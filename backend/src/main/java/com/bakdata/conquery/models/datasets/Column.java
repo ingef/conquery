@@ -161,6 +161,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@Override
 	public Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage) {
 		return storage.getAllImports().stream()
+					  .filter(imp -> imp.getTable().equals(getTable()))
 					  .flatMap(imp -> StreamSupport.stream(((StringStore) getTypeFor(imp)).spliterator(), false))
 					  .map(value -> new FEValue(value, value))
 					  .onClose(() -> log.debug("DONE processing values for {}", getId()));
