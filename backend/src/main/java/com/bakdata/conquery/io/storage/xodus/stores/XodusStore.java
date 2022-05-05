@@ -44,7 +44,11 @@ public class XodusStore implements RawStore {
 	}
 
 	public byte[] get(byte[] key) {
-		return environment.computeInReadonlyTransaction(t -> store.get(t, new ArrayByteIterable(key))).getBytesUnsafe();
+		final ByteIterable byteIterable = environment.computeInReadonlyTransaction(t -> store.get(t, new ArrayByteIterable(key)));
+		if (byteIterable == null) {
+			return null;
+		}
+		return byteIterable.getBytesUnsafe();
 	}
 
 	/**
