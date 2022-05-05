@@ -53,10 +53,6 @@ public class FilterTemplate implements Searchable {
 	private int minSuffixLength = 3;
 	private boolean generateSuffixes = true;
 
-	@Override
-	public Searchable getSearchReference() {
-		return this;
-	}
 
 	@Override
 	public Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage) {

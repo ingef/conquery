@@ -117,36 +117,36 @@ public class FilterSearch {
 								   .collect(Collectors.toList());
 
 
-					final Set<Searchable> suppliers = new HashSet<>();
+					final Set<Searchable> collectedSearchables = new HashSet<>();
 
 					// collect all tasks that are based on the filters configured label mappings
-					suppliers.addAll(collectLabelTasks(allSelectFilters));
+					collectedSearchables.addAll(collectLabelTasks(allSelectFilters));
 
 					// collect all tasks based on the filters optionally configured templates based on csvs
-					suppliers.addAll(collectTemplateTasks(allSelectFilters));
+					collectedSearchables.addAll(collectTemplateTasks(allSelectFilters));
 
 					// collect all tasks that are based on the raw data in the columns, these have no reference or template for mapping
-					suppliers.addAll(collectColumnTasks(allSelectFilters));
+					collectedSearchables.addAll(collectColumnTasks(allSelectFilters));
 
 					// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 					final ExecutorService service = Executors.newCachedThreadPool();
 
 					final Map<Searchable, TrieSearch<FEValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
 
-					log.debug("Found {} search suppliers", suppliers.size());
+					log.debug("Found {} searchable Objects.", collectedSearchables.size());
 
-					for (Searchable searchProvider : suppliers) {
+					for (Searchable searchable : collectedSearchables) {
 
 						service.submit(() -> {
-							final Stream<FEValue> values = searchProvider.getSearchValues(getParserConfig(), storage);
+							final Stream<FEValue> values = searchable.getSearchValues(getParserConfig(), storage);
 
 							final long begin = System.currentTimeMillis();
 
-							log.info("BEGIN collecting entries for `{}`", searchProvider);
+							log.info("BEGIN collecting entries for `{}`", searchable);
 
 							try {
 								final TrieSearch<FEValue> search = new TrieSearch<>(
-										searchProvider.isGenerateSuffixes() ? searchProvider.getMinSuffixLength() : Integer.MAX_VALUE,
+										searchable.isGenerateSuffixes() ? searchable.getMinSuffixLength() : Integer.MAX_VALUE,
 										searchConfig.getSplit()
 								);
 
@@ -155,17 +155,17 @@ public class FilterSearch {
 
 								search.shrinkToFit();
 
-								synchronizedResult.put(searchProvider, search);
+								synchronizedResult.put(searchable, search);
 
 								final long end = System.currentTimeMillis();
 
 								log.debug("DONE collecting entries for `{}`, within {} ({} Items)",
-										  searchProvider,
+										  searchable,
 										  Duration.ofMillis(end - begin), search.calculateSize()
 								);
 							}
 							catch (Exception e) {
-								log.error("Failed to create search for {}", searchProvider, e);
+								log.error("Failed to create search for {}", searchable, e);
 							}
 						});
 					}
@@ -174,7 +174,7 @@ public class FilterSearch {
 
 
 					while (!service.awaitTermination(30, TimeUnit.SECONDS)) {
-						log.trace("Still waiting for {} to finish.", Sets.difference(synchronizedResult.keySet(), suppliers));
+						log.trace("Still waiting for {} to finish.", Sets.difference(synchronizedResult.keySet(), collectedSearchables));
 					}
 
 					log.debug("DONE loading SourceSearch");
@@ -201,6 +201,7 @@ public class FilterSearch {
 
 	private Set<Searchable> collectLabelTasks(List<SelectFilter<?>> allSelectFilters) {
 		return allSelectFilters.stream()
+							   .filter(filter -> !filter.getLabels().isEmpty())
 							   .map(SelectFilter::getSearchReference)
 							   .collect(Collectors.toSet());
 	}
