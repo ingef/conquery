@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -168,13 +169,13 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	}
 
 	@Override
-	public Searchable getSearchReference() {
+	public List<Searchable> getSearchReferences() {
 
 		if (getSecondaryId() != null) {
-			return getSecondaryId().getSearchReference();
+			return getSecondaryId().getSearchReferences();
 		}
 
-		return this;
+		return List.of(this);
 	}
 
 }

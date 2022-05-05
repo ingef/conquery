@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FEValue;
@@ -25,9 +26,9 @@ public interface Searchable {
 	 * The actual Searchable to use, if there is potential for deduplication/pooling.
 	 */
 	@JsonIgnore
-	default Searchable getSearchReference() {
+	default List<Searchable> getSearchReferences() {
 		//Hopefully the only candidate will be Column
-		return this;
+		return List.of(this);
 	}
 
 	/**

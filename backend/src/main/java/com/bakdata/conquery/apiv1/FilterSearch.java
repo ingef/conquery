@@ -1,10 +1,9 @@
 package com.bakdata.conquery.apiv1;
 
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,9 +18,7 @@ import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.SearchConfig;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
-import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -70,19 +67,7 @@ public class FilterSearch {
 	 * @implSpec the order defines the precedence in the output.
 	 */
 	private static List<Searchable> getSearchReferences(SelectFilter<?> filter) {
-		final List<Searchable> references = new ArrayList<>(3);
-
-		if (filter.getTemplate() != null) {
-			references.add(filter.getTemplate().getSearchReference());
-		}
-
-		if (!filter.getLabels().isEmpty()) {
-			references.add(filter.getSearchReference());
-		}
-
-		references.add(filter.getColumn().getSearchReference());
-
-		return references;
+		return filter.getSearchReferences();
 	}
 
 	/**
@@ -117,16 +102,12 @@ public class FilterSearch {
 								   .collect(Collectors.toList());
 
 
-					final Set<Searchable> collectedSearchables = new HashSet<>();
+					final Set<Searchable> collectedSearchables =
+							allSelectFilters.stream()
+											.map(FilterSearch::getSearchReferences)
+											.flatMap(Collection::stream)
+											.collect(Collectors.toSet());
 
-					// collect all tasks that are based on the filters configured label mappings
-					collectedSearchables.addAll(collectLabelTasks(allSelectFilters));
-
-					// collect all tasks based on the filters optionally configured templates based on csvs
-					collectedSearchables.addAll(collectTemplateTasks(allSelectFilters));
-
-					// collect all tasks that are based on the raw data in the columns, these have no reference or template for mapping
-					collectedSearchables.addAll(collectColumnTasks(allSelectFilters));
 
 					// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 					final ExecutorService service = Executors.newCachedThreadPool();
@@ -180,30 +161,6 @@ public class FilterSearch {
 					log.debug("DONE loading SourceSearch");
 				}
 		));
-
-
-	}
-
-	private Set<Searchable> collectColumnTasks(List<SelectFilter<?>> allSelectFilters) {
-		final Set<Column> columns = allSelectFilters.stream().map(SingleColumnFilter::getColumn).collect(Collectors.toSet());
-
-		return columns.stream()
-					  .map(Column::getSearchReference)
-					  .collect(Collectors.toSet());
-	}
-
-	private Set<Searchable> collectTemplateTasks(List<SelectFilter<?>> allSelectFilters) {
-		return allSelectFilters.stream()
-							   .filter(filter -> filter.getTemplate() != null)
-							   .map(filter -> filter.getTemplate().getSearchReference())
-							   .collect(Collectors.toSet());
-	}
-
-	private Set<Searchable> collectLabelTasks(List<SelectFilter<?>> allSelectFilters) {
-		return allSelectFilters.stream()
-							   .filter(filter -> !filter.getLabels().isEmpty())
-							   .map(SelectFilter::getSearchReference)
-							   .collect(Collectors.toSet());
 	}
 
 }

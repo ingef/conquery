@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,6 +71,23 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 
 	private int searchMinSuffixLength = 3;
 	private boolean generateSearchSuffixes = true;
+
+	@Override
+	public List<Searchable> getSearchReferences() {
+		final List<Searchable> out = new ArrayList<>();
+
+		if (getTemplate() != null) {
+			out.add(getTemplate());
+		}
+
+		if (!labels.isEmpty()) {
+			out.add(this);
+		}
+
+		out.addAll(getColumn().getSearchReferences());
+
+		return out;
+	}
 
 	@Override
 	@JsonIgnore
