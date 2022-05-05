@@ -76,7 +76,10 @@ public class FilterSearch {
 			references.add(filter.getTemplate().getSearchReference());
 		}
 
-		references.add(filter.getSearchReference());
+		if (!filter.getLabels().isEmpty()) {
+			references.add(filter.getSearchReference());
+		}
+
 		references.add(filter.getColumn().getSearchReference());
 
 		return references;
