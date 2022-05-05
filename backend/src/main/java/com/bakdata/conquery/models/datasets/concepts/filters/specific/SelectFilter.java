@@ -67,12 +67,19 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		return (getTemplate() == null) != labels.isEmpty();
 	}
 
-	private int minSuffixLength = 3;
-	private boolean generateSuffixes = true;
+	private int searchMinSuffixLength = 3;
+	private boolean generateSearchSuffixes = true;
 
 	@Override
-	public Searchable getSearchReference() {
-		return this;
+	@JsonIgnore
+	public boolean isGenerateSuffixes() {
+		return generateSearchSuffixes;
+	}
+
+	@Override
+	@JsonIgnore
+	public int getMinSuffixLength() {
+		return searchMinSuffixLength;
 	}
 
 	@Override

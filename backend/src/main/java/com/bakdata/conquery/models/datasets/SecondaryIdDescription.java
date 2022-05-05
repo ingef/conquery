@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,9 +26,20 @@ public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> im
 
 	private String description;
 
-	private int minSuffixLength = 3;
-	private boolean generateSuffixes = true;
+	private int searchMinSuffixLength = 3;
+	private boolean generateSearchSuffixes = true;
 
+	@Override
+	@JsonIgnore
+	public boolean isGenerateSuffixes() {
+		return generateSearchSuffixes;
+	}
+
+	@Override
+	@JsonIgnore
+	public int getMinSuffixLength() {
+		return searchMinSuffixLength;
+	}
 
 	@Override
 	public Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage) {
@@ -36,11 +48,6 @@ public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> im
 					  .flatMap(Arrays::stream)
 					  .filter(column -> this.equals(column.getSecondaryId()))
 					  .flatMap(column -> column.getSearchValues(config, storage));
-	}
-
-	@Override
-	public Searchable getSearchReference() {
-		return this;
 	}
 
 	@Override
