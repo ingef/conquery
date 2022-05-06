@@ -1,5 +1,5 @@
 import { ThemeProvider, Theme } from "@emotion/react";
-import ReactDOM from "react-dom";
+import { createRoot } from "react-dom/client";
 import { Store } from "redux";
 
 import "../fonts.css";
@@ -23,12 +23,13 @@ const initialState = {};
 const renderRoot = (tabs: TabT[], theme: Theme) => {
   store = store || makeStore(initialState);
 
-  ReactDOM.render(
+  const root = createRoot(document.getElementById("root")!);
+
+  return root.render(
     <ThemeProvider theme={theme}>
       <GlobalStyles />
       <AppRoot store={store} rightTabs={tabs} />
     </ThemeProvider>,
-    document.getElementById("root"),
   );
 };
 
