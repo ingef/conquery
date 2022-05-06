@@ -9,7 +9,7 @@ import { useAreTreesAvailable } from "../concept-trees/selectors";
 import Pane from "../pane/Pane";
 import ProjectItemsTab from "../previous-queries/list/ProjectItemsTab";
 
-import { StateT } from "./reducers";
+import type { StateT } from "./reducers";
 
 const SxConceptTreeSearchBox = styled(ConceptTreeSearchBox)`
   margin: 8px 10px 5px;

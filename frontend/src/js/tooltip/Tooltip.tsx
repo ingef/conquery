@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
 import remarkGfm from "remark-gfm";
 
+import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import type { SearchT } from "../concept-trees/reducer";
 import FaIcon from "../icon/FaIcon";

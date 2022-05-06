@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
-import type { StateT } from "app-types";
 import { parseISO } from "date-fns";
 import { forwardRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { SecondaryId } from "../../api/types";
+import type { StateT } from "../../app/reducers";
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
 import { formatDate } from "../../common/helpers";

@@ -1,9 +1,9 @@
-import { StateT } from "app-types";
 import { FC } from "react";
 import { useFormContext, useFormState } from "react-hook-form";
 import { useSelector } from "react-redux";
 
 import { DatasetIdT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import QueryRunner from "../query-runner/QueryRunner";

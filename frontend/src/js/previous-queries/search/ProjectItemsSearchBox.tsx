@@ -1,8 +1,8 @@
-import { StateT } from "app-types";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
+import type { StateT } from "../../app/reducers";
 import SearchBar from "../../search-bar/SearchBar";
 
 import { clearSearch, useSearchItems } from "./actions";
