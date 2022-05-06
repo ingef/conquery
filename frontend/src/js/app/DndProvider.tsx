@@ -2,7 +2,8 @@ import styled from "@emotion/styled";
 import { FC } from "react";
 import { DndProvider as ReactDndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import MultiBackend, {
+import {
+  MultiBackend,
   TouchTransition,
   usePreview,
 } from "react-dnd-multi-backend";
@@ -61,15 +62,15 @@ const findItemWithAndHeight = (
 };
 
 const DndPreview: FC = () => {
-  const { display, item, style } = usePreview();
+  const preview = usePreview<PossibleDroppableObject>();
 
-  if (!display) {
+  if (!preview.display) {
     return null;
   }
 
-  const { width, height } = findItemWithAndHeight(item);
+  const { width, height } = findItemWithAndHeight(preview.item);
 
-  return <PreviewItem width={width} height={height} style={style} />;
+  return <PreviewItem width={width} height={height} style={preview.style} />;
 };
 
 const DndProvider: FC = ({ children }) => {
