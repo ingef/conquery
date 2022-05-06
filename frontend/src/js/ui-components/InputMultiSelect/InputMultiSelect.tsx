@@ -366,7 +366,10 @@ const InputMultiSelect = ({
                     ? filteredOptions.slice(1)
                     : filteredOptions;
 
-                setSelectedItems(optionsWithoutCreatable);
+                setSelectedItems([
+                  ...selectedItems,
+                  ...optionsWithoutCreatable,
+                ]);
                 setInputValue("");
               }
             }}
