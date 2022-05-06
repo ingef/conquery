@@ -36,10 +36,12 @@ To test frontend and backend together you can start the setup that is used for e
 First build the backend using `conquery/scripts/build_version.sh` or download a JAR from the [release page](https://github.com/bakdata/conquery/releases) and place it in `conquery/executable/target/`.
 
 Build the frontend by running:
-```
-$ cd frontend
-$ cp .env.example .env
-$ yarn build
+
+```bash
+cd frontend
+cp .env.example .env
+yarn
+yarn build
 ```
 
 You can then run `conquery/scripts/run_conquery_cypress.sh` to start frontend and backend, and also load the test data required by cypress end-to-end test or you can run `conquery/scripts/run_backend_cypress.sh` and `conquery/scripts/run_frontend_cypress.sh` separately without loading any data.
@@ -51,13 +53,13 @@ The frontend is accessible at http://localhost:8000 as the default "superuser" i
 ## Development
 
 ### Testing
-Apart from separate frontend and backend tests, the project also contains end-to-end tests powered by cypress. 
+Apart from separate frontend and backend tests, the project also contains end-to-end tests powered by cypress.
 
 To run the end-to-end test locally:
 1. Make sure you installed all [requirements](#requirements)
 2. From the repo root folder run  `conquery/scripts/run_conquery_cypress.sh`
 3. Wait until the output: `Node server listening on port: 8000` appears
-4. Start cypress from the `conquery/frontend` folder in another terminal: `$ yarn cypress open`
+4. Start cypress from the `conquery/frontend` folder in another terminal: `yarn cypress open`
 5. Then chose a test suite and start it.
 
 For further informations on this and other tests, please refer to the corresponding [CI configuration](https://github.com/bakdata/conquery/tree/develop/.github/workflows).

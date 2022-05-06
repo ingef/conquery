@@ -25,9 +25,11 @@ const PreviewItem = styled("div")<{ width: number; height: number }>`
 const CustomHTML5toTouch = {
   backends: [
     {
+      id: "html5",
       backend: HTML5Backend,
     },
     {
+      id: "touch",
       backend: TouchBackend,
       transition: TouchTransition,
       options: { enableMouseEvents: true, delayTouchStart: 100 },
