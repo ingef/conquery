@@ -1,5 +1,4 @@
 import { ThemeProvider, Theme } from "@emotion/react";
-import { StateT } from "app-types";
 import ReactDOM from "react-dom";
 import { Store } from "redux";
 
@@ -7,6 +6,7 @@ import "../fonts.css";
 
 import AppRoot from "./AppRoot";
 import GlobalStyles from "./GlobalStyles";
+import type { StateT } from "./app/reducers";
 import { initializeEnvironment, CustomEnvironment } from "./environment";
 import { TabT } from "./pane/types";
 import { makeStore } from "./store";

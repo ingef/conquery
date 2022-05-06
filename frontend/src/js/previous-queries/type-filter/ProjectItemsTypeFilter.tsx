@@ -1,8 +1,8 @@
-import { StateT } from "app-types";
 import { FC, ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
+import type { StateT } from "../../app/reducers";
 import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
