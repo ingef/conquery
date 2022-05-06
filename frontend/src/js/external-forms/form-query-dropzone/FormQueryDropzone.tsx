@@ -1,6 +1,4 @@
-import styled from "@emotion/styled";
 import { FC } from "react";
-import { useFormContext } from "react-hook-form";
 
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
@@ -17,12 +15,7 @@ const DROP_TYPES = [
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
 
-const SxDropzone = styled(Dropzone)<{ centered?: boolean }>`
-  justify-content: ${({ centered }) => (centered ? "center" : "flex-start")};
-`;
-
 interface PropsT {
-  fieldName: string;
   label: string;
   tooltip?: string;
   optional?: boolean;
@@ -33,7 +26,6 @@ interface PropsT {
 }
 
 const FormQueryDropzone: FC<PropsT> = ({
-  fieldName,
   label,
   tooltip,
   optional,
@@ -42,9 +34,16 @@ const FormQueryDropzone: FC<PropsT> = ({
   value,
   onChange,
 }) => {
-  const { setError } = useFormContext();
   const onDrop = (item: DragItemQuery) => {
     onChange(item);
+  };
+
+  const onInvalid = () => {
+    // It would be better to call `setError` to register an error for the field,
+    // but that error won't persist when another `useController` call is made for that field
+    // during field registration, so we have to do something here that
+    // makes the field not pass the `validate` rule.
+    onChange(null);
   };
 
   return (
@@ -54,25 +53,19 @@ const FormQueryDropzone: FC<PropsT> = ({
         {label}
         {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>
-      <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
+      <Dropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
         onDrop={(item) => onDrop(item as DragItemQuery)}
         acceptedDropTypes={DROP_TYPES}
-        centered={!value}
       >
-        {() =>
-          !value ? (
-            dropzoneText
-          ) : (
-            <ValidatedFormQueryResult
-              queryResult={value}
-              onInvalid={(error) =>
-                setError(fieldName, { type: "invalid", message: error })
-              }
-              onDelete={() => onChange(null)}
-            />
-          )
-        }
-      </SxDropzone>
+        {() => (
+          <ValidatedFormQueryResult
+            placeholder={dropzoneText}
+            queryResult={value || undefined}
+            onInvalid={onInvalid}
+            onDelete={() => onChange(null)}
+          />
+        )}
+      </Dropzone>
     </div>
   );
 };
