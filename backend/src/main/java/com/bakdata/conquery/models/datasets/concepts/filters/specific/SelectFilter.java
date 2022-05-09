@@ -101,6 +101,15 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		return searchMinSuffixLength;
 	}
 
+	/**
+	 * Does not make sense to distinguish at Filter level since it's only referenced when labels is set.
+	 */
+	@Override
+	@JsonIgnore
+	public boolean isSearchDisabled() {
+		return false;
+	}
+
 	@Override
 	public Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage) {
 		return labels.entrySet().stream()

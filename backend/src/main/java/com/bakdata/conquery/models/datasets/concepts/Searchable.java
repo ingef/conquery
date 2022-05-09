@@ -48,7 +48,5 @@ public interface Searchable {
 	/**
 	 * Feature to disable search on a column completely. This has no benefit to the users, but can be used to reduce strain on memory and time spent indexing large columns.
 	 */
-	default boolean isSearchDisabled(){
-		return false;
-	}
+	boolean isSearchDisabled();
 }
