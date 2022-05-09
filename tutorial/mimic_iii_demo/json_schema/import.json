@@ -1,0 +1,27 @@
+{
+	"title": "Import",
+	"description": "The import format of conquery",
+	"type": "object",
+	"properties": {
+		"label": { "type": "string" },
+		"name": { "$ref": "cqIdPart.json#" },
+		"inputs": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties" : {
+					"primary" : { "$ref":"import_column.json#"},
+					"output": {
+						"type": "array",
+						"items": { "$ref":"import_column.json#"},
+						"minItems": 1,
+						"uniqueItems": true
+					},
+					"sourceFile":  {"type": "string"}
+				},			
+				"required": ["primary", "output", "sourceFile"]
+			}
+		}
+	},
+	"required": ["name", "table"]
+}

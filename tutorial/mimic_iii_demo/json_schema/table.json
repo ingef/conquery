@@ -1,0 +1,21 @@
+{
+  "title": "Table",
+  "description": "The table format of conquery",
+  "type": "object",
+  "properties": {
+    "name": { "$ref": "cqIdPart.json#" },
+    "columns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "$ref": "cqIdPart.json" },
+          "type": { "$ref": "cqType.json" }
+        }
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": ["name", "columns"]
+}
