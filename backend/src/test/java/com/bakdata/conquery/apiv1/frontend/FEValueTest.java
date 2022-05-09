@@ -10,8 +10,11 @@ import org.junit.jupiter.api.Test;
 
 
 class FEValueTest {
+	/**
+	 * This taste ensures that changes to FEValue maintain, that equals/hashcode respect {@link FEValue#getValue()} only.
+	 */
 	@Test
-	public void test() {
+	public void testDistinctByNameOnly() {
 		final FEValue firstA = new FEValue("a", "Label A", "Label A");
 		final FEValue secondA = new FEValue("a", "Label A2", "Label A");
 
