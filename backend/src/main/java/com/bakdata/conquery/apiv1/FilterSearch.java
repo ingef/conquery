@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,7 +24,6 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.util.search.TrieSearch;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -49,35 +49,26 @@ public class FilterSearch {
 	 * From a given {@link FEValue} extract all relevant keywords.
 	 */
 	private static List<String> extractKeywords(FEValue value) {
-		final ImmutableList.Builder<String> builder = ImmutableList.builderWithExpectedSize(3);
+		List<String> keywords = new ArrayList<>(3);
 
-		builder.add(value.getLabel())
-			   .add(value.getValue());
+		keywords.add(value.getLabel());
+		keywords.add(value.getValue());
 
 		if (value.getOptionValue() != null) {
-			builder.add(value.getOptionValue());
+			keywords.add(value.getOptionValue());
 		}
 
-		return builder.build();
-	}
-
-	/**
-	 * For a {@link SelectFilter}, decide which references to use for searching.
-	 *
-	 * @implSpec the order defines the precedence in the output.
-	 */
-	private static List<Searchable> getSearchReferences(SelectFilter<?> filter) {
-		return filter.getSearchReferences();
+		return keywords;
 	}
 
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
 	public List<TrieSearch<FEValue>> getSearchesFor(SelectFilter<?> filter) {
-		return getSearchReferences(filter).stream()
-										  .map(searchCache::get)
-										  .filter(Objects::nonNull)
-										  .collect(Collectors.toList());
+		return filter.getSearchReferences().stream()
+					 .map(searchCache::get)
+					 .filter(Objects::nonNull)
+					 .collect(Collectors.toList());
 	}
 
 
@@ -104,7 +95,7 @@ public class FilterSearch {
 
 					final Set<Searchable> collectedSearchables =
 							allSelectFilters.stream()
-											.map(FilterSearch::getSearchReferences)
+											.map(filter -> filter.getSearchReferences())
 											.flatMap(Collection::stream)
 											.collect(Collectors.toSet());
 
@@ -120,7 +111,7 @@ public class FilterSearch {
 
 						// Disabling search is only a last resort for when columns are too big to store in memory or process for indexing.
 						// TODO FK: We want no Searchable to be disabled, better scaling searches or mechanisms to fill search.
-						if(searchable.isSearchDisabled()){
+						if (searchable.isSearchDisabled()) {
 							log.debug("{} is Disabled, skipping.", searchable);
 							continue;
 						}
