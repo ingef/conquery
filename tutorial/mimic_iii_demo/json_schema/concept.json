@@ -37,7 +37,10 @@
 			"oneOf": [
 				{
 					"properties": {
-						"type": { "type": "string", "pattern": "^PREFIX_RANGE$" },
+						"type": {
+							"type": "string",
+							"enum": ["PREFIX_RANGE"]
+						},
 						"min": { "type": "string" },
 						"max": { "type": "string" }
 					},
@@ -46,7 +49,10 @@
 				{
 					"type": "object",
 					"properties": {
-						"type": { "type": "string", "pattern": "^PREFIX_LIST$" },
+						"type": {
+							"type": "string",
+							"enum": ["PREFIX_LIST"]
+						},
 						"prefixes": {
 							"type": "array",
 							"items": { "type": "string" }
