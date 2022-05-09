@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class Namespace implements Injectable, Closeable {
+public class Namespace implements Closeable {
 
 	private final ObjectWriter objectWriter;
 	@ToString.Include
@@ -220,10 +220,5 @@ public class Namespace implements Injectable, Closeable {
 
 	public int getNumberOfEntities() {
 		return getStorage().getPrimaryDictionary().getSize();
-	}
-
-	@Override
-	public MutableInjectableValues inject(MutableInjectableValues values) {
-		return values.add(Namespace.class, this);
 	}
 }
