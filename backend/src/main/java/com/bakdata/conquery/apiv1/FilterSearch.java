@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilt
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.util.search.TrieSearch;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,7 @@ public class FilterSearch {
 	 * <p>
 	 * In the code below, the keys of this map will usually be called "reference".
 	 */
+	@JsonIgnore
 	private final Map<Searchable, TrieSearch<FEValue>> searchCache = new HashMap<>();
 
 	/**

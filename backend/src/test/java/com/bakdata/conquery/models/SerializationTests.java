@@ -70,6 +70,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -81,7 +82,7 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 public class SerializationTests {
 
-	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
+	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
 	@Test
 	public void dataset() throws IOException, JSONException {
@@ -258,7 +259,7 @@ public class SerializationTests {
 
 		final Validator validator = Validators.newValidator();
 
-		registry.injectInto(Jackson.MAPPER)
+		registry.injectInto(Jackson.MAPPER.copy())
 				.readerFor(Table.class)
 				.readValue("{\"name\" : \"table\", \"columns\" : [{\"name\" : \"column\", \"type\" : \"STRING\"}]}");
 
@@ -380,8 +381,11 @@ public class SerializationTests {
 
 	@Test
 	public void managedQuery() throws JSONException, IOException {
+		final DatasetRegistry datasetRegistry = new DatasetRegistry(0);
+		final MetaStorage metaStorage = new MetaStorage(datasetRegistry);
+		datasetRegistry.setMetaStorage(metaStorage);
 
-		final CentralRegistry registry = new CentralRegistry();
+		final CentralRegistry registry = metaStorage.getCentralRegistry();
 
 		final Dataset dataset = new Dataset("test-dataset");
 
@@ -390,10 +394,16 @@ public class SerializationTests {
 		registry.register(dataset);
 		registry.register(user);
 
+		STORAGE.updateUser(user);
+
 		ManagedQuery execution = new ManagedQuery(null, user, dataset);
 		execution.setTags(new String[]{"test-tag"});
 
+		log.info("Registry=`{}`", registry.getAllValues());
+
+
 		SerializationTestUtil.forType(ManagedExecution.class)
+							 .injectables(values -> values.add(MetaStorage.class, metaStorage))
 							 .registry(registry)
 							 .test(execution);
 	}

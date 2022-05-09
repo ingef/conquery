@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.identifiable;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -118,5 +119,9 @@ public class CentralRegistry implements Injectable {
 		}
 
 		return (T) map.get(name);
+	}
+
+	public Collection<Identifiable> getAllValues() {
+		return map.values();
 	}
 }

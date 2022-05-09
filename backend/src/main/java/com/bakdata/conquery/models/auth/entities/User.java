@@ -162,14 +162,13 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 
 
 	/**
-	 * This class is non static so its a fixed part of the enclosing User object.
-	 * Its protected for testing purposes only.
+	 * This class is non-static so it's a fixed part of the enclosing User object.
+	 * It's protected for testing purposes only.
 	 */
-	protected class ShiroUserAdapter extends FilteredUser {
+	public class ShiroUserAdapter extends FilteredUser {
 
 		@Getter
-		private final ThreadLocal<ConqueryAuthenticationInfo>
-				authenticationInfo =
+		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo =
 				ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false));
 
 		@Override

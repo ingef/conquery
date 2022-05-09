@@ -1,5 +1,12 @@
 package com.bakdata.conquery.models.auth.apitoken;
 
+import java.time.LocalDate;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -9,20 +16,15 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.ImmutableSet;
-import lombok.*;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.util.Set;
-import java.util.UUID;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
 
 @Getter
-@AllArgsConstructor(onConstructor = @__(@JsonCreator))
 public class ApiTokenData implements Authorized, Owned {
 
 	/**
@@ -52,6 +54,22 @@ public class ApiTokenData implements Authorized, Owned {
 	private final LocalDate expirationDate;
 	@NotEmpty
 	private final Set<Scopes> scopes;
+
+//	@JsonCreator
+//	public ApiTokenData(UUID id, @NonNull ApiTokenHash tokenHash, @NonNull String name, @NotNull UserId userId, @NonNull LocalDate creationDate, LocalDate expirationDate, @NotEmpty Set<Scopes> scopes) {
+//		this(id, )
+//	}
+
+	public ApiTokenData(UUID id, @NonNull ApiTokenHash tokenHash, @NonNull String name, @NotNull UserId userId, @NonNull LocalDate creationDate, LocalDate expirationDate, @NotEmpty Set<Scopes> scopes, @NotNull MetaStorage storage) {
+		this.id = id;
+		this.tokenHash = tokenHash;
+		this.name = name;
+		this.userId = userId;
+		this.creationDate = creationDate;
+		this.expirationDate = expirationDate;
+		this.scopes = scopes;
+		this.storage = storage;
+	}
 
 	/**
 	 * @implNote This is the only member that would be mutable otherwise.
