@@ -248,8 +248,8 @@ public class ConceptsProcessor {
 
 	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {
 
-		final List<ConceptElementId<?>> resolvedCodes = new ArrayList<>();
-		final List<String> unknownCodes = new ArrayList<>();
+		final Set<ConceptElementId<?>> resolvedCodes = new HashSet<>();
+		final Set<String> unknownCodes = new HashSet<>();
 
 		for (String conceptCode : conceptCodes) {
 			try {
@@ -284,7 +284,7 @@ public class ConceptsProcessor {
 	@AllArgsConstructor
 	@ToString
 	public static class ResolvedConceptsResult {
-		private List<ConceptElementId<?>> resolvedConcepts;
+		private Set<ConceptElementId<?>> resolvedConcepts;
 		private ResolvedFilterResult resolvedFilter;
 		private Collection<String> unknownCodes;
 	}
