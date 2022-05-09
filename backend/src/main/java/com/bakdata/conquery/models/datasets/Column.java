@@ -51,6 +51,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 	private int minSuffixLength = 3;
 	private boolean generateSuffixes;
+	private boolean searchDisabled = false;
 
 	@JsonIgnore
 	@Getter(lazy = true)

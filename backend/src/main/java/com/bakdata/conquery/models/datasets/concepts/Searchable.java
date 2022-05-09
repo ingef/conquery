@@ -41,4 +41,11 @@ public interface Searchable {
 	 * If true, the underlying {@link com.bakdata.conquery.util.search.TrieSearch} will not generate any suffixes. This can help reduce pressure on memory.
 	 */
 	boolean isGenerateSuffixes();
+
+	/**
+	 * Feature to disable search on a column completely. This has no benefit to the users, but can be used to reduce strain on memory and time spent indexing large columns.
+	 */
+	default boolean isSearchDisabled(){
+		return false;
+	}
 }

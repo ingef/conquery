@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets;
 
 import java.util.Arrays;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FEValue;
@@ -28,6 +29,7 @@ public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> im
 
 	private int searchMinSuffixLength = 3;
 	private boolean generateSearchSuffixes = true;
+	private boolean searchDisabled = false;
 
 	@Override
 	@JsonIgnore
@@ -46,6 +48,7 @@ public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> im
 		return storage.getTables().stream()
 					  .map(Table::getColumns)
 					  .flatMap(Arrays::stream)
+					  .filter(Predicate.not(Column::isSearchDisabled))
 					  .filter(column -> this.equals(column.getSecondaryId()))
 					  .flatMap(column -> column.getSearchValues(config, storage));
 	}

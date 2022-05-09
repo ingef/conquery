@@ -118,6 +118,13 @@ public class FilterSearch {
 
 					for (Searchable searchable : collectedSearchables) {
 
+						// Disabling search is only a last resort for when columns are too big to store in memory or process for indexing.
+						// TODO FK: We want no Searchable to be disabled, better scaling searches or mechanisms to fill search.
+						if(searchable.isSearchDisabled()){
+							log.debug("{} is Disabled, skipping.", searchable);
+							continue;
+						}
+
 						service.submit(() -> {
 							final Stream<FEValue> values = searchable.getSearchValues(getParserConfig(), storage);
 
@@ -155,7 +162,7 @@ public class FilterSearch {
 
 
 					while (!service.awaitTermination(30, TimeUnit.SECONDS)) {
-						log.trace("Still waiting for {} to finish.", Sets.difference(collectedSearchables, synchronizedResult.keySet()));
+						log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables, synchronizedResult.keySet()));
 					}
 
 					log.debug("DONE loading SourceSearch");
