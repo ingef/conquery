@@ -61,31 +61,27 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private final BucketManager bucketManager;
 
 
-	private Worker(
+	public Worker(
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull WorkerStorage storage,
 			@NonNull ExecutorService jobsExecutorService,
 			boolean failOnError,
-			int entityBucketSize
+			int entityBucketSize,
+			ObjectMapper objectMapper
 	) {
 		this.storage = storage;
 		this.jobsExecutorService = jobsExecutorService;
+
+
+		storage.openStores(objectMapper);
+		storage.loadData();
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"));
 		bucketManager = BucketManager.create(this, storage, entityBucketSize);
 	}
 
-	public static Worker newWorker(
-			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-			@NonNull ExecutorService executorService,
-			@NonNull WorkerStorage storage,
-			boolean failOnError,
-			int entityBucketSize) {
-
-		return new Worker(queryThreadPoolDefinition, storage, executorService, failOnError, entityBucketSize);
-	}
-
+	@SneakyThrows(IOException.class)
 	public static Worker newWorker(
 			@NonNull Dataset dataset,
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
@@ -109,8 +105,9 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
+		workerStorage.close();
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize);
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, objectMapper);
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {
@@ -163,7 +160,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	@Override
 	public String toString() {
-		return "Worker[" + getInfo().getId() + ", " + session.getLocalAddress() + "]";
+		return "Worker[" + getInfo().getId() + ", " + (session != null ? session.getLocalAddress() : "no session") + "]";
 	}
 
 	public boolean isBusy() {

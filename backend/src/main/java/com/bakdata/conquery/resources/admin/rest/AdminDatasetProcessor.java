@@ -79,6 +79,7 @@ public class AdminDatasetProcessor {
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
 	 */
+	@SneakyThrows(IOException.class)
 	public synchronized Dataset addDataset(Dataset dataset) {
 
 		final String name = dataset.getName();
@@ -86,12 +87,19 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), validator, "dataset_" + name);
 
 		// Todo unify this with ManagerNode
 		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
+
+		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), validator, "dataset_" + name);
+		datasetStorage.openStores(objectMapper);
+		datasetStorage.loadData();
+		datasetStorage.updateDataset(dataset);
+		datasetStorage.updateIdMapping(new EntityIdMap());
+		datasetStorage.close();
+
 
 		Namespace.createAndRegister(
 				getDatasetRegistry(),
@@ -99,11 +107,6 @@ public class AdminDatasetProcessor {
 				config,
 				objectMapper
 		);
-
-
-		datasetStorage.loadData();
-		datasetStorage.updateDataset(dataset);
-		datasetStorage.updateIdMapping(new EntityIdMap());
 
 		// for now we just add one worker to every ShardNode
 		for (ShardNodeInformation node : datasetRegistry.getShardNodes().values()) {

@@ -76,6 +76,8 @@ public class Namespace implements Injectable, Closeable {
 
 		storage.openStores(objectMapper);
 
+		storage.loadData();
+
 		ExecutionManager executionManager = new ExecutionManager(datasetRegistry);
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 

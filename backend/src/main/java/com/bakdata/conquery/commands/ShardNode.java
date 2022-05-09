@@ -124,7 +124,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workers.add(this.workers.createWorker(workerStorage, config.isFailOnError()));
+					workers.add(this.workers.createWorker(workerStorage, config.isFailOnError(), createInternalObjectMapper()));
 				}
 				catch (Exception e) {
 					log.error("Failed reading Storage", e);

@@ -196,20 +196,17 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	@SneakyThrows
 	public Collection<NamespaceStorage> loadNamespaceStorages() {
 		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, validator, storePath), NAMESPACE_STORES);
 	}
 
 	@Override
-	@SneakyThrows
 	public Collection<WorkerStorage> loadWorkerStorages() {
 		return loadNamespacedStores("worker_", (storePath) -> new WorkerStorage(this, validator, storePath), WORKER_STORES);
 	}
 
 
-	private <T extends NamespacedStorage> Queue<T> loadNamespacedStores(String prefix, Function<String, T> creator, Set<String> storesToTest)
-			throws InterruptedException {
+	private <T extends NamespacedStorage> Queue<T> loadNamespacedStores(String prefix, Function<String, T> creator, Set<String> storesToTest) {
 		File baseDir = getDirectory().toFile();
 
 		if (baseDir.mkdirs()) {
@@ -217,48 +214,23 @@ public class XodusStoreFactory implements StoreFactory {
 		}
 
 		Queue<T> storages = new ConcurrentLinkedQueue<>();
-		ExecutorService loaders = Executors.newFixedThreadPool(getNThreads());
-
 
 		for (File directory : Objects.requireNonNull(baseDir.listFiles((file, name) -> file.isDirectory() && name.startsWith(prefix)))) {
 
 			final String name = directory.getName();
 
-			loaders.submit(() -> {
-				try {
-					ConqueryMDC.setLocation(directory.toString());
+			ConqueryMDC.setLocation(directory.toString());
 
-					if (!environmentHasStores(directory, storesToTest)) {
-						log.warn("No valid WorkerStorage found.");
-						return;
-					}
+			if (!environmentHasStores(directory, storesToTest)) {
+				log.warn("No valid WorkerStorage found.");
+				continue;
+			}
 
-					T namespacedStorage = creator.apply(name);
+			T namespacedStorage = creator.apply(name);
 
-					log.debug("BEGIN reading Storage");
-					namespacedStorage.loadData();
-
-					storages.add(namespacedStorage);
-
-				}
-				catch (Exception e) {
-					log.error("Failed reading Storage", e);
-				}
-				finally {
-					log.debug("DONE reading Storage");
-					ConqueryMDC.clearLocation();
-				}
-			});
+			storages.add(namespacedStorage);
 		}
 
-		loaders.shutdown();
-		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-
-
-			log.debug("Waiting for Worker storages to load. {} are already finished.", storages.size());
-		}
-
-		log.info("All WorkerStores loaded: {}", storages);
 		return storages;
 	}
 

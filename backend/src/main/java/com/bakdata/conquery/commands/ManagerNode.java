@@ -5,7 +5,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -52,11 +57,13 @@ import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.apache.poi.ss.formula.functions.T;
 
 /**
  * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to
@@ -207,9 +214,23 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		datasetRegistry.setMetaStorage(storage);
 	}
 
+	@SneakyThrows(InterruptedException.class)
 	public void loadNamespaces() {
+
+
+		Queue<Namespace> namespaces = new ConcurrentLinkedQueue<>();
+		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
 		for (NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages()) {
-			Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), createInternalObjectMapper());
+			loaders.submit(() -> {
+				namespaces.add(Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), createInternalObjectMapper()));
+			});
+		}
+
+
+		loaders.shutdown();
+		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
+			log.debug("Waiting for Worker namespaces to load. {} are already finished.", namespaces.size());
 		}
 	}
 
