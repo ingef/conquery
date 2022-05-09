@@ -25,7 +25,11 @@ public class AddWorker extends MessageToShardNode.Slow {
 		log.info("creating a new worker for {}", dataset);
 		ConqueryConfig config = context.getConfig();
 
-		Worker worker = context.getWorkers().createWorker(dataset, config.getStorage(), createWorkerName(), context.getValidator(), config.isFailOnError());
+		Worker
+				worker =
+				context.getWorkers()
+					   .createWorker(dataset, config.getStorage(), createWorkerName(), context.getValidator(), config.isFailOnError(), context.getInternalObjectMapperCreator()
+																																			  .get());
 
 		worker.setSession(context.getRawSession());
 

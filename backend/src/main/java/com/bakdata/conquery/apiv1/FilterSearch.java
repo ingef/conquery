@@ -224,7 +224,7 @@ public class FilterSearch {
 		final CsvParser parser = parserConfig.createParser();
 		// It is likely that multiple Filters reference the same file+config. However we want to ensure it is read only once to avoid wasting computation.
 		// We use Streams below to ensure a completely transparent lazy execution of parsing reference files
-		return Stream.of(new File(template.getFilePath()))
+		return Stream.of(new File(template.getFilePath().getPath()))
 					 .map(parser::iterateRecords)
 					 // Univocity parser does not support streams, so we create one manually using their spliterator.
 					 .flatMap(iter -> StreamSupport.stream(iter.spliterator(), false))

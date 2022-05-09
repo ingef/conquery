@@ -1,15 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.index.InternToExternMapper;
-import com.bakdata.conquery.models.index.LuceneInternToExternMapper;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

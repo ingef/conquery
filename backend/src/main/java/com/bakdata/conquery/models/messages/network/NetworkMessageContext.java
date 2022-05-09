@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.messages.network;
 
+import java.util.function.Supplier;
+
 import javax.validation.Validator;
 
 import com.bakdata.conquery.commands.ManagerNode;
@@ -10,6 +12,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Workers;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 
 @Getter
@@ -32,18 +35,20 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	 */
 	@Getter
 	public static class ShardNodeNetworkContext extends NetworkMessageContext<MessageToManagerNode> {
-		
+
 		private final Workers workers;
 		private final ConqueryConfig config;
 		private final Validator validator;
-		private NetworkSession rawSession;
+		private final NetworkSession rawSession;
+		private final Supplier<ObjectMapper> internalObjectMapperCreator;
 
-		public ShardNodeNetworkContext(JobManager jobManager, NetworkSession session, Workers workers, ConqueryConfig config, Validator validator) {
+		public ShardNodeNetworkContext(JobManager jobManager, NetworkSession session, Workers workers, ConqueryConfig config, Validator validator, Supplier<ObjectMapper> internalObjectMapperCreator) {
 			super(jobManager, session, config.getCluster().getBackpressure());
 			this.workers = workers;
 			this.config = config;
 			this.validator = validator;
 			this.rawSession = session;
+			this.internalObjectMapperCreator = internalObjectMapperCreator;
 		}
 	}
 	

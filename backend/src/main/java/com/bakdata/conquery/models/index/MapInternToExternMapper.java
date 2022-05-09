@@ -21,15 +21,17 @@ public class MapInternToExternMapper implements InternToExternMapper {
 
 	@JsonCreator
 	public MapInternToExternMapper(
-			@JacksonInject Namespace namespace,
+			@JacksonInject MapIndexService mapIndex,
 			URL csv,
 			String internalColumn,
 			String externalColumn
 	) {
-		if (namespace != null) {
-			int2ext = namespace.getMapIndexService().getMapping(csv, internalColumn, externalColumn);
+		if (mapIndex != null) {
+			// Manager
+			int2ext = mapIndex.getMapping(csv, internalColumn, externalColumn);
 		}
 		else {
+			// Todo ensure we are not on a Worker
 			int2ext = null;
 		}
 	}

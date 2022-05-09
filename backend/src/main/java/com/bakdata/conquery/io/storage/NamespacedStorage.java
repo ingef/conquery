@@ -24,6 +24,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
@@ -46,6 +48,8 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	@Getter
 	@ToString.Include
 	private final String pathName;
+	@Getter
+	private final StoreFactory storageFactory;
 
 	protected SingletonStore<Dataset> dataset;
 	protected IdentifiableStore<SecondaryIdDescription> secondaryIds;
@@ -54,18 +58,19 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorage(Validator validator, String pathName) {
+	public NamespacedStorage(StoreFactory storageFactory, Validator validator, String pathName) {
 		this.validator = validator;
 		this.pathName = pathName;
+		this.storageFactory = storageFactory;
 	}
 
-	public void openStores(StoreFactory storageFactory) {
-		dataset = storageFactory.createDatasetStore(pathName);
-		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName);
-		tables = storageFactory.createTableStore(centralRegistry, pathName);
-		dictionaries = storageFactory.createDictionaryStore(centralRegistry, pathName);
-		imports = storageFactory.createImportStore(centralRegistry, pathName);
-		concepts = storageFactory.createConceptStore(centralRegistry, pathName);
+	public void openStores(ObjectMapper objectMapper) {
+		dataset = storageFactory.createDatasetStore(pathName, objectMapper);
+		secondaryIds = storageFactory.createSecondaryIdDescriptionStore(centralRegistry, pathName, objectMapper);
+		tables = storageFactory.createTableStore(centralRegistry, pathName, objectMapper);
+		dictionaries = storageFactory.createDictionaryStore(centralRegistry, pathName, objectMapper);
+		imports = storageFactory.createImportStore(centralRegistry, pathName, objectMapper);
+		concepts = storageFactory.createConceptStore(centralRegistry, pathName, objectMapper);
 
 		decorateDatasetStore(dataset);
 		decorateSecondaryIdDescriptionStore(secondaryIds);

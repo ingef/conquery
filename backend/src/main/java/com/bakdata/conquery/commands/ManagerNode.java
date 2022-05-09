@@ -13,6 +13,7 @@ import javax.ws.rs.client.Client;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -108,7 +109,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// Instantiate DatasetRegistry and MetaStorage so they are ready for injection into the object mapper (API + Storage)
 		// The validator is already injected at this point see Conquery.java
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
-		storage = new MetaStorage(datasetRegistry);
+		storage = new MetaStorage(config.getStorage(), datasetRegistry);
 
 		datasetRegistry.injectInto(environment.getObjectMapper());
 		storage.injectInto(environment.getObjectMapper());
@@ -183,9 +184,22 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
+	public ObjectMapper createInternalObjectMapper() {
+		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+
+		final MutableInjectableValues injectableValues = (MutableInjectableValues) objectMapper.getInjectableValues();
+		injectableValues.add(Validator.class, validator);
+		datasetRegistry.injectInto(objectMapper);
+		storage.injectInto(objectMapper);
+
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
+		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
+		return objectMapper;
+	}
+
 	private void loadMetaStorage() {
 		log.info("Opening MetaStorage");
-		storage.openStores(config.getStorage());
+		storage.openStores(createInternalObjectMapper());
 		log.info("Loading MetaStorage");
 		storage.loadData();
 		log.info("MetaStorage loaded {}", storage);
@@ -194,12 +208,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	public void loadNamespaces() {
-		final Collection<NamespaceStorage> storages = config.getStorage().loadNamespaceStorages();
-		final ObjectWriter objectWriter =
-				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
-
-		for (NamespaceStorage namespaceStorage : storages) {
-			Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), objectWriter);
+		for (NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages()) {
+			Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), createInternalObjectMapper());
 		}
 	}
 

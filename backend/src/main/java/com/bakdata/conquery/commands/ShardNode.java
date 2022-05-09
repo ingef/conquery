@@ -2,11 +2,16 @@ package com.bakdata.conquery.commands;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
@@ -46,6 +51,7 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.apache.poi.ss.formula.functions.T;
 
 /**
  * This node holds a shard of data (in so called {@link Worker}s for the different datasets in conquery.
@@ -111,11 +117,45 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 		final Collection<WorkerStorage> workerStorages = config.getStorage().loadWorkerStorages();
 
-		for(WorkerStorage workerStorage : workerStorages) {
-			workers.createWorker(workerStorage, config.isFailOnError());
+
+		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+		Queue<Worker> workers = new ConcurrentLinkedQueue<>();
+		for (WorkerStorage workerStorage : workerStorages) {
+			loaders.submit(() -> {
+				try {
+					workers.add(this.workers.createWorker(workerStorage, config.isFailOnError()));
+				}
+				catch (Exception e) {
+					log.error("Failed reading Storage", e);
+				}
+				finally {
+					log.debug("DONE reading Storage {}", workerStorage);
+					ConqueryMDC.clearLocation();
+				}
+			});
 		}
 
-		log.info("All Worker Storages loaded: {}", workers.getWorkers().size());
+		loaders.shutdown();
+		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
+
+
+			log.debug("Waiting for Worker workers to load. {} are already finished.", workers.size());
+		}
+
+		log.info("All Worker loaded: {}", this.workers.getWorkers().size());
+	}
+
+
+	public ObjectMapper createInternalObjectMapper() {
+		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+
+		final MutableInjectableValues injectableValues = (MutableInjectableValues) objectMapper.getInjectableValues();
+		injectableValues.add(Validator.class, validator);
+
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
+		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
+		return objectMapper;
 	}
 
 	@Override
@@ -150,7 +190,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator);
+		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator, this::createInternalObjectMapper);
 		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode

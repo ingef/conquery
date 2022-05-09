@@ -16,11 +16,13 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.MapIndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -65,16 +67,22 @@ public class Namespace implements Injectable, Closeable {
 
 	private final MapIndexService mapIndexService;
 
-	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, ObjectWriter objectWriter) {
+	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, ObjectMapper objectMapper) {
+
+
+		final MapIndexService mapIndexService = new MapIndexService(config.getCsv().createCsvParserSettings());
+
+		mapIndexService.injectInto(objectMapper);
+
+		storage.openStores(objectMapper);
 
 		ExecutionManager executionManager = new ExecutionManager(datasetRegistry);
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 
 		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getSearch());
 
-		final MapIndexService mapIndexService = new MapIndexService(config.getCsv().createCsvParserSettings());
 
-		final Namespace namespace = new Namespace(objectWriter, storage, executionManager, jobManager, filterSearch, mapIndexService);
+		final Namespace namespace = new Namespace(objectMapper.writer(), storage, executionManager, jobManager, filterSearch, mapIndexService);
 
 		datasetRegistry.add(namespace);
 

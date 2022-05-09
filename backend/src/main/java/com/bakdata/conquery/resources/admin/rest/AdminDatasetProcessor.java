@@ -50,6 +50,7 @@ import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
@@ -85,21 +86,24 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		NamespaceStorage datasetStorage = new NamespaceStorage(validator, "dataset_" + name);
+		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), validator, "dataset_" + name);
 
-		datasetStorage.openStores(config.getStorage());
+		// Todo unify this with ManagerNode
+		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
+		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
+
+		Namespace.createAndRegister(
+				getDatasetRegistry(),
+				datasetStorage,
+				config,
+				objectMapper
+		);
+
+
 		datasetStorage.loadData();
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
-
-		final ObjectWriter mapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
-										  .writerWithView(InternalOnly.class);
-		Namespace.createAndRegister(
-						getDatasetRegistry(),
-						datasetStorage,
-						config,
-						mapper
-				);
 
 		// for now we just add one worker to every ShardNode
 		for (ShardNodeInformation node : datasetRegistry.getShardNodes().values()) {

@@ -32,6 +32,7 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @CPSType(id = "NON_PERSISTENT", base = StoreFactory.class)
 public class NonPersistentStoreFactory implements StoreFactory {
@@ -47,92 +48,92 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public SingletonStore<Dataset> createDatasetStore(String pathName) {
+	public SingletonStore<Dataset> createDatasetStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(new NonPersistentStore<>());
 	}
 
 	@Override
-	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore<>(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore<>(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore<>(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore<>(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore<>(), centralRegistry);
 	}
 
 	@Override
-	public SingletonStore<WorkerInformation> createWorkerInformationStore(String pathName) {
+	public SingletonStore<WorkerInformation> createWorkerInformationStore(String pathName, ObjectMapper objectMapper) {
 		return WORKER.singleton(new NonPersistentStore<>());
 	}
 
 	@Override
-	public SingletonStore<EntityIdMap> createIdMappingStore(String pathName) {
+	public SingletonStore<EntityIdMap> createIdMappingStore(String pathName, ObjectMapper objectMapper) {
 		return ID_MAPPING.singleton(new NonPersistentStore<>());
 	}
 
 	@Override
-	public SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(String pathName) {
+	public SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(String pathName, ObjectMapper objectMapper) {
 		return WORKER_TO_BUCKETS.singleton(new NonPersistentStore<>());
 	}
 
 	@Override
-	public SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry) {
+	public SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(new NonPersistentStore<>());
 	}
 
 	@Override
-	public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName) {
+	public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore<>(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName) {
+	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore<>(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore<>(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore<>(), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(new NonPersistentStore<>(), centralRegistry);
 	}
 
 	@Override
-	public SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, CentralRegistry centralRegistry) {
+	public SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(new NonPersistentStore<>());
 	}
 
@@ -140,8 +141,8 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	 * @implNote intended for Unit-tests
 	 */
 	public MetaStorage createMetaStorage() {
-		final MetaStorage metaStorage = new MetaStorage(null);
-		metaStorage.openStores(this);
+		final MetaStorage metaStorage = new MetaStorage(this, null);
+		metaStorage.openStores(null);
 		return metaStorage;
 	}
 }

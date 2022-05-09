@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -22,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 @RequiredArgsConstructor
 @Slf4j
-public class MapIndexService {
+public class MapIndexService implements Injectable {
 
 	private final CsvParserSettings csvParserSettings;
 
@@ -83,6 +85,11 @@ public class MapIndexService {
 		catch (ExecutionException e) {
 			throw new IllegalStateException(String.format("Unable to get mapping from %s (internal column = %s, external column = %s)", csv, internalColumn, externalColumn), e);
 		}
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(MapIndexService.class, this);
 	}
 
 	@EqualsAndHashCode

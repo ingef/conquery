@@ -51,7 +51,8 @@ public class DefaultLabelTest {
 
 	@BeforeAll
 	public static void beforeAll() {
-		STORAGE.openStores(new NonPersistentStoreFactory());
+		// no mapper required
+		STORAGE.openStores(null);
 
 		I18n.init();
 

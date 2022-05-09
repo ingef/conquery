@@ -71,15 +71,20 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
-		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
+		final Path tmpCsv = Files.createTempFile("conquery_search", "csv");
 
 		Files.write(
-				tmpCSv,
+				tmpCsv,
 				String.join(csvConf.getLineSeparator(), RAW_LINES).getBytes(),
 				StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
 		);
 
-		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), "id", "{{label}}", "Hello this is {{option}}"));
+		filter.setTemplate(new FilterTemplate(
+				tmpCsv.toUri().toURL(),
+				"id",
+				"{{label}}",
+				"Hello this is {{option}}"
+		));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "updateMatchingStats")

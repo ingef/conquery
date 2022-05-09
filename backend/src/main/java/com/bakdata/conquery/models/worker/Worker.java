@@ -94,9 +94,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			@NonNull String directory,
 			@NonNull Validator validator,
 			boolean failOnError,
-			int entityBucketSize) {
+			int entityBucketSize,
+			ObjectMapper objectMapper) {
 
-		WorkerStorage workerStorage = new WorkerStorage(validator, "worker_" + directory);
+		WorkerStorage workerStorage = new WorkerStorage(config, validator, "worker_" + directory);
 
 		// On the worker side we don't have to set the object writer vor ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();
@@ -104,7 +105,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
 
-		workerStorage.openStores(config);
+		workerStorage.openStores(objectMapper);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);

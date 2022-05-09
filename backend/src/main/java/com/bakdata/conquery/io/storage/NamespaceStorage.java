@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,8 +28,8 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	protected SingletonStore<Dictionary> primaryDictionary;
 
-	public NamespaceStorage(Validator validator, String pathName) {
-		super(validator, pathName);
+	public NamespaceStorage(StoreFactory storageFactory, Validator validator, String pathName) {
+		super(storageFactory, validator, pathName);
 	}
 
 	public EncodedDictionary getPrimaryDictionary() {
@@ -58,13 +59,13 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 	@Override
-	public void openStores(StoreFactory storageFactory) {
-		super.openStores(storageFactory);
+	public void openStores(ObjectMapper objectMapper) {
+		super.openStores(objectMapper);
 
-		idMapping = storageFactory.createIdMappingStore(super.getPathName());
-		structure = storageFactory.createStructureStore(super.getPathName(), getCentralRegistry());
-		workerToBuckets = storageFactory.createWorkerToBucketsStore(super.getPathName());
-		primaryDictionary = storageFactory.createPrimaryDictionaryStore(super.getPathName(), getCentralRegistry());
+		idMapping = getStorageFactory().createIdMappingStore(super.getPathName(), objectMapper);
+		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
+		primaryDictionary = getStorageFactory().createPrimaryDictionaryStore(super.getPathName(), getCentralRegistry(), objectMapper);
 
 		decorateIdMapping(idMapping);
 	}

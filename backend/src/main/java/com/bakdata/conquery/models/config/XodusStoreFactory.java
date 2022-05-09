@@ -198,13 +198,13 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	@SneakyThrows
 	public Collection<NamespaceStorage> loadNamespaceStorages() {
-		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(validator, storePath), NAMESPACE_STORES);
+		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, validator, storePath), NAMESPACE_STORES);
 	}
 
 	@Override
 	@SneakyThrows
 	public Collection<WorkerStorage> loadWorkerStorages() {
-		return loadNamespacedStores("worker_", (storePath) -> new WorkerStorage(validator, storePath), WORKER_STORES);
+		return loadNamespacedStores("worker_", (storePath) -> new WorkerStorage(this, validator, storePath), WORKER_STORES);
 	}
 
 
@@ -234,8 +234,6 @@ public class XodusStoreFactory implements StoreFactory {
 					}
 
 					T namespacedStorage = creator.apply(name);
-
-					namespacedStorage.openStores(this);
 
 					log.debug("BEGIN reading Storage");
 					namespacedStorage.loadData();
@@ -287,22 +285,22 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public SingletonStore<Dataset> createDatasetStore(String pathName) {
+	public SingletonStore<Dataset> createDatasetStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, DATASET, objectMapper));
 	}
 
 	@Override
-	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SECONDARY_IDS, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, TABLES, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		final Environment environment = findEnvironment(pathName);
 
 		final BigStore<IId<Dictionary>, Dictionary> bigStore;
@@ -329,32 +327,32 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, CONCEPTS, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, IMPORTS, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, C_BLOCKS, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName) {
+	public IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, BUCKETS, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
 	}
 
 	@Override
-	public SingletonStore<WorkerInformation> createWorkerInformationStore(String pathName) {
+	public SingletonStore<WorkerInformation> createWorkerInformationStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, WORKER, objectMapper));
 	}
 
 	@Override
-	public SingletonStore<EntityIdMap> createIdMappingStore(String pathName) {
+	public SingletonStore<EntityIdMap> createIdMappingStore(String pathName, ObjectMapper objectMapper) {
 		final Environment environment = findEnvironment(pathName);
 
 		synchronized (openStoresInEnv) {
@@ -368,43 +366,43 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(String pathName) {
+	public SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, WORKER_TO_BUCKETS, objectMapper));
 	}
 
 	@Override
-	public SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry) {
+	public SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, STRUCTURE, centralRegistry.injectIntoNew(objectMapper)));
 	}
 
 	@Override
-	public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName) {
+	public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "executions")), validator, EXECUTIONS, datasetRegistry.injectInto(centralRegistry.injectIntoNew(objectMapper))), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName) {
+	public IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "formConfigs")), validator, FORM_CONFIG, datasetRegistry.injectInto(centralRegistry.injectIntoNew(objectMapper))), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+	public IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "users")), validator, AUTH_USER, objectMapper), centralRegistry);
 	}
 
 	@Override
-	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+	public IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "roles")), validator, AUTH_ROLE, objectMapper), centralRegistry);
 	}
 
 
 	@Override
-	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage) {
+	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP, objectMapper), centralRegistry);
 	}
 
 	@Override
-	public SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, CentralRegistry centralRegistry) {
+	public SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, PRIMARY_DICTIONARY, centralRegistry.injectIntoNew(objectMapper)));
 	}
 
