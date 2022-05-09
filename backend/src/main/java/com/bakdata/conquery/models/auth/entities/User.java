@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
@@ -40,6 +41,11 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	@JsonIgnore
 	@Getter(AccessLevel.PROTECTED)
 	private final transient ShiroUserAdapter shiroUserAdapter;
+
+	@JsonCreator
+	public User(String name, String label) {
+		this(name, label, null);
+	}
 
 	public User(String name, String label, MetaStorage storage) {
 		super(name, label, storage);
@@ -162,7 +168,9 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	protected class ShiroUserAdapter extends FilteredUser {
 
 		@Getter
-		private final ThreadLocal<ConqueryAuthenticationInfo> authenticationInfo = ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false));
+		private final ThreadLocal<ConqueryAuthenticationInfo>
+				authenticationInfo =
+				ThreadLocal.withInitial(() -> new ConqueryAuthenticationInfo(User.this, null, null, false));
 
 		@Override
 		public void checkPermission(Permission permission) throws AuthorizationException {

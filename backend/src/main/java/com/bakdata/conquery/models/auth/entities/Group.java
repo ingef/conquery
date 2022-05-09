@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,11 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	private Set<UserId> members = Collections.synchronizedSet(new HashSet<>());
 	@JsonProperty
 	private Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
+
+	@JsonCreator
+	public Group(String name, String label) {
+		this(name, label, null);
+	}
 
 	public Group(String name, String label, MetaStorage storage) {
 		super(name, label, storage);
