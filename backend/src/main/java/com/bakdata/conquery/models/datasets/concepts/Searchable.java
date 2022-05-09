@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.datasets.concepts;
 import java.util.List;
 import java.util.stream.Stream;
 
+import javax.validation.constraints.Min;
+
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
@@ -35,6 +37,7 @@ public interface Searchable {
 	 * Parameter used in the construction of {@link com.bakdata.conquery.util.search.TrieSearch}, defining the shortest suffix to create.
 	 * Ignored if isGenerateSuffixes is true.
 	 */
+	@Min(0)
 	int getMinSuffixLength();
 
 	/**
