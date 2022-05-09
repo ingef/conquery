@@ -27,6 +27,7 @@ import com.bakdata.conquery.util.search.TrieSearch;
 import com.google.common.collect.Sets;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 
 
 @Slf4j
@@ -95,7 +96,7 @@ public class FilterSearch {
 
 					final Set<Searchable> collectedSearchables =
 							allSelectFilters.stream()
-											.map(filter -> filter.getSearchReferences())
+											.map(SelectFilter::getSearchReferences)
 											.flatMap(Collection::stream)
 											.collect(Collectors.toSet());
 
@@ -119,7 +120,7 @@ public class FilterSearch {
 						service.submit(() -> {
 							final Stream<FEValue> values = searchable.getSearchValues(getParserConfig(), storage);
 
-							final long begin = System.currentTimeMillis();
+							final StopWatch watch = StopWatch.createStarted();
 
 							log.info("BEGIN collecting entries for `{}`", searchable);
 
@@ -136,12 +137,15 @@ public class FilterSearch {
 
 								synchronizedResult.put(searchable, search);
 
-								final long end = System.currentTimeMillis();
 
-								log.debug("DONE collecting entries for `{}`, within {} ({} Items)",
-										  searchable,
-										  Duration.ofMillis(end - begin), search.calculateSize()
-								);
+								if(log.isDebugEnabled()) {
+									watch.stop();
+									log.debug("DONE collecting entries for `{}`, within {} ({} Items)",
+											  searchable,
+											  Duration.ofMillis(watch.getTime()),
+											  search.calculateSize()
+									);
+								}
 							}
 							catch (Exception e) {
 								log.error("Failed to create search for {}", searchable, e);
