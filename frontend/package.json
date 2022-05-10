@@ -105,6 +105,7 @@
     "cors": "^2.8.5",
     "customize-cra": "^1.0.0",
     "cypress": "^9.5.3",
+    "eslint-plugin-cypress": "^2.12.1",
     "express": "^4.17.2",
     "flux-standard-action": "^2.1.2",
     "ie-version": "^0.1.0",
