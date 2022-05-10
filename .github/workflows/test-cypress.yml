@@ -35,6 +35,7 @@ jobs:
         # https://github.com/cypress-io/github-action
         uses: cypress-io/github-action@v2
         env:
+          CI: false # CI: true treats warnings as errors. We're fine with warnings though.
           REACT_APP_API_URL: "http://localhost:8080"
           REACT_APP_DISABLE_LOGIN: true
           REACT_APP_LANG: de
