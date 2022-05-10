@@ -47,7 +47,7 @@ public class PathParamInjector implements ContainerRequestFilter {
 				final DatasetId datasetId = DatasetId.Parser.INSTANCE.parse(pathParams.getFirst(ResourceConstants.DATASET));
 				values.add(DatasetId.class, datasetId);
 				if (registry != null) {
-					registry.get(datasetId).getMapIndexService().inject(values);
+					registry.get(datasetId).getInjectables().forEach(i -> i.inject(values));
 				}
 			}
 

@@ -2,8 +2,10 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -65,14 +67,15 @@ public class Namespace implements Closeable {
 
 	private final FilterSearch filterSearch;
 
-	private final MapIndexService mapIndexService;
+	// Jackson injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
+	private final List<Injectable> injectables;
 
 	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, ObjectMapper objectMapper) {
 
-
-		final MapIndexService mapIndexService = new MapIndexService(config.getCsv().createCsvParserSettings());
-
-		mapIndexService.injectInto(objectMapper);
+		// Prepare JacksonInjectables
+		List<Injectable> injectables = new ArrayList<>();
+		injectables.add(new MapIndexService(config.getCsv().createCsvParserSettings()));
+		injectables.forEach(i -> i.injectInto(objectMapper));
 
 		storage.openStores(objectMapper);
 
@@ -84,7 +87,7 @@ public class Namespace implements Closeable {
 		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getSearch());
 
 
-		final Namespace namespace = new Namespace(objectMapper.writer(), storage, executionManager, jobManager, filterSearch, mapIndexService);
+		final Namespace namespace = new Namespace(objectMapper.writer(), storage, executionManager, jobManager, filterSearch, injectables);
 
 		datasetRegistry.add(namespace);
 

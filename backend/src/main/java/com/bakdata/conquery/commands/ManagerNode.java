@@ -218,6 +218,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		Queue<Namespace> namespaces = new ConcurrentLinkedQueue<>();
 		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
+		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
 		for (NamespaceStorage namespaceStorage : config.getStorage().findNamespaceStorages()) {
 			loaders.submit(() -> {
 				namespaces.add(Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), createInternalObjectMapper()));
