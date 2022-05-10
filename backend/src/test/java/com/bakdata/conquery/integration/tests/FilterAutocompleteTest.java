@@ -79,7 +79,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 				StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
 		);
 
-		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), "id", "{{label}}", "Hello this is {{option}}"));
+		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), "id", "{{label}}", "Hello this is {{option}}", 2, true));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "updateMatchingStats")

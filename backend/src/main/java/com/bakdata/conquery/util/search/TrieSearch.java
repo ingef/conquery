@@ -53,6 +53,9 @@ public class TrieSearch<T extends Comparable<T>> {
 	private final Pattern splitPattern;
 
 	public TrieSearch(int suffixCutoff, String split) {
+		if(suffixCutoff < 0){
+			throw new IllegalArgumentException("Negative Suffix Length is not allowed.");
+		}
 		this.suffixCutoff = suffixCutoff;
 
 		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split, "") + WHOLE_WORD_MARKER)));
