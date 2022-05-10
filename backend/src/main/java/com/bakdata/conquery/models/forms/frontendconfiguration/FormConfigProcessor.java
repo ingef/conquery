@@ -10,7 +10,7 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -49,7 +49,7 @@ public class FormConfigProcessor {
 	private final MetaStorage storage;
 	private final DatasetRegistry datasetRegistry;
 	@Getter(onMethod = @__({@TestOnly}))
-	private final static ObjectMapper MAPPER = Jackson.getMapper().copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);;
+	private static final ObjectMapper MAPPER = Mappers.getMapper().copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);;
 	
 	/**
 	 * Return an overview of all form config available to the subject. The selection can be reduced by setting a specific formType.

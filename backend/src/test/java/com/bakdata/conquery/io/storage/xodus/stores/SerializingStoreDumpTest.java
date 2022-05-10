@@ -11,7 +11,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore.IterationStatistic;
@@ -119,7 +119,7 @@ public class SerializingStoreDumpTest {
 		// Test if the dump is correct
 		File dumpFile = getDumpFile(dumpFileCond);
 
-		assertThat((QueryDescription) Jackson.getMapper().readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
+		assertThat((QueryDescription) Mappers.getMapper().readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
 	}
 
 	private File getDumpFile(Condition<File> dumpFileCond) {
@@ -172,7 +172,7 @@ public class SerializingStoreDumpTest {
 		// Test if the dump is correct
 		File dumpFile = getDumpFile(dumpFileCond);
 
-		assertThat((QueryDescription) Jackson.getMapper().readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
+		assertThat((QueryDescription) Mappers.getMapper().readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
 	}
 
 	/**

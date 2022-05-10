@@ -8,7 +8,7 @@ import java.lang.reflect.Modifier;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId.Parser;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -87,7 +87,7 @@ public class IdTests {
 			"4"
 		);
 		
-		ObjectMapper mapper = Jackson.getMapper();
+		ObjectMapper mapper = Mappers.getMapper();
 		ConceptTreeChildId copy = mapper.readValue(mapper.writeValueAsBytes(id), ConceptTreeChildId.class);
 		
 		assertThat(copy).isEqualTo(id);
@@ -121,7 +121,7 @@ public class IdTests {
 			"4"
 		);
 		
-		ObjectMapper mapper = Jackson.getBinaryMapper();
+		ObjectMapper mapper = Mappers.getBinaryMapper();
 		ConceptTreeChildId copy = mapper.readValue(mapper.writeValueAsBytes(id), ConceptTreeChildId.class);
 		
 		assertThat(copy).isEqualTo(id);

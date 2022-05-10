@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -31,9 +30,9 @@ public class FormScanner extends Task {
 	private Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
 
 
-	public FormScanner() {
+	public FormScanner(ObjectReader reader) {
 		super("form-scanner");
-		registerFrontendFormConfigProvider(ResourceFormConfigProvider::accept);
+		registerFrontendFormConfigProvider(formConfigInfos -> ResourceFormConfigProvider.accept(formConfigInfos, reader));
 	}
 
 	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {

@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -69,7 +69,7 @@ public abstract class ConqueryTestSpec {
 	}
 
 	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		return parseSubTree(support, node, Jackson.getMapper()
+		return parseSubTree(support, node, Mappers.getMapper()
 												  .getTypeFactory().constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation);
 	}
 
@@ -81,7 +81,7 @@ public abstract class ConqueryTestSpec {
 		ObjectMapper mapper = support.getDataset().injectIntoNew(
 				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
 						.injectIntoNew(
-								Jackson.getMapper().copy().addHandler(new DatasetPlaceHolderFiller(support))
+								Mappers.getMapper().copy().addHandler(new DatasetPlaceHolderFiller(support))
 						)
 		);
 
@@ -98,7 +98,7 @@ public abstract class ConqueryTestSpec {
 	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		ObjectMapper mapper = support.getDataset().injectIntoNew(
 			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
-					Jackson.getMapper().copy().addHandler(new DatasetPlaceHolderFiller(support))
+					Mappers.getMapper().copy().addHandler(new DatasetPlaceHolderFiller(support))
 			)
 		);
 		List<T> result = new ArrayList<>(node.size());

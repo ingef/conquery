@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.InjectingCentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -47,7 +47,7 @@ public class PreprocessedReader implements AutoCloseable {
 		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
 		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
 
-		parser = namespaceCollection.injectIntoNew(Jackson.getBinaryMapper().copy())
+		parser = namespaceCollection.injectIntoNew(Mappers.getBinaryMapper().copy())
 				.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
 				.getFactory()
 				.createParser(inputStream);

@@ -21,7 +21,7 @@ import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.AbstractQueryEngineTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -128,7 +128,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		}
 
 
-		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.getMapper().getTypeFactory().constructType(FilterValue.class));
+		FilterValue<?> result = parseSubTree(support, rawFilterValue, Mappers.getMapper().getTypeFactory().constructType(FilterValue.class));
 
 		CQTable cqTable = new CQTable();
 

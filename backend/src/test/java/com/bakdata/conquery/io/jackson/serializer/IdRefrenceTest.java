@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -36,7 +36,7 @@ public class IdRefrenceTest {
 		User user = new User("usermail", "userlabel", mock(MetaStorage.class));
 		metaRegistry.register(user);
 
-		String json = Jackson.getMapper().writeValueAsString(
+		String json = Mappers.getMapper().writeValueAsString(
 				new ListHolder(
 						Collections.singletonList(table),
 						Collections.singletonList(user)
@@ -48,7 +48,7 @@ public class IdRefrenceTest {
 				.contains("\"dataset.table\"");
 
 		ListHolder holder = new SingletonNamespaceCollection(registry, metaRegistry)
-									.injectIntoNew(Jackson.getMapper().readerFor(ListHolder.class))
+									.injectIntoNew(Mappers.getMapper().readerFor(ListHolder.class))
 									.readValue(json);
 
 		assertThat(holder.getUsers().get(0)).isSameAs(user);

@@ -77,7 +77,8 @@ public class AdminServlet {
 				manager.getDatasetRegistry(),
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
-				manager.getValidator()
+				manager.getValidator(),
+				manager.getEnvironment().getObjectMapper().writer()
 		);
 
 		adminDatasetProcessor = new AdminDatasetProcessor(

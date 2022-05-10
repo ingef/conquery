@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.SequenceInputStream;
 import java.nio.file.Files;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -39,7 +39,7 @@ public class BigStoreTest {
 
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
 	private static SingletonNamespaceCollection NAMESPACE_COLLECTION = new SingletonNamespaceCollection(CENTRAL_REGISTRY);
-	private static ObjectMapper MAPPER = NAMESPACE_COLLECTION.injectIntoNew(Jackson.getBinaryMapper());
+	private static ObjectMapper MAPPER = NAMESPACE_COLLECTION.injectIntoNew(Mappers.getBinaryMapper());
 
 	@BeforeAll
 	public static void setupRegistry(){
@@ -76,7 +76,7 @@ public class BigStoreTest {
 		}
 
 		// check if manual serialization deserialization works
-		byte[] bytes = Jackson.getBinaryMapper().writeValueAsBytes(nDict);
+		byte[] bytes = Mappers.getBinaryMapper().writeValueAsBytes(nDict);
 
 
 		Dictionary simpleCopy = MAPPER.readValue(bytes, Dictionary.class);

@@ -7,7 +7,7 @@ import java.io.InputStream;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 @RequiredArgsConstructor
 public class JsonIntegrationTest extends IntegrationTest.Simple {
 
-	public static final ObjectReader TEST_SPEC_READER = Jackson.getMapper().readerFor(ConqueryTestSpec.class);
+	public static final ObjectReader TEST_SPEC_READER = Mappers.getMapper().readerFor(ConqueryTestSpec.class);
 	public static final Validator VALIDATOR = Validators.newValidator();
 	@Getter
 	private final ConqueryTestSpec testSpec;

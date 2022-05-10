@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -100,7 +100,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 
-		final ObjectMapper binaryMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper()));
+		final ObjectMapper binaryMapper = config.configureObjectMapper(Mappers.copyMapperAndInjectables(Mappers.getBinaryMapper()));
 		((MutableInjectableValues) binaryMapper.getInjectableValues()).add(Validator.class, environment.getValidator());
 
 		workers = new Workers(
@@ -201,7 +201,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
 
-		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper());
+		ObjectMapper om = Mappers.copyMapperAndInjectables(Mappers.getBinaryMapper());
 		config.configureObjectMapper(om);
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);

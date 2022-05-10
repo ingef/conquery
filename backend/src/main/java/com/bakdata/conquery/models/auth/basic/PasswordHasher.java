@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.auth.basic;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -8,10 +7,6 @@ import java.security.spec.InvalidKeySpecException;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import jetbrains.exodus.ArrayByteIterable;
-import jetbrains.exodus.ByteIterable;
 import lombok.Data;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;

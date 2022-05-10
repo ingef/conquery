@@ -23,7 +23,7 @@ import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -232,7 +232,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				}
 			}
 			desc.setInputs(new TableInputDescriptor[]{input});
-			Jackson.getMapper().writeValue(descriptionFile, desc);
+			Mappers.getMapper().writeValue(descriptionFile, desc);
 
 			//preprocess
 			conquery.preprocessTmp(conquery.getTmpDir(), List.of(descriptionFile));

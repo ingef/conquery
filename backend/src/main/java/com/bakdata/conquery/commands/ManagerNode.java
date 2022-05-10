@@ -12,7 +12,7 @@ import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -115,7 +115,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 
 		jobManager = new JobManager("ManagerNode", config.isFailOnError());
-		formScanner = new FormScanner();
+		formScanner = new FormScanner(environment.getObjectMapper().reader());
 		this.config = config;
 
 		config.initialize(this);
@@ -196,7 +196,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void loadNamespaces() {
 		final Collection<NamespaceStorage> storages = config.getStorage().loadNamespaceStorages();
 		final ObjectWriter objectWriter =
-				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper())).writerWithView(InternalOnly.class);
+				config.configureObjectMapper(Mappers.copyMapperAndInjectables(Mappers.getBinaryMapper())).writerWithView(InternalOnly.class);
 
 		for (NamespaceStorage namespaceStorage : storages) {
 			Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), objectWriter);
@@ -253,7 +253,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
 
-		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper());
+		ObjectMapper om = Mappers.copyMapperAndInjectables(Mappers.getBinaryMapper());
 		config.configureObjectMapper(om);
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));

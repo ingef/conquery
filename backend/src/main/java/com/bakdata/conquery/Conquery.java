@@ -12,7 +12,7 @@ import com.bakdata.conquery.commands.RecodeStoreCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +44,7 @@ public class Conquery extends Application<ConqueryConfig> {
 	@Override
 	public void initialize(Bootstrap<ConqueryConfig> bootstrap) {
 		final ObjectMapper confMapper = bootstrap.getObjectMapper();
-		Jackson.configure(confMapper);
+		Mappers.configure(confMapper);
 
 		confMapper.setConfig(confMapper.getDeserializationConfig().withView(InternalOnly.class));
 

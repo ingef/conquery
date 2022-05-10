@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,9 +35,9 @@ public class Cloner {
 	public static <T> T clone(T element, Injectable injectable, Class<T> valueType) {
 		try {
 			return injectable
-						   .injectIntoNew(Jackson.getBinaryMapper())
+						   .injectIntoNew(Mappers.getBinaryMapper())
 						   .readValue(
-								   Jackson.getBinaryMapper().writeValueAsBytes(element),
+								   Mappers.getBinaryMapper().writeValueAsBytes(element),
 								   valueType
 						   );
 		}

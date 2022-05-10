@@ -3,7 +3,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 import java.io.IOException;
 import java.util.Optional;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -60,7 +60,7 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 	}
 
 	private static String findDatasetName(DeserializationContext ctx) throws JsonMappingException {
-		Dataset dataset = Jackson.findInjectable(ctx, Dataset.class);
+		Dataset dataset = Mappers.findInjectable(ctx, Dataset.class);
 
 		if (dataset != null) {
 			return dataset.getName();
@@ -68,7 +68,7 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 
 		// Sometimes injected via @PathParam
 
-		DatasetId id = Jackson.findInjectable(ctx, DatasetId.class);
+		DatasetId id = Mappers.findInjectable(ctx, DatasetId.class);
 
 		if (id != null) {
 			return id.getName();

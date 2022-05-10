@@ -6,7 +6,7 @@ import java.util.Objects;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -34,7 +34,7 @@ public class RequiredSecondaryId {
 
 	@JsonCreator
 	public static RequiredSecondaryId fromFile(String fileResource) throws JsonParseException, JsonMappingException, IOException {
-		return Jackson.getMapper().readValue(
+		return Mappers.getMapper().readValue(
 				Objects.requireNonNull(
 						IntegrationTest.class.getResourceAsStream(fileResource),
 						fileResource+" not found"

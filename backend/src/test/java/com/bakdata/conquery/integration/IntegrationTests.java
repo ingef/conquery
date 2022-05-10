@@ -23,7 +23,7 @@ import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -47,7 +47,7 @@ public class IntegrationTests {
 	private static final ObjectWriter CONFIG_WRITER;
 
 	static {
-		final ObjectMapper mapper = Jackson.getMapper().copy();
+		final ObjectMapper mapper = Mappers.getMapper().copy();
 
 		MAPPER = mapper.setConfig(mapper.getDeserializationConfig().withView(InternalOnly.class))
 					   .setConfig(mapper.getSerializationConfig().withView(InternalOnly.class));

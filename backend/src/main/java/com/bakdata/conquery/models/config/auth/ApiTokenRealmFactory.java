@@ -8,7 +8,7 @@ import javax.ws.rs.core.HttpHeaders;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.apitoken.ApiToken;
 import com.bakdata.conquery.models.auth.apitoken.ApiTokenCreator;
@@ -38,7 +38,7 @@ public class ApiTokenRealmFactory implements AuthenticationRealmFactory {
 	@Override
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
 
-		final TokenStorage tokenStorage = new TokenStorage(storeDir, apiTokenStoreConfig, managerNode.getValidator(), Jackson.getBinaryMapper().copy());
+		final TokenStorage tokenStorage = new TokenStorage(storeDir, apiTokenStoreConfig, managerNode.getValidator(), Mappers.getBinaryMapper().copy());
 		managerNode.getEnvironment().lifecycle().manage(tokenStorage);
 
 		final ApiTokenRealm apiTokenRealm = new ApiTokenRealm(managerNode.getStorage(), tokenStorage);

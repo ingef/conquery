@@ -25,7 +25,7 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
@@ -81,7 +81,7 @@ public class LoadingUtil {
 		}
 
 		for (JsonNode queryNode : content.getPreviousQueries()) {
-			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectIntoNew(Jackson.getMapper());
+			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectIntoNew(Mappers.getMapper());
 			mapper = support.getDataset().injectIntoNew(mapper);
 			Query query = mapper.readerFor(Query.class).readValue(queryNode);
 			UUID queryId = new UUID(0L, id++);
@@ -145,7 +145,7 @@ public class LoadingUtil {
 			}
 			desc.setInputs(new TableInputDescriptor[]{input});
 
-			Jackson.getMapper().writeValue(descriptionFile, desc);
+			Mappers.getMapper().writeValue(descriptionFile, desc);
 
 			descriptions.add(descriptionFile);
 			preprocessedFiles.add(outFile);

@@ -19,7 +19,6 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.models.preproc.PreprocessingJob;
@@ -29,6 +28,7 @@ import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import io.dropwizard.setup.Environment;
 import lombok.SneakyThrows;
@@ -163,7 +163,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		if (tags == null || tags.isEmpty()) {
 			for (File desc : descriptionFiles) {
 				final List<PreprocessingJob> descriptions =
-						findPreprocessingDescriptions(desc, inDir, outDir, Optional.empty(), environment.getValidator());
+						findPreprocessingDescriptions(desc, inDir, outDir, Optional.empty(), environment.getValidator(), environment.getObjectMapper());
 				jobs.addAll(descriptions);
 			}
 		}
@@ -171,7 +171,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 			for (String tag : tags) {
 				for (File desc : descriptionFiles) {
 					final List<PreprocessingJob> jobDescriptions =
-							findPreprocessingDescriptions(desc, inDir, outDir, Optional.of(tag), environment.getValidator());
+							findPreprocessingDescriptions(desc, inDir, outDir, Optional.of(tag), environment.getValidator(), environment.getObjectMapper());
 
 					jobs.addAll(jobDescriptions);
 				}
@@ -261,7 +261,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		failed.add(job.toString());
 	}
 
-	public List<PreprocessingJob> findPreprocessingDescriptions(File descriptionFiles, File inDir, File outputDir, Optional<String> tag, Validator validator)
+	public List<PreprocessingJob> findPreprocessingDescriptions(File descriptionFiles, File inDir, File outputDir, Optional<String> tag, Validator validator, ObjectMapper mapper)
 			throws IOException {
 		List<PreprocessingJob> out = new ArrayList<>();
 
@@ -274,7 +274,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		}
 
 		for (File descriptionFile : files) {
-			tryExtractDescriptor(validator, tag, descriptionFile, outputDir, inDir)
+			tryExtractDescriptor(validator, tag, descriptionFile, outputDir, inDir, mapper)
 					.ifPresent(out::add);
 		}
 		return out;
@@ -284,12 +284,12 @@ public class PreprocessorCommand extends ConqueryCommand {
 		return !failed.isEmpty();
 	}
 
-	private Optional<PreprocessingJob> tryExtractDescriptor(Validator validator, Optional<String> tag, File descriptionFile, File outputDir, File csvDir)
+	private Optional<PreprocessingJob> tryExtractDescriptor(Validator validator, Optional<String> tag, File descriptionFile, File outputDir, File csvDir, ObjectMapper mapper)
 			throws IOException {
 		try {
 			final TableImportDescriptor
 					descriptor =
-					TableImportDescriptor.read(descriptionFile);
+					TableImportDescriptor.read(descriptionFile, mapper);
 
 			validator.validate(validator);
 

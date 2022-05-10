@@ -27,7 +27,7 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -159,7 +159,7 @@ public class XodusStoreFactory implements StoreFactory {
 	private transient Validator validator;
 
 	@JsonIgnore
-	private transient final ObjectMapper objectMapper = Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper());
+	private transient final ObjectMapper objectMapper = Mappers.copyMapperAndInjectables(Mappers.getBinaryMapper());
 
 	@JsonIgnore
 	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();

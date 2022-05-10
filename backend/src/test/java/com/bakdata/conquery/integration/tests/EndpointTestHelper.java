@@ -3,7 +3,7 @@ package com.bakdata.conquery.integration.tests;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -20,8 +20,8 @@ import org.glassfish.jersey.server.model.ResourceMethod;
  */
 public class EndpointTestHelper {
 
-	public static final ObjectReader READER = Jackson.getMapper()
-													 .readerFor(Jackson.getMapper().getTypeFactory().constructCollectionLikeType(List.class, EndPoint.class));
+	public static final ObjectReader READER = Mappers.getMapper()
+													 .readerFor(Mappers.getMapper().getTypeFactory().constructCollectionLikeType(List.class, EndPoint.class));
 
 	private static final TypeResolver TYPE_RESOLVER = new TypeResolver();
 

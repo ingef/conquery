@@ -6,7 +6,6 @@ import java.util.UUID;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.worker.IdResolveContext;
@@ -43,8 +42,8 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 		UUID id = message.getMessageId();
 		Chunkable chunkable = new Chunkable(id, writer, message);
 		if(log.isTraceEnabled()) {
-			Jackson.getMapper()
-				   .writerFor(NetworkMessage.class).with(SerializationFeature.INDENT_OUTPUT).writeValue(new File("dumps/out_" + id + ".json"), message);
+			writer.forType(NetworkMessage.class)
+				  .with(SerializationFeature.INDENT_OUTPUT).writeValue(new File("dumps/out_" + id + ".json"), message);
 		}
 		return chunkable;
 	}

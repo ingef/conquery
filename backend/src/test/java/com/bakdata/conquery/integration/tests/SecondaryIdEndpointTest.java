@@ -12,7 +12,7 @@ import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.frontend.FESecondaryId;
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
@@ -64,10 +64,10 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			// Upload Table referencing SecondaryId
 			{
 				// Build data manually so content is minmal (ie no dataset prefixes etc)
-				ObjectNode tableNode = Jackson.getMapper().createObjectNode();
+				ObjectNode tableNode = Mappers.getMapper().createObjectNode();
 				tableNode.put("name", "table");
 
-				ObjectNode columnNode = Jackson.getMapper().createObjectNode();
+				ObjectNode columnNode = Mappers.getMapper().createObjectNode();
 				columnNode.put("name", "column");
 				columnNode.put("type", MajorTypeId.INTEGER.name());
 				columnNode.put("secondaryId", description.getId().toStringWithoutDataset());
@@ -133,7 +133,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 											  .get(ObjectNode.class);
 
 		// The injection is necessary to deserialize the dataset.
-		ObjectMapper mapper = conquery.getDatasetRegistry().injectIntoNew(Jackson.getMapper());
+		ObjectMapper mapper = conquery.getDatasetRegistry().injectIntoNew(Mappers.getMapper());
 		mapper = conquery.getDataset().injectIntoNew(mapper);
 
 		return objectNode.get("secondaryIds")

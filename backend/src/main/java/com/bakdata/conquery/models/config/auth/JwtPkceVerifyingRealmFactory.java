@@ -27,7 +27,6 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.oidc.JwtPkceVerifyingRealm;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
@@ -35,6 +34,7 @@ import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.oauth2.sdk.AccessTokenResponse;
 import com.nimbusds.oauth2.sdk.AuthorizationCode;
@@ -86,6 +86,7 @@ import org.keycloak.representations.AccessToken;
 public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory {
 
 	public static final String REFRESH_TOKEN = "refresh_token";
+	private ObjectMapper mapper; // Initialized in createRealm
 	/**
 	 * The client id is also used as the expected audience in the validated token.
 	 * Ensure that the IDP is configured accordingly.
@@ -160,6 +161,8 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	}
 
 	public ConqueryAuthenticationRealm createRealm(ManagerNode manager) {
+		mapper = manager.getEnvironment().getObjectMapper();
+
 		List<TokenVerifier.Predicate<AccessToken>> additionalVerifiers = new ArrayList<>();
 
 		for (String additionalTokenCheck : additionalTokenChecks) {
@@ -259,12 +262,11 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		return new IdpConfiguration(getPublicKey(jwk), authorizationEndpoint, tokenEndpoint, issuer);
 	}
 
-
 	@JsonIgnore
 	@SneakyThrows(JsonProcessingException.class)
-	private static PublicKey getPublicKey(JWK jwk) {
+	private PublicKey getPublicKey(JWK jwk) {
 		// We have to re-serdes the object because it might be a sub class which can not be handled correctly by the JWKParser
-		String jwkString = Jackson.getMapper().writeValueAsString(jwk);
+		String jwkString = mapper.writeValueAsString(jwk);
 		return JWKParser.create().parse(jwkString).toPublicKey();
 	}
 

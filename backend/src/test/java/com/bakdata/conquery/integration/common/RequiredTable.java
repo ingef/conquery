@@ -9,7 +9,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -51,7 +51,7 @@ public class RequiredTable {
 
     @JsonCreator
     public static RequiredTable fromFile(String fileResource) throws JsonParseException, JsonMappingException, IOException {
-        return Jackson.getMapper().readValue(
+        return Mappers.getMapper().readValue(
                 Objects.requireNonNull(
                         IntegrationTest.class.getResourceAsStream(fileResource),
                         fileResource + " not found"

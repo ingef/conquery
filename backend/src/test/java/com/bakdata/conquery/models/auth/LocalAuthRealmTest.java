@@ -8,7 +8,7 @@ import java.util.List;
 
 import com.auth0.jwt.JWT;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
@@ -52,7 +52,7 @@ public class LocalAuthRealmTest {
 
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 
-		realm = new LocalAuthenticationRealm(Validators.newValidator(), Jackson.getBinaryMapper(), conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig(), Duration.hours(1));
+		realm = new LocalAuthenticationRealm(Validators.newValidator(), Mappers.getBinaryMapper(), conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig(), Duration.hours(1));
 		LifecycleUtils.init(realm);
 	}
 

@@ -12,12 +12,12 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableImportDescriptorId;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,9 +51,9 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 	@Valid
 	private TableInputDescriptor[] inputs;
 
-	public static TableImportDescriptor read(File descriptionFile) throws IOException {
-		return Jackson.getMapper().readerFor(TableImportDescriptor.class)
-					  .readValue(descriptionFile);
+	public static TableImportDescriptor read(File descriptionFile, ObjectMapper mapper) throws IOException {
+		return mapper.readerFor(TableImportDescriptor.class)
+					 .readValue(descriptionFile);
 	}
 
 	@JsonIgnore

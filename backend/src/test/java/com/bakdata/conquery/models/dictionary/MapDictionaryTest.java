@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -26,7 +26,7 @@ class MapDictionaryTest {
 		final CentralRegistry registry = new CentralRegistry();
 		registry.register(Dataset.PLACEHOLDER);
 
-		String json = Jackson.getMapper().writeValueAsString(map);
+		String json = Mappers.getMapper().writeValueAsString(map);
 		assertThat(json)
 				.startsWith("{\"type\":\"MAP_DICTIONARY\",\"dataset\":\"PLACEHOLDER\",\"name\":\"dictionary\",\"id2Value\":[")
 				.endsWith("]}");

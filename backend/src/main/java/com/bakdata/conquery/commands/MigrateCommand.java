@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -108,7 +108,7 @@ public class MigrateCommand extends ConqueryCommand {
 
 		final Function4<String, String, String, ObjectNode, Tuple> migrator = factory.run();
 
-		final ObjectMapper mapper = Jackson.getBinaryMapper();
+		final ObjectMapper mapper = Mappers.getBinaryMapper();
 
 		final ObjectReader keyReader = mapper.readerFor(String.class);
 		final ObjectReader valueReader = mapper.readerFor(ObjectNode.class);

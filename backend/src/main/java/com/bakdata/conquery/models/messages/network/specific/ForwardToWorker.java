@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;

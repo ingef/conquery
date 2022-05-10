@@ -8,7 +8,7 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -40,11 +40,11 @@ public class SerializationTestUtil<T> {
 	private Injectable[] injectables = {};
 
 	public static <T> SerializationTestUtil<T> forType(TypeReference<T> type) {
-		return new SerializationTestUtil<>(Jackson.getMapper().getTypeFactory().constructType(type));
+		return new SerializationTestUtil<>(Mappers.getMapper().getTypeFactory().constructType(type));
 	}
 
 	public static <T> SerializationTestUtil<T> forType(Class<? extends T> type) {
-		return new SerializationTestUtil<>(Jackson.getMapper().getTypeFactory().constructType(type));
+		return new SerializationTestUtil<>(Mappers.getMapper().getTypeFactory().constructType(type));
 	}
 
 	public SerializationTestUtil<T> injectables(Injectable ... injectables) {
@@ -56,12 +56,12 @@ public class SerializationTestUtil<T> {
 		test(
 				value,
 				expected,
-				Jackson.getMapper()
+				Mappers.getMapper()
 		);
 		test(
 				value,
 				expected,
-				Jackson.getBinaryMapper()
+				Mappers.getBinaryMapper()
 		);
 	}
 

@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
@@ -348,7 +347,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		try {
 			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
 			JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
-			Jackson.getMapper().writer().writeValue(dumpfile, dump);
+			objectMapper.writeValue(dumpfile, dump);
 		}
 		catch (IOException e) {
 			log.error("Unable to dump unreadable value of key `{}` to file `{}`",keyOfDump, dumpfile, e);

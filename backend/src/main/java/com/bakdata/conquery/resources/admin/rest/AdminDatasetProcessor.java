@@ -15,7 +15,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -92,7 +92,7 @@ public class AdminDatasetProcessor {
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
 
-		final ObjectWriter mapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper()))
+		final ObjectWriter mapper = config.configureObjectMapper(Mappers.copyMapperAndInjectables(Mappers.getBinaryMapper()))
 										  .writerWithView(InternalOnly.class);
 		Namespace.createAndRegister(
 						getDatasetRegistry(),

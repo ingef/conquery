@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Map;
 import java.util.UUID;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.error.ConqueryError.ExternalResolveFormatError;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -20,7 +20,7 @@ public class ConqueryErrorTest {
 	
 	@Test
 	public void errorDeserialization() throws JsonMappingException, JsonProcessingException {
-		PlainError error = Jackson.getMapper().readerFor(PlainError.class).readValue("{\r\n" +
+		PlainError error = Mappers.getMapper().readerFor(PlainError.class).readValue("{\r\n" +
 																					 "    \"code\": \"TEST_ERROR\",\r\n" +
 																					 "    \"context\": {\r\n" +
 																					 "      \"group\": \"group\"\r\n" +

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -78,16 +78,16 @@ public class ResultTypeTest {
 	@ParameterizedTest(name="{0} {1}: {2} -> {3}") @MethodSource("testData")
 	public void testPrinting(PrintSettings cfg, ResultType type, Object value, String expected) throws IOException {
 		assertThat(type.printNullable(cfg, value)).isEqualTo(expected);
-		String str = Jackson.getMapper().writeValueAsString(value);
-		Object copy = Jackson.getMapper().readValue(str, Object.class);
+		String str = Mappers.getMapper().writeValueAsString(value);
+		Object copy = Mappers.getMapper().readValue(str, Object.class);
 		assertThat(type.printNullable(cfg, copy)).isEqualTo(expected);
 	}
 	
 	@ParameterizedTest(name="{1}: {2}") @MethodSource("testData")
 	public void testBinaryPrinting(PrintSettings cfg, ResultType type, Object value, String expected) throws IOException {
 		assertThat(type.printNullable(cfg, value)).isEqualTo(expected);
-		byte[] bytes = Jackson.getBinaryMapper().writeValueAsBytes(value);
-		Object copy = Jackson.getBinaryMapper().readValue(bytes, Object.class);
+		byte[] bytes = Mappers.getBinaryMapper().writeValueAsBytes(value);
+		Object copy = Mappers.getBinaryMapper().readValue(bytes, Object.class);
 		assertThat(type.printNullable(cfg, copy)).isEqualTo(expected);
 	}
 }

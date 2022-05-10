@@ -30,7 +30,7 @@ public class JacksonUtil {
 	 */
 	public static String toJsonDebug(InputStream is) {
 		StringBuilder sb = new StringBuilder();
-		try (JsonParser parser = Jackson.getBinaryMapper().getFactory().createParser(is)) {
+		try (JsonParser parser = Mappers.getBinaryMapper().getFactory().createParser(is)) {
 
 			for (int i = 0; i < 50; i++) {
 				JsonToken t = parser.nextToken();

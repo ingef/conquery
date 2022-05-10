@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -31,12 +31,12 @@ public class IdMapTest {
 		idMap.add(d2);
 		ContainingDataset containedDataset = new ContainingDataset(idMap);
 		
-		JsonNode json = Jackson.getMapper().valueToTree(containedDataset);
+		JsonNode json = Mappers.getMapper().valueToTree(containedDataset);
 		
 		/*assertThat(json.isArray()).isTrue();
 		assertThat(json.get(0)).isEqualTo(Jackson.MAPPER.valueToTree(d1));*/
 		
-		ContainingDataset constructed = Jackson.getMapper().treeToValue(json, ContainingDataset.class);
+		ContainingDataset constructed = Mappers.getMapper().treeToValue(json, ContainingDataset.class);
 		assertThat(constructed.idMap.entrySet()).isEqualTo(containedDataset.idMap.entrySet());
 	}
 	

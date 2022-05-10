@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -55,7 +54,7 @@ public class AdminProcessor {
 	private final JobManager jobManager;
 	private final ScheduledExecutorService maintenanceService;
 	private final Validator validator;
-	private final ObjectWriter jsonWriter = Jackson.getMapper().writer();
+	private final ObjectWriter jsonWriter;
 
 
 

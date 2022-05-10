@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.google.common.collect.ClassToInstanceMap;
@@ -19,9 +19,9 @@ public class ClassToInstanceMapDeserializerTest {
 		map.putInstance(MajorTypeId.class, MajorTypeId.DATE);
 		map.putInstance(String.class, "test");
 		
-		String v= Jackson.getMapper().writeValueAsString(map);
+		String v= Mappers.getMapper().writeValueAsString(map);
 		assertThat(
-				Jackson.getMapper().readValue(v, ClassToInstanceMap.class)
+				Mappers.getMapper().readValue(v, ClassToInstanceMap.class)
 		).isEqualTo(map);
 	}
 

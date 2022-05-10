@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -59,7 +59,7 @@ public class GroovyIndexedTest {
 
 	@BeforeAll
 	public static void init() throws IOException, JSONException, ConfigurationException {
-		ObjectNode node = Jackson.getMapper().readerFor(ObjectNode.class).readValue(In.resource(GroovyIndexedTest.class, CONCEPT_SOURCE).asStream());
+		ObjectNode node = Mappers.getMapper().readerFor(ObjectNode.class).readValue(In.resource(GroovyIndexedTest.class, CONCEPT_SOURCE).asStream());
 
 		// load concept tree from json
 		CentralRegistry registry = new CentralRegistry();
@@ -93,7 +93,7 @@ public class GroovyIndexedTest {
 			public MutableInjectableValues inject(MutableInjectableValues values) {
 				return values.add(Validator.class, validator);
 			}
-		}.injectInto(registry.injectIntoNew(dataset.injectIntoNew(Jackson.getMapper()))).readerFor(Concept.class);
+		}.injectInto(registry.injectIntoNew(dataset.injectIntoNew(Mappers.getMapper()))).readerFor(Concept.class);
 
 		// load tree twice to to avoid references
 		indexedConcept = conceptReader.readValue(node);

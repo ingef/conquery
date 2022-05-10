@@ -20,7 +20,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.introspection.Introspection;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -28,6 +28,7 @@ import com.bakdata.conquery.util.PrettyPrinter;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ClassToInstanceMap;
@@ -60,6 +61,7 @@ public class GroupHandler {
 	private final Group group;
 	private final SimpleWriter out;
 	private final File root;
+	private final ObjectMapper mapper = Mappers.getMapper();
 	private Multimap<Base, Pair<CPSType, ClassInfo>> content = HashMultimap.create();
 	private List<Pair<String, MethodInfo>> endpoints = new ArrayList<>();
 
@@ -297,7 +299,7 @@ public class GroupHandler {
 	private String findDefault(ClassInfo currentType, FieldInfo field) {
 		try {
 			Object value = currentType.loadClass().getConstructor().newInstance();
-			JsonNode node = Jackson.getMapper().valueToTree(value);
+			JsonNode node = mapper.valueToTree(value);
 			JsonNode def = node.get(field.getName());
 			if (def == null) {
 				return "\u2400";
@@ -306,13 +308,13 @@ public class GroupHandler {
 			if (field.getAnnotationInfo(VariableDefaultValue.class.getName()) != null) {
 				return "generated default varies";
 			}
-			String json = Jackson.getMapper().writeValueAsString(def);
+			String json = mapper.writeValueAsString(def);
 			//we don't want to print defaults if it is a whole object itself
 			if (json.contains("{")) {
 				return "";
 			}
 			//check if file path not not generate absolute paths
-			String localPath = Jackson.getMapper().writeValueAsString(new File("."));
+			String localPath = mapper.writeValueAsString(new File("."));
 			json = StringUtils.replace(json, localPath.substring(1, localPath.length() - 2), "./");
 			return code(json);
 		}

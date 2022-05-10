@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -122,7 +122,7 @@ public class Preprocessed {
 	private static void writePreprocessed(File file, PreprocessedHeader header, PreprocessedDictionaries dictionaries, PreprocessedData data)
 			throws IOException {
 		OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
-		try (JsonGenerator generator = Jackson.getBinaryMapper().copy()
+		try (JsonGenerator generator = Mappers.getBinaryMapper().copy()
 											  .enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
 											  .getFactory()
 											  .createGenerator(out)) {

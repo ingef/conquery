@@ -13,7 +13,7 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
@@ -78,7 +78,7 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 
 		LocalAuthenticationRealm realm = new LocalAuthenticationRealm(
 				manager.getValidator(),
-				Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper()),
+				Mappers.copyMapperAndInjectables(Mappers.getBinaryMapper()),
 				manager.getAuthController().getConqueryTokenRealm(),
 				storeName,
 				directory,

@@ -21,14 +21,7 @@ import lombok.experimental.UtilityClass;
 import org.apache.shiro.authz.Permission;
 
 @UtilityClass
-public class Jackson {
-	private static final ObjectMapper MAPPER;
-	private static final ObjectMapper BINARY_MAPPER;
-
-	static {
-		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
-		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
-	}
+public class Mappers {
 
 	/**
 	 * Helper method that also creates a copy of the injected values to reduce side effects.
@@ -83,10 +76,10 @@ public class Jackson {
 	}
 
 	public static ObjectMapper getMapper() {
-		return MAPPER;
+		return configure(io.dropwizard.jackson.Jackson.newObjectMapper());
 	}
 
 	public static ObjectMapper getBinaryMapper() {
-		return BINARY_MAPPER;
+		return configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
 	}
 }

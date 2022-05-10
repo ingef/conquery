@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.Mappers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
@@ -75,9 +75,9 @@ public class ProgressReporterTest {
 		pr.report(1);
 		log.info(pr.getEstimate());
 		
-		JsonNode json = Jackson.getMapper().valueToTree(pr);
+		JsonNode json = Mappers.getMapper().valueToTree(pr);
 		log.info(json.asText());
-		ImmutableProgressReporter deserialized = (ImmutableProgressReporter) Jackson.getMapper().treeToValue(json, ProgressReporter.class);
+		ImmutableProgressReporter deserialized = (ImmutableProgressReporter) Mappers.getMapper().treeToValue(json, ProgressReporter.class);
 		
 		log.info(deserialized.getEstimate());
 		Thread.sleep(100);
