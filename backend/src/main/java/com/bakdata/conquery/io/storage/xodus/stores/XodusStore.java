@@ -5,9 +5,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import com.bakdata.conquery.io.storage.RawStore;
 import com.google.common.primitives.Ints;
-import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.Environment;
@@ -17,7 +15,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class XodusStore implements RawStore {
+public class XodusStore {
 	private final Store store;
 	@Getter
 	private final Environment environment;
@@ -39,16 +37,12 @@ public class XodusStore implements RawStore {
 		);
 	}
 
-	public boolean add(byte[] key, byte[] value) {
-		return environment.computeInTransaction(t -> store.add(t, new ArrayByteIterable(key), new ArrayByteIterable(value)));
+	public boolean add(ByteIterable key, ByteIterable value) {
+		return environment.computeInTransaction(t -> store.add(t, key, value));
 	}
 
-	public byte[] get(byte[] key) {
-		final ByteIterable byteIterable = environment.computeInReadonlyTransaction(t -> store.get(t, new ArrayByteIterable(key)));
-		if (byteIterable == null) {
-			return null;
-		}
-		return byteIterable.getBytesUnsafe();
+	public ByteIterable get(ByteIterable key) {
+		return environment.computeInReadonlyTransaction(t -> store.get(t, key));
 	}
 
 	/**
@@ -57,7 +51,7 @@ public class XodusStore implements RawStore {
 	 *
 	 * @param consumer function called for-each key-value pair.
 	 */
-	public void forEach(BiConsumer<byte[], byte[]> consumer) {
+	public void forEach(BiConsumer<ByteIterable, ByteIterable> consumer) {
 		AtomicReference<ByteIterable> lastKey = new AtomicReference<>();
 		AtomicBoolean done = new AtomicBoolean(false);
 		while (!done.get()) {
@@ -70,25 +64,25 @@ public class XodusStore implements RawStore {
 					if (lastKey.get() != null) {
 						c.getSearchKey(lastKey.get());
 					}
-					while(System.currentTimeMillis()-start < timeoutHalfMillis) {
-						if(!c.getNext()) {
+					while (System.currentTimeMillis() - start < timeoutHalfMillis) {
+						if (!c.getNext()) {
 							done.set(true);
 							return;
 						}
 						lastKey.set(c.getKey());
-						consumer.accept(lastKey.get().getBytesUnsafe(), c.getValue().getBytesUnsafe());
+						consumer.accept(lastKey.get(), c.getValue());
 					}
 				}
 			});
 		}
 	}
 
-	public boolean update(byte[] key, byte[] value) {
-		return environment.computeInTransaction(t -> store.put(t, new ArrayByteIterable(key), new ArrayByteIterable(value)));
+	public boolean update(ByteIterable key, ByteIterable value) {
+		return environment.computeInTransaction(t -> store.put(t, key, value));
 	}
 
-	public boolean remove(byte[] key) {
-		return environment.computeInTransaction(t -> store.delete(t, new ArrayByteIterable(key)));
+	public boolean remove(ByteIterable key) {
+		return environment.computeInTransaction(t -> store.delete(t, key));
 	}
 
 	public int count() {

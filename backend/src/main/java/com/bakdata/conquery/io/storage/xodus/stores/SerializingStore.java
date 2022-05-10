@@ -13,7 +13,6 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
-import com.bakdata.conquery.io.storage.RawStore;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -24,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
+import jetbrains.exodus.ArrayByteIterable;
+import jetbrains.exodus.ByteIterable;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.ToString;
@@ -61,7 +62,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * Deserializer for values
 	 */
-	private final ObjectReader valueReader;
+	private ObjectReader valueReader;
 
 	/**
 	 * Optional validator used for serialization.
@@ -71,7 +72,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * The underlying store to write the values to.
 	 */
-	private final RawStore store;
+	private final XodusStore store;
 
 	/**
 	 *
@@ -88,12 +89,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * If set, all values that cannot be read are dumped as single files into this directory.
 	 */
 	private final File unreadableValuesDumpDir;
-	
+
 	private final boolean removeUnreadablesFromUnderlyingStore;
 
 	private final ObjectMapper objectMapper;
 
-	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(RawStore store,
+	@SuppressWarnings("unchecked")
+	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStore store,
 																					   Validator validator,
 																					   ObjectMapper objectMapper,
 																					   CLASS_K keyType,
@@ -144,7 +146,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public VALUE get(KEY key) {
-		byte[] binValue = store.get(writeKey(key));
+		ByteIterable binValue = store.get(writeKey(key));
 		try {
 			return readValue(binValue);			
 		} catch (Exception e) {
@@ -169,7 +171,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		IterationStatistic result = new IterationStatistic();
-		ArrayList<byte[]> unreadables = new ArrayList<>();
+		ArrayList<ByteIterable> unreadables = new ArrayList<>();
 		store.forEach((k, v) -> {
 			result.incrTotalProcessed();
 
@@ -177,7 +179,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			KEY key = getDeserializedAndDumpFailed(
 					k,
 					this::readKey,
-					() -> new String(k),
+					() -> new String(k.getBytesUnsafe()),
 					v,
 					"Could not parse key [{}]");
 			if (key == null) {
@@ -201,7 +203,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 			// Apply the consumer to key and value
 			try {
-				consumer.accept(key, value, v.length);
+				consumer.accept(key, value, v.getLength());
 			}
 			catch (Exception e) {
 				log.warn("Unable to apply for-each consumer on key[{}]", key, e);
@@ -239,7 +241,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * @param onFailWarnMsgFmt        The warn message that will be logged on failure.
 	 * @return The deserialized value
 	 */
-	private <TYPE> TYPE getDeserializedAndDumpFailed(byte[] serial, Function<byte[], TYPE> deserializer, Supplier<String> onFailKeyStringSupplier, byte[] onFailOrigValue, String onFailWarnMsgFmt) {
+	private <TYPE> TYPE getDeserializedAndDumpFailed(ByteIterable serial, Function<ByteIterable, TYPE> deserializer, Supplier<String> onFailKeyStringSupplier, ByteIterable onFailOrigValue, String onFailWarnMsgFmt) {
 		try {
 			return deserializer.apply(serial);
 		}
@@ -275,42 +277,42 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * Serialize value with {@code valueWriter}.
 	 */
-	private byte[] writeValue(VALUE value) {
+	private ByteIterable writeValue(VALUE value) {
 		return write(value, valueWriter);
 	}
 
 	/**
 	 * Serialize key with {@code keyWriter}.
 	 */
-	private byte[] writeKey(KEY key) {
+	private ByteIterable writeKey(KEY key) {
 		return write(key, keyWriter);
 	}
 
 	/**
 	 * Deserialize value with {@code valueReader}.
 	 */
-	private VALUE readValue(byte[] value) {
+	private VALUE readValue(ByteIterable value) {
 		return read(valueReader, value);
 	}
 
 	/**
 	 * Deserialize value with {@code keyReader}.
 	 */
-	private KEY readKey(byte[] key) {
+	private KEY readKey(ByteIterable key) {
 		return read(keyReader, key);
 	}
 
 	/**
 	 * Try writing object with writer.
 	 */
-	private byte[] write(Object obj, ObjectWriter writer) {
+	private ByteIterable write(Object obj, ObjectWriter writer) {
 		try {
 			byte[] bytes = writer.writeValueAsBytes(obj);
 			if (log.isTraceEnabled()) {
 				String json = JacksonUtil.toJsonDebug(bytes);
 				log.trace("Written Messagepack ({}): {}", valueType.getName(), json);
 			}
-			return bytes;
+			return new ArrayByteIterable(bytes);
 		}
 		catch (JsonProcessingException e) {
 			throw new RuntimeException("Failed to write " + obj, e);
@@ -320,15 +322,15 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * Try read value with reader.
 	 */
-	private <T> T read(ObjectReader reader, byte[] obj) {
+	private <T> T read(ObjectReader reader, ByteIterable obj) {
 		if (obj == null) {
 			return null;
 		}
 		try {
-			return reader.readValue(obj, 0, obj.length);
+			return reader.readValue(obj.getBytesUnsafe(), 0, obj.getLength());
 		}
 		catch (IOException e) {
-			throw new RuntimeException("Failed to read " + JacksonUtil.toJsonDebug(obj), e);
+			throw new RuntimeException("Failed to read " + JacksonUtil.toJsonDebug(obj.getBytesUnsafe()), e);
 		}
 	}
 
@@ -340,7 +342,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
 	 * @param storeName         The name of the store which is also used in the dump file name.
 	 */
-	private static void dumpToFile(byte[] obj, @NonNull String keyOfDump, @NonNull File unreadableDumpDir, @NonNull String storeName, ObjectMapper objectMapper) {
+	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, @NonNull File unreadableDumpDir, @NonNull String storeName, ObjectMapper objectMapper) {
 		// Create dump filehandle
 		File dumpfile = new File(unreadableDumpDir, makeDumpfileName(keyOfDump, storeName));
 		if (dumpfile.exists()) {
@@ -350,7 +352,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		// Write dump
 		try {
 			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
-			JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(obj, 0, obj.length);
+			JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
 			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
 		}
 		catch (IOException e) {
