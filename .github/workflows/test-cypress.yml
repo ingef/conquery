@@ -35,7 +35,6 @@ jobs:
         # https://github.com/cypress-io/github-action
         uses: cypress-io/github-action@v2
         env:
-          CI: "" # process.env.CI = true treats warnings as errors. We're fine with warnings though.
           REACT_APP_API_URL: "http://localhost:8080"
           REACT_APP_DISABLE_LOGIN: true
           REACT_APP_LANG: de
@@ -45,7 +44,7 @@ jobs:
         with:
           working-directory: ./frontend
           install-command: yarn --ignore-platform --frozen-lockfile
-          build: yarn run react-app-rewired build
+          build: CI=false && yarn run react-app-rewired build # process.env.CI = true treats warnings as errors. We're fine with warnings.
           start: bash ./cypress/support/run_e2e_all.sh
           wait-on: "http://localhost:8000"
 
