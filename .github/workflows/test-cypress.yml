@@ -17,17 +17,22 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+
       - uses: actions/checkout@v2
         with:
           submodules: true
+
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
           java-version: 11
+
       - name: Build Backend
-        run: ./scripts/build_no_version.sh
+        run: ./scripts/build_backend_no_version.sh
 
       - name: Cypress run
+        # This is a preconfigured action, maintained by cypress, to run e2e tests
+        # https://github.com/cypress-io/github-action
         uses: cypress-io/github-action@v2
         env:
           TSC_COMPILE_ON_ERROR: true
@@ -41,13 +46,15 @@ jobs:
           working-directory: ./frontend
           install-command: yarn --ignore-platform --frozen-lockfile
           build: yarn run react-app-rewired build
-          start: bash ./cypress/support/run_conquery_cypress.sh
-          wait-on: 'http://localhost:8000'
+          start: bash ./cypress/support/run_e2e_all.sh
+          wait-on: "http://localhost:8000"
+
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: cypress-screenshots
           path: frontend/cypress/screenshots
+
       - uses: actions/upload-artifact@v2
         if: failure()
         with:

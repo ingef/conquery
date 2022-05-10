@@ -4,6 +4,9 @@ admin_api="http://localhost:8081/admin"
 h_ct="content-type:application/json"
 h_auth="authorization: Bearer user.SUPERUSER@SUPERUSER"
 
+echo ""
+echo "Loading data into backend for e2e testing"
+
 echo "Waiting to $admin_api come up."
 until $(curl --output /dev/null --silent --head -H "$h_auth" --fail $admin_api/users/); do
     printf '.'
@@ -24,3 +27,5 @@ sleep 3
 curl -X POST  "$admin_api/datasets/dataset1/tables" -H "$h_ct" -H "$h_auth" -d "@./frontend/cypress/support/test_data/all_types.table.json"
 sleep 3
 curl -X POST  "$admin_api/datasets/dataset1/concepts" -H "$h_ct" -H "$h_auth" -d "@./frontend/cypress/support/test_data/all_types.concept.json"
+
+echo "Done loading data"
