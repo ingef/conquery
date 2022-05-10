@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.config.auth;
 
+import java.nio.file.Path;
+
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.HttpHeaders;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -19,11 +25,6 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.HttpHeaders;
-import java.nio.file.Path;
-
 @CPSType(base = AuthenticationRealmFactory.class, id = "API_TOKEN")
 @Data
 public class ApiTokenRealmFactory implements AuthenticationRealmFactory {
@@ -37,7 +38,7 @@ public class ApiTokenRealmFactory implements AuthenticationRealmFactory {
 	@Override
 	public ConqueryAuthenticationRealm createRealm(ManagerNode managerNode) {
 
-		final TokenStorage tokenStorage = new TokenStorage(storeDir, apiTokenStoreConfig, managerNode.getValidator(), Jackson.BINARY_MAPPER.copy());
+		final TokenStorage tokenStorage = new TokenStorage(storeDir, apiTokenStoreConfig, managerNode.getValidator(), Jackson.getBinaryMapper().copy());
 		managerNode.getEnvironment().lifecycle().manage(tokenStorage);
 
 		final ApiTokenRealm apiTokenRealm = new ApiTokenRealm(managerNode.getStorage(), tokenStorage);

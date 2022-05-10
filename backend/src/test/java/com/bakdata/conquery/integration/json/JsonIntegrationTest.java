@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 @RequiredArgsConstructor
 public class JsonIntegrationTest extends IntegrationTest.Simple {
 
-	public static final ObjectReader TEST_SPEC_READER = Jackson.MAPPER.readerFor(ConqueryTestSpec.class);
+	public static final ObjectReader TEST_SPEC_READER = Jackson.getMapper().readerFor(ConqueryTestSpec.class);
 	public static final Validator VALIDATOR = Validators.newValidator();
 	@Getter
 	private final ConqueryTestSpec testSpec;

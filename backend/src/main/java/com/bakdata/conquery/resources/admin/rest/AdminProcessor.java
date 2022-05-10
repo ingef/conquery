@@ -55,7 +55,7 @@ public class AdminProcessor {
 	private final JobManager jobManager;
 	private final ScheduledExecutorService maintenanceService;
 	private final Validator validator;
-	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
+	private final ObjectWriter jsonWriter = Jackson.getMapper().writer();
 
 
 

@@ -24,7 +24,7 @@ public class ResourceFormConfigProvider{
 		for (Resource config : frontendConfigs) {
 			try (config){
 				try(InputStream in = config.open()){			
-					JsonNode configTree = Jackson.MAPPER.reader().readTree(in);
+					JsonNode configTree = Jackson.getMapper().reader().readTree(in);
 					formConfigInfos.add(new FormFrontendConfigInformation("Resource " + config.getPath(), configTree));
 				}
 			}

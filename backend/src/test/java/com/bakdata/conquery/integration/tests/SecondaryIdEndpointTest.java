@@ -64,10 +64,10 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			// Upload Table referencing SecondaryId
 			{
 				// Build data manually so content is minmal (ie no dataset prefixes etc)
-				ObjectNode tableNode = Jackson.MAPPER.createObjectNode();
+				ObjectNode tableNode = Jackson.getMapper().createObjectNode();
 				tableNode.put("name", "table");
 
-				ObjectNode columnNode = Jackson.MAPPER.createObjectNode();
+				ObjectNode columnNode = Jackson.getMapper().createObjectNode();
 				columnNode.put("name", "column");
 				columnNode.put("type", MajorTypeId.INTEGER.name());
 				columnNode.put("secondaryId", description.getId().toStringWithoutDataset());
@@ -133,7 +133,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 											  .get(ObjectNode.class);
 
 		// The injection is necessary to deserialize the dataset.
-		ObjectMapper mapper = conquery.getDatasetRegistry().injectIntoNew(Jackson.MAPPER);
+		ObjectMapper mapper = conquery.getDatasetRegistry().injectIntoNew(Jackson.getMapper());
 		mapper = conquery.getDataset().injectIntoNew(mapper);
 
 		return objectNode.get("secondaryIds")

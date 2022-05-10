@@ -39,7 +39,7 @@ public class BigStoreTest {
 
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
 	private static SingletonNamespaceCollection NAMESPACE_COLLECTION = new SingletonNamespaceCollection(CENTRAL_REGISTRY);
-	private static ObjectMapper MAPPER = NAMESPACE_COLLECTION.injectIntoNew(Jackson.BINARY_MAPPER);
+	private static ObjectMapper MAPPER = NAMESPACE_COLLECTION.injectIntoNew(Jackson.getBinaryMapper());
 
 	@BeforeAll
 	public static void setupRegistry(){
@@ -76,7 +76,7 @@ public class BigStoreTest {
 		}
 
 		// check if manual serialization deserialization works
-		byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(nDict);
+		byte[] bytes = Jackson.getBinaryMapper().writeValueAsBytes(nDict);
 
 
 		Dictionary simpleCopy = MAPPER.readValue(bytes, Dictionary.class);

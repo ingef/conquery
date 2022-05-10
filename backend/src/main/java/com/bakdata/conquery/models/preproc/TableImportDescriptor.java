@@ -52,8 +52,8 @@ public class TableImportDescriptor extends Labeled<TableImportDescriptorId> impl
 	private TableInputDescriptor[] inputs;
 
 	public static TableImportDescriptor read(File descriptionFile) throws IOException {
-		return Jackson.MAPPER.readerFor(TableImportDescriptor.class)
-							 .readValue(descriptionFile);
+		return Jackson.getMapper().readerFor(TableImportDescriptor.class)
+					  .readValue(descriptionFile);
 	}
 
 	@JsonIgnore

@@ -51,7 +51,7 @@ class BooleanStoreTest {
 
 		final BitSetStore booleanStore = new BitSetStore(bitSet, new BitSet(128), 128);
 
-		final BitSetStore booleanStore1 = Jackson.MAPPER.readValue(Jackson.MAPPER.writeValueAsString(booleanStore), BitSetStore.class);
+		final BitSetStore booleanStore1 = Jackson.getMapper().readValue(Jackson.getMapper().writeValueAsString(booleanStore), BitSetStore.class);
 
 		assertThat(booleanStore1.getValues().get(128)).isEqualTo(false);
 

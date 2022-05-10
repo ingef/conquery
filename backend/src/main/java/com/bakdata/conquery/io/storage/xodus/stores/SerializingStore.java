@@ -348,7 +348,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		try {
 			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
 			JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
-			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
+			Jackson.getMapper().writer().writeValue(dumpfile, dump);
 		}
 		catch (IOException e) {
 			log.error("Unable to dump unreadable value of key `{}` to file `{}`",keyOfDump, dumpfile, e);

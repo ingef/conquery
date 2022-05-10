@@ -3,18 +3,16 @@ package com.bakdata.conquery.integration.tests;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.glassfish.jersey.server.model.Resource;
-import org.glassfish.jersey.server.model.ResourceMethod;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;
 import com.fasterxml.jackson.databind.ObjectReader;
-
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.glassfish.jersey.server.model.Resource;
+import org.glassfish.jersey.server.model.ResourceMethod;
 
 /**
  * The following functions are adapted from dropwizards
@@ -22,8 +20,8 @@ import lombok.Getter;
  */
 public class EndpointTestHelper {
 
-	public static final ObjectReader READER = Jackson.MAPPER
-		.readerFor(Jackson.MAPPER.getTypeFactory().constructCollectionLikeType(List.class, EndPoint.class));
+	public static final ObjectReader READER = Jackson.getMapper()
+													 .readerFor(Jackson.getMapper().getTypeFactory().constructCollectionLikeType(List.class, EndPoint.class));
 
 	private static final TypeResolver TYPE_RESOLVER = new TypeResolver();
 

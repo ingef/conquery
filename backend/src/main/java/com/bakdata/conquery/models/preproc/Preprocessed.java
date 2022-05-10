@@ -122,10 +122,10 @@ public class Preprocessed {
 	private static void writePreprocessed(File file, PreprocessedHeader header, PreprocessedDictionaries dictionaries, PreprocessedData data)
 			throws IOException {
 		OutputStream out = new GZIPOutputStream(new FileOutputStream(file));
-		try (JsonGenerator generator = Jackson.BINARY_MAPPER.copy()
-															.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-															.getFactory()
-															.createGenerator(out)) {
+		try (JsonGenerator generator = Jackson.getBinaryMapper().copy()
+											  .enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+											  .getFactory()
+											  .createGenerator(out)) {
 
 			log.debug("Writing header");
 

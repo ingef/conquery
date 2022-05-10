@@ -47,7 +47,7 @@ public class IntegrationTests {
 	private static final ObjectWriter CONFIG_WRITER;
 
 	static {
-		final ObjectMapper mapper = Jackson.MAPPER.copy();
+		final ObjectMapper mapper = Jackson.getMapper().copy();
 
 		MAPPER = mapper.setConfig(mapper.getDeserializationConfig().withView(InternalOnly.class))
 					   .setConfig(mapper.getSerializationConfig().withView(InternalOnly.class));

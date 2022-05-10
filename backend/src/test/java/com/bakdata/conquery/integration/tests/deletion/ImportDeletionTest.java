@@ -232,7 +232,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				}
 			}
 			desc.setInputs(new TableInputDescriptor[]{input});
-			Jackson.MAPPER.writeValue(descriptionFile, desc);
+			Jackson.getMapper().writeValue(descriptionFile, desc);
 
 			//preprocess
 			conquery.preprocessTmp(conquery.getTmpDir(), List.of(descriptionFile));

@@ -7,11 +7,6 @@ import java.io.IOException;
 import java.lang.reflect.Modifier;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -23,6 +18,10 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 public class IdTests {
 
@@ -88,7 +87,7 @@ public class IdTests {
 			"4"
 		);
 		
-		ObjectMapper mapper = Jackson.MAPPER;
+		ObjectMapper mapper = Jackson.getMapper();
 		ConceptTreeChildId copy = mapper.readValue(mapper.writeValueAsBytes(id), ConceptTreeChildId.class);
 		
 		assertThat(copy).isEqualTo(id);
@@ -122,7 +121,7 @@ public class IdTests {
 			"4"
 		);
 		
-		ObjectMapper mapper = Jackson.BINARY_MAPPER;
+		ObjectMapper mapper = Jackson.getBinaryMapper();
 		ConceptTreeChildId copy = mapper.readValue(mapper.writeValueAsBytes(id), ConceptTreeChildId.class);
 		
 		assertThat(copy).isEqualTo(id);

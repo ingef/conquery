@@ -11,14 +11,13 @@ import java.util.List;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.fasterxml.jackson.databind.ObjectReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.fasterxml.jackson.databind.ObjectReader;
 
 
 class RangeTest {
@@ -164,8 +163,8 @@ class RangeTest {
 	
 	@ParameterizedTest(name="{0}") @MethodSource
 	public void deserialize(String json, Range<LocalDate> expected, CDateRange expectedCDateRange) throws IOException {
-		ObjectReader reader = Jackson.MAPPER.readerFor(
-			Jackson.MAPPER.getTypeFactory().constructParametricType(Range.class, LocalDate.class)
+		ObjectReader reader = Jackson.getMapper().readerFor(
+				Jackson.getMapper().getTypeFactory().constructParametricType(Range.class, LocalDate.class)
 		);
 		Range<LocalDate> range = reader.readValue(json);
 		assertThat(range).isEqualTo(expected);

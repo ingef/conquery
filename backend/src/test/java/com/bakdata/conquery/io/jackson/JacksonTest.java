@@ -23,14 +23,14 @@ public class JacksonTest {
 	@Test
 	public void testSingleElementArraySerialization() throws JsonProcessingException {
 		String[] arr = new String[] {"singular"};
-		assertThat(Jackson.MAPPER.writeValueAsString(arr))
+		assertThat(Jackson.getMapper().writeValueAsString(arr))
 			.isEqualTo("[\"singular\"]");
 	}
 	
 	@Test
 	public void testSingleElementListSerialization() throws JsonProcessingException {
 		List<String> list = Arrays.asList("singular");
-		assertThat(Jackson.MAPPER.writeValueAsString(list))
+		assertThat(Jackson.getMapper().writeValueAsString(list))
 			.isEqualTo("[\"singular\"]");
 	}
 	
@@ -68,7 +68,7 @@ public class JacksonTest {
 	@Test
 	public void testInternalOnly() throws JsonProcessingException {
 		InternalTestClass test = new InternalTestClass();
-		assertThat(Jackson.MAPPER.writeValueAsString(test))
+		assertThat(Jackson.getMapper().writeValueAsString(test))
 			.isEqualTo("{\"external\":4}");
 	}
 	

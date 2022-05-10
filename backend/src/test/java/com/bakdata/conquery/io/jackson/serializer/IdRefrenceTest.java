@@ -36,7 +36,7 @@ public class IdRefrenceTest {
 		User user = new User("usermail", "userlabel", mock(MetaStorage.class));
 		metaRegistry.register(user);
 
-		String json = Jackson.MAPPER.writeValueAsString(
+		String json = Jackson.getMapper().writeValueAsString(
 				new ListHolder(
 						Collections.singletonList(table),
 						Collections.singletonList(user)
@@ -48,7 +48,7 @@ public class IdRefrenceTest {
 				.contains("\"dataset.table\"");
 
 		ListHolder holder = new SingletonNamespaceCollection(registry, metaRegistry)
-									.injectIntoNew(Jackson.MAPPER.readerFor(ListHolder.class))
+									.injectIntoNew(Jackson.getMapper().readerFor(ListHolder.class))
 									.readValue(json);
 
 		assertThat(holder.getUsers().get(0)).isSameAs(user);

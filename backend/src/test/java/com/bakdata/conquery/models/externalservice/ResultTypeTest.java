@@ -78,16 +78,16 @@ public class ResultTypeTest {
 	@ParameterizedTest(name="{0} {1}: {2} -> {3}") @MethodSource("testData")
 	public void testPrinting(PrintSettings cfg, ResultType type, Object value, String expected) throws IOException {
 		assertThat(type.printNullable(cfg, value)).isEqualTo(expected);
-		String str = Jackson.MAPPER.writeValueAsString(value);
-		Object copy = Jackson.MAPPER.readValue(str, Object.class);
+		String str = Jackson.getMapper().writeValueAsString(value);
+		Object copy = Jackson.getMapper().readValue(str, Object.class);
 		assertThat(type.printNullable(cfg, copy)).isEqualTo(expected);
 	}
 	
 	@ParameterizedTest(name="{1}: {2}") @MethodSource("testData")
 	public void testBinaryPrinting(PrintSettings cfg, ResultType type, Object value, String expected) throws IOException {
 		assertThat(type.printNullable(cfg, value)).isEqualTo(expected);
-		byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(value);
-		Object copy = Jackson.BINARY_MAPPER.readValue(bytes, Object.class);
+		byte[] bytes = Jackson.getBinaryMapper().writeValueAsBytes(value);
+		Object copy = Jackson.getBinaryMapper().readValue(bytes, Object.class);
 		assertThat(type.printNullable(cfg, copy)).isEqualTo(expected);
 	}
 }

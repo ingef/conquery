@@ -119,7 +119,7 @@ public class SerializingStoreDumpTest {
 		// Test if the dump is correct
 		File dumpFile = getDumpFile(dumpFileCond);
 
-		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
+		assertThat((QueryDescription) Jackson.getMapper().readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
 	}
 
 	private File getDumpFile(Condition<File> dumpFileCond) {
@@ -172,7 +172,7 @@ public class SerializingStoreDumpTest {
 		// Test if the dump is correct
 		File dumpFile = getDumpFile(dumpFileCond);
 
-		assertThat((QueryDescription) Jackson.MAPPER.readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
+		assertThat((QueryDescription) Jackson.getMapper().readerFor(QueryDescription.class).readValue(dumpFile)).isEqualTo(cQuery);
 	}
 
 	/**

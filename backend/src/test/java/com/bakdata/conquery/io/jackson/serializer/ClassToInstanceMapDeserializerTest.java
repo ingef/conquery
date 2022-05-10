@@ -19,9 +19,9 @@ public class ClassToInstanceMapDeserializerTest {
 		map.putInstance(MajorTypeId.class, MajorTypeId.DATE);
 		map.putInstance(String.class, "test");
 		
-		String v=Jackson.MAPPER.writeValueAsString(map);
+		String v= Jackson.getMapper().writeValueAsString(map);
 		assertThat(
-			Jackson.MAPPER.readValue(v, ClassToInstanceMap.class)
+				Jackson.getMapper().readValue(v, ClassToInstanceMap.class)
 		).isEqualTo(map);
 	}
 

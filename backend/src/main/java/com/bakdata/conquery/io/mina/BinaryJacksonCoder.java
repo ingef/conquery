@@ -43,7 +43,8 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 		UUID id = message.getMessageId();
 		Chunkable chunkable = new Chunkable(id, writer, message);
 		if(log.isTraceEnabled()) {
-			Jackson.MAPPER.writerFor(NetworkMessage.class).with(SerializationFeature.INDENT_OUTPUT).writeValue(new File("dumps/out_"+id+".json"), message);
+			Jackson.getMapper()
+				   .writerFor(NetworkMessage.class).with(SerializationFeature.INDENT_OUTPUT).writeValue(new File("dumps/out_" + id + ".json"), message);
 		}
 		return chunkable;
 	}

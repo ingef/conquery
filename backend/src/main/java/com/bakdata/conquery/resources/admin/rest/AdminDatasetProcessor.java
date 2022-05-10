@@ -92,7 +92,7 @@ public class AdminDatasetProcessor {
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
 
-		final ObjectWriter mapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
+		final ObjectWriter mapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper()))
 										  .writerWithView(InternalOnly.class);
 		Namespace.createAndRegister(
 						getDatasetRegistry(),

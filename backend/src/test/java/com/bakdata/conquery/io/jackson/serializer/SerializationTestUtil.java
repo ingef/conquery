@@ -40,11 +40,11 @@ public class SerializationTestUtil<T> {
 	private Injectable[] injectables = {};
 
 	public static <T> SerializationTestUtil<T> forType(TypeReference<T> type) {
-		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
+		return new SerializationTestUtil<>(Jackson.getMapper().getTypeFactory().constructType(type));
 	}
 
 	public static <T> SerializationTestUtil<T> forType(Class<? extends T> type) {
-		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
+		return new SerializationTestUtil<>(Jackson.getMapper().getTypeFactory().constructType(type));
 	}
 
 	public SerializationTestUtil<T> injectables(Injectable ... injectables) {
@@ -56,12 +56,12 @@ public class SerializationTestUtil<T> {
 		test(
 				value,
 				expected,
-				Jackson.MAPPER
+				Jackson.getMapper()
 		);
 		test(
 				value,
 				expected,
-				Jackson.BINARY_MAPPER
+				Jackson.getBinaryMapper()
 		);
 	}
 

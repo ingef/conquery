@@ -160,7 +160,7 @@ public class ImportUpdateTest implements ProgrammaticIntegrationTest {
 					}
 				}
 				desc.setInputs(new TableInputDescriptor[]{input});
-				Jackson.MAPPER.writeValue(descriptionFile, desc);
+				Jackson.getMapper().writeValue(descriptionFile, desc);
 			}
 
 			//preprocess

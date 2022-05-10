@@ -47,7 +47,7 @@ public class PreprocessedReader implements AutoCloseable {
 		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
 		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
 
-		parser = namespaceCollection.injectIntoNew(Jackson.BINARY_MAPPER.copy())
+		parser = namespaceCollection.injectIntoNew(Jackson.getBinaryMapper().copy())
 				.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
 				.getFactory()
 				.createParser(inputStream);

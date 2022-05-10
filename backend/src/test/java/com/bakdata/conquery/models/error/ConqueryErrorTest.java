@@ -20,14 +20,14 @@ public class ConqueryErrorTest {
 	
 	@Test
 	public void errorDeserialization() throws JsonMappingException, JsonProcessingException {
-		PlainError error = Jackson.MAPPER.readerFor(PlainError.class).readValue("{\r\n" + 
-			"    \"code\": \"TEST_ERROR\",\r\n" + 
-			"    \"context\": {\r\n" + 
-			"      \"group\": \"group\"\r\n" + 
-			"    },\r\n" + 
-			"    \"id\": \"c8be5f10-1ea8-11eb-8fb8-26885ec43e14\",\r\n" + 
-			"    \"message\": \"group was empty.\"\r\n" + 
-			"  }");
+		PlainError error = Jackson.getMapper().readerFor(PlainError.class).readValue("{\r\n" +
+																					 "    \"code\": \"TEST_ERROR\",\r\n" +
+																					 "    \"context\": {\r\n" +
+																					 "      \"group\": \"group\"\r\n" +
+																					 "    },\r\n" +
+																					 "    \"id\": \"c8be5f10-1ea8-11eb-8fb8-26885ec43e14\",\r\n" +
+																					 "    \"message\": \"group was empty.\"\r\n" +
+																					 "  }");
 		
 		assertThat(error).isEqualTo(new PlainError(UUID.fromString("c8be5f10-1ea8-11eb-8fb8-26885ec43e14"), "TEST_ERROR", "group was empty.", Map.of("group", "group")));
 	}

@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.XodusConfig;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.util.Duration;
@@ -53,7 +52,7 @@ public class LocalAuthRealmTest {
 
 		conqueryTokenRealm = new ConqueryTokenRealm(storage);
 
-		realm = new LocalAuthenticationRealm(Validators.newValidator(), Jackson.BINARY_MAPPER, conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig(), Duration.hours(1));
+		realm = new LocalAuthenticationRealm(Validators.newValidator(), Jackson.getBinaryMapper(), conqueryTokenRealm, "localtestRealm", tmpDir, new XodusConfig(), Duration.hours(1));
 		LifecycleUtils.init(realm);
 	}
 

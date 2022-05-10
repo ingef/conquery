@@ -196,7 +196,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void loadNamespaces() {
 		final Collection<NamespaceStorage> storages = config.getStorage().loadNamespaceStorages();
 		final ObjectWriter objectWriter =
-				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
+				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper())).writerWithView(InternalOnly.class);
 
 		for (NamespaceStorage namespaceStorage : storages) {
 			Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), objectWriter);
@@ -253,7 +253,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
 
-		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
+		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper());
 		config.configureObjectMapper(om);
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));

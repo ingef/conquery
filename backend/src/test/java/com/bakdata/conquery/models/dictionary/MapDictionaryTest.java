@@ -26,7 +26,7 @@ class MapDictionaryTest {
 		final CentralRegistry registry = new CentralRegistry();
 		registry.register(Dataset.PLACEHOLDER);
 
-		String json = Jackson.MAPPER.writeValueAsString(map);
+		String json = Jackson.getMapper().writeValueAsString(map);
 		assertThat(json)
 				.startsWith("{\"type\":\"MAP_DICTIONARY\",\"dataset\":\"PLACEHOLDER\",\"name\":\"dictionary\",\"id2Value\":[")
 				.endsWith("]}");

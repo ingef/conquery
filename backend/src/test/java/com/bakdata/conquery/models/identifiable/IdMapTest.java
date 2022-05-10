@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
-import org.junit.jupiter.api.Test;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -14,10 +12,10 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.junit.jupiter.api.Test;
 
 
 public class IdMapTest {
@@ -33,12 +31,12 @@ public class IdMapTest {
 		idMap.add(d2);
 		ContainingDataset containedDataset = new ContainingDataset(idMap);
 		
-		JsonNode json = Jackson.MAPPER.valueToTree(containedDataset);
+		JsonNode json = Jackson.getMapper().valueToTree(containedDataset);
 		
 		/*assertThat(json.isArray()).isTrue();
 		assertThat(json.get(0)).isEqualTo(Jackson.MAPPER.valueToTree(d1));*/
 		
-		ContainingDataset constructed = Jackson.MAPPER.treeToValue(json, ContainingDataset.class);
+		ContainingDataset constructed = Jackson.getMapper().treeToValue(json, ContainingDataset.class);
 		assertThat(constructed.idMap.entrySet()).isEqualTo(containedDataset.idMap.entrySet());
 	}
 	

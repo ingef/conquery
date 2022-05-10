@@ -17,11 +17,13 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import lombok.experimental.UtilityClass;
 import org.apache.shiro.authz.Permission;
 
+@UtilityClass
 public class Jackson {
-	public static final ObjectMapper MAPPER;
-	public static final ObjectMapper BINARY_MAPPER;
+	private static final ObjectMapper MAPPER;
+	private static final ObjectMapper BINARY_MAPPER;
 
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
@@ -78,5 +80,13 @@ public class Jackson {
 
 	public static <T> T findInjectable(DeserializationContext ctxt, Class<T> clazz) throws JsonMappingException {
 		return (T) ctxt.findInjectableValue(clazz.getName(), null, null);
+	}
+
+	public static ObjectMapper getMapper() {
+		return MAPPER;
+	}
+
+	public static ObjectMapper getBinaryMapper() {
+		return BINARY_MAPPER;
 	}
 }

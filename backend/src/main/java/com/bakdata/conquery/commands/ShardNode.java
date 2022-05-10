@@ -100,7 +100,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 
-		final ObjectMapper binaryMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+		final ObjectMapper binaryMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper()));
 		((MutableInjectableValues) binaryMapper.getInjectableValues()).add(Validator.class, environment.getValidator());
 
 		workers = new Workers(
@@ -201,7 +201,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
 
-		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
+		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.getBinaryMapper());
 		config.configureObjectMapper(om);
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);

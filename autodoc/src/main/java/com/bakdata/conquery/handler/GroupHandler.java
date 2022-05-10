@@ -297,7 +297,7 @@ public class GroupHandler {
 	private String findDefault(ClassInfo currentType, FieldInfo field) {
 		try {
 			Object value = currentType.loadClass().getConstructor().newInstance();
-			JsonNode node = Jackson.MAPPER.valueToTree(value);
+			JsonNode node = Jackson.getMapper().valueToTree(value);
 			JsonNode def = node.get(field.getName());
 			if (def == null) {
 				return "\u2400";
@@ -306,13 +306,13 @@ public class GroupHandler {
 			if (field.getAnnotationInfo(VariableDefaultValue.class.getName()) != null) {
 				return "generated default varies";
 			}
-			String json = Jackson.MAPPER.writeValueAsString(def);
+			String json = Jackson.getMapper().writeValueAsString(def);
 			//we don't want to print defaults if it is a whole object itself
 			if (json.contains("{")) {
 				return "";
 			}
 			//check if file path not not generate absolute paths
-			String localPath = Jackson.MAPPER.writeValueAsString(new File("."));
+			String localPath = Jackson.getMapper().writeValueAsString(new File("."));
 			json = StringUtils.replace(json, localPath.substring(1, localPath.length() - 2), "./");
 			return code(json);
 		}

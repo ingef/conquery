@@ -108,7 +108,7 @@ public class MigrateCommand extends ConqueryCommand {
 
 		final Function4<String, String, String, ObjectNode, Tuple> migrator = factory.run();
 
-		final ObjectMapper mapper = Jackson.BINARY_MAPPER;
+		final ObjectMapper mapper = Jackson.getBinaryMapper();
 
 		final ObjectReader keyReader = mapper.readerFor(String.class);
 		final ObjectReader valueReader = mapper.readerFor(ObjectNode.class);

@@ -75,9 +75,9 @@ public class ProgressReporterTest {
 		pr.report(1);
 		log.info(pr.getEstimate());
 		
-		JsonNode json = Jackson.MAPPER.valueToTree(pr);
+		JsonNode json = Jackson.getMapper().valueToTree(pr);
 		log.info(json.asText());
-		ImmutableProgressReporter deserialized = (ImmutableProgressReporter) Jackson.MAPPER.treeToValue(json, ProgressReporter.class);
+		ImmutableProgressReporter deserialized = (ImmutableProgressReporter) Jackson.getMapper().treeToValue(json, ProgressReporter.class);
 		
 		log.info(deserialized.getEstimate());
 		Thread.sleep(100);

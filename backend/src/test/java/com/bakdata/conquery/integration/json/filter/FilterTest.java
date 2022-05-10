@@ -1,6 +1,6 @@
 package com.bakdata.conquery.integration.json.filter;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -128,7 +128,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		}
 
 
-		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class));
+		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.getMapper().getTypeFactory().constructType(FilterValue.class));
 
 		CQTable cqTable = new CQTable();
 

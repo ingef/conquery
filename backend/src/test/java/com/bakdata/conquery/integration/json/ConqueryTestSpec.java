@@ -69,7 +69,8 @@ public abstract class ConqueryTestSpec {
 	}
 
 	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory().constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation);
+		return parseSubTree(support, node, Jackson.getMapper()
+												  .getTypeFactory().constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation);
 	}
 
 	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType) throws IOException, JSONException {
@@ -80,7 +81,7 @@ public abstract class ConqueryTestSpec {
 		ObjectMapper mapper = support.getDataset().injectIntoNew(
 				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
 						.injectIntoNew(
-								Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
+								Jackson.getMapper().copy().addHandler(new DatasetPlaceHolderFiller(support))
 						)
 		);
 
@@ -97,7 +98,7 @@ public abstract class ConqueryTestSpec {
 	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		ObjectMapper mapper = support.getDataset().injectIntoNew(
 			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
-				Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
+					Jackson.getMapper().copy().addHandler(new DatasetPlaceHolderFiller(support))
 			)
 		);
 		List<T> result = new ArrayList<>(node.size());
