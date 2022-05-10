@@ -44,8 +44,10 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -146,8 +148,9 @@ public class QueryResource {
 	}
 
 	@Data
+	@AllArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class EntityPreview {
-		private String idKind = "ID"; //TODO I think ID is fallback, but i dont currently know.
+		private String idKind; //TODO I think ID is fallback, but i dont currently know.
 		private final String entity;
 		private final CDateRange time;
 		@NsIdRefCollection

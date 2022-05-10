@@ -393,7 +393,7 @@ public class QueryProcessor {
 	 */
 	public Response getSingleEntityExport(Subject subject, String idKind, String entity, List<Connector> sources, String format, Dataset dataset) {
 
-		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{entity}}));
+		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
 		exportQuery.setTables(
