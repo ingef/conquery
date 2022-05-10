@@ -221,7 +221,7 @@ public class MigrateCommand extends ConqueryCommand {
 				// Everything is mapped with Smile so even the keys.
 				final String key = keyReader.readValue(cursor.getKey().getBytesUnsafe());
 
-				final ObjectNode node = valueReader.readValue(cursor.getValue().getBytesUnsafe());
+				final JsonNode node = valueReader.readValue(cursor.getValue().getBytesUnsafe());
 
 				// Apply the migrator, it will return new key and value
 				final Tuple<?> migrated =
