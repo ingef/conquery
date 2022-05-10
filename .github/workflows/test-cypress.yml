@@ -30,23 +30,15 @@ jobs:
       - name: Build Backend
         run: ./scripts/build_backend_no_version.sh
 
-      - run: CI=false # process.env.CI = true treats warnings as errors. We're fine with warnings.
+      - name: Build Frontend
+        run: ./scripts/build_frontend.sh
+
       - name: Cypress run
         # This is a preconfigured action, maintained by cypress, to run e2e tests
         # https://github.com/cypress-io/github-action
         uses: cypress-io/github-action@v2
-        env:
-          REACT_APP_API_URL: "http://localhost:8080"
-          REACT_APP_DISABLE_LOGIN: true
-          REACT_APP_LANG: de
-          REACT_APP_IDP_ENABLE: false
-          REACT_APP_IDP_REALM: Myrealm
-          REACT_APP_IDP_CLIENT_ID: frontend
         with:
-          working-directory: ./frontend
-          install-command: yarn --ignore-platform --frozen-lockfile
-          build: yarn run react-app-rewired build
-          start: bash ./cypress/support/run_e2e_all.sh
+          start: ./scripts/run_e2e_all.sh
           wait-on: "http://localhost:8000"
 
       - uses: actions/upload-artifact@v2
