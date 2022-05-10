@@ -72,3 +72,5 @@ nbactions.xml
 **/*-checkpoint.ipynb
 **/pyvenv.cfg
 tutorial/mimic_iii_demo/data/**
+
+/node_modules
