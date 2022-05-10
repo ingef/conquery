@@ -38,6 +38,7 @@ jobs:
         # https://github.com/cypress-io/github-action
         uses: cypress-io/github-action@v2
         with:
+          working-directory: .
           start: ./scripts/run_e2e_all.sh
           wait-on: "http://localhost:8000"
 
