@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -106,14 +107,14 @@ public class MigrateCommand extends ConqueryCommand {
 
 		MigrationScriptFactory factory = (MigrationScriptFactory) groovy.parse(In.file((File) namespace.get("script")).readAll());
 
-		final Function4<String, String, String, ObjectNode, Tuple> migrator = factory.run();
+		final Function4<String, String, String, JsonNode, Tuple> migrator = factory.run();
 
 		final ObjectMapper mapper = Jackson.BINARY_MAPPER;
 
 		final ObjectReader keyReader = mapper.readerFor(String.class);
-		final ObjectReader valueReader = mapper.readerFor(ObjectNode.class);
+		final ObjectReader valueReader = mapper.readerFor(JsonNode.class);
 		final ObjectWriter keyWriter = mapper.writerFor(String.class);
-		final ObjectWriter valueWriter = mapper.writerFor(ObjectNode.class);
+		final ObjectWriter valueWriter = mapper.writerFor(JsonNode.class);
 
 
 		Arrays.stream(environments)
@@ -138,10 +139,10 @@ public class MigrateCommand extends ConqueryCommand {
 		 * Environment -> Store -> Key -> Value -> (Key, Value)
 		 */
 		@Override
-		public abstract Function4<String, String, String, ObjectNode, Tuple> run();
+		public abstract Function4<String, String, String, JsonNode, Tuple> run();
 	}
 
-	private void processEnvironment(File inStoreDirectory, long logSize, File outStoreDirectory, Function4<String, String, String, ObjectNode, Tuple> migrator, ObjectReader keyReader, ObjectReader valueReader, ObjectWriter keyWriter, ObjectWriter valueWriter) {
+	private void processEnvironment(File inStoreDirectory, long logSize, File outStoreDirectory, Function4<String, String, String, JsonNode, Tuple> migrator, ObjectReader keyReader, ObjectReader valueReader, ObjectWriter keyWriter, ObjectWriter valueWriter) {
 		final jetbrains.exodus.env.Environment inEnvironment = Environments.newInstance(
 				inStoreDirectory,
 				new EnvironmentConfig().setLogFileSize(logSize)
@@ -198,7 +199,7 @@ public class MigrateCommand extends ConqueryCommand {
 		inEnvironment.close();
 	}
 
-	private void doMigrate(Store inStore, Store outStore, Function4<String, String, String, ObjectNode, Tuple> migrator, ObjectReader keyReader, ObjectReader valueReader, ObjectWriter keyWriter, ObjectWriter valueWriter) {
+	private void doMigrate(Store inStore, Store outStore, Function4<String, String, String, JsonNode, Tuple> migrator, ObjectReader keyReader, ObjectReader valueReader, ObjectWriter keyWriter, ObjectWriter valueWriter) {
 
 		final Environment inEnvironment = inStore.getEnvironment();
 		final Environment outEnvironment = outStore.getEnvironment();
