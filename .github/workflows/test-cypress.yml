@@ -30,6 +30,7 @@ jobs:
       - name: Build Backend
         run: ./scripts/build_backend_no_version.sh
 
+      - run: CI=false # process.env.CI = true treats warnings as errors. We're fine with warnings.
       - name: Cypress run
         # This is a preconfigured action, maintained by cypress, to run e2e tests
         # https://github.com/cypress-io/github-action
@@ -44,7 +45,7 @@ jobs:
         with:
           working-directory: ./frontend
           install-command: yarn --ignore-platform --frozen-lockfile
-          build: CI=false && yarn run react-app-rewired build # process.env.CI = true treats warnings as errors. We're fine with warnings.
+          build: yarn run react-app-rewired build
           start: bash ./cypress/support/run_e2e_all.sh
           wait-on: "http://localhost:8000"
 
