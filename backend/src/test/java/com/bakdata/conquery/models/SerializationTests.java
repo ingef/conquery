@@ -25,6 +25,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -69,6 +70,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -80,7 +82,7 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 public class SerializationTests {
 
-	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
+	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
 	@Test
 	public void dataset() throws IOException, JSONException {
@@ -257,6 +259,10 @@ public class SerializationTests {
 
 		final Validator validator = Validators.newValidator();
 
+		registry.injectInto(Jackson.MAPPER.copy())
+				.readerFor(Table.class)
+				.readValue("{\"name\" : \"table\", \"columns\" : [{\"name\" : \"column\", \"type\" : \"STRING\"}]}");
+
 		SerializationTestUtil
 				.forType(Table.class)
 				.registry(registry)
@@ -375,8 +381,11 @@ public class SerializationTests {
 
 	@Test
 	public void managedQuery() throws JSONException, IOException {
+		final DatasetRegistry datasetRegistry = new DatasetRegistry(0);
+		final MetaStorage metaStorage = new MetaStorage(datasetRegistry);
+		datasetRegistry.setMetaStorage(metaStorage);
 
-		final CentralRegistry registry = new CentralRegistry();
+		final CentralRegistry registry = metaStorage.getCentralRegistry();
 
 		final Dataset dataset = new Dataset("test-dataset");
 
@@ -385,10 +394,13 @@ public class SerializationTests {
 		registry.register(dataset);
 		registry.register(user);
 
+		STORAGE.updateUser(user);
+
 		ManagedQuery execution = new ManagedQuery(null, user, dataset);
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
+							 .injectables(values -> values.add(MetaStorage.class, metaStorage))
 							 .registry(registry)
 							 .test(execution);
 	}

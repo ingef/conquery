@@ -1,28 +1,36 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Setter
 @Getter
-@RequiredArgsConstructor
+@NoArgsConstructor
 @Slf4j
-public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> {
+@JsonIgnoreProperties({"searchType"})
+public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> implements Searchable {
 
 	/**
 	 * user given mapping from the values in the CSVs to shown labels
@@ -45,11 +53,9 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		f.setTemplate(getTemplate());
 		f.setType(getFilterType());
 
-		f.setOptions(
-				labels.entrySet().stream()
-					  .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
-					  .collect(Collectors.toList())
-		);
+		f.setOptions(labels.entrySet().stream()
+						   .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
+						   .collect(Collectors.toList()));
 	}
 
 	@JsonIgnore
@@ -63,4 +69,50 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		return (getTemplate() == null) != labels.isEmpty();
 	}
 
+	private int searchMinSuffixLength = 3;
+	private boolean generateSearchSuffixes = true;
+
+	@Override
+	public List<Searchable> getSearchReferences() {
+		final List<Searchable> out = new ArrayList<>();
+
+		if (getTemplate() != null) {
+			out.add(getTemplate());
+		}
+
+		if (!labels.isEmpty()) {
+			out.add(this);
+		}
+
+		out.addAll(getColumn().getSearchReferences());
+
+		return out;
+	}
+
+	@Override
+	@JsonIgnore
+	public boolean isGenerateSuffixes() {
+		return generateSearchSuffixes;
+	}
+
+	@Override
+	@JsonIgnore
+	public int getMinSuffixLength() {
+		return searchMinSuffixLength;
+	}
+
+	/**
+	 * Does not make sense to distinguish at Filter level since it's only referenced when labels is set.
+	 */
+	@Override
+	@JsonIgnore
+	public boolean isSearchDisabled() {
+		return false;
+	}
+
+	@Override
+	public Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage) {
+		return labels.entrySet().stream()
+					 .map(entry -> new FEValue(entry.getKey(), entry.getValue()));
+	}
 }

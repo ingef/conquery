@@ -37,14 +37,14 @@ public class CentralRegistry implements Injectable {
 	public <T extends Identifiable<?>> T resolve(IId<T> name) {
 		final T result = get(name);
 
-		if(result == null){
+		if (result == null) {
 			throw new ExecutionCreationResolveError(name);
 		}
 
 		return result;
 	}
 
-	public Identifiable update(Identifiable<?> ident){
+	public Identifiable update(Identifiable<?> ident) {
 		return map.update(ident);
 	}
 
@@ -72,7 +72,7 @@ public class CentralRegistry implements Injectable {
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		return values.add(CentralRegistry.class, this)
 					 // Possibly overriding mapping for DatasetRegistry
-				.add(IdResolveContext.class, new SingletonNamespaceCollection(this));
+					 .add(IdResolveContext.class, new SingletonNamespaceCollection(this));
 	}
 
 	public static CentralRegistry get(DeserializationContext ctxt) throws JsonMappingException {
@@ -95,7 +95,7 @@ public class CentralRegistry implements Injectable {
 	/**
 	 * Needs to be protected in order to be overwritten by {@link InjectingCentralRegistry}
 	 */
-	protected  <T extends Identifiable<?>> T get(IId<T> name) {
+	protected <T extends Identifiable<?>> T get(IId<T> name) {
 		Object res = map.get(name);
 		if (res != null) {
 			return (T) res;
@@ -119,4 +119,5 @@ public class CentralRegistry implements Injectable {
 
 		return (T) map.get(name);
 	}
+
 }

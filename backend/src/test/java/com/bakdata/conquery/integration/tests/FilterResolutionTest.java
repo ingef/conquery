@@ -75,7 +75,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
 								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), "HEADER", "", ""));
+		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), "HEADER", "", "", 2, true));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "updateMatchingStats")
