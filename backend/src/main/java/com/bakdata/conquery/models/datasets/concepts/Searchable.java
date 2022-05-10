@@ -13,10 +13,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 /**
  * @implNote This class is tightly coupled with {@link com.bakdata.conquery.apiv1.FilterSearch} and {@link com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter}.
  *
- * Searchable classes describe how a search should be constructed, and provide the values.
+ * Searchable classes describe how a search should be constructed, and provide the values with getSearchValues.
  *
- * getSearchReference is used for when a Searchable object opts to delegate to an underlying other Searchable:
- * Currently this is only {@link com.bakdata.conquery.models.datasets.Column}, which may delegate to its underlying {@link com.bakdata.conquery.models.datasets.SecondaryIdDescription}, to pool all values from all Columns for that SecondaryId into a single search.
  */
 public interface Searchable {
 	/**
@@ -25,7 +23,8 @@ public interface Searchable {
 	Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage);
 
 	/**
-	 * The actual Searchable to use, if there is potential for deduplication/pooling.
+	 * The actual Searchables to use, if there is potential for deduplication/pooling.
+	 * @implSpec The order of objects returned is used to also sort search results from different sources.
 	 */
 	@JsonIgnore
 	default List<Searchable> getSearchReferences() {

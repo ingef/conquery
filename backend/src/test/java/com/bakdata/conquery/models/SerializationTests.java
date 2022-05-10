@@ -399,9 +399,6 @@ public class SerializationTests {
 		ManagedQuery execution = new ManagedQuery(null, user, dataset);
 		execution.setTags(new String[]{"test-tag"});
 
-		log.info("Registry=`{}`", registry.getAllValues());
-
-
 		SerializationTestUtil.forType(ManagedExecution.class)
 							 .injectables(values -> values.add(MetaStorage.class, metaStorage))
 							 .registry(registry)

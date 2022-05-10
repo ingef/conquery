@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.ImmutableSet;
@@ -35,10 +36,10 @@ public class ApiTokenData implements Authorized, Owned {
 	 * The hash is the hashed API-token and not the hash of this object.
 	 * It is only used internally in the realm to get a mapping back to the key of this object.
 	 * This is used when a token is deleted:
-	 *  - The api provides the token id (UUID) for the token that needs to be deleted
-	 *  - The realm queries the storage for the {@link ApiTokenData} with that id
-	 *  - The realm gets the token hash from the data
-	 *  - The realm uses this token hash to delete the data from the store
+	 * - The api provides the token id (UUID) for the token that needs to be deleted
+	 * - The realm queries the storage for the {@link ApiTokenData} with that id
+	 * - The realm gets the token hash from the data
+	 * - The realm uses this token hash to delete the data from the store
 	 */
 	@NonNull
 	private final ApiTokenHash tokenHash;
@@ -55,10 +56,10 @@ public class ApiTokenData implements Authorized, Owned {
 	@NotEmpty
 	private final Set<Scopes> scopes;
 
-//	@JsonCreator
-//	public ApiTokenData(UUID id, @NonNull ApiTokenHash tokenHash, @NonNull String name, @NotNull UserId userId, @NonNull LocalDate creationDate, LocalDate expirationDate, @NotEmpty Set<Scopes> scopes) {
-//		this(id, )
-//	}
+	@JsonCreator
+	private ApiTokenData(UUID id, @NonNull ApiTokenHash tokenHash, @NonNull String name, @NotNull UserId userId, @NonNull LocalDate creationDate, LocalDate expirationDate, @NotEmpty Set<Scopes> scopes) {
+		this(id, tokenHash, name, userId, creationDate, expirationDate, scopes, null);
+	}
 
 	public ApiTokenData(UUID id, @NonNull ApiTokenHash tokenHash, @NonNull String name, @NotNull UserId userId, @NonNull LocalDate creationDate, LocalDate expirationDate, @NotEmpty Set<Scopes> scopes, @NotNull MetaStorage storage) {
 		this.id = id;
@@ -100,7 +101,7 @@ public class ApiTokenData implements Authorized, Owned {
 	 * Dynamic information about the token
 	 */
 	@Data
-	public static class MetaData{
+	public static class MetaData {
 		@NotNull
 		private final LocalDate lastUsed;
 	}
