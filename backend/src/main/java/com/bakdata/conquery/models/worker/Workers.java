@@ -64,18 +64,20 @@ public class Workers extends IdResolveContext {
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
-	public Worker createWorker(WorkerStorage storage, boolean failOnError, ObjectMapper objectMapper) {
-		final Worker worker = new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, objectMapper);
+	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
+		final Worker
+				worker =
+				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, Jackson.copyMapperAndInjectables(binaryMapper));
 
 		addWorker(worker);
 
 		return worker;
 	}
 
-	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError, ObjectMapper objectMapper) {
+	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError) {
 		final Worker
 				worker =
-				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, objectMapper);
+				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, binaryMapper);
 
 		addWorker(worker);
 

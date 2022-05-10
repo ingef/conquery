@@ -3,7 +3,6 @@ package com.bakdata.conquery.commands;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -49,7 +48,6 @@ import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -63,12 +61,11 @@ import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.apache.poi.ss.formula.functions.T;
 
 /**
  * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to
  * {@link ShardNode}s and respectively the {@link Worker}s hosted on them. The {@link ManagerNode} can also
- * forward queries or results to statistic backends. Finally it collects the results of queries for access over the api.
+ * forward queries or results to statistic backends. Finally, it collects the results of queries for access over the api.
  */
 @Slf4j
 @Getter
@@ -221,7 +218,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		Queue<Namespace> namespaces = new ConcurrentLinkedQueue<>();
 		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-		for (NamespaceStorage namespaceStorage : config.getStorage().loadNamespaceStorages()) {
+		for (NamespaceStorage namespaceStorage : config.getStorage().findNamespaceStorages()) {
 			loaders.submit(() -> {
 				namespaces.add(Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), createInternalObjectMapper()));
 			});

@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.config;
 
 import java.util.Collection;
 
-import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -36,19 +34,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public interface StoreFactory {
 
-	default void init(ManagerNode managerNode) {
-	}
+	Collection<NamespaceStorage> findNamespaceStorages();
 
-	;
-
-	default void init(ShardNode shardNode) {
-	}
-
-	;
-
-	Collection<NamespaceStorage> loadNamespaceStorages();
-
-	Collection<WorkerStorage> loadWorkerStorages();
+	Collection<WorkerStorage> findWorkerStorages();
 
 	// NamespacedStorage (Important for serdes communication between manager and shards)
 	SingletonStore<Dataset> createDatasetStore(String pathName, ObjectMapper objectMapper);

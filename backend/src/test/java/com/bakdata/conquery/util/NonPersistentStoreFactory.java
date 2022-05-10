@@ -62,12 +62,12 @@ public class NonPersistentStoreFactory implements StoreFactory {
 
 
 	@Override
-	public Collection<NamespaceStorage> loadNamespaceStorages() {
+	public Collection<NamespaceStorage> findNamespaceStorages() {
 		return Collections.emptyList();
 	}
 
 	@Override
-	public Collection<WorkerStorage> loadWorkerStorages() {
+	public Collection<WorkerStorage> findWorkerStorages() {
 		return Collections.emptyList();
 	}
 

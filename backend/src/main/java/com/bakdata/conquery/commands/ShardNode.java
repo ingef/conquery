@@ -51,7 +51,6 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
-import org.apache.poi.ss.formula.functions.T;
 
 /**
  * This node holds a shard of data (in so called {@link Worker}s for the different datasets in conquery.
@@ -87,35 +86,29 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		this.environment = environment;
+		this.config = config;
+
 		connector = new NioSocketConnector();
 
 		jobManager = new JobManager(getName(), config.isFailOnError());
-		synchronized (environment) {
-			environment.lifecycle().manage(this);
-			validator = environment.getValidator();
+		environment.lifecycle().manage(this);
+		validator = environment.getValidator();
 
-			scheduler = environment
-								.lifecycle()
-								.scheduledExecutorService("Scheduled Messages")
-								.build();
-		}
-
-		this.config = config;
-		config.initialize(this);
+		scheduler = environment
+				.lifecycle()
+				.scheduledExecutorService("Scheduled Messages")
+				.build();
 
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 
-		final ObjectMapper binaryMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
-		((MutableInjectableValues) binaryMapper.getInjectableValues()).add(Validator.class, environment.getValidator());
-
 		workers = new Workers(
 				getConfig().getQueries().getExecutionPool(),
-				binaryMapper,
+				createInternalObjectMapper(),
 				getConfig().getCluster().getEntityBucketSize()
 		);
 
-		final Collection<WorkerStorage> workerStorages = config.getStorage().loadWorkerStorages();
+		final Collection<WorkerStorage> workerStorages = config.getStorage().findWorkerStorages();
 
 
 		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -124,7 +117,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workers.add(this.workers.createWorker(workerStorage, config.isFailOnError(), createInternalObjectMapper()));
+					workers.add(this.workers.createWorker(workerStorage, config.isFailOnError()));
 				}
 				catch (Exception e) {
 					log.error("Failed reading Storage", e);
@@ -190,7 +183,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator, this::createInternalObjectMapper);
+		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator);
 		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode

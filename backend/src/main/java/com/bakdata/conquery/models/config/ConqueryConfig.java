@@ -117,12 +117,7 @@ public class ConqueryConfig extends Configuration {
 	private boolean failOnError = false;
 
 	public void initialize(ManagerNode node) {
-		storage.init(node);
 		plugins.forEach(config -> config.initialize((node)));
-	}
-
-	public void initialize(ShardNode node) {
-		storage.init(node);
 	}
 
 	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {

@@ -142,9 +142,6 @@ public class XodusStoreFactory implements StoreFactory {
 	@NotNull
 	private Duration weakCacheDuration = Duration.hours(48);
 
-	@Min(1)
-	private int nThreads = Runtime.getRuntime().availableProcessors();
-
 	/**
 	 * Flag for the {@link SerializingStore} whether to delete values from the underlying store, that cannot be mapped to an object anymore.
 	 */
@@ -160,9 +157,6 @@ public class XodusStoreFactory implements StoreFactory {
 	private transient Validator validator;
 
 	@JsonIgnore
-	private transient final ObjectMapper objectMapper = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
-
-	@JsonIgnore
 	private final BiMap<File, Environment> activeEnvironments = HashBiMap.create();
 
 	@JsonIgnore
@@ -171,37 +165,12 @@ public class XodusStoreFactory implements StoreFactory {
 			Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
 
 	@Override
-	public void init(ManagerNode managerNode) {
-		validator = managerNode.getValidator();
-		configureMapper(managerNode.getConfig(), this.validator);
-		managerNode.getStorage().injectInto(objectMapper);
-	}
-
-	@Override
-	public void init(ShardNode shardNode) {
-		validator = shardNode.getValidator();
-		configureMapper(shardNode.getConfig(), this.validator);
-	}
-
-	/**
-	 * Configures the XodusStorage Smile ObjectMapper with the defaults from the configuration.
-	 */
-	private void configureMapper(ConqueryConfig config, Validator validator) {
-		config.configureObjectMapper(objectMapper);
-
-		((MutableInjectableValues)objectMapper.getInjectableValues()).add(Validator.class, validator);
-
-		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
-		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
-	}
-
-	@Override
-	public Collection<NamespaceStorage> loadNamespaceStorages() {
+	public Collection<NamespaceStorage> findNamespaceStorages() {
 		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, validator, storePath), NAMESPACE_STORES);
 	}
 
 	@Override
-	public Collection<WorkerStorage> loadWorkerStorages() {
+	public Collection<WorkerStorage> findWorkerStorages() {
 		return loadNamespacedStores("worker_", (storePath) -> new WorkerStorage(this, validator, storePath), WORKER_STORES);
 	}
 
