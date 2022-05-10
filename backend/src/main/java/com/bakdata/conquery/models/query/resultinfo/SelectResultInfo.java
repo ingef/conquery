@@ -82,7 +82,9 @@ public class SelectResultInfo extends ResultInfo {
 
 
 	public Optional<Function<Object, String>> getValueMapper() {
+		// Todo may cache the mappings here per result request
 		if (select instanceof MappedSelect) {
+			// Todo this also looks wierd because MappedSelect is a marker interface
 			MappedSelect mappedSelect = (MappedSelect) select;
 			return Optional.of(select::transformValue);
 

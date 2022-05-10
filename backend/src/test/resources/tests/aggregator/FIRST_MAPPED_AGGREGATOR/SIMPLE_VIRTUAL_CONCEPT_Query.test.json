@@ -38,7 +38,7 @@
                         "mapping": {
                             "type": "CSV_MAP",
                             "internalColumn": "internal",
-                            "externalColumn": "external",
+                            "externalTemplate": "External: {{external}}",
                             "csv": "classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"
                         }
                     }

@@ -5,14 +5,10 @@ import java.net.URL;
 import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @CPSType(id = "CSV_MAP", base = InternToExternMapper.class)
@@ -30,7 +26,7 @@ public class MapInternToExternMapper implements InternToExternMapper {
 	@Getter
 	private final String internalColumn;
 	@Getter
-	private final String externalColumn;
+	private final String externalTemplate;
 
 
 	//Manager only
@@ -45,7 +41,7 @@ public class MapInternToExternMapper implements InternToExternMapper {
 			return;
 		}
 		// Manager
-		int2ext = mapIndex.getMapping(csv, internalColumn, externalColumn);
+		int2ext = mapIndex.getMapping(csv, internalColumn, externalTemplate);
 	}
 
 
