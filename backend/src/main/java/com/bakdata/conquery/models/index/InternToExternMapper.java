@@ -7,5 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(property = "type", use = JsonTypeInfo.Id.CUSTOM)
 public interface InternToExternMapper {
 
+	void init();
+
 	String external(String internalValue);
 }

@@ -31,6 +31,11 @@ public class FirstValueMappedSelect extends FirstValueSelect implements MappedSe
 	}
 
 	@Override
+	public void init() {
+		mapping.init();
+	}
+
+	@Override
 	public String transformValue(Object intern) {
 		return doTransformValue(intern);
 	}

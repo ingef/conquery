@@ -117,4 +117,8 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	public Dataset getDataset() {
 		return getConcept().getDataset();
 	}
+
+	public void init() {
+		getSelects().forEach(Select::init);
+	}
 }

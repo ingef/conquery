@@ -64,6 +64,8 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	public abstract List<? extends Select> getSelects();
 
 	public void initElements() throws ConfigurationException, JSONException {
+		getSelects().forEach(Select::init);
+		getConnectors().forEach(CONNECTOR::init);
 	}
 
 	@Override

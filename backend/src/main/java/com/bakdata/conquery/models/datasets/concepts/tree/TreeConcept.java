@@ -51,10 +51,10 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Getter
 	private final int[] prefix = new int[]{0};
 	@JsonIgnore
-	private List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
+	private final List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
 	@JsonIgnore
 	@Getter
-	private IdMap<ConceptTreeChildId, ConceptTreeChild> allChildren = new IdMap<>();
+	private final IdMap<ConceptTreeChildId, ConceptTreeChild> allChildren = new IdMap<>();
 	@Getter
 	@Setter
 	private List<ConceptTreeChild> children = Collections.emptyList();
@@ -73,7 +73,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Setter
 	private TreeChildPrefixIndex childIndex;
 	@JsonIgnore
-	private Map<Import, ConceptTreeCache> caches = new ConcurrentHashMap<>();
+	private final Map<Import, ConceptTreeCache> caches = new ConcurrentHashMap<>();
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@EqualsAndHashCode.Exclude
@@ -103,6 +103,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 	@Override
 	public void initElements() throws ConfigurationException, JSONException {
+		super.initElements();
 		this.setLocalId(0);
 		localIdMap.add(this);
 

@@ -24,6 +24,11 @@ public class LastValueMappedSelect extends FirstValueSelect implements MappedSel
 	}
 
 	@Override
+	public void init() {
+		mapping.init();
+	}
+
+	@Override
 	public String transformValue(Object intern) {
 		return doTransformValue(intern);
 	}
