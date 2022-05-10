@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -100,6 +101,9 @@ public class FilterSearch {
 							allSelectFilters.stream()
 											.map(SelectFilter::getSearchReferences)
 											.flatMap(Collection::stream)
+											// Disabling search is only a last resort for when columns are too big to store in memory or process for indexing.
+											// TODO FK: We want no Searchable to be disabled, better scaling searches or mechanisms to fill search.
+											.filter(Predicate.not(Searchable::isSearchDisabled))
 											.collect(Collectors.toSet());
 
 
@@ -111,13 +115,6 @@ public class FilterSearch {
 					log.debug("Found {} searchable Objects.", collectedSearchables.size());
 
 					for (Searchable searchable : collectedSearchables) {
-
-						// Disabling search is only a last resort for when columns are too big to store in memory or process for indexing.
-						// TODO FK: We want no Searchable to be disabled, better scaling searches or mechanisms to fill search.
-						if (searchable.isSearchDisabled()) {
-							log.debug("{} is Disabled, skipping.", searchable);
-							continue;
-						}
 
 						service.submit(() -> {
 							final Stream<FEValue> values = searchable.getSearchValues(getParserConfig(), storage);
@@ -137,17 +134,17 @@ public class FilterSearch {
 
 								search.shrinkToFit();
 
-								synchronizedResult.put(searchable, search);
-
-
-								if(log.isDebugEnabled()) {
-									watch.stop();
-									log.debug("DONE collecting entries for `{}`, within {} ({} Items)",
-											  searchable,
-											  Duration.ofMillis(watch.getTime()),
-											  search.calculateSize()
+								if (log.isDebugEnabled()) {
+									log.debug(
+											"DONE collecting entries for `{}`, within {} ({} Items)",
+											searchable,
+											Duration.ofMillis(watch.getTime()),
+											search.calculateSize()
 									);
 								}
+
+								synchronizedResult.put(searchable, search);
+
 							}
 							catch (Exception e) {
 								log.error("Failed to create search for {}", searchable, e);
@@ -158,7 +155,7 @@ public class FilterSearch {
 					service.shutdown();
 
 
-					while (!service.awaitTermination(30, TimeUnit.SECONDS)) {
+					while (!service.awaitTermination(1, TimeUnit.MINUTES)) {
 						log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables, synchronizedResult.keySet()));
 					}
 
