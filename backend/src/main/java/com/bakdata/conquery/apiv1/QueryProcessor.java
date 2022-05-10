@@ -4,6 +4,7 @@ import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
@@ -39,6 +41,7 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -391,9 +394,11 @@ public class QueryProcessor {
 	 *
 	 * @implNote we don't do anything special here, this request could also be made manually. We however want to encapsulate this behaviour to shield the frontend from knowing too much about the query engine.
 	 */
-	public Response getSingleEntityExport(Subject subject, String idKind, String entity, List<Connector> sources, String format, Dataset dataset) {
+	public Response getSingleEntityExport(Subject subject, String idKind, String entity, List<Connector> sources, String format, Dataset dataset, Range<LocalDate> dateRange) {
 
-		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}));
+		final ConceptQuery
+				entitySelectQuery =
+				new ConceptQuery(new CQDateRestriction(dateRange, new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}})));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
 		exportQuery.setTables(

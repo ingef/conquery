@@ -4,6 +4,7 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +39,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.CsvResultRenderer;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -152,7 +153,7 @@ public class QueryResource {
 	public static class EntityPreview {
 		private String idKind; //TODO I think ID is fallback, but i dont currently know.
 		private final String entity;
-		private final CDateRange time;
+		private final Range<LocalDate> time;
 		@NsIdRefCollection
 		private final List<Connector> sources;
 	}
@@ -163,7 +164,7 @@ public class QueryResource {
 	@Path("/entity")
 	public Response getEntityData(@Auth Subject subject, EntityPreview query, @QueryParam("format") Optional<String> format, @Context HttpServletRequest request) {
 
-		return processor.getSingleEntityExport(subject, query.getIdKind(), query.getEntity(), query.getSources(), format.orElse(CSV_RESULT_ID), dataset);
+		return processor.getSingleEntityExport(subject, query.getIdKind(), query.getEntity(), query.getSources(), format.orElse(CSV_RESULT_ID), dataset, query.getTime());
 	}
 
 

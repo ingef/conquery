@@ -24,13 +24,17 @@ import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 
 @CPSType(id = "DATE_RESTRICTION", base = CQElement.class)
 @Setter
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class CQDateRestriction extends CQElement {
     @NotNull
     private Range<LocalDate> dateRange;
