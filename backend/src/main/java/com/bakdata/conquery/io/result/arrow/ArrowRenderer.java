@@ -54,8 +54,8 @@ public class ArrowRenderer {
         VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 
         // Build separate pipelines for id and value, as they have different sources but the same target
-        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), printSettings, null);
-        RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), printSettings, resultInfo);
+        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), printSettings, idHeaders);
+		RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), printSettings, resultInfo);
 
         // Write the data
         try (ArrowWriter writer = writerProducer.apply(root)) {
@@ -243,7 +243,6 @@ public class ArrowRenderer {
         ) {
 			final int pos = vecI - vectorOffset;
 			final FieldVector vector = root.getVector(vecI);
-
 			final ResultInfo resultInfo = resultInfos.get(pos);
 			builder[pos] =
 					generateVectorFiller(pos, vector, settings, resultInfo.getType(), resultInfo instanceof SelectResultInfo
