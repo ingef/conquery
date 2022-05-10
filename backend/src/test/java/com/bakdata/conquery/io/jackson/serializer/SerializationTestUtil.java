@@ -3,12 +3,15 @@ package com.bakdata.conquery.io.jackson.serializer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -32,6 +35,11 @@ import org.assertj.core.api.RecursiveComparisonAssert;
 @Slf4j
 public class SerializationTestUtil<T> {
 
+	/**
+	 * These don't seem to behave well in combination with recursiveComparison.
+	 */
+	private static final Class<?>[] TYPES_TO_IGNORE = new Class[]{User.ShiroUserAdapter.class, AtomicInteger.class};
+
 	private final JavaType type;
 	private final Validator validator = Validators.newValidator();
 	@Setter
@@ -44,10 +52,10 @@ public class SerializationTestUtil<T> {
 	}
 
 	public static <T> SerializationTestUtil<T> forType(Class<? extends T> type) {
-		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
+		return new SerializationTestUtil<>(Jackson.MAPPER.copy().getTypeFactory().constructType(type));
 	}
 
-	public SerializationTestUtil<T> injectables(Injectable ... injectables) {
+	public SerializationTestUtil<T> injectables(Injectable... injectables) {
 		this.injectables = injectables;
 		return this;
 	}
@@ -70,6 +78,10 @@ public class SerializationTestUtil<T> {
 	}
 
 	private void test(T value, T expected, ObjectMapper mapper) throws IOException {
+		// Very aggressively enforces isolation of the mapper.
+		mapper = mapper.copy()
+					   .setInjectableValues(new MutableInjectableValues());
+
 		if (registry != null) {
 			mapper = new SingletonNamespaceCollection(registry, registry).injectIntoNew(mapper);
 		}
@@ -95,8 +107,8 @@ public class SerializationTestUtil<T> {
 		}
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
-												   .as("Unequal after copy.")
-												   .usingRecursiveComparison();
+				.as("Unequal after copy.")
+				.usingRecursiveComparison().ignoringFieldsOfTypes(TYPES_TO_IGNORE);
 
 
 		ass.isEqualTo(expected);
