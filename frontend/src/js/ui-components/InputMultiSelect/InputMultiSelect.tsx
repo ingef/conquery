@@ -134,6 +134,7 @@ const InputMultiSelect = ({
     selectedItems,
     inputValue,
     creatable,
+    skipQueryMatching: !!onLoadMore,
   });
 
   const {
@@ -366,7 +367,10 @@ const InputMultiSelect = ({
                     ? filteredOptions.slice(1)
                     : filteredOptions;
 
-                setSelectedItems(optionsWithoutCreatable);
+                setSelectedItems([
+                  ...selectedItems,
+                  ...optionsWithoutCreatable,
+                ]);
                 setInputValue("");
               }
             }}

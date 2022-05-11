@@ -10,11 +10,13 @@ export const useFilteredOptions = ({
   selectedItems,
   inputValue,
   creatable,
+  skipQueryMatching,
 }: {
   options: SelectOptionT[];
   selectedItems: SelectOptionT[];
   inputValue: string;
   creatable?: boolean;
+  skipQueryMatching?: boolean;
 }) => {
   const { t } = useTranslation();
 
@@ -35,9 +37,10 @@ export const useFilteredOptions = ({
 
     const regularOptions = options.filter(
       (option) =>
-        stillSelectable(option) && optionMatchesQuery(option, inputValue),
+        stillSelectable(option) &&
+        (skipQueryMatching || optionMatchesQuery(option, inputValue)),
     );
 
     return [...creatableOption, ...regularOptions];
-  }, [options, selectedItems, inputValue, creatable, t]);
+  }, [options, selectedItems, inputValue, creatable, skipQueryMatching, t]);
 };

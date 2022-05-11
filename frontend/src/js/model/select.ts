@@ -33,10 +33,10 @@ const resetSelected = (select: SelectorT, config: NodeResetConfig) => ({
 });
 
 export const resetSelects = (
-  selects?: SelectorT[],
+  selects: SelectorT[],
   config: NodeResetConfig = {},
 ): SelectedSelectorT[] =>
-  selects ? selects.map((select) => resetSelected(select, config)) : [];
+  selects.map((select) => resetSelected(select, config));
 
 function selectTypesMatch(
   resultType1: SelectorResultType,

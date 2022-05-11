@@ -1,7 +1,7 @@
-import { StateT } from "app-types";
 import { useWatch } from "react-hook-form";
 import { useSelector } from "react-redux";
 
+import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { useActiveLang } from "../localization/useActiveLang";
 

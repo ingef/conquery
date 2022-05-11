@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
+import type { StateT } from "../app/reducers";
 import { TransparentButton } from "../button/TransparentButton";
 import AnimatedDots from "../common/components/AnimatedDots";
 import ConceptTreesOpenButtons from "../concept-trees-open/ConceptTreesOpenButtons";

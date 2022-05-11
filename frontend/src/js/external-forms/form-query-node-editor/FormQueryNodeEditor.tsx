@@ -1,4 +1,3 @@
-import { StateT } from "app-types";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
@@ -11,6 +10,7 @@ import {
   SelectOptionT,
   SelectorResultType,
 } from "../../api/types";
+import type { StateT } from "../../app/reducers";
 import { toUpperCaseUnderscore } from "../../common/helpers";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import type { NodeResetConfig } from "../../model/node";

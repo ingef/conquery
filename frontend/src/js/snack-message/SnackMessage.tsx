@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { useRef, memo, FC } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
+import type { StateT } from "../app/reducers";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
 

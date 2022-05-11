@@ -174,7 +174,7 @@ export const setFilterValue = createAction("query-editor/SET_FILTER_VALUE")<{
   orIdx: number;
   tableIdx: number;
   filterIdx: number;
-  value: unknown;
+  value: any; // Actually: FilterWithValueType["value"] which is overloaded;
 }>();
 
 export const setTableSelects = createAction("query-editor/SET_TABLE_SELECTS")<{

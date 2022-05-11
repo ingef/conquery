@@ -1,6 +1,6 @@
 package com.bakdata.conquery.integration.json.filter;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -116,7 +116,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		);
 
 		concept.setConnectors(Collections.singletonList((ConceptTreeConnector) connector));
-		support.getDatasetsProcessor().addConcept(dataset, concept);
+		LoadingUtil.uploadConcept(support, dataset, concept);
 	}
 
 	private Query parseQuery(StandaloneSupport support) throws JSONException, IOException {

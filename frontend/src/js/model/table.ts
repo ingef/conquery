@@ -1,3 +1,4 @@
+import type { TableT } from "../api/types";
 import { compose } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
@@ -72,15 +73,6 @@ export function tableIsDisabled(
   );
 }
 
-export const resetAllTableSettings = (
-  tables?: TableWithFilterValueT[],
-  config: NodeResetConfig = {},
-) => {
-  if (!tables) return [];
-
-  return resetTables(tables, config);
-};
-
 const tableWithDefaultDateColumn = (
   table: TableWithFilterValueT,
 ): TableWithFilterValueT => {
@@ -112,7 +104,7 @@ const tableWithDefaultSelects =
 
 export const tableWithDefaults =
   (config: NodeResetConfig) =>
-  (table: TableWithFilterValueT): TableWithFilterValueT =>
+  (table: TableWithFilterValueT | TableT): TableWithFilterValueT =>
     compose(
       tableWithDefaultDateColumn,
       tableWithDefaultSelects(config),
@@ -120,9 +112,9 @@ export const tableWithDefaults =
     )({
       ...table,
       exclude: config.useDefaults ? !table.default : table.exclude,
-    });
+    } as TableWithFilterValueT);
 
 export const resetTables = (
-  tables?: TableWithFilterValueT[],
+  tables: TableT[] | TableWithFilterValueT[],
   config: NodeResetConfig = {},
-) => (tables ? tables.map(tableWithDefaults(config)) : []);
+) => tables.map(tableWithDefaults(config));

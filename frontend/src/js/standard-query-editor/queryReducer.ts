@@ -1,7 +1,6 @@
 import { ActionType, getType } from "typesafe-actions";
 
 import type {
-  TableT,
   OrNodeT,
   DateRestrictionNodeT,
   NegationNodeT,
@@ -24,7 +23,7 @@ import type { TreesT } from "../concept-trees/reducer";
 import { isMultiSelectFilter, mergeFilterOptions } from "../model/filter";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { resetSelects } from "../model/select";
-import { resetAllTableSettings, tableWithDefaults } from "../model/table";
+import { resetTables, tableWithDefaults } from "../model/table";
 import { loadQuerySuccess } from "../previous-queries/list/actions";
 import {
   queryGroupModalResetAllDates,
@@ -64,6 +63,8 @@ import type {
   DragItemConceptTreeNode,
   FilterWithValueType,
   DragItemQuery,
+  TableWithFilterValueT,
+  SelectedSelectorT,
 } from "./types";
 
 export type StandardQueryStateT = QueryGroupType[];
@@ -242,7 +243,7 @@ const updateNodeTable = (
   andIdx: number,
   orIdx: number,
   tableIdx: number,
-  table: TableT,
+  table: TableWithFilterValueT,
 ) => {
   const node = state[andIdx].elements[orIdx];
 
@@ -261,7 +262,7 @@ const updateNodeTables = (
   state: StandardQueryStateT,
   andIdx: number,
   orIdx: number,
-  tables,
+  tables: TableWithFilterValueT[],
 ) => {
   return setElementProperties(state, andIdx, orIdx, { tables });
 };
@@ -306,7 +307,7 @@ const setNodeFilterProperties = (
 
   const filter = filters[filterIdx];
 
-  const newTable: TableT = {
+  const newTable: TableWithFilterValueT = {
     ...table,
     filters: [
       ...filters.slice(0, filterIdx),
@@ -315,7 +316,7 @@ const setNodeFilterProperties = (
         ...properties,
       },
       ...filters.slice(filterIdx + 1),
-    ],
+    ] as FilterWithValueType[],
   };
 
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
@@ -367,11 +368,16 @@ const setNodeTableDateColumn = (
     value,
   }: ActionType<typeof setDateColumn>["payload"],
 ) => {
-  const table = state[andIdx].elements[orIdx].tables[tableIdx];
+  const node = state[andIdx].elements[orIdx];
+
+  if (!nodeIsConceptQueryNode(node)) return state;
+
+  const table = node.tables[tableIdx];
   const { dateColumn } = table;
 
-  // value contains the selects that have now been selected
-  const newTable: TableT = {
+  if (!dateColumn) return state;
+
+  const newTable: TableWithFilterValueT = {
     ...table,
     dateColumn: {
       ...dateColumn,
@@ -436,7 +442,7 @@ const resetNodeAllSettings = (
 
   if (!nodeIsConceptQueryNode(node)) return newState;
 
-  const tables = resetAllTableSettings(node.tables, config);
+  const tables = resetTables(node.tables, config);
 
   return updateNodeTables(newState, andIdx, orIdx, tables);
 };
@@ -473,7 +479,7 @@ const resetGroupDates = (
   state: StandardQueryStateT,
   { andIdx }: ActionType<typeof queryGroupModalResetAllDates>["payload"],
 ) => {
-  return setGroupProperties(state, andIdx, { dateRange: null });
+  return setGroupProperties(state, andIdx, { dateRange: undefined });
 };
 
 const isRangeFilterConfig = (
@@ -505,7 +511,7 @@ const isMultiSelectFilterConfig = (
 // Since `table` comes from a previous query, it may have set filter values
 // if so, we will need to merge them in.
 const mergeFiltersFromSavedConcept = (
-  savedTable: TableT,
+  savedTable: TableWithFilterValueT,
   table?: TableConfigT,
 ) => {
   if (!table || !table.filters) return savedTable.filters || null;
@@ -582,8 +588,6 @@ const mergeSelects = (
 
   if (!savedSelects) return null;
 
-  console.log(conceptOrTable);
-
   return savedSelects.map((select) => {
     const selectedSelect = (conceptOrTable.selects || []).find(
       (id) => id === select.id,
@@ -593,7 +597,10 @@ const mergeSelects = (
   });
 };
 
-const mergeDateColumn = (savedTable: TableT, table?: TableConfigT) => {
+const mergeDateColumn = (
+  savedTable: TableWithFilterValueT,
+  table?: TableConfigT,
+) => {
   if (!table || !table.dateColumn || !savedTable.dateColumn)
     return savedTable.dateColumn;
 
@@ -603,7 +610,10 @@ const mergeDateColumn = (savedTable: TableT, table?: TableConfigT) => {
   };
 };
 
-const mergeTables = (savedTables: TableT[], concept: QueryConceptNodeT) => {
+const mergeTables = (
+  savedTables: TableWithFilterValueT[],
+  concept: QueryConceptNodeT,
+) => {
   return savedTables
     ? savedTables.map((savedTable) => {
         // Find corresponding table in previous queryObject
@@ -631,7 +641,10 @@ const mergeTables = (savedTables: TableT[], concept: QueryConceptNodeT) => {
 // Also, apply all necessary filters
 const mergeFromSavedConceptIntoNode = (
   node: QueryConceptNodeT,
-  { tables, selects }: { tables: TableT[]; selects: SelectorT[] },
+  {
+    tables,
+    selects,
+  }: { tables: TableWithFilterValueT[]; selects: SelectedSelectorT[] },
 ) => {
   return {
     selects: mergeSelects(selects, node),
@@ -648,11 +661,11 @@ const expandNode = (
     | QueryConceptNodeT
     | SavedQueryNodeT,
   expandErrorMessage: string,
-) => {
+): any /* This FN returns a QueryGroupType in the end  */ => {
   switch (node.type) {
     case "OR":
+      // The assumption is that the OR node is always the root of the tree.
       return {
-        type: "OR",
         elements: node.children.map((c) =>
           expandNode(rootConcepts, c, expandErrorMessage),
         ),
@@ -689,7 +702,7 @@ const expandNode = (
 
       const { tables, selects } = mergeFromSavedConceptIntoNode(node, {
         tables: lookupResult.tables,
-        selects: lookupResult.selects,
+        selects: lookupResult.selects || [],
       });
       const label = node.label || lookupResult.concepts[0].label;
       const description = lookupResult.concepts[0].description;
@@ -875,8 +888,10 @@ const createQueryNodeFromConceptListUploadResult = (
         label,
         ids: resolvedConcepts,
         tables: lookupResult.tables,
-        selects: lookupResult.selects,
+        selects: lookupResult.selects || [],
         tree: lookupResult.root,
+        matchingEntities: 0,
+        matchingEntries: 0,
       }
     : null;
 };

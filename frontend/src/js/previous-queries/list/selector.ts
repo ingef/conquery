@@ -1,7 +1,7 @@
-import { StateT } from "app-types";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
+import type { StateT } from "../../app/reducers";
 import { exists } from "../../common/helpers/exists";
 import { configHasFilterType } from "../../external-forms/form-configs/selectors";
 import type { ProjectItemsFilterStateT } from "../filter/reducer";
