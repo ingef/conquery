@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { FC, useContext } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { ColumnDescription } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { useOpenPreview } from "../preview/actions";
 import WithTooltip from "../tooltip/WithTooltip";

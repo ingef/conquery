@@ -61,7 +61,8 @@ public class FormTest extends ConqueryTestSpec {
 	@NotNull
 	private JsonNode rawForm;
 
-	@NotEmpty @Valid
+	@NotEmpty
+	@Valid
 	private Map<String, ResourceFile> expectedCsv;
 
 	@Valid
@@ -112,7 +113,9 @@ public class FormTest extends ConqueryTestSpec {
 				.isEmpty();
 
 
-		ManagedExecution<?> managedForm = support.getNamespace().getExecutionManager().runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig());
+		ManagedExecution<?>
+				managedForm =
+				support.getNamespace().getExecutionManager().runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig());
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {
@@ -178,14 +181,14 @@ public class FormTest extends ConqueryTestSpec {
 		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = parseSubTreeList(
-			support,
-			rawConcepts,
-			Concept.class,
-			c -> c.setDataset(support.getDataset())
+				support,
+				rawConcepts,
+				Concept.class,
+				c -> c.setDataset(support.getDataset())
 		);
 
 		for (Concept<?> concept : concepts) {
-			support.getDatasetsProcessor().addConcept(dataset, concept);
+			LoadingUtil.uploadConcept(support, dataset, concept);
 		}
 	}
 

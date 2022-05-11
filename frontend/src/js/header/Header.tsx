@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import preval from "preval.macro";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
+import type { StateT } from "../app/reducers";
 import DatasetSelector from "../dataset/DatasetSelector";
 import { useHideLogoutButton } from "../user/selectors";
 

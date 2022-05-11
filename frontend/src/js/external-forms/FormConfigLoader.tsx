@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import type { StateT } from "app-types";
 import { FC, useState, useEffect, memo, ReactNode } from "react";
 import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -7,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 
 import { useGetFormConfig } from "../api/api";
 import type { SelectOptionT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { DNDType } from "../common/constants/dndTypes";
 import { useDatasetId } from "../dataset/selectors";
 import { Language, useActiveLang } from "../localization/useActiveLang";

@@ -46,6 +46,8 @@ public class RESTServer {
 		jersey.register(CachingFilter.class);
 		jersey.register(LocaleFilter.class);
 
-		jersey.register(new PathParamInjector(datasetRegistry));
+		if (datasetRegistry != null) {
+			jersey.register(new PathParamInjector(datasetRegistry));
+		}
 	}
 }

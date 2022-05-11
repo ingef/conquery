@@ -31,7 +31,6 @@ import org.apache.shiro.authz.Permission;
  * persons and groups with permissions.
  *
  * @param <T> The id type by which an instance is identified.
- *
  * @implNote The NoArgsConstructor is private and used for deserialization
  */
 @Slf4j
@@ -65,7 +64,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	private Set<ConqueryPermission> permissions = new HashSet<>();
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NonNull
+	@NotNull
 	@EqualsAndHashCode.Exclude
 	protected MetaStorage storage;
 
@@ -85,19 +84,19 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 */
 	public synchronized void addPermissions(Set<ConqueryPermission> permissions) {
 		this.permissions = ImmutableSet
-								   .<ConqueryPermission>builder()
-								   .addAll(this.permissions)
-								   .addAll(permissions)
-								   .build();
+				.<ConqueryPermission>builder()
+				.addAll(this.permissions)
+				.addAll(permissions)
+				.build();
 		updateStorage();
 	}
 
 	public synchronized void addPermission(ConqueryPermission permission) {
 		this.permissions = ImmutableSet
-								   .<ConqueryPermission>builder()
-								   .addAll(this.permissions)
-								   .add(permission)
-								   .build();
+				.<ConqueryPermission>builder()
+				.addAll(this.permissions)
+				.add(permission)
+				.build();
 		updateStorage();
 	}
 
@@ -147,6 +146,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	/**
 	 * Returns a collection of the effective permissions. These are the permissions of the owner and
 	 * the permission of the roles/groups it inherits from.
+	 *
 	 * @return Owned and inherited permissions.
 	 */
 	@JsonIgnore

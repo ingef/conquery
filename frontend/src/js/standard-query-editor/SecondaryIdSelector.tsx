@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { SecondaryId } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode } from "../model/node";

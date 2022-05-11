@@ -11,8 +11,8 @@
 		</div>
 	</div>
 	<div class="row pt-3">
-		<div class="col">
-            <table class="table table-striped">
+		<div class="col table-responsive">
+            <table class="table table-sm table-striped">
                 <thead>
                     <tr>
                     <th scope="col">User</th>
@@ -26,16 +26,18 @@
                             <td>
                                 <@snippet.snippet permissionOwner=row.user linkBase="./${ctx.staticUriElem.USERS_PATH_ELEMENT}/" />
                             <td>
-                                <ul class="list-inline">
+                                <ul class="list-group">
                                 <#list row.groups as group>
                                     <li class="list-inline-item"><@snippet.snippet permissionOwner=group linkBase="./${ctx.staticUriElem.GROUPS_PATH_ELEMENT}/" /></li>
                                  </#list>
                                 </ul>
                             </td>
                             <td>
+                                <ul class="list-group">
                                 <#list row.effectiveRoles as role>
                                     <li class="list-inline-item"><@snippet.snippet permissionOwner=role linkBase="./${ctx.staticUriElem.ROLES_PATH_ELEMENT}/" /></li>
                                  </#list>
+                                </ul>
                             </td>
                         </tr>
                     </#list>

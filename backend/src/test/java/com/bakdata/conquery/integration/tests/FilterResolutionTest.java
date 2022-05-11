@@ -71,11 +71,11 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		SelectFilter<?> filter = (SelectFilter<?>) connector.getFilters().iterator().next();
 
 		// Copy search csv from resources to tmp folder.
-		final Path tmpCsv = Files.createTempFile("conquery_search", "csv");
-		Files.write(tmpCsv, String.join(csvConf.getLineSeparator(), lines)
+		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
+		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
 								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-		filter.setTemplate(new FilterTemplate(tmpCsv.toUri().toURL(), "HEADER", "", ""));
+		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), "HEADER", "", "", 2, true));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "updateMatchingStats")

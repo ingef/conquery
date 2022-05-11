@@ -170,7 +170,7 @@ public class ConceptsProcessor {
 
 
 		try {
-			log.trace("Searching for for the term `{}`. (Page = {}, Items = {})", text, pageNumber, itemsPerPage);
+			log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", text, filter.getId(), pageNumber, itemsPerPage);
 
 			List<FEValue> fullResult = searchCache.get(Pair.of(filter, text));
 
@@ -191,13 +191,12 @@ public class ConceptsProcessor {
 	private List<FEValue> listAllValues(SelectFilter<?> filter) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
-		List<FEValue> out = new ArrayList<>();
-
-		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
-			out.addAll(search.listItems());
-		}
-
-		return out;
+		return namespace.getFilterSearch().getSearchesFor(filter)
+						.stream()
+						.map(TrieSearch::listItems)
+						.flatMap(Collection::stream)
+						.distinct()
+						.collect(Collectors.toList());
 	}
 
 	/**
@@ -249,8 +248,8 @@ public class ConceptsProcessor {
 
 	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {
 
-		final List<ConceptElementId<?>> resolvedCodes = new ArrayList<>();
-		final List<String> unknownCodes = new ArrayList<>();
+		final Set<ConceptElementId<?>> resolvedCodes = new HashSet<>();
+		final Set<String> unknownCodes = new HashSet<>();
 
 		for (String conceptCode : conceptCodes) {
 			try {
@@ -285,7 +284,7 @@ public class ConceptsProcessor {
 	@AllArgsConstructor
 	@ToString
 	public static class ResolvedConceptsResult {
-		private List<ConceptElementId<?>> resolvedConcepts;
+		private Set<ConceptElementId<?>> resolvedConcepts;
 		private ResolvedFilterResult resolvedFilter;
 		private Collection<String> unknownCodes;
 	}

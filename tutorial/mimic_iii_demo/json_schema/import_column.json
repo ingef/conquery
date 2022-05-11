@@ -1,0 +1,16 @@
+{
+	"title": "Import Column",
+	"description": "The import column format of conquery",
+	"type": "object",
+	"properties": {
+		"inputColumn": { "type": "string" },
+		"name": { "$ref": "cqIdPart.json#" },
+		"inputType": {"$ref": "cqType.json#"},
+        "operation": {
+            "type": "string",
+            "pattern": "^(COMPOUND_DATE_RANGE|LINE|EPOCH|NULL|COPY|EPOCH_DATE_RANGE|DATE_RANGE)$"
+        },
+        "required": {"type": "boolean"}
+	},
+	"required": ["name", "inputColumn", "inputType", "operation"]
+}

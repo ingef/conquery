@@ -1,7 +1,7 @@
-import { StateT } from "app-types";
 import { FC } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import type { StateT } from "../app/reducers";
 import { TreesT } from "../concept-trees/reducer";
 import UploadConceptListModal from "../upload-concept-list-modal/UploadConceptListModal";
 import { resetUploadConceptListModal } from "../upload-concept-list-modal/actions";

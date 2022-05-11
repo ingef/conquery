@@ -116,7 +116,7 @@ public class ExecutionManager {
 	 */
 	public <R extends ShardResult, E extends ManagedExecution<R>> void handleQueryResult(R result) {
 
-		final MetaStorage metaStorage = datasetRegistry.getMetaStorage();
+		MetaStorage metaStorage = datasetRegistry.getMetaStorage();
 
 		final E query = (E) metaStorage.getExecution(result.getQueryId());
 

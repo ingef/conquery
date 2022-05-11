@@ -16,11 +16,13 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectReaderInjector;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectReaderModifier;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class PathParamInjector implements ContainerRequestFilter {
 
+	@NonNull
 	public final DatasetRegistry registry;
 
 	@Override

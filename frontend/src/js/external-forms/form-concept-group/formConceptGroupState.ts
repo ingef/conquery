@@ -13,11 +13,7 @@ import { TreesT } from "../../concept-trees/reducer";
 import { mergeFilterOptions } from "../../model/filter";
 import { NodeResetConfig } from "../../model/node";
 import { resetSelects } from "../../model/select";
-import {
-  resetTables,
-  tableWithDefaults,
-  resetAllTableSettings,
-} from "../../model/table";
+import { resetTables, tableWithDefaults } from "../../model/table";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
   DragItemConceptTreeNode,
@@ -162,7 +158,7 @@ export const setFilterProperties = (
         ...props,
       },
       ...filters.slice(filterIdx + 1),
-    ],
+    ] as FilterWithValueType[],
   });
 };
 
@@ -447,7 +443,7 @@ export const resetAllSettings = (
     excludeFromSecondaryId: false,
     excludeTimestamps: false,
     selects: resetSelects(concept.selects, config),
-    tables: resetAllTableSettings(concept.tables, config),
+    tables: resetTables(concept.tables, config),
   });
 };
 

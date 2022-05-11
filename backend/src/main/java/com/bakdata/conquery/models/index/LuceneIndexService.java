@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.google.common.cache.CacheBuilder;
@@ -32,7 +34,7 @@ import org.apache.lucene.store.FSDirectory;
 import org.jetbrains.annotations.NotNull;
 
 @Slf4j
-public class LuceneIndexService implements Managed {
+public class LuceneIndexService implements Managed, Injectable {
 
 
 	private Path indexDir = Path.of("./storage/index");
@@ -143,5 +145,10 @@ public class LuceneIndexService implements Managed {
 		for (Directory directory : directories) {
 			directory.close();
 		}
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(LuceneIndexService.class, this);
 	}
 }

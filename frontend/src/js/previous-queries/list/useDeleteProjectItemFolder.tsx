@@ -1,7 +1,7 @@
-import { StateT } from "app-types";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
+import type { StateT } from "../../app/reducers";
 import { useDatasetId } from "../../dataset/selectors";
 import { setMessage } from "../../snack-message/actions";
 

@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.LuceneIndexService;
 import com.bakdata.conquery.models.index.MapIndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -72,13 +73,14 @@ public class Namespace implements Closeable {
 
 	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, ObjectMapper objectMapper) {
 
-		// Prepare JacksonInjectables
+		// Prepare namespace dependent Jackson injectables
 		List<Injectable> injectables = new ArrayList<>();
 		injectables.add(new MapIndexService(config.getCsv().createCsvParserSettings()));
+		injectables.add(new LuceneIndexService());
 		injectables.forEach(i -> i.injectInto(objectMapper));
 
+		// Open and load the stores
 		storage.openStores(objectMapper);
-
 		storage.loadData();
 
 		ExecutionManager executionManager = new ExecutionManager(datasetRegistry);

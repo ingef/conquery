@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import type { StateT } from "app-types";
 import React, { FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,6 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import Pane from "../pane/Pane";
 import { clickPaneTab } from "../pane/actions";
 import type { TabT } from "../pane/types";
+
+import type { StateT } from "./reducers";
 
 interface PropsT {
   tabs: TabT[];

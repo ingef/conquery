@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -10,6 +9,7 @@ import type {
   QueryUploadConfigT,
   UploadQueryResponseT,
 } from "../../api/types";
+import type { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import { setMessage } from "../../snack-message/actions";
 import WithTooltip from "../../tooltip/WithTooltip";

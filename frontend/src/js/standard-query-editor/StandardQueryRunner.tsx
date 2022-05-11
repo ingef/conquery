@@ -1,8 +1,8 @@
-import { StateT } from "app-types";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { DatasetIdT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { validateQueryLength, validateQueryDates } from "../model/query";
 import QueryRunner from "../query-runner/QueryRunner";
 import { useStartQuery, useStopQuery } from "../query-runner/actions";

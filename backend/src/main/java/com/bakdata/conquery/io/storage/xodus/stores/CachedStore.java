@@ -14,18 +14,19 @@ import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@RequiredArgsConstructor @Slf4j
+@RequiredArgsConstructor
+@Slf4j
 public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
-	private static final  ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
-	
+	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
+
 	private ConcurrentHashMap<KEY, VALUE> cache = new ConcurrentHashMap<>();
 	private final Store<KEY, VALUE> store;
-	
+
 	@Override
 	public void add(KEY key, VALUE value) {
-		if(cache.putIfAbsent(key, value)!=null) {
-			throw new IllegalStateException("The id "+key+" is already part of this store");
+		if (cache.putIfAbsent(key, value) != null) {
+			throw new IllegalStateException("The id " + key + " is already part of this store");
 		}
 		store.add(key, value);
 	}
@@ -52,10 +53,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		cache.remove(key);
 		store.remove(key);
 	}
-	
+
 	@Override
 	public int count() {
-		if(cache.isEmpty()) {
+		if (cache.isEmpty()) {
 			return store.count();
 		}
 		return cache.size();
@@ -68,8 +69,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		cache = new ConcurrentHashMap<KEY, VALUE>(count);
 		final ProgressBar bar;
 		Stopwatch timer = Stopwatch.createStarted();
-		
-		if(count>100) {
+
+		if (count > 100) {
 			synchronized (PROGRESS_BAR) {
 				bar = PROGRESS_BAR;
 				bar.addMaxValue(count);
@@ -79,7 +80,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		else {
 			bar = null;
 		}
-		
+
 		store.forEach((key, value, size) -> {
 			try {
 				totalSize.addAndGet(size);
@@ -87,13 +88,14 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			}
 			catch (RuntimeException e) {
 				if (e.getCause() != null && e.getCause() instanceof IdReferenceResolvingException) {
-					log.warn("Probably failed to read id '{}' because it is not yet present, skipping",
-						((IdReferenceResolvingException) e.getCause()).getValue(),
-						e
+					log.warn(
+							"Probably failed to read id '{}' because it is not yet present, skipping",
+							((IdReferenceResolvingException) e.getCause()).getValue(),
+							e
 					);
 				}
 				else {
-					throw  e;
+					throw e;
 				}
 			}
 			finally {
@@ -102,8 +104,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				}
 			}
 		});
-		log.info(
-				"\tloaded store {}: {} entries, {} within {}",
+		log.debug("\tloaded store {}: {} entries, {} within {}",
 				this,
 				cache.values().size(),
 				BinaryByteUnit.format(totalSize.get()),
@@ -115,10 +116,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public Collection<VALUE> getAll() {
 		return cache.values();
 	}
-	
+
 	@Override
 	public String toString() {
-		return "cached "+store.toString();
+		return "cached " + store.toString();
 	}
 
 	@Override

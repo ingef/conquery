@@ -9,7 +9,7 @@ interface PropsT {
   selects: SelectedSelectorT[];
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
-  onSelectTableSelects: (value: SelectOptionT[] | null) => void;
+  onSelectTableSelects: (value: SelectOptionT[]) => void;
   excludeTable?: boolean;
 }
 

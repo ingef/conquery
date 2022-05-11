@@ -1,8 +1,8 @@
-import { StateT } from "app-types";
 import { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction } from "typesafe-actions";
 
+import type { StateT } from "../../app/reducers";
 import { exists } from "../../common/helpers/exists";
 import {
   configHasFilterType,

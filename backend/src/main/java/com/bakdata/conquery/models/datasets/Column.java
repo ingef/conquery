@@ -1,16 +1,23 @@
 package com.bakdata.conquery.models.datasets;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
@@ -21,13 +28,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 
 @Getter
 @Setter
-public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId> {
+@NoArgsConstructor
+@Slf4j
+public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable {
 
 	public static final int UNKNOWN_POSITION = -1;
 
@@ -37,6 +48,10 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	private Table table;
 	@NotNull
 	private MajorTypeId type;
+
+	private int minSuffixLength = 3;
+	private boolean generateSuffixes;
+	private boolean searchDisabled = false;
 
 	@JsonIgnore
 	@Getter(lazy = true)
@@ -52,6 +67,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 */
 	@NsIdRef
 	private SecondaryIdDescription secondaryId;
+
 
 	@Override
 	public ColumnId createId() {
@@ -143,4 +159,24 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	private String computeDefaultDictionaryName(String importName) {
 		return String.format("%s#%s", importName, getId().toString());
 	}
+
+	@Override
+	public Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage) {
+		return storage.getAllImports().stream()
+					  .filter(imp -> imp.getTable().equals(getTable()))
+					  .flatMap(imp -> StreamSupport.stream(((StringStore) getTypeFor(imp)).spliterator(), false))
+					  .map(value -> new FEValue(value, value))
+					  .onClose(() -> log.debug("DONE processing values for {}", getId()));
+	}
+
+	@Override
+	public List<Searchable> getSearchReferences() {
+
+		if (getSecondaryId() != null) {
+			return getSecondaryId().getSearchReferences();
+		}
+
+		return List.of(this);
+	}
+
 }

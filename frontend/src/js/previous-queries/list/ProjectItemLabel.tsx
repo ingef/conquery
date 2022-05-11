@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { FC } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
+import type { StateT } from "../../app/reducers";
 import EditableText from "../../ui-components/EditableText";
 
 const Text = styled("div")`
