@@ -28,7 +28,6 @@ class QuickSearchTest {
 
 	private static TrieSearch<String> setup() {
 		final TrieSearch<String> search = new TrieSearch<>(2, "");
-		search.clear();
 
 		List<String> items = List.of(
 				"a",

@@ -71,17 +71,19 @@ public class ConceptsProcessor {
 							}
 						});
 
+	/**
+	 * Caches values of an iterator by spilling them into a backing array.
+	 * Access exceeding already observed values results in a spill, and a view of the list to the offsets is returned.
+	 */
 	@RequiredArgsConstructor
 	@ToString
 	/*package*/ static class Cursor<T> {
 		private final Iterator<T> provider;
 		private final List<T> past = new ArrayList<>();
 
-		private void take(final int n) {
-			int taken = 0;
-			while (taken < n && provider.hasNext()) {
+		private synchronized void advanceTo(final int expectedSize) {
+			while (currentSize() < expectedSize && provider.hasNext()) {
 				past.add(provider.next());
-				taken++;
 			}
 		}
 
@@ -91,18 +93,21 @@ public class ConceptsProcessor {
 
 		public List<T> get(int from, int to) {
 			// Being inclusive in the API is easier to read
-			int end = Ints.saturatedCast((long) to + 1L);
+			final int end = Ints.saturatedCast((long) to + 1L);
 
 			if (end > currentSize()) {
-				take(end - currentSize());
+				advanceTo(end);
 			}
 
-			// We have exceeded the data
-			if (from > currentSize()) {
+			//TODO FK: I don't want to synchronize here but I don't actually know how Lists handle access while growing :( (It's also unlikely to have real collisions)
+
+			final int currentSize = currentSize();
+			// We have exceeded the available data
+			if (from > currentSize) {
 				return Collections.emptyList();
 			}
 
-			return past.subList(from, Math.min(end, currentSize()));
+			return past.subList(from, Math.min(end, currentSize));
 		}
 	}
 
@@ -213,7 +218,7 @@ public class ConceptsProcessor {
 
 			log.trace("Preparing subresult for search term `{}` in the index range [{}-{})", text, startIncl, endExcl);
 
-			return new AutoCompleteResult(fullResult.get(startIncl, endExcl), Integer.MAX_VALUE); //TODO how to estimate max?
+			return new AutoCompleteResult(fullResult.get(startIncl, endExcl), Integer.MAX_VALUE); //TODO how to get max?
 		}
 		catch (ExecutionException e) {
 			log.warn("Failed to search for \"{}\".", text, (Throwable) (log.isTraceEnabled() ? e : null));
@@ -226,11 +231,11 @@ public class ConceptsProcessor {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
 
-		return new Cursor<FEValue>(namespace.getFilterSearch()
-											.getSearchesFor(filter).stream()
-											.flatMap(TrieSearch::stream)
-											.distinct()
-											.iterator());
+		return new Cursor<>(namespace.getFilterSearch()
+									 .getSearchesFor(filter).stream()
+									 .flatMap(TrieSearch::stream)
+									 .distinct()
+									 .iterator());
 	}
 
 	/**
