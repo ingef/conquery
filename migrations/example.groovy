@@ -2,11 +2,11 @@
  * Example script for MigrateCommand, deleting all Executions that are for dataset `example_dataset`.
  */
 
-import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.node.JsonNode
 
 
 return {
-    String env, String store, String key, ObjectNode value ->
+    String env, String store, JsonNode key, JsonNode value ->
         if (store != "EXECUTIONS") {
             return new Tuple(key, value)
         }
