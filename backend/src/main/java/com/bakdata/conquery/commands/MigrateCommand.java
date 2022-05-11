@@ -12,8 +12,6 @@ import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
 import groovy.lang.GroovyShell;
@@ -110,11 +108,6 @@ public class MigrateCommand extends ConqueryCommand {
 		final Function4<String, String, JsonNode, JsonNode, Tuple> migrator = factory.run();
 
 		final ObjectMapper mapper = Jackson.BINARY_MAPPER;
-
-		final ObjectReader keyReader = mapper.readerFor(String.class);
-		final ObjectReader valueReader = mapper.readerFor(JsonNode.class);
-		final ObjectWriter keyWriter = mapper.writerFor(String.class);
-		final ObjectWriter valueWriter = mapper.writerFor(JsonNode.class);
 
 		Arrays.stream(environments)
 			  .parallel()
