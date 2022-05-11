@@ -1,7 +1,7 @@
 #!/bin/bash
 
 jar="./executable/target/executable-0.0.0-SNAPSHOT.jar"
-config="./frontend/cypress/support/backend_config.json"
+config="./cypress/support/backend_config.json"
 
 echo ""
 
