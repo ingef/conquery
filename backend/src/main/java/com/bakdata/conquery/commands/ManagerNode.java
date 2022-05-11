@@ -18,6 +18,7 @@ import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -42,6 +43,8 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
@@ -61,6 +64,7 @@ import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 /**
  * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to
@@ -128,7 +132,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// Initialization of internationalization
 		I18n.init();
 
-		RESTServer.configure(config, environment.jersey().getResourceConfig(), datasetRegistry);
+		final DropwizardResourceConfig resourceConfig = environment.jersey().getResourceConfig();
+		configureApiServlet(config, resourceConfig);
 
 		maintenanceService = environment.lifecycle()
 										.scheduledExecutorService("Maintenance Service")
@@ -186,6 +191,17 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
 		environment.lifecycle().addServerLifecycleListener(shutdown);
+	}
+
+	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig resourceConfig) {
+		RESTServer.configure(config, resourceConfig);
+		resourceConfig.register(PathParamInjector.class);
+		resourceConfig.register(new AbstractBinder() {
+			@Override
+			protected void configure() {
+				bind(datasetRegistry).to(DatasetRegistry.class);
+			}
+		});
 	}
 
 	public ObjectMapper createInternalObjectMapper() {

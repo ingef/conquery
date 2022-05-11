@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.jackson;
 
 import java.io.IOException;
 
+import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.MultivaluedMap;
@@ -19,11 +20,10 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectReaderModifier;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public class PathParamInjector implements ContainerRequestFilter {
 
-	@NonNull
-	public final DatasetRegistry registry;
+	@Inject
+	public DatasetRegistry registry;
 
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {

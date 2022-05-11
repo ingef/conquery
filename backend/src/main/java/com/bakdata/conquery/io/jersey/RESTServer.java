@@ -22,7 +22,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 @UtilityClass
 public class RESTServer {
 
-	public static void configure(ConqueryConfig config, ResourceConfig jersey, DatasetRegistry datasetRegistry) {
+	public static void configure(ConqueryConfig config, ResourceConfig jersey) {
 		// Bind User class to REST authentication
 		jersey.register(new AuthValueFactoryProvider.Binder<>(Subject.class));
 		//change exception mapper behavior because of JERSEY-2437
@@ -45,9 +45,5 @@ public class RESTServer {
 		//disable all browser caching if not expressly wanted
 		jersey.register(CachingFilter.class);
 		jersey.register(LocaleFilter.class);
-
-		if (datasetRegistry != null) {
-			jersey.register(new PathParamInjector(datasetRegistry));
-		}
 	}
 }

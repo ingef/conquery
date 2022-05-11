@@ -8,9 +8,11 @@ import java.util.Collections;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
+import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
@@ -61,7 +63,7 @@ public class AdminServlet {
 		jerseyConfigUI = new DropwizardResourceConfig(manager.getEnvironment().metrics());
 		jerseyConfigUI.setUrlPattern("/admin-ui");
 
-		RESTServer.configure(manager.getConfig(), jerseyConfig, manager.getDatasetRegistry());
+		RESTServer.configure(manager.getConfig(), jerseyConfig);
 
 		manager.getEnvironment().admin().addServlet(ADMIN_SERVLET_PATH, new ServletContainer(jerseyConfig)).addMapping("/" + ADMIN_SERVLET_PATH + "/*");
 		manager.getEnvironment().admin().addServlet(ADMIN_UI_SERVLET_PATH, new ServletContainer(jerseyConfigUI)).addMapping("/" + ADMIN_UI_SERVLET_PATH + "/*");
@@ -96,6 +98,7 @@ public class AdminServlet {
 			protected void configure() {
 				bind(adminProcessor).to(AdminProcessor.class);
 				bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
+				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 			}
 		});
 
@@ -110,6 +113,7 @@ public class AdminServlet {
 
 		jerseyConfig.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
 		jerseyConfigUI.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
+		jerseyConfig.register(PathParamInjector.class);
 	}
 
 	public void register(ManagerNode manager) {

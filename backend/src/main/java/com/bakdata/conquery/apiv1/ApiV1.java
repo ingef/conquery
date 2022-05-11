@@ -43,6 +43,7 @@ public class ApiV1 implements ResourcesProvider {
 			protected void configure() {
 				bind(manager.getConfig()).to(ConqueryConfig.class);
 
+				// TODO some of these have been bind previously -> clean that up
 				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 				bind(manager.getStorage()).to(MetaStorage.class);
 
