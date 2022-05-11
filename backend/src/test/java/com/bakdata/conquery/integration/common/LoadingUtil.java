@@ -108,8 +108,19 @@ public class LoadingUtil {
 
 		for (RequiredTable rTable : tables) {
 			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry());
-			support.getDatasetsProcessor().addTable(table, support.getNamespace());
+			uploadTable(support, table);
 		}
+	}
+
+	private static void uploadTable(StandaloneSupport support, Table table) {
+		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addTable")
+									   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId()));
+
+		final Response response = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(table));
+
+		assertThat(response.getStatusInfo().getFamily())
+				.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+				.isEqualTo(Response.Status.Family.SUCCESSFUL);
 	}
 
 	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws Exception {
@@ -214,8 +225,19 @@ public class LoadingUtil {
 		);
 
 		for (Concept<?> concept : concepts) {
-			support.getDatasetsProcessor().addConcept(dataset, concept);
+			uploadConcept(support, dataset, concept);
 		}
+	}
+
+	public static void uploadConcept(StandaloneSupport support, Dataset dataset, Concept<?> concept) {
+		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addConcept")
+									   .buildFromMap(Map.of(ResourceConstants.DATASET, dataset.getId().toString()));
+
+		final Response response = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(concept));
+
+		assertThat(response.getStatusInfo().getFamily())
+				.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+				.isEqualTo(Response.Status.Family.SUCCESSFUL);
 	}
 
 

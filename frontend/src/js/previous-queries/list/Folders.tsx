@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
+import type { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";

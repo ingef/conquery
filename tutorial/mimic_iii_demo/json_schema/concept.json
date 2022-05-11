@@ -1,0 +1,66 @@
+{
+	"title": "Concept",
+	"description": "The concept format of conquery",
+	"type": "object",
+	"properties": {
+		"name": { "$ref": "cqIdPart.json#" },
+		"type": { "type": "string", "pattern": "^TREE$" },
+		"connectors": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"column": { "type": "string" },
+					"label": { "type": "string" }
+				}
+			}
+		},
+		"children": { "$ref": "concept.json#/$defs/treeChildren" }
+	},
+	"required": ["name", "children", "connectors"],
+	"$defs": {
+		"treeChildren": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"label": { "type": "string" },
+					"description": { "type:": "string" },
+					"condition": { "$ref": "concept.json#/$defs/condition" },
+					"children": { "$ref": "concept.json#/$defs/treeChildren" }
+				},
+				"required": ["condition", "children"]
+			}
+		},
+		"condition": {
+			"type": "object",
+			"oneOf": [
+				{
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["PREFIX_RANGE"]
+						},
+						"min": { "type": "string" },
+						"max": { "type": "string" }
+					},
+					"required": ["type", "min", "max"]
+				},
+				{
+					"type": "object",
+					"properties": {
+						"type": {
+							"type": "string",
+							"enum": ["PREFIX_LIST"]
+						},
+						"prefixes": {
+							"type": "array",
+							"items": { "type": "string" }
+						},
+						"required": ["type", "items"]
+					}
+				}
+			]
+		}
+	}
+}

@@ -1,12 +1,12 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
 import type { DatasetIdT } from "../../api/types";
+import type { StateT } from "../../app/reducers";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import { selectFormConfigs } from "../../external-forms/form-configs/selectors";
 import EmptyList from "../../list/EmptyList";

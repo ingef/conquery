@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import type { StateT } from "app-types";
 import { FormEvent, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { ConceptIdT, SelectOptionT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import PrimaryButton from "../button/PrimaryButton";
 import type { TreesT } from "../concept-trees/reducer";
 import FaIcon from "../icon/FaIcon";
