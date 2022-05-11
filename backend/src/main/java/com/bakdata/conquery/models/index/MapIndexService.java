@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.index;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -10,13 +11,12 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.univocity.parsers.common.ParsingContext;
-import com.univocity.parsers.common.processor.RowProcessor;
 import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
@@ -27,9 +27,11 @@ public class MapIndexService implements Injectable {
 
 	private final CsvParserSettings csvParserSettings;
 
+	// TODO provide a way to evict mappings
 	private final LoadingCache<Key, Map<String, String>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<Key, Map<String, String>>() {
 		@Override
 		public Map<String, String> load(@NotNull Key key) throws Exception {
+			log.info("Started to parse mapping {}", key);
 
 			final Map<String, String> int2ext = new HashMap<>();
 
@@ -61,18 +63,23 @@ public class MapIndexService implements Injectable {
 			}
 			csvParser.stopParsing();
 
+			log.info("Finished parsing mapping {} with {} entries", key, int2ext.size());
 			return int2ext;
 		}
 	});
 
 
-	public Map<String, String> getMapping(URL csv, String internalColumn, String externalTemplate) {
-		try {
-			return mappings.get(new Key(csv, internalColumn, externalTemplate));
-		}
-		catch (ExecutionException e) {
-			throw new IllegalStateException(String.format("Unable to get mapping from %s (internal column = %s, external column = %s)", csv, internalColumn, externalTemplate), e);
-		}
+	public CompletableFuture<Map<String, String>> getMapping(URL csv, String internalColumn, String externalTemplate) {
+		// TODO may use a specific executor service here
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				return mappings.get(new Key(csv, internalColumn, externalTemplate));
+			}
+			catch (ExecutionException e) {
+				throw new IllegalStateException(String.format("Unable to get mapping from %s (internal column = %s, external column = %s)", csv, internalColumn, externalTemplate), e);
+			}
+		});
+
 	}
 
 	@Override
@@ -82,6 +89,7 @@ public class MapIndexService implements Injectable {
 
 	@EqualsAndHashCode
 	@RequiredArgsConstructor
+	@ToString
 	private static class Key {
 		private final URL csv;
 		private final String internalColumn;

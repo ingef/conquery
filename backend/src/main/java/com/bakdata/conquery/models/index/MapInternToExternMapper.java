@@ -3,6 +3,10 @@ package com.bakdata.conquery.models.index;
 
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.fasterxml.jackson.annotation.JacksonInject;
@@ -10,9 +14,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @CPSType(id = "CSV_MAP", base = InternToExternMapper.class)
 @RequiredArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
 public class MapInternToExternMapper implements InternToExternMapper {
 
 
@@ -22,16 +30,19 @@ public class MapInternToExternMapper implements InternToExternMapper {
 	private MapIndexService mapIndex;
 
 	@Getter
+	@ToString.Include
 	private final URL csv;
 	@Getter
+	@ToString.Include
 	private final String internalColumn;
 	@Getter
+	@ToString.Include
 	private final String externalTemplate;
 
 
 	//Manager only
 	@JsonIgnore
-	private Map<String, String> int2ext = null;
+	private CompletableFuture<Map<String, String>> int2ext = null;
 
 
 	@Override
@@ -47,6 +58,12 @@ public class MapInternToExternMapper implements InternToExternMapper {
 
 	@Override
 	public String external(String internalValue) {
-		return int2ext.getOrDefault(internalValue, "");
+		try {
+			return int2ext.get(1, TimeUnit.MINUTES).getOrDefault(internalValue, "");
+		}
+		catch (ExecutionException | InterruptedException | TimeoutException e) {
+			log.warn("Unable to get mapping for {} from {}. Returning nothing", internalValue, this, e);
+			return "";
+		}
 	}
 }
