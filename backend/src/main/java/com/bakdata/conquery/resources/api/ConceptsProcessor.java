@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -35,20 +34,20 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.bakdata.conquery.util.search.Cursor;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.common.primitives.Ints;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -58,7 +57,6 @@ import org.apache.commons.lang3.tuple.Pair;
 public class ConceptsProcessor {
 
 	private final DatasetRegistry namespaces;
-
 
 	private final LoadingCache<Concept<?>, FEList> nodeCache =
 			CacheBuilder.newBuilder()
@@ -71,64 +69,39 @@ public class ConceptsProcessor {
 							}
 						});
 
-	/**
-	 * Caches values of an iterator by spilling them into a backing array.
-	 * Access exceeding already observed values results in a spill, and a view of the list to the offsets is returned.
-	 */
-	@RequiredArgsConstructor
-	@ToString
-	/*package*/ static class Cursor<T> {
-		private final Iterator<T> provider;
-		private final List<T> past = new ArrayList<>();
-
-		private synchronized void advanceTo(final int expectedSize) {
-			while (currentSize() < expectedSize && provider.hasNext()) {
-				past.add(provider.next());
-			}
-		}
-
-		private int currentSize() {
-			return past.size();
-		}
-
-		public List<T> get(int from, int to) {
-			// Being inclusive in the API is easier to read
-			final int end = Ints.saturatedCast((long) to + 1L);
-
-			if (end > currentSize()) {
-				advanceTo(end);
-			}
-
-			//TODO FK: I don't want to synchronize here but I don't actually know how Lists handle access while growing :( (It's also unlikely to have real collisions)
-
-			final int currentSize = currentSize();
-			// We have exceeded the available data
-			if (from > currentSize) {
-				return Collections.emptyList();
-			}
-
-			return past.subList(from, Math.min(end, currentSize));
-		}
-	}
-
-	private final LoadingCache<Pair<SelectFilter<?>, String>, Cursor<FEValue>> searchCache =
+	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchResults =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.build(new CacheLoader<>() {
 
 							@Override
-							public Cursor<FEValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
+							public List<FEValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
 								String searchTerm = filterAndSearch.getValue();
 								SelectFilter<?> filter = filterAndSearch.getKey();
 
 								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
 
-								if (Strings.isNullOrEmpty(searchTerm)) {
-									return listAllValues(filter);
-								}
-								else {
-									return autocompleteTextFilter(filter, searchTerm);
-								}
+								return autocompleteTextFilter(filter, searchTerm);
+							}
+
+						});
+
+	/**
+	 * Container class to pair both values.
+	 */
+	@Value
+	private static class CursorAndLength {
+		private final Cursor<FEValue> values;
+		private final long size;
+	}
+
+	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults =
+			CacheBuilder.newBuilder()
+						.softValues()
+						.build(new CacheLoader<>() {
+							@Override
+							public CursorAndLength load(SelectFilter<?> filter) {
+								return new CursorAndLength(listAllValues(filter), countAllValues(filter));
 							}
 
 						});
@@ -202,26 +175,30 @@ public class ConceptsProcessor {
 		final int pageNumber = pageNumberOpt.orElse(0);
 		final int itemsPerPage = itemsPerPageOpt.orElse(50);
 
-		final String text = maybeText.orElse("");
-
 		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
 
+		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filter.getId(), pageNumber, itemsPerPage);
+
+		final int startIncl = itemsPerPage * pageNumber;
+		final int endExcl = startIncl + itemsPerPage;
 
 		try {
-			log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", text, filter.getId(), pageNumber, itemsPerPage);
 
-			Cursor<FEValue> fullResult = searchCache.get(Pair.of(filter, text));
+			log.trace("Preparing subresult for search term `{}` in the index range [{}-{})", maybeText, startIncl, endExcl);
 
-			int startIncl = itemsPerPage * pageNumber;
-			int endExcl = startIncl + itemsPerPage;
+			if (maybeText.isEmpty()) {
+				final CursorAndLength cursorAndLength = listResults.get(filter);
+				final Cursor<FEValue> cursor = cursorAndLength.getValues();
 
-			log.trace("Preparing subresult for search term `{}` in the index range [{}-{})", text, startIncl, endExcl);
+				return new AutoCompleteResult(cursor.get(startIncl, endExcl), cursorAndLength.getSize());
+			}
 
-			return new AutoCompleteResult(fullResult.get(startIncl, endExcl), Integer.MAX_VALUE); //TODO how to get max?
+			final List<FEValue> fullResult = searchResults.get(Pair.of(filter, maybeText.get()));
+			return new AutoCompleteResult(fullResult.subList(startIncl, endExcl), fullResult.size());
 		}
 		catch (ExecutionException e) {
-			log.warn("Failed to search for \"{}\".", text, (Throwable) (log.isTraceEnabled() ? e : null));
+			log.warn("Failed to search for \"{}\".", maybeText, (Throwable) (log.isTraceEnabled() ? e : null));
 			return new AutoCompleteResult(Collections.emptyList(), 0);
 		}
 	}
@@ -238,11 +215,21 @@ public class ConceptsProcessor {
 									 .iterator());
 	}
 
+	private long countAllValues(SelectFilter<?> filter) {
+		final Namespace namespace = namespaces.get(filter.getDataset().getId());
+
+
+		return namespace.getFilterSearch()
+						.getSearchesFor(filter).stream()
+						.mapToLong(TrieSearch::calculateSize)
+						.sum();
+	}
+
 	/**
 	 * Autocompletion for search terms. For values of {@link SelectFilter <?>}.
 	 * Is used by the serach cache to load missing items
 	 */
-	private Cursor<FEValue> autocompleteTextFilter(SelectFilter<?> filter, String text) {
+	private List<FEValue> autocompleteTextFilter(SelectFilter<?> filter, String text) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
 		// Note that FEValues is equals/hashcode only on value:
@@ -250,7 +237,7 @@ public class ConceptsProcessor {
 		// they are already sorted in terms of information weight by getSearchesFor
 
 		// Also note: currently we are still issuing large search requests, but much smaller allocations at once, and querying only when the past is not sufficient
-		return new Cursor<>(
+		return
 				namespace.getFilterSearch().getSearchesFor(filter).stream()
 						 .map(search -> createSourceSearchResult(
 								 search,
@@ -258,7 +245,8 @@ public class ConceptsProcessor {
 								 OptionalInt.empty()
 						 ))
 						 .flatMap(Collection::stream)
-						 .distinct().iterator());
+						 .distinct()
+						 .collect(Collectors.toList());
 
 
 	}
