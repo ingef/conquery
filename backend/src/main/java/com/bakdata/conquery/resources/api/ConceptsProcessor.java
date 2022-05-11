@@ -132,7 +132,16 @@ public class ConceptsProcessor {
 
 		List<FEValue> out = new ArrayList<>();
 
-		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
+		final List<TrieSearch<FEValue>> searches = namespace.getFilterSearch().getSearchesFor(filter);
+
+		if (searches.isEmpty()) {
+			// Not having any searches, we have to assume those are all valid.
+			searchTerms.stream()
+					   .map(name -> new FEValue(name, name))
+					   .forEach(out::add);
+		}
+
+		for (TrieSearch<FEValue> search : searches) {
 			final List<FEValue> searchResult = search.findExact(openSearchTerms, Integer.MAX_VALUE);
 
 			searchResult.forEach(result -> openSearchTerms.remove(result.getValue()));
@@ -208,7 +217,14 @@ public class ConceptsProcessor {
 
 		List<FEValue> out = new ArrayList<>();
 
-		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
+		final List<TrieSearch<FEValue>> searches = namespace.getFilterSearch().getSearchesFor(filter);
+
+		if (searches.isEmpty()) {
+			// We can't judge if the value is available or not without any searches.
+			return List.of(new FEValue(text, text));
+		}
+
+		for (TrieSearch<FEValue> search : searches) {
 
 			List<FEValue> result = createSourceSearchResult(
 					search,

@@ -70,6 +70,7 @@ public class FilterSearch {
 	 */
 	public List<TrieSearch<FEValue>> getSearchesFor(SelectFilter<?> filter) {
 		return filter.getSearchReferences().stream()
+					 .filter(Predicate.not(Searchable::isSearchDisabled))
 					 .map(searchCache::get)
 					 .filter(Objects::nonNull)
 					 .collect(Collectors.toList());
