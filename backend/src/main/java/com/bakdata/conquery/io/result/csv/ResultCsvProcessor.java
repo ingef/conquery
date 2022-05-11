@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
+import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -27,16 +28,21 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
 
 @Slf4j
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class ResultCsvProcessor {
 
-	private final DatasetRegistry datasetRegistry;
-	private final ConqueryConfig config;
+	@Inject
+	private DatasetRegistry datasetRegistry;
+	@Inject
+	private ConqueryConfig config;
 
 
 	public <E extends ManagedExecution<?> & SingleTableResult> Response getResult(Subject subject, Dataset dataset, E exec, String userAgent, String queryCharset, boolean pretty) {

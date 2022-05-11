@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
@@ -52,15 +53,19 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.univocity.parsers.csv.CsvParser;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.glassfish.jersey.spi.Contract;
 
 
 @Slf4j
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 public class AdminDatasetProcessor {
 
@@ -68,11 +73,17 @@ public class AdminDatasetProcessor {
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
 	private static final String ABBREVIATION_MARKER = "\u2026";
 
-	private final MetaStorage storage; // TODO Remove
-	private final ConqueryConfig config;
-	private final Validator validator;
-	private final DatasetRegistry datasetRegistry;
-	private final JobManager jobManager;
+	@Inject
+	private MetaStorage storage; // TODO Remove
+	@Inject
+	private ConqueryConfig config;
+	@Inject
+	private Validator validator;
+	@Inject
+	private DatasetRegistry datasetRegistry;
+	@Inject
+	private JobManager jobManager;
+
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 
 	/**

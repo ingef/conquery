@@ -14,8 +14,5 @@ public class FormResourceProvider implements ResourcesProvider {
 	@Override
 	public void registerResources(ManagerNode manager) {
 		JerseyEnvironment environment = manager.getEnvironment().jersey();
-		processor = new FormProcessor();
-
-		environment.register(new FormResource(processor));
 	}
 }

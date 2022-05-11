@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.arrow;
 import static com.bakdata.conquery.io.result.arrow.ResultArrowProcessor.getArrowResult;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -12,18 +13,23 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class ResultArrowStreamProcessor {
 
 
 	// From https://www.iana.org/assignments/media-types/application/vnd.apache.arrow.stream
 	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.apache.arrow.stream");
-	private final DatasetRegistry datasetRegistry;
-	private final ConqueryConfig config;
+	@Inject
+	private DatasetRegistry datasetRegistry;
+	@Inject
+	private ConqueryConfig config;
 
 
 	public <E extends ManagedExecution<?> & SingleTableResult> Response getArrowStreamResult(Subject subject, E exec, Dataset dataset, boolean pretty) {

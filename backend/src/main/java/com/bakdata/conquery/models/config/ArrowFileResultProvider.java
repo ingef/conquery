@@ -4,6 +4,7 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.arrow.ResultArrowFileProcessor;
+import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.api.ResultArrowFileResource;
@@ -41,16 +42,16 @@ public class ArrowFileResultProvider implements ResultRendererProvider {
 	}
 
 	@Override
-	public void registerResultResource(JerseyEnvironment environment, ManagerNode manager) {
+	public void registerResultResource(JerseyEnvironment jersey, ManagerNode manager) {
 
 		//inject required services
-		environment.register(new AbstractBinder() {
+		jersey.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
-				bind(new ResultArrowFileProcessor(manager.getDatasetRegistry(), manager.getConfig())).to(ResultArrowFileProcessor.class);
+				bindAsContract(ResultArrowFileProcessor.class);
 			}
 		});
 
-		environment.register(ResultArrowFileResource.class);
+		jersey.register(ResultArrowFileResource.class);
 	}
 }

@@ -41,16 +41,16 @@ public class CsvResultRendererProvider implements ResultRendererProvider {
 	}
 
 	@Override
-	public void registerResultResource(JerseyEnvironment environment, ManagerNode manager) {
+	public void registerResultResource(JerseyEnvironment jersey, ManagerNode manager) {
 
 		//inject required services
-		environment.register(new AbstractBinder() {
+		jersey.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
-				bind(new ResultCsvProcessor(manager.getDatasetRegistry(), manager.getConfig())).to(ResultCsvProcessor.class);
+				bindAsContract(ResultCsvProcessor.class);
 			}
 		});
 
-		environment.register(ResultCsvResource.class);
+		jersey.register(ResultCsvResource.class);
 	}
 }

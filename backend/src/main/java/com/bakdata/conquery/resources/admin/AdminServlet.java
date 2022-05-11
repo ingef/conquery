@@ -8,9 +8,11 @@ import java.util.Collections;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
+import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
@@ -88,28 +90,33 @@ public class AdminServlet {
 				manager.getJobManager()
 		);
 
-
-		// inject required services
+		jerseyConfig.register(manager.getDatasetRegistry());
+		jerseyConfig.register(manager.getStorage());
+		jerseyConfig.register(manager.getValidator());
+		jerseyConfig.register(manager.getJobManager());
+		jerseyConfig.register(manager.getConfig());
 		jerseyConfig.register(new AbstractBinder() {
-
 			@Override
 			protected void configure() {
-				bind(adminProcessor).to(AdminProcessor.class);
-				bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
+				bindAsContract(AdminProcessor.class);
+				bindAsContract(AdminDatasetProcessor.class);
 			}
 		});
 
-		// inject required services
-		jerseyConfigUI.register(new AbstractBinder() {
-
+		jerseyConfigUI.register(manager.getDatasetRegistry());
+		jerseyConfigUI.register(manager.getStorage());
+		jerseyConfigUI.register(manager.getValidator());
+		jerseyConfig.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
-				bind(new UIProcessor(adminProcessor)).to(UIProcessor.class);
+				bindAsContract(AdminProcessor.class);
+				bindAsContract(UIProcessor.class);
 			}
 		});
 
-		jerseyConfig.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
-		jerseyConfigUI.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
+		jerseyConfig.register(IdRefPathParamConverterProvider.class);
+		jerseyConfigUI.register(IdRefPathParamConverterProvider.class);
+		jerseyConfig.register(PathParamInjector.class);
 	}
 
 	public void register(ManagerNode manager) {
