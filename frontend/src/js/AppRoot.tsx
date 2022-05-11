@@ -1,9 +1,9 @@
-import { StateT } from "app-types";
 import { FC } from "react";
 import { Provider } from "react-redux";
 import { Store } from "redux";
 
 import AppRouter from "./app/AppRouter";
+import type { StateT } from "./app/reducers";
 import type { TabT } from "./pane/types";
 
 interface PropsT {

@@ -2,8 +2,6 @@
 *fast & efficient analysis*
 
 [![Last Release](https://img.shields.io/github/release-date/bakdata/conquery.svg?logo=github)](https://github.com/bakdata/conquery/releases/latest)
-[![Build Status](https://dev.azure.com/bakdata/public/_apis/build/status/Conquery%20CI?branchName=develop)](https://dev.azure.com/bakdata/public/_build/latest?definitionId=7&branchName=develop)
-[![CodeFactor](https://www.codefactor.io/repository/github/bakdata/conquery/badge/develop)](https://www.codefactor.io/repository/github/bakdata/conquery)
 ![Code Size](https://img.shields.io/github/languages/code-size/bakdata/conquery.svg)
 [![License](https://img.shields.io/github/license/bakdata/conquery.svg)](https://github.com/bakdata/conquery/blob/develop/LICENSE)
 
@@ -16,11 +14,66 @@ Event data sets typically associate events with a certain subject (i.e. a person
 
 Conquery supplies a powerful interface to group event types in a hierarchical *concept tree* structure. Elements of this tree represent a group of similar subjects. Those subjects can be composed into a powerful query that runs against the data set.
 
+## Requirements
+- Maven 3 (optional for building)
+- Java JDK 11
+- Node.js 16 + Yarn
+- curl (to import the test data)
+
 ## Starting the demo
+
+### Frontend only
 
 This repository includes the Conquery frontend along with a non-functional backend. It provides a set of example concept trees to demonstrate the capabilities of the UI: The example's use case is to search for groups of actors who appeared in movies of the same genre or received the same award.
 
 Check the README in `/frontend` for details.
+
+### Frontend + Backend
+
+#### Steps
+To test frontend and backend together you can start the setup that is used for end-to-end tests.
+
+First build the backend using `conquery/scripts/build_version.sh` or download a JAR from the [release page](https://github.com/bakdata/conquery/releases) and place it in `conquery/executable/target/`.
+
+Build the frontend by running:
+
+```bash
+cd frontend
+cp .env.example .env
+yarn
+yarn build
+```
+
+You can then run `conquery/scripts/run_conquery_cypress.sh` to start frontend and backend, and also load the test data required by cypress end-to-end test or you can run `conquery/scripts/run_backend_cypress.sh` and `conquery/scripts/run_frontend_cypress.sh` separately without loading any data.
+
+After that, you can visit http://localhost:8081/admin-ui and explore the Admin Panel.
+
+The frontend is accessible at http://localhost:8000 as the default "superuser" implicitly. Since the backend uses a development authentication, you can switch users by passing another users "UserId" as the access token in the query string when accessing the frontend, e.g.: http://localhost:8000/?access_token=user.user2.
+
+## Development
+
+### Testing
+Apart from separate frontend and backend tests, the project also contains end-to-end tests powered by cypress.
+
+To run the end-to-end test locally:
+1. Make sure you installed all [requirements](#requirements)
+2. From the repo root folder run  `conquery/scripts/run_conquery_cypress.sh`
+3. Wait until the output: `Node server listening on port: 8000` appears
+4. Start cypress from the `conquery/frontend` folder in another terminal: `yarn cypress open`
+5. Then chose a test suite and start it.
+
+For further informations on this and other tests, please refer to the corresponding [CI configuration](https://github.com/bakdata/conquery/tree/develop/.github/workflows).
+
+### Data Integration
+To make you own data (in form of CSVs) availiable to conquery some steps are necessary:
+
+1. Describe your data table structure with meta data, by generating Import- and Table-JSONs.
+2. Describe your data content as Concept-JSON to provide query functionallity.
+3. Preprocess your data from CSV to CQPP.
+4. Upload everything.
+
+To get a better impression of the single steps, take a look at the [Tutorial](https://github.com/bakdata/conquery/tree/tutorial/mimic_iii_demo/mimic_iii.ipynb)
+
 
 ## Acknowledgements
 

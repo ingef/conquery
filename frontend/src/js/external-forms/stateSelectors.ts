@@ -1,21 +1,12 @@
-import { StateT } from "app-types";
 import { useWatch } from "react-hook-form";
 import { useSelector } from "react-redux";
 
+import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { useActiveLang } from "../localization/useActiveLang";
 
-import {
-  ConceptListField,
-  Form,
-  GeneralField,
-  Group,
-  Tabs,
-} from "./config-types";
+import { ConceptListField, Form, GeneralField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
-
-export const selectFormContextState = (state: StateT, formType: string) =>
-  state.externalForms ? state.externalForms.formsContext[formType] : null;
 
 export const selectAvailableForms = (state: StateT) =>
   state.externalForms ? state.externalForms.availableForms : {};
@@ -23,23 +14,11 @@ export const selectAvailableForms = (state: StateT) =>
 export const selectActiveFormType = (state: StateT) =>
   state.externalForms ? state.externalForms.activeForm : null;
 
-export const useActiveFormType = () =>
-  useSelector<StateT, string | null>((state) => selectActiveFormType(state));
-
 export const selectFormConfig = (state: StateT): Form | null => {
   const availableForms = selectAvailableForms(state);
   const activeFormType = selectActiveFormType(state);
 
   return (activeFormType && availableForms[activeFormType]) || null;
-};
-
-export const useSelectActiveFormName = (): string => {
-  const formConfig = useSelector<StateT, Form | null>((state) =>
-    selectFormConfig(state),
-  );
-  const activeLang = useActiveLang();
-
-  return (formConfig && formConfig.title[activeLang]) || "";
 };
 
 export const selectQueryRunner = (state: StateT) =>
@@ -110,11 +89,13 @@ export const useAllowExtendedCopying = (
   return otherConceptListFields.some(fieldHasFilledConcept);
 };
 
-export const useFormLabelByType = (formType: string) => {
+export const useFormLabelByType = (formType: string | null) => {
   const availableForms = useSelector<StateT, { [formName: string]: Form }>(
     (state) => selectAvailableForms(state),
   );
   const activeLang = useActiveLang();
+
+  if (!formType) return null;
 
   return availableForms[formType]
     ? availableForms[formType].title[activeLang]

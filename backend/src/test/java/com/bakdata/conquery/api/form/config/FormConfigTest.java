@@ -161,7 +161,7 @@ public class FormConfigTest {
 
 		processor.addConfig(user, dataset, formConfig);
 		
-		assertThat(storage.getAllFormConfigs()).containsExactly(FormConfigAPI.intern(formConfig, user, dataset));
+		assertThat(storage.getAllFormConfigs()).containsExactly(formConfig.intern(user, dataset));
 	}
 
 	@Test

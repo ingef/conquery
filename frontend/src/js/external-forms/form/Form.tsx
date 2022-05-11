@@ -4,7 +4,6 @@ import { UseFormReturn } from "react-hook-form";
 
 import type { SelectOptionT } from "../../api/types";
 import { useActiveLang } from "../../localization/useActiveLang";
-import FormConfigSaver from "../FormConfigSaver";
 import FormHeader from "../FormHeader";
 import type { Form as FormType } from "../config-types";
 import { isFormField, isOptionalField } from "../helper";
@@ -33,9 +32,11 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
       {config.description && config.description[activeLang] && (
         <SxFormHeader description={config.description[activeLang]!} />
       )}
-      <FormConfigSaver datasetOptions={datasetOptions} />
       {config.fields.map((field, i) => {
-        const key = isFormField(field) ? field.name : field.type + i;
+        const key =
+          isFormField(field) && field.type !== "GROUP"
+            ? field.name
+            : field.type + i;
         const optional = isOptionalField(field);
 
         return (

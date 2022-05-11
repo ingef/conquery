@@ -1,0 +1,55 @@
+name: "End-To-End Tests"
+
+on:
+  pull_request:
+    paths:
+      - "**"
+
+jobs:
+  end-to-end-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Build Backend
+        run: ./scripts/build_no_version.sh
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v2
+        env:
+          TSC_COMPILE_ON_ERROR: true
+          REACT_APP_API_URL: "http://localhost:8080"
+          REACT_APP_DISABLE_LOGIN: true
+          REACT_APP_LANG: de
+          REACT_APP_IDP_ENABLE: false
+          REACT_APP_IDP_REALM: Myrealm
+          REACT_APP_IDP_CLIENT_ID: frontend
+        with:
+          working-directory: ./frontend
+          install-command: yarn --ignore-platform --frozen-lockfile
+          build: yarn run react-app-rewired build
+          start: bash ./cypress/support/run_conquery_cypress.sh
+          wait-on: 'http://localhost:8000'
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: frontend/cypress/screenshots
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-videos
+          path: frontend/cypress/videos

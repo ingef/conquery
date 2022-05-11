@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { usePostLogin } from "../api/api";
 import PrimaryButton from "../button/PrimaryButton";
@@ -78,7 +78,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
   const postLogin = usePostLogin();
   const { t } = useTranslation();
   const { setAuthToken } = useContext(AuthTokenContext);
@@ -93,7 +93,7 @@ const LoginPage = () => {
 
       if (result.access_token) {
         setAuthToken(result.access_token);
-        history.push("/");
+        navigate("/");
 
         return;
       }

@@ -5,13 +5,11 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespacedStorage;
-import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -19,7 +17,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,7 +28,6 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	// TODO: 10.01.2020 fk: register imports here?
 
 	@NsIdRef
-	@NonNull //Null may be null at load time
 	private Dataset dataset;
 	@NotNull
 	@Valid

@@ -209,7 +209,7 @@
                             "label": {
                                 "de": "Zugehörigkeit Indexdatum"
                             },
-                            "defaultValue": "BEFORE",
+                            "defaultValue": "AFTER",
                             "options": [
                                 {
                                     "label": {

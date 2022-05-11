@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.auth.conquerytoken;
 
-import javax.ws.rs.container.ContainerRequestContext;
-
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -22,11 +20,17 @@ import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authc.*;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.BearerToken;
+import org.apache.shiro.authc.ExpiredCredentialsException;
+import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.realm.AuthenticatingRealm;
 
 @Slf4j
+@ToString(of = {"storage", "jwtConfig"})
 public class ConqueryTokenRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = BearerToken.class;

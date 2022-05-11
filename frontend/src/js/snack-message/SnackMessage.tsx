@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { useRef, memo, FC } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
+import type { StateT } from "../app/reducers";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
 
@@ -13,7 +13,7 @@ const Root = styled("div")`
   z-index: 10;
   bottom: 20px;
   right: 20px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.75);
   color: white;
   display: flex;
   flex-direction: row;
@@ -58,7 +58,7 @@ const SnackMessage: FC = memo(function SnackMessageComponent() {
       {message && (
         <Root>
           <Relative>
-            {message}
+            <div dangerouslySetInnerHTML={{ __html: message }} />
             <ClearZone onClick={resetMessage}>
               <FaIcon white large icon="times" />
             </ClearZone>

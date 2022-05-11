@@ -13,6 +13,7 @@ interface PropsT {
   className?: string;
   tags?: string[];
   loading?: boolean;
+  label?: string;
   onSubmit: (tags: string[]) => void;
   onCancel?: () => void;
   availableTags: string[];
@@ -39,6 +40,7 @@ const EditableTagsForm: FC<PropsT> = ({
   loading,
   onSubmit,
   onCancel,
+  label,
   availableTags,
 }) => {
   const { t } = useTranslation();
@@ -63,6 +65,7 @@ const EditableTagsForm: FC<PropsT> = ({
       <SxInputMultiSelect
         creatable
         autoFocus
+        label={label}
         value={values}
         options={availableTags.map((t) => ({
           label: t,

@@ -13,16 +13,13 @@ import { TreesT } from "../../concept-trees/reducer";
 import { mergeFilterOptions } from "../../model/filter";
 import { NodeResetConfig } from "../../model/node";
 import { resetSelects } from "../../model/select";
-import {
-  resetTables,
-  tableWithDefaults,
-  resetAllTableSettings,
-} from "../../model/table";
+import { resetTables, tableWithDefaults } from "../../model/table";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
   DragItemConceptTreeNode,
   TableWithFilterValueT,
   FilterWithValueType,
+  SelectedSelectorT,
 } from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
@@ -161,7 +158,7 @@ export const setFilterProperties = (
         ...props,
       },
       ...filters.slice(filterIdx + 1),
-    ],
+    ] as FilterWithValueType[],
   });
 };
 
@@ -245,14 +242,19 @@ export const createQueryNodeFromConceptListUploadResult = (
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
     rootConcepts,
     resolvedConcepts,
+    { useDefaults: true },
   );
 
   return lookupResult
     ? {
+        type: DNDType.CONCEPT_TREE_NODE as const,
+        dragContext: { width: 0, height: 0 },
+        matchingEntities: lookupResult.concepts[0].matchingEntities,
+        matchingEntries: lookupResult.concepts[0].matchingEntries,
         label,
         ids: resolvedConcepts,
-        tables: lookupResult.tables,
-        selects: lookupResult.selects,
+        tables: lookupResult.tables as TableWithFilterValueT[], // TODO: Convert this better
+        selects: lookupResult.selects as SelectedSelectorT[], // TODO: Convert this better
         tree: lookupResult.root,
       }
     : null;
@@ -441,7 +443,7 @@ export const resetAllSettings = (
     excludeFromSecondaryId: false,
     excludeTimestamps: false,
     selects: resetSelects(concept.selects, config),
-    tables: resetAllTableSettings(concept.tables, config),
+    tables: resetTables(concept.tables, config),
   });
 };
 

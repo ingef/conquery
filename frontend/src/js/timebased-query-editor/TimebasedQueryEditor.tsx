@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import type { StateT } from "app-types";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
+import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import type { DragItemQuery } from "../standard-query-editor/types";
 

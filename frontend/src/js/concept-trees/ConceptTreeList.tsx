@@ -14,6 +14,10 @@ import type { TreesT, SearchT } from "./reducer";
 import { useAreTreesAvailable } from "./selectors";
 import { useRootConceptIds } from "./useRootConceptIds";
 
+/**
+  @param show For historic reasons, it was necessary to only hide / show the concept tree list,
+  instead of mounting / unmounting it. Maybe we can remove this in the future.
+*/
 const Root = styled("div")<{ show?: boolean }>`
   flex-grow: 1;
   flex-shrink: 0;
@@ -22,19 +26,8 @@ const Root = styled("div")<{ show?: boolean }>`
   -webkit-overflow-scrolling: touch;
   padding: 0 10px 0;
   white-space: nowrap;
-
-  ${
-    ""
-    // Only hide the Concept trees when the tab is not selected
-    // Because mount / unmount would reset the open states
-    // that are React states and not part of the Redux state
-    // because if they were part of Redux state, the entire tree
-    // would have to re-render when a single node would be opened
-    //
-    // Also: Can't set it to initial, because IE11 doesn't work then
-    // => Empty string instead
-  }
-  display: ${({ show }) => (show ? "" : "none")};
+  margin-bottom: 10px;
+  display: ${({ show }) => (show ? "initial" : "none")};
 `;
 
 interface PropsT {

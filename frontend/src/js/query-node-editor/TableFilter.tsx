@@ -35,7 +35,6 @@ export interface BaseTableFilterProps {
     pageSize: number,
     config?: { returnOnly?: boolean },
   ) => Promise<PostFilterSuggestionsResponseT | null>;
-  onShowDescription: (filterIdx: number) => void;
 }
 
 interface TableFilterProps extends BaseTableFilterProps {
@@ -52,7 +51,6 @@ const TableFilter = ({
   currencyConfig,
   onLoadFilterSuggestions,
   onSetFilterValue,
-  onShowDescription,
   onSwitchFilterMode,
 }: TableFilterProps) => {
   const filterContext = useMemo(
@@ -98,6 +96,7 @@ const TableFilter = ({
             indexPrefix={filterIdx + 1}
             context={filterContext}
             value={filter.value || []}
+            defaultValue={filter.defaultValue}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             options={filter.options}
@@ -175,12 +174,7 @@ const TableFilter = ({
   })();
 
   return filterComponent ? (
-    <div
-      className={className}
-      onFocusCapture={() => onShowDescription(filterIdx)}
-    >
-      {filterComponent}
-    </div>
+    <div className={className}>{filterComponent}</div>
   ) : null;
 };
 

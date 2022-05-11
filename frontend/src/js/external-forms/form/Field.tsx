@@ -25,10 +25,8 @@ import { Description } from "../form-components/Description";
 import { Headline } from "../form-components/Headline";
 import FormConceptGroup from "../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../form-concept-group/formConceptGroupState";
-import {
-  FormQueryDropzone,
-  FormMultiQueryDropzone,
-} from "../form-query-dropzone";
+import FormMultiQueryDropzone from "../form-query-dropzone/FormMultiQueryDropzone";
+import FormQueryDropzone from "../form-query-dropzone/FormQueryDropzone";
 import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
 import { getInitialValue, isFormField, isOptionalField } from "../helper";
 import { getErrorForField } from "../validators";
@@ -61,7 +59,7 @@ const BOTTOM_MARGIN = 7;
 // };
 
 type Props<T> = T & {
-  children: (props: ControllerRenderProps<DynamicFormValues> & T) => ReactNode;
+  children: (props: ControllerRenderProps<DynamicFormValues>) => ReactNode;
   control: Control<DynamicFormValues>;
   formField: FieldT | Tabs;
   defaultValue?: any;
@@ -73,8 +71,7 @@ const FieldContainer = styled("div")<{ noLabel?: boolean }>`
   padding: ${({ noLabel }) => (noLabel ? "7px 10px" : "2px 10px 7px")};
   background-color: ${({ theme }) => theme.col.bg};
   border-radius: 3px;
-  box-shadow: 1px 1px 3px 0 rgba(0, 0, 0, 0.2);
-  border-left: 5px solid;
+  box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.2);
 `;
 const ConnectedField = <T extends Object>({
   children,
@@ -101,7 +98,7 @@ const ConnectedField = <T extends Object>({
   return noContainer ? (
     <div>{children({ ...field, ...props })}</div>
   ) : (
-    <FieldContainer style={{ borderColor: "#ccc" }} noLabel={noLabel}>
+    <FieldContainer noLabel={noLabel}>
       {children({ ...field, ...props })}
     </FieldContainer>
   );
@@ -117,14 +114,15 @@ const Spacer = styled("div")`
 
 const Group = styled("div")`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
 `;
 
 const NestedFields = styled("div")`
   padding: 12px 10px 5px;
-  box-shadow: 0px 0px 2px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
   background-color: ${({ theme }) => theme.col.bg};
-  border-radius: 3px;
+  border-radius: 5px;
   margin-bottom: ${BOTTOM_MARGIN * 2}px;
 `;
 
@@ -321,7 +319,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
       );
     case "DATASET_SELECT":
       const datasetDefaultValue =
-        availableDatasets.length > 0 ? availableDatasets[0] : undefined;
+        availableDatasets.length > 0 ? availableDatasets[0] : null;
 
       return (
         <ConnectedField formField={field} control={control}>
@@ -350,12 +348,10 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           <Group
             style={{
               display: (field.style && field.style.display) || "flex",
-              flexDirection: "row",
-              flexWrap: "wrap",
+              gap: field.style?.display === "grid" ? "0 12px" : "0 8px",
               gridTemplateColumns: `repeat(${
                 field.style?.gridColumns || 1
               }, 1fr)`,
-              gap: "0 8px",
             }}
           >
             {field.fields.map((f, i) => {
@@ -461,7 +457,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               allowlistedSelects={field.allowlistedSelects}
               defaults={field.defaults}
               optional={optional}
-              isValidConcept={(item: Object) =>
+              isValidConcept={(item) =>
                 !nodeIsInvalid(
                   item,
                   field.blocklistedConceptIds,
@@ -493,7 +489,13 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                             value: option.value,
                           }),
                         )}
-                        value={row[field.rowPrefixField!.name]}
+                        value={
+                          /* Because we're essentially adding an extra dynamic field to FormConceptGroupT
+                            with the key `field.rowPrefixField.name` */
+                          (row as unknown as Record<string, string>)[
+                            field.rowPrefixField!.name
+                          ]
+                        }
                         onChange={(value) =>
                           onChange([
                             ...fieldValue.slice(0, i),

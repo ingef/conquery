@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import type { StateT } from "app-types";
 import React, { FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,6 +7,8 @@ import Pane from "../pane/Pane";
 import { clickPaneTab } from "../pane/actions";
 import type { TabT } from "../pane/types";
 
+import type { StateT } from "./reducers";
+
 interface PropsT {
   tabs: TabT[];
 }
@@ -15,10 +16,13 @@ interface PropsT {
 const Tab = styled("div")<{ isActive: boolean }>`
   height: 100%;
   flex-grow: 1;
-  display: flex;
   flex-direction: column;
 
   display: ${({ isActive }) => (isActive ? "flex" : "none")};
+`;
+
+const SxPane = styled(Pane)`
+  background-color: ${({ theme }) => theme.col.bgAlt};
 `;
 
 const RightPane: FC<PropsT> = ({ tabs }) => {
@@ -33,13 +37,14 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
   }, [dispatch, tabs]);
 
   return (
-    <Pane
+    <SxPane
       right
       tabs={tabs.map((tab) => ({
         key: tab.key,
         label: t(tab.labelKey), // TODO: Somehow make this non-dynamic
         tooltip: t(tab.tooltipKey), // TODO: Somehow make this non-dynamic
       }))}
+      dataTestId="right-pane"
     >
       {tabs.map((tab) => {
         const isActive = tab.key === activeTab;
@@ -51,7 +56,7 @@ const RightPane: FC<PropsT> = ({ tabs }) => {
           </Tab>
         );
       })}
-    </Pane>
+    </SxPane>
   );
 };
 

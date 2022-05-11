@@ -1,7 +1,7 @@
-import { StateT } from "app-types";
 import { useSelector } from "react-redux";
 
 import { DatasetIdT, QueryIdT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import QueryRunner from "../query-runner/QueryRunner";
 import { useStartQuery, useStopQuery } from "../query-runner/actions";
 import { QueryRunnerStateT } from "../query-runner/reducer";
@@ -45,7 +45,7 @@ const TimebasedQueryRunner = () => {
   const stopTimebasedQuery = useStopQuery("timebased");
 
   const startQuery = () => {
-    if (datasetId) {
+    if (datasetId && allConditionsFilled(query)) {
       startTimebasedQuery(datasetId, query);
     }
   };

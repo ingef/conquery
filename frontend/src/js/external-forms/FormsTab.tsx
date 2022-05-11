@@ -1,29 +1,26 @@
-import { tabDescription } from ".";
-import { StateT } from "app-types";
 import { useCallback, useEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { useSelector, useStore } from "react-redux";
+import { useDispatch, useSelector, useStore } from "react-redux";
 
 import { useGetForms } from "../api/api";
 import type { DatasetIdT, DatasetT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { usePrevious } from "../common/helpers/usePrevious";
 import { useActiveLang } from "../localization/useActiveLang";
-import StandardQueryEditorTab from "../standard-query-editor";
-import { updateReducers } from "../store";
-import TimebasedQueryEditorTab from "../timebased-query-editor";
 
 import FormContainer from "./FormContainer";
 import FormsNavigation from "./FormsNavigation";
 import FormsQueryRunner from "./FormsQueryRunner";
+import { loadFormsSuccess, setExternalForm } from "./actions";
 import type { Field, Form, Tabs } from "./config-types";
 import type { DynamicFormValues } from "./form/Form";
 import { collectAllFormFields, getInitialValue } from "./helper";
-import buildExternalFormsReducer from "./reducer";
 import { selectFormConfig } from "./stateSelectors";
 
 const useLoadForms = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
   const store = useStore();
   const getForms = useGetForms();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     async function loadForms() {
@@ -31,24 +28,13 @@ const useLoadForms = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
         return;
       }
 
-      const configuredForms = await getForms(datasetId);
+      const forms = await getForms(datasetId);
 
-      const forms = Object.fromEntries(
-        configuredForms.map((form) => [form.type, form]),
-      );
+      dispatch(loadFormsSuccess({ forms }));
 
-      const externalFormsReducer = buildExternalFormsReducer(forms);
-
-      const tabs = [
-        StandardQueryEditorTab,
-        TimebasedQueryEditorTab,
-        {
-          ...tabDescription,
-          reducer: externalFormsReducer,
-        },
-      ];
-
-      updateReducers(store, tabs);
+      if (forms.length > 0) {
+        dispatch(setExternalForm({ form: forms[0].type }));
+      }
     }
 
     loadForms();

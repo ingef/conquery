@@ -2,14 +2,14 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -18,15 +18,13 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -36,54 +34,46 @@ import lombok.extern.slf4j.Slf4j;
  * Every Worker is assigned a partition of the loaded {@link Entity}s via {@link Entity::getBucket}.
  */
 @Slf4j
-@Setter
 @Getter
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @ToString(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Namespace implements Closeable {
 
-	@JsonIgnore
-	private transient ObjectWriter objectWriter;
-	@JsonIgnore
+	private final ObjectWriter objectWriter;
 	@ToString.Include
-	private transient NamespaceStorage storage;
+	private final NamespaceStorage storage;
 
-	@JsonIgnore
-	private transient ExecutionManager executionManager;
+	private final ExecutionManager executionManager;
 
 	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
-	@JsonIgnore
-	private transient JobManager jobManager;
+	private final JobManager jobManager;
 
 	/**
 	 * All known {@link Worker}s that are part of this Namespace.
 	 */
-	private Set<WorkerInformation> workers = new HashSet<>();
+	private final Set<WorkerInformation> workers = new HashSet<>();
 
 	/**
 	 * Map storing the buckets each Worker has been assigned.
 	 */
-	@JsonIgnore
-	private transient Int2ObjectMap<WorkerInformation> bucket2WorkerMap = new Int2ObjectArrayMap<>();
+	private final Int2ObjectMap<WorkerInformation> bucket2WorkerMap = new Int2ObjectArrayMap<>();
 
-	@JsonIgnore
-	private transient DatasetRegistry namespaces;
+	private final FilterSearch filterSearch;
 
-	public Namespace(NamespaceStorage storage, boolean failOnError, ObjectWriter objectWriter) {
-		this.storage = storage;
-		this.executionManager = new ExecutionManager(this);
-		this.jobManager = new JobManager(storage.getDataset().getName(), failOnError);
-		this.objectWriter = objectWriter;
+	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, ObjectWriter objectWriter){
+
+		ExecutionManager executionManager = new ExecutionManager(datasetRegistry);
+		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
+
+		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getSearch());
+
+		final Namespace namespace = new Namespace(objectWriter, storage, executionManager, jobManager, filterSearch);
+
+		datasetRegistry.add(namespace);
+
+		return namespace;
 	}
 
-	public void checkConnections() {
-		List<WorkerInformation> l = new ArrayList<>(workers);
-		l.removeIf(w -> w.getConnectedShardNode() != null);
-
-		if (!l.isEmpty()) {
-			throw new IllegalStateException("Not all known ShardNodes are connected. Missing " + l);
-		}
-	}
 
 	public void sendToAll(WorkerMessage msg) {
 		if (workers.isEmpty()) {
@@ -124,9 +114,7 @@ public class Namespace implements Closeable {
 
 		info.setObjectWriter(objectWriter);
 
-		Set<WorkerInformation> l = new HashSet<>(workers);
-		l.add(info);
-		workers = l;
+		workers.add(info);
 
 		for (Integer bucket : info.getIncludedBuckets()) {
 			final WorkerInformation old = bucket2WorkerMap.put(bucket.intValue(), info);
@@ -138,11 +126,10 @@ public class Namespace implements Closeable {
 		}
 	}
 
-	@JsonIgnore
 	public Dataset getDataset() {
 		return storage.getDataset();
 	}
-	
+
 	public void close() {
 		try {
 			jobManager.close();
@@ -150,7 +137,7 @@ public class Namespace implements Closeable {
 		catch (Exception e) {
 			log.error("Unable to close namespace jobmanager of {}", this, e);
 		}
-		
+
 		try {
 			log.info("Closing namespace storage of {}", getStorage().getDataset().getId());
 			storage.close();
@@ -176,18 +163,19 @@ public class Namespace implements Closeable {
 		return getWorkerBucketsMap().getBucketsForWorker(workerId);
 	}
 
-	private WorkerToBucketsMap getWorkerBucketsMap(){
+	private WorkerToBucketsMap getWorkerBucketsMap() {
 		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
-		if (workerBuckets == null){
+		if (workerBuckets == null) {
 			workerBuckets = createWorkerBucketsMap();
 		}
+
 		return workerBuckets;
 	}
 
 	private synchronized WorkerToBucketsMap createWorkerBucketsMap() {
 		// Ensure that only one map is created and populated in the storage
 		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
-		if (workerBuckets != null){
+		if (workerBuckets != null) {
 			return workerBuckets;
 		}
 		storage.setWorkerToBucketsMap(new WorkerToBucketsMap());

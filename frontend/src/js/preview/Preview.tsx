@@ -1,12 +1,12 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { FC } from "react";
 import Hotkeys from "react-hot-keys";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
 import type { ColumnDescription, ColumnDescriptionKind } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { getDiffInDays, parseStdDate } from "../common/helpers/dateHelper";
 
 import { Cell } from "./Cell";

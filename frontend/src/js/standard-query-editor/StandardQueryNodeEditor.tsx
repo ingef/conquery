@@ -1,11 +1,10 @@
-import { StateT } from "app-types";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ConceptIdT, CurrencyConfigT, DatasetIdT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { tableIsEditable } from "../model/table";
 import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
-import { QueryNodeEditorStateT } from "../query-node-editor/reducer";
 
 import {
   updateNodeLabel,
@@ -50,9 +49,7 @@ const StandardQueryNodeEditor = ({ editedNode, setEditedNode }: Props) => {
     !!node.tables &&
     node.tables.length > 1 &&
     node.tables.some((table) => tableIsEditable(table));
-  const editorState = useSelector<StateT, QueryNodeEditorStateT>(
-    (state) => state.queryNodeEditor,
-  );
+
   const currencyConfig = useSelector<StateT, CurrencyConfigT>(
     (state) => state.startup.config.currency,
   );
@@ -71,7 +68,6 @@ const StandardQueryNodeEditor = ({ editedNode, setEditedNode }: Props) => {
       name="standard"
       datasetId={datasetId}
       node={node}
-      editorState={editorState}
       showTables={showTables}
       currencyConfig={currencyConfig}
       onLoadFilterSuggestions={onLoadFilterSuggestions}

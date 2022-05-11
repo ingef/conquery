@@ -1,16 +1,14 @@
-import type {
-  ConceptT,
-  TableT,
-  SelectorT,
-  ConceptIdT,
-  GetConceptResponseT,
-} from "../api/types";
+import type { ConceptT, ConceptIdT, GetConceptResponseT } from "../api/types";
 import { includes } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
-import { nodeIsElement } from "../model/node";
+import { nodeIsElement, NodeResetConfig } from "../model/node";
 import { resetSelects } from "../model/select";
 import { resetTables } from "../model/table";
-import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
+import type {
+  DragItemConceptTreeNode,
+  SelectedSelectorT,
+  TableWithFilterValueT,
+} from "../standard-query-editor/types";
 
 import type { TreesT } from "./reducer";
 import { findConcepts } from "./search";
@@ -87,8 +85,8 @@ const findParentConcepts = (
 interface ConceptsByIds {
   concepts: ConceptT[];
   root: ConceptIdT;
-  tables: TableT[];
-  selects?: SelectorT[];
+  tables: TableWithFilterValueT[];
+  selects?: SelectedSelectorT[];
 }
 
 const findRootConceptFromNodeIds = (
@@ -118,6 +116,7 @@ const findRootConceptFromNodeIds = (
 export const getConceptsByIdsWithTablesAndSelects = (
   rootConcepts: TreesT,
   conceptIds: ConceptIdT[],
+  resetConfig: NodeResetConfig,
 ): ConceptsByIds | null => {
   const rootConceptId = findRootConceptFromNodeIds(rootConcepts, conceptIds);
 
@@ -136,13 +135,15 @@ export const getConceptsByIdsWithTablesAndSelects = (
   }
 
   const selects = rootConcept.selects
-    ? { selects: resetSelects(rootConcept.selects, { useDefaults: true }) }
+    ? { selects: resetSelects(rootConcept.selects, resetConfig) }
     : {};
 
   return {
     concepts: conceptIds.map((id) => getConceptById(id)).filter(exists),
     root: rootConceptId,
-    tables: resetTables(rootConcept.tables, { useDefaults: true }),
+    tables: rootConcept.tables
+      ? resetTables(rootConcept.tables, resetConfig)
+      : [],
     ...selects,
   };
 };

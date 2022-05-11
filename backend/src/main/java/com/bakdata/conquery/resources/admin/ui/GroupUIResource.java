@@ -29,14 +29,13 @@ public class GroupUIResource {
 
 	/**
 	 * End point for retrieving information about a specific group.
-	 * 
-	 * @param group
-	 *            Unique id of the group.
+	 *
+	 * @param group Unique id of the group.
 	 * @return A view holding the information about the group.
 	 */
 	@Path("{" + GROUP_ID + "}")
 	@GET
-	public View getUser(@PathParam(GROUP_ID) Group group) {
+	public View getGroup(@PathParam(GROUP_ID) Group group) {
 		return new UIView<>("group.html.ftl", uiProcessor.getUIContext(), uiProcessor.getGroupContent(group));
 	}
 }

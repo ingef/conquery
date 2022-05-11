@@ -82,6 +82,10 @@ public class ConqueryConfig extends Configuration {
 	@NotNull
 	private FrontendConfig frontend = new FrontendConfig();
 
+	@NotNull
+	@Valid
+	private SearchConfig search = new SearchConfig();
+
 	private ConqueryMetricsConfig metricsConfig = new ConqueryMetricsConfig();
 
 	@Valid

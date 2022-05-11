@@ -4,7 +4,6 @@ import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.Labeled;
@@ -46,7 +45,21 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 		return getConnector().getDataset();
 	}
 
-	public abstract void configureFrontend(FEFilter f) throws ConceptConfigurationException;
+	public FEFilter createFrontendConfig() throws ConceptConfigurationException {
+		FEFilter f = FEFilter.builder()
+							 .id(getId())
+							 .label(getLabel())
+							 .description(getDescription())
+							 .unit(getUnit())
+							 .allowDropFile(getAllowDropFile())
+							 .pattern(getPattern())
+							 .defaultValue(getDefaultValue())
+							 .build();
+		configureFrontend(f);
+		return f;
+	}
+
+	protected abstract void configureFrontend(FEFilter f) throws ConceptConfigurationException;
 
 	@JsonIgnore
 	public abstract Column[] getRequiredColumns();
@@ -56,17 +69,6 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 	@Override
 	public FilterId createId() {
 		return new FilterId(connector.getId(), getName());
-	}
-
-	/**
-	 * This method is called once at startup or if the dataset changes for each new import that
-	 * concerns this filter. Use this to collect metadata from the import. It is not guaranteed that
-	 * any blocks or cBlocks exist at this time. Any data created by this method should be volatile
-	 * and @JsonIgnore.
-	 *
-	 * @param imp the import added
-	 */
-	public void addImport(Import imp) {
 	}
 
 	@JsonIgnore

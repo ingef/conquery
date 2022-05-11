@@ -24,9 +24,9 @@ export function useOpenPreview() {
     dispatch(loadCSVForPreview.request());
 
     try {
-      const parsed = await loadCSV(url);
+      const result = await loadCSV(url);
 
-      dispatch(loadCSVForPreview.success({ csv: parsed.result.data, columns }));
+      dispatch(loadCSVForPreview.success({ csv: result.data, columns }));
     } catch (e) {
       dispatch(loadCSVForPreview.failure(errorPayload(e as Error, {})));
     }

@@ -9,10 +9,10 @@ import {
 import type {
   AndQueryT,
   ConceptIdT,
-  DatasetIdT,
   QueryT,
   QueryNodeT,
   PostFilterSuggestionsResponseT,
+  SelectOptionT,
 } from "../api/types";
 import { successPayload } from "../common/actions";
 import type { TreesT } from "../concept-trees/reducer";
@@ -114,10 +114,10 @@ const isAndQuery = (query: QueryT): query is AndQueryT => {
 */
 export const useExpandPreviousQuery = () => {
   const dispatch = useDispatch();
-  const loadQuery = useLoadQuery();
+  const { loadQuery } = useLoadQuery();
   const { t } = useTranslation();
 
-  return async (datasetId: DatasetIdT, rootConcepts: TreesT, query: QueryT) => {
+  return async (rootConcepts: TreesT, query: QueryT) => {
     if (!isAndQuery(query)) {
       throw new Error("Cant expand query, because root is not AND");
     }
@@ -133,7 +133,7 @@ export const useExpandPreviousQuery = () => {
     );
 
     await Promise.all(
-      nestedPreviousQueryIds.map((queryId) => loadQuery(datasetId, queryId)),
+      nestedPreviousQueryIds.map((queryId) => loadQuery(queryId)),
     );
 
     dispatch(
@@ -174,19 +174,19 @@ export const setFilterValue = createAction("query-editor/SET_FILTER_VALUE")<{
   orIdx: number;
   tableIdx: number;
   filterIdx: number;
-  value: unknown;
+  value: any; // Actually: FilterWithValueType["value"] which is overloaded;
 }>();
 
 export const setTableSelects = createAction("query-editor/SET_TABLE_SELECTS")<{
   andIdx: number;
   orIdx: number;
   tableIdx: number;
-  value: unknown;
+  value: SelectOptionT[];
 }>();
 export const setSelects = createAction("query-editor/SET_SELECTS")<{
   andIdx: number;
   orIdx: number;
-  value: unknown;
+  value: SelectOptionT[];
 }>();
 export const setDateColumn = createAction("query-editor/SET_DATE_COLUMN")<{
   andIdx: number;

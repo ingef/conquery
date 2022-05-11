@@ -1,6 +1,5 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
@@ -11,6 +10,7 @@ import Tooltip from "../tooltip/Tooltip";
 import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
+import type { StateT } from "./reducers";
 
 // ADDING TO react-split-pane STYLES
 // Because otherwise, vertical panes don't expand properly in Safari
@@ -45,7 +45,7 @@ const Content = ({ rightTabs }: ContentPropsT) => {
           allowResize={displayTooltip}
           minSize={displayTooltip ? 200 : 30}
           maxSize={600}
-          defaultSize={displayTooltip ? "18%" : 30}
+          defaultSize={displayTooltip ? "15%" : 30}
           className={!displayTooltip ? "SplitPane--tooltip-fixed" : ""}
         >
           {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
@@ -53,7 +53,7 @@ const Content = ({ rightTabs }: ContentPropsT) => {
             split="vertical"
             minSize={350}
             maxSize={-300}
-            defaultSize="39%"
+            defaultSize="42%"
           >
             <LeftPane />
             <RightPane tabs={rightTabs} />

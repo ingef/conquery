@@ -33,9 +33,9 @@ public class ExcelConfig {
 
 	private static final Map<String, CellStyler> FALLBACK_STYLES = Map.of(
 			BASIC_STYLE, new CellStyler(),
-			CURRENCY_STYLE_PREFIX+"EUR", new CellStyler().withDataFormatString("#,##0.00 €"),
+			CURRENCY_STYLE_PREFIX + "EUR", new CellStyler().withDataFormatString("#,##0.00 €"),
 			NUMERIC_STYLE, new CellStyler().withDataFormatString("#,##0.00"),
-			INTEGER_STYLE, new CellStyler().withDataFormatString("#,###")
+			INTEGER_STYLE, new CellStyler().withDataFormatString("#,##0")
 	);
 
 	/**

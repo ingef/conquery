@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -15,7 +14,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -52,6 +50,7 @@ import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.NonNull;
@@ -90,19 +89,17 @@ public class AdminDatasetProcessor {
 
 		datasetStorage.openStores(config.getStorage());
 		datasetStorage.loadData();
-		datasetStorage.setMetaStorage(storage);
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
 
-		Namespace ns =
-				new Namespace(
-				datasetStorage,
-				config.isFailOnError(),
-				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
-																			.writerWithView(InternalOnly.class)
-		);
-
-		datasetRegistry.add(ns);
+		final ObjectWriter mapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
+										  .writerWithView(InternalOnly.class);
+		Namespace.createAndRegister(
+						getDatasetRegistry(),
+						datasetStorage,
+						config,
+						mapper
+				);
 
 		// for now we just add one worker to every ShardNode
 		for (ShardNodeInformation node : datasetRegistry.getShardNodes().values()) {
@@ -359,8 +356,9 @@ public class AdminDatasetProcessor {
 		ns.getJobManager().addSlowJob(new SimpleJob(
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
+
 					ns.sendToAll(new UpdateMatchingStatsMessage());
-					FilterSearch.updateSearch(getDatasetRegistry(), Collections.singleton(ns.getDataset()), getJobManager(), config.getCsv());
+					ns.getFilterSearch().updateSearch();
 				}
 		));
 	}

@@ -2,7 +2,6 @@ import { ActionType, getType } from "typesafe-actions";
 
 import type { ConceptT, ConceptIdT, SecondaryId } from "../api/types";
 import type { Action } from "../app/actions";
-import { nodeIsElement } from "../model/node";
 
 import {
   clearSearchQuery,
@@ -14,7 +13,11 @@ import {
 } from "./actions";
 import { setTree } from "./globalTreeStoreHelper";
 
-export type LoadedConcept = ConceptT & { loading?: boolean; error?: string };
+export type LoadedConcept = ConceptT & {
+  loading?: boolean;
+  error?: string;
+  success?: boolean;
+};
 
 export interface TreesT {
   [treeId: string]: LoadedConcept;
@@ -131,7 +134,7 @@ const setTreeSuccess = (
   // Side effect in a reducer.
   // Globally store the huge (1-5 MB) trees for read only
   // - keeps the redux store free from huge data
-  const newState = updateTree(state, treeId, { loading: false });
+  const newState = updateTree(state, treeId, { loading: false, success: true });
 
   const rootConcept = newState.trees[treeId];
 
@@ -156,16 +159,6 @@ const setLoadTreesSuccess = (
     data: { concepts, secondaryIds },
   }: ActionType<typeof loadTrees.success>["payload"],
 ): ConceptTreesStateT => {
-  // Assign default select filter values
-  for (const concept of Object.values(concepts)) {
-    const tables = nodeIsElement(concept) ? concept.tables || [] : [];
-
-    for (const table of tables) {
-      for (const filter of table.filters || [])
-        if (filter.defaultValue) filter.value = filter.defaultValue;
-    }
-  }
-
   return {
     ...state,
     loading: false,

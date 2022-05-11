@@ -4,10 +4,11 @@ import type { DatasetActions } from "../dataset/actions";
 import type { ExternalFormActions } from "../external-forms/actions";
 import type { PaneActions } from "../pane/actions";
 import type { PreviewActions } from "../preview/actions";
-import type { PreviousQueriesFilterActions } from "../previous-queries/filter/actions";
-import type { FolderFilterActions } from "../previous-queries/folderFilter/actions";
+import type { ProjectItemsFilterActions } from "../previous-queries/filter/actions";
+import type { FolderFilterActions } from "../previous-queries/folder-filter/actions";
 import type { PreviousQueryListActions } from "../previous-queries/list/actions";
-import type { QueriesSearchActions } from "../previous-queries/search/actions";
+import type { ProjectItemsSearchActions } from "../previous-queries/search/actions";
+import type { ProjectItemsTypeFilterActions } from "../previous-queries/type-filter/actions";
 import type { QueryGroupModalActions } from "../query-group-modal/actions";
 import type { QueryRunnerActions } from "../query-runner/actions";
 import type { QueryUploadConceptListModalActions } from "../query-upload-concept-list-modal/actions";
@@ -24,8 +25,9 @@ type ReduxInitAction = { type: "@@INIT" };
 export type Action =
   | ReduxInitAction
   | FolderFilterActions
-  | QueriesSearchActions
-  | PreviousQueriesFilterActions
+  | ProjectItemsSearchActions
+  | ProjectItemsFilterActions
+  | ProjectItemsTypeFilterActions
   | StandardQueryEditorActions
   | QueryGroupModalActions
   | QueryUploadConceptListModalActions

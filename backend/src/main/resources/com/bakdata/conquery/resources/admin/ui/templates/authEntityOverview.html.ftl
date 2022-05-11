@@ -1,7 +1,27 @@
 <#macro entityOverview uiPathBase adminPathBase entities entityName>
+<div class="container">
     <div class="row">
-		<div class="col">
-            <table class="table table-striped">
+		<div class="col bg-light pb-3 rounded">
+			<form>
+				<h3>Create ${entityName}</h3>
+                    <div class="form-group">
+                      <label for="entity_name">Name:</label>
+                      <input id="entity_name" name="entity_name" class="form-control text-monospace" style="font-family:monospace;">
+                      <small id="nameHelp" class="form-text text-muted">The display name</small>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="entity_id">ID:</label>
+                      <input id="entity_id" name="entity_id"  class="form-control text-monospace" style="font-family:monospace;">
+                      <small id="idHelp" class="form-text text-muted">The internal id used to distinguish ${entityName}s (must be unique) </small>
+                    </div>
+                    <input class="btn btn-primary" type="submit" onclick="createEntity()"/>
+			</form>
+		</div>
+	</div>
+    <div class="row pt-5">
+        <div class="col table-responsive">
+            <table class="table table-sm table-striped">
                 <thead>
                     <td>Label</td>
                     <td>Id</td>
@@ -18,19 +38,11 @@
                 </tbody>
             </table>
 			<button class="btn btn-primary" onclick="downloadEntities()">Download</button>
-			<form>
-				<div class="form-group">
-					<h3>Create ${entityName}</h3>
-				  <label for="entity_name">Name:</label>
-				  <input id="entity_name" name="entity_name" class="form-control text-monospace" style="font-family:monospace;">
-				  <label for="entity_id">ID:</label>
-				  <input id="entity_id" name="entity_id"  class="form-control text-monospace" style="font-family:monospace;">
-				  <input class="btn btn-primary" type="submit" onclick="createEntity()"/>
-				</div> 
-			</form>
 
 		</div>
 	</div>
+
+</div>
 	<script type="application/javascript">
         function createEntity() {
             event.preventDefault(); 

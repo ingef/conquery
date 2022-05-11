@@ -1,177 +1,167 @@
 package com.bakdata.conquery.apiv1;
 
-import java.io.File;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import javax.validation.Valid;
-
+import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.models.datasets.concepts.Searchable;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.util.search.QuickSearch;
-import com.github.powerlibraries.io.In;
-import com.univocity.parsers.common.IterableResult;
-import com.univocity.parsers.common.ParsingContext;
-import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.bakdata.conquery.util.search.TrieSearch;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Sets;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 
 
 @Slf4j
+@Value
 public class FilterSearch {
 
+	private final NamespaceStorage storage;
+	private final JobManager jobManager;
+	private final CSVConfig parserConfig;
+	private final SearchConfig searchConfig;
+
 	/**
-	 * Enum to specify a scorer function in {@link QuickSearch}. Used for resolvers in {@link AbstractSelectFilter}.
+	 * We tag our searches based on references collected in getSearchReferences. We do not mash them all together to allow for sharing and prioritising different sources.
+	 * <p>
+	 * In the code below, the keys of this map will usually be called "reference".
 	 */
-	@AllArgsConstructor
-	@Getter
-	public enum FilterSearchType {
-		/**
-		 * String must start with search-String.
-		 */
-		PREFIX {
-			@Override
-			public double score(String candidate, String keyword) {
-				/* Sort ascending by length of match */
-				if (keyword.startsWith(candidate)) {
-					return 1d / candidate.length();
-				}
-				return -1d;
-			}
-		},
-		/**
-		 * Search is contained somewhere in string.
-		 */
-		CONTAINS {
-			@Override
-			public double score(String candidate, String keyword) {
-				/* 0...1 depending on the length ratio */
-				double matchScore = (double) candidate.length() / (double) keyword.length();
+	@JsonIgnore
+	private final Map<Searchable, TrieSearch<FEValue>> searchCache = new HashMap<>();
 
-				/* boost by 1 if matches start of keyword */
-				if (keyword.startsWith(candidate))
-					return matchScore + 1.0;
+	/**
+	 * From a given {@link FEValue} extract all relevant keywords.
+	 */
+	private static List<String> extractKeywords(FEValue value) {
+		List<String> keywords = new ArrayList<>(3);
 
-				return matchScore;
-			}
-		},
-		/**
-		 * Values must be exactly the same.
-		 */
-		EXACT {
-			@Override
-			public double score(String candidate, String keyword) {
-				/* Only allow exact matches through (returning < 0.0 means skip this candidate) */
-				return candidate.equals(keyword) ? 1.0 : -1.0;
-			}
-		};
+		keywords.add(value.getLabel());
+		keywords.add(value.getValue());
 
-		/**
-		 * Search function. See {@link QuickSearch}.
-		 * @param candidate potential match.
-		 * @param match search String.
-		 * @return Value > 0 increases relevance of string (also used for ordering results). < 0 removes string.
-		 */
-		public abstract double score(String candidate, String match);
+		if (value.getOptionValue() != null) {
+			keywords.add(value.getOptionValue());
+		}
+
+		return keywords;
 	}
 
-	private static Map<String, QuickSearch<FilterSearchItem>> search = new HashMap<>();
+	/**
+	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
+	 */
+	public List<TrieSearch<FEValue>> getSearchesFor(SelectFilter<?> filter) {
+		return filter.getSearchReferences().stream()
+					 .map(searchCache::get)
+					 .filter(Objects::nonNull)
+					 .collect(Collectors.toList());
+	}
+
 
 	/**
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
-	public static void updateSearch(DatasetRegistry datasets, Collection<Dataset> datasetsToUpdate, JobManager jobManager, CSVConfig parser) {
-		datasetsToUpdate.stream()
-				.flatMap(ds -> datasets.get(ds.getId()).getStorage().getAllConcepts().stream())
-				.flatMap(c -> c.getConnectors().stream())
-				.flatMap(co -> co.collectAllFilters().stream())
-				.filter(f -> f instanceof AbstractSelectFilter && ((AbstractSelectFilter<?>) f).getTemplate() != null)
-				.map(AbstractSelectFilter.class::cast)
-				.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(f, parser))));
-	}
+	public void updateSearch() {
 
-	/***
-	 * Create interactive Search for the selected filter based on its Template.
-	 * @param filter
-	 */
-	public static void createSourceSearch(AbstractSelectFilter<?> filter, CSVConfig parserConfig) {
-		FilterTemplate template = filter.getTemplate();
+		jobManager.addSlowJob(new SimpleJob(
+				"Initialize Source Search",
+				() -> {
 
-		List<String> templateColumns = new ArrayList<>(template.getColumns());
-		templateColumns.add(template.getColumnValue());
+					log.info("BEGIN loading SourceSearch");
+
+					// collect all SelectFilters to the create searches for them
+					final List<SelectFilter<?>> allSelectFilters =
+							storage.getAllConcepts().stream()
+								   .flatMap(c -> c.getConnectors().stream())
+								   .flatMap(co -> co.collectAllFilters().stream())
+								   .filter(SelectFilter.class::isInstance)
+								   .map(f -> ((SelectFilter<?>) f))
+								   .collect(Collectors.toList());
 
 
-		File file = new File(template.getFilePath());
-		String autocompleteKey = String.join("_", templateColumns) + "_" + file.getName();
+					final Set<Searchable> collectedSearchables =
+							allSelectFilters.stream()
+											.map(SelectFilter::getSearchReferences)
+											.flatMap(Collection::stream)
+											// Disabling search is only a last resort for when columns are too big to store in memory or process for indexing.
+											// TODO FK: We want no Searchable to be disabled, better scaling searches or mechanisms to fill search.
+											.filter(Predicate.not(Searchable::isSearchDisabled))
+											.collect(Collectors.toSet());
 
-		QuickSearch<FilterSearchItem> search = FilterSearch.search.get(autocompleteKey);
 
-		if (search != null) {
-			log.info("Reference list '{}' already exists ...", file.getAbsolutePath());
-			filter.setSourceSearch(search);
-			return;
-		}
+					// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
+					final ExecutorService service = Executors.newCachedThreadPool();
 
-		log.info("Processing reference list '{}' ...", file.getAbsolutePath());
-		final long time = System.currentTimeMillis();
+					final Map<Searchable, TrieSearch<FEValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
 
-		search = new QuickSearch.QuickSearchBuilder()
-							   .withUnmatchedPolicy(QuickSearch.UnmatchedPolicy.IGNORE)
-							   .withMergePolicy(QuickSearch.MergePolicy.UNION)
-							   .withKeywordMatchScorer(FilterSearchType.CONTAINS::score)
-							   .build();
+					log.debug("Found {} searchable Objects.", collectedSearchables.size());
 
-		final CsvParser parser = parserConfig.createParser();
-		try {
-			IterableResult<String[], ParsingContext> it = parser.iterate(In.file(file).withUTF8().asReader());
-			String[] header = it.getContext().parsedHeaders();
+					for (Searchable searchable : collectedSearchables) {
 
-			for (String[] row : it) {
-				FilterSearchItem item = new FilterSearchItem();
+						service.submit(() -> {
+							final Stream<FEValue> values = searchable.getSearchValues(getParserConfig(), storage);
 
-				for (int i = 0; i < header.length; i++) {
-					String column = header[i];
+							final StopWatch watch = StopWatch.createStarted();
 
-					if (!templateColumns.contains(column)) {
-						continue;
+							log.info("BEGIN collecting entries for `{}`", searchable);
+
+							try {
+								final TrieSearch<FEValue> search = new TrieSearch<>(
+										searchable.isGenerateSuffixes() ? searchable.getMinSuffixLength() : Integer.MAX_VALUE,
+										searchConfig.getSplit()
+								);
+
+								values.distinct()
+									  .forEach(item -> search.addItem(item, extractKeywords(item)));
+
+								search.shrinkToFit();
+
+								if (log.isDebugEnabled()) {
+									log.debug(
+											"DONE collecting entries for `{}`, within {} ({} Items)",
+											searchable,
+											Duration.ofMillis(watch.getTime()),
+											search.calculateSize()
+									);
+								}
+
+								synchronizedResult.put(searchable, search);
+
+							}
+							catch (Exception e) {
+								log.error("Failed to create search for {}", searchable, e);
+							}
+						});
 					}
 
-					item.setLabel(template.getValue());
-					item.setOptionValue(template.getOptionValue());
-					item.getTemplateValues().put(column, row[i]);
+					service.shutdown();
 
-					if (column.equals(template.getColumnValue())) {
-						item.setValue(row[i]);
+
+					while (!service.awaitTermination(1, TimeUnit.MINUTES)) {
+						log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables, synchronizedResult.keySet()));
 					}
 
-					search.addItem(item, row[i]);
+					log.debug("DONE loading SourceSearch");
 				}
-			}
-
-			filter.setSourceSearch(search);
-
-			FilterSearch.search.put(autocompleteKey, search);
-			final long duration = System.currentTimeMillis() - time;
-
-			log.info("Processed reference list '{}' in {} ms ({} Items in {} Lines)",
-					 file.getAbsolutePath(), duration, search.getStats().getItems(), it.getContext().currentLine());
-		} catch (Exception e) {
-			log.error("Failed to process reference list '"+file.getAbsolutePath()+"'", e);
-		} finally {
-			parser.stopParsing();
-		}
+		));
 	}
 
-	public static void clear() {
-		search.clear();
-	}
 }

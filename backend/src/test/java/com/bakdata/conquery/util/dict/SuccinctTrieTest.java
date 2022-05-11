@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -48,7 +49,7 @@ public class SuccinctTrieTest {
 		words.add("ha");
 		words.add("hat");
 
-		SuccinctTrie direct = new SuccinctTrie(Dataset.PLACEHOLDER,"name");
+		SuccinctTrie direct = new SuccinctTrie(Dataset.PLACEHOLDER, "name");
 
 
 		int distinctValues = 0;
@@ -60,6 +61,8 @@ public class SuccinctTrieTest {
 		}
 
 		direct.compress();
+
+		assertThat(direct.iterator().next()).isEqualTo(new DictionaryEntry(0, "hat".getBytes()));
 
 		assertThat(direct.getElement(0)).isEqualTo("hat".getBytes());
 		assertThat(direct.getElement(1)).isEqualTo("it".getBytes());
@@ -77,7 +80,7 @@ public class SuccinctTrieTest {
 		final CentralRegistry registry = new CentralRegistry();
 		registry.register(Dataset.PLACEHOLDER);
 
-		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER,"testDict");
+		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "testDict");
 
 		data().forEach(value -> dict.put(value.getBytes()));
 
@@ -91,7 +94,7 @@ public class SuccinctTrieTest {
 	@ParameterizedTest(name = "seed: {0}")
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
-		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER,"name");
+		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "name");
 		EncodedDictionary direct = new EncodedDictionary(dict, StringTypeEncoded.Encoding.UTF8);
 		final BiMap<String, Integer> reference = HashBiMap.create();
 

@@ -1,13 +1,18 @@
-import { StateT } from "app-types";
 import { useMemo } from "react";
 import { useSelector } from "react-redux";
 
-import { TreesT } from "./reducer";
+import type { StateT } from "../app/reducers";
+import { exists } from "../common/helpers/exists";
+
+import type { TreesT } from "./reducer";
 
 const isRootTreeId = (trees: TreesT) => (treeId: string) => {
-  // Those that don't have a parent, must be root
-  // If they don't have a label, they're loading, or in any other broken state
-  return !trees[treeId].parent && trees[treeId].label;
+  const tree = trees[treeId];
+  const hasParent =
+    tree.hasOwnProperty("parent") && exists((tree as any).parent);
+  const isntLoadingOrBrokenSomehow = exists(tree.label);
+
+  return !hasParent && isntLoadingOrBrokenSomehow;
 };
 
 export const useRootConceptIds = () => {

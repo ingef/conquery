@@ -1,9 +1,9 @@
-import { StateT } from "app-types";
 import { FC } from "react";
 import { useFormContext, useFormState } from "react-hook-form";
 import { useSelector } from "react-redux";
 
 import { DatasetIdT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import QueryRunner from "../query-runner/QueryRunner";
@@ -15,7 +15,6 @@ import {
   selectFormConfig,
   selectQueryRunner,
   selectRunningQuery,
-  selectActiveFormType,
 } from "./stateSelectors";
 import transformQueryToApi from "./transformQueryToApi";
 
@@ -45,7 +44,6 @@ const FormQueryRunner: FC = () => {
   );
   const queryId = useSelector<StateT, string | null>(selectRunningQuery);
   const isQueryRunning = exists(queryId);
-  const formName = useSelector<StateT, string | null>(selectActiveFormType);
   const formConfig = useSelector<StateT, Form | null>(selectFormConfig);
 
   const { getValues } = useFormContext();
@@ -59,21 +57,17 @@ const FormQueryRunner: FC = () => {
       isValid,
     });
 
-  const formQueryTransformation = formConfig
-    ? transformQueryToApi(formConfig)
-    : () => {};
-
   const startExternalFormsQuery = useStartQuery("externalForms");
   const stopExternalFormsQuery = useStopQuery("externalForms");
 
   const startQuery = () => {
-    if (datasetId) {
-      const form = getValues();
-      const query = { formName, form };
+    if (datasetId && exists(formConfig)) {
+      const values = getValues();
 
-      startExternalFormsQuery(datasetId, query, {
-        formQueryTransformation,
-      });
+      startExternalFormsQuery(
+        datasetId,
+        transformQueryToApi(formConfig, values),
+      );
     }
   };
   const stopQuery = () => {

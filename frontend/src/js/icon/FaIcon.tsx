@@ -1,7 +1,7 @@
 import isPropValid from "@emotion/is-prop-valid";
 import { keyframes } from "@emotion/react";
 import styled from "@emotion/styled";
-import { library } from "@fortawesome/fontawesome-svg-core";
+import { IconName, library } from "@fortawesome/fontawesome-svg-core";
 import { far } from "@fortawesome/free-regular-svg-icons";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -25,7 +25,7 @@ export interface IconStyleProps {
 }
 
 export interface FaIconPropsT extends IconStyleProps {
-  icon: string;
+  icon: IconName;
   className?: string;
   regular?: boolean;
 }

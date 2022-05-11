@@ -21,7 +21,7 @@ public class PrefixTextFilter extends SingleColumnFilter<String> {
 
 	@Override
 	public void configureFrontend(FEFilter f) {
-		f.setType(FEFilterType.STRING);
+		f.setType(FEFilterType.Fields.STRING);
 	}
 	
 	@Override

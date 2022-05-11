@@ -38,7 +38,6 @@ import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
-import com.bakdata.conquery.tasks.ClearFilterSourceSearch;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
@@ -91,7 +90,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	// For registering form providers
 	private FormScanner formScanner;
 
-
 	public ManagerNode() {
 		this(DEFAULT_NAME);
 	}
@@ -105,7 +103,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		validator = environment.getValidator();
 
 		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
-				.build(getName());
+													 .build(getName());
 
 		// Instantiate DatasetRegistry and MetaStorage so they are ready for injection into the object mapper (API + Storage)
 		// The validator is already injected at this point see Conquery.java
@@ -158,8 +156,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				ResourcesProvider provider = resourceProvider.getConstructor().newInstance();
 				provider.registerResources(this);
 				providers.add(provider);
-			} catch (Exception e) {
-				log.error("Failed to register Resource {}",resourceProvider, e);
+			}
+			catch (Exception e) {
+				log.error("Failed to register Resource {}", resourceProvider, e);
 			}
 		}
 
@@ -177,7 +176,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
 		environment.admin().addTask(new PermissionCleanupTask(storage));
-		environment.admin().addTask(new ClearFilterSourceSearch());
 		environment.admin().addTask(new ReportConsistencyTask(datasetRegistry));
 
 		ShutdownTask shutdown = new ShutdownTask();
@@ -193,59 +191,60 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		log.info("MetaStorage loaded {}", storage);
 
 		datasetRegistry.setMetaStorage(storage);
-		for (Namespace sn : datasetRegistry.getDatasets()) {
-			sn.getStorage().setMetaStorage(storage);
-		}
 	}
 
 	public void loadNamespaces() {
-		final Collection<NamespaceStorage > storages = config.getStorage().loadNamespaceStorages();
-		final ObjectWriter objectWriter = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
+		final Collection<NamespaceStorage> storages = config.getStorage().loadNamespaceStorages();
+		final ObjectWriter objectWriter =
+				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
 
-		for(NamespaceStorage namespaceStorage : storages) {
-			Namespace ns = new Namespace(namespaceStorage, config.isFailOnError(), objectWriter);
-			datasetRegistry.add(ns);
+		for (NamespaceStorage namespaceStorage : storages) {
+			Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), objectWriter);
 		}
 	}
 
 	@Override
-	public void sessionOpened(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("ManagerNode["+session.getLocalAddress().toString()+"]");
+	public void sessionOpened(IoSession session) {
+		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
 	@Override
-	public void sessionClosed(IoSession session) throws Exception {
+	public void sessionClosed(IoSession session) {
 		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.info("Client '{}' disconnected ", session.getAttribute(MinaAttributes.IDENTIFIER));
 	}
 
 	@Override
-	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
+	public void exceptionCaught(IoSession session, Throwable cause) {
 		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		log.error("caught exception", cause);
 	}
 
 	@Override
-	public void messageReceived(IoSession session, Object message) throws Exception {
+	public void messageReceived(IoSession session, Object message) {
 		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
 		if (message instanceof MessageToManagerNode) {
 			MessageToManagerNode mrm = (MessageToManagerNode) message;
 			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext> job = new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
-					jobManager,
-					new NetworkSession(session),
-					datasetRegistry, config.getCluster().getBackpressure()
-			));
 
-			// TODO: 01.07.2020 FK: distribute messages/jobs to their respective JobManagers (if they have one)
+			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext>
+					job =
+					new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
+							jobManager,
+							new NetworkSession(session),
+							datasetRegistry, config.getCluster().getBackpressure()
+					));
+
 			if (mrm.isSlowMessage()) {
 				((SlowMessage) mrm).setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
-			} else {
+			}
+			else {
 				jobManager.addFastJob(job);
 			}
-		} else {
+		}
+		else {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 		}
 	}
@@ -273,21 +272,24 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		try {
 			acceptor.dispose();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error(acceptor + " could not be closed", e);
 		}
 
 		for (ResourcesProvider provider : providers) {
 			try {
 				provider.close();
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.error(provider + " could not be closed", e);
 			}
 
 		}
 		try {
 			storage.close();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error(storage + " could not be closed", e);
 		}
 

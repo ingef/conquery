@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
+import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import WithTooltip from "../tooltip/WithTooltip";
@@ -54,7 +54,7 @@ const DatasetSelector: FC = () => {
 
   return (
     <WithTooltip text={t("help.datasetSelector")} lazy>
-      <Root>
+      <Root data-test-id="dataset-selector">
         <Headline>{t("datasetSelector.label")}</Headline>
         <SxInputSelect
           value={selected || null}

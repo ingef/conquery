@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
  * A group consists of users and permissions. The permissions held by the group
  * are effective for all users in the group. In Conquery, when a user shares a
  * query it is currently shared with all groups a user is in.
- *
  */
 @Slf4j
 public class Group extends PermissionOwner<GroupId> implements RoleOwner {
@@ -27,6 +27,11 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	@JsonProperty
 	private Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
 
+	@JsonCreator
+	private Group(String name, String label) {
+		this(name, label, null);
+	}
+
 	public Group(String name, String label, MetaStorage storage) {
 		super(name, label, storage);
 	}
@@ -35,7 +40,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	public Set<ConqueryPermission> getEffectivePermissions() {
 		Set<ConqueryPermission> permissions = getPermissions();
 		for (RoleId roleId : roles) {
-			permissions = Sets.union(permissions,storage.getRole(roleId).getEffectivePermissions());
+			permissions = Sets.union(permissions, storage.getRole(roleId).getEffectivePermissions());
 		}
 		return permissions;
 	}
@@ -51,7 +56,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	public synchronized void addMember(User user) {
-		if(members.add(user.getId())) {
+		if (members.add(user.getId())) {
 			log.trace("Added user {} to group {}", user.getId(), getId());
 			updateStorage();
 		}

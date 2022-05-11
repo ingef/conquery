@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { FC } from "react";
 
 import { DNDType } from "../../common/constants/dndTypes";
@@ -9,16 +8,12 @@ import Dropzone from "../../ui-components/Dropzone";
 import Label from "../../ui-components/Label";
 import Optional from "../../ui-components/Optional";
 
-import FormQueryResult from "./FormQueryResult";
+import ValidatedFormQueryResult from "./ValidatedFormQueryResult";
 
 const DROP_TYPES = [
   DNDType.PREVIOUS_QUERY,
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
-
-const SxDropzone = styled(Dropzone)<{ centered?: boolean }>`
-  justify-content: ${({ centered }) => (centered ? "center" : "flex-start")};
-`;
 
 interface PropsT {
   label: string;
@@ -43,6 +38,14 @@ const FormQueryDropzone: FC<PropsT> = ({
     onChange(item);
   };
 
+  const onInvalid = () => {
+    // It would be better to call `setError` to register an error for the field,
+    // but that error won't persist when another `useController` call is made for that field
+    // during field registration, so we have to do something here that
+    // makes the field not pass the `validate` rule.
+    onChange(null);
+  };
+
   return (
     <div className={className}>
       <Label>
@@ -50,22 +53,19 @@ const FormQueryDropzone: FC<PropsT> = ({
         {label}
         {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>
-      <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
+      <Dropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
         onDrop={(item) => onDrop(item as DragItemQuery)}
         acceptedDropTypes={DROP_TYPES}
-        centered={!value}
       >
-        {() =>
-          !value ? (
-            dropzoneText
-          ) : (
-            <FormQueryResult
-              queryResult={value}
-              onDelete={() => onChange(null)}
-            />
-          )
-        }
-      </SxDropzone>
+        {() => (
+          <ValidatedFormQueryResult
+            placeholder={dropzoneText}
+            queryResult={value || undefined}
+            onInvalid={onInvalid}
+            onDelete={() => onChange(null)}
+          />
+        )}
+      </Dropzone>
     </div>
   );
 };

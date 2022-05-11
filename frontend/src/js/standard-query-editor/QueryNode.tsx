@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import type { StateT } from "app-types";
 import { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
@@ -7,6 +6,7 @@ import { useSelector } from "react-redux";
 
 import type { QueryT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
+import type { StateT } from "../app/reducers";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import ErrorMessage from "../error-message/ErrorMessage";
 import {
@@ -190,11 +190,14 @@ const QueryNode: FC<PropsT> = ({
         }),
   };
   const [, drag] = useDrag<StandardQueryNodeT, void, {}>({
-    item,
-    begin: () =>
+    type: item.type,
+    item: () =>
       ({
         ...item,
-        ...getWidthAndHeight(ref),
+        dragContext: {
+          ...item.dragContext,
+          ...getWidthAndHeight(ref),
+        },
       } as StandardQueryNodeT),
   });
 

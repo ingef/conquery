@@ -38,6 +38,7 @@ const Label = styled("p")`
   line-height: 1.2;
   font-size: ${({ theme }) => theme.font.md};
 `;
+
 const Description = styled("div")`
   margin: 3px 0 0;
   word-break: break-word;
@@ -105,13 +106,14 @@ const FormConceptNode: FC<PropsT> = ({
     },
   };
   const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
-    item,
-    begin: () => {
-      return {
-        ...item,
+    type: item.type,
+    item: () => ({
+      ...item,
+      dragContext: {
+        ...item.dragContext,
         ...getWidthAndHeight(ref),
-      };
-    },
+      },
+    }),
   });
 
   const tooltipText = hasNonDefaultSettings
@@ -129,13 +131,15 @@ const FormConceptNode: FC<PropsT> = ({
       active={hasNonDefaultSettings || hasFilterValues}
       onClick={onFilterClick}
     >
-      <WithTooltip text={tooltipText}>
-        {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-        <Label>{conceptNode && conceptNode.label}</Label>
-        {conceptNode && !!conceptNode.description && (
-          <Description>{conceptNode.description}</Description>
-        )}
-      </WithTooltip>
+      <div>
+        <WithTooltip text={tooltipText}>
+          {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
+          <Label>{conceptNode && conceptNode.label}</Label>
+          {conceptNode && !!conceptNode.description && (
+            <Description>{conceptNode.description}</Description>
+          )}
+        </WithTooltip>
+      </div>
       <Right>
         {expand && expand.expandable && (
           <WithTooltip text={t("externalForms.common.concept.expand")}>

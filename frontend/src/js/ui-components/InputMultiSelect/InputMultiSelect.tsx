@@ -134,6 +134,7 @@ const InputMultiSelect = ({
     selectedItems,
     inputValue,
     creatable,
+    skipQueryMatching: !!onLoadMore,
   });
 
   const {
@@ -242,8 +243,20 @@ const InputMultiSelect = ({
     setSelectedItems,
   });
 
+  const clearStaleSearch = () => {
+    if (!isOpen) {
+      setInputValue("");
+    }
+  };
+
+  const filterOptionsCount =
+    creatable && inputValue.length > 0
+      ? filteredOptions.length - 1
+      : filteredOptions.length;
+
   const Select = (
     <SelectContainer
+      onBlur={clearStaleSearch}
       ref={(instance) => {
         if (!label) {
           clickOutsideRef.current = instance;
@@ -289,6 +302,7 @@ const InputMultiSelect = ({
               inputPropsRef(instance);
             }}
             disabled={disabled}
+            spellCheck={false}
             placeholder={
               selectedItems.length > 0
                 ? null
@@ -340,15 +354,24 @@ const InputMultiSelect = ({
         >
           <MenuActionBar
             total={total}
-            optionsCount={filteredOptions.length}
+            optionsCount={filterOptionsCount}
             onInsertAllClick={() => {
               const moreInsertableThanCurrentlyLoaded =
-                exists(total) && total > filteredOptions.length;
+                exists(total) && total > filterOptionsCount;
 
               if (!!onLoadAndInsertAll && moreInsertableThanCurrentlyLoaded) {
                 onLoadAndInsertAll(inputValue);
               } else {
-                setSelectedItems(filteredOptions);
+                const optionsWithoutCreatable =
+                  creatable && inputValue.length > 0
+                    ? filteredOptions.slice(1)
+                    : filteredOptions;
+
+                setSelectedItems([
+                  ...selectedItems,
+                  ...optionsWithoutCreatable,
+                ]);
+                setInputValue("");
               }
             }}
           />
