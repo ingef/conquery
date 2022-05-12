@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
+import java.util.Optional;
+import java.util.function.Function;
+
+import com.bakdata.conquery.models.datasets.concepts.select.connector.MappedSelect;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -38,10 +42,13 @@ public abstract class ResultInfo {
 
 	public ColumnDescriptor asColumnDescriptor(PrintSettings settings, UniqueNamer collector) {
 		return ColumnDescriptor.builder()
-				.label(collector.getUniqueName(this))
-				.defaultLabel(defaultColumnName(settings))
-				.userConceptLabel(userColumnName(settings))
-				.type(getType().typeInfo())
-				.build();
+							   .label(collector.getUniqueName(this))
+							   .defaultLabel(defaultColumnName(settings))
+							   .userConceptLabel(userColumnName(settings))
+							   .type(getType().typeInfo())
+							   .build();
 	}
+
+
+	public abstract Optional<Function<Object, String>> getValueMapper();
 }

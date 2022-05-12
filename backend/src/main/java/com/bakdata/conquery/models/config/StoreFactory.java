@@ -34,9 +34,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public interface StoreFactory {
 
-	Collection<NamespaceStorage> findNamespaceStorages();
+	Collection<NamespaceStorage> discoverNamespaceStorages();
 
-	Collection<WorkerStorage> findWorkerStorages();
+	Collection<WorkerStorage> discoverWorkerStorages();
 
 	// NamespacedStorage (Important for serdes communication between manager and shards)
 	SingletonStore<Dataset> createDatasetStore(String pathName, ObjectMapper objectMapper);

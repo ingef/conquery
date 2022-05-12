@@ -292,9 +292,8 @@ public class ExcelRenderer {
 	}
 
 	// Type specific cell writers
-
     private static void writeStringCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-        cell.setCellValue(info.getType().printNullable(settings, value));
+        cell.setCellValue(info.getType().printNullable(settings, info.getValueMapper().map(m -> m.apply(value)).orElse(String.valueOf(value))));
     }
 
     /**

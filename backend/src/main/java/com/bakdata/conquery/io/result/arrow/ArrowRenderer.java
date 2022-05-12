@@ -245,9 +245,7 @@ public class ArrowRenderer {
 			final FieldVector vector = root.getVector(vecI);
 			final ResultInfo resultInfo = resultInfos.get(pos);
 			builder[pos] =
-					generateVectorFiller(pos, vector, settings, resultInfo.getType(), resultInfo instanceof SelectResultInfo
-																					  ? ((SelectResultInfo) resultInfo).getValueMapper()
-																					  : Optional.empty());
+					generateVectorFiller(pos, vector, settings, resultInfo.getType(), resultInfo.getValueMapper());
 
 		}
         return builder;
@@ -261,6 +259,7 @@ public class ArrowRenderer {
 		}
 
 		if (vector instanceof VarCharVector) {
+			Function<Object, String> concreteMapper = valueMapper.orElse(o -> resultType.printNullable(settings, o));
 			return varCharVectorFiller(
 					(VarCharVector) vector,
 					(line) -> {
@@ -273,7 +272,7 @@ public class ArrowRenderer {
 							return null;
 						}
 
-						return valueMapper.orElse(o -> resultType.printNullable(settings, o)).apply(line[pos]);
+						return concreteMapper.apply(line[pos]);
 
 					});
         }

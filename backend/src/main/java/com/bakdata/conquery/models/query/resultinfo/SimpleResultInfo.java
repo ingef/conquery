@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.AllArgsConstructor;
@@ -24,5 +27,11 @@ public class SimpleResultInfo extends ResultInfo {
 	@Override
 	public String defaultColumnName(PrintSettings printSettings) {
 		return name;
+	}
+
+	@Override
+	public Optional<Function<Object, String>> getValueMapper() {
+		// TODO may provide ids through this
+		return Optional.empty();
 	}
 }

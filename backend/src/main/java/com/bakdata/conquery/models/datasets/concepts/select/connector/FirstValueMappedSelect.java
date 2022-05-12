@@ -20,7 +20,6 @@ public class FirstValueMappedSelect extends FirstValueSelect implements MappedSe
 
 	@Getter
 	@NotNull
-	@NonNull
 	private final InternToExternMapper mapping;
 
 	@JsonCreator

@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -108,16 +107,16 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 				getConfig().getCluster().getEntityBucketSize()
 		);
 
-		final Collection<WorkerStorage> workerStorages = config.getStorage().findWorkerStorages();
+		final Collection<WorkerStorage> workerStorages = config.getStorage().discoverWorkerStorages();
 
 
-		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+		ExecutorService loaders = config.getQueries().getExecutionPool().createService("Worker loader");
 
-		Queue<Worker> workers = new ConcurrentLinkedQueue<>();
+		Queue<Worker> workersDone = new ConcurrentLinkedQueue<>();
 		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
 				try {
-					workers.add(this.workers.createWorker(workerStorage, config.isFailOnError()));
+					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError()));
 				}
 				catch (Exception e) {
 					log.error("Failed reading Storage", e);
@@ -133,7 +132,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
 
 
-			log.debug("Waiting for Worker workers to load. {} are already finished.", workers.size());
+			log.debug("Waiting for Worker workers to load. {} are already finished. {} pending", workersDone.size(), workerStorages.size()
+																													 - workersDone.size());
 		}
 
 		log.info("All Worker loaded: {}", this.workers.getWorkers().size());

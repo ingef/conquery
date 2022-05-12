@@ -14,21 +14,20 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id="ADD_WORKER", base=NetworkMessage.class)
-@RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter @Slf4j
+@CPSType(id = "ADD_WORKER", base = NetworkMessage.class)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@Getter
+@Slf4j
 public class AddWorker extends MessageToShardNode.Slow {
 
 	private final Dataset dataset;
-	
+
 	@Override
 	public void react(ShardNodeNetworkContext context) throws Exception {
 		log.info("creating a new worker for {}", dataset);
 		ConqueryConfig config = context.getConfig();
 
-		Worker
-				worker =
-				context.getWorkers()
-					   .createWorker(dataset, config.getStorage(), createWorkerName(), context.getValidator(), config.isFailOnError());
+		Worker worker = context.getWorkers().createWorker(dataset, config.getStorage(), createWorkerName(), context.getValidator(), config.isFailOnError());
 
 		worker.setSession(context.getRawSession());
 

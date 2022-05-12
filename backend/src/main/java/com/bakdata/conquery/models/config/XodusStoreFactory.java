@@ -5,6 +5,7 @@ import static com.bakdata.conquery.io.storage.StoreMappings.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -165,24 +166,24 @@ public class XodusStoreFactory implements StoreFactory {
 			Multimaps.synchronizedSetMultimap(MultimapBuilder.hashKeys().hashSetValues().build());
 
 	@Override
-	public Collection<NamespaceStorage> findNamespaceStorages() {
+	public Collection<NamespaceStorage> discoverNamespaceStorages() {
 		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, validator, storePath), NAMESPACE_STORES);
 	}
 
 	@Override
-	public Collection<WorkerStorage> findWorkerStorages() {
+	public Collection<WorkerStorage> discoverWorkerStorages() {
 		return loadNamespacedStores("worker_", (storePath) -> new WorkerStorage(this, validator, storePath), WORKER_STORES);
 	}
 
 
-	private <T extends NamespacedStorage> Queue<T> loadNamespacedStores(String prefix, Function<String, T> creator, Set<String> storesToTest) {
+	private <T extends NamespacedStorage> List<T> loadNamespacedStores(String prefix, Function<String, T> creator, Set<String> storesToTest) {
 		File baseDir = getDirectory().toFile();
 
 		if (baseDir.mkdirs()) {
 			log.warn("Had to create Storage Dir at `{}`", baseDir);
 		}
 
-		Queue<T> storages = new ConcurrentLinkedQueue<>();
+		List<T> storages = new ArrayList<>();
 
 		for (File directory : Objects.requireNonNull(baseDir.listFiles((file, name) -> file.isDirectory() && name.startsWith(prefix)))) {
 
@@ -191,7 +192,7 @@ public class XodusStoreFactory implements StoreFactory {
 			ConqueryMDC.setLocation(directory.toString());
 
 			if (!environmentHasStores(directory, storesToTest)) {
-				log.warn("No valid WorkerStorage found.");
+				log.warn("No valid WorkerStorage found in {}", directory);
 				continue;
 			}
 

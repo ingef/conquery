@@ -28,6 +28,10 @@ public class CsvRenderer {
 	private final CsvWriter writer;
 	private final PrintSettings cfg;
 
+	/**
+	 * "Printer-Mapping" that combine a potentially nested {@link ResultType}
+	 * with an element valueMapper (see {@link com.bakdata.conquery.models.datasets.concepts.select.Select#transformValue} and {@link SelectResultInfo#getValueMapper()}.
+	 */
 	private final Map<Class<? extends ResultType>, Function3<ResultType, Object, Function<Object, String>, String>> FIELD_MAP = Map.of(
 			ResultType.ListT.class, this::printList,
 			ResultType.StringT.class, this::printString
@@ -61,17 +65,13 @@ public class CsvRenderer {
 		try {
 			for (int i = 0; i < infos.size(); i++) {
 				final ResultInfo info = infos.get(i);
-				if (info instanceof SelectResultInfo) {
-					SelectResultInfo selectResultInfo = (SelectResultInfo) info;
 
-					final String
-							printValue =
-							FIELD_MAP.getOrDefault(selectResultInfo.getType().getClass(), this::printDefault)
-									 .invoke(info.getType(), value[i], selectResultInfo.getValueMapper().orElse(null));
-					writer.addValue(printValue);
-					continue;
-				}
-				writer.addValue(info.getType().printNullable(cfg, value[i]));
+				final Function3<ResultType, Object, Function<Object, String>, String>
+						printer =
+						FIELD_MAP.getOrDefault(info.getType().getClass(), this::printDefault);
+				final Function<Object, String> valueMapper = info.getValueMapper().orElse(null);
+				final String printValue = printer.invoke(info.getType(), value[i], valueMapper);
+				writer.addValue(printValue);
 			}
 		}
 		catch (Exception e) {
@@ -91,11 +91,14 @@ public class CsvRenderer {
 			throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", values, values.getClass().getName(), values));
 		}
 		// Not sure if this escaping is enough
-		String listDelimEscape = cfg.getListElementEscaper() + cfg.getListFormat().getSeparator();
 		StringJoiner joiner = new StringJoiner(cfg.getListFormat().getSeparator(), cfg.getListFormat().getStart(), cfg.getListFormat().getEnd());
 		for (Object obj : (List<?>) values) {
 			final ResultType elementType = ((ResultType.ListT) type).getElementType();
-			joiner.add(FIELD_MAP.getOrDefault(elementType.getClass(), this::printDefault).invoke(elementType, obj, mapper));
+			final Function3<ResultType, Object, Function<Object, String>, String>
+					printer =
+					FIELD_MAP.getOrDefault(elementType.getClass(), this::printDefault);
+			final String printValue = printer.invoke(elementType, obj, mapper);
+			joiner.add(printValue.replace(cfg.getListFormat().getSeparator(), cfg.getListDelimEscape()));
 		}
 		return joiner.toString();
 	}

@@ -4,6 +4,7 @@ import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
@@ -64,7 +65,6 @@ public class ResultCsvProcessor {
 				idPrinter::createId
 		);
 		Charset charset = determineCharset(userAgent, queryCharset);
-
 
 		StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {

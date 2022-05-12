@@ -3,6 +3,7 @@ package com.bakdata.conquery.commands;
 import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -43,8 +44,6 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
-import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
@@ -231,20 +230,22 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void loadNamespaces() {
 
 
-		Queue<Namespace> namespaces = new ConcurrentLinkedQueue<>();
+		Queue<Namespace> namespacesDone = new ConcurrentLinkedQueue<>();
 		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
-		for (NamespaceStorage namespaceStorage : config.getStorage().findNamespaceStorages()) {
+		final Collection<NamespaceStorage> namespaceStorages = config.getStorage().discoverNamespaceStorages();
+		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				namespaces.add(Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), createInternalObjectMapper()));
+				namespacesDone.add(Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), createInternalObjectMapper()));
 			});
 		}
 
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			log.debug("Waiting for Worker namespaces to load. {} are already finished.", namespaces.size());
+			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", namespacesDone.size(), namespaceStorages.size()
+																															- namespacesDone.size());
 		}
 	}
 
