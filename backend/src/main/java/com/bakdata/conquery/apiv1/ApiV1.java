@@ -9,9 +9,7 @@ import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourcesProvider;
@@ -25,7 +23,6 @@ import com.bakdata.conquery.resources.api.FormConfigResource;
 import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 @CPSType(base = ResourcesProvider.class, id = "ApiV1")
 public class ApiV1 implements ResourcesProvider {
@@ -37,23 +34,15 @@ public class ApiV1 implements ResourcesProvider {
 		JerseyEnvironment environment = manager.getEnvironment().jersey();
 		environment.setUrlPattern("/api");
 
-		//inject required services
-		environment.register(new AbstractBinder() {
-			//TODO use DirectBinder instead?
-			@Override
-			protected void configure() {
-				bind(manager.getConfig()).to(ConqueryConfig.class);
+		environment.register(manager.getConfig());
 
-				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
-				bind(manager.getStorage()).to(MetaStorage.class);
+		environment.register(manager.getDatasetRegistry());
+		environment.register(manager.getStorage());
 
-				bind(new ConceptsProcessor(manager.getDatasetRegistry())).to(ConceptsProcessor.class);
-				bind(new MeProcessor(manager.getStorage(), datasets)).to(MeProcessor.class);
-				bind(new QueryProcessor(datasets, manager.getStorage(), manager.getConfig())).to(QueryProcessor.class);
-				bind(new FormConfigProcessor(manager.getValidator(), manager.getStorage(), datasets)).to(FormConfigProcessor.class);
-			}
-		});
-
+		environment.register(new ConceptsProcessor(manager.getDatasetRegistry()));
+		environment.register(new MeProcessor(manager.getStorage(), datasets));
+		environment.register(new QueryProcessor(datasets, manager.getStorage(), manager.getConfig()));
+		environment.register(new FormConfigProcessor(manager.getValidator(), manager.getStorage(), datasets));
 		environment.register(CORSPreflightRequestFilter.class);
 		environment.register(CORSResponseFilter.class);
 
