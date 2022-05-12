@@ -17,6 +17,7 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
+import io.dropwizard.jackson.Jackson;
 import lombok.experimental.UtilityClass;
 import org.apache.shiro.authz.Permission;
 
@@ -76,10 +77,10 @@ public class Mappers {
 	}
 
 	public static ObjectMapper getMapper() {
-		return configure(io.dropwizard.jackson.Jackson.newObjectMapper());
+		return configure(Jackson.newObjectMapper());
 	}
 
 	public static ObjectMapper getBinaryMapper() {
-		return configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
+		return configure(Jackson.newObjectMapper(new SmileFactory()));
 	}
 }

@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.jackson.Mappers;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -32,10 +31,13 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@Slf4j @CPSBase
+@Slf4j
+@CPSBase
 public abstract class ConqueryTestSpec {
-	
-	@Getter @Setter @NotNull
+
+	@Getter
+	@Setter
+	@NotNull
 	private String label;
 
 	@Setter
@@ -68,8 +70,9 @@ public abstract class ConqueryTestSpec {
 		return parseSubTree(support, node, expectedClass, null);
 	}
 
-	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		return parseSubTree(support, node, Mappers.getMapper()
+	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation)
+			throws IOException, JSONException {
+		return parseSubTree(support, node, support.getObjectMapper()
 												  .getTypeFactory().constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation);
 	}
 
@@ -77,11 +80,12 @@ public abstract class ConqueryTestSpec {
 		return parseSubTree(support, node, expectedType, null);
 	}
 
-	public static  <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation)
+			throws IOException, JSONException {
 		ObjectMapper mapper = support.getDataset().injectIntoNew(
 				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
 						.injectIntoNew(
-								Mappers.getMapper().copy().addHandler(new DatasetPlaceHolderFiller(support))
+								support.getObjectMapper().addHandler(new DatasetPlaceHolderFiller(support))
 						)
 		);
 
@@ -94,34 +98,39 @@ public abstract class ConqueryTestSpec {
 		ValidatorHelper.failOnError(log, support.getValidator().validate(result));
 		return result;
 	}
-	
-	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		ObjectMapper mapper = support.getDataset().injectIntoNew(
-			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
-					Mappers.getMapper().copy().addHandler(new DatasetPlaceHolderFiller(support))
-			)
-		);
+
+	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation)
+			throws IOException, JSONException {
+
+		ObjectMapper mapper = support.getDataset()
+									 .injectIntoNew(
+											 new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry())
+													 .injectIntoNew(
+															 support.getObjectMapper()
+																	.addHandler(new DatasetPlaceHolderFiller(support))
+													 )
+									 );
 		List<T> result = new ArrayList<>(node.size());
-		for(var child : node) {
+		for (var child : node) {
 			T value;
 			try {
 				value = mapper.readerFor(expectedType).readValue(child);
 			}
-			catch(Exception e) {
-				if(child.isValueNode()) {
+			catch (Exception e) {
+				if (child.isValueNode()) {
 					String potentialPath = child.textValue();
 					try {
 						value = mapper.readerFor(expectedType).readValue(IntegrationTest.class.getResource(potentialPath));
 					}
-					catch(Exception e2) {
-						throw new RuntimeException("Could not parse value "+potentialPath, e2);
+					catch (Exception e2) {
+						throw new RuntimeException("Could not parse value " + potentialPath, e2);
 					}
 				}
 				else {
 					throw e;
 				}
 			}
-			
+
 			if (modifierBeforeValidation != null) {
 				modifierBeforeValidation.accept(value);
 			}

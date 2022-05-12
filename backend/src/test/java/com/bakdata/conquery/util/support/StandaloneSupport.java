@@ -11,6 +11,7 @@ import javax.ws.rs.client.ClientRequestContext;
 import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -23,6 +24,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.setup.Environment;
 import lombok.Data;
@@ -50,6 +52,13 @@ public class StandaloneSupport {
 	@Getter
 	private final User testUser;
 
+	public ObjectMapper getObjectMapper() {
+		return getManagerNode()
+				.getEnvironment()
+				.getObjectMapper()
+				.copy();
+	}
+
 	public AuthorizationController getAuthorizationController() {
 		return testConquery.getStandaloneCommand().getManager().getAuthController();
 	}
@@ -70,13 +79,13 @@ public class StandaloneSupport {
 		);
 
 		// We use this to change the visibility of the run method, hence it cannot be instantiated.
-		new PreprocessorCommand(MoreExecutors.newDirectExecutorService()){
+		new PreprocessorCommand(MoreExecutors.newDirectExecutorService()) {
 			@Override
 			public void run(Environment environment, net.sourceforge.argparse4j.inf.Namespace namespace, ConqueryConfig config) throws Exception {
 				super.run(environment, namespace, config);
 			}
 		}
-		.run(env, namespace, config);
+				.run(env, namespace, config);
 	}
 
 
@@ -96,6 +105,10 @@ public class StandaloneSupport {
 		return testConquery.getStandaloneCommand().getManager().getDatasetRegistry();
 	}
 
+	public ManagerNode getManagerNode() {
+		return testConquery.getStandaloneCommand().getManager();
+	}
+
 	public List<ShardNode> getShardNodes() {
 		return testConquery.getStandaloneCommand().getShardNodes();
 	}
@@ -111,7 +124,8 @@ public class StandaloneSupport {
 
 	public Client getClient() {
 		return testConquery.getClient()
-						   .register(new ConqueryAuthenticationFilter(getAuthorizationController().getConqueryTokenRealm().createTokenForUser(getTestUser().getId())));
+						   .register(new ConqueryAuthenticationFilter(getAuthorizationController().getConqueryTokenRealm()
+																								  .createTokenForUser(getTestUser().getId())));
 	}
 
 	@Data
@@ -121,7 +135,7 @@ public class StandaloneSupport {
 		@Override
 		public void filter(ClientRequestContext requestContext) throws IOException {
 			// If none set to provided token
-			if(requestContext.getHeaders().containsKey("Authorization")){
+			if (requestContext.getHeaders().containsKey("Authorization")) {
 				return;
 			}
 
