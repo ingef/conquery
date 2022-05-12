@@ -180,7 +180,6 @@ public class ConceptsProcessor {
 
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-	@Getter
 	public static class AutoCompleteResult {
 		private final List<FEValue> values;
 		private final long total;
@@ -209,7 +208,12 @@ public class ConceptsProcessor {
 			}
 
 			final List<FEValue> fullResult = searchResults.get(Pair.of(filter, maybeText.get()));
-			return new AutoCompleteResult(fullResult.subList(startIncl, endExcl), fullResult.size());
+
+			if (startIncl >= fullResult.size()) {
+				return new AutoCompleteResult(Collections.emptyList(), fullResult.size());
+			}
+
+			return new AutoCompleteResult(fullResult.subList(startIncl, Math.min(fullResult.size(), endExcl)), fullResult.size());
 		}
 		catch (ExecutionException e) {
 			log.warn("Failed to search for \"{}\".", maybeText, (Throwable) (log.isTraceEnabled() ? e : null));
@@ -251,16 +255,15 @@ public class ConceptsProcessor {
 		// they are already sorted in terms of information weight by getSearchesFor
 
 		// Also note: currently we are still issuing large search requests, but much smaller allocations at once, and querying only when the past is not sufficient
-		return
-				namespace.getFilterSearch().getSearchesFor(filter).stream()
-						 .map(search -> createSourceSearchResult(
-								 search,
-								 Collections.singletonList(text),
-								 OptionalInt.empty()
-						 ))
-						 .flatMap(Collection::stream)
-						 .distinct()
-						 .collect(Collectors.toList());
+		return namespace.getFilterSearch().getSearchesFor(filter).stream()
+						.map(search -> createSourceSearchResult(
+								search,
+								Collections.singletonList(text),
+								OptionalInt.empty()
+						))
+						.flatMap(Collection::stream)
+						.distinct()
+						.collect(Collectors.toList());
 
 
 	}
