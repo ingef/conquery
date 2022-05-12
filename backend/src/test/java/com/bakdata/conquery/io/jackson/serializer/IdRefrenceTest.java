@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -26,6 +27,7 @@ public class IdRefrenceTest {
 	@Test
 	public void testListReferences() throws IOException {
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
+		mapper.setInjectableValues(new MutableInjectableValues());
 
 		CentralRegistry registry = new CentralRegistry();
 		Dataset dataset = new Dataset();
