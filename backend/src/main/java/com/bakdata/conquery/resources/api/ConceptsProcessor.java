@@ -70,6 +70,9 @@ public class ConceptsProcessor {
 							}
 						});
 
+	/**
+	 * Cache of all search results on SelectFilters.
+	 */
 	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchResults =
 			CacheBuilder.newBuilder()
 						.softValues()
@@ -96,6 +99,10 @@ public class ConceptsProcessor {
 		private final long size;
 	}
 
+	/**
+	 * Cache of raw listing of values on a filter.
+	 * We use Cursor here to reduce strain on memory and increase response time.
+	 */
 	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults =
 			CacheBuilder.newBuilder()
 						.softValues()
