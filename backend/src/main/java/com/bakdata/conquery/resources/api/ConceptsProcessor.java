@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -87,7 +88,7 @@ public class ConceptsProcessor {
 						});
 
 	/**
-	 * Container class to pair both values.
+	 * Container class to pair number of available values and Cursor for those values.
 	 */
 	@Value
 	private static class CursorAndLength {
@@ -138,18 +139,25 @@ public class ConceptsProcessor {
 	public ResolvedConceptsResult resolveFilterValues(SelectFilter<?> filter, List<String> searchTerms) {
 
 		// search in the full text engine
-		Set<String> openSearchTerms = new HashSet<>(searchTerms);
+		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
 
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
-		List<FEValue> out = new ArrayList<>();
+		final List<FEValue> out = new ArrayList<>();
 
 		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
-			final List<FEValue> searchResult = search.findExact(openSearchTerms, Integer.MAX_VALUE);
+			for (Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 
-			searchResult.forEach(result -> openSearchTerms.remove(result.getValue()));
+				final String searchTerm = iterator.next();
+				final List<FEValue> results = search.findExact(List.of(searchTerm), Integer.MAX_VALUE);
 
-			out.addAll(searchResult);
+				if (results.isEmpty()) {
+					continue;
+				}
+
+				iterator.remove();
+				out.addAll(results);
+			}
 		}
 
 		return new ResolvedConceptsResult(
@@ -178,15 +186,14 @@ public class ConceptsProcessor {
 		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
 
-		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filter.getId(), pageNumber, itemsPerPage);
+		log.debug("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filter.getId(), pageNumber, itemsPerPage);
 
 		final int startIncl = itemsPerPage * pageNumber;
 		final int endExcl = startIncl + itemsPerPage;
 
 		try {
 
-			log.trace("Preparing subresult for search term `{}` in the index range [{}-{})", maybeText, startIncl, endExcl);
-
+			// If we have no query string we list all values.
 			if (maybeText.isEmpty()) {
 				final CursorAndLength cursorAndLength = listResults.get(filter);
 				final Cursor<FEValue> cursor = cursorAndLength.getValues();
