@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -13,8 +12,11 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
@@ -23,6 +25,8 @@ public class IdRefrenceTest {
 
 	@Test
 	public void testListReferences() throws IOException {
+		final ObjectMapper mapper = Jackson.MAPPER.copy();
+
 		CentralRegistry registry = new CentralRegistry();
 		Dataset dataset = new Dataset();
 		dataset.setName("dataset");
@@ -31,12 +35,19 @@ public class IdRefrenceTest {
 		table.setName("table");
 		registry.register(dataset);
 		registry.register(table);
-		final CentralRegistry metaRegistry = new CentralRegistry();
 
-		User user = new User("usermail", "userlabel", mock(MetaStorage.class));
-		metaRegistry.register(user);
+		final DatasetRegistry datasetRegistry = new DatasetRegistry(0);
 
-		String json = Jackson.MAPPER.writeValueAsString(
+		final MetaStorage metaStorage = new MetaStorage(datasetRegistry);
+
+		metaStorage.openStores(new NonPersistentStoreFactory());
+		datasetRegistry.setMetaStorage(metaStorage);
+
+
+		User user = new User("usermail", "userlabel", metaStorage);
+		metaStorage.addUser(user);
+
+		String json = mapper.writeValueAsString(
 				new ListHolder(
 						Collections.singletonList(table),
 						Collections.singletonList(user)
@@ -47,9 +58,9 @@ public class IdRefrenceTest {
 				.contains("\"user.usermail\"")
 				.contains("\"dataset.table\"");
 
-		ListHolder holder = new SingletonNamespaceCollection(registry, metaRegistry)
-									.injectIntoNew(Jackson.MAPPER.copy().readerFor(ListHolder.class))
-									.readValue(json);
+		ListHolder holder = new SingletonNamespaceCollection(registry, metaStorage.getCentralRegistry())
+				.injectIntoNew(mapper.readerFor(ListHolder.class))
+				.readValue(json);
 
 		assertThat(holder.getUsers().get(0)).isSameAs(user);
 		assertThat(holder.getTables().get(0)).isSameAs(table);
