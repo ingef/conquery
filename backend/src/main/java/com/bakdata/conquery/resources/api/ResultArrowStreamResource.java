@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -52,11 +53,12 @@ public class ResultArrowStreamResource {
 		@Auth Subject subject,
 		@PathParam(DATASET) Dataset dataset,
 		@PathParam(QUERY) ManagedExecution<?> execution,
+		@HeaderParam("subject-agent") String userAgent,
+		@QueryParam("charset") String queryCharset,
 		@QueryParam("pretty") Optional<Boolean> pretty)
 	{
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset, subject.getId(), subject.getName());
-		return processor.createResult(subject, execution, dataset, pretty.orElse(false), determineCharset(null, null), () -> {
-		});
+		return processor.createResult(subject, execution, dataset, pretty.orElse(false), determineCharset(userAgent, queryCharset), () -> {});
 	}
 }

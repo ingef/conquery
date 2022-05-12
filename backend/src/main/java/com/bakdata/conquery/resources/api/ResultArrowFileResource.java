@@ -10,6 +10,7 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -41,13 +42,13 @@ public class ResultArrowFileResource {
 			@Auth Subject subject,
 			@PathParam(DATASET) Dataset dataset,
 			@PathParam(QUERY) ManagedExecution<?> query,
+			@HeaderParam("subject-agent") String userAgent,
+			@QueryParam("charset") String queryCharset,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 
-		//TODO charset
 		checkSingleTableResult(query);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), dataset.getId(), subject.getId(), subject.getName());
-		return processor.createResult(subject, query, dataset, pretty.orElse(false), determineCharset(null, null), () -> {
-		});
+		return processor.createResult(subject, query, dataset, pretty.orElse(false), determineCharset(userAgent, queryCharset), () -> {});
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
