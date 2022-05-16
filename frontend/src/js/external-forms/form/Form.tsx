@@ -10,6 +10,10 @@ import { isFormField, isOptionalField } from "../helper";
 
 import Field from "./Field";
 
+const FormContent = styled("div")`
+  width: 100%;
+`;
+
 const SxFormHeader = styled(FormHeader)`
   margin: 5px 0 15px;
 `;
@@ -28,7 +32,7 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
   const activeLang = useActiveLang();
 
   return (
-    <div>
+    <FormContent>
       {config.description && config.description[activeLang] && (
         <SxFormHeader description={config.description[activeLang]!} />
       )}
@@ -53,7 +57,7 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
           />
         );
       })}
-    </div>
+    </FormContent>
   );
 });
 
