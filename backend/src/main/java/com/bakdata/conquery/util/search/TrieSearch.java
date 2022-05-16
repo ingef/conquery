@@ -179,13 +179,13 @@ public class TrieSearch<T extends Comparable<T>> {
 
 
 	private void doPut(String kw, T item) {
-		assertWriteable();
+		ensureWriteable();
 
 		trie.computeIfAbsent(kw, (ignored) -> new ArrayList<>())
 			.add(item);
 	}
 
-	private void assertWriteable() {
+	private void ensureWriteable() {
 		if (!shrunk) {
 			return;
 		}

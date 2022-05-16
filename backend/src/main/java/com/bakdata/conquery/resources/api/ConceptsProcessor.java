@@ -109,6 +109,7 @@ public class ConceptsProcessor {
 						.build(new CacheLoader<>() {
 							@Override
 							public CursorAndLength load(SelectFilter<?> filter) {
+								log.debug("Creating cursor for `{}`", filter.getId());
 								return new CursorAndLength(listAllValues(filter), countAllValues(filter));
 							}
 
@@ -192,7 +193,7 @@ public class ConceptsProcessor {
 		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
 
-		log.debug("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filter.getId(), pageNumber, itemsPerPage);
+		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filter.getId(), pageNumber, itemsPerPage);
 
 		final int startIncl = itemsPerPage * pageNumber;
 		final int endExcl = startIncl + itemsPerPage;
