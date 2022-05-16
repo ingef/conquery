@@ -200,8 +200,8 @@ public class ConceptsProcessor {
 
 		try {
 
-			// If we have no query string we list all values.
-			if (maybeText.isEmpty()) {
+			// If we have none or a blank query string we list all values.
+			if (maybeText.isEmpty() || maybeText.get().isBlank()) {
 				final CursorAndLength cursorAndLength = listResults.get(filter);
 				final Cursor<FEValue> cursor = cursorAndLength.getValues();
 
