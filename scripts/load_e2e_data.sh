@@ -14,18 +14,22 @@ until $(curl --output /dev/null --silent --head -H "$h_auth" --fail $admin_api/u
 done
 
 # create users
-curl -X POST  "$admin_api/users/" -H "$h_ct" -H "$h_auth" -d '{"name": "user1", "label": "User1"}'
+echo "Creating users and permissions"
+curl --fail -X POST  "$admin_api/users/" -H "$h_ct" -H "$h_auth" -d '{"name": "user1", "label": "User1"}'
 
-curl -X POST  "$admin_api/users/" -H "$h_ct" -H "$h_auth" -d '{"name": "user2", "label": "User2"}'
-curl -X POST  "$admin_api/permissions/user.user2" -H "$h_ct" -H "$h_auth" -d 'datasets:read,download,preserve_id:dataset1'
-curl -X POST  "$admin_api/permissions/user.user2" -H "$h_ct" -H "$h_auth" -d 'concepts:read:*'
+curl --fail -X POST  "$admin_api/users/" -H "$h_ct" -H "$h_auth" -d '{"name": "user2", "label": "User2"}'
+curl --fail -X POST  "$admin_api/permissions/user.user2" -H "$h_ct" -H "$h_auth" -d 'datasets:read,download,preserve_id:dataset1'
+curl --fail -X POST  "$admin_api/permissions/user.user2" -H "$h_ct" -H "$h_auth" -d 'concepts:read:*'
 
+echo "Creating dataset"
 #create dataset
-curl -X POST  "$admin_api/datasets/" -H "$h_ct" -H "$h_auth" -d '{"name": "dataset1", "label": "Dataset1"}'
+curl --fail -X POST  "$admin_api/datasets/" -H "$h_ct" -H "$h_auth" -d '{"name": "dataset1", "label": "Dataset1"}'
 sleep 3
  # TODO secondary ID
-curl -X POST  "$admin_api/datasets/dataset1/tables" -H "$h_ct" -H "$h_auth" -d "@./frontend/cypress/support/test_data/all_types.table.json"
+echo "Creating tables"
+curl --fail -X POST  "$admin_api/datasets/dataset1/tables" -H "$h_ct" -H "$h_auth" -d "@./cypress/support/test_data/all_types.table.json"
 sleep 3
-curl -X POST  "$admin_api/datasets/dataset1/concepts" -H "$h_ct" -H "$h_auth" -d "@./frontend/cypress/support/test_data/all_types.concept.json"
+echo "Creating concepts"
+curl --fail -X POST  "$admin_api/datasets/dataset1/concepts" -H "$h_ct" -H "$h_auth" -d "@./cypress/support/test_data/all_types.concept.json"
 
 echo "Done loading data"
