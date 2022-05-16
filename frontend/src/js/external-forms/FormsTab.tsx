@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useDispatch, useSelector, useStore } from "react-redux";
 
@@ -94,7 +94,9 @@ const useInitializeForm = () => {
   }, [methods, defaultValues]);
 
   const previousConfig = usePrevious(config);
-  useEffect(
+  // Layout effect to re-initialize the new form before all other children effects
+  // that load values into the fields, for example.
+  useLayoutEffect(
     function resetOnFormChange() {
       if (previousConfig?.type !== config?.type) {
         onReset();
