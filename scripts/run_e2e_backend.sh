@@ -3,7 +3,7 @@
 jar="./executable/target/executable-0.0.0-SNAPSHOT.jar"
 config="./cypress/support/backend_config.json"
 
-echo ""
+echo
 echo "Checking for backend build"
 if [ ! -e $jar ]
 then
@@ -13,6 +13,6 @@ else
     echo "Backend executable found: $jar"
 fi
 
-echo ""
+echo
 echo "Starting backend server"
 java -jar $jar standalone $config

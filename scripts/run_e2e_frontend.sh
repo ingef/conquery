@@ -2,7 +2,7 @@
 set -e
 
 
-echo ""
+echo
 echo "Checking for frontend build"
 if [ ! -e ./frontend/build/index.html ]
 then
@@ -18,7 +18,7 @@ pushd "./frontend"
 echo "Using frontend env variables from .env.e2e"
 ./scripts/replace-env-at-runtime.sh ./.env.e2e
 
-echo ""
+echo
 echo "Starting frontend server"
 yarn serve
 

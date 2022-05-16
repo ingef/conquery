@@ -4,7 +4,7 @@ admin_api="http://localhost:8081/admin"
 h_ct="content-type:application/json"
 h_auth="authorization: Bearer user.SUPERUSER@SUPERUSER"
 
-echo ""
+echo
 echo "Loading data into backend for e2e testing"
 
 echo "Waiting to $admin_api come up."
