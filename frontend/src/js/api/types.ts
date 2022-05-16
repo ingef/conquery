@@ -63,6 +63,7 @@ export interface MultiSelectFilterBaseT extends FilterBaseT {
   total?: number; // Not coming via the API yet, but may come soon, will be set when loading more options via autocomplete
   defaultValue?: string[];
   allowDropFile: boolean;
+  creatable?: boolean;
 }
 
 export interface MultiSelectFilterT extends MultiSelectFilterBaseT {

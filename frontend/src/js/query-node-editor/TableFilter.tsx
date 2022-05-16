@@ -101,6 +101,7 @@ const TableFilter = ({
             label={filter.label}
             options={filter.options}
             disabled={!!excludeTable}
+            creatable={!!filter.creatable}
             allowDropFile={!!filter.allowDropFile}
             total={filter.total}
             onLoad={(prefix, page, pageSize, config) =>
