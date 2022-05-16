@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -34,10 +35,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.bakdata.conquery.util.search.Cursor;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -47,6 +48,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -68,7 +70,10 @@ public class ConceptsProcessor {
 							}
 						});
 
-	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchCache =
+	/**
+	 * Cache of all search results on SelectFilters.
+	 */
+	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchResults =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.build(new CacheLoader<>() {
@@ -80,16 +85,32 @@ public class ConceptsProcessor {
 
 								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
 
-								if (Strings.isNullOrEmpty(searchTerm)) {
-									return listAllValues(filter);
-								}
+								return autocompleteTextFilter(filter, searchTerm);
+							}
 
-								final List<FEValue> result = autocompleteTextFilter(filter, searchTerm);
+						});
 
+	/**
+	 * Container class to pair number of available values and Cursor for those values.
+	 */
+	@Value
+	private static class CursorAndLength {
+		private final Cursor<FEValue> values;
+		private final long size;
+	}
 
-								log.debug("Got {} results for {}", result.size(), filterAndSearch);
-
-								return result;
+	/**
+	 * Cache of raw listing of values on a filter.
+	 * We use Cursor here to reduce strain on memory and increase response time.
+	 */
+	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults =
+			CacheBuilder.newBuilder()
+						.softValues()
+						.build(new CacheLoader<>() {
+							@Override
+							public CursorAndLength load(SelectFilter<?> filter) {
+								log.debug("Creating cursor for `{}`", filter.getId());
+								return new CursorAndLength(listAllValues(filter), countAllValues(filter));
 							}
 
 						});
@@ -126,18 +147,25 @@ public class ConceptsProcessor {
 	public ResolvedConceptsResult resolveFilterValues(SelectFilter<?> filter, List<String> searchTerms) {
 
 		// search in the full text engine
-		Set<String> openSearchTerms = new HashSet<>(searchTerms);
+		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
 
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
-		List<FEValue> out = new ArrayList<>();
+		final List<FEValue> out = new ArrayList<>();
 
 		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
-			final List<FEValue> searchResult = search.findExact(openSearchTerms, Integer.MAX_VALUE);
+			for (Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 
-			searchResult.forEach(result -> openSearchTerms.remove(result.getValue()));
+				final String searchTerm = iterator.next();
+				final List<FEValue> results = search.findExact(List.of(searchTerm), Integer.MAX_VALUE);
 
-			out.addAll(searchResult);
+				if (results.isEmpty()) {
+					continue;
+				}
+
+				iterator.remove();
+				out.addAll(results);
+			}
 		}
 
 		return new ResolvedConceptsResult(
@@ -153,7 +181,6 @@ public class ConceptsProcessor {
 
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-	@Getter
 	public static class AutoCompleteResult {
 		private final List<FEValue> values;
 		private final long total;
@@ -163,40 +190,58 @@ public class ConceptsProcessor {
 		final int pageNumber = pageNumberOpt.orElse(0);
 		final int itemsPerPage = itemsPerPageOpt.orElse(50);
 
-		final String text = maybeText.orElse("");
-
 		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
 
+		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filter.getId(), pageNumber, itemsPerPage);
+
+		final int startIncl = itemsPerPage * pageNumber;
+		final int endExcl = startIncl + itemsPerPage;
 
 		try {
-			log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", text, filter.getId(), pageNumber, itemsPerPage);
 
-			List<FEValue> fullResult = searchCache.get(Pair.of(filter, text));
+			// If we have no query string we list all values.
+			if (maybeText.isEmpty()) {
+				final CursorAndLength cursorAndLength = listResults.get(filter);
+				final Cursor<FEValue> cursor = cursorAndLength.getValues();
 
-			int startIncl = Math.min(itemsPerPage * pageNumber, fullResult.size());
-			int endExcl = Math.min(startIncl + itemsPerPage, fullResult.size());
+				return new AutoCompleteResult(cursor.get(startIncl, endExcl), cursorAndLength.getSize());
+			}
 
-			log.trace("Preparing subresult for search term `{}` in the index range [{}-{})", text, startIncl, endExcl);
+			final List<FEValue> fullResult = searchResults.get(Pair.of(filter, maybeText.get()));
 
-			return new AutoCompleteResult(fullResult.subList(startIncl, endExcl), fullResult.size());
+			if (startIncl >= fullResult.size()) {
+				return new AutoCompleteResult(Collections.emptyList(), fullResult.size());
+			}
+
+			return new AutoCompleteResult(fullResult.subList(startIncl, Math.min(fullResult.size(), endExcl)), fullResult.size());
 		}
 		catch (ExecutionException e) {
-			log.warn("Failed to search for \"{}\".", text, (Throwable) (log.isTraceEnabled() ? e : null));
+			log.warn("Failed to search for \"{}\".", maybeText, (Throwable) (log.isTraceEnabled() ? e : null));
 			return new AutoCompleteResult(Collections.emptyList(), 0);
 		}
 	}
 
 
-	private List<FEValue> listAllValues(SelectFilter<?> filter) {
+	private Cursor<FEValue> listAllValues(SelectFilter<?> filter) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
-		return namespace.getFilterSearch().getSearchesFor(filter)
-						.stream()
-						.map(TrieSearch::listItems)
-						.flatMap(Collection::stream)
-						.distinct()
-						.collect(Collectors.toList());
+
+		return new Cursor<>(namespace.getFilterSearch()
+									 .getSearchesFor(filter).stream()
+									 .flatMap(TrieSearch::stream)
+									 .distinct()
+									 .iterator());
+	}
+
+	private long countAllValues(SelectFilter<?> filter) {
+		final Namespace namespace = namespaces.get(filter.getDataset().getId());
+
+
+		return namespace.getFilterSearch()
+						.getSearchesFor(filter).stream()
+						.mapToLong(TrieSearch::calculateSize)
+						.sum();
 	}
 
 	/**
@@ -206,25 +251,22 @@ public class ConceptsProcessor {
 	private List<FEValue> autocompleteTextFilter(SelectFilter<?> filter, String text) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
-		List<FEValue> out = new ArrayList<>();
-
-		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
-
-			List<FEValue> result = createSourceSearchResult(
-					search,
-					Collections.singletonList(text),
-					OptionalInt.empty()
-			);
-
-			out.addAll(result);
-		}
-
 		// Note that FEValues is equals/hashcode only on value:
 		// The different sources might contain duplicate FEValue#values which we want to avoid as
 		// they are already sorted in terms of information weight by getSearchesFor
-		return out.stream()
-				  .distinct()
-				  .collect(Collectors.toList());
+
+		// Also note: currently we are still issuing large search requests, but much smaller allocations at once, and querying only when the past is not sufficient
+		return namespace.getFilterSearch().getSearchesFor(filter).stream()
+						.map(search -> createSourceSearchResult(
+								search,
+								Collections.singletonList(text),
+								OptionalInt.empty()
+						))
+						.flatMap(Collection::stream)
+						.distinct()
+						.collect(Collectors.toList());
+
+
 	}
 
 	/**

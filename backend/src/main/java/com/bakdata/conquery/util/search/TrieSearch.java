@@ -52,8 +52,11 @@ public class TrieSearch<T extends Comparable<T>> {
 
 	private final Pattern splitPattern;
 
+	private boolean shrunk = false;
+	private long size = -1;
+
 	public TrieSearch(int suffixCutoff, String split) {
-		if(suffixCutoff < 0){
+		if (suffixCutoff < 0) {
 			throw new IllegalArgumentException("Negative Suffix Length is not allowed.");
 		}
 		this.suffixCutoff = suffixCutoff;
@@ -65,10 +68,6 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * Maps from keywords to associated items.
 	 */
 	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
-
-	public void clear() {
-		trie.clear();
-	}
 
 	Stream<String> suffixes(String word) {
 		return Stream.concat(
@@ -180,8 +179,17 @@ public class TrieSearch<T extends Comparable<T>> {
 
 
 	private void doPut(String kw, T item) {
+		ensureWriteable();
+
 		trie.computeIfAbsent(kw, (ignored) -> new ArrayList<>())
 			.add(item);
+	}
+
+	private void ensureWriteable() {
+		if (!shrunk) {
+			return;
+		}
+		throw new IllegalStateException("Cannot alter a shrunk search.");
 	}
 
 	public void addItem(T item, List<String> keywords) {
@@ -208,6 +216,10 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	public long calculateSize() {
+		if (size != -1) {
+			return size;
+		}
+
 		return trie.values().stream().distinct().count();
 	}
 
@@ -217,7 +229,14 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * @implSpec the TrieSearch is still mutable after this.
 	 */
 	public void shrinkToFit() {
+		if (shrunk) {
+			return;
+		}
+
 		trie.replaceAll((key, values) -> values.stream().distinct().collect(Collectors.toList()));
+
+		size = calculateSize();
+		shrunk = true;
 	}
 
 	public void logStats() {
@@ -236,4 +255,9 @@ public class TrieSearch<T extends Comparable<T>> {
 		log.info("Stats=`{}`, with {} singletons.", statistics, singletons);
 	}
 
+	public Stream<T> stream() {
+		return trie.values().stream()
+				   .flatMap(Collection::stream)
+				   .distinct();
+	}
 }
