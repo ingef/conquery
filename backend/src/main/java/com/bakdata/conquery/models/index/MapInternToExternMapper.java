@@ -62,7 +62,7 @@ public class MapInternToExternMapper implements InternToExternMapper {
 			return int2ext.get(1, TimeUnit.MINUTES).getOrDefault(internalValue, "");
 		}
 		catch (ExecutionException | InterruptedException | TimeoutException e) {
-			log.warn("Unable to get mapping for {} from {}. Returning nothing", internalValue, this, e);
+			log.warn("Unable to get mapping for {} from {}. Returning nothing.", internalValue, this, e);
 			return "";
 		}
 	}

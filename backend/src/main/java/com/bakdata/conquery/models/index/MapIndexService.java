@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.index;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +20,7 @@ import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,31 +40,32 @@ public class MapIndexService implements Injectable {
 
 			final CsvParser csvParser = new CsvParser(csvParserSettings);
 
-			csvParser.beginParsing(key.csv.openStream());
-			Record row;
-			for (row = csvParser.parseNextRecord(); row != null; row = csvParser.parseNextRecord()) {
-				final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
+			try (InputStream inputStream = key.csv.openStream()) {
+				for (Record row : csvParser.iterateRecords(inputStream)) {
+					final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
-				substitutor.setEnableUndefinedVariableException(true);
-				final String internalValue = row.getString(key.internalColumn);
+					final String internalValue = row.getString(key.internalColumn);
 
-				if (internalValue == null) {
-					return null;
-				}
+					if (internalValue == null) {
+						log.trace("Could not create a mapping for row {} because the cell for the internal value was empty. Row: {}", csvParser.getContext()
+																																			   .currentLine(),
+								  log.isTraceEnabled()
+								  ? StringUtils.join(row.toFieldMap())
+								  : null
+						);
+						return null;
+					}
 
-				try {
+					// We allow template values to be missing
 					final String externalValue = substitutor.replace(key.externalTemplate);
 					int2ext.put(internalValue, externalValue);
 				}
-				catch (IllegalArgumentException exception) {
-					log.warn("Missing template values for line {}. Internal value: {}", csvParser.getContext()
-																								 .currentLine(), internalValue, (Exception) (log.isTraceEnabled()
-																																			 ? exception
-																																			 : null));
-				}
-
 			}
-			csvParser.stopParsing();
+			catch (IOException ioException) {
+				log.warn("Failed to open {}", key.csv, ioException);
+				throw ioException;
+			}
+
 
 			log.info("Finished parsing mapping {} with {} entries", key, int2ext.size());
 			return int2ext;

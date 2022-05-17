@@ -76,7 +76,6 @@ public class Namespace implements Closeable {
 		// Prepare namespace dependent Jackson injectables
 		List<Injectable> injectables = new ArrayList<>();
 		injectables.add(new MapIndexService(config.getCsv().createCsvParserSettings()));
-		injectables.add(new LuceneIndexService());
 		injectables.forEach(i -> i.injectInto(objectMapper));
 
 		// Open and load the stores
