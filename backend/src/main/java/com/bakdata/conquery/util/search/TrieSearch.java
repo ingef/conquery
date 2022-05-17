@@ -17,6 +17,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Object2DoubleAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import lombok.ToString;
@@ -202,9 +203,9 @@ public class TrieSearch<T extends Comparable<T>> {
 				.forEach(kw -> doPut(kw, item));
 	}
 
-	public Iterator<T> iterator() {
-		return trie.keySet().stream().flatMap(this::doGet).distinct().iterator();
-	}
+//	public Iterator<T> iterator() {
+//		return trie.keySet().stream().flatMap(this::doGet).distinct().iterator();
+//	}
 
 	public Collection<T> listItems() {
 		//TODO this a pretty dangerous operation, I'd rather see a session based iterator instead
@@ -259,5 +260,11 @@ public class TrieSearch<T extends Comparable<T>> {
 		return trie.values().stream()
 				   .flatMap(Collection::stream)
 				   .distinct();
+	}
+
+	public Iterator<T> iterator() {
+		return Iterators.<T>concat((Iterator<T>[]) trie.values().stream()
+									.map(Collection::iterator)
+									.toArray(Iterator[]::new));
 	}
 }

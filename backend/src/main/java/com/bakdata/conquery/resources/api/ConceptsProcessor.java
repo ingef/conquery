@@ -42,6 +42,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Iterators;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -225,13 +226,22 @@ public class ConceptsProcessor {
 
 	private Cursor<FEValue> listAllValues(SelectFilter<?> filter) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
+		/*
+		Don't worry, I am as confused as you are!
+		For some reason, flatMapped streams in conjunction with distinct will be evaluated full before further operation.
+		This in turn causes initial loads of this endpoint to extremely slow. By instead using iterators we have uglier code but enforce laziness.
 
+		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
+		 */
 
-		return new Cursor<>(namespace.getFilterSearch()
-									 .getSearchesFor(filter).stream()
-									 .flatMap(TrieSearch::stream)
-									 .distinct()
-									 .iterator());
+		final Iterator<FEValue>[] iterators = namespace.getFilterSearch()
+													   .getSearchesFor(filter).stream()
+													   .map(TrieSearch::iterator).toArray(Iterator[]::new);
+
+		// Use Set to accomplish distinct values
+		final Set<FEValue> seen = new HashSet<>();
+
+		return new Cursor<>(Iterators.filter(Iterators.concat(iterators), seen::add));
 	}
 
 	private long countAllValues(SelectFilter<?> filter) {
