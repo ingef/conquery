@@ -63,7 +63,6 @@ export function getInitialValue(
       }
     case "RESULT_GROUP":
       return undefined;
-    case "MULTI_RESULT_GROUP":
     case "CONCEPT_LIST":
       return [];
     case "DATE_RANGE":
