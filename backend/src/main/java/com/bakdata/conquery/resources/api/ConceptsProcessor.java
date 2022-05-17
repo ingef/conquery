@@ -236,7 +236,8 @@ public class ConceptsProcessor {
 
 		final Iterator<FEValue>[] iterators = namespace.getFilterSearch()
 													   .getSearchesFor(filter).stream()
-													   .map(TrieSearch::iterator).toArray(Iterator[]::new);
+													   .map(TrieSearch::iterator)
+													   .toArray(Iterator[]::new);
 
 		// Use Set to accomplish distinct values
 		final Set<FEValue> seen = new HashSet<>();
