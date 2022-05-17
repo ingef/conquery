@@ -140,6 +140,13 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	}
 
 
+	/**
+	 * Pendant to {@link ManagerNode#createInternalObjectMapper()}.
+	 * <p>
+	 * TODO May move to {@link ConqueryCommand}
+	 *
+	 * @return a preconfigured binary object mapper
+	 */
 	public ObjectMapper createInternalObjectMapper() {
 		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 

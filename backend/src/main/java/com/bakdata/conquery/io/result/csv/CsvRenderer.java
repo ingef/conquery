@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.result.csv;
 
-import com.bakdata.conquery.io.result.arrow.ArrowUtil;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -9,15 +8,12 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.univocity.parsers.csv.CsvWriter;
-import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -30,7 +26,7 @@ public class CsvRenderer {
 
 	/**
 	 * "Printer-Mapping" that combine a potentially nested {@link ResultType}
-	 * with an element valueMapper (see {@link com.bakdata.conquery.models.datasets.concepts.select.Select#transformValue} and {@link SelectResultInfo#getValueMapper()}.
+	 * with an element valueMapper (see {@link com.bakdata.conquery.models.datasets.concepts.select.Select#toExternalRepresentation} and {@link SelectResultInfo#getValueMapper()}.
 	 */
 	private final Map<Class<? extends ResultType>, Function3<ResultType, Object, Function<Object, Object>, String>> FIELD_MAP = Map.of(
 			ResultType.ListT.class, this::printList,
@@ -104,10 +100,7 @@ public class CsvRenderer {
 	}
 
 	private String printString(ResultType resultType, Object o, Function<Object, Object> mapper) {
-		if (mapper != null) {
-			return (String) mapper.apply(o);
-		}
-		return resultType.printNullable(cfg, o);
+		return resultType.printNullable(cfg, mapper.apply(o));
 	}
 
 

@@ -203,6 +203,14 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		});
 	}
 
+	/**
+	 * Create a new internal object mapper for binary serdes that is equipped with {@link ManagerNode} related injectables
+	 * and configured to use the {@link InternalOnly} view.
+	 * <p>
+	 * TODO we need to distinguish between internal persistence and internal communication (manager<->shard). ATM we persist unnecessary fields.
+	 *
+	 * @return a preconfigured binary object mapper
+	 */
 	public ObjectMapper createInternalObjectMapper() {
 		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 

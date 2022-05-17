@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -10,6 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,7 +20,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.poi.ss.formula.functions.T;
 import org.jetbrains.annotations.NotNull;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
@@ -68,7 +70,17 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 			   + getLabel();
 	}
 
-	public Object transformValue(Object intern) {
+	/**
+	 * Function that allows a select to transform the value or type of a aggregator result.
+	 * The returned value can be null but its type must fit the {@link ResultType} of this select.
+	 * <p>
+	 * TODO enforce type strictness
+	 *
+	 * @param intern value that is the result of an aggregator (after serdes with Jackson)
+	 * @return The value that can be passed to {@link ResultType#printNullable(PrintSettings, Object)}
+	 */
+	@Nullable
+	public Object toExternalRepresentation(Object intern) {
 		return intern;
 	}
 }

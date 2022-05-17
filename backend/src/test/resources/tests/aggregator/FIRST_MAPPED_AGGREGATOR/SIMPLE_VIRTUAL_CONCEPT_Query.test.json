@@ -33,7 +33,7 @@
                     },
                     "selects": {
                         "name": "select",
-                        "type": "FIRST_MAPPED",
+                        "type": "FIRST",
                         "column": "table.value",
                         "mapping": {
                             "type": "CSV_MAP",

@@ -33,7 +33,7 @@
                     },
                     "selects": {
                         "name": "select",
-                        "type": "DISTINCT_MAPPED",
+                        "type": "DISTINCT",
                         "column": "table.value",
                         "mapping": {
                             "type": "CSV_MAP",
