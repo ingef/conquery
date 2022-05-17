@@ -149,6 +149,7 @@
           "connectorId": "tv_series",
           "id": "tv_series",
           "label": "TV Series",
+          "selects": [],
           "dateColumn": {
             "id": "385623",
             "options": [
@@ -277,6 +278,7 @@
             ]
           },
           "supportedSecondaryIds": ["fun_fall_id", "fun2_fall_id"],
+          "selects": [],
           "filters": [
             {
               "id": "award_type",
@@ -310,7 +312,7 @@
         "australia"
       ],
       "detailsAvailable": true,
-      "tables": [{}]
+      "tables": []
     }
   }
 }
