@@ -81,8 +81,8 @@ public class SelectResultInfo extends ResultInfo {
 	}
 
 
-	public Optional<Function<Object, String>> getValueMapper() {
-		// Todo kill Optional
+	@Override
+	public Optional<Function<Object, Object>> getValueMapper() {
 		return Optional.of(select::transformValue);
 	}
 

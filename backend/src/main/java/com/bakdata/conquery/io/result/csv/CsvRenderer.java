@@ -32,7 +32,7 @@ public class CsvRenderer {
 	 * "Printer-Mapping" that combine a potentially nested {@link ResultType}
 	 * with an element valueMapper (see {@link com.bakdata.conquery.models.datasets.concepts.select.Select#transformValue} and {@link SelectResultInfo#getValueMapper()}.
 	 */
-	private final Map<Class<? extends ResultType>, Function3<ResultType, Object, Function<Object, String>, String>> FIELD_MAP = Map.of(
+	private final Map<Class<? extends ResultType>, Function3<ResultType, Object, Function<Object, Object>, String>> FIELD_MAP = Map.of(
 			ResultType.ListT.class, this::printList,
 			ResultType.StringT.class, this::printString
 	);
@@ -66,10 +66,10 @@ public class CsvRenderer {
 			for (int i = 0; i < infos.size(); i++) {
 				final ResultInfo info = infos.get(i);
 
-				final Function3<ResultType, Object, Function<Object, String>, String>
+				final Function3<ResultType, Object, Function<Object, Object>, String>
 						printer =
 						FIELD_MAP.getOrDefault(info.getType().getClass(), this::printDefault);
-				final Function<Object, String> valueMapper = info.getValueMapper().orElse(null);
+				final Function<Object, Object> valueMapper = info.getValueMapper().orElse(null);
 				final String printValue = printer.invoke(info.getType(), value[i], valueMapper);
 				writer.addValue(printValue);
 			}
@@ -81,7 +81,7 @@ public class CsvRenderer {
 		writer.writeValuesToRow();
 	}
 
-	private String printList(ResultType type, Object values, Function<Object, String> mapper) {
+	private String printList(ResultType type, Object values, Function<Object, Object> mapper) {
 		if (values == null) {
 			return type.printNullable(cfg, null);
 		}
@@ -94,7 +94,7 @@ public class CsvRenderer {
 		StringJoiner joiner = new StringJoiner(cfg.getListFormat().getSeparator(), cfg.getListFormat().getStart(), cfg.getListFormat().getEnd());
 		for (Object obj : (List<?>) values) {
 			final ResultType elementType = ((ResultType.ListT) type).getElementType();
-			final Function3<ResultType, Object, Function<Object, String>, String>
+			final Function3<ResultType, Object, Function<Object, Object>, String>
 					printer =
 					FIELD_MAP.getOrDefault(elementType.getClass(), this::printDefault);
 			final String printValue = printer.invoke(elementType, obj, mapper);
@@ -103,15 +103,15 @@ public class CsvRenderer {
 		return joiner.toString();
 	}
 
-	private String printString(ResultType resultType, Object o, Function<Object, String> mapper) {
+	private String printString(ResultType resultType, Object o, Function<Object, Object> mapper) {
 		if (mapper != null) {
-			return mapper.apply(o);
+			return (String) mapper.apply(o);
 		}
 		return resultType.printNullable(cfg, o);
 	}
 
 
-	private String printDefault(ResultType resultType, Object o, Function<Object, String> mapper) {
+	private String printDefault(ResultType resultType, Object o, Function<Object, Object> mapper) {
 		return resultType.printNullable(cfg, o);
 	}
 }

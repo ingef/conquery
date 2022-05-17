@@ -50,5 +50,5 @@ public abstract class ResultInfo {
 	}
 
 
-	public abstract Optional<Function<Object, String>> getValueMapper();
+	public abstract Optional<Function<Object, Object>> getValueMapper();
 }

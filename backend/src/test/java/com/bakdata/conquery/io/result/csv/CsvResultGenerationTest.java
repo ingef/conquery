@@ -101,6 +101,6 @@ public class CsvResultGenerationTest {
 					}
 				});
 
-		return expected.stream().collect(Collectors.joining());
+		return String.join("", expected);
 	}
 }

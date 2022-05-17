@@ -245,21 +245,21 @@ public class ArrowRenderer {
 			final FieldVector vector = root.getVector(vecI);
 			final ResultInfo resultInfo = resultInfos.get(pos);
 			builder[pos] =
-					generateVectorFiller(pos, vector, settings, resultInfo.getType(), resultInfo.getValueMapper());
+					generateVectorFiller(pos, vector, settings, resultInfo.getType(), resultInfo.getValueMapper().orElse(null));
 
 		}
         return builder;
 
     }
 
-	private static RowConsumer generateVectorFiller(int pos, ValueVector vector, final PrintSettings settings, ResultType resultType, Optional<Function<Object, String>> valueMapper) {
+	private static RowConsumer generateVectorFiller(int pos, ValueVector vector, final PrintSettings settings, ResultType resultType, Function<Object, Object> valueMapper) {
 		//TODO When Pattern-matching lands, clean this up. (Think Java 12?)
 		if (vector instanceof IntVector) {
 			return intVectorFiller((IntVector) vector, (line) -> (Integer) line[pos]);
 		}
 
 		if (vector instanceof VarCharVector) {
-			Function<Object, String> concreteMapper = valueMapper.orElse(o -> resultType.printNullable(settings, o));
+			Function<Object, Object> concreteMapper = valueMapper != null ? valueMapper : Function.identity();
 			return varCharVectorFiller(
 					(VarCharVector) vector,
 					(line) -> {
@@ -271,9 +271,7 @@ public class ArrowRenderer {
 							// If there is no value, we don't want to have it displayed as an empty string (see next if)
 							return null;
 						}
-
-						return concreteMapper.apply(line[pos]);
-
+						return resultType.printNullable(settings, concreteMapper.apply(line[pos]));
 					});
         }
 

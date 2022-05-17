@@ -32,7 +32,7 @@ public class RandomValueMappedSelect extends FirstValueSelect implements MappedS
 	}
 
 	@Override
-	public String transformValue(Object intern) {
+	public Object transformValue(Object intern) {
 		return doTransformValue(intern);
 	}
 }

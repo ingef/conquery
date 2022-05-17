@@ -58,7 +58,7 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public Optional<Function<Object, String>> getValueMapper() {
+	public Optional<Function<Object, Object>> getValueMapper() {
 		return Optional.empty();
 	}
 

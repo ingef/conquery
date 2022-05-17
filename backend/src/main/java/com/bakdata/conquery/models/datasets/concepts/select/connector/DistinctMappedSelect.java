@@ -27,7 +27,7 @@ public class DistinctMappedSelect extends DistinctSelect implements MappedSelect
 	}
 
 	@Override
-	public String transformValue(Object intern) {
+	public Object transformValue(Object intern) {
 		return doTransformValue(intern);
 	}
 }

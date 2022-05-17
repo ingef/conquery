@@ -6,8 +6,8 @@ public interface MappedSelect {
 
 	InternToExternMapper getMapping();
 
-	default String doTransformValue(Object intern) {
-		return getMapping().external(String.valueOf(intern));
+	default Object doTransformValue(Object intern) {
+		return intern == null ? "" : getMapping().external(intern.toString());
 	}
 
 }

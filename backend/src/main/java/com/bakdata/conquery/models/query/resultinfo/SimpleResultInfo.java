@@ -30,7 +30,7 @@ public class SimpleResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public Optional<Function<Object, String>> getValueMapper() {
+	public Optional<Function<Object, Object>> getValueMapper() {
 		// TODO may provide ids through this
 		return Optional.empty();
 	}
