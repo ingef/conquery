@@ -37,11 +37,11 @@ public class FEFilter {
 	private List<FEValue> options = Collections.emptyList();
 
 	/**
-	 * min value for range selects.
+	 * min value for range filters.
 	 */
 	private Integer min;
 	/**
-	 * max value for range selects.
+	 * max value for range filters.
 	 */
 	private Integer max;
 
