@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,10 +28,10 @@ public class DatasetId extends AId<Dataset> implements NamespacedId {
 	public void collectComponents(List<Object> components) {
 		components.add(name);
 	}
-	
-	public static enum Parser implements IId.Parser<DatasetId> {
+
+	public static enum Parser implements IdUtil.Parser<DatasetId> {
 		INSTANCE;
-		
+
 		@Override
 		public DatasetId parseInternally(IdIterator parts) {
 			return new DatasetId(parts.next());

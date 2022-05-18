@@ -6,8 +6,8 @@ import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.*;
-import com.bakdata.conquery.models.datasets.concepts.MatchingStats;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -15,7 +15,6 @@ import com.fasterxml.jackson.datatype.joda.PackageVersion;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.HashBiMap;
-import groovyjarjarantlr4.v4.runtime.misc.IntSet;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.http.util.CharArrayBuffer;
@@ -46,9 +45,9 @@ public class ConquerySerializersModule extends SimpleModule {
 
 		//register IdKeySerializer for all id types
 		List<Class<?>> idTypes = CPSTypeIdResolver
-			.SCAN_RESULT
-			.getClassesImplementing(IId.class.getName())
-			.loadClasses();
+				.SCAN_RESULT
+				.getSubclasses(AId.class.getName())
+				.loadClasses();
 
 		for(Class<?> type : idTypes) {
 			addKeyDeserializer(type, new IdKeyDeserializer<>());

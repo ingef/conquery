@@ -23,7 +23,8 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.Group;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.util.PrettyPrinter;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -60,8 +61,8 @@ public class GroupHandler {
 	private final Group group;
 	private final SimpleWriter out;
 	private final File root;
-	private Multimap<Base, Pair<CPSType, ClassInfo>> content = HashMultimap.create();
-	private List<Pair<String, MethodInfo>> endpoints = new ArrayList<>();
+	private final Multimap<Base, Pair<CPSType, ClassInfo>> content = HashMultimap.create();
+	private final List<Pair<String, MethodInfo>> endpoints = new ArrayList<>();
 
 	public void handle() throws IOException {
 		out.heading(group.getName());
@@ -343,7 +344,7 @@ public class GroupHandler {
 			Class<?> cl = classRef.loadClass();
 
 			//ID
-			if (IId.class.isAssignableFrom(cl)) {
+			if (AId.class.isAssignableFrom(cl)) {
 				String name = cl.getSimpleName();
 				return ID_OF + code(name.substring(0, name.length() - 2));
 			}

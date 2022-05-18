@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -16,13 +16,13 @@ import lombok.experimental.Accessors;
 @Accessors(fluent=true) @Setter @Getter
 public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends IdentifiableStore<VALUE> {
 
-	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store) {
+	public IdentifiableCachedStore(CentralRegistry centralRegistry, Store<AId<VALUE>, VALUE> store) {
 		super(store, centralRegistry);
 	}
 
 	@Override
-	protected IId<VALUE> extractKey(VALUE value) {
-		return (IId<VALUE>)value.getId();
+	protected AId<VALUE> extractKey(VALUE value) {
+		return (AId<VALUE>) value.getId();
 	}
 	
 	@Override
@@ -41,7 +41,7 @@ public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends Iden
 	protected void added(VALUE value) {
 		try {
 			if(value != null) {
-				final IId<VALUE> key = extractKey(value);
+				final AId<VALUE> key = extractKey(value);
 				centralRegistry.registerCacheable(key, this::get);
 				onAdd.accept(value);
 			}
@@ -54,7 +54,7 @@ public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends Iden
 	protected void updated(VALUE value) {
 		try {
 			if(value != null) {
-				final IId<VALUE> key = extractKey(value);
+				final AId<VALUE> key = extractKey(value);
 				final Optional<Identifiable> oldOpt = centralRegistry.updateCacheable(key, this::get);
 				if (oldOpt.isPresent()) {
 					final VALUE old = (VALUE) oldOpt.get();
@@ -70,7 +70,7 @@ public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends Iden
 	@Override
 	public void loadData() {
 		store.fillCache();
-		for(IId<VALUE> key : getAllKeys()) {
+		for (AId<VALUE> key : getAllKeys()) {
 			centralRegistry.registerCacheable(key, this::get);
 		}
 	}

@@ -5,25 +5,29 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public abstract class AId<TYPE> implements IId<TYPE> {
+@JsonDeserialize(using = IdDeserializer.class)
+public abstract class AId<TYPE> {
 
 	@Override
 	public abstract boolean equals(Object obj);
-	
+
 	@Override
 	public abstract int hashCode();
-	
-	@Override @JsonValue
+
+	@Override
+	@JsonValue
 	public String toString() {
 		List<Object> components = getComponents();
 		components.replaceAll(o->ConqueryEscape.escape(Objects.toString(o)));
-		return IId.JOINER.join(components);
+		return IdUtil.JOINER.join(components);
 	}
 
 	public List<Object> getComponents() {
@@ -34,7 +38,6 @@ public abstract class AId<TYPE> implements IId<TYPE> {
 
 	public abstract void collectComponents(List<Object> components);
 	
-	@Override
 	public List<String> collectComponents() {
 		List<Object> components = getComponents();
 		String[] result = new String[components.size()];

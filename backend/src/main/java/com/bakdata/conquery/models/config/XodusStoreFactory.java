@@ -26,7 +26,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -59,7 +58,7 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -305,7 +304,7 @@ public class XodusStoreFactory implements StoreFactory {
 	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName) {
 		final Environment environment = findEnvironment(pathName);
 
-		final BigStore<IId<Dictionary>, Dictionary> bigStore;
+		final BigStore<AId<Dictionary>, Dictionary> bigStore;
 
 		synchronized (openStoresInEnv) {
 			bigStore =

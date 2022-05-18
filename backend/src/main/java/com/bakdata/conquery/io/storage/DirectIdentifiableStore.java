@@ -2,10 +2,8 @@ package com.bakdata.conquery.io.storage;
 
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.util.functions.ThrowingConsumer;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 
-import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -13,13 +11,13 @@ import java.util.Optional;
  */
 public class DirectIdentifiableStore<VALUE extends Identifiable<?>> extends IdentifiableStore<VALUE> {
 
-	public DirectIdentifiableStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store) {
+	public DirectIdentifiableStore(CentralRegistry centralRegistry, Store<AId<VALUE>, VALUE> store) {
 		super(store, centralRegistry);
 	}
 
 	@Override
-	protected IId<VALUE> extractKey(VALUE value) {
-		return (IId<VALUE>)value.getId();
+	protected AId<VALUE> extractKey(VALUE value) {
+		return (AId<VALUE>) value.getId();
 	}
 	
 	@Override

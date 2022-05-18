@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -79,7 +79,7 @@ public enum StoreMappings {
 	/**
 	 * Store for identifiable values, with injectors. Store is also cached.
 	 */
-	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<IId<T>, T> baseStore, CentralRegistry centralRegistry) {
+	public static <T extends Identifiable<?>> DirectIdentifiableStore<T> identifiable(Store<AId<T>, T> baseStore, CentralRegistry centralRegistry) {
 		return new DirectIdentifiableStore<>(centralRegistry, baseStore);
 	}
 
@@ -93,7 +93,7 @@ public enum StoreMappings {
 	/**
 	 * Identifiable store, that lazy registers items in the central registry.
 	 */
-	public static <T extends Identifiable<?>> IdentifiableCachedStore<T> identifiableCachedStore(Store<IId<T>,T> baseStore, CentralRegistry centralRegistry) {
+	public static <T extends Identifiable<?>> IdentifiableCachedStore<T> identifiableCachedStore(Store<AId<T>, T> baseStore, CentralRegistry centralRegistry) {
 		return new IdentifiableCachedStore<T>(centralRegistry, baseStore);
 	}
 

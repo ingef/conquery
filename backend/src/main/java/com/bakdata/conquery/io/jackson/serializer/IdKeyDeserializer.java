@@ -2,8 +2,9 @@ package com.bakdata.conquery.io.jackson.serializer;
 
 import java.util.Optional;
 
-import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.models.identifiable.ids.IId.Parser;
+import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -15,7 +16,7 @@ import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
-public class IdKeyDeserializer<ID extends IId<?>> extends KeyDeserializer implements ContextualKeyDeserializer {
+public class IdKeyDeserializer<ID extends AId<?>> extends KeyDeserializer implements ContextualKeyDeserializer {
 
 	private Class<ID> idClass;
 	private Parser<ID> idParser;
@@ -40,7 +41,7 @@ public class IdKeyDeserializer<ID extends IId<?>> extends KeyDeserializer implem
 		type = type.getKeyType();
 
 		Class<ID> idClass = (Class<ID>) type.getRawClass();
-		Parser<ID> parser = IId.createParser(idClass);
+		Parser<ID> parser = IdUtil.createParser(idClass);
 
 		return new IdKeyDeserializer<>(idClass, parser, NamespacedId.class.isAssignableFrom(idClass));
 	}

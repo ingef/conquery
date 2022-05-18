@@ -51,7 +51,6 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 		return new ConceptSelectId(holder.findConcept().getId(), getName());
 	}
 
-
 	@NotNull
 	@JsonIgnore
 	public String getColumnName() {

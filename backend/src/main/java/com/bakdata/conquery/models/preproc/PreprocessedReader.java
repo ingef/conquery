@@ -8,7 +8,7 @@ import java.util.Map;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.InjectingCentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -41,7 +41,7 @@ public class PreprocessedReader implements AutoCloseable {
 	@Getter
 	private LastRead lastRead = LastRead.BEGIN;
 	private final JsonParser parser;
-	private final Map<IId<?>, Identifiable<?>> replacements = new HashMap<>();
+	private final Map<AId<?>, Identifiable<?>> replacements = new HashMap<>();
 
 	public PreprocessedReader(InputStream inputStream) throws IOException {
 		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
@@ -53,11 +53,11 @@ public class PreprocessedReader implements AutoCloseable {
 				.createParser(inputStream);
 	}
 
-	public void addReplacement(IId<?> id, Identifiable<?> replacement) {
+	public void addReplacement(AId<?> id, Identifiable<?> replacement) {
 		this.replacements.put(id, replacement);
 	}
 
-	public <K extends IId<?>, V extends Identifiable<?>> void addAllReplacements(Map<K, V> replacements) {
+	public <K extends AId<?>, V extends Identifiable<?>> void addAllReplacements(Map<K, V> replacements) {
 		this.replacements.putAll(replacements);
 	}
 

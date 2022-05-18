@@ -1,10 +1,18 @@
 package com.bakdata.conquery.models.error;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.util.VariableDefaultValue;
@@ -17,13 +25,6 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.Flat3Map;
 import org.apache.commons.text.StringSubstitutor;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
 
 /**
  * Base class for errors that are thrown within Conquery and can be serialized
@@ -150,7 +151,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 			super(TEMPLATE);
 		}
 
-		public ExecutionCreationResolveError(IId<?> unresolvableElementId) {
+		public ExecutionCreationResolveError(AId<?> unresolvableElementId) {
 			this();
 			getContext().put(FAILED_ELEMENT, unresolvableElementId.toString());
 			getContext().put(FAILED_ELEMENT_CLASS, unresolvableElementId.getClass().getSimpleName());

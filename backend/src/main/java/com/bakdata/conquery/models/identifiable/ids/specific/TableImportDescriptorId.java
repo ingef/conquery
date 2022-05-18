@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import lombok.AllArgsConstructor;
@@ -19,10 +19,10 @@ public class TableImportDescriptorId extends AId<TableImportDescriptor> {
 	public void collectComponents(List<Object> components) {
 		components.add(importDescriptor);
 	}
-	
-	public static enum Parser implements IId.Parser<TableImportDescriptorId> {
+
+	public static enum Parser implements IdUtil.Parser<TableImportDescriptorId> {
 		INSTANCE;
-		
+
 		@Override
 		public TableImportDescriptorId parseInternally(IdIterator parts) {
 			return new TableImportDescriptorId(parts.next());

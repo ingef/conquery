@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 
@@ -28,10 +28,10 @@ public class CBlockId extends AId<CBlock> implements NamespacedId {
 		bucket.collectComponents(components);
 		connector.collectComponents(components);
 	}
-	
-	public static enum Parser implements IId.Parser<CBlockId> {
+
+	public static enum Parser implements IdUtil.Parser<CBlockId> {
 		INSTANCE;
-		
+
 		@Override
 		public CBlockId parseInternally(IdIterator parts) {
 			ConnectorId connector = ConnectorId.Parser.INSTANCE.parse(parts.splitOff(3));

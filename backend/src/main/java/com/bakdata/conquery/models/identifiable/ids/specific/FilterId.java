@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 
@@ -28,10 +28,10 @@ public class FilterId extends AId<Filter<?>> implements NamespacedId {
 		connector.collectComponents(components);
 		components.add(filter);
 	}
-	
-	public static enum Parser implements IId.Parser<FilterId> {
+
+	public static enum Parser implements IdUtil.Parser<FilterId> {
 		INSTANCE;
-		
+
 		@Override
 		public FilterId parseInternally(IdIterator parts) {
 			String filter = parts.next();

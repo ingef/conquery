@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.identifiable;
 
 import java.util.Map;
 
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +17,10 @@ public class InjectingCentralRegistry extends CentralRegistry{
 	 * This map is intentionally NOT an IdMap as it allows wiring up mismatched ids.
 	 */
 	@NonNull
-	private final Map<IId<?>, Identifiable<?>> injections;
+	private final Map<AId<?>, Identifiable<?>> injections;
 
 	@Override
-	protected <T extends Identifiable<?>> T get(IId<T> name) {
+	protected <T extends Identifiable<?>> T get(AId<T> name) {
 		return (T) injections.get(name);
 	}
 }

@@ -8,7 +8,8 @@ import javax.ws.rs.ext.ParamConverterProvider;
 
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +26,13 @@ public class IdRefPathParamConverterProvider implements ParamConverterProvider {
 			return null;
 		}
 
-		final Class<IId<T>> idClass = IId.findIdClass(rawType);
+		final Class<AId<T>> idClass = IdUtil.findIdClass(rawType);
 
 		if(idClass == null){
 			return null;
 		}
 
-		final IId.Parser<IId<T>> parser = IId.createParser(idClass);
+		final IdUtil.Parser<AId<T>> parser = IdUtil.createParser(idClass);
 
 
 		if (NamespacedId.class.isAssignableFrom(idClass)) {
