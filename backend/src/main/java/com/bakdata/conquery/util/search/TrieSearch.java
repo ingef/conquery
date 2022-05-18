@@ -205,9 +205,6 @@ public class TrieSearch<T extends Comparable<T>> {
 				.forEach(kw -> doPut(kw, item));
 	}
 
-	//	public Iterator<T> iterator() {
-	//		return trie.keySet().stream().flatMap(this::doGet).distinct().iterator();
-	//	}
 
 	public Collection<T> listItems() {
 		//TODO this a pretty dangerous operation, I'd rather see a session based iterator instead
