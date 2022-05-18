@@ -9,6 +9,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.Named;
+import com.bakdata.conquery.models.identifiable.NamedImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -21,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "CSV_MAP", base = InternToExternMapper.class)
 @RequiredArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
-public class MapInternToExternMapper implements InternToExternMapper {
+public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, NamespacedIdentifiable<InternToExternMapperId> {
 
 
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
@@ -29,6 +35,14 @@ public class MapInternToExternMapper implements InternToExternMapper {
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	private MapIndexService mapIndex;
 
+	@JsonIgnore
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@Getter
+	private Dataset dataset;
+
+	@Getter
+	@ToString.Include
+	private final String name;
 	@Getter
 	@ToString.Include
 	private final URL csv;
@@ -65,5 +79,10 @@ public class MapInternToExternMapper implements InternToExternMapper {
 			log.warn("Unable to get mapping for {} from {}. Returning nothing.", internalValue, this, e);
 			return "";
 		}
+	}
+
+	@Override
+	public InternToExternMapperId createId() {
+		return new InternToExternMapperId(getDataset().getId(), getName());
 	}
 }

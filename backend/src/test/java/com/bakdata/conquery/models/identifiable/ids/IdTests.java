@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId.Parser;
+import com.bakdata.conquery.models.identifiable.ids.AId.Parser;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -166,12 +166,13 @@ public class IdTests {
 				return fail("Could not find id class for "+cl);
 			});
 	}
-	
-	@ParameterizedTest @MethodSource
-	public void reflectionTest(Class<?> modelClass, Class<? extends IId<?>> expectedIdClass) {
-		
-		Class<? extends IId<?>> idClass = IId.findIdClass(modelClass);
+
+	@ParameterizedTest
+	@MethodSource
+	public void reflectionTest(Class<?> modelClass, Class<? extends AId<?>> expectedIdClass) {
+
+		Class<? extends AId<?>> idClass = AId.findIdClass(modelClass);
 		assertThat(idClass).isSameAs(expectedIdClass);
-		assertThat(IId.createParser(idClass)).isInstanceOf(Parser.class);
+		assertThat(AId.createParser(idClass)).isInstanceOf(Parser.class);
 	}
 }

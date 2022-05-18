@@ -36,11 +36,13 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -324,4 +326,12 @@ public class LoadingUtil {
 
 		return out;
 	}
+
+	public static void importInternToExternMappers(StandaloneSupport support, List<InternToExternMapper> internToExternMappers) {
+		final AdminDatasetProcessor datasetsProcessor = support.getDatasetsProcessor();
+		for (InternToExternMapper internToExternMapper : internToExternMappers) {
+			datasetsProcessor.addInternToExternMapping(support.getNamespace(), internToExternMapper);
+		}
+	}
+
 }

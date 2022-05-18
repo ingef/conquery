@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Shareable.ShareInformation;
 import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.Data;
@@ -41,21 +41,22 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 	 * Hence the patched instance must have a corresponding {@link Permission}-type.
 	 * Tagging and Labeling only alters the state of the instance while sharing also alters the state of {@link Group}s.
 	 *
-	 * @param instance          The instance to patch
-	 * @param storage           Storage that persists the instance and also auth information.
-	 * @param subject              The subject on whose behalf the patch is executed
-	 * @param <INST>            Type of the instance that is patched
+	 * @param instance The instance to patch
+	 * @param storage  Storage that persists the instance and also auth information.
+	 * @param subject  The subject on whose behalf the patch is executed
+	 * @param <INST>   Type of the instance that is patched
 	 */
-	public <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, Subject subject) {
-		buildChain(QueryUtils.getNoOpEntryPoint(),
-				   storage,
-				   subject,
-				   instance
+	public <T extends MetaDataPatch, ID extends AId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> void applyTo(INST instance, MetaStorage storage, Subject subject) {
+		buildChain(
+				QueryUtils.getNoOpEntryPoint(),
+				storage,
+				subject,
+				instance
 		)
 				.accept(this);
 	}
 
-	protected <T extends MetaDataPatch, ID extends IId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, Subject subject, INST instance) {
+	protected <T extends MetaDataPatch, ID extends AId<?>, INST extends Taggable & Shareable & Labelable & Identifiable<? extends ID> & Owned & Authorized> Consumer<T> buildChain(Consumer<T> patchConsumerChain, MetaStorage storage, Subject subject, INST instance) {
 		if (getTags() != null && subject.isPermitted(instance, Ability.TAG)) {
 			patchConsumerChain = patchConsumerChain.andThen(instance.tagger());
 		}
@@ -70,7 +71,7 @@ public class MetaDataPatch implements Taggable, Labelable, ShareInformation {
 
 
 	@FunctionalInterface
-	public interface PermissionCreator<ID extends IId<?>> extends BiFunction<Set<Ability>, ID, ConqueryPermission> {
+	public interface PermissionCreator<ID extends AId<?>> extends BiFunction<Set<Ability>, ID, ConqueryPermission> {
 
 	}
 }

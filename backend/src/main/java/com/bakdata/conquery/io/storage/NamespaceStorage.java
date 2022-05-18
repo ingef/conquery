@@ -13,7 +13,9 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class NamespaceStorage extends NamespacedStorage {
 
+	protected IdentifiableStore<InternToExternMapper> internToExternMappers;
 	protected SingletonStore<EntityIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
@@ -62,6 +65,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	public void openStores(ObjectMapper objectMapper) {
 		super.openStores(objectMapper);
 
+		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		idMapping = getStorageFactory().createIdMappingStore(super.getPathName(), objectMapper);
 		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
@@ -74,6 +78,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	public void loadData() {
 		super.loadData();
 
+		internToExternMappers.loadData();
 		idMapping.loadData();
 		structure.loadData();
 		workerToBuckets.loadData();
@@ -83,6 +88,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	@Override
 	public void clear() {
 		super.clear();
+		internToExternMappers.clear();
 		idMapping.clear();
 		structure.clear();
 		workerToBuckets.clear();
@@ -93,6 +99,8 @@ public class NamespaceStorage extends NamespacedStorage {
 	@Override
 	public void removeStorage() {
 		super.removeStorage();
+
+		internToExternMappers.removeStore();
 		idMapping.removeStore();
 		structure.removeStore();
 		workerToBuckets.removeStore();
@@ -103,6 +111,8 @@ public class NamespaceStorage extends NamespacedStorage {
 	@Override
 	public void close() throws IOException {
 		super.close();
+
+		internToExternMappers.close();
 		idMapping.close();
 		structure.close();
 		workerToBuckets.close();
@@ -138,5 +148,17 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	public void updateStructure(StructureNode[] structure) {
 		this.structure.update(structure);
+	}
+
+	public InternToExternMapper getInternToExternMapper(InternToExternMapperId id) {
+		return internToExternMappers.get(id);
+	}
+
+	public void addInternToExternMapper(InternToExternMapper internToExternMapper) {
+		internToExternMappers.add(internToExternMapper);
+	}
+
+	public void removeInternToExternMapper(InternToExternMapperId id) {
+		internToExternMappers.remove(id);
 	}
 }

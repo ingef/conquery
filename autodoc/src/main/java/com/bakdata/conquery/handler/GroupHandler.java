@@ -23,7 +23,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.Group;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.util.PrettyPrinter;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -343,7 +343,7 @@ public class GroupHandler {
 			Class<?> cl = classRef.loadClass();
 
 			//ID
-			if (IId.class.isAssignableFrom(cl)) {
+			if (AId.class.isAssignableFrom(cl)) {
 				String name = cl.getSimpleName();
 				return ID_OF + code(name.substring(0, name.length() - 2));
 			}

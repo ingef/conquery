@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AllArgsConstructor;
@@ -23,9 +22,9 @@ public class SecondaryIdDescriptionId extends AId<SecondaryIdDescription> implem
 		components.add(name);
 	}
 	
-	public static enum Parser implements IId.Parser<SecondaryIdDescriptionId> {
+	public static enum Parser implements AId.Parser<SecondaryIdDescriptionId> {
 		INSTANCE;
-		
+
 		@Override
 		public SecondaryIdDescriptionId parseInternally(IdIterator parts) {
 			String name = parts.next();

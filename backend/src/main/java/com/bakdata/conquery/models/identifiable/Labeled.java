@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.identifiable;
 
 import javax.validation.constraints.NotEmpty;
 
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.google.common.base.CharMatcher;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -18,9 +18,9 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @AllArgsConstructor
 @ToString
-public abstract class Labeled<ID extends IId<? extends Labeled<? extends ID>>> extends NamedImpl<ID> {
+public abstract class Labeled<ID extends AId<? extends Labeled<? extends ID>>> extends NamedImpl<ID> {
 
-	private static final CharMatcher DEFAULT_NAME_UNWANTED = CharMatcher.is(IId.JOIN_CHAR).or(CharMatcher.whitespace());
+	private static final CharMatcher DEFAULT_NAME_UNWANTED = CharMatcher.is(AId.JOIN_CHAR).or(CharMatcher.whitespace());
 
 	/**
 	 * shown in the frontend

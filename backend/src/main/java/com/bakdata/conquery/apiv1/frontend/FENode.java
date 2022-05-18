@@ -2,7 +2,7 @@ package com.bakdata.conquery.apiv1.frontend;
 
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,11 +14,11 @@ import java.util.List;
  */
 @Data @Builder
 public class FENode {
-	private IId<?> parent;
+	private AId<?> parent;
 	private String label;
 	private String description;
 	private Boolean active;
-	private IId<?>[] children;
+	private AId<?>[] children;
 	private List<KeyValue> additionalInfos;
 	private long matchingEntries;
 	private Range<LocalDate> dateRange;

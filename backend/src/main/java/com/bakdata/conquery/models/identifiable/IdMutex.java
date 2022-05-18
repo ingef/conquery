@@ -4,9 +4,9 @@ import java.io.Closeable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
 
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 
-public class IdMutex<T extends IId<?>> {
+public class IdMutex<T extends AId<?>> {
 	private final ConcurrentHashMap<T, Locked> mutexMap = new ConcurrentHashMap<>();
 
 	public Locked acquire(final T key) {

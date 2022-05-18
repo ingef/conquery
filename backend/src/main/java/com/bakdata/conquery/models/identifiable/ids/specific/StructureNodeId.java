@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -29,13 +28,13 @@ public class StructureNodeId extends AId<StructureNode> {
 		components.add(structureNode);
 	}
 	
-	public static enum Parser implements IId.Parser<StructureNodeId> {
+	public static enum Parser implements AId.Parser<StructureNodeId> {
 		INSTANCE;
-		
+
 		@Override
 		public StructureNodeId parseInternally(IdIterator parts) {
 			String name = parts.next();
-			if(parts.remaining() == 1) {
+			if (parts.remaining() == 1) {
 				DatasetId dataset = DatasetId.Parser.INSTANCE.parse(parts);
 				return new StructureNodeId(dataset, null, name);
 			}

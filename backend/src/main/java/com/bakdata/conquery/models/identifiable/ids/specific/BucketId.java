@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 
@@ -29,9 +28,9 @@ public class BucketId extends AId<Bucket> implements NamespacedId {
 		components.add(bucket);
 	}
 	
-	public static enum Parser implements IId.Parser<BucketId> {
+	public static enum Parser implements AId.Parser<BucketId> {
 		INSTANCE;
-		
+
 		@Override
 		public BucketId parseInternally(IdIterator parts) {
 			int bucket = Integer.parseInt(parts.next());

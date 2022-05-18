@@ -5,7 +5,6 @@ import java.util.UUID;
 
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -23,9 +22,9 @@ public class ManagedExecutionId extends AId<ManagedExecution<?>> {
 		components.add(execution);
 	}
 	
-	public static enum Parser implements IId.Parser<ManagedExecutionId> {
+	public static enum Parser implements AId.Parser<ManagedExecutionId> {
 		INSTANCE;
-		
+
 		@Override
 		public ManagedExecutionId parseInternally(IdIterator parts) {
 			UUID query = UUID.fromString(parts.next());

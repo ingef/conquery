@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +37,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.bakdata.conquery.util.io.FileUtil;
@@ -100,6 +100,19 @@ public class AdminDatasetResource extends HAdmin {
 	}
 
 	@POST
+	@Path("secondaryId")
+	public void addSecondaryId(SecondaryIdDescription secondaryId) {
+		processor.addSecondaryId(namespace, secondaryId);
+	}
+
+
+	@POST
+	@Path("internToExtern")
+	public void addInternToExternMapping(InternToExternMapper internToExternMapper) {
+		processor.addInternToExternMapping(namespace, internToExternMapper);
+	}
+
+	@POST
 	@Path("tables")
 	public void addTable(Table table) {
 		processor.addTable(table, namespace);
@@ -155,16 +168,16 @@ public class AdminDatasetResource extends HAdmin {
 		processor.updateConcept(namespace.getDataset(), concept);
 	}
 
-	@POST
-	@Path("secondaryId")
-	public void addSecondaryId(SecondaryIdDescription secondaryId) {
-		processor.addSecondaryId(namespace, secondaryId);
-	}
-
 	@DELETE
 	@Path("secondaryId/{" + SECONDARY_ID + "}")
 	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId) {
 		processor.deleteSecondaryId(secondaryId);
+	}
+
+	@POST
+	@Path("secondaryId/{" + INTERN_TO_EXTERN_ID + "}")
+	public void deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper) {
+		processor.deleteInternToExternMapping(internToExternMapper);
 	}
 
 	@GET

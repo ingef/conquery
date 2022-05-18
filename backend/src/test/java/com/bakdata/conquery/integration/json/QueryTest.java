@@ -2,6 +2,8 @@ package com.bakdata.conquery.integration.json;
 
 import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 
+import java.util.List;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -10,6 +12,7 @@ import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,6 +41,9 @@ public class QueryTest extends AbstractQueryEngineTest {
 	@JsonProperty("concepts")
 	private ArrayNode rawConcepts;
 
+	@NotNull
+	private List<InternToExternMapper> internToExternMappers = List.of();
+
 	@JsonIgnore
 	private Query query;
 
@@ -49,6 +55,9 @@ public class QueryTest extends AbstractQueryEngineTest {
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
 		importSecondaryIds(support, content.getSecondaryIds());
+		support.waitUntilWorkDone();
+
+		importInternToExternMappers(support, internToExternMappers);
 		support.waitUntilWorkDone();
 
 		importTables(support, content.getTables());

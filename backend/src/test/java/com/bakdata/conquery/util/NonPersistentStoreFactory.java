@@ -2,8 +2,6 @@ package com.bakdata.conquery.util;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,8 +28,9 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
@@ -41,23 +40,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class NonPersistentStoreFactory implements StoreFactory {
 
 	private final Map<String, NonPersistentStore<Boolean, Dataset>> datasetStores = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<SecondaryIdDescription>, SecondaryIdDescription>> secondaryIdDescriptionStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<Table>, Table>> tableStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<Dictionary>, Dictionary>> dictionaryStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<Concept<?>>, Concept<?>>> conceptStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<Import>, Import>> importStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<CBlock>, CBlock>> cBlockStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<Bucket>, Bucket>> bucketStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<SecondaryIdDescription>, SecondaryIdDescription>> secondaryIdDescriptionStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<Table>, Table>> tableStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<Dictionary>, Dictionary>> dictionaryStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<Concept<?>>, Concept<?>>> conceptStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<Import>, Import>> importStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<CBlock>, CBlock>> cBlockStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<Bucket>, Bucket>> bucketStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<InternToExternMapper>, InternToExternMapper>> internToExternStore = new ConcurrentHashMap<>();
 
 	private final Map<String, NonPersistentStore<Boolean, WorkerInformation>> workerStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Boolean, EntityIdMap>> idMappingStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Boolean, WorkerToBucketsMap>> workerToBucketStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Boolean, StructureNode[]>> structureStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<ManagedExecution<?>>, ManagedExecution<?>>> executionStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<FormConfig>, FormConfig>> formConfigStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<User>, User>> userStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<Role>, Role>> roleStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<IId<Group>, Group>> groupStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<ManagedExecution<?>>, ManagedExecution<?>>> executionStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<FormConfig>, FormConfig>> formConfigStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<User>, User>> userStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<Role>, Role>> roleStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<AId<Group>, Group>> groupStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Boolean, Dictionary>> primaryDictionaryStoreStore = new ConcurrentHashMap<>();
 
 
@@ -79,6 +79,11 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	@Override
 	public IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(secondaryIdDescriptionStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	}
+
+	@Override
+	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(internToExternStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
 	}
 
 	@Override

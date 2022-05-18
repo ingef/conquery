@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AllArgsConstructor;
@@ -28,9 +27,9 @@ public class ImportId extends AId<Import> implements NamespacedId {
 		components.add(tag);
 	}
 	
-	public static enum Parser implements IId.Parser<ImportId> {
+	public static enum Parser implements AId.Parser<ImportId> {
 		INSTANCE;
-		
+
 		@Override
 		public ImportId parseInternally(IdIterator parts) {
 			String tag = parts.next();

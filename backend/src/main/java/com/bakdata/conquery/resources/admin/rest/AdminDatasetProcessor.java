@@ -35,6 +35,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -372,5 +373,20 @@ public class AdminDatasetProcessor {
 
 	public EntityIdMap getIdMapping(Namespace namespace) {
 		return namespace.getStorage().getIdMapping();
+	}
+
+	public void addInternToExternMapping(Namespace namespace, InternToExternMapper internToExternMapper) {
+		if (namespace.getStorage().getInternToExternMapper(internToExternMapper.getId()) != null) {
+			throw new WebApplicationException("SecondaryId already exists", Response.Status.CONFLICT);
+		}
+
+		log.info("Received new SecondaryId[{}]", internToExternMapper.getId());
+
+		namespace.getStorage().addInternToExternMapper(internToExternMapper);
+	}
+
+	public void deleteInternToExternMapping(InternToExternMapper internToExternMapper) {
+		final Namespace namespace = datasetRegistry.get(internToExternMapper.getDataset().getId());
+		namespace.getStorage().removeInternToExternMapper(internToExternMapper.getId());
 	}
 }
