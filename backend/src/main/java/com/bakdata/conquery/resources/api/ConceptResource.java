@@ -63,6 +63,8 @@ public class ConceptResource extends HConcepts {
 		throw new WebApplicationException("can only resolved elements on tree concepts", Status.BAD_REQUEST);
 	}
 
+
+
 	@Getter
 	@Setter
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)

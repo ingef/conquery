@@ -2,14 +2,17 @@ package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.apiv1.frontend.FERoot;
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.resources.hierarchies.HDatasets;
 import lombok.Setter;
 
@@ -26,5 +29,11 @@ public class DatasetResource extends HDatasets {
 	@Path("concepts")
 	public FERoot getRoot() {
 		return processor.getRoot(getNamespace().getStorage(), subject);
+	}
+
+	@GET
+	@Path("entity-preview-default-connectors")
+	public List<ConnectorId> getEntityPreviewDefaultConnectors() {
+		return processor.getEntityPreviewDefaultConnectors(getDataset());
 	}
 }
