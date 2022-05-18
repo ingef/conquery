@@ -79,6 +79,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		final Response allEntityDataResponse =
 				conquery.getClient().target(entityExport)
 						.request(MediaType.APPLICATION_JSON_TYPE)
+						.header("Accept-Language", "en-Us")
 						.post(Entity.json(new QueryResource.EntityPreview("ID", "3", Range.all(), allConnectors)));
 
 		assertThat(allEntityDataResponse.getStatusInfo().getFamily())
@@ -87,8 +88,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		final String rawData = allEntityDataResponse.readEntity(String.class);
 
-		assertThat(rawData)
-				.isEqualTo("result,Datumswerte,test_table test_column,test_table2 test_column\n3,10.11.2013,A1,\n");
+		assertThat(rawData.lines().collect(Collectors.toList()))
+				.isEqualTo(List.of("result,dates,test_table test_column,test_table2 test_column", "3,2013-11-10,A1,"));
 
 	}
 
