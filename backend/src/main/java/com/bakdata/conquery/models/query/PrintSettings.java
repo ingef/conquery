@@ -52,10 +52,6 @@ public class PrintSettings {
 
 	private final LocaleConfig.ListFormat listFormat;
 
-	private final String listElementEscaper = "\\";
-
-	private final String listDelimEscape;
-
 	private final PrintIdMapper idMapper;
 
 	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
@@ -75,7 +71,6 @@ public class PrintSettings {
 		this.dateFormat = config.getLocale().findDateFormat(locale);
 		this.dateFormatter = prettyPrint ? DateTimeFormatter.ofPattern(dateFormat) : UNPRETTY_DATEFORMATTER;
 
-		this.listDelimEscape = listElementEscaper + listFormat.getSeparator();
 	}
 
 	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper) {

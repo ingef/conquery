@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.result.csv;
 
+import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -87,14 +88,15 @@ public class CsvRenderer {
 			throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", values, values.getClass().getName(), values));
 		}
 		// Not sure if this escaping is enough
-		StringJoiner joiner = new StringJoiner(cfg.getListFormat().getSeparator(), cfg.getListFormat().getStart(), cfg.getListFormat().getEnd());
+		final LocaleConfig.ListFormat listFormat = cfg.getListFormat();
+		StringJoiner joiner = listFormat.createListJoiner();
 		for (Object obj : (List<?>) values) {
 			final ResultType elementType = ((ResultType.ListT) type).getElementType();
 			final Function3<ResultType, Object, Function<Object, Object>, String>
 					printer =
 					FIELD_MAP.getOrDefault(elementType.getClass(), this::printDefault);
 			final String printValue = printer.invoke(elementType, obj, mapper);
-			joiner.add(printValue.replace(cfg.getListFormat().getSeparator(), cfg.getListDelimEscape()));
+			joiner.add(listFormat.escapeListElement(printValue));
 		}
 		return joiner.toString();
 	}

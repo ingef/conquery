@@ -4,6 +4,7 @@ import c10n.C10N;
 import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -256,14 +257,14 @@ public abstract class ResultType {
 		@Override
 		public String print(PrintSettings cfg, @NonNull Object f) {
 			// Jackson deserializes collections as lists instead of an array, if the type is not given
-			if(!(f instanceof List)) {
+			if (!(f instanceof List)) {
 				throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
 			}
 			// Not sure if this escaping is enough
-			String listDelimEscape = cfg.getListElementEscaper() + cfg.getListFormat().getSeparator();
-			StringJoiner joiner = new StringJoiner(cfg.getListFormat().getSeparator(), cfg.getListFormat().getStart(),cfg.getListFormat().getEnd());
-			for(Object obj : (List<?>) f) {
-				joiner.add(elementType.print(cfg,obj).replace(cfg.getListFormat().getSeparator(), listDelimEscape));
+			final LocaleConfig.ListFormat listFormat = cfg.getListFormat();
+			StringJoiner joiner = listFormat.createListJoiner();
+			for (Object obj : (List<?>) f) {
+				joiner.add(listFormat.escapeListElement(elementType.print(cfg, obj)));
 			}
 			return joiner.toString();
 		}

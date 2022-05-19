@@ -212,9 +212,11 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	 * @return a preconfigured binary object mapper
 	 */
 	public ObjectMapper createInternalObjectMapper() {
-		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.BINARY_MAPPER.copy());
 
-		final MutableInjectableValues injectableValues = (MutableInjectableValues) objectMapper.getInjectableValues();
+
+		final MutableInjectableValues injectableValues = new MutableInjectableValues();
+		objectMapper.setInjectableValues(injectableValues);
 		injectableValues.add(Validator.class, validator);
 		datasetRegistry.injectInto(objectMapper);
 		storage.injectInto(objectMapper);

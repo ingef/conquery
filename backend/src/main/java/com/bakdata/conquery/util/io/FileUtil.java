@@ -100,19 +100,16 @@ public class FileUtil {
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
 
 		//Get file input stream for reading the file content
-		FileInputStream fis = new FileInputStream(file);
+		try (FileInputStream fis = new FileInputStream(file)) {
+			//Create byte array to read data in chunks
+			byte[] byteArray = new byte[1024];
+			int bytesCount;
 
-		//Create byte array to read data in chunks
-		byte[] byteArray = new byte[1024];
-		int bytesCount;
-
-		//Read file data and update in message digest
-		while ((bytesCount = fis.read(byteArray)) != -1) {
-			digest.update(byteArray, 0, bytesCount);
+			//Read file data and update in message digest
+			while ((bytesCount = fis.read(byteArray)) != -1) {
+				digest.update(byteArray, 0, bytesCount);
+			}
 		}
-
-		//close the stream; We don't need it now.
-		fis.close();
 
 		//Get the hash's bytes
 		byte[] bytes = digest.digest();
