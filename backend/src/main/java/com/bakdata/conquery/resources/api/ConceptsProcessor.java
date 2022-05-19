@@ -234,15 +234,16 @@ public class ConceptsProcessor {
 		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
 		 */
 
-		final Iterator<FEValue>[] iterators = namespace.getFilterSearch()
-													   .getSearchesFor(filter).stream()
-													   .map(TrieSearch::iterator)
-													   .toArray(Iterator[]::new);
+		final Iterator<FEValue> iterators =
+				Iterators.concat(Iterators.transform(
+						namespace.getFilterSearch().getSearchesFor(filter).iterator(),
+						TrieSearch::iterator
+				));
 
 		// Use Set to accomplish distinct values
 		final Set<FEValue> seen = new HashSet<>();
 
-		return new Cursor<>(Iterators.filter(Iterators.concat(iterators), seen::add));
+		return new Cursor<>(Iterators.filter(iterators, seen::add));
 	}
 
 	private long countAllValues(SelectFilter<?> filter) {
