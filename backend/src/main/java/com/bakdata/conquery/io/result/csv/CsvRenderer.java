@@ -66,7 +66,7 @@ public class CsvRenderer {
 				final Function3<ResultType, Object, Function<Object, Object>, String>
 						printer =
 						FIELD_MAP.getOrDefault(info.getType().getClass(), this::printDefault);
-				final Function<Object, Object> valueMapper = info.getValueMapper().orElse(null);
+				final Function<Object, Object> valueMapper = info.getValueMapper().orElse(Function.identity());
 				final String printValue = printer.invoke(info.getType(), value[i], valueMapper);
 				writer.addValue(printValue);
 			}
