@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.IntSummaryStatistics;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -17,6 +19,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Object2DoubleAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import lombok.ToString;
@@ -202,9 +205,6 @@ public class TrieSearch<T extends Comparable<T>> {
 				.forEach(kw -> doPut(kw, item));
 	}
 
-	public Iterator<T> iterator() {
-		return trie.keySet().stream().flatMap(this::doGet).distinct().iterator();
-	}
 
 	public Collection<T> listItems() {
 		//TODO this a pretty dangerous operation, I'd rather see a session based iterator instead
@@ -259,5 +259,17 @@ public class TrieSearch<T extends Comparable<T>> {
 		return trie.values().stream()
 				   .flatMap(Collection::stream)
 				   .distinct();
+	}
+
+	public Iterator<T> iterator() {
+		// This is a very ugly workaround to not get eager evaluation (which happens when using flatMap and distinct on streams)
+		final Set<T> seen = new HashSet<>();
+
+		return Iterators.filter(
+				Iterators.<T>concat(trie.values().stream()
+										.map(Collection::iterator)
+										.toArray(Iterator[]::new)),
+				seen::add
+		);
 	}
 }
