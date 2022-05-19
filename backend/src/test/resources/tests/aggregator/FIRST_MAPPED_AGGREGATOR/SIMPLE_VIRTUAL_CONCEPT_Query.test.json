@@ -20,12 +20,12 @@
         }
     },
     "internToExternMappings": {
-        "name": "test_map",
-//        "type": "CSV_MAP",
-        "internalColumn": "internal",
-        "externalTemplate": "External: {{external}}",
-        "csv": "classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"
-    },
+		"name": "test_map",
+		"type": "CSV_MAP",
+		"internalColumn": "internal",
+		"externalTemplate": "External: {{external}}",
+		"csv": "classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"
+	},
     "concepts": [
         {
             "label": "concept",
