@@ -176,7 +176,7 @@ public class AdminDatasetResource extends HAdmin {
 	}
 
 	@POST
-	@Path("secondaryId/{" + INTERN_TO_EXTERN_ID + "}")
+	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
 	public void deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper) {
 		processor.deleteInternToExternMapping(internToExternMapper);
 	}

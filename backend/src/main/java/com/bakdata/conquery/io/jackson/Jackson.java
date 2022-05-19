@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.jackson;
 
 import java.util.Locale;
 
+import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -25,7 +26,10 @@ public class Jackson {
 
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
+		MAPPER.setConfig(MAPPER.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
+
 		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
+		BINARY_MAPPER.setConfig(BINARY_MAPPER.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 	}
 
 	/**

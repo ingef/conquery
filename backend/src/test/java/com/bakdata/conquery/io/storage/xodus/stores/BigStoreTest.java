@@ -9,6 +9,7 @@ import java.io.SequenceInputStream;
 import java.nio.file.Files;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -51,6 +52,8 @@ public class BigStoreTest {
 		tmpDir = Files.createTempDirectory(BigStoreTest.class.getSimpleName()).toFile();
 		tmpDir.mkdirs();
 		env = Environments.newInstance(tmpDir);
+
+		MAPPER.setConfig(MAPPER.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 	}
 
 	@AfterEach
