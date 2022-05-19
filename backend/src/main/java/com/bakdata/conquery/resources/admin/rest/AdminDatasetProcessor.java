@@ -376,11 +376,15 @@ public class AdminDatasetProcessor {
 	}
 
 	public void addInternToExternMapping(Namespace namespace, InternToExternMapper internToExternMapper) {
+		internToExternMapper.setDataset(namespace.getDataset());
+
+		ValidatorHelper.failOnError(log, validator.validate(internToExternMapper));
+
 		if (namespace.getStorage().getInternToExternMapper(internToExternMapper.getId()) != null) {
-			throw new WebApplicationException("SecondaryId already exists", Response.Status.CONFLICT);
+			throw new WebApplicationException("InternToExternMapping already exists", Response.Status.CONFLICT);
 		}
 
-		log.info("Received new SecondaryId[{}]", internToExternMapper.getId());
+		log.info("Received new InternToExternMapping[{}]", internToExternMapper.getId());
 
 		namespace.getStorage().addInternToExternMapper(internToExternMapper);
 	}

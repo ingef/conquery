@@ -20,6 +20,7 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.PathParamInjector;
+import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -118,8 +119,11 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
 		storage = new MetaStorage(config.getStorage(), datasetRegistry);
 
-		datasetRegistry.injectInto(environment.getObjectMapper());
-		storage.injectInto(environment.getObjectMapper());
+
+		final ObjectMapper objectMapper = environment.getObjectMapper();
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
+		datasetRegistry.injectInto(objectMapper);
+		storage.injectInto(objectMapper);
 
 
 		jobManager = new JobManager("ManagerNode", config.isFailOnError());
@@ -147,8 +151,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		authController = new AuthorizationController(storage, config.getAuthorizationRealms());
 		environment.lifecycle().manage(authController);
 
-		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
-		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
+		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), objectMapper);
+		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), objectMapper);
 
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
@@ -221,6 +225,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		datasetRegistry.injectInto(objectMapper);
 		storage.injectInto(objectMapper);
 
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class,SerdesTarget.MANAGER));
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
 		return objectMapper;
@@ -309,7 +314,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
 
-		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
+		ObjectMapper om = createInternalObjectMapper();
 		config.configureObjectMapper(om);
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));

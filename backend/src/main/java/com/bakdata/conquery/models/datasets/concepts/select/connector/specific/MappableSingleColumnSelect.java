@@ -3,8 +3,11 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
+import javax.validation.Valid;
+import javax.validation.constraints.Null;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.index.InternToExternMapper;
@@ -14,7 +17,13 @@ import lombok.Getter;
 
 public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 
+	/**
+	 * If a mapping was provided the mapping changes the aggregator result before it is processed by a {@link com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider}.
+	 */
 	@Getter
+	@Valid
+	@Nullable
+	@NsIdRef(serdesTarget = SerdesTarget.MANAGER)
 	private final InternToExternMapper mapping;
 
 	@JsonIgnore
@@ -23,7 +32,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 
 	@JsonCreator
 	public MappableSingleColumnSelect(@NsIdRef Column column,
-									  @Nullable InternToExternMapper mapping) {
+									  @Nullable InternToExternMapper mapping){
 		super(column);
 		this.mapping = mapping;
 

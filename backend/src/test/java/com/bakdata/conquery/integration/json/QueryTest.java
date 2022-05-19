@@ -13,6 +13,7 @@ import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.MapInternToExternMapper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -21,7 +22,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jvnet.hk2.internal.Utilities;
 
 @Slf4j
 @Getter
@@ -42,7 +42,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 	private ArrayNode rawConcepts;
 
 	@NotNull
-	private List<InternToExternMapper> internToExternMappers = List.of();
+	private List<InternToExternMapper> internToExternMappings = List.of();
 
 	@JsonIgnore
 	private Query query;
@@ -57,7 +57,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		importSecondaryIds(support, content.getSecondaryIds());
 		support.waitUntilWorkDone();
 
-		importInternToExternMappers(support, internToExternMappers);
+		importInternToExternMappers(support, internToExternMappings);
 		support.waitUntilWorkDone();
 
 		importTables(support, content.getTables());

@@ -65,7 +65,7 @@ public class Namespace implements Closeable {
 
 	private final FilterSearch filterSearch;
 
-	// Jackson injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
+	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
 	private final List<Injectable> injectables;
 
 	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, ObjectMapper objectMapper) {

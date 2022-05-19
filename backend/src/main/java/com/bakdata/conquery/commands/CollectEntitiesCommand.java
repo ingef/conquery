@@ -17,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
@@ -28,6 +30,7 @@ import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.powerlibraries.io.Out;
 import com.google.common.collect.Sets;
 import io.dropwizard.cli.Command;
@@ -118,7 +121,9 @@ public class CollectEntitiesCommand extends Command {
 
 		@Override
 		public void execute() throws Exception {
-			try (final PreprocessedReader parser = new PreprocessedReader(new GZIPInputStream(new FileInputStream(file)))) {
+			final ObjectMapper om = Jackson.BINARY_MAPPER.copy();
+			om.setConfig(om.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
+			try (final PreprocessedReader parser = new PreprocessedReader(new GZIPInputStream(new FileInputStream(file)), om)) {
 				parser.addReplacement(Dataset.PLACEHOLDER.getId(), Dataset.PLACEHOLDER);
 				final PreprocessedHeader header = parser.readHeader();
 				log.info("Reading {}", header.getName());

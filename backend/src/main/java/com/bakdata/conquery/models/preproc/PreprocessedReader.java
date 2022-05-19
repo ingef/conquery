@@ -5,13 +5,13 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.InjectingCentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -43,11 +43,11 @@ public class PreprocessedReader implements AutoCloseable {
 	private final JsonParser parser;
 	private final Map<AId<?>, Identifiable<?>> replacements = new HashMap<>();
 
-	public PreprocessedReader(InputStream inputStream) throws IOException {
+	public PreprocessedReader(InputStream inputStream, ObjectMapper objectMapper) throws IOException {
 		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
 		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
 
-		parser = namespaceCollection.injectIntoNew(Jackson.BINARY_MAPPER.copy())
+		parser = namespaceCollection.injectIntoNew(objectMapper)
 				.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
 				.getFactory()
 				.createParser(inputStream);

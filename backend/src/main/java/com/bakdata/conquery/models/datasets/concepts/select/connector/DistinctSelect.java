@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -15,7 +17,7 @@ public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@JsonCreator
 	public DistinctSelect(@NsIdRef Column column,
-						  InternToExternMapper mapping) {
+						  @NsIdRef InternToExternMapper mapping) {
 		super(column, mapping);
 	}
 

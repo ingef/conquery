@@ -151,6 +151,7 @@ public class AdminDatasetResource extends HAdmin {
 			processor.addImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
 		}
 		catch (IOException err) {
+			log.warn("Unable to process import", err);
 			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied.", importFile), err, Status.BAD_REQUEST);
 		}
 	}

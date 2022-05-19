@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
+import static com.bakdata.conquery.io.jackson.serializer.SerdesTarget.MANAGER_AND_SHARD;
+
 import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Optional;
@@ -31,6 +33,7 @@ public class NsIdReferenceDeserializer<ID extends AId<T> & NamespacedId, T exten
 	private Class<?> type;
 	private JsonDeserializer<?> beanDeserializer;
 	private Class<ID> idClass;
+	private SerdesTarget fieldTarget;
 
 	@Override
 	public T deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
@@ -40,8 +43,19 @@ public class NsIdReferenceDeserializer<ID extends AId<T> & NamespacedId, T exten
 	@SuppressWarnings("unchecked")
 	@Override
 	public T deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
+		final SerdesTarget omTarget = (SerdesTarget) ctxt.getAttribute(SerdesTarget.class);
+
+		if (omTarget == null) {
+			throw new IllegalStateException("Deserialization target not set. Don't know in whose context to deserialize.");
+		}
+
 		if (parser.getCurrentToken() != JsonToken.VALUE_STRING) {
 			return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
+		}
+
+		if (!omTarget.shouldDeserializeField(fieldTarget)) {
+			log.trace("Skipping deserialization on instance (target={}) for field (target={}). Id was: {}", omTarget, fieldTarget, log.isTraceEnabled() ? parser.getText(): "trace not enabled");
+			return null;
 		}
 
 		ID id = ctxt.readValue(parser, idClass);
@@ -80,11 +94,15 @@ public class NsIdReferenceDeserializer<ID extends AId<T> & NamespacedId, T exten
 		Class<T> cl = (Class<T>) type.getRawClass();
 		Class<ID> idClass = AId.findIdClass(cl);
 
+		// Get the serdes target, but don't evaluate it yet (however it might be possible to return a noop deserializer here)
+		final NsIdRef annotation = property.getAnnotation(NsIdRef.class);
+		final SerdesTarget serdesTarget = annotation != null ? annotation.serdesTarget() : MANAGER_AND_SHARD;
 
 		return new NsIdReferenceDeserializer<>(
 				cl,
 				ctxt.getFactory().createBeanDeserializer(ctxt, type, descr),
-				idClass
+				idClass,
+				serdesTarget
 		);
 	}
 

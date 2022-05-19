@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -14,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class RandomValueSelect extends MappableSingleColumnSelect {
 	@JsonCreator
 	public RandomValueSelect(@NsIdRef Column column,
-							 InternToExternMapper mapping) {
+							 @NsIdRef InternToExternMapper mapping) {
 		super(column, mapping);
 	}
 

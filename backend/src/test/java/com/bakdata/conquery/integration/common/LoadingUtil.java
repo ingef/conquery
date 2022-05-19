@@ -37,6 +37,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.MapInternToExternMapper;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -328,10 +329,26 @@ public class LoadingUtil {
 	}
 
 	public static void importInternToExternMappers(StandaloneSupport support, List<InternToExternMapper> internToExternMappers) {
-		final AdminDatasetProcessor datasetsProcessor = support.getDatasetsProcessor();
 		for (InternToExternMapper internToExternMapper : internToExternMappers) {
-			datasetsProcessor.addInternToExternMapping(support.getNamespace(), internToExternMapper);
+			uploadInternalToExternalMappings(support, internToExternMapper, Response.Status.Family.SUCCESSFUL);
 		}
+	}
+
+	private static void uploadInternalToExternalMappings(@NonNull StandaloneSupport support, @NonNull InternToExternMapper mapping, @NonNull Response.Status.Family expectedResponseFamily) {
+		final URI
+				conceptURI =
+				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addInternToExternMapping")
+							   .buildFromMap(Map.of(
+									   ResourceConstants.DATASET, support.getDataset().getId()
+							   ));
+
+		final Response response = support.getClient()
+										 .target(conceptURI)
+										 .request(MediaType.APPLICATION_JSON)
+										 .post(Entity.entity(mapping, MediaType.APPLICATION_JSON_TYPE));
+
+
+		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
 	}
 
 }

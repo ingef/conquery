@@ -18,6 +18,8 @@ import java.util.zip.GZIPInputStream;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
@@ -29,6 +31,7 @@ import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import io.dropwizard.setup.Environment;
 import lombok.SneakyThrows;
@@ -72,7 +75,9 @@ public class PreprocessorCommand extends ConqueryCommand {
 											  .calculateValidityHash(preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
 
-			try (final PreprocessedReader parser = new PreprocessedReader(new GZIPInputStream(new FileInputStream(preprocessingJob.getPreprocessedFile())))) {
+			final ObjectMapper om = Jackson.BINARY_MAPPER.copy();
+			om.setConfig(om.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
+			try (final PreprocessedReader parser = new PreprocessedReader(new GZIPInputStream(new FileInputStream(preprocessingJob.getPreprocessedFile())), om)) {
 
 				PreprocessedHeader header = parser.readHeader();
 

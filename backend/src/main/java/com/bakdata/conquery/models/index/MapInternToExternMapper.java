@@ -8,7 +8,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.Named;
@@ -20,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,22 +40,27 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	private MapIndexService mapIndex;
 
-	@JsonIgnore
-	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NsIdRef
 	@Getter
+	@Setter
+	@NotNull
 	private Dataset dataset;
 
 	@Getter
 	@ToString.Include
+	@NotEmpty
 	private final String name;
 	@Getter
 	@ToString.Include
+	@NotNull
 	private final URL csv;
 	@Getter
 	@ToString.Include
+	@NotEmpty
 	private final String internalColumn;
 	@Getter
 	@ToString.Include
+	@NotEmpty
 	private final String externalTemplate;
 
 

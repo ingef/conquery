@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -77,10 +78,12 @@ public abstract class ConqueryTestSpec {
 	}
 
 	public static  <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+		final ObjectMapper om = Jackson.MAPPER.copy();
+		om.setConfig(om.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 		ObjectMapper mapper = support.getDataset().injectIntoNew(
 				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
 						.injectIntoNew(
-								Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
+								om.addHandler(new DatasetPlaceHolderFiller(support))
 						)
 		);
 
@@ -95,9 +98,11 @@ public abstract class ConqueryTestSpec {
 	}
 	
 	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+		final ObjectMapper om = Jackson.MAPPER.copy();
+		om.setConfig(om.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 		ObjectMapper mapper = support.getDataset().injectInto(
 				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
-						Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
+						om.addHandler(new DatasetPlaceHolderFiller(support))
 				)
 		);
 		support.getNamespace().getInjectables().forEach(i -> i.injectInto(mapper));
