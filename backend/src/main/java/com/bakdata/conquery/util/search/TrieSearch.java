@@ -266,9 +266,7 @@ public class TrieSearch<T extends Comparable<T>> {
 		final Set<T> seen = new HashSet<>();
 
 		return Iterators.filter(
-				Iterators.<T>concat(trie.values().stream()
-										.map(Collection::iterator)
-										.toArray(Iterator[]::new)),
+				Iterators.concat(Iterators.transform(trie.values().iterator(), Collection::iterator)),
 				seen::add
 		);
 	}
