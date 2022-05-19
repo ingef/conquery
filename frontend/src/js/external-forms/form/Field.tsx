@@ -25,7 +25,6 @@ import { Description } from "../form-components/Description";
 import { Headline } from "../form-components/Headline";
 import FormConceptGroup from "../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../form-concept-group/formConceptGroupState";
-import FormMultiQueryDropzone from "../form-query-dropzone/FormMultiQueryDropzone";
 import FormQueryDropzone from "../form-query-dropzone/FormQueryDropzone";
 import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
 import { getInitialValue, isFormField, isOptionalField } from "../helper";
@@ -48,7 +47,6 @@ const BOTTOM_MARGIN = 7;
 //       SELECT: theme.col.palette[3],
 //       DATASET_SELECT: theme.col.palette[4],
 //       CHECKBOX: theme.col.palette[7],
-//       MULTI_RESULT_GROUP: theme.col.palette[5],
 //       RESULT_GROUP: theme.col.palette[5],
 //       TABS: theme.col.palette[9],
 //     }),
@@ -251,25 +249,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
               optional={optional}
               value={fieldProps.value as DragItemQuery}
-              onChange={(value) => setValue(field.name, value, setValueConfig)}
-            />
-          )}
-        </ConnectedField>
-      );
-    case "MULTI_RESULT_GROUP":
-      return (
-        <ConnectedField
-          formField={field}
-          control={control}
-          defaultValue={defaultValue}
-        >
-          {({ ref, ...fieldProps }) => (
-            <FormMultiQueryDropzone
-              label={field.label[locale] || ""}
-              dropzoneChildren={() => field.dropzoneLabel[locale]}
-              tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
-              value={fieldProps.value as DragItemQuery[]}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
             />
           )}

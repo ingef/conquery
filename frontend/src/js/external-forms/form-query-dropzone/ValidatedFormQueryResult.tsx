@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -7,6 +8,10 @@ import type { DragItemQuery } from "../../standard-query-editor/types";
 
 import FormQueryResult from "./FormQueryResult";
 
+const FullWidthCentered = styled("div")`
+  width: 100%;
+  text-align: center;
+`;
 interface PropsT {
   queryResult?: DragItemQuery;
   placeholder: string;
@@ -49,7 +54,7 @@ const ValidatedFormQueryResult = ({
   const error = localError ? t("previousQuery.loadError") : undefined;
 
   return !queryResult && !error ? (
-    <>{placeholder}</>
+    <FullWidthCentered>{placeholder}</FullWidthCentered>
   ) : (
     <FormQueryResult
       {...props}
