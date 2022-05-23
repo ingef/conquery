@@ -75,7 +75,7 @@
               "id": "studio",
               "label": "Production Studio",
               "type": "MULTI_SELECT",
-              "tooltip": "Test tooltip for the production studio",
+              "tooltip": "Test tooltip for the production studio that includes a nice<br />line break.",
               "description": "The studio producing the movie",
               "options": [
                 {
