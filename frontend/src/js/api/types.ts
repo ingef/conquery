@@ -37,6 +37,7 @@ export interface FilterBaseT {
   id: FilterIdT;
   label: string;
   description?: string;
+  tooltip?: string;
 }
 
 export interface RangeFilterValueT {

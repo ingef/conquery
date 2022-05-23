@@ -136,6 +136,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
   defaultValue,
   onChange,
   label,
+  tooltip,
   indexPrefix,
   options,
   disabled,
@@ -245,6 +246,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
         value={value}
         onChange={onChange}
         label={label}
+        tooltip={tooltip}
         options={options}
         total={total}
         loading={loading}

@@ -73,6 +73,7 @@ const TableFilter = ({
               onSetFilterValue(filterIdx, value?.value || null)
             }
             label={filter.label}
+            tooltip={filter.tooltip}
             options={filter.options}
             disabled={excludeTable}
           />
@@ -85,6 +86,7 @@ const TableFilter = ({
             value={filter.value || []}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
+            tooltip={filter.tooltip}
             options={filter.options}
             disabled={excludeTable}
             allowDropFile={!!filter.allowDropFile}
@@ -99,6 +101,7 @@ const TableFilter = ({
             defaultValue={filter.defaultValue}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
+            tooltip={filter.tooltip}
             options={filter.options}
             disabled={!!excludeTable}
             creatable={!!filter.creatable}
@@ -126,6 +129,7 @@ const TableFilter = ({
             limits={{ min: filter.min, max: filter.max }}
             unit={filter.unit}
             label={filter.label}
+            tooltip={filter.tooltip}
             mode={filter.mode || "range"}
             disabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
@@ -143,6 +147,7 @@ const TableFilter = ({
             limits={{ min: filter.min, max: filter.max }}
             unit={filter.unit}
             label={filter.label}
+            tooltip={filter.tooltip}
             mode={filter.mode || "range"}
             stepSize={filter.precision || 0.1}
             disabled={!!excludeTable}
@@ -161,6 +166,7 @@ const TableFilter = ({
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             unit={filter.unit}
             label={filter.label}
+            tooltip={filter.tooltip}
             mode={filter.mode || "range"}
             disabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
