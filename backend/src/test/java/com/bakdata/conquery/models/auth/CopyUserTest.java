@@ -44,7 +44,7 @@ public class CopyUserTest {
 		User copy = AuthorizationController.flatCopyUser(originUser, "copytest", storage);
 
 		// Check that it is not the same user
-		assertThat(copy).usingRecursiveComparison().isNotEqualTo(originUser);
+		assertThat(copy).usingRecursiveComparison().ignoringFieldsOfTypes(ThreadLocal.class).isNotEqualTo(originUser);
 
 		// Check that the copy does not have any mappings
 		assertThat(group.containsMember(copy)).isFalse();

@@ -88,6 +88,7 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
 
   return (
     <Root
+      data-test-id="project-items-list"
       ref={(instance) => {
         if (!instance) {
           container.current = null;

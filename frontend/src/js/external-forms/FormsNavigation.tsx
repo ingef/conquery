@@ -1,9 +1,8 @@
 import styled from "@emotion/styled";
-import type { StateT } from "app-types";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
-import type { SelectOptionT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
 import WithTooltip from "../tooltip/WithTooltip";
@@ -81,6 +80,7 @@ const FormsNavigation = ({ reset }: Props) => {
     <Root>
       <Row>
         <SxInputSelect
+          dataTestId="form-select"
           label={t("externalForms.forms")}
           options={options}
           value={options.find((o) => o.value === activeForm) || null}

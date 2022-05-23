@@ -112,9 +112,12 @@ Depending on the use-case, we're still calling the same concepts differently som
 
 ## Technical Explanations (mini ADRs – "architectural decision records")
 
+### Issues
+- We're getting a lot of "Failed to parse source maps"-warnings when starting the dev server because we're using react-keycloak. There is [an open issue for that](https://github.com/react-keycloak/react-keycloak/issues/176), and we hope this gets resolved soon.
+
 ### Types
 
-- Migration from Flow to TypeScript is in progress. At the moment, Typescript errors are printed to console on server start and build, to see what they are and to fix them. To check how many errors are left: `yarn typecheck`. But type errors are ignored (see `.env`) to be able to still compile for now. Plan is to fix the errors step by step and then to enable failure on TS errors on start / build again.
+- Before migrating to TypeScript, the code used a few Flow types here and there and relied relied on object mutation and other patterns that feel a little like quirky today / would be written differently with TypeScript. Some remainders of that time might still be present in the code.
 
 ### Hooks
 - We're using react hooks extensively, but we're **not** using useCallback in a lot of places yet. So in general, we've been avoiding passing callbacks into the dependency arrays of useEffect / useMemo / etc. Probably, we should introduce more useCallback gradually, while making sure we don't introduce infinite loops.
@@ -125,9 +128,9 @@ Depending on the use-case, we're still calling the same concepts differently som
 
 ### State
 
-- Redux actions aren't all typed well yet. Plan is to migrate fully to https://github.com/piotrwitek/typesafe-actions
+- We're using [typesafe-actions](https://github.com/piotrwitek/typesafe-actions) for redux actions.
 - We're moving away from redux-thunk (replaced mostly by hooks)
-- We've migrated from `redux-form` to `react-hook-form`. Still TODO: there's some form context stored in redux for every available form (e.g. for filter suggestions in concept fields). We should move this from redux to local state (e.g. into `FormConceptGroup`).
+- We've migrated from `redux-form` to `react-hook-form` recently.
 
 ### Browser support
 

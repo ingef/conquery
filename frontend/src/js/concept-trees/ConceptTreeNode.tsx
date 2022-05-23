@@ -107,8 +107,12 @@ const ConceptTreeNode: FC<PropsT> = ({
             ids: [conceptId],
             ...description,
             label: data.label,
-            tables: resetTables(concept?.tables, { useDefaults: true }),
-            selects: resetSelects(concept?.selects, { useDefaults: true }),
+            tables: concept?.tables
+              ? resetTables(concept.tables, { useDefaults: true })
+              : [],
+            selects: concept?.selects
+              ? resetSelects(concept.selects, { useDefaults: true })
+              : [],
 
             additionalInfos: data.additionalInfos,
             matchingEntries: data.matchingEntries,

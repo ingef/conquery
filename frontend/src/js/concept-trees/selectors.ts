@@ -1,7 +1,7 @@
-import { StateT } from "app-types";
 import { useSelector } from "react-redux";
 
 import type { ConceptIdT } from "../api/types";
+import type { StateT } from "../app/reducers";
 
 import type { SearchT, TreesT } from "./reducer";
 

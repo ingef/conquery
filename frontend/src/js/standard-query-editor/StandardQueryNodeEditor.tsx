@@ -1,7 +1,7 @@
-import { StateT } from "app-types";
 import { useDispatch, useSelector } from "react-redux";
 
 import { ConceptIdT, CurrencyConfigT, DatasetIdT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { tableIsEditable } from "../model/table";
 import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";

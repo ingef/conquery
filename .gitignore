@@ -65,3 +65,12 @@ nbactions.xml
 *.iml
 
 /workspace.code-workspace
+**/Lib/
+**/Include/
+**/etc/
+**/share/
+**/*-checkpoint.ipynb
+**/pyvenv.cfg
+tutorial/mimic_iii_demo/data/**
+
+/node_modules

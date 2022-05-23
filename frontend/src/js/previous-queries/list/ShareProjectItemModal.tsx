@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import type { StateT } from "app-types";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { SelectOptionT, UserGroupT } from "../../api/types";
+import type { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import Modal from "../../modal/Modal";
 import WithTooltip from "../../tooltip/WithTooltip";

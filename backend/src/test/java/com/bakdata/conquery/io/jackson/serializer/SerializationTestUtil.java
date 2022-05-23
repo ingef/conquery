@@ -38,7 +38,7 @@ public class SerializationTestUtil<T> {
 	/**
 	 * These don't seem to behave well in combination with recursiveComparison.
 	 */
-	private static final Class<?>[] TYPES_TO_IGNORE = new Class[]{User.ShiroUserAdapter.class, AtomicInteger.class};
+	private static final Class<?>[] TYPES_TO_IGNORE = new Class[]{User.ShiroUserAdapter.class, AtomicInteger.class, Double.class, ThreadLocal.class};
 
 	private final JavaType type;
 	private final Validator validator = Validators.newValidator();

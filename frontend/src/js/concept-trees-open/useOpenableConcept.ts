@@ -1,7 +1,7 @@
-import { StateT } from "app-types";
 import { useSelector, useDispatch } from "react-redux";
 
 import { ConceptIdT } from "../api/types";
+import type { StateT } from "../app/reducers";
 
 import { setConceptOpen } from "./actions";
 

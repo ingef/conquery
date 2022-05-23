@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { StateT } from "app-types";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { QueryT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { getUniqueFileRows } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { TreesT } from "../concept-trees/reducer";

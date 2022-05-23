@@ -66,7 +66,6 @@ const DEFAULT_VALIDATION_BY_TYPE: Record<
   CHECKBOX: null,
   CONCEPT_LIST: null,
   RESULT_GROUP: null,
-  MULTI_RESULT_GROUP: null,
   SELECT: null,
   TABS: null,
   DATASET_SELECT: null,

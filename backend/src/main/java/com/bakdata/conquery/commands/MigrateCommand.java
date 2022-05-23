@@ -10,9 +10,8 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
 import groovy.lang.GroovyShell;
@@ -106,15 +105,9 @@ public class MigrateCommand extends ConqueryCommand {
 
 		MigrationScriptFactory factory = (MigrationScriptFactory) groovy.parse(In.file((File) namespace.get("script")).readAll());
 
-		final Function4<String, String, String, ObjectNode, Tuple> migrator = factory.run();
+		final Function4<String, String, JsonNode, JsonNode, Tuple> migrator = factory.run();
 
 		final ObjectMapper mapper = Jackson.BINARY_MAPPER;
-
-		final ObjectReader keyReader = mapper.readerFor(String.class);
-		final ObjectReader valueReader = mapper.readerFor(ObjectNode.class);
-		final ObjectWriter keyWriter = mapper.writerFor(String.class);
-		final ObjectWriter valueWriter = mapper.writerFor(ObjectNode.class);
-
 
 		Arrays.stream(environments)
 			  .parallel()
@@ -123,7 +116,7 @@ public class MigrateCommand extends ConqueryCommand {
 						   final File environmentDirectory = new File(outStoreDirectory, xenv.getName());
 						   environmentDirectory.mkdirs();
 
-						   processEnvironment(xenv, logsize, environmentDirectory, migrator, keyReader, valueReader, keyWriter, valueWriter);
+						   processEnvironment(xenv, logsize, environmentDirectory, migrator, mapper);
 					   });
 
 	}
@@ -132,16 +125,16 @@ public class MigrateCommand extends ConqueryCommand {
 	/**
 	 * Class defining the interface for the Groovy-Script.
 	 */
-	public static abstract class MigrationScriptFactory extends Script {
+	public abstract static class MigrationScriptFactory extends Script {
 
 		/**
 		 * Environment -> Store -> Key -> Value -> (Key, Value)
 		 */
 		@Override
-		public abstract Function4<String, String, String, ObjectNode, Tuple> run();
+		public abstract Function4<String, String, JsonNode, JsonNode, Tuple> run();
 	}
 
-	private void processEnvironment(File inStoreDirectory, long logSize, File outStoreDirectory, Function4<String, String, String, ObjectNode, Tuple> migrator, ObjectReader keyReader, ObjectReader valueReader, ObjectWriter keyWriter, ObjectWriter valueWriter) {
+	private void processEnvironment(File inStoreDirectory, long logSize, File outStoreDirectory, Function4<String, String, JsonNode, JsonNode, Tuple> migrator, ObjectMapper mapper) {
 		final jetbrains.exodus.env.Environment inEnvironment = Environments.newInstance(
 				inStoreDirectory,
 				new EnvironmentConfig().setLogFileSize(logSize)
@@ -182,7 +175,7 @@ public class MigrateCommand extends ConqueryCommand {
 				continue;
 			}
 
-			doMigrate(inStore, outStore, migrator, keyReader, valueReader, keyWriter, valueWriter);
+			doMigrate(inStore, outStore, migrator, mapper);
 			log.info("Done writing {}.", store);
 		}
 
@@ -198,7 +191,7 @@ public class MigrateCommand extends ConqueryCommand {
 		inEnvironment.close();
 	}
 
-	private void doMigrate(Store inStore, Store outStore, Function4<String, String, String, ObjectNode, Tuple> migrator, ObjectReader keyReader, ObjectReader valueReader, ObjectWriter keyWriter, ObjectWriter valueWriter) {
+	private void doMigrate(Store inStore, Store outStore, Function4<String, String, JsonNode, JsonNode, Tuple> migrator, ObjectMapper mapper) {
 
 		final Environment inEnvironment = inStore.getEnvironment();
 		final Environment outEnvironment = outStore.getEnvironment();
@@ -218,9 +211,9 @@ public class MigrateCommand extends ConqueryCommand {
 			while (cursor.getNext()) {
 
 				// Everything is mapped with Smile so even the keys.
-				final String key = keyReader.readValue(cursor.getKey().getBytesUnsafe());
+				final JsonNode key = mapper.readTree(cursor.getKey().getBytesUnsafe());
 
-				final ObjectNode node = valueReader.readValue(cursor.getValue().getBytesUnsafe());
+				final JsonNode node = mapper.readTree(cursor.getValue().getBytesUnsafe());
 
 				// Apply the migrator, it will return new key and value
 				final Tuple<?> migrated =
@@ -233,9 +226,9 @@ public class MigrateCommand extends ConqueryCommand {
 				}
 
 				// Serialize the values and write them into new Store.
-				final ByteIterable keyIter = new ArrayByteIterable(keyWriter.writeValueAsBytes(migrated.get(0)));
+				final ByteIterable keyIter = new ArrayByteIterable(mapper.writeValueAsBytes(migrated.get(0)));
 
-				final ByteIterable valueIter = new ArrayByteIterable(valueWriter.writeValueAsBytes(migrated.get(1)));
+				final ByteIterable valueIter = new ArrayByteIterable(mapper.writeValueAsBytes(migrated.get(1)));
 
 				if (log.isTraceEnabled()) {
 					log.trace("Mapped `{}` to \n{}", new String(keyIter.getBytesUnsafe()), new String(valueIter.getBytesUnsafe()));

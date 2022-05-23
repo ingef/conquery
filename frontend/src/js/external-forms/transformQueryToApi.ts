@@ -59,13 +59,6 @@ function transformFieldToApiEntries(
       return [
         [fieldConfig.name, formValue ? (formValue as DragItemQuery).id : null],
       ];
-    case "MULTI_RESULT_GROUP":
-      return [
-        [
-          fieldConfig.name,
-          (formValue as DragItemQuery[]).map((group) => group.id),
-        ],
-      ];
     case "DATE_RANGE":
       return [
         [

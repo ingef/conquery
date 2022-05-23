@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -7,26 +8,36 @@ import type { DragItemQuery } from "../../standard-query-editor/types";
 
 import FormQueryResult from "./FormQueryResult";
 
+const FullWidthCentered = styled("div")`
+  width: 100%;
+  text-align: center;
+`;
 interface PropsT {
   queryResult?: DragItemQuery;
+  placeholder: string;
   className?: string;
   onDelete?: () => void;
   onInvalid: (error: string) => void;
 }
 
-const ValidatedFormQueryResult = ({ onInvalid, ...props }: PropsT) => {
+const ValidatedFormQueryResult = ({
+  onInvalid,
+  placeholder,
+  queryResult,
+  ...props
+}: PropsT) => {
   const datasetId = useDatasetId();
   const getQuery = useGetQuery();
   const { t } = useTranslation();
 
-  const [localError, setLocalError] = useState(false);
+  const [localError, setLocalError] = useState<boolean>(false);
 
   useEffect(
     function validateQuery() {
       const loadAndValidateQuery = async () => {
-        if (datasetId && props.queryResult) {
+        if (datasetId && queryResult) {
           try {
-            await getQuery(datasetId, props.queryResult.id);
+            await getQuery(datasetId, queryResult.id);
             setLocalError(false);
           } catch (e) {
             setLocalError(true);
@@ -37,13 +48,22 @@ const ValidatedFormQueryResult = ({ onInvalid, ...props }: PropsT) => {
 
       loadAndValidateQuery();
     },
-    [datasetId, props.queryResult],
+    [datasetId, queryResult],
   );
 
-  return (
+  const error = localError ? t("previousQuery.loadError") : undefined;
+
+  return !queryResult && !error ? (
+    <FullWidthCentered>{placeholder}</FullWidthCentered>
+  ) : (
     <FormQueryResult
       {...props}
-      error={localError ? t("previousQuery.loadError") : undefined}
+      queryResult={queryResult}
+      onDelete={() => {
+        props.onDelete?.();
+        setLocalError(false);
+      }}
+      error={error}
     />
   );
 };
