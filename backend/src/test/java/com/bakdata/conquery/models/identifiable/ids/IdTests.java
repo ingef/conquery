@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -131,40 +134,47 @@ public class IdTests {
 	}
 	
 	public static Stream<Arguments> reflectionTest() {
+		final Class<Identifiable> identifiableClass = Identifiable.class;
 		return CPSTypeIdResolver
-			.SCAN_RESULT
-			.getClassesImplementing(Identifiable.class.getName()).loadClasses()
-			.stream()
-			.filter(cl -> !cl.isInterface())
-			.filter(cl -> !Modifier.isAbstract(cl.getModifiers()))
-			//filter test classes
-			.filter(cl -> !cl.toString().toLowerCase().contains("test"))
-			.map(cl -> {
-				Class<?> current = cl;
-				while(current != null) {
-					String name = current.getSimpleName();
-					
-					
-					//special exceptions for this test
-					if(name.endsWith("Information")) {
-						name = name.substring(0, name.length()-11);
-					}
-					if(name.endsWith("Permission")) {
-						name = "Permission";
-					}
-					
+				.SCAN_RESULT
+				.getClassesImplementing(identifiableClass.getName()).loadClasses()
+				.stream()
+				.filter(cl -> !cl.isInterface())
+				.filter(cl -> !Modifier.isAbstract(cl.getModifiers()))
+				//filter test classes
+				.filter(cl -> !cl.toString().toLowerCase().contains("test"))
+				.map(cl -> {
+
+					Class<?> idClazz = null;
+					// Try to get the specific Id
 					try {
-						return Arguments.of(
-							cl,
-							Class.forName("com.bakdata.conquery.models.identifiable.ids.specific."+name+"Id")
-						);
-					} catch(ClassNotFoundException e) {
-						current = current.getSuperclass();
+						idClazz = cl.getMethod("getId").getReturnType();
+
 					}
-				}
-				
-				return fail("Could not find id class for "+cl);
-			});
+					catch (NoSuchMethodException e) {
+						return fail(" does not implement the method 'getId()'");
+					}
+
+					if (Modifier.isAbstract(idClazz.getModifiers())) {
+						try {
+							idClazz = cl.getMethod("createId").getReturnType();
+
+						}
+						catch (NoSuchMethodException e) {
+							return fail(cl + " does not implement the method 'createId()' unable to retrieve specific id class");
+						}
+					}
+
+					String packageString = "com.bakdata.conquery.models.identifiable.ids.specific.";
+					if (!idClazz.getName().startsWith(packageString)) {
+						return fail("The id class " + idClazz + " is not located in the package " + packageString + ". Please clean that up.");
+					}
+
+					return Arguments.of(
+							cl,
+							idClazz
+					);
+				});
 	}
 
 	@ParameterizedTest
