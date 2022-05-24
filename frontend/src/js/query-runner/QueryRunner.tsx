@@ -1,9 +1,12 @@
 import styled from "@emotion/styled";
 import { FC } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useSelector } from "react-redux";
 
+import { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import Preview from "../preview/Preview";
+import { PreviewStateT } from "../preview/reducer";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryResults from "./QueryResults";
@@ -56,6 +59,9 @@ const QueryRunner: FC<PropsT> = ({
   isButtonEnabled,
 }) => {
   const btnAction = isQueryRunning ? stopQuery : startQuery;
+  const isPreviewOpen = useSelector<StateT, boolean>(
+    (state) => state.preview.isOpen,
+  );
 
   const isStartStopLoading =
     !!queryRunner &&
@@ -73,7 +79,7 @@ const QueryRunner: FC<PropsT> = ({
 
   return (
     <Root>
-      <Preview />
+      {isPreviewOpen && <Preview />}
       <Left>
         <WithTooltip text={buttonTooltip}>
           <QueryRunnerButton
