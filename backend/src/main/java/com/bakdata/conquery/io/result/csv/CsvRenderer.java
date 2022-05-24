@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.univocity.parsers.csv.CsvWriter;
 import kotlin.jvm.functions.Function2;
-import kotlin.jvm.functions.Function3;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -33,7 +32,7 @@ public class CsvRenderer {
 	 */
 	private final Map<Class<? extends ResultType>, Function2<ResultType, Function<Object, Object>, Function<Object, String>>> FIELD_MAP = Map.of(
 			ResultType.ListT.class, this::createListPrinter,
-			ResultType.StringT.class, this::printString
+			ResultType.StringT.class, this::createStringPrinter
 	);
 
 
@@ -51,7 +50,7 @@ public class CsvRenderer {
 		final List<Function<Object, String>> printers = infos.stream().map(info -> {
 			final Function2<ResultType, Function<Object, Object>, Function<Object, String>>
 					printerCreator =
-					FIELD_MAP.getOrDefault(info.getType().getClass(), this::printDefault);
+					FIELD_MAP.getOrDefault(info.getType().getClass(), this::createDefaultPrinter);
 			final Function<Object, Object> valueMapper = info.getValueMapper().orElse(Function.identity());
 
 			return printerCreator.invoke(info.getType(), valueMapper);
@@ -88,7 +87,7 @@ public class CsvRenderer {
 		final ResultType elementType = ((ResultType.ListT) type).getElementType();
 		final Function2<ResultType, Function<Object, Object>, Function<Object, String>>
 				elementPrinterCreator =
-				FIELD_MAP.getOrDefault(elementType.getClass(), this::printDefault);
+				FIELD_MAP.getOrDefault(elementType.getClass(), this::createDefaultPrinter);
 
 		final Function<Object, String> elementPrinter = elementPrinterCreator.invoke(elementType, mapper);
 
@@ -113,12 +112,12 @@ public class CsvRenderer {
 		};
 	}
 
-	private Function<Object, String> printString(ResultType resultType, Function<Object, Object> mapper) {
+	private Function<Object, String> createStringPrinter(ResultType resultType, Function<Object, Object> mapper) {
 		return (o) -> resultType.printNullable(cfg, mapper.apply(o));
 	}
 
 
-	private Function<Object, String> printDefault(ResultType resultType, Function<Object, Object> mapper) {
+	private Function<Object, String> createDefaultPrinter(ResultType resultType, Function<Object, Object> mapper) {
 		return (o) -> resultType.printNullable(cfg, o);
 	}
 }
