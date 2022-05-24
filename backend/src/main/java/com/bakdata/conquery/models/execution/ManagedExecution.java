@@ -52,6 +52,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
@@ -94,7 +95,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
 
-	private boolean machineGenerated;
+	@JsonAlias("machineGenerated")
+	private boolean system;
 
 
 	// we don't want to store or send query results or other result metadata
@@ -234,7 +236,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	public ExecutionState awaitDone(int time, TimeUnit unit) {
 		if (getState() != ExecutionState.RUNNING) {
-			return ExecutionState.RUNNING;
+			return getState();
 		}
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 
@@ -398,7 +400,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	protected abstract String makeDefaultLabel(PrintSettings cfg);
 
 	protected String makeAutoLabel(PrintSettings cfg) {
-		return makeDefaultLabel(cfg) +  AUTO_LABEL_SUFFIX;
+		return makeDefaultLabel(cfg) + AUTO_LABEL_SUFFIX;
 	}
 
 	@Override

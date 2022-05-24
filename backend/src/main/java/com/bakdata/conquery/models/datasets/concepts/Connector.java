@@ -67,9 +67,18 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	@Valid
 	private List<Select> selects = new ArrayList<>();
 
+	/**
+	 * Determines if the connector is preselected for the user when creating a new {@link com.bakdata.conquery.apiv1.query.concept.specific.CQConcept}.
+	 */
 	@JsonProperty("default")
 	private boolean isDefault = true;
 
+	/**
+	 * If true, Frontend should use Connector as default when using {@link com.bakdata.conquery.resources.api.QueryResource.EntityPreview}.
+	 */
+	private  boolean defaultForEntityPreview = false;
+
+	@JsonIgnore
 	public List<Select> getDefaultSelects() {
 		return getSelects()
 					   .stream().filter(Select::isDefault)

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 import java.net.URL;
@@ -12,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,7 +32,6 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
@@ -78,7 +77,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Subject subject) {
+	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Subject subject, boolean system) {
 
 		log.info("Query posted on Dataset[{}] by User[{{}].", dataset.getId(), subject.getId());
 
@@ -132,7 +131,7 @@ public class QueryProcessor {
 		}
 
 		// Execute the query
-		return executionManager.runQuery(datasetRegistry, query, subject.getUser(), dataset, config);
+		return executionManager.runQuery(datasetRegistry, query, subject.getUser(), dataset, config, system);
 	}
 
 	/**
@@ -164,7 +163,9 @@ public class QueryProcessor {
 
 		// If the user is not the owner of the execution, we definitely create a new Execution, so the owner can cancel it
 		if (!user.isOwner(execution)) {
-			final ManagedExecution<?> newExecution = executionManager.createExecution(datasetRegistry, execution.getSubmitted(), user, execution.getDataset());
+			final ManagedExecution<?>
+					newExecution =
+					executionManager.createExecution(datasetRegistry, execution.getSubmitted(), user, execution.getDataset(), false);
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
 			storage.updateExecution(newExecution);
@@ -201,6 +202,7 @@ public class QueryProcessor {
 						 .filter(q -> q.getDataset().equals(datasetId))
 						 // to exclude subtypes from somewhere else
 						 .filter(QueryProcessor::canFrontendRender)
+						 .filter(Predicate.not(ManagedExecution::isSystem))
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
@@ -244,6 +246,7 @@ public class QueryProcessor {
 	 * Test if the query is structured in a way the Frontend can render it.
 	 */
 	private static boolean canFrontendRender(ManagedExecution<?> q) {
+		//TODO FK: should this be used to fill into canExpand instead of hiding the Executions?
 		if (!(q instanceof ManagedQuery)) {
 			return false;
 		}
@@ -371,7 +374,7 @@ public class QueryProcessor {
 		// We only create the Query, really no need to execute it as it's only useful for composition.
 		final ManagedQuery execution =
 				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
-											   .createExecution(datasetRegistry, query, subject.getUser(), dataset));
+											   .createExecution(datasetRegistry, query, subject.getUser(), dataset, false));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 
@@ -392,12 +395,12 @@ public class QueryProcessor {
 	/**
 	 * Execute a {@link TableExportQuery} for a single Entity on some Connectors.
 	 *
+	 * @return
 	 * @implNote we don't do anything special here, this request could also be made manually. We however want to encapsulate this behaviour to shield the frontend from knowing too much about the query engine.
 	 */
-	public Response getSingleEntityExport(Subject subject, String idKind, String entity, List<Connector> sources, String format, Dataset dataset, Range<LocalDate> dateRange) {
+	public List<URL> getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
-		final ConceptQuery
-				entitySelectQuery =
+		final ConceptQuery entitySelectQuery =
 				new ConceptQuery(new CQDateRestriction(dateRange, new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}})));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
@@ -407,7 +410,8 @@ public class QueryProcessor {
 					   .collect(Collectors.toList())
 		);
 
-		final ManagedQuery execution = (ManagedQuery) postQuery(dataset, exportQuery, subject);
+		final ManagedExecution<?> execution = postQuery(dataset, exportQuery, subject, true);
+
 
 		// collect id immediately so it does not get sucked into closure
 		final ManagedExecutionId id = execution.getId();
@@ -416,18 +420,16 @@ public class QueryProcessor {
 			log.trace("Still waiting for {}", id);
 		}
 
+		if (execution.getState() == ExecutionState.FAILED) {
+			//TODO I am not sure how to relay errors properly to the Frontend, they are not Exceptions for some reason
+			throw new IllegalStateException(execution.getError().toString());
+		}
+
 		// Use the provided format name to find the respective provider.
-		final ResultRendererProvider rendererProvider =
-				config.getResultProviders().stream()
-					  .filter(provider -> provider.getClass().getAnnotation(CPSType.class).id().equalsIgnoreCase(format))
-					  .findFirst()
-					  .orElseThrow(() -> new BadRequestException(String.format("No configured provider for `%s` found.", format)));
+		return config.getResultProviders().stream()
+					 .map(resultRendererProvider -> resultRendererProvider.generateResultURLs(execution, uriBuilder.clone(), true))
+					 .flatMap(Collection::stream)
+					 .collect(Collectors.toList());
 
-		final Response response = rendererProvider.createResult(
-				subject, execution, dataset, true, determineCharset(null, null),
-				() -> storage.removeExecution(id)
-		);
-
-		return response;
 	}
 }

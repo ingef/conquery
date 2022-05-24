@@ -4,6 +4,8 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,6 +16,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -33,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.description.LazyTextDescription;
 
 /**
- * Adapted from {@link com.bakdata.conquery.integration.tests.deletion.ImportDeletionTest}, tests {@link com.bakdata.conquery.resources.api.QueryResource#getEntityData(Subject, QueryResource.EntityPreview, Optional, HttpServletRequest)}.
+ * Adapted from {@link com.bakdata.conquery.integration.tests.deletion.ImportDeletionTest}, tests {@link QueryResource#getEntityData(Subject, QueryResource.EntityPreview, HttpServletRequest)}.
  */
 @Slf4j
 public class EntityExportTest implements ProgrammaticIntegrationTest {
@@ -86,10 +89,27 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
 				.isEqualTo(Response.Status.Family.SUCCESSFUL);
 
-		final String rawData = allEntityDataResponse.readEntity(String.class);
+		final URL[] resultUrls = allEntityDataResponse.readEntity(URL[].class);
 
-		assertThat(rawData.lines().collect(Collectors.toList()))
+		assertThat(resultUrls).isNotEmpty();
+
+		final Optional<URL> csvUrl = Arrays.stream(resultUrls).filter(url -> url.getFile().endsWith(".csv")).findFirst();
+
+		assertThat(csvUrl).isPresent();
+
+		final Response resultLines = conquery.getClient().target(csvUrl.get().toURI())
+											 .request(AdditionalMediaTypes.CSV)
+											 .header("Accept-Language", "en-Us")
+											 .get();
+
+		assertThat(resultLines.getStatusInfo().getFamily())
+				.describedAs(new LazyTextDescription(() -> resultLines.readEntity(String.class)))
+				.isEqualTo(Response.Status.Family.SUCCESSFUL);
+
+
+		assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
 				.isEqualTo(List.of("result,dates,test_table test_column,test_table2 test_column", "3,2013-11-10,A1,"));
+
 
 	}
 

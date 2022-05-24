@@ -59,8 +59,8 @@ public class ExecutionManager {
 	}
 
 
-	public ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config) {
-		final ManagedExecution<?> execution = createExecution(datasets, query, user, submittedDataset);
+	public ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
+		final ManagedExecution<?> execution = createExecution(datasets, query, user, submittedDataset, system);
 		execute(datasets, execution, config);
 
 		return execution;
@@ -91,15 +91,15 @@ public class ExecutionManager {
 		}
 	}
 
-	public ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset) {
-		return createQuery(datasets, query, UUID.randomUUID(), user, submittedDataset);
+	public ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset, boolean system) {
+		return createQuery(datasets, query, UUID.randomUUID(), user, submittedDataset, system);
 	}
 
 
-	public ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, User user, Dataset submittedDataset) {
+	public ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution<?> managed = query.toManagedExecution(user, submittedDataset);
-
+		managed.setSystem(system);
 		managed.setQueryId(queryId);
 
 		// Store the execution
