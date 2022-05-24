@@ -77,7 +77,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Subject subject) {
+	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Subject subject, boolean system) {
 
 		log.info("Query posted on Dataset[{}] by User[{{}].", dataset.getId(), subject.getId());
 
@@ -131,7 +131,7 @@ public class QueryProcessor {
 		}
 
 		// Execute the query
-		return executionManager.runQuery(datasetRegistry, query, subject.getUser(), dataset, config, false);
+		return executionManager.runQuery(datasetRegistry, query, subject.getUser(), dataset, config, system);
 	}
 
 	/**
@@ -400,8 +400,7 @@ public class QueryProcessor {
 	 */
 	public List<URL> getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
-		final ConceptQuery
-				entitySelectQuery =
+		final ConceptQuery entitySelectQuery =
 				new ConceptQuery(new CQDateRestriction(dateRange, new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}})));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
@@ -411,9 +410,7 @@ public class QueryProcessor {
 					   .collect(Collectors.toList())
 		);
 
-		final ManagedQuery execution =
-				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
-											   .createExecution(datasetRegistry, exportQuery, subject.getUser(), dataset, true));
+		final ManagedExecution<?> execution = postQuery(dataset, exportQuery, subject, true);
 
 
 		// collect id immediately so it does not get sucked into closure
@@ -430,7 +427,7 @@ public class QueryProcessor {
 
 		// Use the provided format name to find the respective provider.
 		return config.getResultProviders().stream()
-					 .map(resultRendererProvider -> resultRendererProvider.generateResultURLs(execution, uriBuilder, true))
+					 .map(resultRendererProvider -> resultRendererProvider.generateResultURLs(execution, uriBuilder.clone(), true))
 					 .flatMap(Collection::stream)
 					 .collect(Collectors.toList());
 
