@@ -163,7 +163,7 @@ const Preview: FC = () => {
     onClose();
   });
 
-  if (!preview.csv || !preview.resultColumns) return null;
+  if (!preview.isOpen || !preview.csv || !preview.resultColumns) return null;
 
   // Limit size:
   const RENDER_ROWS_LIMIT = 500;

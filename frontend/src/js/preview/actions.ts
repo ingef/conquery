@@ -6,9 +6,10 @@ import { ErrorObject, errorPayload } from "../common/actions";
 import { loadCSV } from "../file/csv";
 
 export type PreviewActions = ActionType<
-  typeof loadCSVForPreview | typeof closePreview
+  typeof loadCSVForPreview | typeof closePreview | typeof openPreview
 >;
 
+export const openPreview = createAction("preview/OPENk")();
 export const closePreview = createAction("preview/CLOSE")();
 
 export const loadCSVForPreview = createAsyncAction(
@@ -17,7 +18,7 @@ export const loadCSVForPreview = createAsyncAction(
   "preview/LOAD_CSV_ERROR",
 )<void, { csv: string[][]; columns: ColumnDescription[] }, ErrorObject>();
 
-export function useOpenPreview() {
+export function useLoadPreviewData() {
   const dispatch = useDispatch();
 
   return async (url: string, columns: ColumnDescription[]) => {
