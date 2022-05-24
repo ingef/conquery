@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.description.LazyTextDescription;
 
 /**
- * Adapted from {@link com.bakdata.conquery.integration.tests.deletion.ImportDeletionTest}, tests {@link com.bakdata.conquery.resources.api.QueryResource#getEntityData(Subject, QueryResource.EntityPreview, Optional, HttpServletRequest)}.
+ * Adapted from {@link com.bakdata.conquery.integration.tests.deletion.ImportDeletionTest}, tests {@link #getEntityData(Subject, QueryResource.EntityPreview, HttpServletRequest)}.
  */
 @Slf4j
 public class EntityExportTest implements ProgrammaticIntegrationTest {
