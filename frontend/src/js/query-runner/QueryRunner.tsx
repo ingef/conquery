@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { FC } from "react";
-import Hotkeys from "react-hot-keys";
+import { useHotkeys } from "react-hotkeys-hook";
 
 import { exists } from "../common/helpers/exists";
 import Preview from "../preview/Preview";
@@ -63,14 +63,16 @@ const QueryRunner: FC<PropsT> = ({
 
   const progress = queryRunner?.progress;
 
+  useHotkeys(
+    "shift+enter",
+    () => {
+      if (isButtonEnabled) btnAction();
+    },
+    [isButtonEnabled, btnAction],
+  );
+
   return (
     <Root>
-      <Hotkeys
-        keyName="shift+enter"
-        onKeyDown={() => {
-          if (isButtonEnabled) btnAction();
-        }}
-      />
       <Preview />
       <Left>
         <WithTooltip text={buttonTooltip}>
