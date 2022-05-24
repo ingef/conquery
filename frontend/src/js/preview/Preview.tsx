@@ -163,17 +163,17 @@ const Preview: FC = () => {
     onClose();
   });
 
-  if (!preview.csv || !preview.resultColumns) return null;
+  if (!preview.data.csv || !preview.data.resultColumns) return null;
 
   // Limit size:
   const RENDER_ROWS_LIMIT = 500;
-  const previewData = preview.csv.slice(0, RENDER_ROWS_LIMIT + 1); // +1 Header row
+  const previewData = preview.data.csv.slice(0, RENDER_ROWS_LIMIT + 1); // +1 Header row
 
   if (previewData.length < 2) return null;
 
   const columns = detectColumnTypesByHeader(
     previewData[0],
-    preview.resultColumns,
+    preview.data.resultColumns,
   );
 
   const { min, max, diff } = getMinMaxDates(previewData.slice(1), columns);
@@ -217,7 +217,7 @@ const Preview: FC = () => {
   return (
     <FullScreen>
       <PreviewInfo
-        rawPreviewData={preview.csv}
+        rawPreviewData={preview.data.csv}
         columns={columns}
         onClose={onClose}
         minDate={min}

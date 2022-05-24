@@ -7,16 +7,22 @@ import { openPreview, closePreview, loadCSVForPreview } from "./actions";
 
 export type PreviewStateT = {
   isOpen: boolean;
-  csv: string[][] | null;
-  resultColumns: ColumnDescription[] | null;
   isLoading: boolean;
+  dataLoadedForResultUrl: string | null;
+  data: {
+    csv: string[][] | null;
+    resultColumns: ColumnDescription[] | null;
+  };
 };
 
 const initialState: PreviewStateT = {
   isOpen: false,
-  csv: null,
-  resultColumns: null,
   isLoading: false,
+  dataLoadedForResultUrl: null,
+  data: {
+    csv: null,
+    resultColumns: null,
+  },
 };
 
 export default function reducer(
@@ -37,9 +43,12 @@ export default function reducer(
     case getType(loadCSVForPreview.success):
       return {
         ...state,
-        csv: action.payload.csv,
-        resultColumns: action.payload.columns,
         isLoading: false,
+        dataLoadedForResultUrl: action.payload.resultUrl,
+        data: {
+          csv: action.payload.csv,
+          resultColumns: action.payload.columns,
+        },
       };
     case getType(openPreview):
       return {
@@ -50,8 +59,6 @@ export default function reducer(
       return {
         ...state,
         isOpen: false,
-        csv: null,
-        resultColumns: null,
       };
     default:
       return state;
