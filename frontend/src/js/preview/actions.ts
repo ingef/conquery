@@ -15,35 +15,44 @@ export type PreviewActions = ActionType<
 export const openPreview = createAction("preview/OPENk")();
 export const closePreview = createAction("preview/CLOSE")();
 
+interface PreviewData {
+  csv: string[][];
+  columns: ColumnDescription[];
+  resultUrl: string;
+}
+
 export const loadCSVForPreview = createAsyncAction(
   "preview/LOAD_CSV_START",
   "preview/LOAD_CSV_SUCCESS",
   "preview/LOAD_CSV_ERROR",
-)<
-  void,
-  { csv: string[][]; columns: ColumnDescription[]; resultUrl: string },
-  ErrorObject
->();
+)<void, PreviewData, ErrorObject>();
 
 export function useLoadPreviewData() {
   const dispatch = useDispatch();
   const { dataLoadedForResultUrl, data } = useSelector<StateT, PreviewStateT>(
     (state) => state.preview,
   );
+  const currentPreviewData: PreviewData | null =
+    data.csv && data.resultColumns && dataLoadedForResultUrl
+      ? {
+          csv: data.csv,
+          columns: data.resultColumns,
+          resultUrl: dataLoadedForResultUrl,
+        }
+      : null;
 
-  return async (url: string, columns: ColumnDescription[]) => {
-    if (dataLoadedForResultUrl === url)
-      return {
-        csv: data.csv,
-        columns: data.resultColumns,
-        resultUrl: dataLoadedForResultUrl,
-      };
+  return async (
+    url: string,
+    columns: ColumnDescription[],
+  ): Promise<PreviewData | null> => {
+    if (currentPreviewData && dataLoadedForResultUrl === url) {
+      return currentPreviewData;
+    }
 
     dispatch(loadCSVForPreview.request());
 
     try {
       const result = await loadCSV(url);
-
       const payload = {
         csv: result.data,
         columns,
@@ -55,6 +64,8 @@ export function useLoadPreviewData() {
       return payload;
     } catch (e) {
       dispatch(loadCSVForPreview.failure(errorPayload(e as Error, {})));
+
+      return null;
     }
   };
 }

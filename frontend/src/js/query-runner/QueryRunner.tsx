@@ -6,7 +6,6 @@ import { useSelector } from "react-redux";
 import { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import Preview from "../preview/Preview";
-import { PreviewStateT } from "../preview/reducer";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryResults from "./QueryResults";
