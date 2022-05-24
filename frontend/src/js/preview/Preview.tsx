@@ -17,7 +17,7 @@ import StatsSubline from "./StatsSubline";
 import { closePreview } from "./actions";
 import type { PreviewStateT } from "./reducer";
 
-const Root = styled("div")`
+const FullScreen = styled("div")`
   height: 100%;
   width: 100%;
   position: fixed;
@@ -215,7 +215,7 @@ const Preview: FC = () => {
   );
 
   return (
-    <Root>
+    <FullScreen>
       <PreviewInfo
         rawPreviewData={preview.csv}
         columns={columns}
@@ -248,7 +248,7 @@ const Preview: FC = () => {
           </List>
         </ScrollWrap>
       </CSVFrame>
-    </Root>
+    </FullScreen>
   );
 };
 
