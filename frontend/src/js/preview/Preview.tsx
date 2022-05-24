@@ -23,7 +23,7 @@ const Root = styled("div")`
   position: fixed;
   top: 0;
   left: 0;
-  background-color: white;
+  background-color: ${({ theme }) => theme.col.bgAlt};
   padding: 60px 20px 20px;
   z-index: 2;
   display: flex;
@@ -50,6 +50,7 @@ const CSVFrame = styled("div")`
   overflow: hidden;
   padding: 10px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  background-color: white;
 `;
 
 const ScrollWrap = styled("div")`

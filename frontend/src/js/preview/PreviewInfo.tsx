@@ -50,11 +50,16 @@ const Tr = styled("tr")`
   line-height: 1;
 `;
 
+const SxIconButton = styled(IconButton)`
+  background-color: white;
+`;
+
 const StatsContainer = styled("div")`
   display: flex;
   flex-wrap: wrap;
   padding: 10px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  background-color: white;
 `;
 
 const COLUMN_TYPES_WITH_SUPPORTED_STATS = new Set<ColumnDescriptionType>([
@@ -92,9 +97,9 @@ const PreviewInfo: FC<PropsT> = ({
       <TopRow>
         <div>
           <StdRow>
-            <IconButton frame icon="chevron-left" onClick={onClose}>
+            <SxIconButton frame icon="chevron-left" onClick={onClose}>
               {t("common.back")}
-            </IconButton>
+            </SxIconButton>
             <HeadInfo>
               <Headline>{t("preview.headline")}</Headline>
             </HeadInfo>
