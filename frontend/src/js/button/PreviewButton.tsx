@@ -27,28 +27,30 @@ const PreviewButton: FC<PropsT> = ({
   className,
   ...restProps
 }) => {
-  const { authToken } = useContext(AuthTokenContext);
+  const { t } = useTranslation();
   const isLoading = useSelector<StateT, boolean>(
     (state) => state.preview.isLoading,
   );
-  const { t } = useTranslation();
 
   const openPreview = useOpenPreview();
-  const onOpenPreview = (url: string) => openPreview(url, columns);
-
-  const href = `${url}?access_token=${encodeURIComponent(
-    authToken,
-  )}&charset=utf-8&pretty=false`;
+  const previewUrl = useAuthorizedPreviewUrl(url);
 
   return (
     <WithTooltip text={t("preview.preview")} className={className}>
       <SxIconButton
         icon={isLoading ? "spinner" : "search"}
-        onClick={() => onOpenPreview(href)}
+        onClick={() => openPreview(previewUrl, columns)}
         {...restProps}
       />
     </WithTooltip>
   );
+};
+const useAuthorizedPreviewUrl = (url: string) => {
+  const { authToken } = useContext(AuthTokenContext);
+
+  const encodedAuthToken = encodeURIComponent(authToken);
+
+  return `${url}?access_token=${encodedAuthToken}&charset=utf-8&pretty=false`;
 };
 
 export default PreviewButton;
