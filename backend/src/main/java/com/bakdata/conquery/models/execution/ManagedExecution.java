@@ -234,7 +234,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 */
 	public ExecutionState awaitDone(int time, TimeUnit unit) {
 		if (getState() != ExecutionState.RUNNING) {
-			return ExecutionState.RUNNING;
+			return getState();
 		}
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 
