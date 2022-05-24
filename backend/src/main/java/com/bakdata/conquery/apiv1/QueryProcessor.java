@@ -45,6 +45,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -421,8 +422,7 @@ public class QueryProcessor {
 		}
 
 		if (execution.getState() == ExecutionState.FAILED) {
-			//TODO I am not sure how to relay errors properly to the Frontend, they are not Exceptions for some reason
-			throw new IllegalStateException(execution.getError().toString());
+			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
 		}
 
 		// Use the provided format name to find the respective provider.
