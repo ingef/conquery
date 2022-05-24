@@ -2,7 +2,7 @@ package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -31,9 +31,12 @@ public class DatasetResource extends HDatasets {
 		return processor.getRoot(getNamespace().getStorage(), subject);
 	}
 
+	/**
+	 * Provides list of default {@link ConnectorId}s to use for {@link QueryResource.EntityPreview#getSources()}.
+	 */
 	@GET
-	@Path("entity-preview-default-connectors")
-	public List<ConnectorId> getEntityPreviewDefaultConnectors() {
+	@Path("entity-preview")
+	public Stream<ConnectorId> getEntityPreviewDefaultConnectors() {
 		return processor.getEntityPreviewDefaultConnectors(getDataset());
 	}
 }

@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FEList;
@@ -121,13 +122,12 @@ public class ConceptsProcessor {
 						 .collect(Collectors.toList());
 	}
 
-	public List<ConnectorId> getEntityPreviewDefaultConnectors(Dataset dataset){
+	public Stream<ConnectorId> getEntityPreviewDefaultConnectors(Dataset dataset){
 		return namespaces.get(dataset.getId()).getStorage().getAllConcepts().stream()
 				.map(Concept::getConnectors)
 				.flatMap(Collection::stream)
 				.filter(Connector::isDefaultForEntityPreview)
-				.map(Identifiable::getId)
-				.collect(Collectors.toList());
+				.map(Identifiable::getId);
 	}
 
 	/**
