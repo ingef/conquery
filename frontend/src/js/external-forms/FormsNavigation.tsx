@@ -80,6 +80,7 @@ const FormsNavigation = ({ reset }: Props) => {
     <Root>
       <Row>
         <SxInputSelect
+          dataTestId="form-select"
           label={t("externalForms.forms")}
           options={options}
           value={options.find((o) => o.value === activeForm) || null}

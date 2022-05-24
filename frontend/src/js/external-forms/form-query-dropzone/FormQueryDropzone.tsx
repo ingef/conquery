@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import { FC } from "react";
 
 import { DNDType } from "../../common/constants/dndTypes";
@@ -9,6 +10,10 @@ import Label from "../../ui-components/Label";
 import Optional from "../../ui-components/Optional";
 
 import ValidatedFormQueryResult from "./ValidatedFormQueryResult";
+
+const SxDropzone = styled(Dropzone)`
+  justify-content: flex-start;
+`;
 
 const DROP_TYPES = [
   DNDType.PREVIOUS_QUERY,
@@ -53,7 +58,7 @@ const FormQueryDropzone: FC<PropsT> = ({
         {label}
         {exists(tooltip) && <InfoTooltip text={tooltip} />}
       </Label>
-      <Dropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
+      <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
         onDrop={(item) => onDrop(item as DragItemQuery)}
         acceptedDropTypes={DROP_TYPES}
       >
@@ -65,7 +70,7 @@ const FormQueryDropzone: FC<PropsT> = ({
             onDelete={() => onChange(null)}
           />
         )}
-      </Dropzone>
+      </SxDropzone>
     </div>
   );
 };

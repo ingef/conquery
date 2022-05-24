@@ -27,6 +27,7 @@ interface PropsT {
   disabled?: boolean;
   tooltip?: string;
   allowDropFile?: boolean;
+  creatable?: boolean;
 
   total?: number;
   onLoad?: (
@@ -135,10 +136,12 @@ const FilterListMultiSelect: FC<PropsT> = ({
   defaultValue,
   onChange,
   label,
+  tooltip,
   indexPrefix,
   options,
   disabled,
   allowDropFile,
+  creatable,
 
   total,
   onLoad,
@@ -243,11 +246,13 @@ const FilterListMultiSelect: FC<PropsT> = ({
         value={value}
         onChange={onChange}
         label={label}
+        tooltip={tooltip}
         options={options}
         total={total}
         loading={loading}
         disabled={disabled}
         indexPrefix={indexPrefix}
+        creatable={creatable}
         onLoadMore={onLoad ? onLoadMore : undefined}
         onLoadAndInsertAll={onLoad ? onLoadAndInsertAll : undefined}
         onResolve={allowDropFile ? onDropFile : undefined}
