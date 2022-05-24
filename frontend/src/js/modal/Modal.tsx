@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useRef, FC, ReactNode } from "react";
-import Hotkeys from "react-hot-keys";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
 import { TransparentButton } from "../button/TransparentButton";
@@ -94,9 +94,10 @@ const Modal: FC<PropsT> = ({
 }) => {
   const { t } = useTranslation();
 
+  useHotkeys("esc", onClose);
+
   return (
     <Root className={className}>
-      <Hotkeys keyName="escape" onKeyDown={onClose} />
       <ModalContent onClose={onClose} scrollable={scrollable}>
         <TopRow>
           <Headline>{headline}</Headline>

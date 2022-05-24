@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { FC } from "react";
-import Hotkeys from "react-hot-keys";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -158,6 +158,10 @@ const Preview: FC = () => {
 
   const onClose = () => dispatch(closePreview());
 
+  useHotkeys("esc", () => {
+    onClose();
+  });
+
   if (!preview.csv || !preview.resultColumns) return null;
 
   // Limit size:
@@ -211,7 +215,6 @@ const Preview: FC = () => {
 
   return (
     <Root>
-      <Hotkeys keyName="escape" onKeyDown={onClose} />
       <PreviewInfo
         rawPreviewData={preview.csv}
         columns={columns}

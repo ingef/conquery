@@ -19,7 +19,13 @@ const QueryClearButton: FC<PropsT> = ({ className }) => {
   return (
     <div className={className}>
       <WithTooltip text={t("queryEditor.clear")}>
-        <IconButton tiny onClick={onClearQuery} regular icon="trash-alt" />
+        <IconButton
+          tiny
+          onClick={onClearQuery}
+          regular
+          icon="trash-alt"
+          tabIndex={-1}
+        />
       </WithTooltip>
     </div>
   );
