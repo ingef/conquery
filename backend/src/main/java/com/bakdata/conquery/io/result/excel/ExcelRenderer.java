@@ -1,5 +1,13 @@
 package com.bakdata.conquery.io.result.excel;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -14,8 +22,8 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.google.common.collect.ImmutableMap;
-import org.apache.poi.ooxml.POIXMLProperties;
 import lombok.SneakyThrows;
+import org.apache.poi.ooxml.POIXMLProperties;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
@@ -30,18 +38,9 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumn;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableColumns;
 import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
-
 public class ExcelRenderer {
 
-	private final static Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
+	private static final Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
             ResultType.DateT.class, ExcelRenderer::writeDateCell,
             ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
             ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
