@@ -91,31 +91,4 @@ public class FileUtil {
 		return new FileInputStream(file);
 	}
 
-	/**
-	 * Adapted from https://howtodoinjava.com/java/java-security/sha-md5-file-checksum-hash/
-	 **/
-	@SneakyThrows(NoSuchAlgorithmException.class)
-	public static String getFileChecksum(File file) throws IOException {
-		//Use SHA-1 algorithm
-		MessageDigest digest = MessageDigest.getInstance("SHA-256");
-
-		//Get file input stream for reading the file content
-		try (FileInputStream fis = new FileInputStream(file)) {
-			//Create byte array to read data in chunks
-			byte[] byteArray = new byte[1024];
-			int bytesCount;
-
-			//Read file data and update in message digest
-			while ((bytesCount = fis.read(byteArray)) != -1) {
-				digest.update(byteArray, 0, bytesCount);
-			}
-		}
-
-		//Get the hash's bytes
-		byte[] bytes = digest.digest();
-
-		//return complete hash
-		return new BigInteger(bytes).toString(16);
-	}
-
 }
