@@ -442,5 +442,8 @@
     "editorDropzoneAnd": "Drop concepts here to connect them logically via AND. Click to select a concept list.",
     "editorDropzoneOr": "Drop concepts here to connect them logically via OR. Click to select a concept list.",
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
+  },
+  "history": {
+    "history": "History"
   }
 }

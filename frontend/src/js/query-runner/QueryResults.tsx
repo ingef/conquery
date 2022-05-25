@@ -4,7 +4,9 @@ import { useTranslation } from "react-i18next";
 
 import type { ColumnDescription } from "../api/types";
 import DownloadButton from "../button/DownloadButton";
+import HistoryButton from "../button/HistoryButton";
 import PreviewButton from "../button/PreviewButton";
+import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
@@ -34,6 +36,10 @@ const SxPreviewButton = styled(PreviewButton)`
   margin-left: 10px;
 `;
 
+const SxHistoryButton = styled(HistoryButton)`
+  margin-left: 10px;
+`;
+
 const Bold = styled("span")`
   font-weight: 700;
 `;
@@ -52,6 +58,7 @@ const QueryResults: FC<PropsT> = ({
   queryType,
 }) => {
   const { t } = useTranslation();
+  const isHistoryEnabled = useIsHistoryEnabled();
   const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
 
   return (
@@ -68,6 +75,9 @@ const QueryResults: FC<PropsT> = ({
             ? t("queryRunner.resultCountSecondaryIdQuery")
             : t("queryRunner.resultCount")}
         </LgText>
+      )}
+      {isHistoryEnabled && !!csvUrl && exists(resultColumns) && (
+        <SxHistoryButton columns={resultColumns} url={csvUrl} />
       )}
       {!!csvUrl && exists(resultColumns) && (
         <SxPreviewButton columns={resultColumns} url={csvUrl} />

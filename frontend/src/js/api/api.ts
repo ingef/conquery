@@ -29,6 +29,9 @@ import type {
   GetFormConfigResponseT,
   GetDatasetsResponseT,
   UploadQueryResponseT,
+  GetEntityHistoryResponse,
+  GetEntityHistoryDefaultParamsResponse,
+  TableT,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
@@ -314,5 +317,32 @@ export const useDeleteFormConfig = () => {
         `/datasets/${datasetId}/form-configs/${formConfigId}`,
       ),
       method: "DELETE",
+    });
+};
+
+export const useGetEntityHistoryDefaultParams = () => {
+  const api = useApi<GetEntityHistoryDefaultParamsResponse>();
+
+  return (datasetId: DatasetIdT) =>
+    api({
+      url: getProtectedUrl(
+        `/datasets/${datasetId}/entity-preview-default-connectors`,
+      ),
+    });
+};
+
+export const useGetEntityHistory = () => {
+  const api = useApi<GetEntityHistoryResponse>();
+
+  return (datasetId: DatasetIdT, entityId: string, sources: TableT["id"][]) =>
+    api({
+      method: "POST",
+      url: getProtectedUrl(`/datasets/${datasetId}/entity-preview`),
+      data: {
+        idKind: "ID", // TODO: Figure out which other strings are possible here
+        entity: entityId, // TODO: Call this entityId
+        time: null, // TODO: Figure out the format here
+        sources,
+      },
     });
 };
