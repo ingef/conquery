@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
-import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.net.MalformedURLException;
@@ -47,7 +46,7 @@ public class ResultArrowFileResource {
 
 		checkSingleTableResult(query);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), dataset.getId(), subject.getId(), subject.getName());
-		return processor.createResult(subject, query, dataset, pretty.orElse(false), determineCharset(userAgent, queryCharset));
+		return processor.createResult(subject, query, dataset, pretty.orElse(false));
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
-import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.net.MalformedURLException;
@@ -58,6 +57,6 @@ public class ResultArrowStreamResource {
 	{
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset, subject.getId(), subject.getName());
-		return processor.createResult(subject, execution, dataset, pretty.orElse(false), determineCharset(userAgent, queryCharset));
+		return processor.createResult(subject, execution, dataset, pretty.orElse(false));
 	}
 }
