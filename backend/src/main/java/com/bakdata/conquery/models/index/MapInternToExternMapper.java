@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -71,11 +72,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@Override
 	public void init() {
-		if (mapIndex == null) {
-			// Todo ensure we are on a Worker
-			return;
-		}
-		// Manager
+		// this class gets resolved only on the ManagerNode
 		int2ext = mapIndex.getMapping(csv, internalColumn, externalTemplate);
 	}
 

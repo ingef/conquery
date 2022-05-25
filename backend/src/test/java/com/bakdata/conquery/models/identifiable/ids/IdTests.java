@@ -134,10 +134,9 @@ public class IdTests {
 	}
 	
 	public static Stream<Arguments> reflectionTest() {
-		final Class<Identifiable> identifiableClass = Identifiable.class;
 		return CPSTypeIdResolver
 				.SCAN_RESULT
-				.getClassesImplementing(identifiableClass.getName()).loadClasses()
+				.getClassesImplementing(Identifiable.class.getName()).loadClasses()
 				.stream()
 				.filter(cl -> !cl.isInterface())
 				.filter(cl -> !Modifier.isAbstract(cl.getModifiers()))
