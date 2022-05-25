@@ -26,6 +26,7 @@ import com.google.common.cache.RemovalNotification;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.arrow.vector.ipc.message.ArrowRecordBatch;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -37,6 +38,11 @@ public class ExecutionManager {
 	private final DatasetRegistry datasetRegistry;
 
 	private final Cache<ManagedExecution<?>, List<List<EntityResult>>> executionResults = CacheBuilder.newBuilder()
+																									  .softValues()
+																									  .removalListener(this::executionRemoved)
+																									  .build();
+
+	private final Cache<ManagedExecution<?>, List<ArrowRecordBatch>> executionResultBatches = CacheBuilder.newBuilder()
 																									  .softValues()
 																									  .removalListener(this::executionRemoved)
 																									  .build();

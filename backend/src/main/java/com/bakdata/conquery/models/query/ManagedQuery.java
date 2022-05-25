@@ -51,6 +51,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.arrow.vector.ipc.message.ArrowRecordBatch;
 
 @Getter
 @Setter
@@ -119,6 +120,11 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 	public Stream<EntityResult> streamResults() {
 		return getExecutionManager().streamQueryResults(this);
+	}
+
+	@Override
+	public void addShardBatch(ArrowRecordBatch recordBatch) {
+
 	}
 
 	@Override

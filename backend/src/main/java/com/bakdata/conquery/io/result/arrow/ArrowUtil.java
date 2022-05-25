@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.result.arrow;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -15,6 +16,7 @@ import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
+import org.apache.arrow.vector.types.pojo.Schema;
 
 @UtilityClass
 public class ArrowUtil {
@@ -87,5 +89,9 @@ public class ArrowUtil {
 		// Fallback to string field if type is not explicitly registered
 		BiFunction<ResultInfo, String, Field> fieldCreator = FIELD_MAP.getOrDefault(info.getType().getClass(), ArrowUtil::stringField);
 		return fieldCreator.apply(info, collector.getUniqueName(info));
+	}
+
+	public List<ArrowType> extractTypes(Schema schema) {
+		return schema.getFields().stream().map(Field::getType).collect(Collectors.toList());
 	}
 }

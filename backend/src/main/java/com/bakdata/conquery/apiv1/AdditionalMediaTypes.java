@@ -9,4 +9,5 @@ public interface AdditionalMediaTypes {
 	// As proposed in https://issues.apache.org/jira/browse/ARROW-7396
 	static final String ARROW_STREAM = "application/vnd.apache.arrow.stream";
 	static final String ARROW_FILE = "application/vnd.apache.arrow.file";
+
 }
