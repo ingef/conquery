@@ -212,7 +212,7 @@ public class QueryProcessor {
 									 subject
 							 );
 							 if (mq.isReadyToDownload(datasetAbilities)) {
-								 setDownloadUrls(status, config.getResultProviders(), mq, uriBuilder, allProviders);
+								 status.setResultUrls(getDownloadUrls(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
 							 return status;
 						 });
@@ -223,23 +223,18 @@ public class QueryProcessor {
 	 * Sets the result urls for the given result renderer. Result urls are only rendered for providers that match the
 	 * result type of the execution.
 	 *
-	 * @param status       The status that is edited.
 	 * @param renderer     The renderer that are requested for a result url generation.
 	 * @param exec         The execution that is used for generating the url
 	 * @param uriBuilder   The Uribuilder with the base configuration to generate the urls
 	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
-	 * @param <S>          The type of the provided and returned status
 	 * @return The modified status
 	 */
-	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public static List<URL> getDownloadUrls(List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 
-		List<URL> resultUrls = renderer.stream()
-									   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
-									   .flatMap(Collection::stream).collect(Collectors.toList());
+		return renderer.stream()
+					   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
+					   .flatMap(Collection::stream).collect(Collectors.toList());
 
-		status.setResultUrls(resultUrls);
-
-		return status;
 	}
 
 
@@ -346,7 +341,7 @@ public class QueryProcessor {
 		final FullExecutionStatus status = query.buildStatusFull(storage, subject, datasetRegistry, config);
 
 		if (query.isReadyToDownload(datasetAbilities)) {
-			setDownloadUrls(status, config.getResultProviders(), query, url, allProviders);
+			status.setResultUrls(getDownloadUrls(config.getResultProviders(), query, url, allProviders));
 		}
 		return status;
 	}
@@ -425,11 +420,9 @@ public class QueryProcessor {
 			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
 		}
 
+
 		// Use the provided format name to find the respective provider.
-		return config.getResultProviders().stream()
-					 .map(resultRendererProvider -> resultRendererProvider.generateResultURLs(execution, uriBuilder.clone(), true))
-					 .flatMap(Collection::stream)
-					 .collect(Collectors.toList());
+		return getDownloadUrls(config.getResultProviders(), execution, uriBuilder, true);
 
 	}
 }

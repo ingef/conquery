@@ -49,7 +49,7 @@ public class ResultArrowProcessor {
 			boolean pretty,
 			String fileExtension,
 			MediaType mediaType,
-			ConqueryConfig config, Runnable onClose) {
+			ConqueryConfig config) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
@@ -99,7 +99,6 @@ public class ResultArrowProcessor {
 			}
 			finally {
 				log.trace("DONE downloading data for `{}`", exec.getId());
-				onClose.run();
 			}
 		};
 
