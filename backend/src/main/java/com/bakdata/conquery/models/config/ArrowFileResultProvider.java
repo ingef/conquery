@@ -6,7 +6,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_AR
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -58,8 +57,7 @@ public class ArrowFileResultProvider implements ResultRendererProvider {
 		return List.of(ResultArrowFileResource.getDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec));
 	}
 
-	@Override
-	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty, Charset charset, Runnable onClose) {
+	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
@@ -69,7 +67,7 @@ public class ArrowFileResultProvider implements ResultRendererProvider {
 				pretty,
 				FILE_EXTENTION_ARROW_FILE,
 				MEDIA_TYPE,
-				config, onClose
+				config
 		);
 	}
 

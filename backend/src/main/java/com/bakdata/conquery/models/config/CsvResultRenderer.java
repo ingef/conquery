@@ -72,8 +72,7 @@ public class CsvResultRenderer implements ResultRendererProvider {
 		return List.of(ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec));
 	}
 
-	@Override
-	public Response createResult(Subject subject, ManagedExecution<?> execRaw, Dataset dataset, boolean pretty, Charset charset, Runnable onClose) {
+	public Response createResult(Subject subject, ManagedExecution<?> execRaw, Dataset dataset, boolean pretty, Charset charset) {
 
 		final ManagedQuery exec = (ManagedQuery) execRaw;
 
@@ -114,7 +113,7 @@ public class CsvResultRenderer implements ResultRendererProvider {
 				throw new WebApplicationException("Failed to load result", e);
 			}
 			finally {
-				onClose.run();
+				log.trace("FINISHED downloading {}", exec.getId());
 			}
 		};
 

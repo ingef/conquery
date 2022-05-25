@@ -4,7 +4,6 @@ import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -36,9 +35,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import lombok.Data;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
 @CPSType(base = ResultRendererProvider.class, id = "XLSX")
+@Slf4j
 public class ExcelResultProvider implements ResultRendererProvider {
 
 	// Media type according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
@@ -77,8 +78,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		environment.register(ResultExcelResource.class);
 	}
 
-	@Override
-	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty, Charset charset, Runnable onClose) {
+	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
 		ConqueryMDC.setLocation(subject.getName());
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
@@ -100,16 +100,12 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel(), settings);
 
 		StreamingOutput out = output -> {
-			try {
-				excelRenderer.renderToStream(
-						config.getFrontend().getQueryUpload().getIdResultInfos(),
-						(ManagedExecution<?> & SingleTableResult) exec,
-						output
-				);
-			}
-			finally {
-				onClose.run();
-			}
+			excelRenderer.renderToStream(
+					config.getFrontend().getQueryUpload().getIdResultInfos(),
+					(ManagedExecution<?> & SingleTableResult) exec,
+					output
+			);
+			log.trace("FINISHED downloading {}", exec.getId());
 		};
 
 		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx", MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);

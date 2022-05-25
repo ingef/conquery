@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
-import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
@@ -37,21 +36,19 @@ public class ResultExcelResource {
 
 	@Inject
 	private ExcelResultProvider processor;
-	
+
 	@GET
 	@Path("{" + QUERY + "}.xlsx")
 	@Produces(AdditionalMediaTypes.EXCEL)
 	public Response get(
-		@Auth Subject subject,
-		@PathParam(DATASET) Dataset dataset,
-		@PathParam(QUERY) ManagedExecution<?> execution,
-		@HeaderParam("subject-agent") String userAgent,
-		@QueryParam("charset") String queryCharset,
-		@QueryParam("pretty") Optional<Boolean> pretty) {
+			@Auth Subject subject,
+			@PathParam(DATASET) Dataset dataset,
+			@PathParam(QUERY) ManagedExecution<?> execution,
+			@HeaderParam("subject-agent") String userAgent,
+			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), dataset, subject.getId(), subject.getName());
-		return processor.createResult(subject, execution, dataset, pretty.orElse(true), determineCharset(userAgent, queryCharset), () -> {
-		});
+		return processor.createResult(subject, execution, dataset, pretty.orElse(true));
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

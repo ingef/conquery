@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
-import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.net.MalformedURLException;
@@ -50,15 +49,14 @@ public class ResultArrowStreamResource {
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_STREAM)
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
 	public Response get(
-		@Auth Subject subject,
-		@PathParam(DATASET) Dataset dataset,
-		@PathParam(QUERY) ManagedExecution<?> execution,
-		@HeaderParam("subject-agent") String userAgent,
-		@QueryParam("charset") String queryCharset,
-		@QueryParam("pretty") Optional<Boolean> pretty)
+			@Auth Subject subject,
+			@PathParam(DATASET) Dataset dataset,
+			@PathParam(QUERY) ManagedExecution<?> execution,
+			@HeaderParam("subject-agent") String userAgent,
+			@QueryParam("pretty") Optional<Boolean> pretty)
 	{
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset, subject.getId(), subject.getName());
-		return processor.createResult(subject, execution, dataset, pretty.orElse(false), determineCharset(userAgent, queryCharset), () -> {});
+		return processor.createResult(subject, execution, dataset, pretty.orElse(false));
 	}
 }

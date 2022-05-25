@@ -62,7 +62,6 @@ public class ResultCsvResource {
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset.getId(), subject.getId(), subject.getName());
-		return processor.createResult(subject, execution, dataset, pretty.orElse(Boolean.TRUE), determineCharset(userAgent, queryCharset), () -> {
-		});
+		return processor.createResult(subject, execution, dataset, pretty.orElse(Boolean.TRUE), determineCharset(userAgent, queryCharset));
 	}
 }
