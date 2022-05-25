@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 import java.io.IOException;
 
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.worker.IdResolveContext;
@@ -21,7 +22,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class NsIdReferenceKeyDeserializer<ID extends AId<VALUE> & NamespacedId, VALUE extends NamespacedIdentifiable<? extends ID>> extends KeyDeserializer implements ContextualKeyDeserializer {
 
-	private AId.Parser<ID> parser;
+	private IdUtil.Parser<ID> parser;
 
 	@Override
 	public Object deserializeKey(String key, DeserializationContext ctxt) throws IOException {
@@ -33,8 +34,8 @@ public class NsIdReferenceKeyDeserializer<ID extends AId<VALUE> & NamespacedId, 
 	@Override
 	public KeyDeserializer createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
 
-		final Class<ID> idClass = AId.findIdClass(property.getType().getKeyType().getRawClass());
-		final AId.Parser<ID> parser = AId.createParser(idClass);
+		final Class<ID> idClass = IdUtil.findIdClass(property.getType().getKeyType().getRawClass());
+		final IdUtil.Parser<ID> parser = IdUtil.createParser(idClass);
 
 
 		return new NsIdReferenceKeyDeserializer<>(parser);

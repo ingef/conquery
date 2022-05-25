@@ -7,7 +7,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.AId.Parser;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.core.JsonParser;
@@ -27,7 +27,7 @@ import lombok.NoArgsConstructor;
 public class IdDeserializer<ID extends AId<?>> extends JsonDeserializer<ID> implements ContextualDeserializer {
 
 	private Class<ID> idClass;
-	private Parser<ID> idParser;
+	private IdUtil.Parser<ID> idParser;
 	private boolean checkForInjectedPrefix;
 
 	@SuppressWarnings("unchecked")
@@ -46,7 +46,7 @@ public class IdDeserializer<ID extends AId<?>> extends JsonDeserializer<ID> impl
 		}
 	}
 
-	public static <ID extends AId<?>> ID deserializeId(String text, Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
+	public static <ID extends AId<?>> ID deserializeId(String text, IdUtil.Parser<ID> idParser, boolean checkForInjectedPrefix, DeserializationContext ctx)
 			throws JsonMappingException {
 		if (checkForInjectedPrefix) {
 			//check if there was a dataset injected and if it is already a prefix
@@ -91,7 +91,7 @@ public class IdDeserializer<ID extends AId<?>> extends JsonDeserializer<ID> impl
 			type = type.getContentType();
 		}
 		Class<AId<?>> idClass = (Class<AId<?>>) type.getRawClass();
-		Parser<AId<Identifiable<?>>> parser = AId.<AId<Identifiable<?>>>createParser((Class) idClass);
+		IdUtil.Parser<AId<Identifiable<?>>> parser = IdUtil.createParser((Class) idClass);
 
 		return new IdDeserializer(
 				idClass,

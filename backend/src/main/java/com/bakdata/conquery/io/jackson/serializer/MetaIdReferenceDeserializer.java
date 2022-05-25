@@ -7,6 +7,7 @@ import java.util.Optional;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.BeanDescription;
@@ -85,7 +86,7 @@ public class MetaIdReferenceDeserializer<ID extends AId<T>, T extends Identifiab
 		}
 
 		Class<?> cl = type.getRawClass();
-		Class<ID> idClass = AId.findIdClass(cl);
+		Class<ID> idClass = IdUtil.findIdClass(cl);
 
 		return new MetaIdReferenceDeserializer<>(cl, ctxt.getFactory().createBeanDeserializer(ctxt, type, descr), idClass);
 	}

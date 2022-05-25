@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,7 @@ public abstract class SelectId extends AId<Select> implements NamespacedId {
 		components.add(select);
 	}
 
-	public static enum Parser implements AId.Parser<SelectId> {
+	public static enum Parser implements IdUtil.Parser<SelectId> {
 		INSTANCE;
 
 		@Override

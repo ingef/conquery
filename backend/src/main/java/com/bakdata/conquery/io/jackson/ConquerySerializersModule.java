@@ -5,7 +5,13 @@ import java.util.Currency;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.jackson.serializer.*;
+import com.bakdata.conquery.io.jackson.serializer.CharArrayBufferDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.CharArrayBufferSerializer;
+import com.bakdata.conquery.io.jackson.serializer.ClassToInstanceMapDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.ConqueryDoubleSerializer;
+import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitSerializer;
+import com.bakdata.conquery.io.jackson.serializer.IdKeyDeserializer;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.ValueInstantiator;

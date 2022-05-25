@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.identifiable;
 
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -19,7 +19,7 @@ public abstract class IdentifiableImpl<ID extends AId<? extends Identifiable<? e
 	@Override
 	public ID getId() {
 		if (cachedId == null) {
-			cachedId = AId.intern(createId());
+			cachedId = IdUtil.intern(createId());
 		}
 		return cachedId;
 	}

@@ -14,6 +14,6 @@ public interface NamespacedId {
 	DatasetId getDataset();
 
 	default String toStringWithoutDataset() {
-		return StringUtils.removeStart(toString(), getDataset().toString() + AId.JOIN_CHAR);
+		return StringUtils.removeStart(toString(), getDataset().toString() + IdUtil.JOIN_CHAR);
 	}
 }

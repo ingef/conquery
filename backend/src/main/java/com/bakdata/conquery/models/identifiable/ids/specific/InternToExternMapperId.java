@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import lombok.EqualsAndHashCode;
@@ -24,7 +25,7 @@ public class InternToExternMapperId extends AId<InternToExternMapper> implements
 	}
 
 
-	public enum Parser implements AId.Parser<InternToExternMapperId> {
+	public enum Parser implements IdUtil.Parser<InternToExternMapperId> {
 		INSTANCE;
 
 		@Override

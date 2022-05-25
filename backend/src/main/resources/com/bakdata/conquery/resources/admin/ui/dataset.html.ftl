@@ -19,6 +19,13 @@
         </#list>
 	    </ul>
 	</@layout.kc>
+    <@layout.kc k="Mappings">
+        <ul>
+        <#list c.secondaryIds as secondaryId>
+            <li>${secondaryId}</li>
+        </#list>
+        </ul>
+    </@layout.kc>
 	<@layout.kc k="Tables">
 		<ul>
 			<#list c.tables?sort_by("label") as table>

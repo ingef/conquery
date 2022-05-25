@@ -7,14 +7,15 @@ import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 
 import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.AId.Parser;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
 
 public class IdParamConverter<T extends AId<?>> implements ParamConverter<T> {
 
 	private final Parser<T> parser;
 
 	public IdParamConverter(Class<T> type) {
-		parser = AId.createParser(type);
+		parser = IdUtil.createParser(type);
 	}
 
 	@Override

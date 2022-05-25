@@ -6,6 +6,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AllArgsConstructor;
@@ -19,14 +20,14 @@ public class DictionaryId extends AId<Dictionary> implements NamespacedId {
 	private final DatasetId dataset;
 	@NotNull
 	private final String name;
-	
+
 	@Override
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
 		components.add(name);
 	}
-	
-	public static enum Parser implements AId.Parser<DictionaryId> {
+
+	public static enum Parser implements IdUtil.Parser<DictionaryId> {
 		INSTANCE;
 
 		@Override

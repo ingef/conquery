@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.bakdata.conquery.models.identifiable.ids.AId.Parser;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
 
 public enum IIdInterner {
 	
@@ -28,8 +28,4 @@ public enum IIdInterner {
 			return interned.get(components);
 		}
 	}
-
-	
-
-	
 }

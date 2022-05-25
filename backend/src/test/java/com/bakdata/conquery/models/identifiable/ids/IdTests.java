@@ -18,7 +18,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.AId.Parser;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -180,8 +180,8 @@ public class IdTests {
 	@MethodSource
 	public void reflectionTest(Class<?> modelClass, Class<? extends AId<?>> expectedIdClass) {
 
-		Class<? extends AId<?>> idClass = AId.findIdClass(modelClass);
+		Class<? extends AId<?>> idClass = IdUtil.findIdClass(modelClass);
 		assertThat(idClass).isSameAs(expectedIdClass);
-		assertThat(AId.createParser(idClass)).isInstanceOf(Parser.class);
+		assertThat(IdUtil.createParser(idClass)).isInstanceOf(Parser.class);
 	}
 }

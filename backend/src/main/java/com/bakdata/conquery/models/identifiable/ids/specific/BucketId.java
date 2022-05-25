@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 
@@ -16,19 +17,19 @@ public class BucketId extends AId<Bucket> implements NamespacedId {
 
 	private final ImportId imp;
 	private final int bucket;
-	
+
 	@Override
 	public DatasetId getDataset() {
 		return imp.getDataset();
 	}
-	
+
 	@Override
 	public void collectComponents(List<Object> components) {
 		imp.collectComponents(components);
 		components.add(bucket);
 	}
-	
-	public static enum Parser implements AId.Parser<BucketId> {
+
+	public static enum Parser implements IdUtil.Parser<BucketId> {
 		INSTANCE;
 
 		@Override

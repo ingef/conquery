@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.core.JsonParser;
@@ -92,7 +93,7 @@ public class NsIdReferenceDeserializer<ID extends AId<T> & NamespacedId, T exten
 			type = type.getContentType();
 		}
 		Class<T> cl = (Class<T>) type.getRawClass();
-		Class<ID> idClass = AId.findIdClass(cl);
+		Class<ID> idClass = IdUtil.findIdClass(cl);
 
 		// Get the serdes target, but don't evaluate it yet (however it might be possible to return a noop deserializer here)
 		final NsIdRef annotation = property.getAnnotation(NsIdRef.class);

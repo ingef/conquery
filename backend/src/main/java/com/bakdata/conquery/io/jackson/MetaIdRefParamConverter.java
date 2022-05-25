@@ -5,13 +5,14 @@ import javax.ws.rs.ext.ParamConverter;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class MetaIdRefParamConverter<ID extends AId<VALUE>, VALUE extends Identifiable<ID>> implements ParamConverter<VALUE> {
 
-	private final AId.Parser<ID> idParser;
+	private final IdUtil.Parser<ID> idParser;
 	@NonNull
 	private final CentralRegistry registry;
 

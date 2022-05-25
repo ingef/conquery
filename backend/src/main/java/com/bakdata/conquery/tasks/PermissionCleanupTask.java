@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import io.dropwizard.servlets.tasks.Task;
@@ -110,7 +111,7 @@ public class PermissionCleanupTask extends Task {
 	 *
 	 * @return The number of deleted permissions.
 	 */
-	public static <E extends IdentifiableImpl<ID> & Owned, ID extends AId<E>> int deletePermissionsOfOwnedInstances(MetaStorage storage, String permissionDomain, AId.Parser<ID> idParser, Function<ID, E> instanceStorageExtractor) {
+	public static <E extends IdentifiableImpl<ID> & Owned, ID extends AId<E>> int deletePermissionsOfOwnedInstances(MetaStorage storage, String permissionDomain, IdUtil.Parser<ID> idParser, Function<ID, E> instanceStorageExtractor) {
 		int countDeleted = 0;
 		for (User user : storage.getAllUsers()) {
 			Set<ConqueryPermission> permissions = user.getPermissions();

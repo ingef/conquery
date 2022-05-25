@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 
@@ -16,19 +17,19 @@ public class FilterId extends AId<Filter<?>> implements NamespacedId {
 
 	private final ConnectorId connector;
 	private final String filter;
-	
+
 	@Override
 	public DatasetId getDataset() {
 		return connector.getDataset();
 	}
-	
+
 	@Override
 	public void collectComponents(List<Object> components) {
 		connector.collectComponents(components);
 		components.add(filter);
 	}
-	
-	public static enum Parser implements AId.Parser<FilterId> {
+
+	public static enum Parser implements IdUtil.Parser<FilterId> {
 		INSTANCE;
 
 		@Override

@@ -60,8 +60,8 @@ public class GroupHandler {
 	private final Group group;
 	private final SimpleWriter out;
 	private final File root;
-	private Multimap<Base, Pair<CPSType, ClassInfo>> content = HashMultimap.create();
-	private List<Pair<String, MethodInfo>> endpoints = new ArrayList<>();
+	private final Multimap<Base, Pair<CPSType, ClassInfo>> content = HashMultimap.create();
+	private final List<Pair<String, MethodInfo>> endpoints = new ArrayList<>();
 
 	public void handle() throws IOException {
 		out.heading(group.getName());

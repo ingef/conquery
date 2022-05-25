@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AllArgsConstructor;
@@ -19,14 +20,14 @@ public class ValidityDateId extends AId<ValidityDate> implements NamespacedId {
 	public DatasetId getDataset() {
 		return connector.getDataset();
 	}
-	
+
 	@Override
 	public void collectComponents(List<Object> components) {
 		connector.collectComponents(components);
 		components.add(validityDate);
 	}
-	
-	public static enum Parser implements AId.Parser<ValidityDateId> {
+
+	public static enum Parser implements IdUtil.Parser<ValidityDateId> {
 		INSTANCE;
 
 		@Override

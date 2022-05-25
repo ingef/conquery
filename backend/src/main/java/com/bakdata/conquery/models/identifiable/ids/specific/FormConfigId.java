@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -23,10 +24,10 @@ public class FormConfigId extends AId<FormConfig> {
 		components.add(dataset);
 		components.add(formType);
 		components.add(id);
-		
+
 	}
-	
-	public static enum Parser implements AId.Parser<FormConfigId> {
+
+	public static enum Parser implements IdUtil.Parser<FormConfigId> {
 		INSTANCE;
 
 		@Override

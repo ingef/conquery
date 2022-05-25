@@ -1,13 +1,13 @@
 package com.bakdata.conquery.apiv1.frontend;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import lombok.Builder;
 import lombok.Data;
-
-import java.time.LocalDate;
-import java.util.List;
 
 /**
  * This class represents a concept as it is presented to the front end.
