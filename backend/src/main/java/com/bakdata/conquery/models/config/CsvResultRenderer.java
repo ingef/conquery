@@ -112,6 +112,9 @@ public class CsvResultRenderer implements ResultRendererProvider {
 			catch (Exception e) {
 				throw new WebApplicationException("Failed to load result", e);
 			}
+			finally {
+				log.trace("FINISHED downloading {}", exec.getId());
+			}
 		};
 
 		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "csv", new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.ATTACHMENT);

@@ -35,9 +35,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import lombok.Data;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 @Data
 @CPSType(base = ResultRendererProvider.class, id = "XLSX")
+@Slf4j
 public class ExcelResultProvider implements ResultRendererProvider {
 
 	// Media type according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
@@ -103,6 +105,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 					(ManagedExecution<?> & SingleTableResult) exec,
 					output
 			);
+			log.trace("FINISHED downloading {}", exec.getId());
 		};
 
 		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx", MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
