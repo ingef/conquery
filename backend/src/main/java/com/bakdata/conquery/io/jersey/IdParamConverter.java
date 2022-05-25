@@ -6,11 +6,11 @@ import java.lang.reflect.Type;
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
 
-public class IdParamConverter<T extends AId<?>> implements ParamConverter<T> {
+public class IdParamConverter<T extends Id<?>> implements ParamConverter<T> {
 
 	private final Parser<T> parser;
 
@@ -34,7 +34,7 @@ public class IdParamConverter<T extends AId<?>> implements ParamConverter<T> {
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
-			if (AId.class.isAssignableFrom(rawType)) {
+			if (Id.class.isAssignableFrom(rawType)) {
 				return new IdParamConverter(rawType);
 			}
 			return null;

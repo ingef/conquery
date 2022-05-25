@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 @NoArgsConstructor
-public class MetaIdReferenceDeserializer<ID extends AId<T>, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
+public class MetaIdReferenceDeserializer<ID extends Id<T>, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
 
 	private Class<?> type;
 	private JsonDeserializer<?> beanDeserializer;

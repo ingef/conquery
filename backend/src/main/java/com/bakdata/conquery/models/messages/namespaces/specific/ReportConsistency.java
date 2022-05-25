@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -58,7 +58,7 @@ public class ReportConsistency extends NamespaceMessage {
         throw new IllegalStateException("Detected inconsistency between manager and worker [" + workerId + "]");
     }
 
-	private static <ID extends AId<?>> boolean isConsistent(String typeName, @NonNull Set<ID> managerIds, @NonNull Set<ID> workerIds, WorkerId workerId) {
+	private static <ID extends Id<?>> boolean isConsistent(String typeName, @NonNull Set<ID> managerIds, @NonNull Set<ID> workerIds, WorkerId workerId) {
 		Sets.SetView<ID> notInWorker = Sets.difference(managerIds, workerIds);
 		Sets.SetView<ID> notInManager = Sets.difference(workerIds, managerIds);
 

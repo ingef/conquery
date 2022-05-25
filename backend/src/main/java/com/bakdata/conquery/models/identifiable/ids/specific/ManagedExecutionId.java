@@ -4,15 +4,17 @@ import java.util.List;
 import java.util.UUID;
 
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class ManagedExecutionId extends AId<ManagedExecution<?>> {
+@AllArgsConstructor
+@Getter
+@EqualsAndHashCode(callSuper = false)
+public class ManagedExecutionId extends Id<ManagedExecution<?>> {
 
 	private final DatasetId dataset;
 	private final UUID execution;

@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -11,8 +11,10 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class SecondaryIdDescriptionId extends AId<SecondaryIdDescription> implements NamespacedId {
+@AllArgsConstructor
+@Getter
+@EqualsAndHashCode(callSuper = false)
+public class SecondaryIdDescriptionId extends Id<SecondaryIdDescription> implements NamespacedId {
 
 	private final DatasetId dataset;
 	private final String name;

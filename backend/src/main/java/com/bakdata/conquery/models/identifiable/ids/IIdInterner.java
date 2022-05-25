@@ -13,11 +13,11 @@ public enum IIdInterner {
 	private final Map<Parser<?>, ParserIIdInterner<?>> perParserInterner = new ConcurrentHashMap<>();
 
 	@SuppressWarnings("unchecked")
-	public static <ID extends AId<?>> ParserIIdInterner<ID> forParser(Parser<ID> parser) {
+	public static <ID extends Id<?>> ParserIIdInterner<ID> forParser(Parser<ID> parser) {
 		return (ParserIIdInterner<ID>) INSTANCE.perParserInterner.computeIfAbsent(parser, k -> new ParserIIdInterner<>());
 	}
 
-	public static class ParserIIdInterner<ID extends AId<?>> {
+	public static class ParserIIdInterner<ID extends Id<?>> {
 		private final Map<List<String>, ID> interned = new ConcurrentHashMap<>();
 
 		public ID putIfAbsent(List<String> components, ID id) {

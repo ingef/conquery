@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.google.common.collect.ForwardingMap;
 
 /**
@@ -19,7 +19,7 @@ import com.google.common.collect.ForwardingMap;
  *
  * @implNote implementation of {@link Iterable} is dropped, because hibernate could not decide on how to validate this map (either with an map-extractor or an iterable-extractor).
  */
-public class IdMap<ID extends AId<? super V>, V extends Identifiable<? extends ID>> extends ForwardingMap<ID, V> {
+public class IdMap<ID extends Id<? super V>, V extends Identifiable<? extends ID>> extends ForwardingMap<ID, V> {
 
 	@Valid
 	private final ConcurrentMap<ID, V> map;

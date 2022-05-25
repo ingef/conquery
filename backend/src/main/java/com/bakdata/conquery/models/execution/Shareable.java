@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.util.QueryUtils;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public interface  Shareable extends Authorized {
 	 */
 	void setShared(boolean shared);
 
-	default <ID extends AId<?>, S extends Identifiable<? extends ID> & Shareable & Authorized> Consumer<ShareInformation> sharer(
+	default <ID extends Id<?>, S extends Identifiable<? extends ID> & Shareable & Authorized> Consumer<ShareInformation> sharer(
 			MetaStorage storage,
 			Subject subject) {
 		if (!(this instanceof Identifiable<?>)) {

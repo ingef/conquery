@@ -8,7 +8,7 @@ import java.util.function.Function;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.error.ConqueryError.ExecutionCreationResolveError;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -25,18 +25,18 @@ import lombok.extern.slf4j.Slf4j;
 public class CentralRegistry implements Injectable {
 
 	private final IdMap map = new IdMap<>();
-	private final ConcurrentMap<AId<?>, Function<AId, Identifiable>> cacheables = new ConcurrentHashMap<>();
+	private final ConcurrentMap<Id<?>, Function<Id, Identifiable>> cacheables = new ConcurrentHashMap<>();
 
 	public synchronized CentralRegistry register(Identifiable<?> ident) {
 		map.add(ident);
 		return this;
 	}
 
-	public synchronized Function<AId, Identifiable> registerCacheable(AId id, Function<AId, Identifiable> supplier) {
+	public synchronized Function<Id, Identifiable> registerCacheable(Id id, Function<Id, Identifiable> supplier) {
 		return cacheables.put(id, supplier);
 	}
 
-	public <T extends Identifiable<?>> T resolve(AId<T> name) {
+	public <T extends Identifiable<?>> T resolve(Id<T> name) {
 		final T result = get(name);
 
 		if (result == null) {
@@ -50,8 +50,8 @@ public class CentralRegistry implements Injectable {
 		return map.update(ident);
 	}
 
-	public synchronized Optional<Identifiable> updateCacheable(AId id, Function<AId, Identifiable> supplier) {
-		Function<AId, Identifiable> old = cacheables.put(id, supplier);
+	public synchronized Optional<Identifiable> updateCacheable(Id id, Function<Id, Identifiable> supplier) {
+		Function<Id, Identifiable> old = cacheables.put(id, supplier);
 		if (old != null) {
 			// If the cacheable was still there, the Object was never cached.
 			return Optional.empty();
@@ -61,12 +61,12 @@ public class CentralRegistry implements Injectable {
 		return Optional.ofNullable(map.remove(id));
 	}
 
-	public <T extends Identifiable<?>> Optional<T> getOptional(AId<T> name) {
+	public <T extends Identifiable<?>> Optional<T> getOptional(Id<T> name) {
 		return Optional.ofNullable(get(name));
 	}
 
 	public synchronized void remove(Identifiable<?> ident) {
-		AId<?> id = ident.getId();
+		Id<?> id = ident.getId();
 		map.remove(id);
 	}
 
@@ -97,7 +97,7 @@ public class CentralRegistry implements Injectable {
 	/**
 	 * Needs to be protected in order to be overwritten by {@link InjectingCentralRegistry}
 	 */
-	protected <T extends Identifiable<?>> T get(AId<T> name) {
+	protected <T extends Identifiable<?>> T get(Id<T> name) {
 		Object res = map.get(name);
 		if (res != null) {
 			return (T) res;
@@ -108,7 +108,7 @@ public class CentralRegistry implements Injectable {
 			if (res2 != null) {
 				return (T) res2;
 			}
-			Function<AId, Identifiable> supplier = cacheables.get(name);
+			Function<Id, Identifiable> supplier = cacheables.get(name);
 			if (supplier == null) {
 				return null;
 			}

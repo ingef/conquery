@@ -3,7 +3,7 @@ package com.bakdata.conquery.io.storage;
 import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
 import lombok.Getter;
 import lombok.NonNull;
@@ -18,7 +18,7 @@ import lombok.experimental.Accessors;
 @Accessors(fluent = true)
 @Setter
 @Getter
-public abstract class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<AId<VALUE>, VALUE> {
+public abstract class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<Id<VALUE>, VALUE> {
 
 	protected final CentralRegistry centralRegistry;
 
@@ -31,13 +31,13 @@ public abstract class IdentifiableStore<VALUE extends Identifiable<?>> extends K
 	protected ThrowingConsumer<VALUE> onRemove = (v) -> {
 	};
 
-	public IdentifiableStore(Store<AId<VALUE>, VALUE> store, CentralRegistry centralRegistry) {
+	public IdentifiableStore(Store<Id<VALUE>, VALUE> store, CentralRegistry centralRegistry) {
 		super(store);
 		this.centralRegistry = centralRegistry;
 	}
 
 	@Override
-	protected abstract AId<VALUE> extractKey(VALUE value);
+	protected abstract Id<VALUE> extractKey(VALUE value);
 
     @Override
     protected abstract void removed(VALUE value);

@@ -7,7 +7,7 @@ import java.util.InputMismatchException;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.IdResolveContext;
@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 @NoArgsConstructor
-public class NsIdReferenceDeserializer<ID extends AId<T> & NamespacedId, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
+public class NsIdReferenceDeserializer<ID extends Id<T> & NamespacedId, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
 
 	private Class<?> type;
 	private JsonDeserializer<?> beanDeserializer;

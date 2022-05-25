@@ -3,15 +3,17 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class StructureNodeId extends AId<StructureNode> {
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+public class StructureNodeId extends Id<StructureNode> {
 
 	private final DatasetId dataset;
 	private final StructureNodeId parent;

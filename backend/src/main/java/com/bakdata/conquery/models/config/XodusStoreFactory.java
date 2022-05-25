@@ -48,7 +48,7 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -238,7 +238,7 @@ public class XodusStoreFactory implements StoreFactory {
 	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		final Environment environment = findEnvironment(pathName);
 
-		final BigStore<AId<Dictionary>, Dictionary> bigStore;
+		final BigStore<Id<Dictionary>, Dictionary> bigStore;
 
 		synchronized (openStoresInEnv) {
 			bigStore =

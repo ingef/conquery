@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -11,8 +11,10 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class ValidityDateId extends AId<ValidityDate> implements NamespacedId {
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+public class ValidityDateId extends Id<ValidityDate> implements NamespacedId {
 	private final ConnectorId connector;
 	private final String validityDate;
 

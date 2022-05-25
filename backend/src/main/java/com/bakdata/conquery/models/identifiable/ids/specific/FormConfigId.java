@@ -4,16 +4,18 @@ import java.util.List;
 import java.util.UUID;
 
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class FormConfigId extends AId<FormConfig> {
-	
+@AllArgsConstructor
+@Getter
+@EqualsAndHashCode(callSuper = false)
+public class FormConfigId extends Id<FormConfig> {
+
 
 	private final DatasetId dataset;
 	private String formType;

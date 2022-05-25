@@ -29,7 +29,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
@@ -47,7 +47,7 @@ public class FrontEndConceptBuilder {
 	public static FERoot createRoot(NamespaceStorage storage, Subject subject) {
 
 		FERoot root = new FERoot();
-		Map<AId<?>, FENode> roots = root.getConcepts();
+		Map<Id<?>, FENode> roots = root.getConcepts();
 		
 		List<? extends Concept<?>> allConcepts = new ArrayList<>(storage.getAllConcepts());
 		// Remove any hidden concepts
@@ -142,7 +142,7 @@ public class FrontEndConceptBuilder {
 	}
 
 	@Nullable
-	private static FENode createStructureNode(StructureNode cn, Map<AId<?>, FENode> roots) {
+	private static FENode createStructureNode(StructureNode cn, Map<Id<?>, FENode> roots) {
 		List<ConceptId> unstructured = new ArrayList<>();
 		for (ConceptId id : cn.getContainedRoots()) {
 			if (!roots.containsKey(id)) {
@@ -168,8 +168,8 @@ public class FrontEndConceptBuilder {
 				ArrayUtils.addAll(
 						cn.getChildren().stream()
 						  .map(IdentifiableImpl::getId)
-						  .toArray(AId[]::new),
-						unstructured.toArray(AId[]::new)
+						  .toArray(Id[]::new),
+						unstructured.toArray(Id[]::new)
 				)
 			)
 			.build();

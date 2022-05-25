@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.List;
 
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -12,8 +12,10 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class CBlockId extends AId<CBlock> implements NamespacedId {
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+public class CBlockId extends Id<CBlock> implements NamespacedId {
 
 	private final BucketId bucket;
 	private final ConnectorId connector;

@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.identifiable;
 
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @NoArgsConstructor
-public abstract class IdentifiableImpl<ID extends AId<? extends Identifiable<? extends ID>>> implements Identifiable<ID> {
+public abstract class IdentifiableImpl<ID extends Id<? extends Identifiable<? extends ID>>> implements Identifiable<ID> {
 
 	@JsonIgnore
 	protected transient ID cachedId;

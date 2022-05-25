@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -12,8 +12,10 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class ConnectorId extends AId<Connector> implements NamespacedId {
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
+public class ConnectorId extends Id<Connector> implements NamespacedId {
 
 	private final ConceptId concept;
 	private final String connector;

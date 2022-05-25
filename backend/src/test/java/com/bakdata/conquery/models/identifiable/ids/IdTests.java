@@ -5,9 +5,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -178,9 +175,9 @@ public class IdTests {
 
 	@ParameterizedTest
 	@MethodSource
-	public void reflectionTest(Class<?> modelClass, Class<? extends AId<?>> expectedIdClass) {
+	public void reflectionTest(Class<?> modelClass, Class<? extends Id<?>> expectedIdClass) {
 
-		Class<? extends AId<?>> idClass = IdUtil.findIdClass(modelClass);
+		Class<? extends Id<?>> idClass = IdUtil.findIdClass(modelClass);
 		assertThat(idClass).isSameAs(expectedIdClass);
 		assertThat(IdUtil.createParser(idClass)).isInstanceOf(Parser.class);
 	}

@@ -2,7 +2,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
 
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
@@ -20,7 +20,7 @@ import lombok.NoArgsConstructor;
  */
 @AllArgsConstructor
 @NoArgsConstructor
-public class NsIdReferenceKeyDeserializer<ID extends AId<VALUE> & NamespacedId, VALUE extends NamespacedIdentifiable<? extends ID>> extends KeyDeserializer implements ContextualKeyDeserializer {
+public class NsIdReferenceKeyDeserializer<ID extends Id<VALUE> & NamespacedId, VALUE extends NamespacedIdentifiable<? extends ID>> extends KeyDeserializer implements ContextualKeyDeserializer {
 
 	private IdUtil.Parser<ID> parser;
 

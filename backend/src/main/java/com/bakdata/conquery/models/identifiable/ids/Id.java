@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @JsonDeserialize(using = IdDeserializer.class)
-public abstract class AId<TYPE> {
+public abstract class Id<TYPE> {
 
 	@Override
 	public abstract boolean equals(Object obj);

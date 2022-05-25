@@ -6,10 +6,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.util.ConqueryEscape;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import lombok.experimental.UtilityClass;
@@ -23,7 +21,7 @@ public final class IdUtil {
 	public static final Joiner JOINER = Joiner.on(JOIN_CHAR);
 	private static final Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
 
-	public static <ID extends AId<?>> ID intern(ID id) {
+	public static <ID extends Id<?>> ID intern(ID id) {
 		@SuppressWarnings("unchecked")
 		ID old = IIdInterner.forParser((Parser<ID>) createParser(id.getClass())).putIfAbsent(id.collectComponents(), id);
 		if (old == null) {
@@ -33,11 +31,11 @@ public final class IdUtil {
 		return old;
 	}
 
-	public static <T extends AId<?>> Parser<T> createParser(Class<T> idClass) {
+	public static <T extends Id<?>> Parser<T> createParser(Class<T> idClass) {
 		return (Parser<T>) idClass.getDeclaredClasses()[0].getEnumConstants()[0];
 	}
 
-	public static void checkConflict(AId<?> id, AId<?> cached) {
+	public static void checkConflict(Id<?> id, Id<?> cached) {
 		if (!cached.equals(id)) {
 			throw new IllegalStateException("The cached id '"
 											+ cached
@@ -48,7 +46,7 @@ public final class IdUtil {
 		}
 	}
 
-	public static <T extends AId<?>> Class<T> findIdClass(Class<?> cl) {
+	public static <T extends Id<?>> Class<T> findIdClass(Class<?> cl) {
 		Class<?> result = CLASS_TO_ID_MAP.get(cl);
 
 		if (result != null) {
@@ -62,7 +60,7 @@ public final class IdUtil {
 
 		try {
 			Class<?> returnType = MethodUtils.getAccessibleMethod(cl, methodName).getReturnType();
-			if (!AId.class.isAssignableFrom(returnType) || AId.class.equals(returnType)) {
+			if (!Id.class.isAssignableFrom(returnType) || Id.class.equals(returnType)) {
 				throw new IllegalStateException("The type `" + returnType + "` of `" + cl + "#" + methodName + "` is not a specific subtype of IId");
 			}
 
@@ -80,7 +78,7 @@ public final class IdUtil {
 		}
 	}
 
-	public interface Parser<ID extends AId<?>> {
+	public interface Parser<ID extends Id<?>> {
 
 		default ID parse(String id) {
 			return parse(split(id));

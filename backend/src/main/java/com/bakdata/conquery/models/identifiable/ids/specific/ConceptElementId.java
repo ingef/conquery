@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public abstract class ConceptElementId<T extends ConceptElement<?>> extends AId<T> implements NamespacedId {
+public abstract class ConceptElementId<T extends ConceptElement<?>> extends Id<T> implements NamespacedId {
 
 	public abstract ConceptId findConcept();
 

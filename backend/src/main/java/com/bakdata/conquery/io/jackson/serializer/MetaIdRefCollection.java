@@ -5,15 +5,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.bakdata.conquery.models.identifiable.ids.AId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * An annotation that guides Jackson to serialize/deserialize the field as a {@link AId} instead of the object content itself.
- *
+ * An annotation that guides Jackson to serialize/deserialize the field as a {@link Id} instead of the object content itself.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @JacksonAnnotationsInside
