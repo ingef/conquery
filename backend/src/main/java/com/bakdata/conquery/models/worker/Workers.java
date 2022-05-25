@@ -65,8 +65,7 @@ public class Workers extends IdResolveContext {
 	}
 
 	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
-		final Worker
-				worker =
+		final Worker worker =
 				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, Jackson.copyMapperAndInjectables(binaryMapper));
 
 		addWorker(worker);

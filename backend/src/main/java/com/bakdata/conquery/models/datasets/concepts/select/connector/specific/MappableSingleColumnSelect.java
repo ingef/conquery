@@ -29,8 +29,6 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	@JsonIgnore
 	private final Function<Object, Object> mapper;
 
-
-	@JsonCreator
 	public MappableSingleColumnSelect(@NsIdRef Column column,
 									  @Nullable InternToExternMapper mapping){
 		super(column);
