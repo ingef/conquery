@@ -21,8 +21,11 @@
 	</@layout.kc>
     <@layout.kc k="Mappings">
         <ul>
-        <#list c.secondaryIds as secondaryId>
-            <li>${secondaryId}</li>
+        <#list c.internToExternMappers as mapper>
+            <li>
+                ${mapper.name} <#if mapper.initialized() ><i class="fas fa-check" alt="In use"></i><#else><i class="fas fa-moon" alt="Not used by any select"></i></i></#if>
+                <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/internToExtern/${mapper.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+            </li>
         </#list>
         </ul>
     </@layout.kc>
@@ -51,6 +54,13 @@
         <h3>Start Update Matching Stats Job</h3>
         <input class="btn btn-primary" type="submit"/>
     </form>
+	<h3>Add Mapping</h3>
+	<form onsubmit="postFile(event, '/admin/datasets/${c.ds.id}/internToExtern');">
+		<div class="form-group">
+			<input type="file" class="restparam" name="mapping" title="Mapping configuration" accept="*.mapping.json" multiple required>
+		</div>
+		<input class="btn btn-primary" type="submit"/>
+	</form>
 	<h3>Add Table</h3>
 	<form onsubmit="postFile(event, '/admin/datasets/${c.ds.id}/tables');">
 		<div class="form-group">

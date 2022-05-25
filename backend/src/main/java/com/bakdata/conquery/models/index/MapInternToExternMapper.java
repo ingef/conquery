@@ -71,11 +71,17 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 
 	@Override
-	public void init() {
+	public synchronized void init() {
 		// this class gets resolved only on the ManagerNode
-		int2ext = mapIndex.getMapping(csv, internalColumn, externalTemplate);
+		if (int2ext == null) {
+			int2ext = mapIndex.getMapping(csv, internalColumn, externalTemplate);
+		}
 	}
 
+	@Override
+	public boolean initialized() {
+		return int2ext != null;
+	}
 
 	@Override
 	public String external(String internalValue) {

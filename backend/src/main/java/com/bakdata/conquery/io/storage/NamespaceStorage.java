@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.storage;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Objects;
 
 import javax.validation.Validator;
@@ -8,6 +9,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
@@ -61,6 +63,10 @@ public class NamespaceStorage extends NamespacedStorage {
 				.onAdd(mapping -> mapping.setStorage(this));
 	}
 
+	private void decorateInternToExternMappingStore(IdentifiableStore<InternToExternMapper> store) {
+		// We don't call internToExternMapper::init this is done by the first select that needs the mapping
+	}
+
 	@Override
 	public void openStores(ObjectMapper objectMapper) {
 		super.openStores(objectMapper);
@@ -71,6 +77,7 @@ public class NamespaceStorage extends NamespacedStorage {
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
 		primaryDictionary = getStorageFactory().createPrimaryDictionaryStore(super.getPathName(), getCentralRegistry(), objectMapper);
 
+		decorateInternToExternMappingStore(internToExternMappers);
 		decorateIdMapping(idMapping);
 	}
 
@@ -160,5 +167,9 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	public void removeInternToExternMapper(InternToExternMapperId id) {
 		internToExternMappers.remove(id);
+	}
+
+	public Collection<InternToExternMapper> getInternToExternMappers() {
+		return internToExternMappers.getAll();
 	}
 }

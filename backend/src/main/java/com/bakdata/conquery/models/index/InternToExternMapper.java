@@ -14,6 +14,8 @@ public interface InternToExternMapper extends NamespacedIdentifiable<InternToExt
 
 	void init();
 
+	boolean initialized();
+
 	String external(String internalValue);
 
 	void setDataset(Dataset dataset);

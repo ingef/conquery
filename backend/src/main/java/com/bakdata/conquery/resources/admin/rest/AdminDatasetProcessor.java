@@ -386,6 +386,7 @@ public class AdminDatasetProcessor {
 
 		log.info("Received new InternToExternMapping[{}]", internToExternMapper.getId());
 
+		// We don't call internToExternMapper::init this is done by the first select that needs the mapping
 		namespace.getStorage().addInternToExternMapper(internToExternMapper);
 	}
 
