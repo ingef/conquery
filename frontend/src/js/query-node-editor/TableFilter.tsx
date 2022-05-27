@@ -1,12 +1,12 @@
 import { memo, useMemo } from "react";
 
-import {
+import type {
   ConceptIdT,
   CurrencyConfigT,
-  DatasetIdT,
-  FilterIdT,
+  DatasetT,
+  FilterT,
   PostFilterSuggestionsResponseT,
-  TableIdT,
+  TableT,
 } from "../api/types";
 import { FilterWithValueType } from "../standard-query-editor/types";
 import InputRange, { ModeT } from "../ui-components/InputRange";
@@ -15,9 +15,9 @@ import InputSelect from "../ui-components/InputSelect/InputSelect";
 import FilterListMultiSelect from "./FilterListMultiSelect";
 
 export interface FiltersContextT {
-  datasetId: DatasetIdT;
+  datasetId: DatasetT["id"];
   treeId: ConceptIdT;
-  tableId: TableIdT;
+  tableId: TableT["id"];
 }
 
 export interface BaseTableFilterProps {
@@ -29,7 +29,7 @@ export interface BaseTableFilterProps {
   onSetFilterValue: (filterIdx: number, value: unknown) => void;
   onLoadFilterSuggestions: (
     tableIdx: number,
-    filterId: FilterIdT,
+    filterId: FilterT["id"],
     prefix: string,
     page: number,
     pageSize: number,

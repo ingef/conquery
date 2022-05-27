@@ -1,7 +1,7 @@
 /// <reference types="react-scripts" />
 import "@emotion/react";
 
-import { ConceptIdT, ConceptT } from "./js/api/types";
+import type { ConceptIdT, ConceptT } from "./js/api/types";
 
 declare namespace NodeJS {
   interface ProcessEnv {

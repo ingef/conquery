@@ -10,7 +10,7 @@ import {
   usePostQueryCancel,
 } from "../api/api";
 import type {
-  DatasetIdT,
+  DatasetT,
   ErrorResponseT,
   GetQueryErrorResponseT,
   GetQueryResponseDoneT,
@@ -72,7 +72,7 @@ export const useStartQuery = (queryType: QueryTypeT) => {
   const postFormQueries = usePostFormQueries();
 
   return (
-    datasetId: DatasetIdT,
+    datasetId: DatasetT["id"],
     query:
       | StandardQueryStateT
       | ValidatedTimebasedQueryStateT
@@ -125,7 +125,7 @@ export const useStopQuery = (queryType: QueryTypeT) => {
   const dispatch = useDispatch();
   const cancelQuery = usePostQueryCancel();
 
-  return (datasetId: DatasetIdT, queryId: QueryIdT) => {
+  return (datasetId: DatasetT["id"], queryId: QueryIdT) => {
     dispatch(stopQuery.request({ queryType }));
 
     return cancelQuery(datasetId, queryId).then(
@@ -201,7 +201,7 @@ export const queryResultSuccess = createAction(
 )<{
   data: GetQueryResponseDoneT;
   queryType: QueryTypeT;
-  datasetId: DatasetIdT;
+  datasetId: DatasetT["id"];
 }>();
 
 const useQueryResult = (queryType: QueryTypeT) => {
@@ -211,7 +211,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
   const { loadQueries } = useLoadQueries();
   const { loadFormConfigs } = useLoadFormConfigs();
 
-  const queryResult = (datasetId: DatasetIdT, queryId: QueryIdT) => {
+  const queryResult = (datasetId: DatasetT["id"], queryId: QueryIdT) => {
     dispatch(queryResultStart({ queryType }));
 
     return getQuery(datasetId, queryId).then(
