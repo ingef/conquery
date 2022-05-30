@@ -5,12 +5,11 @@ import {
   useGetEntityHistory,
   useGetEntityHistoryDefaultParams,
 } from "../api/api";
-import { ColumnDescription } from "../api/types";
-import { StateT } from "../app/reducers";
+import type { ColumnDescription, DatasetT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { ErrorObject, errorPayload } from "../common/actions";
 import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
-import { DatasetT } from "../dataset/reducer";
 import { useDatasetId } from "../dataset/selectors";
 import { loadCSV } from "../file/csv";
 import { useLoadPreviewData } from "../preview/actions";
