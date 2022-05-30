@@ -75,7 +75,6 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 			return Optional.empty();
 		}
 
-
 		List<Object[]> resultValues = new ArrayList<>(dateContexts.size());
 
 		for (DateContext dateContext : dateContexts) {
