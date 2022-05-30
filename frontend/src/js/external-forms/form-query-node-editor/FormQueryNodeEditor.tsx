@@ -5,7 +5,7 @@ import type { PostPrefixForSuggestionsParams } from "../../api/api";
 import {
   ConceptIdT,
   CurrencyConfigT,
-  DatasetIdT,
+  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
@@ -62,7 +62,7 @@ interface PropsT {
 }
 
 const FormQueryNodeEditor = (props: PropsT) => {
-  const datasetId = useSelector<StateT, DatasetIdT | null>(
+  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
     (state) => state.datasets.selectedDatasetId,
   );
 

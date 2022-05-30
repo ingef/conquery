@@ -6,26 +6,26 @@ type Timeout = ReturnType<typeof setTimeout>;
 //       because fn will be saved in a ref / will always be up to date
 export const useDebounce = (
   fn: (...args: any) => any,
-  ms: number,
+  delay: number,
   debounceTriggers: any[],
 ) => {
   const handle = useRef<Timeout | null>(null);
   const fnRef = useRef<(...args: any) => any>(fn);
-  const msRef = useRef<number>(ms);
+  const delayRef = useRef<number>(delay);
 
   useEffect(() => {
     fnRef.current = fn;
   }, [fn]);
   useEffect(() => {
-    msRef.current = ms;
-  }, [ms]);
+    delayRef.current = delay;
+  }, [delay]);
 
   useEffect(() => {
     if (handle.current) clearTimeout(handle.current);
 
     handle.current = setTimeout(
       fnRef.current.bind(null, ...debounceTriggers),
-      msRef.current,
+      delayRef.current,
     );
 
     return () => {

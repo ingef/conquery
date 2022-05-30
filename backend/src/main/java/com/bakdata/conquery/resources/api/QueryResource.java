@@ -152,7 +152,7 @@ public class QueryResource {
 	@AllArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class EntityPreview {
 		private String idKind; //TODO I think ID is fallback, but i dont currently know.
-		private final String entity;
+		private final String entityId;
 		private final Range<LocalDate> time;
 		@NsIdRefCollection
 		private final List<Connector> sources;
@@ -162,7 +162,7 @@ public class QueryResource {
 	@Path("/entity")
 	public List<URL> getEntityData(@Auth Subject subject, EntityPreview query, @Context HttpServletRequest request) {
 		final UriBuilder uriBuilder = RequestAwareUriBuilder.fromRequest(request);
-		return processor.getSingleEntityExport(subject, uriBuilder, query.getIdKind(), query.getEntity(), query.getSources(), dataset, query.getTime());
+		return processor.getSingleEntityExport(subject, uriBuilder, query.getIdKind(), query.getEntityId(), query.getSources(), dataset, query.getTime());
 	}
 
 

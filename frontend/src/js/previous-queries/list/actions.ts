@@ -14,7 +14,7 @@ import {
   useGetFormConfigs,
 } from "../../api/api";
 import {
-  DatasetIdT,
+  DatasetT,
   GetQueriesResponseT,
   GetQueryResponseT,
   QueryIdT,
@@ -47,7 +47,7 @@ export const useLoadQueries = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const loadQueries = async (datasetId: DatasetIdT) => {
+  const loadQueries = async (datasetId: DatasetT["id"]) => {
     setLoading(true);
     try {
       const data = await getQueries(datasetId);
@@ -190,7 +190,7 @@ export const useLoadFormConfigs = () => {
   const getFormConfigs = useGetFormConfigs();
 
   const loadFormConfigs = useCallback(
-    async (datasetId: DatasetIdT) => {
+    async (datasetId: DatasetT["id"]) => {
       setLoading(true);
       try {
         const data = await getFormConfigs(datasetId);
