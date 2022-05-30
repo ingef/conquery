@@ -40,10 +40,10 @@ public class ResultExcelResource {
 	@GET
 	@Path("{" + QUERY + "}.xlsx")
 	@Produces(AdditionalMediaTypes.EXCEL)
-	public Response get(
+	public <E extends ManagedExecution<?> & SingleTableResult> Response get(
 			@Auth Subject subject,
 			@PathParam(DATASET) Dataset dataset,
-			@PathParam(QUERY) ManagedExecution<?> execution,
+			@PathParam(QUERY) E execution,
 			@HeaderParam("subject-agent") String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
