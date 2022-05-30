@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -397,7 +398,7 @@ public class QueryProcessor {
 	public List<URL> getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
 		final ConceptQuery entitySelectQuery =
-				new ConceptQuery(new CQDateRestriction(dateRange, new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}})));
+				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}})));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
 		exportQuery.setTables(
