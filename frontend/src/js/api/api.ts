@@ -325,8 +325,7 @@ export const useGetEntityHistoryDefaultParams = () => {
 
   return (datasetId: DatasetT["id"]) =>
     api({
-      method: "POST",
-      url: getProtectedUrl(`/datasets/${datasetId}/queries/entity`),
+      url: getProtectedUrl(`/datasets/${datasetId}/entity-preview`),
     });
 };
 
@@ -340,13 +339,16 @@ export const useGetEntityHistory = () => {
     time: {
       min: string; // Format like "2020-01-01"
       max: string; // Format like "2020-12-31"
-    } | null = null,
+    } = {
+      min: "2015-01-01",
+      max: "2021-12-31",
+    },
   ) =>
     api({
       method: "POST",
-      url: getProtectedUrl(`/datasets/${datasetId}/entity-preview`),
+      url: getProtectedUrl(`/datasets/${datasetId}/queries/entity`),
       data: {
-        idKind: "ID", // TODO: Figure out which other strings are possible here
+        idKind: "PID", // TODO: Figure out which other strings are possible here
         entityId,
         time,
         sources,

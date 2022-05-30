@@ -453,8 +453,6 @@ export type UploadQueryResponseT = {
   unreadableDate: string[][];
 };
 
-export type GetEntityHistoryDefaultParamsResponse = string[];
+export type GetEntityHistoryDefaultParamsResponse = string[]; // connectors
 
-export type GetEntityHistoryResponse = {
-  resultUrls: string[];
-};
+export type GetEntityHistoryResponse = string[]; // result urls
