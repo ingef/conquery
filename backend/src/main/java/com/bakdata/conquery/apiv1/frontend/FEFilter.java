@@ -32,7 +32,10 @@ public class FEFilter {
 	 */
 	private String unit;
 
-	private String description;
+	/**
+	 * Displayed on hover for filters.
+	 */
+	private String tooltip;
 	@Builder.Default
 	private List<FEValue> options = Collections.emptyList();
 
