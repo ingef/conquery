@@ -159,7 +159,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return query.isOfInterest(entity) || featurePlan.isOfInterest(entity);
+		return query.isOfInterest(entity);
 	}
 
 	@Override
