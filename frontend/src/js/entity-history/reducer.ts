@@ -5,10 +5,13 @@ import type { Action } from "../app/actions";
 
 import {
   closeHistory,
-  initHistoryData,
+  loadHistoryData,
   loadDefaultHistoryParamsSuccess,
   openHistory,
 } from "./actions";
+
+// TODO: This is quite inaccurate
+export type EntityEvent = { [key: string]: any };
 
 export type EntityHistoryStateT = {
   defaultParams: {
@@ -18,7 +21,7 @@ export type EntityHistoryStateT = {
   isOpen: boolean;
   entityIds: string[];
   currentEntityId: string | null;
-  currentEntityData: string[][];
+  currentEntityData: EntityEvent[];
 };
 
 const initialState: EntityHistoryStateT = {
@@ -44,11 +47,11 @@ export default function reducer(
           sources: action.payload.sources,
         },
       };
-    case getType(initHistoryData.request):
+    case getType(loadHistoryData.request):
       return { ...state, isLoading: true };
-    case getType(initHistoryData.failure):
+    case getType(loadHistoryData.failure):
       return { ...state, isLoading: false };
-    case getType(initHistoryData.success):
+    case getType(loadHistoryData.success):
       return {
         ...state,
         ...action.payload,

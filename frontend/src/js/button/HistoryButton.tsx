@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { ColumnDescription } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
-import { openHistory, useInitHistorySession } from "../entity-history/actions";
+import { openHistory, useNewHistorySession } from "../entity-history/actions";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import IconButton from "./IconButton";
@@ -28,14 +28,14 @@ const HistoryButton = ({ url, columns, className, ...restProps }: PropsT) => {
   );
 
   const getAuthorizedUrl = useGetAuthorizedUrl();
-  const initHistorySession = useInitHistorySession();
+  const newHistorySession = useNewHistorySession();
 
   return (
     <WithTooltip text={t("history.history")} className={className}>
       <SxIconButton
         icon={isLoading ? "spinner" : "book"}
         onClick={async () => {
-          await initHistorySession(getAuthorizedUrl(url), columns);
+          await newHistorySession(getAuthorizedUrl(url), columns);
           dispatch(openHistory());
         }}
         {...restProps}

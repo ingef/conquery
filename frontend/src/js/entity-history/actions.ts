@@ -10,18 +10,21 @@ import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { ErrorObject, errorPayload } from "../common/actions";
 import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
+import { formatStdDate, getFirstAndLastDateOfRange } from "../common/helpers";
 import { useDatasetId } from "../dataset/selectors";
-import { loadCSV } from "../file/csv";
+import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { useLoadPreviewData } from "../preview/actions";
+
+import { EntityEvent } from "./reducer";
 
 export type EntityHistoryActions = ActionType<
   | typeof openHistory
   | typeof closeHistory
-  | typeof initHistoryData
+  | typeof loadHistoryData
   | typeof loadDefaultHistoryParamsSuccess
 >;
 
-export const openHistory = createAction("history/CLOSE")();
+export const openHistory = createAction("history/OPEN")();
 export const closeHistory = createAction("history/CLOSE")();
 
 export const loadDefaultHistoryParamsSuccess = createAction(
@@ -47,15 +50,15 @@ export const useLoadDefaultHistoryParams = () => {
   };
 };
 
-export const initHistoryData = createAsyncAction(
-  "history/INIT_START",
-  "history/INIT_SUCCESS",
-  "history/INIT_ERROR",
+export const loadHistoryData = createAsyncAction(
+  "history/LOAD_START",
+  "history/LOAD_SUCCESS",
+  "history/LOAD_ERROR",
 )<
   void,
   {
-    entityIds: string[];
-    currentEntityData: string[][];
+    entityIds?: string[];
+    currentEntityData: EntityEvent[];
     currentEntityId: string;
   },
   ErrorObject
@@ -65,26 +68,15 @@ export const initHistoryData = createAsyncAction(
 // but there will be other ways of starting a history session
 // - from a dropped file with a list of entities
 // - from a previous query
-export function useInitHistorySession() {
-  const dispatch = useDispatch();
-  const datasetId = useDatasetId();
+export function useNewHistorySession() {
   const loadPreviewData = useLoadPreviewData();
-  const getEntityHistory = useGetEntityHistory();
-  const getAuthorizedUrl = useGetAuthorizedUrl();
-
-  const defaultEntityHistoryParams = useSelector<StateT, { sources: string[] }>(
-    (state) => state.entityHistory.defaultParams,
-  );
+  const updateHistorySession = useUpdateHistorySession();
 
   let csv = useSelector<StateT, string[][] | null>(
     (state) => state.preview.data.csv,
   );
 
   return async (url: string, columns: ColumnDescription[]) => {
-    if (!datasetId) return;
-
-    dispatch(initHistoryData.request());
-
     if (!csv) {
       const result = await loadPreviewData(url, columns);
 
@@ -95,23 +87,47 @@ export function useInitHistorySession() {
       csv = result.csv;
     }
 
-    const entityIds = csv.map((row) => row[0]);
+    // hard-coded column index to use for entity ids (should be "PID")
+    const entityIdsColumn = csv.map((row) => row[2]);
+    const entityIds = entityIdsColumn.slice(1); // remove header;
 
     if (entityIds.length === 0) {
       return;
     }
 
+    updateHistorySession({ entityId: entityIds[0], entityIds });
+  };
+}
+
+export function useUpdateHistorySession() {
+  const dispatch = useDispatch();
+  const datasetId = useDatasetId();
+  const getEntityHistory = useGetEntityHistory();
+  const getAuthorizedUrl = useGetAuthorizedUrl();
+
+  const defaultEntityHistoryParams = useSelector<StateT, { sources: string[] }>(
+    (state) => state.entityHistory.defaultParams,
+  );
+
+  return async ({
+    entityId,
+    entityIds,
+  }: {
+    entityId: string;
+    entityIds?: string[];
+  }) => {
+    if (!datasetId) return;
+
     try {
-      const firstEntityResult = await getEntityHistory(
+      dispatch(loadHistoryData.request());
+
+      const entityResult = await getEntityHistory(
         datasetId,
-        entityIds[0],
+        entityId,
         defaultEntityHistoryParams.sources,
       );
 
-      // Assuming the first resultURL is a CSV url
-      const csvUrl = firstEntityResult.resultUrls.find((url) =>
-        url.endsWith("csv"),
-      );
+      const csvUrl = entityResult.find((url) => url.endsWith("csv"));
 
       if (!csvUrl) {
         throw new Error("No CSV URL found");
@@ -119,16 +135,49 @@ export function useInitHistorySession() {
 
       const authorizedCSVUrl = getAuthorizedUrl(csvUrl);
       const csv = await loadCSV(authorizedCSVUrl);
+      const currentEntityData = await parseCSVWithHeaderToObj(
+        csv.data.map((r) => r.join(";")).join("\n"),
+      );
+
+      const currentEntityDataProcessed = currentEntityData
+        .map((row) => {
+          const { first, last } = getFirstAndLastDateOfRange(
+            row["Datumswerte"],
+          );
+
+          return first && last
+            ? {
+                dates: {
+                  from: first,
+                  to: last,
+                },
+                ...row,
+              }
+            : row;
+        })
+        .sort((a, b) => {
+          return a.dates.from - b.dates.from > 0 ? -1 : 1;
+        })
+        .map((row) => {
+          const { dates, ...rest } = row;
+          return {
+            dates: {
+              from: formatStdDate(row.dates?.from),
+              to: formatStdDate(row.dates?.to),
+            },
+            ...rest,
+          };
+        });
 
       dispatch(
-        initHistoryData.success({
-          entityIds,
-          currentEntityData: csv.data,
-          currentEntityId: entityIds[0],
+        loadHistoryData.success({
+          currentEntityData: currentEntityDataProcessed,
+          currentEntityId: entityId,
+          ...(entityIds ? { entityIds } : {}),
         }),
       );
     } catch (e) {
-      dispatch(initHistoryData.failure(errorPayload(e as Error, {})));
+      dispatch(loadHistoryData.failure(errorPayload(e as Error, {})));
     }
   };
 }

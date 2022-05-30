@@ -29,15 +29,15 @@ const LgText = styled(Text)`
 `;
 
 const SxDownloadButton = styled(DownloadButton)`
-  margin-left: 10px;
+  margin-left: 7px;
 `;
 
 const SxPreviewButton = styled(PreviewButton)`
-  margin-left: 10px;
+  margin-left: 7px;
 `;
 
 const SxHistoryButton = styled(HistoryButton)`
-  margin-left: 10px;
+  margin-left: 7px;
 `;
 
 const Bold = styled("span")`
