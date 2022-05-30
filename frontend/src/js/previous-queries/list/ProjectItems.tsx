@@ -9,7 +9,7 @@ import {
 } from "react";
 import { FixedSizeList } from "react-window";
 
-import { DatasetIdT } from "../../api/types";
+import type { DatasetT } from "../../api/types";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 
 import DeleteProjectItemModal from "./DeleteProjectItemModal";
@@ -19,7 +19,7 @@ import ProjectItemDragContainer from "./ProjectItemDragContainer";
 import ShareProjectItemModal from "./ShareProjectItemModal";
 
 interface PropsT {
-  datasetId: DatasetIdT | null;
+  datasetId: DatasetT["id"] | null;
   items: ProjectItemT[];
 }
 

@@ -5,9 +5,8 @@ import type { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import type { ModeT } from "../ui-components/InputRange";
 
-export type DatasetIdT = string;
 export interface DatasetT {
-  id: DatasetIdT;
+  id: string;
   label: string;
 }
 
@@ -32,9 +31,8 @@ export interface CurrencyConfigT {
   decimalScale: number;
 }
 
-export type FilterIdT = string;
 export interface FilterBaseT {
-  id: FilterIdT;
+  id: string;
   label: string;
   description?: string;
   tooltip?: string;
@@ -103,9 +101,8 @@ export type FilterT =
   | RangeFilterT
   | BigMultiSelectFilterT;
 
-export type TableIdT = string;
 export interface TableT {
-  id: TableIdT;
+  id: string;
   dateColumn: DateColumnT | null;
   connectorId: string; // TODO: Get rid of two ids here (unclear when which one should be used)
   label: string;
@@ -173,7 +170,7 @@ export interface ConceptElementT extends ConceptBaseT {
 export type ConceptT = ConceptElementT | ConceptStructT;
 
 export interface FilterConfigT {
-  filter: FilterIdT; // TODO: Rename this: "id"
+  filter: FilterT["id"]; // TODO: Rename this: "id"
   type:
     | "INTEGER_RANGE"
     | "REAL_RANGE"
@@ -190,7 +187,7 @@ export interface DateColumnConfigT {
 }
 
 export interface TableConfigT {
-  id: TableIdT;
+  id: TableT["id"];
   filters?: FilterConfigT[];
   dateColumn?: DateColumnConfigT;
   selects: SelectorIdT[];
@@ -398,8 +395,8 @@ export interface PostConceptResolveResponseT {
 export interface PostFilterResolveResponseT {
   unknownCodes?: string[];
   resolvedFilter?: {
-    filterId: FilterIdT;
-    tableId: TableIdT;
+    filterId: FilterT["id"];
+    tableId: TableT["id"];
     value: {
       label: string;
       value: string;
@@ -433,7 +430,7 @@ export interface UserGroupT {
 
 export interface GetMeResponseT {
   userName: string;
-  datasetAbilities: Record<DatasetIdT, PermissionsT>;
+  datasetAbilities: Record<DatasetT["id"], PermissionsT>;
   groups: UserGroupT[];
   hideLogoutButton?: boolean;
 }

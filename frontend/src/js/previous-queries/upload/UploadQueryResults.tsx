@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { usePostQueryUpload } from "../../api/api";
 import type {
-  DatasetIdT,
+  DatasetT,
   QueryUploadConfigT,
   UploadQueryResponseT,
 } from "../../api/types";
@@ -24,7 +24,7 @@ const SxIconButton = styled(IconButton)`
 
 interface PropsT {
   className?: string;
-  datasetId: DatasetIdT | null;
+  datasetId: DatasetT["id"] | null;
 }
 
 const UploadQueryResults = ({ className, datasetId }: PropsT) => {
