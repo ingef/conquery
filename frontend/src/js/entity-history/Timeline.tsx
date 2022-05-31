@@ -1,4 +1,3 @@
-import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -10,7 +9,7 @@ import { DetailLevel } from "./DetailControl";
 import { RowDates } from "./RowDates";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
 
-const Root = styled("div")<{ summary?: boolean }>`
+const Root = styled("div")`
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-left: 10px;
@@ -68,16 +67,11 @@ const YearHead = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme }) => theme.col.gray};
 `;
-const YearGroup = styled("div")<{ summary?: boolean }>`
+const YearGroup = styled("div")`
   padding: 7px;
   box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.2);
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
-  ${({ summary }) =>
-    summary &&
-    css`
-      overflow-y: auto;
-    `};
 `;
 const QuarterGroup = styled("div")`
   padding-top: 7px;
@@ -111,14 +105,14 @@ export const Timeline = ({ className, data, detailLevel }: Props) => {
   const bucketedEntityDataByYearAndQuarter = useTimeBucketedDataDesc(data);
 
   return (
-    <Root className={className} summary={detailLevel === "summary"}>
+    <Root className={className}>
       {bucketedEntityDataByYearAndQuarter.map(({ year, quarterwiseData }) => {
         const totalEvents = quarterwiseData.reduce(
           (all, data) => all + data.events.length,
           0,
         );
         return (
-          <YearGroup key={year} summary={detailLevel === "summary"}>
+          <YearGroup key={year}>
             <YearHead>
               <SxHeading4>{year}</SxHeading4> – {totalEvents}{" "}
               {t("history.events", { count: totalEvents })}
@@ -137,10 +131,7 @@ export const Timeline = ({ className, data, detailLevel }: Props) => {
                         {events
                           .slice(
                             0,
-                            detailLevel === "detail" ||
-                              detailLevel === "summary"
-                              ? 3
-                              : events.length,
+                            detailLevel === "detail" ? 3 : events.length,
                           )
                           .map((row, index) => {
                             return (

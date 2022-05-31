@@ -167,7 +167,10 @@ export const Navigation = ({
       </HeadInfo>
       <EntityIdNav>
         <TopActions>
-          <SxWithTooltip text={`${t("history.prevButtonLabel")} (shift + ⬆)`}>
+          <SxWithTooltip
+            text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
+            lazy
+          >
             <SxIconButton icon="arrow-up" onClick={goToPrev} />
           </SxWithTooltip>
         </TopActions>
@@ -179,13 +182,17 @@ export const Navigation = ({
           />
         </Middle>
         <BottomActions>
-          <SxWithTooltip text={`${t("history.nextButtonLabel")} (shift + ⬇)`}>
+          <SxWithTooltip
+            text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
+            lazy
+          >
             <SxIconButton icon="arrow-down" onClick={goToNext} />
           </SxWithTooltip>
         </BottomActions>
         <BottomActions>
           <SxWithTooltip text={t("history.downloadButtonLabel")}>
             <SxIconButton
+              style={{ backgroundColor: "white" }}
               frame
               icon="download"
               onClick={() => {
@@ -205,7 +212,9 @@ export const Navigation = ({
 
                 downloadBlob(blob, "list.csv");
               }}
-            />
+            >
+              CSV
+            </SxIconButton>
           </SxWithTooltip>
         </BottomActions>
       </EntityIdNav>
