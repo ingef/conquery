@@ -109,9 +109,7 @@ export function useInitHistorySession() {
       );
 
       // Assuming the first resultURL is a CSV url
-      const csvUrl = firstEntityResult.resultUrls.find((url) =>
-        url.endsWith("csv"),
-      );
+      const csvUrl = firstEntityResult.find((url) => url.endsWith("csv"));
 
       if (!csvUrl) {
         throw new Error("No CSV URL found");
