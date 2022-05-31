@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
@@ -18,14 +21,17 @@ import lombok.Data;
 @Builder
 public class FEFilter {
 
+	@NotNull
 	private FilterId id;
 	/**
 	 * User readable name of the Filter.
 	 */
+	@NotEmpty
 	private String label;
 	/**
 	 * Kind of filter: Communicates to the frontend which UI element to use and what values are valid.
 	 */
+	@NotEmpty
 	private String type;
 	/**
 	 * Used as display unit for enumerations etc in UI elements.
@@ -67,5 +73,5 @@ public class FEFilter {
 	/**
 	 * When {@link com.bakdata.conquery.models.datasets.concepts.filters.GroupFilter} is used, the sub-fields of this filter.
 	 */
-	private Map<String, FEFilter> filters;
+	private Map<String, @Valid FEFilter> filters;
 }
