@@ -299,6 +299,17 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	}
 
 	/**
+	 * Execution processing error with individual context.
+	 */
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_PROCESSING_CONTEXT")
+	public static class ExecutionProcessingContextError extends ContextError {
+
+		public ExecutionProcessingContextError(String messageTemplate, Map<String, String> context, ConqueryError cause) {
+			super(messageTemplate, context, cause);
+		}
+	}
+
+	/**
 	 * Unspecified execution processing error.
 	 */
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_PROCESSING")

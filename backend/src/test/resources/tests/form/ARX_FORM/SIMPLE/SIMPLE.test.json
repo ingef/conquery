@@ -1,0 +1,22 @@
+{
+    "type": "FORM_TEST",
+    "label": "ARX-FORM SIMPLE",
+    "expectedCsv": {
+        "results": "tests/form/ARX_FORM/SIMPLE/expected.csv"
+    },
+    "form": {
+        "type": "ARX_FORM",
+        "queryGroup": "00000000-0000-0000-0000-000000000001"
+    },
+    "concepts": [
+        "/tests/form/shared/alter.concept.json"
+    ],
+    "content": {
+        "tables": [
+            "/tests/form/shared/vers_stamm.table.json"
+        ],
+        "previousQueryResults": [
+            "tests/form/ARX_FORM/SIMPLE/query_results_1.csv"
+        ]
+    }
+}
