@@ -13,6 +13,7 @@ import IconButton from "./IconButton";
 
 const SxIconButton = styled(IconButton)`
   white-space: nowrap;
+  padding: 5px 6px;
 `;
 
 interface PropsT {
