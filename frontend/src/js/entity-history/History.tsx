@@ -8,6 +8,7 @@ import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 
 import { DetailControl, DetailLevel } from "./DetailControl";
+import { DownloadEntityDataButton } from "./DownloadEntityDataButton";
 import { EntityHeader } from "./EntityHeader";
 import { Navigation } from "./Navigation";
 import { Timeline } from "./Timeline";
@@ -25,7 +26,7 @@ const FullScreen = styled("div")`
 
 const SxNavigation = styled(Navigation)`
   height: 100%;
-  padding: 55px 20px 15px;
+  padding: 55px 0 10px;
 `;
 
 const SxEntityHeader = styled(EntityHeader)`
@@ -34,9 +35,15 @@ const SxEntityHeader = styled(EntityHeader)`
 const SxTimeline = styled(Timeline)`
   grid-area: timeline;
 `;
-const SxDetailControl = styled(DetailControl)`
+const SxDetailControl = styled(DetailControl)``;
+
+const Controls = styled("div")`
   grid-area: control;
   justify-self: end;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0 20px;
 `;
 
@@ -47,7 +54,7 @@ const Main = styled("div")`
   gap: 10px 0;
   grid-template-areas: "header control" "timeline timeline";
   grid-template-rows: auto 1fr;
-  padding: 55px 0 15px;
+  padding: 55px 0 10px;
 `;
 
 export const History = () => {
@@ -112,10 +119,13 @@ export const History = () => {
               setEntityIdsStatus={setEntityIdsStatus}
             />
           )}
-          <SxDetailControl
-            detailLevel={detailLevel}
-            setDetailLevel={setDetailLevel}
-          />
+          <Controls>
+            <SxDetailControl
+              detailLevel={detailLevel}
+              setDetailLevel={setDetailLevel}
+            />
+            <DownloadEntityDataButton />
+          </Controls>
           <ErrorBoundary
             fallbackRender={() => {
               return <div>Something went wrong here.</div>;

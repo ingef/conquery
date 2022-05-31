@@ -331,6 +331,7 @@ export interface ColumnDescription {
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields
 export interface GetQueryResponseDoneT {
   status: "DONE" | "NEW"; // NEW might mean canceled (query not (yet) executed)
+  label: string;
   numberOfResults: number | null;
   resultUrls: string[];
   columnDescriptions: ColumnDescription[] | null;

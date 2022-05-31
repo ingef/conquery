@@ -444,12 +444,14 @@
   },
   "history": {
     "history": "Historie",
+    "marked": "Markiert",
     "selectStatusPlaceholder": "Status ...",
     "events_one": "Ereignis",
     "events_other": "Ereignisse",
     "downloadButtonLabel": "Liste herunterladen",
-    "nextButtonLabel": "Weiter",
-    "prevButtonLabel": "Zurück",
+    "nextButtonLabel": "Weiterblättern",
+    "prevButtonLabel": "Zurückblättern",
+    "downloadEntityData": "CSV",
     "detail": {
       "summary": "Zusammenfassung",
       "detail": "Details",

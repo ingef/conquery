@@ -74,12 +74,13 @@ export const EntityHeader = ({
       <SxInputMultiSelect
         creatable
         placeholder={t("history.selectStatusPlaceholder")}
-        onChange={(values) =>
+        onChange={(values) => {
+          console.log("onChange", values);
           setEntityIdsStatus((curr) => ({
             ...curr,
             [currentEntityId]: values,
-          }))
-        }
+          }));
+        }}
         value={
           entityIdsStatus[currentEntityId]
             ?.map((val) =>

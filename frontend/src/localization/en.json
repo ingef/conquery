@@ -445,12 +445,14 @@
   },
   "history": {
     "history": "History",
+    "marked": "Marked",
     "selectStatusPlaceholder": "Status ...",
     "events_one": "Event",
     "events_other": "Events",
     "downloadButtonLabel": "Download list",
     "nextButtonLabel": "Next entity",
     "prevButtonLabel": "Previous entity",
+    "downloadEntityData": "CSV",
     "detail": {
       "summary": "Summary",
       "detail": "Details",

@@ -17,11 +17,18 @@ const SxIconButton = styled(IconButton)`
 
 interface PropsT {
   columns: ColumnDescription[];
+  label: string;
   url: string;
   className?: string;
 }
 
-const HistoryButton = ({ url, columns, className, ...restProps }: PropsT) => {
+const HistoryButton = ({
+  url,
+  label,
+  columns,
+  className,
+  ...restProps
+}: PropsT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const isLoading = useSelector<StateT, boolean>(
@@ -36,7 +43,7 @@ const HistoryButton = ({ url, columns, className, ...restProps }: PropsT) => {
       <SxIconButton
         icon={isLoading ? "spinner" : "id-badge"}
         onClick={async () => {
-          await newHistorySession(getAuthorizedUrl(url), columns);
+          await newHistorySession(getAuthorizedUrl(url), columns, label);
           dispatch(openHistory());
         }}
         {...restProps}

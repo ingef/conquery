@@ -57,9 +57,12 @@ export const loadHistoryData = createAsyncAction(
 )<
   void,
   {
-    entityIds?: string[];
+    currentEntityCsvUrl: string;
     currentEntityData: EntityEvent[];
     currentEntityId: string;
+    entityIds?: string[];
+    label?: string;
+    columns?: ColumnDescription[];
   },
   ErrorObject
 >();
@@ -73,28 +76,20 @@ export function useNewHistorySession() {
   const loadPreviewData = useLoadPreviewData();
   const updateHistorySession = useUpdateHistorySession();
 
-  let csv = useSelector<StateT, string[][] | null>(
-    (state) => state.preview.data.csv,
-  );
-
-  return async (url: string, columns: ColumnDescription[]) => {
+  return async (url: string, columns: ColumnDescription[], label: string) => {
     dispatch(loadHistoryData.request());
 
-    if (!csv) {
-      const result = await loadPreviewData(url, columns, { noLoading: true });
+    const result = await loadPreviewData(url, columns, { noLoading: true });
 
-      if (!result) {
-        dispatch(
-          loadHistoryData.failure(new Error("Could not load preview data")),
-        );
-        return;
-      }
-
-      csv = result.csv;
+    if (!result) {
+      dispatch(
+        loadHistoryData.failure(new Error("Could not load preview data")),
+      );
+      return;
     }
 
     // hard-coded column index to use for entity ids (should be "PID")
-    const entityIdsColumn = csv.map((row) => row[2]);
+    const entityIdsColumn = result.csv.map((row) => row[2]);
     const entityIds = entityIdsColumn.slice(1); // remove header;
 
     if (entityIds.length === 0) {
@@ -102,7 +97,13 @@ export function useNewHistorySession() {
       return;
     }
 
-    updateHistorySession({ entityId: entityIds[0], entityIds });
+    updateHistorySession({
+      entityId: entityIds[0],
+      entityIds,
+      years: [],
+      columns,
+      label,
+    });
   };
 }
 
@@ -119,11 +120,14 @@ export function useUpdateHistorySession() {
   return async ({
     entityId,
     entityIds,
-    years,
+    columns,
+    label,
   }: {
     entityId: string;
     entityIds?: string[];
-    years: number[];
+    columns?: ColumnDescription[];
+    years?: number[];
+    label?: string;
   }) => {
     if (!datasetId) return;
 
@@ -148,41 +152,16 @@ export function useUpdateHistorySession() {
         csv.data.map((r) => r.join(";")).join("\n"),
       );
 
-      const currentEntityDataProcessed = currentEntityData
-        .map((row) => {
-          const { first, last } = getFirstAndLastDateOfRange(
-            row["Datumswerte"],
-          );
-
-          return first && last
-            ? {
-                dates: {
-                  from: first,
-                  to: last,
-                },
-                ...row,
-              }
-            : row;
-        })
-        .sort((a, b) => {
-          return a.dates.from - b.dates.from > 0 ? -1 : 1;
-        })
-        .map((row) => {
-          const { dates, ...rest } = row;
-          return {
-            dates: {
-              from: formatStdDate(row.dates?.from),
-              to: formatStdDate(row.dates?.to),
-            },
-            ...rest,
-          };
-        });
+      const currentEntityDataProcessed = transformEntityData(currentEntityData);
 
       dispatch(
         loadHistoryData.success({
+          currentEntityCsvUrl: csvUrl,
           currentEntityData: currentEntityDataProcessed,
           currentEntityId: entityId,
           ...(entityIds ? { entityIds } : {}),
+          ...(columns ? { columns } : {}),
+          ...(label ? { label } : {}),
         }),
       );
     } catch (e) {
@@ -190,3 +169,33 @@ export function useUpdateHistorySession() {
     }
   };
 }
+
+const transformEntityData = (data: { [key: string]: any }[]) => {
+  return data
+    .map((row) => {
+      const { first, last } = getFirstAndLastDateOfRange(row["Datumswerte"]);
+
+      return first && last
+        ? {
+            dates: {
+              from: first,
+              to: last,
+            },
+            ...row,
+          }
+        : row;
+    })
+    .sort((a, b) => {
+      return a.dates.from - b.dates.from > 0 ? -1 : 1;
+    })
+    .map((row) => {
+      const { dates, ...rest } = row;
+      return {
+        dates: {
+          from: formatStdDate(row.dates?.from),
+          to: formatStdDate(row.dates?.to),
+        },
+        ...rest,
+      };
+    });
+};

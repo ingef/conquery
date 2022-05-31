@@ -1,6 +1,6 @@
 import { getType } from "typesafe-actions";
 
-import type { TableT } from "../api/types";
+import type { ColumnDescription, TableT } from "../api/types";
 import type { Action } from "../app/actions";
 
 import {
@@ -19,20 +19,26 @@ export type EntityHistoryStateT = {
   };
   isLoading: boolean;
   isOpen: boolean;
+  columns: ColumnDescription[];
+  label: string;
   entityIds: string[];
   currentEntityId: string | null;
   currentEntityData: EntityEvent[];
+  currentEntityCsvUrl: string;
 };
 
 const initialState: EntityHistoryStateT = {
   defaultParams: {
     sources: [],
   },
+  label: "",
+  columns: [],
   isLoading: false,
   isOpen: false,
   entityIds: [],
   currentEntityId: null,
   currentEntityData: [],
+  currentEntityCsvUrl: "",
 };
 
 export default function reducer(

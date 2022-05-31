@@ -12,8 +12,7 @@ import type { EntityHistoryStateT, EntityEvent } from "./reducer";
 const Root = styled("div")`
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding-left: 10px;
-  padding-right: 20px;
+  padding: 5px 20px 5px 10px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -70,7 +69,7 @@ const YearHead = styled("div")`
 `;
 const YearGroup = styled("div")`
   padding: 7px;
-  box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.2);
+  box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.2);
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
@@ -98,9 +97,9 @@ const SxWithTooltip = styled(WithTooltip)`
 
 const Box = styled("div")`
   display: inline-block;
-  width: 5px;
-  height: 5px;
-  margin-left: 2px;
+  width: 3px;
+  height: 8px;
+  margin-left: 1px;
   background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
 `;
 
@@ -139,7 +138,7 @@ export const Timeline = ({ className, data, detailLevel }: Props) => {
                     {detailLevel === "summary" && (
                       <span style={{ lineHeight: 1 }}>
                         {new Array(events.length).fill(0).map((_, i) => (
-                          <Box />
+                          <Box key={i} />
                         ))}
                       </span>
                     )}

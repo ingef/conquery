@@ -8,47 +8,49 @@ import { useDispatch } from "react-redux";
 import { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
 import { downloadBlob } from "../common/helpers/downloadBlob";
-import { Heading3 } from "../headings/Headings";
 import WithTooltip from "../tooltip/WithTooltip";
 
+import { NavigationHeader } from "./NavigationHeader";
 import { closeHistory, useUpdateHistorySession } from "./actions";
 
 const Root = styled("div")`
   display: grid;
   gap: 10px;
   overflow: hidden;
+  background-color: ${({ theme }) => theme.col.bg};
 `;
 
 const EntityIdNav = styled("div")`
-  gap: 10px;
   display: grid;
   grid-template-rows: auto 12fr auto auto;
   overflow: hidden;
+  padding: 0 10px 0 20px;
 `;
 const TopActions = styled("div")`
   display: flex;
 `;
 
-const HeadInfo = styled("div")`
-  gap: 5px;
+const SxNavigationHeader = styled(NavigationHeader)`
+  padding: 0 10px 0 20px;
 `;
+
 const Middle = styled("div")`
   height: 100%;
   overflow-y: auto;
   border-radius: ${({ theme }) => theme.borderRadius};
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid ${({ theme }) => theme.col.grayLight};
+  padding: 3px;
 `;
 const BottomActions = styled("div")`
   display: flex;
 `;
 
-const SxIconButton = styled(IconButton)`
-  width: 100%;
+const BackButton = styled(IconButton)`
+  margin: 0 10px 0 20px;
 `;
 
-const SxHeading3 = styled(Heading3)`
-  flex-shrink: 0;
-  margin: 0;
+const SxIconButton = styled(IconButton)`
+  width: 100%;
 `;
 
 const SxWithTooltip = styled(WithTooltip)`
@@ -162,14 +164,20 @@ export const Navigation = ({
     );
   };
 
+  const markedCount = useMemo(
+    () => Object.values(entityIdsStatus).filter((v) => v.length > 0).length,
+    [entityIdsStatus],
+  );
+
   return (
     <Root className={className}>
-      <SxIconButton frame icon="chevron-left" onClick={onCloseHistory}>
+      <BackButton frame icon="chevron-left" onClick={onCloseHistory}>
         {t("common.back")}
-      </SxIconButton>
-      <HeadInfo>
-        <SxHeading3>{entityIds.length} ids</SxHeading3>
-      </HeadInfo>
+      </BackButton>
+      <SxNavigationHeader
+        markedCount={markedCount}
+        idsCount={entityIds.length}
+      />
       <EntityIdNav>
         <TopActions>
           <SxWithTooltip
@@ -194,7 +202,7 @@ export const Navigation = ({
             <SxIconButton icon="arrow-down" onClick={goToNext} />
           </SxWithTooltip>
         </BottomActions>
-        <BottomActions>
+        <BottomActions style={{ marginTop: "10px" }}>
           <SxWithTooltip text={t("history.downloadButtonLabel")}>
             <SxIconButton
               style={{ backgroundColor: "white" }}

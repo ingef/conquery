@@ -1,20 +1,13 @@
 import styled from "@emotion/styled";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
-import { Dispatch, SetStateAction, useMemo } from "react";
+import { Dispatch, ReactNode, SetStateAction, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
+import FaIcon from "../icon/FaIcon";
+import SmallTabNavigation from "../small-tab-navigation/SmallTabNavigation";
 
 const Root = styled("div")`
   display: flex;
   align-items: center;
-`;
-const SxIconButton = styled(IconButton)`
-  display: grid;
-  gap: 10px;
-  grid-template-columns: 1fr;
-  padding: 2px 4px;
 `;
 
 export type DetailLevel = "summary" | "detail" | "full";
@@ -28,21 +21,31 @@ interface Props {
 const useButtonConfig = () => {
   const { t } = useTranslation();
   return useMemo(
-    () => [
+    (): {
+      label: ({ selected }: { selected?: boolean }) => ReactNode;
+      value: string;
+      tooltip: string;
+    }[] => [
       {
-        icon: "circle",
-        key: "summary",
-        text: t("history.detail.summary"),
+        label: ({ selected }) => (
+          <FaIcon active={selected} gray={!selected} icon="circle" />
+        ),
+        value: "summary",
+        tooltip: t("history.detail.summary"),
       },
       {
-        icon: "circle-dot",
-        key: "detail",
-        text: t("history.detail.detail"),
+        label: ({ selected }) => (
+          <FaIcon active={selected} gray={!selected} icon="circle-dot" />
+        ),
+        value: "detail",
+        tooltip: t("history.detail.detail"),
       },
       {
-        icon: "bullseye",
-        key: "full",
-        text: t("history.detail.full"),
+        label: ({ selected }) => (
+          <FaIcon active={selected} gray={!selected} icon="bullseye" />
+        ),
+        value: "full",
+        tooltip: t("history.detail.full"),
       },
     ],
     [t],
@@ -54,22 +57,15 @@ export const DetailControl = ({
   detailLevel,
   setDetailLevel,
 }: Props) => {
-  const buttonConfig = useButtonConfig();
+  const navOptions = useButtonConfig();
   return (
     <Root className={className}>
-      {buttonConfig.map(({ icon, key, text }) => {
-        const active = key === detailLevel;
-
-        return (
-          <WithTooltip text={text}>
-            <SxIconButton
-              active={active}
-              icon={icon as IconName}
-              onClick={() => setDetailLevel(key as DetailLevel)}
-            />
-          </WithTooltip>
-        );
-      })}
+      <SmallTabNavigation
+        size="L"
+        options={navOptions}
+        selectedTab={detailLevel}
+        onSelectTab={(tab) => setDetailLevel(tab as DetailLevel)}
+      />
     </Root>
   );
 };
