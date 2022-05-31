@@ -56,13 +56,13 @@ public class ResultCsvResource {
 	public <E extends ManagedExecution<?> & SingleTableResult> Response getAsCsv(
 			@Auth Subject subject,
 			@PathParam(DATASET) Dataset dataset,
-			@PathParam(QUERY) E execution,
+			@PathParam(QUERY) ManagedExecution<?> execution,
 			@HeaderParam("subject-agent") String userAgent,
 			@QueryParam("charset") String queryCharset,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset.getId(), subject.getId(), subject.getName());
 
-		return processor.createResult(subject, execution, dataset, pretty.orElse(Boolean.TRUE), determineCharset(userAgent, queryCharset));
+		return processor.createResult(subject, (E) execution, dataset, pretty.orElse(Boolean.TRUE), determineCharset(userAgent, queryCharset));
 	}
 }
