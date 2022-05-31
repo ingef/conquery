@@ -69,6 +69,7 @@ export const loadHistoryData = createAsyncAction(
 // - from a dropped file with a list of entities
 // - from a previous query
 export function useNewHistorySession() {
+  const dispatch = useDispatch();
   const loadPreviewData = useLoadPreviewData();
   const updateHistorySession = useUpdateHistorySession();
 
@@ -77,10 +78,15 @@ export function useNewHistorySession() {
   );
 
   return async (url: string, columns: ColumnDescription[]) => {
+    dispatch(loadHistoryData.request());
+
     if (!csv) {
-      const result = await loadPreviewData(url, columns);
+      const result = await loadPreviewData(url, columns, { noLoading: true });
 
       if (!result) {
+        dispatch(
+          loadHistoryData.failure(new Error("Could not load preview data")),
+        );
         return;
       }
 
@@ -92,6 +98,7 @@ export function useNewHistorySession() {
     const entityIds = entityIdsColumn.slice(1); // remove header;
 
     if (entityIds.length === 0) {
+      dispatch(loadHistoryData.failure(new Error("No entity IDs found")));
       return;
     }
 
@@ -112,9 +119,11 @@ export function useUpdateHistorySession() {
   return async ({
     entityId,
     entityIds,
+    years,
   }: {
     entityId: string;
     entityIds?: string[];
+    years: number[];
   }) => {
     if (!datasetId) return;
 

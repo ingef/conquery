@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useTranslation } from "react-i18next";
 import ReactList from "react-list";
 
 import { SelectOptionT } from "../api/types";
@@ -33,7 +34,7 @@ const HeadInfo = styled("div")`
 const Middle = styled("div")`
   height: 100%;
   overflow-y: auto;
-  border-radius: 10px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 `;
 const BottomActions = styled("div")`
@@ -64,6 +65,7 @@ const Row = styled("div")<{ active?: boolean }>`
     active ? theme.col.blueGrayVeryLight : "white"};
   height: 24px;
   cursor: pointer;
+  gap: 3px;
 
   &:hover {
     background-color: ${({ active, theme }) =>
@@ -92,6 +94,7 @@ const EntityId = styled("div")<{ active?: boolean }>`
 const Number = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme }) => theme.col.gray};
+  flex-shrink: 0;
 `;
 
 interface Props {
@@ -127,10 +130,11 @@ export const Navigation = ({
   useHotkeys("shift+up", goToPrev, [goToPrev]);
   useHotkeys("shift+down", goToNext, [goToNext]);
 
-  const magnitude = useMemo(
-    () => Math.ceil(Math.log(entityIds.length) / Math.log(10)),
-    [entityIds.length],
-  );
+  const numberWidth = useMemo(() => {
+    const magnitude = Math.ceil(Math.log(entityIds.length) / Math.log(10));
+
+    return 15 + 6 * magnitude;
+  }, [entityIds.length]);
 
   const renderItem = (index: number) => {
     const entityId = entityIds[index];
@@ -142,7 +146,7 @@ export const Navigation = ({
         className="scrollable-list-item"
         onClick={() => updateHistorySession({ entityId })}
       >
-        <Number style={{ width: 20 + 8 * magnitude }}>#{index}</Number>
+        <Number style={{ width: numberWidth }}>#{index}</Number>
         <EntityId>{entityId}</EntityId>
         <Statuses>
           {entityIdsStatus[entityId] &&
@@ -154,6 +158,8 @@ export const Navigation = ({
     );
   };
 
+  const { t } = useTranslation();
+
   return (
     <Root>
       <HeadInfo>
@@ -161,8 +167,8 @@ export const Navigation = ({
       </HeadInfo>
       <EntityIdNav>
         <TopActions>
-          <SxWithTooltip text="Shift+Up">
-            <SxIconButton frame icon="arrow-up" onClick={goToPrev} />
+          <SxWithTooltip text={`${t("history.prevButtonLabel")} (shift + ⬆)`}>
+            <SxIconButton icon="arrow-up" onClick={goToPrev} />
           </SxWithTooltip>
         </TopActions>
         <Middle>
@@ -173,12 +179,12 @@ export const Navigation = ({
           />
         </Middle>
         <BottomActions>
-          <SxWithTooltip text="Shift+Down">
-            <SxIconButton frame icon="arrow-down" onClick={goToNext} />
+          <SxWithTooltip text={`${t("history.nextButtonLabel")} (shift + ⬇)`}>
+            <SxIconButton icon="arrow-down" onClick={goToNext} />
           </SxWithTooltip>
         </BottomActions>
         <BottomActions>
-          <SxWithTooltip text="Download list">
+          <SxWithTooltip text={t("history.downloadButtonLabel")}>
             <SxIconButton
               frame
               icon="download"

@@ -33,7 +33,7 @@ const HistoryButton = ({ url, columns, className, ...restProps }: PropsT) => {
   return (
     <WithTooltip text={t("history.history")} className={className}>
       <SxIconButton
-        icon={isLoading ? "spinner" : "book"}
+        icon={isLoading ? "spinner" : "id-badge"}
         onClick={async () => {
           await newHistorySession(getAuthorizedUrl(url), columns);
           dispatch(openHistory());

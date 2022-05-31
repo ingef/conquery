@@ -444,6 +444,17 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
-    "history": "History"
+    "history": "History",
+    "selectStatusPlaceholder": "Status ...",
+    "events_one": "Event",
+    "events_other": "Events",
+    "downloadButtonLabel": "Download list",
+    "nextButtonLabel": "Next entity",
+    "prevButtonLabel": "Previous entity",
+    "detail": {
+      "summary": "Summary",
+      "detail": "Details",
+      "full": "Full"
+    }
   }
 }

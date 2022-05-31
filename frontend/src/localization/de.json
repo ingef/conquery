@@ -443,6 +443,17 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
-    "history": "Historie"
+    "history": "Historie",
+    "selectStatusPlaceholder": "Status ...",
+    "events_one": "Ereignis",
+    "events_other": "Ereignisse",
+    "downloadButtonLabel": "Liste herunterladen",
+    "nextButtonLabel": "Weiter",
+    "prevButtonLabel": "Zurück",
+    "detail": {
+      "summary": "Zusammenfassung",
+      "detail": "Details",
+      "full": "Alle Ereignisse"
+    }
   }
 }
