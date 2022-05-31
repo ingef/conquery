@@ -13,6 +13,7 @@ const Root = styled("div")`
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding-left: 10px;
+  padding-right: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -82,6 +83,8 @@ const QuarterHead = styled("p")`
   font-weight: 700;
   font-size: ${({ theme }) => theme.font.xs};
   color: black;
+  display: grid;
+  grid-template-columns: 120px 1fr;
 `;
 
 const SxHeading4 = styled(Heading4)`
@@ -91,6 +94,14 @@ const SxHeading4 = styled(Heading4)`
 const SxWithTooltip = styled(WithTooltip)`
   color: black;
   flex-shrink: 0;
+`;
+
+const Box = styled("div")`
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 2px;
+  background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
 `;
 
 interface Props {
@@ -121,8 +132,17 @@ export const Timeline = ({ className, data, detailLevel }: Props) => {
               return (
                 <QuarterGroup key={quarter}>
                   <QuarterHead>
-                    Q{quarter} – {events.length}{" "}
-                    {t("history.events", { count: events.length })}
+                    <span>
+                      Q{quarter} – {events.length}{" "}
+                      {t("history.events", { count: events.length })}
+                    </span>
+                    {detailLevel === "summary" && (
+                      <span style={{ lineHeight: 1 }}>
+                        {new Array(events.length).fill(0).map((_, i) => (
+                          <Box />
+                        ))}
+                      </span>
+                    )}
                   </QuarterHead>
                   {detailLevel !== "summary" && (
                     <EventTimeline>

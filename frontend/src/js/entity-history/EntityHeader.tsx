@@ -64,7 +64,7 @@ export const EntityHeader = ({
     <HeadInfo className={className}>
       <div>
         <EntityBadge>
-          <Avatar>#{currentEntityIndex}</Avatar>
+          <Avatar>#{currentEntityIndex + 1}</Avatar>
           <SxHeading3>{currentEntityId}</SxHeading3>
         </EntityBadge>
         <Subtitle>

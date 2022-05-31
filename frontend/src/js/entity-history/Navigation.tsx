@@ -3,6 +3,7 @@ import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import ReactList from "react-list";
+import { useDispatch } from "react-redux";
 
 import { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
@@ -10,7 +11,7 @@ import { downloadBlob } from "../common/helpers/downloadBlob";
 import { Heading3 } from "../headings/Headings";
 import WithTooltip from "../tooltip/WithTooltip";
 
-import { useUpdateHistorySession } from "./actions";
+import { closeHistory, useUpdateHistorySession } from "./actions";
 
 const Root = styled("div")`
   display: grid;
@@ -98,34 +99,37 @@ const Number = styled("div")`
 `;
 
 interface Props {
+  className?: string;
   entityIds: string[];
   entityIdsStatus: { [entityId: string]: SelectOptionT[] };
   currentEntityId: string | null;
+  currentEntityIndex: number;
 }
 
 export const Navigation = ({
+  className,
   entityIds,
   entityIdsStatus,
   currentEntityId,
+  currentEntityIndex,
 }: Props) => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
   const updateHistorySession = useUpdateHistorySession();
+  const onCloseHistory = useCallback(() => {
+    dispatch(closeHistory());
+  }, [dispatch]);
 
   const goToPrev = useCallback(() => {
-    const prevEntityIdx = currentEntityId
-      ? Math.max(0, entityIds.indexOf(currentEntityId) - 1)
-      : 0;
-    updateHistorySession({
-      entityId: entityIds[prevEntityIdx],
-    });
-  }, [currentEntityId, entityIds]);
+    const prevIdx = Math.max(0, currentEntityIndex - 1);
+
+    updateHistorySession({ entityId: entityIds[prevIdx], years: [] });
+  }, [entityIds, currentEntityIndex]);
   const goToNext = useCallback(() => {
-    const nextEntityIdx = currentEntityId
-      ? Math.min(entityIds.length - 1, entityIds.indexOf(currentEntityId) + 1)
-      : 0;
-    updateHistorySession({
-      entityId: entityIds[nextEntityIdx],
-    });
-  }, [currentEntityId, entityIds]);
+    const nextIdx = Math.min(entityIds.length - 1, currentEntityIndex + 1);
+
+    updateHistorySession({ entityId: entityIds[nextIdx], years: [] });
+  }, [entityIds, currentEntityIndex]);
 
   useHotkeys("shift+up", goToPrev, [goToPrev]);
   useHotkeys("shift+down", goToNext, [goToNext]);
@@ -144,9 +148,9 @@ export const Navigation = ({
         key={entityId}
         active={entityId === currentEntityId}
         className="scrollable-list-item"
-        onClick={() => updateHistorySession({ entityId })}
+        onClick={() => updateHistorySession({ entityId, years: [] })}
       >
-        <Number style={{ width: numberWidth }}>#{index}</Number>
+        <Number style={{ width: numberWidth }}>#{index + 1}</Number>
         <EntityId>{entityId}</EntityId>
         <Statuses>
           {entityIdsStatus[entityId] &&
@@ -158,10 +162,11 @@ export const Navigation = ({
     );
   };
 
-  const { t } = useTranslation();
-
   return (
-    <Root>
+    <Root className={className}>
+      <SxIconButton frame icon="chevron-left" onClick={onCloseHistory}>
+        {t("common.back")}
+      </SxIconButton>
       <HeadInfo>
         <SxHeading3>{entityIds.length} ids</SxHeading3>
       </HeadInfo>
