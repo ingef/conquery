@@ -24,7 +24,7 @@ const HistoryButton = ({ url, columns, className, ...restProps }: PropsT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const isLoading = useSelector<StateT, boolean>(
-    (state) => state.preview.isLoading,
+    (state) => state.entityHistory.isLoading,
   );
 
   const getAuthorizedUrl = useGetAuthorizedUrl();

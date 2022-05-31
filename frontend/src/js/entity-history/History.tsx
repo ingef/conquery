@@ -1,19 +1,16 @@
 import styled from "@emotion/styled";
-import { Fragment, useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useHotkeys } from "react-hotkeys-hook";
-import ReactList from "react-list";
 import { useSelector } from "react-redux";
 
 import { SelectOptionT } from "../api/types";
 import { StateT } from "../app/reducers";
-import IconButton from "../button/IconButton";
-import { exists } from "../common/helpers/exists";
-import { Heading3, Heading4 } from "../headings/Headings";
+import { Heading4 } from "../headings/Headings";
 import WithTooltip from "../tooltip/WithTooltip";
-import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
-import { useUpdateHistorySession } from "./actions";
+import { EntityHeader } from "./EntityHeader";
+import { Navigation } from "./Navigation";
+import { RowDates } from "./RowDates";
 import { EntityEvent, EntityHistoryStateT } from "./reducer";
 
 const FullScreen = styled("div")`
@@ -22,52 +19,24 @@ const FullScreen = styled("div")`
   position: fixed;
   top: 0;
   left: 0;
-  background-color: white;
+  background-color: ${({ theme }) => theme.col.bgAlt};
   padding: 60px 20px 20px;
   z-index: 2;
   display: grid;
-  gap: 10px;
   grid-template-columns: 200px 1fr;
-`;
-const Navigation = styled("div")`
-  display: grid;
-  gap: 10px;
-  overflow: hidden;
-`;
-
-const EntityIdNav = styled("div")`
-  gap: 10px;
-  display: grid;
-  grid-template-rows: 1fr 12fr 1fr 1fr;
-  overflow: hidden;
 `;
 
 const Main = styled("div")`
   overflow: hidden;
   display: grid;
-  gap: 5px;
-`;
-const TopActions = styled("div")`
-  display: flex;
-`;
-const Middle = styled("div")`
-  height: 100%;
-  overflow-y: auto;
-`;
-const BottomActions = styled("div")`
-  display: flex;
+  gap: 10px;
 `;
 
 const EventTimeline = styled("div")`
-  display: flex;
-  align-items: center;
-  height: 100%;
-  overflow: hidden;
+  display: grid;
+  grid-template-columns: auto 1fr;
 `;
 const EventItemList = styled("div")`
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  height: 100%;
   width: 100%;
   margin-left: -10px;
 `;
@@ -81,8 +50,6 @@ const EventItem = styled("div")`
   position: relative;
 `;
 
-const EntityId = styled("div")<{ active?: boolean }>``;
-
 const Bullet = styled("div")`
   width: 8px;
   height: 8px;
@@ -92,10 +59,10 @@ const Bullet = styled("div")`
 `;
 
 const VerticalLine = styled("div")`
-  height: 100%;
+  height: calc(100% - 20px);
   width: 2px;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
-  margin: 0 5px;
+  margin: 10px 5px;
 `;
 
 const Badge = styled("div")`
@@ -103,27 +70,10 @@ const Badge = styled("div")`
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   padding: 1px 4px;
   font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.grayLight};
-  font-weight: 700;
-`;
-const Statuses = styled("div")`
-  display: flex;
-  align-items: center;
-  gap: 2px;
-`;
-const EntityStatus = styled("div")`
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 2px solid ${({ theme }) => theme.col.blueGrayDark};
-  background-color: white;
-  padding: 1px 4px;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.blueGrayDark};
+  color: white;
   font-weight: 700;
 `;
 
-const HeadInfo = styled("div")`
-  gap: 5px;
-`;
 const YearHead = styled("div")`
   display: flex;
   gap: 5px;
@@ -131,31 +81,28 @@ const YearHead = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
 `;
 
-const Row = styled("div")<{ active?: boolean }>`
-  font-weight: 700;
-  padding: 1px 3px;
-  font-size: ${({ theme }) => theme.font.xs};
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: ${({ active, theme }) =>
-    active ? theme.col.blueGrayVeryLight : "white"};
-  height: 24px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: ${({ active, theme }) =>
-      active ? theme.col.blueGrayVeryLight : theme.col.grayVeryLight};
-  }
+const Timeline = styled("div")`
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 10px;
+  display: grid;
+  gap: 10px;
 `;
-
-const SxIconButton = styled(IconButton)`
-  width: 100%;
+const YearGroup = styled("div")`
+  padding: 7px;
+  box-shadow: 1px 2px 3px 0px rgba(0, 0, 0, 0.2);
+  background-color: white;
+  border-radius: ${({ theme }) => theme.borderRadius};
 `;
-
-const SxHeading3 = styled(Heading3)`
-  flex-shrink: 0;
+const QuarterGroup = styled("div")`
+  padding: 7px 4px;
+  background-color: white;
+`;
+const QuarterHead = styled("p")`
   margin: 0;
+  font-weight: 700;
+  font-size: ${({ theme }) => theme.font.xs};
+  color: black;
 `;
 
 const SxHeading4 = styled(Heading4)`
@@ -168,10 +115,9 @@ const SxWithTooltip = styled(WithTooltip)`
 `;
 
 export const History = () => {
-  const updateHistorySession = useUpdateHistorySession();
   const [entityStatusOptions, setEntityStatusOptions] = useState<
     SelectOptionT[]
-  >([{ label: "Done", value: "Done" }]);
+  >([]);
   const [entityIdsStatus, setEntityIdsStatus] = useState<{
     [id: string]: SelectOptionT[];
   }>({});
@@ -188,218 +134,169 @@ export const History = () => {
     EntityHistoryStateT["currentEntityData"]
   >((state) => state.entityHistory.currentEntityData);
 
-  const bucketedEntityDataByYear = currentEntityData.reduce<{
-    [year: string]: EntityEvent[];
-  }>((all, row) => {
-    const year = row.dates.from.slice(0, 4);
-
-    if (!all[year]) {
-      all[year] = [];
-    }
-
-    all[year].push(row);
-
-    return all;
-  }, {});
+  const bucketedEntityDataByYearAndQuarter =
+    useTimeBucketedDataDesc(currentEntityData);
 
   useEffect(() => {
     setEntityStatusOptions(
       [
-        ...new Set([
-          "done",
-          ...Object.values(entityIdsStatus).flatMap((opts) =>
+        ...new Set(
+          Object.values(entityIdsStatus).flatMap((opts) =>
             opts.map((o) => o.value as string),
           ),
-        ]),
+        ),
       ].map((val) => ({ label: val, value: val })),
     );
   }, [entityIdsStatus]);
 
-  const renderItem = (index: number) => {
-    const entityId = entityIds[index];
-    return (
-      <Row
-        key={entityId}
-        active={entityId === currentEntityId}
-        className="scrollable-list-item"
-        onClick={() => updateHistorySession({ entityId })}
-      >
-        <EntityId>{entityId}</EntityId>
-        <Statuses>
-          {entityIdsStatus[entityId] &&
-            entityIdsStatus[entityId].map((val) => (
-              <EntityStatus key={val.value}>{val.label}</EntityStatus>
-            ))}
-        </Statuses>
-      </Row>
-    );
-  };
-
-  const goToPrev = useCallback(() => {
-    const prevEntityIdx = currentEntityId
-      ? Math.max(0, entityIds.indexOf(currentEntityId) - 1)
-      : 0;
-    updateHistorySession({
-      entityId: entityIds[prevEntityIdx],
-    });
-  }, [currentEntityId, entityIds]);
-  const goToNext = useCallback(() => {
-    const nextEntityIdx = currentEntityId
-      ? Math.min(entityIds.length - 1, entityIds.indexOf(currentEntityId) + 1)
-      : 0;
-    updateHistorySession({
-      entityId: entityIds[nextEntityIdx],
-    });
-  }, [currentEntityId, entityIds]);
-
-  useHotkeys("shift+up", goToPrev, [goToPrev]);
-  useHotkeys("shift+down", goToNext, [goToNext]);
-
   return (
     <FullScreen>
-      <Navigation>
-        <HeadInfo>
-          <SxHeading3>{entityIds.length} ids</SxHeading3>
-        </HeadInfo>
-        <EntityIdNav>
-          <TopActions>
-            <WithTooltip text="Shift+Up">
-              <SxIconButton frame icon="arrow-up" onClick={goToPrev} />
-            </WithTooltip>
-          </TopActions>
-          <Middle>
-            <ReactList
-              itemRenderer={renderItem}
-              length={entityIds.length}
-              type="uniform"
-            />
-          </Middle>
-          <BottomActions>
-            <SxWithTooltip text="Shift+Down">
-              <SxIconButton frame icon="arrow-down" onClick={goToNext} />
-            </SxWithTooltip>
-          </BottomActions>
-          <BottomActions>
-            <SxIconButton
-              frame
-              icon="download"
-              onClick={() => {
-                const blob = new Blob(
-                  [
-                    entityIds
-                      .map((id) =>
-                        [
-                          id,
-                          entityIdsStatus[id]
-                            ? entityIdsStatus[id].map((o) => o.value)
-                            : "",
-                        ].join(";"),
-                      )
-                      .join("\n"),
-                  ],
-                  {
-                    type: "application/csv",
-                  },
-                );
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = "list.csv";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-              }}
-            />
-          </BottomActions>
-        </EntityIdNav>
-      </Navigation>
+      <Navigation
+        entityIds={entityIds}
+        entityIdsStatus={entityIdsStatus}
+        currentEntityId={currentEntityId}
+      />
       <Main>
         {currentEntityId && (
-          <HeadInfo>
-            <SxHeading3>
-              {currentEntityId} – {currentEntityData.length} events
-            </SxHeading3>
-            <InputMultiSelect
-              creatable
-              onChange={(values) =>
-                setEntityIdsStatus((curr) => ({
-                  ...curr,
-                  [currentEntityId]: values,
-                }))
-              }
-              value={
-                entityIdsStatus[currentEntityId]
-                  ?.map((val) =>
-                    entityStatusOptions.find((o) => o.value === val.value),
-                  )
-                  .filter(exists) || []
-              }
-              options={entityStatusOptions}
-            />
-          </HeadInfo>
+          <EntityHeader
+            currentEntityId={currentEntityId}
+            totalEvents={currentEntityData.length}
+            entityIdsStatus={entityIdsStatus}
+            entityStatusOptions={entityStatusOptions}
+            setEntityIdsStatus={setEntityIdsStatus}
+          />
         )}
         <ErrorBoundary
           fallbackRender={() => {
             return <div>Something went wrong here.</div>;
           }}
         >
-          {Object.entries(bucketedEntityDataByYear)
-            .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
-            .map(([year, events]) => (
-              <Fragment key={year}>
-                <YearHead key={year}>
-                  <SxHeading4>{year}</SxHeading4> – {events.length} events
-                </YearHead>
-                <EventTimeline>
-                  <VerticalLine />
-                  <EventItemList>
-                    {events.map((row, index) => {
+          <Timeline>
+            {bucketedEntityDataByYearAndQuarter.map(
+              ({ year, quarterwiseData }) => {
+                const totalEvents = quarterwiseData.reduce(
+                  (all, data) => all + data.events.length,
+                  0,
+                );
+                return (
+                  <YearGroup key={year}>
+                    <YearHead>
+                      <SxHeading4>{year}</SxHeading4> – {totalEvents} events
+                    </YearHead>
+                    {quarterwiseData.map(({ quarter, events }) => {
                       return (
-                        <EventItem key={index}>
-                          <Bullet />
-                          <div style={{ flexShrink: 0 }}>{row.dates.from}</div>
-                          <div style={{ flexShrink: 0 }}>{row.dates.to}</div>
-                          <SxWithTooltip
-                            place="right"
-                            html={
-                              <pre
-                                style={{ textAlign: "left", fontSize: "12px" }}
-                              >
-                                {JSON.stringify(row, null, 2)}
-                              </pre>
-                            }
-                          >
-                            <Badge
-                              style={{ cursor: "pointer" }}
-                              onClick={() => {
-                                if (navigator.clipboard) {
-                                  navigator.clipboard.writeText(
-                                    JSON.stringify(row, null, 2),
-                                  );
-                                }
-                              }}
-                            >
-                              DATA
-                            </Badge>
-                          </SxWithTooltip>
-                          {Object.keys(row)
-                            .slice(4)
-                            .reverse()
-                            .map((key, index, array) => (
-                              <SxWithTooltip key={key} place="top" text={key}>
-                                {row[key]}
-                                {index !== array.length - 1 && " – "}
-                              </SxWithTooltip>
-                            ))}
-                        </EventItem>
+                        <QuarterGroup key={quarter}>
+                          <QuarterHead>
+                            Q{quarter} – {events.length} events
+                          </QuarterHead>
+                          <EventTimeline>
+                            <VerticalLine />
+                            <EventItemList>
+                              {events.map((row, index) => {
+                                return (
+                                  <EventItem key={index}>
+                                    <Bullet />
+                                    <RowDates dates={row.dates} />
+                                    <SxWithTooltip
+                                      place="right"
+                                      html={
+                                        <pre
+                                          style={{
+                                            textAlign: "left",
+                                            fontSize: "12px",
+                                          }}
+                                        >
+                                          {JSON.stringify(row, null, 2)}
+                                        </pre>
+                                      }
+                                    >
+                                      <Badge
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => {
+                                          if (navigator.clipboard) {
+                                            navigator.clipboard.writeText(
+                                              JSON.stringify(row, null, 2),
+                                            );
+                                          }
+                                        }}
+                                      >
+                                        DATA
+                                      </Badge>
+                                    </SxWithTooltip>
+                                    {Object.keys(row)
+                                      .slice(4)
+                                      .reverse()
+                                      .map((key, index, array) => (
+                                        <SxWithTooltip
+                                          key={key}
+                                          place="top"
+                                          text={key}
+                                        >
+                                          {`${row[key]}${
+                                            index !== array.length - 1
+                                              ? " – "
+                                              : ""
+                                          }`}
+                                        </SxWithTooltip>
+                                      ))}
+                                  </EventItem>
+                                );
+                              })}
+                            </EventItemList>
+                          </EventTimeline>
+                        </QuarterGroup>
                       );
                     })}
-                  </EventItemList>
-                </EventTimeline>
-              </Fragment>
-            ))}
+                  </YearGroup>
+                );
+              },
+            )}
+          </Timeline>
         </ErrorBoundary>
       </Main>
     </FullScreen>
   );
+};
+
+const useTimeBucketedDataDesc = (
+  data: EntityHistoryStateT["currentEntityData"],
+): {
+  year: number;
+  quarterwiseData: { quarter: string; events: EntityEvent[] }[];
+}[] => {
+  const bucketEntityEvents = (
+    entityData: EntityHistoryStateT["currentEntityData"],
+  ) => {
+    const result: { [year: string]: { [quarter: number]: EntityEvent[] } } = {};
+
+    for (const row of entityData) {
+      const [year, month] = row.dates.from.split("-");
+      const quarter = Math.floor((parseInt(month) - 1) / 3) + 1;
+
+      if (!result[year]) {
+        result[year] = { [quarter]: [] };
+      } else if (!result[year][quarter]) {
+        result[year][quarter] = [];
+      }
+
+      result[year][quarter].push(row);
+    }
+
+    return Object.entries(result)
+      .sort(([yearA], [yearB]) => {
+        return parseInt(yearB) - parseInt(yearA);
+      })
+      .map(([year, quarterwiseData]) => ({
+        year: parseInt(year),
+        quarterwiseData: Object.entries(quarterwiseData)
+          .sort(([quarterA], [quarterB]) => {
+            return parseInt(quarterB) - parseInt(quarterA);
+          })
+          .map(([quarter, events]) => ({ quarter, events })),
+      }));
+  };
+
+  return useMemo(() => {
+    return bucketEntityEvents(data);
+  }, [data]);
 };
