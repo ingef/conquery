@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.validation.Validator;
@@ -52,7 +53,6 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.NonNull;
@@ -75,6 +75,7 @@ public class AdminDatasetProcessor {
 	private final Validator validator;
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
+	private final Supplier<ObjectMapper> internalObjectMapperCreator;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 
 	/**
@@ -88,12 +89,9 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
+		final ObjectMapper objectMapper = internalObjectMapperCreator.get();
 
-		// Todo unify this with ManagerNode
-		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
-		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
-		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
-
+		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), validator, "dataset_" + name);
 		datasetStorage.openStores(objectMapper);
 		datasetStorage.loadData();

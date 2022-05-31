@@ -26,10 +26,8 @@ public class Jackson {
 
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
-		MAPPER.setConfig(MAPPER.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 
 		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
-		BINARY_MAPPER.setConfig(BINARY_MAPPER.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 	}
 
 	/**

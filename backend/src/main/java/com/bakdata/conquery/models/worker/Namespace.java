@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.AccessLevel;
@@ -44,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Namespace implements Closeable {
 
-	private final ObjectWriter objectWriter;
+	private final ObjectMapper objectMapper;
 	@ToString.Include
 	private final NamespaceStorage storage;
 
@@ -85,7 +84,7 @@ public class Namespace implements Closeable {
 		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getSearch());
 
 
-		final Namespace namespace = new Namespace(objectMapper.writer(), storage, executionManager, jobManager, filterSearch, injectables);
+		final Namespace namespace = new Namespace(objectMapper, storage, executionManager, jobManager, filterSearch, injectables);
 
 		datasetRegistry.add(namespace);
 
@@ -131,7 +130,7 @@ public class Namespace implements Closeable {
 	public synchronized void addWorker(WorkerInformation info) {
 		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
 
-		info.setObjectWriter(objectWriter);
+		info.setObjectWriter(objectMapper.writer());
 
 		workers.add(info);
 

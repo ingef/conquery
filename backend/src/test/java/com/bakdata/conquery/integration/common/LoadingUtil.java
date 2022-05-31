@@ -63,7 +63,7 @@ import org.assertj.core.description.LazyTextDescription;
 @UtilityClass
 public class LoadingUtil {
 
-	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException {
+	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException, JSONException {
 		// Load previous query results if available
 		int id = 1;
 		for (ResourceFile queryResults : content.getPreviousQueryResults()) {
@@ -85,9 +85,8 @@ public class LoadingUtil {
 		}
 
 		for (JsonNode queryNode : content.getPreviousQueries()) {
-			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectIntoNew(Jackson.MAPPER);
-			mapper = support.getDataset().injectIntoNew(mapper);
-			Query query = mapper.readerFor(Query.class).readValue(queryNode);
+
+			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class);
 			UUID queryId = new UUID(0L, id++);
 
 			ManagedExecution<?>

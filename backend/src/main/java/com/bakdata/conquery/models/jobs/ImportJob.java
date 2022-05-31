@@ -68,9 +68,7 @@ public class ImportJob extends Job {
 	public static ImportJob createOrUpdate(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, boolean update)
 			throws IOException {
 
-		final ObjectMapper om = Jackson.BINARY_MAPPER.copy();
-		om.setConfig(om.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
-		try (PreprocessedReader parser = new PreprocessedReader(inputStream, om)) {
+		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getObjectMapper())) {
 
 			final Dataset ds = namespace.getDataset();
 

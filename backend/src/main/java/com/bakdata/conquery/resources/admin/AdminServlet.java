@@ -87,7 +87,8 @@ public class AdminServlet {
 				manager.getConfig(),
 				manager.getValidator(),
 				manager.getDatasetRegistry(),
-				manager.getJobManager()
+				manager.getJobManager(),
+				manager::createInternalObjectMapper
 		);
 
 
