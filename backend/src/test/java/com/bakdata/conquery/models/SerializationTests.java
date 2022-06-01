@@ -30,6 +30,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
+import com.bakdata.conquery.io.AbstractSerializationTest;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -95,6 +96,7 @@ import com.github.powerlibraries.io.In;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import io.dropwizard.jersey.validation.Validators;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.util.CharArrayBuffer;
 import org.junit.jupiter.api.BeforeEach;
@@ -103,50 +105,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j
-public class SerializationTests {
-
-	private Validator validator = Validators.newValidator();
-	private ConqueryConfig config = new ConqueryConfig();
-	private DatasetRegistry datasetRegistry;
-	private MetaStorage metaStorage;
-
-	private ObjectMapper managerInternalMapper;
-	private ObjectMapper shardInternalMapper;
-	private ObjectMapper apiMapper;
-
-
-	@BeforeEach
-	public void before() {
-		datasetRegistry = new DatasetRegistry(0);
-		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
-
-		// Prepare manager node internal mapper
-		final ManagerNode managerNode = mock(ManagerNode.class);
-		when(managerNode.getConfig()).thenReturn(config);
-		when(managerNode.getValidator()).thenReturn(validator);
-		when(managerNode.getDatasetRegistry()).thenReturn(datasetRegistry);
-		when(managerNode.getStorage()).thenReturn(metaStorage);
-
-		when(managerNode.createInternalObjectMapper()).thenCallRealMethod();
-		managerInternalMapper = managerNode.createInternalObjectMapper();
-
-		metaStorage.openStores(managerInternalMapper);
-		metaStorage.loadData();
-
-		// Prepare shard node internal mapper
-		final ShardNode shardNode = mock(ShardNode.class);
-		when(shardNode.getConfig()).thenReturn(config);
-		when(shardNode.getValidator()).thenReturn(validator);
-
-		when(shardNode.createInternalObjectMapper()).thenCallRealMethod();
-		shardInternalMapper = shardNode.createInternalObjectMapper();
-
-		// Prepare api response mapper
-		doCallRealMethod().when(managerNode).customizeApiObjectMapper(any(ObjectMapper.class));
-		apiMapper = Jackson.copyMapperAndInjectables(Jackson.MAPPER);
-		managerNode.customizeApiObjectMapper(apiMapper);
-	}
-
+@Getter
+public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void dataset() throws IOException, JSONException {
@@ -155,7 +115,7 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(Dataset.class)
-				.objectMappers(managerInternalMapper, shardInternalMapper)
+				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
 				.test(dataset);
 	}
 
@@ -165,17 +125,17 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(PasswordCredential.class)
-				.objectMappers(managerInternalMapper)
+				.objectMappers(getManagerInternalMapper())
 				.test(credential);
 	}
 
 	@Test
 	public void role() throws IOException, JSONException {
-		Role mandator = new Role("company", "company", metaStorage);
+		Role mandator = new Role("company", "company", getMetaStorage());
 
 		SerializationTestUtil
 				.forType(Role.class)
-				.objectMappers(managerInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getApiMapper())
 				.test(mandator);
 	}
 
@@ -184,41 +144,41 @@ public class SerializationTests {
 	 */
 	@Test
 	public void user() throws IOException, JSONException {
-		User user = new User("user", "user", metaStorage);
+		User user = new User("user", "user", getMetaStorage());
 		user.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		user.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
-		Role role = new Role("company", "company", metaStorage);
+		Role role = new Role("company", "company", getMetaStorage());
 		user.addRole(role);
 
-		CentralRegistry registry = metaStorage.getCentralRegistry();
+		CentralRegistry registry = getMetaStorage().getCentralRegistry();
 		registry.register(role);
 
 		SerializationTestUtil
 				.forType(User.class)
-				.objectMappers(managerInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(user);
 	}
 
 	@Test
 	public void group() throws IOException, JSONException {
-		Group group = new Group("group", "group", metaStorage);
+		Group group = new Group("group", "group", getMetaStorage());
 		group.addPermission(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
 		group.addPermission(ExecutionPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
-		group.addRole(new Role("company", "company", metaStorage));
+		group.addRole(new Role("company", "company", getMetaStorage()));
 
-		Role role = new Role("company", "company", metaStorage);
+		Role role = new Role("company", "company", getMetaStorage());
 		group.addRole(role);
-		User user = new User("userName", "userLabel", metaStorage);
+		User user = new User("userName", "userLabel", getMetaStorage());
 		group.addMember(user);
 
-		CentralRegistry registry = metaStorage.getCentralRegistry();
+		CentralRegistry registry = getMetaStorage().getCentralRegistry();
 		registry.register(role);
 		registry.register(user);
 
 		SerializationTestUtil
 				.forType(Group.class)
-				.objectMappers(managerInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getApiMapper())
 				.test(group);
 	}
 
@@ -269,7 +229,7 @@ public class SerializationTests {
 		compoundStore.setParent(bucket);
 
 
-		CentralRegistry registry = metaStorage.getCentralRegistry();
+		CentralRegistry registry = getMetaStorage().getCentralRegistry();
 
 		registry.register(dataset);
 		registry.register(startCol);
@@ -284,7 +244,7 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(Bucket.class)
-				.objectMappers(managerInternalMapper, shardInternalMapper)
+				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
 				.registry(registry)
 				.injectables(new Injectable() {
 					@Override
@@ -317,7 +277,7 @@ public class SerializationTests {
 		table.setName("tableName");
 
 
-		CentralRegistry registry = metaStorage.getCentralRegistry();
+		CentralRegistry registry = getMetaStorage().getCentralRegistry();
 
 		registry.register(dataset);
 		registry.register(table);
@@ -325,7 +285,7 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(Table.class)
-				.objectMappers(managerInternalMapper, shardInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(table);
 	}
@@ -377,7 +337,7 @@ public class SerializationTests {
 		valDate.setName("valName");
 		connector.setValidityDates(List.of(valDate));
 
-		CentralRegistry registry = metaStorage.getCentralRegistry();
+		CentralRegistry registry = getMetaStorage().getCentralRegistry();
 
 		registry.register(dataset);
 		registry.register(concept);
@@ -387,11 +347,11 @@ public class SerializationTests {
 		registry.register(connector);
 		registry.register(valDate);
 
-		concept.setValidator(validator);
+		concept.setValidator(getValidator());
 
 		SerializationTestUtil
 				.forType(TreeConcept.class)
-				.objectMappers(managerInternalMapper, shardInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(concept);
 	}
@@ -399,14 +359,14 @@ public class SerializationTests {
 	@Test
 	public void persistentIdMap() throws JSONException, IOException {
 		SerializationTestUtil.forType(EntityIdMap.class)
-							 .objectMappers(managerInternalMapper)
+							 .objectMappers(getManagerInternalMapper())
 							 .test(IdMapSerialisationTest.createTestPersistentMap());
 
 	}
 
 	@Test
 	public void formConfig() throws JSONException, IOException {
-		final CentralRegistry registry = metaStorage.getCentralRegistry();
+		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 
 		final Dataset dataset = new Dataset("test-dataset");
 
@@ -425,7 +385,7 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(FormConfig.class)
-				.objectMappers(managerInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(formConfig);
 	}
@@ -433,22 +393,22 @@ public class SerializationTests {
 	@Test
 	public void managedQuery() throws JSONException, IOException {
 
-		final CentralRegistry registry = metaStorage.getCentralRegistry();
+		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 
 		final Dataset dataset = new Dataset("test-dataset");
 
-		final User user = new User("test-user", "test-user", metaStorage);
+		final User user = new User("test-user", "test-user", getMetaStorage());
 
 		registry.register(dataset);
 		registry.register(user);
 
-		metaStorage.updateUser(user);
+		getMetaStorage().updateUser(user);
 
 		ManagedQuery execution = new ManagedQuery(null, user, dataset);
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
-							 .objectMappers(managerInternalMapper, apiMapper)
+							 .objectMappers(getManagerInternalMapper(), getApiMapper())
 							 .registry(registry)
 							 .test(execution);
 	}
@@ -478,14 +438,14 @@ public class SerializationTests {
 
 		cqConcept.setTables(List.of(cqTable));
 
-		final CentralRegistry registry = metaStorage.getCentralRegistry();
+		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 		registry.register(dataset);
 		registry.register(concept);
 		registry.register(connector);
 
 		SerializationTestUtil
 				.forType(CQConcept.class)
-				.objectMappers(managerInternalMapper, shardInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(registry)
 				.test(cqConcept);
 	}
@@ -496,7 +456,7 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
-				.objectMappers(managerInternalMapper, shardInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.test(error);
 	}
 
@@ -506,7 +466,7 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
-				.objectMappers(managerInternalMapper, shardInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.test(error);
 	}
 
@@ -518,13 +478,13 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
-				.objectMappers(managerInternalMapper, shardInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.test(error);
 	}
 
 	@Test
 	public void meInformation() throws IOException, JSONException {
-		User user = new User("name", "labe", metaStorage);
+		User user = new User("name", "labe", getMetaStorage());
 
 		MeProcessor.FEMeInformation info = MeProcessor.FEMeInformation.builder()
 																	  .userName(user.getLabel())
@@ -535,7 +495,7 @@ public class SerializationTests {
 
 		SerializationTestUtil
 				.forType(MeProcessor.FEMeInformation.class)
-				.objectMappers(managerInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getApiMapper())
 				.test(info);
 	}
 
@@ -576,14 +536,14 @@ public class SerializationTests {
 				)
 		);
 
-		CentralRegistry centralRegistry = metaStorage.getCentralRegistry();
+		CentralRegistry centralRegistry = getMetaStorage().getCentralRegistry();
 		centralRegistry.register(dataset);
 		centralRegistry.register(testConcept);
 		centralRegistry.register(connector);
 
 		SerializationTestUtil
 				.forType(AbsoluteFormQuery.class)
-				.objectMappers(managerInternalMapper, shardInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getShardInternalMapper(), getApiMapper())
 				.registry(centralRegistry)
 				.test(query);
 	}
@@ -603,13 +563,13 @@ public class SerializationTests {
 						LocalDate.now(),
 						LocalDate.now().plus(1, ChronoUnit.DAYS),
 						EnumSet.of(Scopes.DATASET),
-						metaStorage
+						getMetaStorage()
 				);
 
 
 		SerializationTestUtil
 				.forType(ApiTokenData.class)
-				.objectMappers(managerInternalMapper, apiMapper)
+				.objectMappers(getManagerInternalMapper(), getApiMapper())
 				.test(apiTokenData);
 	}
 
@@ -622,19 +582,19 @@ public class SerializationTests {
 		map.add("b".getBytes());
 		map.add("c".getBytes());
 
-		final CentralRegistry registry = metaStorage.getCentralRegistry();
+		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 		registry.register(Dataset.PLACEHOLDER);
 
 		SerializationTestUtil
 				.forType(MapDictionary.class)
-				.objectMappers(managerInternalMapper, shardInternalMapper)
+				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
 				.registry(registry)
 				.test(map);
 	}
 
 	@Test
 	public void serialize() throws IOException, JSONException {
-		final CentralRegistry registry = metaStorage.getCentralRegistry();
+		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 
 		final Dataset dataset = new Dataset();
 		dataset.setName("dataset");
@@ -669,7 +629,7 @@ public class SerializationTests {
 				.register(imp);
 
 		SerializationTestUtil.forType(CBlock.class)
-							 .objectMappers(shardInternalMapper)
+							 .objectMappers(getShardInternalMapper())
 							 .registry(registry)
 							 .test(cBlock);
 	}
@@ -678,7 +638,7 @@ public class SerializationTests {
 	public void testSuccinctTrie()
 			throws IOException, JSONException {
 
-		final CentralRegistry registry = metaStorage.getCentralRegistry();
+		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 		registry.register(Dataset.PLACEHOLDER);
 
 		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "testDict");
@@ -689,7 +649,7 @@ public class SerializationTests {
 		dict.compress();
 		SerializationTestUtil
 				.forType(Dictionary.class)
-				.objectMappers(managerInternalMapper, shardInternalMapper)
+				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
 				.registry(registry)
 				.test(dict);
 	}
@@ -703,25 +663,25 @@ public class SerializationTests {
 		SerializationTestUtil
 				.forType(new TypeReference<BiMap<String, String>>() {
 				})
-				.objectMappers(apiMapper, managerInternalMapper)
+				.objectMappers(getApiMapper(), getManagerInternalMapper())
 				.test(map);
 	}
 
 	@Test
 	public void testNonStrictNumbers() throws JSONException, IOException {
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(apiMapper, managerInternalMapper).test(Double.NaN, null);
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.NaN, null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(apiMapper, managerInternalMapper).test(Double.NEGATIVE_INFINITY, null);
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.NEGATIVE_INFINITY, null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(apiMapper, managerInternalMapper).test(Double.POSITIVE_INFINITY, null);
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.POSITIVE_INFINITY, null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(apiMapper, managerInternalMapper).test(Double.MAX_VALUE);
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MAX_VALUE);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(apiMapper, managerInternalMapper).test(Double.MIN_VALUE);
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MIN_VALUE);
 		SerializationTestUtil
 				.forType(EntityResult.class)
-				.objectMappers(apiMapper, managerInternalMapper)
+				.objectMappers(getApiMapper(), getManagerInternalMapper())
 				.test(
 						new MultilineEntityResult(4, List.of(
 								new Object[]{0, 1, 2},
@@ -764,7 +724,7 @@ public class SerializationTests {
 		SerializationTestUtil
 				.forType(new TypeReference<Range<Integer>>() {
 				})
-				.objectMappers(apiMapper, managerInternalMapper, shardInternalMapper)
+				.objectMappers(getApiMapper(), getManagerInternalMapper(), getShardInternalMapper())
 				.test(range);
 	}
 
