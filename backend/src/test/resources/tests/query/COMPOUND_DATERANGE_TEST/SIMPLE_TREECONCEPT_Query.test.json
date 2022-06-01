@@ -56,7 +56,7 @@
             "name": "behandlung",
             "type": "DATE_RANGE",
             "outputDescription": {
-              "allowOpen" : true,
+              "allowOpen": true,
               "startColumn": "behandlung_start",
               "endColumn": "behandlung_ende",
               "name": "behandlung",
