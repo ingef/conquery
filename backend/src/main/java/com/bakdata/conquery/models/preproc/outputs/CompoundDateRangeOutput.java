@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
-import java.time.LocalDate;
 import java.util.Arrays;
 
 import javax.validation.constraints.NotEmpty;
@@ -14,7 +13,6 @@ import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.CompoundDateRangeParser;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Strings;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
@@ -22,7 +20,7 @@ import lombok.ToString;
 
 /**
  * Output creating delegating store of start and end-Column neighbours.
- *
+ * <p>
  * This output will still parse and validate the data to ensure that some assertions are held (ie.: only open when allowOpen is set, and start <= end).
  */
 @Data
@@ -37,32 +35,41 @@ public class CompoundDateRangeOutput extends OutputDescription {
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader) {
-		assertRequiredHeaders(headers, startColumn, endColumn);
+		final Output startReader = Arrays.stream(getParent().getOutput())
+										 .filter(output -> output.getName().equals(getStartColumn()))
+										 .findFirst()
+										 .orElseThrow()
+										 .createForHeaders(headers, dateReader);
 
-		final int startIndex = headers.getInt(startColumn);
-		final int endIndex = headers.getInt(endColumn);
+		final Output endReader = Arrays.stream(getParent().getOutput())
+									   .filter(output -> output.getName().equals(getEndColumn()))
+									   .findFirst()
+									   .orElseThrow()
+									   .createForHeaders(headers, dateReader);
+
 
 		// This output only verifies that the parsed data is valid and present, it will not store the CDateRanges themselves
 		// Obviously this mean doing the work twice, but it's still better than storing the data twice also.
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
-				if (Strings.isNullOrEmpty(row[startIndex]) && Strings.isNullOrEmpty(row[endIndex])) {
+
+				final Object start = startReader.createOutput(row, type, sourceLine);
+				final Object end = endReader.createOutput(row, type, sourceLine);
+
+				if (start == null && end == null) {
 					return false;
 				}
 
-				if (!allowOpen && (Strings.isNullOrEmpty(row[startIndex]) || Strings.isNullOrEmpty(row[endIndex]))) {
+				if (!allowOpen && (start == null || end == null)) {
 					throw new IllegalArgumentException("Open Ranges are not allowed.");
 				}
-
-				final LocalDate start = dateReader.parseToLocalDate(row[startIndex]);
-				final LocalDate end = dateReader.parseToLocalDate(row[endIndex]);
 
 				return
 						// Since it's not possible that BOTH are null either of them being null already implies an open and therefore valid range.
 						(start == null || end == null)
 						// row is included if start <= end
-						|| start.isBefore(end) || start.isEqual(end);
+						|| (Integer) start <= (Integer) end;
 			}
 		};
 	}

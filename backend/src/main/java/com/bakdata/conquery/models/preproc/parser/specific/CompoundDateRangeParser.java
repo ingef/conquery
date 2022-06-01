@@ -25,7 +25,7 @@ public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
 
 	@NotNull
 	@NotEmpty
-	final private String startColumn, endColumn;
+	private final String startColumn, endColumn;
 
 
 	public CompoundDateRangeParser(ConqueryConfig config, @NotNull String startColumn, @NotNull String endColumn) {
