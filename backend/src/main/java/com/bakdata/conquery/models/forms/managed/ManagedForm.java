@@ -14,6 +14,7 @@ import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.Views;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -35,6 +36,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -70,7 +72,7 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 	/**
 	 * Subqueries that are send to the workers.
 	 */
-	@InternalOnly
+	@JsonView(Views.InternalCommunication.class)
 	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 
 

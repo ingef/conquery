@@ -149,11 +149,11 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	 * @return a preconfigured binary object mapper
 	 */
 	public ObjectMapper createInternalObjectMapper() {
-		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
-		injectableValues.add(Validator.class, validator);
+		injectableValues.add(Validator.class, getValidator());
 
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class,SerdesTarget.SHARD));
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));

@@ -121,9 +121,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 
 		final ObjectMapper objectMapper = environment.getObjectMapper();
-		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
-		datasetRegistry.injectInto(objectMapper);
-		storage.injectInto(objectMapper);
+		customizeApiObjectMapper(objectMapper);
 
 
 		jobManager = new JobManager("ManagerNode", config.isFailOnError());
@@ -196,6 +194,22 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
+	/**
+	 * Customize the mapper from the environment, that is used in the REST-API
+	 *
+	 * @param objectMapper
+	 */
+	public void customizeApiObjectMapper(ObjectMapper objectMapper) {
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
+
+		final MutableInjectableValues injectableValues = new MutableInjectableValues();
+		objectMapper.setInjectableValues(injectableValues);
+		injectableValues.add(Validator.class, getValidator());
+
+		getDatasetRegistry().injectInto(objectMapper);
+		getStorage().injectInto(objectMapper);
+	}
+
 	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig resourceConfig) {
 		RESTServer.configure(config, resourceConfig);
 		resourceConfig.register(PathParamInjector.class);
@@ -216,16 +230,16 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	 * @return a preconfigured binary object mapper
 	 */
 	public ObjectMapper createInternalObjectMapper() {
-		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.BINARY_MAPPER.copy());
+		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.BINARY_MAPPER.copy());
 
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
-		injectableValues.add(Validator.class, validator);
-		datasetRegistry.injectInto(objectMapper);
-		storage.injectInto(objectMapper);
+		injectableValues.add(Validator.class, getValidator());
+		getDatasetRegistry().injectInto(objectMapper);
+		getStorage().injectInto(objectMapper);
 
-		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class,SerdesTarget.MANAGER));
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
 		return objectMapper;

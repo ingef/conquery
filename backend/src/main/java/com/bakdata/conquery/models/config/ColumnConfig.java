@@ -8,9 +8,11 @@ import java.util.Objects;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.Views;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Strings;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
@@ -77,40 +79,40 @@ public class ColumnConfig {
 	 *
 	 * Also Name of output column for {@link FrontendConfig.UploadConfig#getIdResultInfos()}, ergo output csv-Columns.
 	 */
-	@InternalOnly
+	@JsonView(Views.InternalPersistence.class)
 	private String field;
 
 	/**
 	 * Pad-String when uploading data, this avoids problems with some tools truncating leading zeros or similar.
 	 */
-	@InternalOnly
+	@JsonView(Views.InternalPersistence.class)
 	private String pad = null;
 
 	/**
 	 * In conjunction with pad, the length of the padded string.
 	 */
-	@InternalOnly
+	@JsonView(Views.InternalPersistence.class)
 	@Builder.Default
 	private int length = -1;
 
 	/**
 	 * Set to true, if the column should be resolvable in upload. This can be used to add supplemental information to an entity, for example it's data-source, which would not be unique among entities.
 	 */
-	@InternalOnly
+	@JsonView(Views.InternalPersistence.class)
 	@Builder.Default
 	private boolean resolvable = false;
 
 	/**
 	 * Set to true, if the Column should be printed to output. This can be used to have resolvable but not printable fields in mapping.
 	 */
-	@InternalOnly
+	@JsonView(Views.InternalPersistence.class)
 	@Builder.Default
 	private boolean print = true;
 
 	/**
 	 * Used in conjunction with {@link com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer}: One column is required to have fillAnon true, which will be filled with pseudomized data.
 	 */
-	@InternalOnly
+	@JsonView(Views.InternalPersistence.class)
 	@Builder.Default
 	private boolean fillAnon = false;
 

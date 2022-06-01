@@ -79,14 +79,15 @@ public class CentralRegistry implements Injectable {
 
 	public static CentralRegistry get(DeserializationContext ctxt) throws JsonMappingException {
 		CentralRegistry result = (CentralRegistry) ctxt.findInjectableValue(CentralRegistry.class.getName(), null, null);
-		if (result == null) {
-			IdResolveContext alternative = (IdResolveContext) ctxt.findInjectableValue(IdResolveContext.class.getName(), null, null);
-			if (alternative == null) {
-				return null;
-			}
-			return alternative.getMetaRegistry();
+		if (result != null) {
+			return result;
 		}
-		return result;
+
+		IdResolveContext alternative = (IdResolveContext) ctxt.findInjectableValue(IdResolveContext.class.getName(), null, null);
+		if (alternative == null) {
+			return null;
+		}
+		return alternative.getMetaRegistry();
 	}
 
 	public void clear() {
