@@ -4,6 +4,7 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -159,7 +160,7 @@ public class QueryResource {
 
 	@POST
 	@Path("/entity")
-	public FullExecutionStatus getEntityData(@Auth Subject subject, EntityPreview query, @Context HttpServletRequest request) {
+	public List<URL> getEntityData(@Auth Subject subject, EntityPreview query, @Context HttpServletRequest request) {
 		final UriBuilder uriBuilder = RequestAwareUriBuilder.fromRequest(request);
 		return processor.getSingleEntityExport(subject, uriBuilder, query.getIdKind(), query.getEntityId(), query.getSources(), dataset, query.getTime());
 	}

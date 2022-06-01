@@ -395,7 +395,7 @@ public class QueryProcessor {
 	 * @return
 	 * @implNote we don't do anything special here, this request could also be made manually. We however want to encapsulate this behaviour to shield the frontend from knowing too much about the query engine.
 	 */
-	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
+	public List<URL> getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
 		final ConceptQuery entitySelectQuery =
 				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}})));
@@ -423,7 +423,7 @@ public class QueryProcessor {
 
 
 		// Use the provided format name to find the respective provider.
-		return getQueryFullStatus(execution, subject, uriBuilder, true);
+		return getDownloadUrls(config.getResultProviders(), execution, uriBuilder, true);
 
 	}
 }
