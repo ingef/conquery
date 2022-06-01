@@ -72,7 +72,7 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 	/**
 	 * Subqueries that are send to the workers.
 	 */
-	@JsonView(Views.InternalCommunication.class)
+	@InternalOnly
 	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 
 

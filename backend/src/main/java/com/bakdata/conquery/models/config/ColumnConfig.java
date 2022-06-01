@@ -79,40 +79,40 @@ public class ColumnConfig {
 	 *
 	 * Also Name of output column for {@link FrontendConfig.UploadConfig#getIdResultInfos()}, ergo output csv-Columns.
 	 */
-	@JsonView(Views.InternalPersistence.class)
+	@InternalOnly
 	private String field;
 
 	/**
 	 * Pad-String when uploading data, this avoids problems with some tools truncating leading zeros or similar.
 	 */
-	@JsonView(Views.InternalPersistence.class)
+	@InternalOnly
 	private String pad = null;
 
 	/**
 	 * In conjunction with pad, the length of the padded string.
 	 */
-	@JsonView(Views.InternalPersistence.class)
+	@InternalOnly
 	@Builder.Default
 	private int length = -1;
 
 	/**
 	 * Set to true, if the column should be resolvable in upload. This can be used to add supplemental information to an entity, for example it's data-source, which would not be unique among entities.
 	 */
-	@JsonView(Views.InternalPersistence.class)
+	@InternalOnly
 	@Builder.Default
 	private boolean resolvable = false;
 
 	/**
 	 * Set to true, if the Column should be printed to output. This can be used to have resolvable but not printable fields in mapping.
 	 */
-	@JsonView(Views.InternalPersistence.class)
+	@InternalOnly
 	@Builder.Default
 	private boolean print = true;
 
 	/**
 	 * Used in conjunction with {@link com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer}: One column is required to have fillAnon true, which will be filled with pseudomized data.
 	 */
-	@JsonView(Views.InternalPersistence.class)
+	@InternalOnly
 	@Builder.Default
 	private boolean fillAnon = false;
 

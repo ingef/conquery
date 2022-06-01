@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
@@ -14,6 +12,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -46,6 +45,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -82,18 +82,25 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
 import com.bakdata.conquery.util.dict.SuccinctTrieTest;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.powerlibraries.io.In;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.util.CharArrayBuffer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j
 public class SerializationTests {
@@ -667,11 +674,6 @@ public class SerializationTests {
 							 .test(cBlock);
 	}
 
-
-	public static Stream<String> data() throws IOException {
-		return In.resource(SuccinctTrieTest.class, "SuccinctTrieTest.data").streamLines();
-	}
-
 	@Test
 	public void testSuccinctTrie()
 			throws IOException, JSONException {
@@ -681,7 +683,8 @@ public class SerializationTests {
 
 		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "testDict");
 
-		data().forEach(value -> dict.put(value.getBytes()));
+		In.resource(SuccinctTrieTest.class, "SuccinctTrieTest.data").streamLines()
+		  .forEach(value -> dict.put(value.getBytes()));
 
 		dict.compress();
 		SerializationTestUtil
@@ -690,4 +693,79 @@ public class SerializationTests {
 				.registry(registry)
 				.test(dict);
 	}
+
+
+	@Test
+	public void testBiMapSerialization() throws JSONException, IOException {
+		BiMap<String, String> map = HashBiMap.create();
+		map.put("a", "1");
+		map.put("b", "2");
+		SerializationTestUtil
+				.forType(new TypeReference<BiMap<String, String>>() {
+				})
+				.objectMappers(apiMapper, managerInternalMapper)
+				.test(map);
+	}
+
+	@Test
+	public void testNonStrictNumbers() throws JSONException, IOException {
+		SerializationTestUtil.forType(Double.class)
+							 .objectMappers(apiMapper, managerInternalMapper).test(Double.NaN, null);
+		SerializationTestUtil.forType(Double.class)
+							 .objectMappers(apiMapper, managerInternalMapper).test(Double.NEGATIVE_INFINITY, null);
+		SerializationTestUtil.forType(Double.class)
+							 .objectMappers(apiMapper, managerInternalMapper).test(Double.POSITIVE_INFINITY, null);
+		SerializationTestUtil.forType(Double.class)
+							 .objectMappers(apiMapper, managerInternalMapper).test(Double.MAX_VALUE);
+		SerializationTestUtil.forType(Double.class)
+							 .objectMappers(apiMapper, managerInternalMapper).test(Double.MIN_VALUE);
+		SerializationTestUtil
+				.forType(EntityResult.class)
+				.objectMappers(apiMapper, managerInternalMapper)
+				.test(
+						new MultilineEntityResult(4, List.of(
+								new Object[]{0, 1, 2},
+								new Object[]{Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
+						)),
+						new MultilineEntityResult(4, List.of(
+								new Object[]{0, 1, 2},
+								new Object[]{null, null, null}
+						))
+				);
+	}
+
+	public static Stream<Range<Integer>> rangeData() {
+		final int SEED = 7;
+		Random random = new Random(SEED);
+		return Stream
+				.generate(() -> {
+					int first = random.nextInt();
+					int second = random.nextInt();
+
+					if (first < second) {
+						return Range.of(first, second);
+					}
+					return Range.of(second, first);
+				})
+				.filter(Range::isOrdered)
+				.flatMap(range -> Stream.of(
+						range,
+						Range.exactly(range.getMin()),
+						Range.atMost(range.getMin()),
+						Range.atLeast(range.getMin())
+				))
+				.filter(Range::isOrdered)
+				.limit(100);
+	}
+
+	@ParameterizedTest
+	@MethodSource("rangeData")
+	public void test(Range<Integer> range) throws IOException, JSONException {
+		SerializationTestUtil
+				.forType(new TypeReference<Range<Integer>>() {
+				})
+				.objectMappers(apiMapper, managerInternalMapper, shardInternalMapper)
+				.test(range);
+	}
+
 }
