@@ -6,9 +6,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.CheckForNull;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
@@ -69,6 +71,9 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 
 	@JsonProperty("default")
 	private boolean isDefault = true;
+
+	@CheckForNull
+	public abstract Column getColumn();
 
 	public List<Select> getDefaultSelects() {
 		return getSelects()

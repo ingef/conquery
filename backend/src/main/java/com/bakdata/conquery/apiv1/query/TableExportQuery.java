@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -84,10 +85,7 @@ public class TableExportQuery extends Query {
 			// Set to null if none-available in the connector.
 			final Column validityDateColumn = findValidityDateColumn(connector, table.getDateColumn());
 
-			final TableExportDescription exportDescription = new TableExportDescription(
-					connector.getTable(),
-					validityDateColumn
-			);
+			final TableExportDescription exportDescription = new TableExportDescription(connector.getTable(), validityDateColumn);
 
 			resolvedConnectors.add(exportDescription);
 		}
@@ -109,7 +107,8 @@ public class TableExportQuery extends Query {
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context);
 
-		AtomicInteger currentPosition = new AtomicInteger(1); // First is dates
+		// First is dates, second is source id
+		AtomicInteger currentPosition = new AtomicInteger(2);
 
 		positions = new HashMap<>();
 
@@ -138,25 +137,31 @@ public class TableExportQuery extends Query {
 			// Set column positions, set SecondaryId positions to precomputed ones.
 			for (Column column : connector.getTable().getColumns()) {
 				positions.computeIfAbsent(column, col -> col.getSecondaryId() != null
-														  ? secondaryIdPositions.get(col.getSecondaryId())
-														  : currentPosition.getAndIncrement());
+														 ? secondaryIdPositions.get(col.getSecondaryId())
+														 : currentPosition.getAndIncrement());
 			}
 		}
 
 		resultInfos = createResultInfos(currentPosition.get(), secondaryIdPositions, positions);
 	}
 
-	private static List<ResultInfo> createResultInfos(int size, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions) {
+	private List<ResultInfo> createResultInfos(int size, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions) {
 
 		ResultInfo[] infos = new ResultInfo[size];
 
 		infos[0] = ConqueryConstants.DATES_INFO;
+		infos[1] = ConqueryConstants.SOURCE_INFO;
 
 		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
 			SecondaryIdDescription desc = e.getKey();
 			Integer pos = e.getValue();
-			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.IdT.INSTANCE);
+			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.SecondaryIdT.INSTANCE);
 		}
+
+		Set<Column> primaryColumns = getTables().stream()
+												.map(tbl -> tbl.getTable().getColumn())
+												.filter(Objects::nonNull)
+												.collect(Collectors.toSet());
 
 		for (Map.Entry<Column, Integer> entry : positions.entrySet()) {
 
@@ -170,7 +175,12 @@ public class TableExportQuery extends Query {
 				continue;
 			}
 
-			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), ResultType.resolveResultType(column.getType()));
+			// Columns that are used to build concepts are marked as PrimaryColumn.
+			final ResultType resultType = primaryColumns.contains(column) ?
+										  ResultType.PrimaryColumn.INSTANCE :
+										  ResultType.resolveResultType(column.getType());
+
+			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType);
 		}
 
 		return List.of(infos);
