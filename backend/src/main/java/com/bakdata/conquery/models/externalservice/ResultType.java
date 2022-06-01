@@ -234,11 +234,11 @@ public abstract class ResultType {
 		public static final SecondaryIdT INSTANCE = new SecondaryIdT();
 	}
 
-	@CPSType(id = "PRIMARY_COLUMN", base = ResultType.class)
+	@CPSType(id = "CONCEPT_COLUMN", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class PrimaryColumn extends PrimitiveResultType {
+	public static class ConceptColumnT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
-		public static final PrimaryColumn INSTANCE = new PrimaryColumn();
+		public static final ConceptColumnT INSTANCE = new ConceptColumnT();
 	}
 
 	@CPSType(id = "MONEY", base = ResultType.class)

@@ -19,6 +19,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.ValidityDateContainer;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -48,7 +49,15 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * A TABLE_EXPORT creates a full export of the given tables. It ignores selects completely.
+ * TableExportQuery can be used to export raw data from selected {@link Connector}s, for selected {@link com.bakdata.conquery.models.query.entity.Entity}s.
+ *
+ * Output format is lightly structured:
+ * 1: Contains the {@link com.bakdata.conquery.models.datasets.concepts.ValidityDate} if one is available for the event.
+ * 2: Contains the source {@link com.bakdata.conquery.models.datasets.Table}s label.
+ * 3 - X: Contain the SecondaryId columns de-duplicated.
+ * Following: Columns of all tables, (except for SecondaryId Columns), grouped by tables. The order is not guaranteed.
+ *
+ * Columns used in Connectors to build Concepts, are marked with {@link ResultType.ConceptColumnT} in {@link FullExecutionStatus#getColumnDescriptions()}.
  */
 @Slf4j
 @Getter
@@ -177,7 +186,7 @@ public class TableExportQuery extends Query {
 
 			// Columns that are used to build concepts are marked as PrimaryColumn.
 			final ResultType resultType = primaryColumns.contains(column) ?
-										  ResultType.PrimaryColumn.INSTANCE :
+										  ResultType.ConceptColumnT.INSTANCE :
 										  ResultType.resolveResultType(column.getType());
 
 			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType);
