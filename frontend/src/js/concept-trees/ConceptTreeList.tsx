@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { FC, useMemo } from "react";
 import { useSelector } from "react-redux";
 
-import type { DatasetIdT } from "../api/types";
+import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 
 import ConceptTreeListItem from "./ConceptTreeListItem";
@@ -31,7 +31,7 @@ const Root = styled("div")<{ show?: boolean }>`
 `;
 
 interface PropsT {
-  datasetId: DatasetIdT | null;
+  datasetId: DatasetT["id"] | null;
 }
 
 const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {

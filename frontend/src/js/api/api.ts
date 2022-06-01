@@ -9,7 +9,6 @@ import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer
 
 import { transformQueryToApi } from "./apiHelper";
 import type {
-  DatasetIdT,
   QueryIdT,
   ConceptIdT,
   GetFrontendConfigResponseT,
@@ -29,6 +28,7 @@ import type {
   GetFormConfigResponseT,
   GetDatasetsResponseT,
   UploadQueryResponseT,
+  DatasetT,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
@@ -51,7 +51,7 @@ export const useGetDatasets = () => {
 export const useGetConcepts = () => {
   const api = useApi<GetConceptsResponseT>({});
 
-  return (datasetId: DatasetIdT) =>
+  return (datasetId: DatasetT["id"]) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/concepts`),
     });
@@ -60,7 +60,7 @@ export const useGetConcepts = () => {
 export const useGetConcept = () => {
   const api = useApi<GetConceptResponseT>({});
 
-  return (datasetId: DatasetIdT, conceptId: ConceptIdT) =>
+  return (datasetId: DatasetT["id"], conceptId: ConceptIdT) =>
     api(
       {
         url: getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}`),
@@ -76,7 +76,7 @@ export const usePostQueries = () => {
   const api = useApi<PostQueriesResponseT>();
 
   return (
-    datasetId: DatasetIdT,
+    datasetId: DatasetT["id"],
     query: StandardQueryStateT | ValidatedTimebasedQueryStateT,
     options: { queryType: string; selectedSecondaryId?: string | null },
   ) =>
@@ -96,7 +96,7 @@ export interface FormQueryPostPayload {
 export const usePostFormQueries = () => {
   const api = useApi<PostQueriesResponseT>();
 
-  return (datasetId: DatasetIdT, query: FormQueryPostPayload) =>
+  return (datasetId: DatasetT["id"], query: FormQueryPostPayload) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries`),
       method: "POST",
@@ -107,7 +107,7 @@ export const usePostFormQueries = () => {
 export const useGetQuery = () => {
   const api = useApi<GetQueryResponseT>();
 
-  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
+  return (datasetId: DatasetT["id"], queryId: QueryIdT) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
     });
@@ -116,7 +116,7 @@ export const useGetQuery = () => {
 export const usePostQueryCancel = () => {
   const api = useApi<null>();
 
-  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
+  return (datasetId: DatasetT["id"], queryId: QueryIdT) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}/cancel`),
       method: "POST",
@@ -126,7 +126,7 @@ export const usePostQueryCancel = () => {
 export const usePostQueryUpload = () => {
   const api = useApi<UploadQueryResponseT>();
 
-  return (datasetId: DatasetIdT, data: QueryToUploadT) =>
+  return (datasetId: DatasetT["id"], data: QueryToUploadT) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries/upload`),
       method: "POST",
@@ -137,7 +137,7 @@ export const usePostQueryUpload = () => {
 export const useDeleteQuery = () => {
   const api = useApi<null>();
 
-  return (datasetId: DatasetIdT, queryId: QueryIdT) =>
+  return (datasetId: DatasetT["id"], queryId: QueryIdT) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
       method: "DELETE",
@@ -147,7 +147,7 @@ export const useDeleteQuery = () => {
 export const useGetForms = () => {
   const api = useApi<GetFormQueriesResponseT>();
 
-  return (datasetId: DatasetIdT) =>
+  return (datasetId: DatasetT["id"]) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/form-queries`),
     });
@@ -156,7 +156,7 @@ export const useGetForms = () => {
 export const useGetQueries = () => {
   const api = useApi<GetQueriesResponseT>();
 
-  return (datasetId: DatasetIdT) =>
+  return (datasetId: DatasetT["id"]) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries`),
     });
@@ -165,7 +165,7 @@ export const useGetQueries = () => {
 export const usePatchQuery = () => {
   const api = useApi<null>();
 
-  return (datasetId: DatasetIdT, queryId: QueryIdT, attributes: Object) =>
+  return (datasetId: DatasetT["id"], queryId: QueryIdT, attributes: Object) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
       method: "PATCH",
@@ -174,7 +174,7 @@ export const usePatchQuery = () => {
 };
 
 export interface PostPrefixForSuggestionsParams {
-  datasetId: DatasetIdT;
+  datasetId: DatasetT["id"];
   conceptId: string;
   tableId: string;
   filterId: string;
@@ -206,7 +206,7 @@ export const usePostPrefixForSuggestions = () => {
 export const usePostConceptsListToResolve = () => {
   const api = useApi<PostConceptResolveResponseT>();
 
-  return (datasetId: DatasetIdT, conceptId: string, concepts: string[]) =>
+  return (datasetId: DatasetT["id"], conceptId: string, concepts: string[]) =>
     api({
       url: getProtectedUrl(
         `/datasets/${datasetId}/concepts/${conceptId}/resolve`,
@@ -220,7 +220,7 @@ export const usePostFilterValuesResolve = () => {
   const api = useApi<PostFilterResolveResponseT>();
 
   return (
-    datasetId: DatasetIdT,
+    datasetId: DatasetT["id"],
     conceptId: string,
     tableId: string,
     filterId: string,
@@ -260,7 +260,7 @@ export const usePostLogin = () => {
 export const usePostFormConfig = () => {
   const api = useApi<PostFormConfigsResponseT>();
 
-  return (datasetId: DatasetIdT, data: BaseFormConfigT) =>
+  return (datasetId: DatasetT["id"], data: BaseFormConfigT) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
       method: "POST",
@@ -271,7 +271,7 @@ export const usePostFormConfig = () => {
 export const useGetFormConfig = () => {
   const api = useApi<GetFormConfigResponseT>();
 
-  return (datasetId: DatasetIdT, formConfigId: string) =>
+  return (datasetId: DatasetT["id"], formConfigId: string) =>
     api({
       url: getProtectedUrl(
         `/datasets/${datasetId}/form-configs/${formConfigId}`,
@@ -283,7 +283,7 @@ export const usePatchFormConfig = () => {
   const api = useApi<GetFormConfigResponseT>();
 
   return (
-    datasetId: DatasetIdT,
+    datasetId: DatasetT["id"],
     formConfigId: string,
     data: Partial<FormConfigT>,
   ) =>
@@ -299,7 +299,7 @@ export const usePatchFormConfig = () => {
 export const useGetFormConfigs = () => {
   const api = useApi<GetFormConfigsResponseT>();
 
-  return (datasetId: DatasetIdT) =>
+  return (datasetId: DatasetT["id"]) =>
     api({
       url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
     });
@@ -308,7 +308,7 @@ export const useGetFormConfigs = () => {
 export const useDeleteFormConfig = () => {
   const api = useApi<null>();
 
-  return (datasetId: DatasetIdT, formConfigId: string) =>
+  return (datasetId: DatasetT["id"], formConfigId: string) =>
     api({
       url: getProtectedUrl(
         `/datasets/${datasetId}/form-configs/${formConfigId}`,

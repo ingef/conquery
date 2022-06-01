@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { FC } from "react";
-import Hotkeys from "react-hot-keys";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -17,13 +17,13 @@ import StatsSubline from "./StatsSubline";
 import { closePreview } from "./actions";
 import type { PreviewStateT } from "./reducer";
 
-const Root = styled("div")`
+const FullScreen = styled("div")`
   height: 100%;
   width: 100%;
   position: fixed;
   top: 0;
   left: 0;
-  background-color: white;
+  background-color: ${({ theme }) => theme.col.bgAlt};
   padding: 60px 20px 20px;
   z-index: 2;
   display: flex;
@@ -50,6 +50,7 @@ const CSVFrame = styled("div")`
   overflow: hidden;
   padding: 10px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  background-color: white;
 `;
 
 const ScrollWrap = styled("div")`
@@ -158,17 +159,21 @@ const Preview: FC = () => {
 
   const onClose = () => dispatch(closePreview());
 
-  if (!preview.csv || !preview.resultColumns) return null;
+  useHotkeys("esc", () => {
+    onClose();
+  });
+
+  if (!preview.data.csv || !preview.data.resultColumns) return null;
 
   // Limit size:
   const RENDER_ROWS_LIMIT = 500;
-  const previewData = preview.csv.slice(0, RENDER_ROWS_LIMIT + 1); // +1 Header row
+  const previewData = preview.data.csv.slice(0, RENDER_ROWS_LIMIT + 1); // +1 Header row
 
   if (previewData.length < 2) return null;
 
   const columns = detectColumnTypesByHeader(
     previewData[0],
-    preview.resultColumns,
+    preview.data.resultColumns,
   );
 
   const { min, max, diff } = getMinMaxDates(previewData.slice(1), columns);
@@ -210,10 +215,9 @@ const Preview: FC = () => {
   );
 
   return (
-    <Root>
-      <Hotkeys keyName="escape" onKeyDown={onClose} />
+    <FullScreen>
       <PreviewInfo
-        rawPreviewData={preview.csv}
+        rawPreviewData={preview.data.csv}
         columns={columns}
         onClose={onClose}
         minDate={min}
@@ -244,7 +248,7 @@ const Preview: FC = () => {
           </List>
         </ScrollWrap>
       </CSVFrame>
-    </Root>
+    </FullScreen>
   );
 };
 
