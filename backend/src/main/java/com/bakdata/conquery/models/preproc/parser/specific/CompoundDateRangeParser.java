@@ -48,7 +48,7 @@ public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
 
 	@Override
 	protected Boolean parseValue(@NotNull String value) throws ParsingException {
-		return null;
+		throw new IllegalStateException("this Parser cannot parse values.");
 	}
 
 	@Override

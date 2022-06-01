@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.CompoundDateRangeParser;
+import com.bakdata.conquery.models.preproc.parser.specific.DateParser;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -34,18 +35,20 @@ public class CompoundDateRangeOutput extends OutputDescription {
 	private boolean allowOpen;
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader) {
+	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
 		final Output startReader = Arrays.stream(getParent().getOutput())
 										 .filter(output -> output.getName().equals(getStartColumn()))
 										 .findFirst()
 										 .orElseThrow()
-										 .createForHeaders(headers, dateReader);
+										 .createForHeaders(headers, dateReader, config);
 
 		final Output endReader = Arrays.stream(getParent().getOutput())
 									   .filter(output -> output.getName().equals(getEndColumn()))
 									   .findFirst()
 									   .orElseThrow()
-									   .createForHeaders(headers, dateReader);
+									   .createForHeaders(headers, dateReader, config);
+
+		final DateParser dateParser = new DateParser(config);
 
 
 		// This output only verifies that the parsed data is valid and present, it will not store the CDateRanges themselves
@@ -54,8 +57,8 @@ public class CompoundDateRangeOutput extends OutputDescription {
 			@Override
 			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
 
-				final Object start = startReader.createOutput(row, type, sourceLine);
-				final Object end = endReader.createOutput(row, type, sourceLine);
+				final Object start = startReader.createOutput(row, dateParser, sourceLine);
+				final Object end = endReader.createOutput(row, dateParser, sourceLine);
 
 				if (start == null && end == null) {
 					return false;
