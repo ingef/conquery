@@ -400,8 +400,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L64) | withoutSecondaryId | list of ID of `@NsIdRefCollection Set<Table>` | ␀ |  |  | 
 </p></details>
 
-### TABLE_EXPORT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L50-L52)</sup></sub></sup>
-A TABLE_EXPORT creates a full export of the given tables. It ignores selects completely.
+### TABLE_EXPORT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L51-L61)</sup></sub></sup>
+TableExportQuery can be used to export raw data from selected {@link Connector}s, for selected {@link com.bakdata.conquery.models.query.entity.Entity}s. Output format is lightly structured: 1: Contains the {@link com.bakdata.conquery.models.datasets.concepts.ValidityDate} if one is available for the event. 2: Contains the source {@link com.bakdata.conquery.models.datasets.Table}s label. 3 - X: Contain the SecondaryId columns de-duplicated. Following: Columns of all tables, (except for SecondaryId Columns), grouped by tables. The order is not guaranteed. Columns used in Connectors to build Concepts, are marked with {@link ResultType.ConceptColumnT} in {@link FullExecutionStatus#getColumnDescriptions()}.
 
 <details><summary>Details</summary><p>
 
@@ -411,10 +411,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L64) | dateRange | `@NotNull Range<LocalDate>` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L70) | positions | map from `Column` to `int` or `null` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L60) | query | `@NonNull Query` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L66) | tables | list of `CQUnfilteredTable` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L73) | dateRange | `@NotNull Range<LocalDate>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L79) | positions | map from `Column` to `int` or `null` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L69) | query | `@NonNull Query` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L75) | tables | list of `CQUnfilteredTable` | ? |  |  | 
 </p></details>
 
 
