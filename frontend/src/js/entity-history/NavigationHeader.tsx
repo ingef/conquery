@@ -24,12 +24,15 @@ const BaseInfo = styled("div")`
   display: flex;
   gap: 15px;
   justify-content: space-between;
+  overflow: hidden;
 `;
 
 const SxHeading3 = styled(Heading3)`
   flex-shrink: 0;
   margin: 0;
   white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 `;
 
 const Count = styled(SxHeading3)`
@@ -88,7 +91,7 @@ export const NavigationHeader = ({
       )}
       <BaseInfo>
         <div style={{ overflow: "hidden" }}>
-          <SxHeading3>{label}</SxHeading3>
+          <SxHeading3 title={label}>{label}</SxHeading3>
           <SpecialText>{t("history.history")}</SpecialText>
         </div>
         <WithTooltip text={t("history.settings.headline")}>

@@ -77,8 +77,7 @@ const QuarterGroup = styled("div")`
   padding-top: 7px;
   background-color: white;
 `;
-const QuarterHead = styled("p")`
-  margin: 0;
+const QuarterHead = styled("div")`
   font-weight: 700;
   font-size: ${({ theme }) => theme.font.xs};
   color: black;
@@ -95,8 +94,11 @@ const SxWithTooltip = styled(WithTooltip)`
   flex-shrink: 0;
 `;
 
+const Boxes = styled("div")`
+  display: flex;
+  align-items: center;
+`;
 const Box = styled("div")`
-  display: inline-block;
   width: 3px;
   height: 8px;
   margin-left: 1px;
@@ -136,11 +138,11 @@ export const Timeline = ({ className, data, detailLevel }: Props) => {
                       {t("history.events", { count: events.length })}
                     </span>
                     {detailLevel === "summary" && (
-                      <span style={{ lineHeight: 1 }}>
+                      <Boxes>
                         {new Array(events.length).fill(0).map((_, i) => (
                           <Box key={i} />
                         ))}
-                      </span>
+                      </Boxes>
                     )}
                   </QuarterHead>
                   {detailLevel !== "summary" && (
