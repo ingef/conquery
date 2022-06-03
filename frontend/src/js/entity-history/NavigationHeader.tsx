@@ -5,9 +5,10 @@ import { useSelector } from "react-redux";
 import type { StateT } from "../app/reducers";
 import { Heading3 } from "../headings/Headings";
 
-const HeadInfo = styled("div")`
+const Root = styled("div")`
   display: grid;
   gap: 15px;
+  background-color: white;
 `;
 const SxHeading3 = styled(Heading3)`
   flex-shrink: 0;
@@ -54,7 +55,7 @@ export const NavigationHeader = ({
     (state) => state.entityHistory.label,
   );
   return (
-    <HeadInfo className={className}>
+    <Root className={className}>
       <div style={{ overflow: "hidden" }}>
         <SxHeading3>{label}</SxHeading3>
         <SpecialText>{t("history.history")}</SpecialText>
@@ -65,6 +66,6 @@ export const NavigationHeader = ({
         <Count>{markedCount}</Count>
         <Text>{t("history.marked", { count: markedCount })}</Text>
       </StatsGrid>
-    </HeadInfo>
+    </Root>
   );
 };

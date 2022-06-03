@@ -57,13 +57,15 @@ const Main = styled("div")`
   padding: 55px 0 10px;
 `;
 
+export interface EntityIdsStatus {
+  [entityId: string]: SelectOptionT[];
+}
+
 export const History = () => {
   const [entityStatusOptions, setEntityStatusOptions] = useState<
     SelectOptionT[]
   >([]);
-  const [entityIdsStatus, setEntityIdsStatus] = useState<{
-    [id: string]: SelectOptionT[];
-  }>({});
+  const [entityIdsStatus, setEntityIdsStatus] = useState<EntityIdsStatus>({});
 
   const entityIds = useSelector<StateT, string[]>(
     (state) => state.entityHistory.entityIds,
