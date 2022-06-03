@@ -445,8 +445,7 @@
   },
   "history": {
     "history": "History",
-    "marked": "Marked",
-    "selectStatusPlaceholder": "Status ...",
+    "marked": "with status",
     "events_one": "Event",
     "events_other": "Events",
     "downloadButtonLabel": "Download list",
@@ -457,6 +456,12 @@
       "summary": "Summary",
       "detail": "Details",
       "full": "Full"
+    },
+    "settings": {
+      "headline": "History session settings",
+      "selectStatusHeadline": "Possible status values",
+      "selectStatusPlaceholder": "Options ...",
+      "selectStatusTooltip": "Set possible status values, that may be assigned to individual entites during the history session."
     }
   }
 }

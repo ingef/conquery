@@ -1,9 +1,10 @@
 import styled from "@emotion/styled";
-import { useCallback, useMemo } from "react";
+import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
+import { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
 import { downloadBlob } from "../common/helpers/downloadBlob";
 import WithTooltip from "../tooltip/WithTooltip";
@@ -31,7 +32,7 @@ const TopActions = styled("div")`
 `;
 
 const SxNavigationHeader = styled(NavigationHeader)`
-  padding: 0 10px 0 20px;
+  margin: 0 10px 0 20px;
 `;
 
 const Middle = styled("div")`
@@ -65,6 +66,8 @@ interface Props {
   entityIdsStatus: EntityIdsStatus;
   currentEntityId: string | null;
   currentEntityIndex: number;
+  entityStatusOptions: SelectOptionT[];
+  setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
 }
 
 export const Navigation = ({
@@ -73,6 +76,8 @@ export const Navigation = ({
   entityIdsStatus,
   currentEntityId,
   currentEntityIndex,
+  entityStatusOptions,
+  setEntityStatusOptions,
 }: Props) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -103,11 +108,13 @@ export const Navigation = ({
   return (
     <Root className={className}>
       <BackButton frame icon="chevron-left" onClick={onCloseHistory}>
-        {t("common.back")}
+        {t("common.cancel")}
       </BackButton>
       <SxNavigationHeader
         markedCount={markedCount}
         idsCount={entityIds.length}
+        entityStatusOptions={entityStatusOptions}
+        setEntityStatusOptions={setEntityStatusOptions}
       />
       <EntityIdNav>
         <TopActions>

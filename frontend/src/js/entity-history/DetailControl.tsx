@@ -28,7 +28,7 @@ const useButtonConfig = () => {
     }[] => [
       {
         label: ({ selected }) => (
-          <FaIcon active={selected} gray={!selected} icon="circle" />
+          <FaIcon active={selected} gray={!selected} regular icon="circle" />
         ),
         value: "summary",
         tooltip: t("history.detail.summary"),

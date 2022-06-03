@@ -1,21 +1,20 @@
 import styled from "@emotion/styled";
-import { Dispatch, SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 
 import { SelectOptionT } from "../api/types";
-import { exists } from "../common/helpers/exists";
+import { BadgeToggleButton } from "../button/BadgeToggleButton";
 import { Heading3 } from "../headings/Headings";
-import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
-const HeadInfo = styled("div")`
-  display: grid;
-  grid-template-columns: auto 200px 1fr;
+const Root = styled("div")`
+  display: flex;
+  align-items: center;
   gap: 15px;
   padding-left: 10px;
 `;
-
-const SxInputMultiSelect = styled(InputMultiSelect)`
-  width: 200px;
+const Flex = styled("div")`
+  display: flex;
+  align-items: center;
+  gap: 5px;
 `;
 
 const SxHeading3 = styled(Heading3)`
@@ -41,13 +40,9 @@ interface Props {
   currentEntityIndex: number;
   currentEntityId: string;
   totalEvents: number;
+  status: SelectOptionT[];
+  setStatus: (value: SelectOptionT[]) => void;
   entityStatusOptions: SelectOptionT[];
-  entityIdsStatus: { [id: string]: SelectOptionT[] };
-  setEntityIdsStatus: Dispatch<
-    SetStateAction<{
-      [id: string]: SelectOptionT[];
-    }>
-  >;
 }
 
 export const EntityHeader = ({
@@ -55,13 +50,25 @@ export const EntityHeader = ({
   currentEntityIndex,
   currentEntityId,
   totalEvents,
+  status,
+  setStatus,
   entityStatusOptions,
-  entityIdsStatus,
-  setEntityIdsStatus,
 }: Props) => {
   const { t } = useTranslation();
+
+  const toggleOption = (option: SelectOptionT) => () => {
+    const newStatus = [...status];
+    const index = newStatus.findIndex((val) => val.value === option.value);
+    if (index === -1) {
+      newStatus.push(option);
+    } else {
+      newStatus.splice(index, 1);
+    }
+    setStatus(newStatus);
+  };
+
   return (
-    <HeadInfo className={className}>
+    <Root className={className}>
       <div>
         <EntityBadge>
           <Avatar>#{currentEntityIndex + 1}</Avatar>
@@ -71,25 +78,17 @@ export const EntityHeader = ({
           {totalEvents} {t("history.events", { count: totalEvents })}
         </Subtitle>
       </div>
-      <SxInputMultiSelect
-        creatable
-        placeholder={t("history.selectStatusPlaceholder")}
-        onChange={(values) => {
-          console.log("onChange", values);
-          setEntityIdsStatus((curr) => ({
-            ...curr,
-            [currentEntityId]: values,
-          }));
-        }}
-        value={
-          entityIdsStatus[currentEntityId]
-            ?.map((val) =>
-              entityStatusOptions.find((o) => o.value === val.value),
-            )
-            .filter(exists) || []
-        }
-        options={entityStatusOptions}
-      />
-    </HeadInfo>
+      <Flex>
+        {entityStatusOptions.map((option, i) => (
+          <BadgeToggleButton
+            active={!!status.find((opt) => opt.value === option.value)}
+            onClick={toggleOption(option)}
+            hotkey={i < 9 ? String(i + 1) : undefined}
+          >
+            {option.label}
+          </BadgeToggleButton>
+        ))}
+      </Flex>
+    </Root>
   );
 };

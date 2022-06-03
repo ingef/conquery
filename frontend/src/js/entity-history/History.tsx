@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
@@ -65,36 +65,40 @@ export const History = () => {
   const [entityStatusOptions, setEntityStatusOptions] = useState<
     SelectOptionT[]
   >([]);
-  const [entityIdsStatus, setEntityIdsStatus] = useState<EntityIdsStatus>({});
 
   const entityIds = useSelector<StateT, string[]>(
     (state) => state.entityHistory.entityIds,
   );
-
   const currentEntityId = useSelector<StateT, string | null>(
     (state) => state.entityHistory.currentEntityId,
   );
-  const currentEntityIndex = useMemo(() => {
-    return currentEntityId ? entityIds.indexOf(currentEntityId) : 0;
-  }, [currentEntityId, entityIds]);
   const currentEntityData = useSelector<
     StateT,
     EntityHistoryStateT["currentEntityData"]
   >((state) => state.entityHistory.currentEntityData);
 
-  const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
+  const [entityIdsStatus, setEntityIdsStatus] = useState<EntityIdsStatus>({});
+  const setCurrentEntityStatus = useCallback(
+    (value: SelectOptionT[]) => {
+      if (!currentEntityId) return;
 
-  useEffect(() => {
-    setEntityStatusOptions(
-      [
-        ...new Set(
-          Object.values(entityIdsStatus).flatMap((opts) =>
-            opts.map((o) => o.value as string),
-          ),
-        ),
-      ].map((val) => ({ label: val, value: val })),
-    );
-  }, [entityIdsStatus]);
+      setEntityIdsStatus((curr) => ({
+        ...curr,
+        [currentEntityId]: value,
+      }));
+    },
+    [currentEntityId],
+  );
+  const currentEntityStatus = useMemo(
+    () => (currentEntityId ? entityIdsStatus[currentEntityId] || [] : []),
+    [currentEntityId, entityIdsStatus],
+  );
+
+  const currentEntityIndex = useMemo(() => {
+    return currentEntityId ? entityIds.indexOf(currentEntityId) : 0;
+  }, [currentEntityId, entityIds]);
+
+  const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
 
   return (
     <FullScreen>
@@ -109,6 +113,8 @@ export const History = () => {
           entityIdsStatus={entityIdsStatus}
           currentEntityId={currentEntityId}
           currentEntityIndex={currentEntityIndex}
+          entityStatusOptions={entityStatusOptions}
+          setEntityStatusOptions={setEntityStatusOptions}
         />
         <Main>
           {currentEntityId && (
@@ -116,9 +122,9 @@ export const History = () => {
               currentEntityIndex={currentEntityIndex}
               currentEntityId={currentEntityId}
               totalEvents={currentEntityData.length}
-              entityIdsStatus={entityIdsStatus}
+              status={currentEntityStatus}
+              setStatus={setCurrentEntityStatus}
               entityStatusOptions={entityStatusOptions}
-              setEntityIdsStatus={setEntityIdsStatus}
             />
           )}
           <Controls>
