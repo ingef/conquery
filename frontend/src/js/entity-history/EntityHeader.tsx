@@ -81,6 +81,7 @@ export const EntityHeader = ({
       <Flex>
         {entityStatusOptions.map((option, i) => (
           <BadgeToggleButton
+            key={option.label + i}
             active={!!status.find((opt) => opt.value === option.value)}
             onClick={toggleOption(option)}
             hotkey={i < 9 ? String(i + 1) : undefined}

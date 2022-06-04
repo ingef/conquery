@@ -11,11 +11,13 @@ import WithTooltip from "../tooltip/WithTooltip";
 
 import { EntityIdsList } from "./EntityIdsList";
 import type { EntityIdsStatus } from "./History";
+import { LoadHistoryDropzone, LoadingPayload } from "./LoadHistoryDropzone";
 import { NavigationHeader } from "./NavigationHeader";
 import { closeHistory, useUpdateHistorySession } from "./actions";
 
 const Root = styled("div")`
   display: grid;
+  grid-template-rows: auto auto 1fr;
   gap: 10px;
   overflow: hidden;
   background-color: ${({ theme }) => theme.col.bg};
@@ -35,12 +37,12 @@ const SxNavigationHeader = styled(NavigationHeader)`
   margin: 0 10px 0 20px;
 `;
 
-const Middle = styled("div")`
+const SxLoadHistoryDropzone = styled(LoadHistoryDropzone)`
   height: 100%;
   overflow-y: auto;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ theme }) => theme.col.grayLight};
-  padding: 3px;
+  padding: 2px;
+  display: block;
+  color: inherit;
 `;
 const BottomActions = styled("div")`
   display: flex;
@@ -68,6 +70,7 @@ interface Props {
   currentEntityIndex: number;
   entityStatusOptions: SelectOptionT[];
   setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
+  onLoad: (payload: LoadingPayload) => void;
 }
 
 export const Navigation = ({
@@ -78,6 +81,7 @@ export const Navigation = ({
   currentEntityIndex,
   entityStatusOptions,
   setEntityStatusOptions,
+  onLoad,
 }: Props) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -89,12 +93,12 @@ export const Navigation = ({
   const goToPrev = useCallback(() => {
     const prevIdx = Math.max(0, currentEntityIndex - 1);
 
-    updateHistorySession({ entityId: entityIds[prevIdx], years: [] });
+    updateHistorySession({ entityId: entityIds[prevIdx] });
   }, [entityIds, currentEntityIndex]);
   const goToNext = useCallback(() => {
     const nextIdx = Math.min(entityIds.length - 1, currentEntityIndex + 1);
 
-    updateHistorySession({ entityId: entityIds[nextIdx], years: [] });
+    updateHistorySession({ entityId: entityIds[nextIdx] });
   }, [entityIds, currentEntityIndex]);
 
   useHotkeys("shift+up", goToPrev, [goToPrev]);
@@ -125,14 +129,14 @@ export const Navigation = ({
             <SxIconButton icon="arrow-up" onClick={goToPrev} />
           </SxWithTooltip>
         </TopActions>
-        <Middle>
+        <SxLoadHistoryDropzone onLoad={onLoad}>
           <EntityIdsList
             currentEntityId={currentEntityId}
             entityIds={entityIds}
             updateHistorySession={updateHistorySession}
             entityIdsStatus={entityIdsStatus}
           />
-        </Middle>
+        </SxLoadHistoryDropzone>
         <BottomActions>
           <SxWithTooltip
             text={`${t("history.nextButtonLabel")} (shift + ⬇)`}

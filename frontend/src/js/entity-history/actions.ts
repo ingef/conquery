@@ -22,6 +22,7 @@ export type EntityHistoryActions = ActionType<
   | typeof closeHistory
   | typeof loadHistoryData
   | typeof loadDefaultHistoryParamsSuccess
+  | typeof resetCurrentEntity
 >;
 
 export const openHistory = createAction("history/OPEN")();
@@ -49,6 +50,10 @@ export const useLoadDefaultHistoryParams = () => {
     }
   };
 };
+
+export const resetCurrentEntity = createAction(
+  "history/RESET_CURRENT_ENTITY",
+)();
 
 export const loadHistoryData = createAsyncAction(
   "history/LOAD_START",

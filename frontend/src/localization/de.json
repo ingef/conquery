@@ -461,6 +461,9 @@
       "selectStatusHeadline": "Möglicher Status pro Eintrag",
       "selectStatusPlaceholder": "Optionen ...",
       "selectStatusTooltip": "Hier werden die möglichen Status-Werte festgelegt, die danach an die einzelnen Entitäten vergeben werden können."
+    },
+    "load": {
+      "error": "Konnte Historie für diese Datei nicht laden."
     }
   }
 }

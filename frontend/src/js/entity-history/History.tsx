@@ -10,8 +10,10 @@ import type { StateT } from "../app/reducers";
 import { DetailControl, DetailLevel } from "./DetailControl";
 import { DownloadEntityDataButton } from "./DownloadEntityDataButton";
 import { EntityHeader } from "./EntityHeader";
+import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import { Timeline } from "./Timeline";
+import { useUpdateHistorySession } from "./actions";
 import type { EntityHistoryStateT } from "./reducer";
 
 const FullScreen = styled("div")`
@@ -99,6 +101,25 @@ export const History = () => {
   }, [currentEntityId, entityIds]);
 
   const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
+  const updateHistorySession = useUpdateHistorySession();
+
+  const onLoad = useCallback(
+    ({
+      label,
+      loadedEntityIds,
+      loadedEntityStatus,
+      loadedEntityStatusOptions,
+    }: LoadingPayload) => {
+      updateHistorySession({
+        label,
+        entityIds: loadedEntityIds,
+        entityId: loadedEntityIds[0],
+      });
+      setEntityIdsStatus(loadedEntityStatus);
+      setEntityStatusOptions(loadedEntityStatusOptions);
+    },
+    [],
+  );
 
   return (
     <FullScreen>
@@ -115,6 +136,7 @@ export const History = () => {
           currentEntityIndex={currentEntityIndex}
           entityStatusOptions={entityStatusOptions}
           setEntityStatusOptions={setEntityStatusOptions}
+          onLoad={onLoad}
         />
         <Main>
           {currentEntityId && (
