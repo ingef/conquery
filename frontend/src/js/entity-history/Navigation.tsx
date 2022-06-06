@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Dispatch, SetStateAction, useCallback, useMemo } from "react";
+import { Dispatch, memo, SetStateAction, useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -73,107 +73,111 @@ interface Props {
   onLoad: (payload: LoadingPayload) => void;
 }
 
-export const Navigation = ({
-  className,
-  entityIds,
-  entityIdsStatus,
-  currentEntityId,
-  currentEntityIndex,
-  entityStatusOptions,
-  setEntityStatusOptions,
-  onLoad,
-}: Props) => {
-  const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const updateHistorySession = useUpdateHistorySession();
-  const onCloseHistory = useCallback(() => {
-    dispatch(closeHistory());
-  }, [dispatch]);
+export const Navigation = memo(
+  ({
+    className,
+    entityIds,
+    entityIdsStatus,
+    currentEntityId,
+    currentEntityIndex,
+    entityStatusOptions,
+    setEntityStatusOptions,
+    onLoad,
+  }: Props) => {
+    const { t } = useTranslation();
+    const dispatch = useDispatch();
+    const updateHistorySession = useUpdateHistorySession();
+    const onCloseHistory = useCallback(() => {
+      dispatch(closeHistory());
+    }, [dispatch]);
 
-  const goToPrev = useCallback(() => {
-    const prevIdx = Math.max(0, currentEntityIndex - 1);
+    const goToPrev = useCallback(() => {
+      const prevIdx = Math.max(0, currentEntityIndex - 1);
 
-    updateHistorySession({ entityId: entityIds[prevIdx] });
-  }, [entityIds, currentEntityIndex]);
-  const goToNext = useCallback(() => {
-    const nextIdx = Math.min(entityIds.length - 1, currentEntityIndex + 1);
+      updateHistorySession({ entityId: entityIds[prevIdx] });
+    }, [entityIds, currentEntityIndex]);
+    const goToNext = useCallback(() => {
+      const nextIdx = Math.min(entityIds.length - 1, currentEntityIndex + 1);
 
-    updateHistorySession({ entityId: entityIds[nextIdx] });
-  }, [entityIds, currentEntityIndex]);
+      updateHistorySession({ entityId: entityIds[nextIdx] });
+    }, [entityIds, currentEntityIndex]);
 
-  useHotkeys("shift+up", goToPrev, [goToPrev]);
-  useHotkeys("shift+down", goToNext, [goToNext]);
+    useHotkeys("shift+up", goToPrev, [goToPrev]);
+    useHotkeys("shift+down", goToNext, [goToNext]);
 
-  const markedCount = useMemo(
-    () => Object.values(entityIdsStatus).filter((v) => v.length > 0).length,
-    [entityIdsStatus],
-  );
+    const markedCount = useMemo(
+      () => Object.values(entityIdsStatus).filter((v) => v.length > 0).length,
+      [entityIdsStatus],
+    );
 
-  return (
-    <Root className={className}>
-      <BackButton frame icon="chevron-left" onClick={onCloseHistory}>
-        {t("common.cancel")}
-      </BackButton>
-      <SxNavigationHeader
-        markedCount={markedCount}
-        idsCount={entityIds.length}
-        entityStatusOptions={entityStatusOptions}
-        setEntityStatusOptions={setEntityStatusOptions}
-      />
-      <EntityIdNav>
-        <TopActions>
-          <SxWithTooltip
-            text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
-            lazy
-          >
-            <SxIconButton icon="arrow-up" onClick={goToPrev} />
-          </SxWithTooltip>
-        </TopActions>
-        <SxLoadHistoryDropzone onLoad={onLoad}>
-          <EntityIdsList
-            currentEntityId={currentEntityId}
-            entityIds={entityIds}
-            updateHistorySession={updateHistorySession}
-            entityIdsStatus={entityIdsStatus}
-          />
-        </SxLoadHistoryDropzone>
-        <BottomActions>
-          <SxWithTooltip
-            text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
-            lazy
-          >
-            <SxIconButton icon="arrow-down" onClick={goToNext} />
-          </SxWithTooltip>
-        </BottomActions>
-        <BottomActions style={{ marginTop: "10px" }}>
-          <SxWithTooltip text={t("history.downloadButtonLabel")}>
-            <SxIconButton
-              style={{ backgroundColor: "white" }}
-              frame
-              icon="download"
-              onClick={() => {
-                const idToRow = (id: string) => [
-                  id,
-                  entityIdsStatus[id]
-                    ? entityIdsStatus[id].map((o) => o.value)
-                    : "",
-                ];
-
-                const csvString = entityIds
-                  .map(idToRow)
-                  .map((row) => row.join(";"))
-                  .join("\n");
-
-                const blob = new Blob([csvString], { type: "application/csv" });
-
-                downloadBlob(blob, "list.csv");
-              }}
+    return (
+      <Root className={className}>
+        <BackButton frame icon="chevron-left" onClick={onCloseHistory}>
+          {t("common.cancel")}
+        </BackButton>
+        <SxNavigationHeader
+          markedCount={markedCount}
+          idsCount={entityIds.length}
+          entityStatusOptions={entityStatusOptions}
+          setEntityStatusOptions={setEntityStatusOptions}
+        />
+        <EntityIdNav>
+          <TopActions>
+            <SxWithTooltip
+              text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
+              lazy
             >
-              CSV
-            </SxIconButton>
-          </SxWithTooltip>
-        </BottomActions>
-      </EntityIdNav>
-    </Root>
-  );
-};
+              <SxIconButton icon="arrow-up" onClick={goToPrev} />
+            </SxWithTooltip>
+          </TopActions>
+          <SxLoadHistoryDropzone onLoad={onLoad}>
+            <EntityIdsList
+              currentEntityId={currentEntityId}
+              entityIds={entityIds}
+              updateHistorySession={updateHistorySession}
+              entityIdsStatus={entityIdsStatus}
+            />
+          </SxLoadHistoryDropzone>
+          <BottomActions>
+            <SxWithTooltip
+              text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
+              lazy
+            >
+              <SxIconButton icon="arrow-down" onClick={goToNext} />
+            </SxWithTooltip>
+          </BottomActions>
+          <BottomActions style={{ marginTop: "10px" }}>
+            <SxWithTooltip text={t("history.downloadButtonLabel")}>
+              <SxIconButton
+                style={{ backgroundColor: "white" }}
+                frame
+                icon="download"
+                onClick={() => {
+                  const idToRow = (id: string) => [
+                    id,
+                    entityIdsStatus[id]
+                      ? entityIdsStatus[id].map((o) => o.value)
+                      : "",
+                  ];
+
+                  const csvString = entityIds
+                    .map(idToRow)
+                    .map((row) => row.join(";"))
+                    .join("\n");
+
+                  const blob = new Blob([csvString], {
+                    type: "application/csv",
+                  });
+
+                  downloadBlob(blob, "list.csv");
+                }}
+              >
+                CSV
+              </SxIconButton>
+            </SxWithTooltip>
+          </BottomActions>
+        </EntityIdNav>
+      </Root>
+    );
+  },
+);

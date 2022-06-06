@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -112,7 +112,7 @@ interface Props {
   detailLevel: DetailLevel;
 }
 
-export const Timeline = ({ className, detailLevel }: Props) => {
+export const Timeline = memo(({ className, detailLevel }: Props) => {
   const { t } = useTranslation();
   const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
     (state) => state.entityHistory.currentEntityData,
@@ -223,7 +223,8 @@ export const Timeline = ({ className, detailLevel }: Props) => {
       })}
     </Root>
   );
-};
+});
+
 const useTimeBucketedDataDesc = (
   data: EntityHistoryStateT["currentEntityData"],
 ): {

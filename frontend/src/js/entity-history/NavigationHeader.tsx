@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, memo, SetStateAction, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -66,47 +66,49 @@ interface Props {
   entityStatusOptions: SelectOptionT[];
   setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
 }
-export const NavigationHeader = ({
-  className,
-  idsCount,
-  markedCount,
-  setEntityStatusOptions,
-  entityStatusOptions,
-}: Props) => {
-  const { t } = useTranslation();
-  const label = useSelector<StateT, string>(
-    (state) => state.entityHistory.label,
-  );
+export const NavigationHeader = memo(
+  ({
+    className,
+    idsCount,
+    markedCount,
+    setEntityStatusOptions,
+    entityStatusOptions,
+  }: Props) => {
+    const { t } = useTranslation();
+    const label = useSelector<StateT, string>(
+      (state) => state.entityHistory.label,
+    );
 
-  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+    const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
-  return (
-    <Root className={className}>
-      {settingsModalOpen && (
-        <SettingsModal
-          onClose={() => setSettingsModalOpen(false)}
-          setEntityStatusOptions={setEntityStatusOptions}
-          entityStatusOptions={entityStatusOptions}
-        />
-      )}
-      <BaseInfo>
-        <div style={{ overflow: "hidden" }}>
-          <SxHeading3 title={label}>{label}</SxHeading3>
-          <SpecialText>{t("history.history")}</SpecialText>
-        </div>
-        <WithTooltip text={t("history.settings.headline")}>
-          <IconButton
-            icon="sliders"
-            onClick={() => setSettingsModalOpen(true)}
+    return (
+      <Root className={className}>
+        {settingsModalOpen && (
+          <SettingsModal
+            onClose={() => setSettingsModalOpen(false)}
+            setEntityStatusOptions={setEntityStatusOptions}
+            entityStatusOptions={entityStatusOptions}
           />
-        </WithTooltip>
-      </BaseInfo>
-      <StatsGrid>
-        <Count>{idsCount}</Count>
-        <Text>{t("tooltip.entitiesFound", { count: idsCount })}</Text>
-        <Count>{markedCount}</Count>
-        <Text>{t("history.marked", { count: markedCount })}</Text>
-      </StatsGrid>
-    </Root>
-  );
-};
+        )}
+        <BaseInfo>
+          <div style={{ overflow: "hidden" }}>
+            <SxHeading3 title={label}>{label}</SxHeading3>
+            <SpecialText>{t("history.history")}</SpecialText>
+          </div>
+          <WithTooltip text={t("history.settings.headline")}>
+            <IconButton
+              icon="sliders"
+              onClick={() => setSettingsModalOpen(true)}
+            />
+          </WithTooltip>
+        </BaseInfo>
+        <StatsGrid>
+          <Count>{idsCount}</Count>
+          <Text>{t("tooltip.entitiesFound", { count: idsCount })}</Text>
+          <Count>{markedCount}</Count>
+          <Text>{t("history.marked", { count: markedCount })}</Text>
+        </StatsGrid>
+      </Root>
+    );
+  },
+);

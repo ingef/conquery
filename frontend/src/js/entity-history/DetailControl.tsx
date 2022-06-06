@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Dispatch, ReactNode, SetStateAction, useMemo } from "react";
+import { Dispatch, memo, ReactNode, SetStateAction, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import FaIcon from "../icon/FaIcon";
@@ -52,20 +52,18 @@ const useButtonConfig = () => {
   );
 };
 
-export const DetailControl = ({
-  className,
-  detailLevel,
-  setDetailLevel,
-}: Props) => {
-  const navOptions = useButtonConfig();
-  return (
-    <Root className={className}>
-      <SmallTabNavigation
-        size="L"
-        options={navOptions}
-        selectedTab={detailLevel}
-        onSelectTab={(tab) => setDetailLevel(tab as DetailLevel)}
-      />
-    </Root>
-  );
-};
+export const DetailControl = memo(
+  ({ className, detailLevel, setDetailLevel }: Props) => {
+    const navOptions = useButtonConfig();
+    return (
+      <Root className={className}>
+        <SmallTabNavigation
+          size="L"
+          options={navOptions}
+          selectedTab={detailLevel}
+          onSelectTab={(tab) => setDetailLevel(tab as DetailLevel)}
+        />
+      </Root>
+    );
+  },
+);
