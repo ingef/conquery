@@ -203,7 +203,7 @@ export const Timeline = memo(({ className, detailLevel }: Props) => {
                                       <span style={{ flexShrink: 0 }}>
                                         {`${row[key]}${
                                           index !== array.length - 1
-                                            ? " – "
+                                            ? " | "
                                             : ""
                                         }`}
                                       </span>
