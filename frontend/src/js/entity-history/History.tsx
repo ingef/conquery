@@ -37,7 +37,6 @@ const SxEntityHeader = styled(EntityHeader)`
 const SxTimeline = styled(Timeline)`
   grid-area: timeline;
 `;
-const SxDetailControl = styled(DetailControl)``;
 
 const Controls = styled("div")`
   grid-area: control;
@@ -64,10 +63,6 @@ export interface EntityIdsStatus {
 }
 
 export const History = () => {
-  const [entityStatusOptions, setEntityStatusOptions] = useState<
-    SelectOptionT[]
-  >([]);
-
   const entityIds = useSelector<StateT, string[]>(
     (state) => state.entityHistory.entityIds,
   );
@@ -79,29 +74,21 @@ export const History = () => {
     EntityHistoryStateT["currentEntityData"]
   >((state) => state.entityHistory.currentEntityData);
 
-  const [entityIdsStatus, setEntityIdsStatus] = useState<EntityIdsStatus>({});
-  const setCurrentEntityStatus = useCallback(
-    (value: SelectOptionT[]) => {
-      if (!currentEntityId) return;
-
-      setEntityIdsStatus((curr) => ({
-        ...curr,
-        [currentEntityId]: value,
-      }));
-    },
-    [currentEntityId],
-  );
-  const currentEntityStatus = useMemo(
-    () => (currentEntityId ? entityIdsStatus[currentEntityId] || [] : []),
-    [currentEntityId, entityIdsStatus],
-  );
+  const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
+  const updateHistorySession = useUpdateHistorySession();
 
   const currentEntityIndex = useMemo(() => {
     return currentEntityId ? entityIds.indexOf(currentEntityId) : 0;
   }, [currentEntityId, entityIds]);
 
-  const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
-  const updateHistorySession = useUpdateHistorySession();
+  const {
+    entityStatusOptions,
+    setEntityStatusOptions,
+    entityIdsStatus,
+    setEntityIdsStatus,
+    currentEntityStatus,
+    setCurrentEntityStatus,
+  } = useEntityStatus({ currentEntityId });
 
   const onLoad = useCallback(
     ({
@@ -150,7 +137,7 @@ export const History = () => {
             />
           )}
           <Controls>
-            <SxDetailControl
+            <DetailControl
               detailLevel={detailLevel}
               setDetailLevel={setDetailLevel}
             />
@@ -167,4 +154,40 @@ export const History = () => {
       </SplitPane>
     </FullScreen>
   );
+};
+
+const useEntityStatus = ({
+  currentEntityId,
+}: {
+  currentEntityId: string | null;
+}) => {
+  const [entityStatusOptions, setEntityStatusOptions] = useState<
+    SelectOptionT[]
+  >([]);
+
+  const [entityIdsStatus, setEntityIdsStatus] = useState<EntityIdsStatus>({});
+  const setCurrentEntityStatus = useCallback(
+    (value: SelectOptionT[]) => {
+      if (!currentEntityId) return;
+
+      setEntityIdsStatus((curr) => ({
+        ...curr,
+        [currentEntityId]: value,
+      }));
+    },
+    [currentEntityId],
+  );
+  const currentEntityStatus = useMemo(
+    () => (currentEntityId ? entityIdsStatus[currentEntityId] || [] : []),
+    [currentEntityId, entityIdsStatus],
+  );
+
+  return {
+    entityStatusOptions,
+    setEntityStatusOptions,
+    entityIdsStatus,
+    setEntityIdsStatus,
+    currentEntityStatus,
+    setCurrentEntityStatus,
+  };
 };
