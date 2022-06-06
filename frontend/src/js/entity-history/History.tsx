@@ -14,7 +14,6 @@ import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import { Timeline } from "./Timeline";
 import { useUpdateHistorySession } from "./actions";
-import type { EntityHistoryStateT } from "./reducer";
 
 const FullScreen = styled("div")`
   position: fixed;
@@ -69,11 +68,6 @@ export const History = () => {
   const currentEntityId = useSelector<StateT, string | null>(
     (state) => state.entityHistory.currentEntityId,
   );
-  const currentEntityData = useSelector<
-    StateT,
-    EntityHistoryStateT["currentEntityData"]
-  >((state) => state.entityHistory.currentEntityData);
-
   const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
   const updateHistorySession = useUpdateHistorySession();
 
@@ -130,7 +124,6 @@ export const History = () => {
             <SxEntityHeader
               currentEntityIndex={currentEntityIndex}
               currentEntityId={currentEntityId}
-              totalEvents={currentEntityData.length}
               status={currentEntityStatus}
               setStatus={setCurrentEntityStatus}
               entityStatusOptions={entityStatusOptions}
@@ -148,7 +141,7 @@ export const History = () => {
               return <div>Something went wrong here.</div>;
             }}
           >
-            <SxTimeline data={currentEntityData} detailLevel={detailLevel} />
+            <SxTimeline detailLevel={detailLevel} />
           </ErrorBoundary>
         </Main>
       </SplitPane>

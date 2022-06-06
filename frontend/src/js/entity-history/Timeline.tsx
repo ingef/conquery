@@ -1,11 +1,13 @@
 import styled from "@emotion/styled";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
+import type { StateT } from "../app/reducers";
 import { Heading4 } from "../headings/Headings";
 import WithTooltip from "../tooltip/WithTooltip";
 
-import { DetailLevel } from "./DetailControl";
+import type { DetailLevel } from "./DetailControl";
 import { RowDates } from "./RowDates";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
 
@@ -107,12 +109,14 @@ const Box = styled("div")`
 
 interface Props {
   className?: string;
-  data: EntityHistoryStateT["currentEntityData"];
   detailLevel: DetailLevel;
 }
 
-export const Timeline = ({ className, data, detailLevel }: Props) => {
+export const Timeline = ({ className, detailLevel }: Props) => {
   const { t } = useTranslation();
+  const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
+    (state) => state.entityHistory.currentEntityData,
+  );
 
   const bucketedEntityDataByYearAndQuarter = useTimeBucketedDataDesc(data);
 

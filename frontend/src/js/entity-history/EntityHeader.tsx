@@ -1,7 +1,9 @@
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
-import { SelectOptionT } from "../api/types";
+import type { SelectOptionT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { BadgeToggleButton } from "../button/BadgeToggleButton";
 import { Heading3 } from "../headings/Headings";
 
@@ -39,7 +41,6 @@ interface Props {
   className?: string;
   currentEntityIndex: number;
   currentEntityId: string;
-  totalEvents: number;
   status: SelectOptionT[];
   setStatus: (value: SelectOptionT[]) => void;
   entityStatusOptions: SelectOptionT[];
@@ -49,11 +50,14 @@ export const EntityHeader = ({
   className,
   currentEntityIndex,
   currentEntityId,
-  totalEvents,
   status,
   setStatus,
   entityStatusOptions,
 }: Props) => {
+  const totalEvents = useSelector<StateT, number>(
+    (state) => state.entityHistory.currentEntityData.length,
+  );
+
   const { t } = useTranslation();
 
   const toggleOption = (option: SelectOptionT) => () => {
