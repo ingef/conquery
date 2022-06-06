@@ -71,7 +71,7 @@ const YearHead = styled("div")`
 `;
 const YearGroup = styled("div")`
   padding: 7px;
-  box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.2);
+  box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.2);
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;

@@ -33,7 +33,7 @@ const initialState: EntityHistoryStateT = {
     sources: [],
   },
   label: "",
-  columns: [],
+  columns: [], // TODO: Make them currentEntityColumns and do something useful with them
   isLoading: false,
   isOpen: false,
   entityIds: [],
