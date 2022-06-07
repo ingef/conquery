@@ -13,6 +13,8 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.univocity.parsers.common.IterableResult;
+import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -41,7 +43,15 @@ public class MapIndexService implements Injectable {
 			final CsvParser csvParser = new CsvParser(csvParserSettings);
 
 			try (InputStream inputStream = key.csv.openStream()) {
-				for (Record row : csvParser.iterateRecords(inputStream)) {
+
+				final IterableResult<Record, ParsingContext> records = csvParser.iterateRecords(inputStream);
+
+				// Set default to "" for all columns
+				final String[] headers = records.getContext().headers();
+				records.getContext().recordMetaData().setDefaultValueOfColumns("", headers);
+
+				// Iterate records
+				for (Record row : records) {
 					final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
 					final String internalValue = row.getString(key.internalColumn);
@@ -58,7 +68,11 @@ public class MapIndexService implements Injectable {
 
 					// We allow template values to be missing
 					final String externalValue = substitutor.replace(key.externalTemplate);
-					int2ext.put(internalValue, externalValue);
+
+					// Clean up the substitution by removing repeated white spaces
+					String externalValueCleaned = externalValue.replaceFirst("\\s+", " ");
+
+					int2ext.put(internalValue, externalValueCleaned);
 				}
 			}
 			catch (IOException ioException) {
