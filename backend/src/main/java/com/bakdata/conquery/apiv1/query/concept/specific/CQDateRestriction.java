@@ -24,6 +24,8 @@ import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -32,16 +34,26 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class CQDateRestriction extends CQElement {
-	@NotNull
-	@Valid
+
 	private final Range<LocalDate> dateRange;
+
+	private final CDateSet dateSet;
+
 	@Valid
 	@NotNull
 	private final CQElement child;
 
+	@JsonIgnore
+	@ValidationMethod(message = "Cannot use both Date-Range and Date-Set.")
+	public boolean isDateRangeOrDateSet() {
+		return (dateRange != null) != (dateSet != null && !dateSet.isEmpty());
+	}
+
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		QPNode childAgg = child.createQueryPlan(context.withDateRestriction(CDateRange.of(dateRange)), plan);
+		final CDateSet restriction = getRestriction();
+
+		QPNode childAgg = child.createQueryPlan(context.withDateRestriction(restriction), plan);
 
 		//insert behind every ValidityDateNode
 		Queue<QPNode> openList = new ArrayDeque<>();
@@ -54,7 +66,7 @@ public class CQDateRestriction extends CQElement {
 				ValidityDateNode validityDateNode = (ValidityDateNode) current;
 
 				validityDateNode.setChild(new DateRestrictingNode(
-						CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
+						restriction,
 						validityDateNode.getChild()
 				));
 			}
@@ -67,6 +79,15 @@ public class CQDateRestriction extends CQElement {
 		}
 
 		return childAgg;
+	}
+
+	@JsonIgnore
+	private CDateSet getRestriction() {
+		if (dateSet != null) {
+			return dateSet;
+		}
+
+		return CDateSet.create(Collections.singleton(CDateRange.of(dateRange)));
 	}
 
 	@Override
