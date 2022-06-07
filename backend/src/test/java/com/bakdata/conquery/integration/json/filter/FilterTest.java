@@ -143,7 +143,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		cqConcept.setTables(Collections.singletonList(cqTable));
 
 		if (dateRange != null) {
-			CQDateRestriction restriction = new CQDateRestriction(dateRange, cqConcept);
+			CQDateRestriction restriction = new CQDateRestriction(dateRange, null, cqConcept);
 			return new ConceptQuery(restriction);
 		}
 		return new ConceptQuery(cqConcept);

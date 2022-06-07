@@ -4,7 +4,6 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +38,7 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -152,7 +151,7 @@ public class QueryResource {
 	public static class EntityPreview {
 		private String idKind; //TODO I think ID is fallback, but i dont currently know.
 		private final String entityId;
-		private final Range<LocalDate> time;
+		private final CDateSet time;
 		@NsIdRefCollection
 		private final List<Connector> sources;
 	}
