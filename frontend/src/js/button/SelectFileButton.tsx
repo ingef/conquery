@@ -8,6 +8,8 @@ export const SelectFileButton = styled(BasicButton)`
   font-weight: 300;
   border: none;
   font-size: ${({ theme }) => theme.font.tiny};
+  display: flex;
+  align-items: center;
 
   &:hover {
     text-decoration: underline;
