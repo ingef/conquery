@@ -145,7 +145,7 @@ export function useUpdateHistorySession() {
         defaultEntityHistoryParams.sources,
       );
 
-      const csvUrl = entityResult.find((url) => url.endsWith("csv"));
+      const csvUrl = entityResult.resultUrls.find((url) => url.endsWith("csv"));
 
       if (!csvUrl) {
         throw new Error("No CSV URL found");
@@ -178,15 +178,15 @@ export function useUpdateHistorySession() {
 const transformEntityData = (data: { [key: string]: any }[]) => {
   return data
     .map((row) => {
-      const { first, last } = getFirstAndLastDateOfRange(row["Datumswerte"]);
+      const { first, last } = getFirstAndLastDateOfRange(row["dates"]);
 
       return first && last
         ? {
+            ...row,
             dates: {
               from: first,
               to: last,
             },
-            ...row,
           }
         : row;
     })

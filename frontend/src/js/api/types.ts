@@ -320,12 +320,18 @@ export type ColumnDescriptionKind =
   | "DATE_RANGE"
   | "LIST[DATE_RANGE]"
   | "CATEGORICAL"
-  | "RESOLUTION";
+  | "RESOLUTION"
+  | "SECONDARY_ID"
+  | "CONCEPT_COLUMN";
 
 export interface ColumnDescription {
   label: string;
-  selectId: string | null;
   type: ColumnDescriptionKind;
+
+  // NOT USED BY US:
+  defaultLabel: string;
+  selectId: string | null;
+  userConceptLabel: string | null;
 }
 
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields
@@ -456,4 +462,7 @@ export type UploadQueryResponseT = {
 
 export type GetEntityHistoryDefaultParamsResponse = string[]; // connectors
 
-export type GetEntityHistoryResponse = string[]; // result urls
+export type GetEntityHistoryResponse = {
+  resultUrls: string[];
+  columnDescriptions: ColumnDescription[];
+};
