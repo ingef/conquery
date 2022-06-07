@@ -21,7 +21,7 @@ export type EntityHistoryActions = ActionType<
   | typeof loadDefaultHistoryParamsSuccess
 >;
 
-export const openHistory = createAction("history/CLOSE")();
+export const openHistory = createAction("history/OPEN")();
 export const closeHistory = createAction("history/CLOSE")();
 
 export const loadDefaultHistoryParamsSuccess = createAction(
