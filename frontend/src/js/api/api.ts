@@ -28,6 +28,9 @@ import type {
   GetFormConfigResponseT,
   GetDatasetsResponseT,
   UploadQueryResponseT,
+  GetEntityHistoryResponse,
+  GetEntityHistoryDefaultParamsResponse,
+  TableT,
   DatasetT,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
@@ -314,5 +317,41 @@ export const useDeleteFormConfig = () => {
         `/datasets/${datasetId}/form-configs/${formConfigId}`,
       ),
       method: "DELETE",
+    });
+};
+
+export const useGetEntityHistoryDefaultParams = () => {
+  const api = useApi<GetEntityHistoryDefaultParamsResponse>();
+
+  return (datasetId: DatasetT["id"]) =>
+    api({
+      url: getProtectedUrl(`/datasets/${datasetId}/entity-preview`),
+    });
+};
+
+export const useGetEntityHistory = () => {
+  const api = useApi<GetEntityHistoryResponse>();
+
+  return (
+    datasetId: DatasetT["id"],
+    entityId: string,
+    sources: TableT["id"][],
+    time: {
+      min: string; // Format like "2020-01-01"
+      max: string; // Format like "2020-12-31"
+    } = {
+      min: "2015-01-01",
+      max: "2021-12-31",
+    },
+  ) =>
+    api({
+      method: "POST",
+      url: getProtectedUrl(`/datasets/${datasetId}/queries/entity`),
+      data: {
+        idKind: "PID", // TODO: Figure out which other strings are possible here
+        entityId,
+        time,
+        sources,
+      },
     });
 };

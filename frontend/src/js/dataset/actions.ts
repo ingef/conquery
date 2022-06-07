@@ -8,6 +8,7 @@ import { StateT } from "../app/reducers";
 import { ErrorObject } from "../common/actions";
 import { exists } from "../common/helpers/exists";
 import { useLoadTrees } from "../concept-trees/actions";
+import { useLoadDefaultHistoryParams } from "../entity-history/actions";
 import { useLoadQueries } from "../previous-queries/list/actions";
 import { setMessage } from "../snack-message/actions";
 import { clearQuery, loadSavedQuery } from "../standard-query-editor/actions";
@@ -32,6 +33,7 @@ export const useLoadDatasets = () => {
   const dispatch = useDispatch();
   const getDatasets = useGetDatasets();
   const loadTrees = useLoadTrees();
+  const loadDefaultHistoryParams = useLoadDefaultHistoryParams();
 
   return async () => {
     dispatch(loadDatasets.request());
@@ -48,6 +50,8 @@ export const useLoadDatasets = () => {
       const defaultId = datasets[0].id;
 
       setDatasetId(defaultId);
+
+      loadDefaultHistoryParams(defaultId);
 
       return loadTrees(defaultId);
     } catch (e) {

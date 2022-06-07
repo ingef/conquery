@@ -452,3 +452,7 @@ export type UploadQueryResponseT = {
   unresolvedId: string[][];
   unreadableDate: string[][];
 };
+
+export type GetEntityHistoryDefaultParamsResponse = string[]; // connectors
+
+export type GetEntityHistoryResponse = string[]; // result urls

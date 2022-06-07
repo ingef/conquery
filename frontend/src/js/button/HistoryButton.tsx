@@ -1,12 +1,11 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { ColumnDescription } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
-import { openPreview, useLoadPreviewData } from "../preview/actions";
+import { openHistory, useInitHistorySession } from "../entity-history/actions";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import IconButton from "./IconButton";
@@ -21,28 +20,23 @@ interface PropsT {
   className?: string;
 }
 
-const PreviewButton: FC<PropsT> = ({
-  url,
-  columns,
-  className,
-  ...restProps
-}) => {
+const HistoryButton = ({ url, columns, className, ...restProps }: PropsT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const isLoading = useSelector<StateT, boolean>(
     (state) => state.preview.isLoading,
   );
 
-  const loadPreviewData = useLoadPreviewData();
   const getAuthorizedUrl = useGetAuthorizedUrl();
+  const initHistorySession = useInitHistorySession();
 
   return (
-    <WithTooltip text={t("preview.preview")} className={className}>
+    <WithTooltip text={t("history.history")} className={className}>
       <SxIconButton
-        icon={isLoading ? "spinner" : "search"}
+        icon={isLoading ? "spinner" : "book"}
         onClick={async () => {
-          await loadPreviewData(getAuthorizedUrl(url), columns);
-          dispatch(openPreview());
+          await initHistorySession(getAuthorizedUrl(url), columns);
+          dispatch(openHistory());
         }}
         {...restProps}
       />
@@ -50,4 +44,4 @@ const PreviewButton: FC<PropsT> = ({
   );
 };
 
-export default PreviewButton;
+export default HistoryButton;
