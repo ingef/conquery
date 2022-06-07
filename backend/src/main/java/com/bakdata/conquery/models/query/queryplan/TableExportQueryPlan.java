@@ -70,8 +70,8 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 					continue;
 				}
 
-				int start = bucket.getEntityStart(entityId);
-				int end = bucket.getEntityEnd(entityId);
+				final int start = bucket.getEntityStart(entityId);
+				final int end = bucket.getEntityEnd(entityId);
 
 				for (int event = start; event < end; event++) {
 
@@ -81,7 +81,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 					}
 
 					final Object[] entry = new Object[totalColumns];
-					entry[1] = exportDescription.getTable().getName(); // TODO Or Id or Label?
+					entry[1] = exportDescription.getTable().getLabel(); // TODO Honestly, I want to map this somehow, but until then Label is sufficient
 
 					for (Column column : exportDescription.getTable().getColumns()) {
 
