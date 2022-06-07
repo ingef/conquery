@@ -18,7 +18,7 @@ import lombok.ToString;
  **/
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_QUARTER")
 @Getter
-@ToString(of = "store")
+@ToString
 public class DateRangeTypeQuarter implements DateRangeStore {
 
 	private final IntegerStore store;

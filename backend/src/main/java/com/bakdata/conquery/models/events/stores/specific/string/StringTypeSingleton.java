@@ -5,7 +5,7 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
+import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -21,14 +21,14 @@ import lombok.ToString;
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_SINGLETON")
-@ToString(of = "singleValue")
+@ToString
 public class StringTypeSingleton implements StringStore {
 
 	private final String singleValue;
-	private final BitSetStore delegate;
+	private final BooleanStore delegate;
 
 	@JsonCreator
-	public StringTypeSingleton(String singleValue, BitSetStore delegate) {
+	public StringTypeSingleton(String singleValue, BooleanStore delegate) {
 		super();
 		this.singleValue = singleValue;
 		this.delegate = delegate;

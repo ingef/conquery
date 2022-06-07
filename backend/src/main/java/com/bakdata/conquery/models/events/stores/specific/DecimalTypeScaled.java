@@ -16,7 +16,7 @@ import lombok.ToString;
  */
 @CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
 @Getter
-@ToString(of = {"scale", "subType"})
+@ToString
 public class DecimalTypeScaled implements DecimalStore {
 
 	private final int scale;

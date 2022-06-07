@@ -17,7 +17,7 @@ import lombok.ToString;
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_DATE_RANGE")
 @Getter
 @Setter
-@ToString(of = {"minStore", "maxStore"})
+@ToString
 public class DateRangeTypeDateRange implements DateRangeStore {
 
 	private final DateStore minStore;

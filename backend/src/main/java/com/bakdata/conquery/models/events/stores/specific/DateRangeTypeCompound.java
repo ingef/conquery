@@ -27,9 +27,8 @@ import lombok.ToString;
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_COMPOUND")
 @Getter
 @Setter
-@ToString(of = {"startColumn", "endColumn"})
+@ToString
 public class DateRangeTypeCompound implements DateRangeStore {
-
 
 	@NotNull
 	@NotEmpty
@@ -41,6 +40,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	 * @implNote since this value is lazy loaded, do not use it directly and use the getter instead.
 	 */
 	@JsonIgnore
+	@ToString.Exclude
 	private DateStore startStore;
 
 	/**
@@ -49,6 +49,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	 * @implNote since this value is lazy loaded, do not use it directly and use the getter instead.
 	 */
 	@JsonIgnore
+	@ToString.Exclude
 	private DateStore endStore;
 
 
@@ -64,6 +65,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	 */
 	@Setter(AccessLevel.PROTECTED)
 	@JsonIgnore
+	@ToString.Exclude
 	private Bucket parent;
 
 	public DateRangeTypeCompound(String startColumn, String endColumn, BooleanStore has) {

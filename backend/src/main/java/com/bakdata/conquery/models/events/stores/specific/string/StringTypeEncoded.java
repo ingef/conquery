@@ -22,6 +22,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.ToString;
 
 /**
  * Compacted String store, that uses two methods to reduce memory footprint:
@@ -31,6 +32,7 @@ import lombok.SneakyThrows;
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_ENCODED")
+@ToString
 public class StringTypeEncoded implements StringStore {
 
 	@Nonnull
@@ -42,6 +44,7 @@ public class StringTypeEncoded implements StringStore {
 	 * Cache element lookups and as they might be time consuming, when a trie traversal is necessary (See {@link com.bakdata.conquery.util.dict.SuccinctTrie}).
 	 */
 	@JsonIgnore
+	@ToString.Exclude
 	private final LoadingCache<Integer,String> elementCache;
 
 	@JsonCreator
@@ -106,11 +109,6 @@ public class StringTypeEncoded implements StringStore {
 				return encoding.decode(subIt.next());
 			}
 		};
-	}
-
-	@Override
-	public String toString() {
-		return "StringTypeEncoded(encoding=" + encoding + ", subType=" + subType + ")";
 	}
 
 	@Override

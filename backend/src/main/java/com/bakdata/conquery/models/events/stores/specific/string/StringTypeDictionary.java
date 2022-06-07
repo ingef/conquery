@@ -14,6 +14,7 @@ import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
 @NoArgsConstructor
+@ToString
 public class StringTypeDictionary implements ColumnStore {
 
 	protected IntegerStore numberType;
@@ -68,11 +70,6 @@ public class StringTypeDictionary implements ColumnStore {
 		}
 
 		return Iterators.transform(dictionary.iterator(), DictionaryEntry::getValue);
-	}
-
-	@Override
-	public String toString() {
-		return "StringTypeDictionary(dictionary=" + dictionary + ", numberType=" + numberType + ")";
 	}
 
 	@Override

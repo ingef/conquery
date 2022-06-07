@@ -22,7 +22,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_PREFIX")
-@ToString(of = {"prefix", "suffix", "subType"})
+@ToString
 public class StringTypePrefixSuffix implements StringStore {
 
 	@Nonnull

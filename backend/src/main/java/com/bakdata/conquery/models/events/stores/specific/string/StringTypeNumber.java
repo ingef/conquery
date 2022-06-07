@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.IntStream;
 
-import javax.annotation.Nonnull;
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
@@ -25,10 +25,10 @@ import lombok.ToString;
 @Getter
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_NUMBER")
-@ToString(of = "delegate")
+@ToString
 public class StringTypeNumber implements StringStore {
 
-	@Nonnull
+	@NotNull
 	protected IntegerStore delegate;
 	//used as a compact intset
 	private Range<Integer> range;
@@ -36,6 +36,7 @@ public class StringTypeNumber implements StringStore {
 	// Only used for setting values in Preprocessing.
 	// TODO fk: can this be moved to the parser?
 	@JsonIgnore
+	@ToString.Exclude
 	private transient Map<Integer, String> dictionary;
 
 	public StringTypeNumber(Range<Integer> range, IntegerStore numberType, Map<Integer, String> dictionary) {

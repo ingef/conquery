@@ -12,7 +12,7 @@ import lombok.ToString;
 @CPSType(base = ColumnStore.class, id = "MONEY_VARINT")
 @Getter
 @Setter
-@ToString(of = "numberType")
+@ToString
 public class MoneyIntStore implements MoneyStore {
 
 	protected IntegerStore numberType;

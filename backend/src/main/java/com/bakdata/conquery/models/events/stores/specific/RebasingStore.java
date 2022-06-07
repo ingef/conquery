@@ -14,11 +14,12 @@ import org.jetbrains.annotations.Nullable;
  */
 @CPSType(base = ColumnStore.class, id = "REBASE")
 @Getter
-@ToString(of = {"min", "store"})
+@ToString
 public class RebasingStore implements IntegerStore {
 
 	private final long min;
 
+	@ToString.Exclude
 	private final long root;
 
 	private final IntegerStore store;
