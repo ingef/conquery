@@ -70,11 +70,10 @@
     "dragElementPlease": "Add an element",
     "dragQuery": "Add a query",
     "explanation": "You'll create a query in this area",
-    "drop": "Drop",
+    "dropIntoThisArea": "Drop one of the following to get started",
     "aConcept": "a concept",
     "aQuery": "a previous query",
-    "aConceptList": "a concept list",
-    "intoThisArea": "into this area"
+    "aConceptList": "a concept list"
   },
   "datasetSelector": {
     "label": "Data sets",

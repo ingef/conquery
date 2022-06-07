@@ -70,11 +70,10 @@
     "dragElementPlease": "Füge ein Element hinzu",
     "dragQuery": "Füge eine Anfrage hinzu",
     "explanation": "In diesem Bereich erstellst Du eine Anfrage",
-    "drop": "Ziehe",
+    "dropIntoThisArea": "Zum Starten, ziehe Folgendes hinein",
     "aConcept": "ein Konzept",
     "aQuery": "eine Anfrage",
-    "aConceptList": "eine Konzeptliste",
-    "intoThisArea": "in diesen Bereich"
+    "aConceptList": "eine Konzeptliste"
   },
   "datasetSelector": {
     "label": "Datensatz",
