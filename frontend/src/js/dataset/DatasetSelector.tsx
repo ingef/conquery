@@ -3,6 +3,7 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
+import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
@@ -10,7 +11,6 @@ import WithTooltip from "../tooltip/WithTooltip";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import { useSelectDataset } from "./actions";
-import { DatasetT } from "./reducer";
 
 const Root = styled("div")`
   color: ${({ theme }) => theme.col.black};
@@ -46,7 +46,7 @@ const DatasetSelector: FC = () => {
   const selectDataset = useSelectDataset();
 
   const onSelectDataset = (datasetId: string | null) =>
-    selectDataset(datasets, datasetId, selectedDatasetId, query);
+    selectDataset(datasetId, selectedDatasetId, query);
 
   const options =
     datasets && datasets.map((db) => ({ value: db.id, label: db.label }));

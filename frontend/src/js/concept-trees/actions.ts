@@ -3,7 +3,7 @@ import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
 import { useGetConcepts, useGetConcept } from "../api/api";
 import type {
-  DatasetIdT,
+  DatasetT,
   ConceptIdT,
   GetConceptsResponseT,
   GetConceptResponseT,
@@ -38,7 +38,7 @@ export const useLoadTrees = () => {
   const getConcepts = useGetConcepts();
   const loadTree = useLoadTree();
 
-  return async (datasetId: DatasetIdT) => {
+  return async (datasetId: DatasetT["id"]) => {
     // CAREFUL: side effect!
     resetAllTrees();
 
@@ -81,7 +81,7 @@ export const useLoadTree = () => {
   const dispatch = useDispatch();
   const getConcept = useGetConcept();
 
-  return async (datasetId: DatasetIdT, treeId: ConceptIdT) => {
+  return async (datasetId: DatasetT["id"], treeId: ConceptIdT) => {
     await semaphore.acquire();
 
     // If the datasetId changed in the mean time, don't load the tree

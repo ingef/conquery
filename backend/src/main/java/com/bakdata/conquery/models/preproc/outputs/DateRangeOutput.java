@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.models.preproc.parser.specific.DateParser;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.bakdata.conquery.util.DateReader;
 import com.google.common.base.Strings;
@@ -46,7 +45,7 @@ public class DateRangeOutput extends OutputDescription {
 	}
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader) {
+	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
 		assertRequiredHeaders(headers, startColumn, endColumn);
 
 		final int startIndex = headers.getInt(startColumn);

@@ -2,7 +2,7 @@ import { getType } from "typesafe-actions";
 
 import type {
   ColumnDescription,
-  DatasetIdT,
+  DatasetT,
   GetQueryResponseDoneT,
 } from "../api/types";
 import type { Action } from "../app/actions";
@@ -57,7 +57,7 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
 
   const getQueryResult = (
     data: GetQueryResponseDoneT,
-    datasetId: DatasetIdT,
+    datasetId: DatasetT["id"],
   ) => {
     return {
       datasetId,
