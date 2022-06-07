@@ -9,12 +9,16 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 /**
  * This class represents a concept as it is presented to the front end.
  */
 @Data @Builder
 public class FENode {
 	private IId<?> parent;
+	@NotNull
 	private String label;
 	private String description;
 	private Boolean active;
@@ -22,7 +26,7 @@ public class FENode {
 	private List<KeyValue> additionalInfos;
 	private long matchingEntries;
 	private Range<LocalDate> dateRange;
-	private List<FETable> tables;
+	private List<@Valid FETable> tables;
 	private Boolean detailsAvailable;
 	private boolean codeListResolvable;
 	private List<FESelect> selects;
