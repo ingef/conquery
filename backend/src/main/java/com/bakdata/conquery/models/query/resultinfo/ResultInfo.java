@@ -47,7 +47,4 @@ public abstract class ResultInfo {
 							   .type(getType().typeInfo())
 							   .build();
 	}
-
-
-	public abstract Optional<Function<Object, Object>> getValueMapper();
 }

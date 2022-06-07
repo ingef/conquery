@@ -79,12 +79,6 @@ public class SelectResultInfo extends ResultInfo {
 		return sb.toString();
 	}
 
-
-	@Override
-	public Optional<Function<Object, Object>> getValueMapper() {
-		return Optional.of(select::toExternalRepresentation);
-	}
-
 	@Override
 	public String toString() {
 		return "SelectResultInfo[" + select.getName() + ", " + select.getResultType() + "]";

@@ -69,18 +69,4 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 			   + ' '
 			   + getLabel();
 	}
-
-	/**
-	 * Function that allows a select to transform the value or type of a aggregator result.
-	 * The returned value can be null but its type must fit the {@link ResultType} of this select.
-	 * <p>
-	 * TODO enforce type strictness
-	 *
-	 * @param intern value that is the result of an aggregator (after serdes with Jackson)
-	 * @return The value that can be passed to {@link ResultType#printNullable(PrintSettings, Object)}
-	 */
-	@Nullable
-	public Object toExternalRepresentation(Object intern) {
-		return intern;
-	}
 }

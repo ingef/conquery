@@ -292,8 +292,12 @@ public class ExcelRenderer {
 
 	// Type specific cell writers
     private static void writeStringCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		cell.setCellValue(info.getType().printNullable(settings, info.getValueMapper().map(m -> m.apply(value)).orElse(value)));
-    }
+		cell.setCellValue(
+				info.getType().printNullable(
+						settings,
+						value
+				));
+	}
 
     /**
      * Is not used at the moment because at least the german Excel does not seem to understand its own boolean format.

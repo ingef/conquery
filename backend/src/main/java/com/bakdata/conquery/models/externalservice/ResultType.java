@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.function.Function;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -218,6 +219,24 @@ public abstract class ResultType {
 	public static class StringT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final StringT INSTANCE = new StringT();
+
+		/**
+		 * Function that allows a select to transform the internal value to an external representation.
+		 * The returned value can be null.
+		 */
+		private Function<Object, String> valueMapper;
+
+		public StringT(Function<Object, String> valueMapper) {
+			this.valueMapper = valueMapper;
+		}
+
+		@Override
+		protected String print(PrintSettings cfg, @NonNull Object f) {
+			if (valueMapper == null) {
+				return super.print(cfg, f);
+			}
+			return super.print(cfg, valueMapper.apply(f));
+		}
 	}
 
 	@CPSType(id = "ID", base = ResultType.class)
