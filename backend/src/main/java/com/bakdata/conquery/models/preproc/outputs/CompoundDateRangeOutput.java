@@ -64,15 +64,20 @@ public class CompoundDateRangeOutput extends OutputDescription {
 					return false;
 				}
 
-				if (!allowOpen && (start == null || end == null)) {
-					throw new IllegalArgumentException("Open Ranges are not allowed.");
+				if (start == null || end == null) {
+					if(!allowOpen) {
+						throw new IllegalArgumentException("Open Ranges are not allowed.");
+					}
+
+					// Since it's not possible that BOTH are null either of them being null already implies an open and therefore valid range.
+					return true;
 				}
 
-				return
-						// Since it's not possible that BOTH are null either of them being null already implies an open and therefore valid range.
-						(start == null || end == null)
-						// row is included if start <= end
-						|| (Integer) start <= (Integer) end;
+				if ((Integer) start > (Integer) end) {
+					throw new ParsingException("Start is after End.");
+				}
+
+				return true;
 			}
 		};
 	}
