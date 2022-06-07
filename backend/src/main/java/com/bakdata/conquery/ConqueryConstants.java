@@ -19,7 +19,8 @@ public class ConqueryConstants {
 	public static final String EXTENSION_DESCRIPTION = ".import.json";
 
 	public static final ResultInfo DATES_INFO = new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).dates(), new ResultType.ListT(ResultType.DateRangeT.INSTANCE));
-	
+	public static final ResultInfo SOURCE_INFO = new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).source(), ResultType.CategoricalT.INSTANCE);
+
 	// Form related constants
 	public static final String CONTEXT_INDEX = "index";
 	public static final String SINGLE_RESULT_TABLE_NAME = "results";

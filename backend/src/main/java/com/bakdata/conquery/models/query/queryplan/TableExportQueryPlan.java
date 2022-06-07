@@ -56,12 +56,11 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 			return Optional.empty();
 		}
 
-		List<Object[]> results = new ArrayList<>();
+		final List<Object[]> results = new ArrayList<>();
 
 		final int totalColumns = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
 		for (TableExportDescription exportDescription : tables) {
-
 
 			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, exportDescription.getTable())) {
 
@@ -81,7 +80,8 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 						continue;
 					}
 
-					Object[] entry = new Object[totalColumns];
+					final Object[] entry = new Object[totalColumns];
+					entry[1] = exportDescription.getTable().getName(); // TODO Or Id or Label?
 
 					for (Column column : exportDescription.getTable().getColumns()) {
 
