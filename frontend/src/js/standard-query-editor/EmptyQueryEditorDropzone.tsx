@@ -16,7 +16,6 @@ const TextInitial = styled("div")`
     margin: 0;
   }
 `;
-
 const ArrowRight = styled(FaIcon)`
   font-size: 140px;
   color: ${({ theme }) => theme.col.grayLight};
@@ -42,11 +41,9 @@ const Row = styled("div")`
   align-items: center;
   justify-content: flex-end;
 `;
-
 const Description = styled("div")`
   grid-area: description;
 `;
-
 const IconInABox = styled("div")`
   border: 1px solid ${({ theme }) => theme.col.grayLight};
   width: 30px;
@@ -56,8 +53,6 @@ const IconInABox = styled("div")`
   justify-content: center;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
-
-const SxFaIcon = styled(FaIcon)``;
 
 export const EmptyQueryEditorDropzone = () => {
   const { t } = useTranslation();
@@ -71,22 +66,22 @@ export const EmptyQueryEditorDropzone = () => {
         <Grid>
           <Row>
             <IconInABox>
-              <SxFaIcon icon="folder" active />
+              <FaIcon icon="folder" active />
             </IconInABox>
             <IconInABox>
-              <SxFaIcon icon="minus" active />
+              <FaIcon icon="minus" active />
             </IconInABox>
           </Row>
           {t("dropzone.aConcept")}
           <Row>
             <IconInABox>
-              <SxFaIcon icon="diagram-project" active />
+              <FaIcon icon="diagram-project" active />
             </IconInABox>
           </Row>
           {t("dropzone.aQuery")}
           <Row>
             <IconInABox>
-              <SxFaIcon icon="file" regular active />
+              <FaIcon icon="file" regular active />
             </IconInABox>
           </Row>
           {t("dropzone.aConceptList")}
