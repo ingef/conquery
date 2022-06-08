@@ -22,7 +22,7 @@ public final class ValidatorHelper {
 		final Optional<String> violationString = createViolationsString(violations, log.isTraceEnabled());
 
 		if (violationString.isPresent()){
-			throw new ValidationException();
+			throw new ValidationException(violationString.get());
 		}
 	}
 
