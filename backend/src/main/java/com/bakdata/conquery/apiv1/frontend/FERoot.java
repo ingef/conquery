@@ -14,5 +14,5 @@ import lombok.Getter;
 @Getter
 public class FERoot {
 	private Set<FESecondaryId> secondaryIds = new HashSet<>();
-	private Map<Id<?>, FENode> concepts = new LinkedHashMap<>();
+	private Map<Id, FENode> concepts = new LinkedHashMap<>();
 }

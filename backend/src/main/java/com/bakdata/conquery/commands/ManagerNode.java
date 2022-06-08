@@ -194,21 +194,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
-	/**
-	 * Customize the mapper from the environment, that is used in the REST-API
-	 *
-	 * @param objectMapper
-	 */
-	public void customizeApiObjectMapper(ObjectMapper objectMapper) {
-		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
-
-		final MutableInjectableValues injectableValues = new MutableInjectableValues();
-		objectMapper.setInjectableValues(injectableValues);
-		injectableValues.add(Validator.class, getValidator());
-
-		getDatasetRegistry().injectInto(objectMapper);
-		getStorage().injectInto(objectMapper);
-	}
 
 	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig resourceConfig) {
 		RESTServer.configure(config, resourceConfig);
@@ -222,12 +207,34 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	/**
-	 * Create a new internal object mapper for binary serdes that is equipped with {@link ManagerNode} related injectables
+	 * Customize the mapper from the environment, that is used in the REST-API.
+	 * In contrast to the internal object mapper this uses textual JSON representation
+	 * instead of the binary smile format. It also does not expose internal fields through serialization.
+	 * <p>
+	 * Internal and external mapper have in common that they might process the same classes/objects and that
+	 * they are configured to understand certain Conquery specific data types.
+	 *
+	 * @param objectMapper to be configured (should be a JSON mapper)
+	 */
+	public void customizeApiObjectMapper(ObjectMapper objectMapper) {
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
+
+		final MutableInjectableValues injectableValues = new MutableInjectableValues();
+		objectMapper.setInjectableValues(injectableValues);
+		injectableValues.add(Validator.class, getValidator());
+
+		getDatasetRegistry().injectInto(objectMapper);
+		getStorage().injectInto(objectMapper);
+	}
+
+	/**
+	 * Create a new internal object mapper for binary (de-)serialization that is equipped with {@link ManagerNode} related injectables
 	 * and configured to use the {@link InternalOnly} view.
 	 * <p>
 	 * TODO we need to distinguish between internal persistence and internal communication (manager<->shard). ATM we persist unnecessary fields.
 	 *
 	 * @return a preconfigured binary object mapper
+	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper)
 	 */
 	public ObjectMapper createInternalObjectMapper() {
 		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.BINARY_MAPPER.copy());

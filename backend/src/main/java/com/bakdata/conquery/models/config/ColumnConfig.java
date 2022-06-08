@@ -8,11 +8,9 @@ import java.util.Objects;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Views;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Strings;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;

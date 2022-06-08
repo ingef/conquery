@@ -70,7 +70,7 @@ public class MapIndexService implements Injectable {
 					final String externalValue = substitutor.replace(key.externalTemplate);
 
 					// Clean up the substitution by removing repeated white spaces
-					String externalValueCleaned = externalValue.replaceFirst("\\s+", " ");
+					String externalValueCleaned = externalValue.replaceAll("\\s+", " ");
 
 					int2ext.put(internalValue, externalValueCleaned);
 				}

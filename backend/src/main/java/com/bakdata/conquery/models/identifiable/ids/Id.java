@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @JsonDeserialize(using = IdDeserializer.class)
-public abstract class Id<TYPE> {
+public abstract class Id {
 
 	@Override
 	public abstract boolean equals(Object obj);
@@ -29,7 +29,7 @@ public abstract class Id<TYPE> {
 		return IdUtil.JOINER.join(components);
 	}
 
-	public List<Object> getComponents() {
+	public final List<Object> getComponents() {
 		List<Object> components = new ArrayList<>();
 		this.collectComponents(components);
 		return components;
@@ -37,12 +37,14 @@ public abstract class Id<TYPE> {
 
 	public abstract void collectComponents(List<Object> components);
 
-	public List<String> collectComponents() {
+	public final List<String> collectComponents() {
 		List<Object> components = getComponents();
-		String[] result = new String[components.size()];
-		for (int i = 0; i < result.length; i++) {
-			result[i] = ConqueryEscape.escape(Objects.toString(components.get(i)));
+		List<String> result = new ArrayList<>(components.size());
+
+		for (Object component : components) {
+			result.add(ConqueryEscape.escape(Objects.toString(component)));
 		}
-		return Arrays.asList(result);
+
+		return result;
 	}
 }
