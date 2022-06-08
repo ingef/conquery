@@ -11,8 +11,10 @@
     <artifactId>backend</artifactId>
 
     <properties>
-        <mock-server.version>5.11.1</mock-server.version>
-    </properties>
+		<mock-server.version>5.11.1</mock-server.version>
+		<apache-poi.version>5.2.2</apache-poi.version>
+		<apache-arrow.version>8.0.0</apache-arrow.version>
+	</properties>
 
     <build>
         <resources>
@@ -255,22 +257,22 @@
         <dependency>
             <groupId>org.apache.arrow</groupId>
             <artifactId>arrow-vector</artifactId>
-            <version>6.0.1</version>
+			<version>${apache-arrow.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.arrow</groupId>
             <artifactId>arrow-memory-netty</artifactId>
-            <version>6.0.1</version>
+			<version>${apache-arrow.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>5.0.0</version>
+			<version>${apache-poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>5.0.0</version>
+			<version>${apache-poi.version}</version>
         </dependency>
     </dependencies>
 </project>
