@@ -13,6 +13,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FEList;
@@ -23,11 +26,14 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -59,6 +65,7 @@ import org.apache.commons.lang3.tuple.Pair;
 public class ConceptsProcessor {
 
 	private final DatasetRegistry namespaces;
+	private final Validator validator;
 
 	private final LoadingCache<Concept<?>, FEList> nodeCache =
 			CacheBuilder.newBuilder()
@@ -119,7 +126,12 @@ public class ConceptsProcessor {
 
 	public FERoot getRoot(NamespaceStorage storage, Subject subject) {
 
-		return FrontEndConceptBuilder.createRoot(storage, subject);
+		final FERoot root = FrontEndConceptBuilder.createRoot(storage, subject);
+
+		// Report Violation
+		ValidatorHelper.createViolationsString(validator.validate(root), log.isTraceEnabled()).ifPresent(log::warn);
+
+		return root;
 	}
 
 	public FEList getNode(Concept<?> concept) {
@@ -139,6 +151,14 @@ public class ConceptsProcessor {
 										   .thenComparing(Dataset::getLabel))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
 						 .collect(Collectors.toList());
+	}
+
+	public Stream<ConnectorId> getEntityPreviewDefaultConnectors(Dataset dataset){
+		return namespaces.get(dataset.getId()).getStorage().getAllConcepts().stream()
+				.map(Concept::getConnectors)
+				.flatMap(Collection::stream)
+				.filter(Connector::isDefaultForEntityPreview)
+				.map(Identifiable::getId);
 	}
 
 	/**

@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
   CurrencyConfigT,
-  DatasetIdT,
+  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
@@ -31,7 +31,7 @@ const MaximizedCell = styled(ContentCell)`
 interface PropsT {
   node: ConceptQueryNodeType;
   tableIdx: number;
-  datasetId: DatasetIdT;
+  datasetId: DatasetT["id"];
   currencyConfig: CurrencyConfigT;
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];

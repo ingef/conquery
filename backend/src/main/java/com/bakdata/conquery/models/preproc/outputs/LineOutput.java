@@ -5,14 +5,12 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.preproc.parser.specific.IntegerParser;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import org.apache.http.message.LineParser;
 
 /**
  * Outputs the current line in the file.
@@ -34,7 +32,7 @@ public class LineOutput extends OutputDescription {
 	}
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader) {
+	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {

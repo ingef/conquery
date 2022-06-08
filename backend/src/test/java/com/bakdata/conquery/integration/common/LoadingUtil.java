@@ -68,10 +68,10 @@ public class LoadingUtil {
 			final CsvParser parser = support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createParser();
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(new String[0][]);
 
-			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data));
+			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data));
 
 			ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
-												 .createQuery(support.getDatasetRegistry(), q, queryId, user, support.getNamespace().getDataset());
+												 .createQuery(support.getDatasetRegistry(), query, queryId, user, support.getNamespace().getDataset(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -86,11 +86,11 @@ public class LoadingUtil {
 			Query query = mapper.readerFor(Query.class).readValue(queryNode);
 			UUID queryId = new UUID(0L, id++);
 
-			ManagedExecution<?>
-					managed =
+			ManagedExecution<?> managed =
 					support.getNamespace()
 						   .getExecutionManager()
-						   .createQuery(support.getDatasetRegistry(), query, queryId, user, support.getNamespace().getDataset());
+						   .createQuery(support.getDatasetRegistry(), query, queryId, user, support.getNamespace().getDataset(), false);
+
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {

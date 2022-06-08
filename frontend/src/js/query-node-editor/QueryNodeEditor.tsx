@@ -1,13 +1,13 @@
 import styled from "@emotion/styled";
 import { useCallback, useRef, useState } from "react";
-import Hotkeys from "react-hot-keys";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
-import {
+import type {
   ConceptIdT,
   CurrencyConfigT,
-  DatasetIdT,
+  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
@@ -103,7 +103,7 @@ export interface QueryNodeEditorPropsT {
   name: string;
   node: StandardQueryNodeT;
   showTables: boolean;
-  datasetId: DatasetIdT;
+  datasetId: DatasetT["id"];
   allowlistedTables?: string[];
   blocklistedTables?: string[];
   allowlistedSelects?: SelectorResultType[];
@@ -174,6 +174,8 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     parentRef.current,
   );
 
+  useHotkeys("esc", close);
+
   if (!node) return null;
 
   const showClearReset = !nodeHasEmptySettings(node);
@@ -188,7 +190,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
       }}
     >
       <ContentWrap>
-        <Hotkeys keyName="escape" onKeyDown={close} />
         <Header>
           <NodeName
             style={{

@@ -75,6 +75,7 @@
               "id": "studio",
               "label": "Production Studio",
               "type": "MULTI_SELECT",
+              "tooltip": "Test tooltip for the production studio that includes a nice<br />line break.",
               "description": "The studio producing the movie",
               "options": [
                 {
@@ -106,6 +107,7 @@
             {
               "id": "production_country",
               "label": "Production Country",
+              "tooltip": "Test tooltip for the production country",
               "type": "BIG_MULTI_SELECT",
               "allowDropFile": true,
               "options": [
@@ -123,6 +125,7 @@
               "id": "words",
               "label": "Words",
               "type": "BIG_MULTI_SELECT",
+              "tooltip": "A very long multi select tooltip to really check out how long-line tooltips work in here",
               "allowDropFile": true,
               "options": [
                 {
@@ -138,6 +141,7 @@
             {
               "id": "budget",
               "label": "Budget",
+              "tooltip": "A money range tooltip, let's see how that works.",
               "type": "MONEY_RANGE",
               "unit": "EUR",
               "description": "The movie's total budget",
@@ -249,6 +253,7 @@
               "id": "series_count",
               "label": "Number of series",
               "type": "INTEGER_RANGE",
+              "tooltip": "An integer range tooltip, let's see how that works.",
               "distinct": true,
               "unit": "#",
               "description": "The total number of series",
