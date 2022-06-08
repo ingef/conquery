@@ -21,7 +21,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.apiv1.query.concept.filter.ValidityDateContainer;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
@@ -39,6 +38,8 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan.TableExportDescription;
+import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
+import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -89,7 +90,7 @@ public class TableExportQuery extends Query {
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
 
 
-		List<TableExportDescription> resolvedConnectors = new ArrayList<>();
+		List<ConceptNode> resolvedConnectors = new ArrayList<>();
 
 		for (CQConcept cqConcept : tables) {
 			for (CQTable table : cqConcept.getTables()) {
@@ -98,11 +99,11 @@ public class TableExportQuery extends Query {
 
 				// if no dateColumn is provided, we use the default instead which is always the first one.
 				// Set to null if none-available in the connector.
-				final Column validityDateColumn = findValidityDateColumn(connector, table.getDateColumn());
+				final Column validityDateColumn = TableExportQueryPlan.findValidityDateColumn(connector, table.getDateColumn());
 
 				final TableExportDescription exportDescription = new TableExportDescription(connector.getTable(), validityDateColumn);
 
-				resolvedConnectors.add(exportDescription);
+				resolvedConnectors.add(new ConceptNode(new Leaf(),cqConcept.getElements(),table,null));
 			}
 
 		}
@@ -148,7 +149,7 @@ public class TableExportQuery extends Query {
 			for (CQTable table : concept.getTables()) {
 
 				final Connector connector = table.getConnector();
-				final Column validityDateColumn = findValidityDateColumn(connector, table.getDateColumn());
+				final Column validityDateColumn = TableExportQueryPlan.findValidityDateColumn(connector, table.getDateColumn());
 
 				if (validityDateColumn != null) {
 					positions.putIfAbsent(validityDateColumn, 0);
@@ -204,7 +205,7 @@ public class TableExportQuery extends Query {
 			final ResultType resultType;
 
 			if (conceptColumns.containsKey(column)) {
-				resultType = new ResultType.ConceptColumnT(conceptColumns.get(column));
+				resultType = ResultType.ConceptColumnT.INSTANCE;
 			}
 			else {
 				resultType = ResultType.resolveResultType(column.getType());
@@ -214,20 +215,6 @@ public class TableExportQuery extends Query {
 		}
 
 		return List.of(infos);
-	}
-
-	private static Column findValidityDateColumn(Connector connector, ValidityDateContainer dateColumn) {
-		// if no dateColumn is provided, we use the default instead which is always the first one.
-		// Set to null if none-available in the connector.
-		if (dateColumn != null) {
-			return dateColumn.getValue().getColumn();
-		}
-
-		if (!connector.getValidityDates().isEmpty()) {
-			return connector.getValidityDates().get(0).getColumn();
-		}
-
-		return null;
 	}
 
 	@Override
