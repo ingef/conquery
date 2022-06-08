@@ -14,11 +14,11 @@ import lombok.Data;
  */
 @Data @Builder
 public class FENode {
-	private Id parent;
+	private Id<?> parent;
 	private String label;
 	private String description;
 	private Boolean active;
-	private Id[] children;
+	private Id<?>[] children;
 	private List<KeyValue> additionalInfos;
 	private long matchingEntries;
 	private Range<LocalDate> dateRange;

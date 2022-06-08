@@ -48,7 +48,7 @@ public class FrontEndConceptBuilder {
 	public static FERoot createRoot(NamespaceStorage storage, Subject subject) {
 
 		FERoot root = new FERoot();
-		Map<Id, FENode> roots = root.getConcepts();
+		Map<Id<?>, FENode> roots = root.getConcepts();
 		
 		List<? extends Concept<?>> allConcepts = new ArrayList<>(storage.getAllConcepts());
 		// Remove any hidden concepts
@@ -143,7 +143,7 @@ public class FrontEndConceptBuilder {
 	}
 
 	@Nullable
-	private static FENode createStructureNode(StructureNode cn, Map<Id, FENode> roots) {
+	private static FENode createStructureNode(StructureNode cn, Map<Id<?>, FENode> roots) {
 		List<ConceptId> unstructured = new ArrayList<>();
 		for (ConceptId id : cn.getContainedRoots()) {
 			if (!roots.containsKey(id)) {
