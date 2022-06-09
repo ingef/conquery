@@ -180,6 +180,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			Throwables.throwIfUnchecked(e);
 			throw new RuntimeException(e);
 		}
+
 		environment.admin().addTask(formScanner);
 		environment.admin().addTask(
 				new QueryCleanupTask(storage, Duration.of(

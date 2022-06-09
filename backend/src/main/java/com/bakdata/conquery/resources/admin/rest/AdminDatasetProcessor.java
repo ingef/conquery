@@ -392,4 +392,8 @@ public class AdminDatasetProcessor {
 		final Namespace namespace = datasetRegistry.get(internToExternMapper.getDataset().getId());
 		namespace.getStorage().removeInternToExternMapper(internToExternMapper.getId());
 	}
+
+	public void clearInternToExternCache(Namespace namespace) {
+		namespace.clearInternToExternCache();
+	}
 }

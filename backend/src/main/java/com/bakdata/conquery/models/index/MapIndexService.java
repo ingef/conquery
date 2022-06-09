@@ -4,7 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -26,11 +30,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
 
-@RequiredArgsConstructor
 @Slf4j
 public class MapIndexService implements Injectable {
 
 	private final CsvParserSettings csvParserSettings;
+
+	public MapIndexService(CsvParserSettings csvParserSettings) {
+		this.csvParserSettings = csvParserSettings.clone();
+		this.csvParserSettings.setHeaderExtractionEnabled(true);
+	}
+
+	private final Queue<CompletableFuture<Map<String, String>>> requestedMappings = new LinkedList<>();
 
 	// TODO provide a way to evict mappings
 	private final LoadingCache<Key, Map<String, String>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<Key, Map<String, String>>() {
@@ -86,18 +96,41 @@ public class MapIndexService implements Injectable {
 		}
 	});
 
+	public void evictCache() {
+		synchronized (requestedMappings) {
+			// Invalidate all mapping requests by cancelling them
+			final Iterator<CompletableFuture<Map<String, String>>> iterator = requestedMappings.iterator();
+
+			while (iterator.hasNext()) {
+				final CompletableFuture<Map<String, String>> next = iterator.next();
+
+				next.obtrudeException(new CancellationException("The mapping for this future was evicted"));
+				iterator.remove();
+
+			}
+
+			// Clear actual cache
+			mappings.invalidateAll();
+		}
+	}
+
 
 	public CompletableFuture<Map<String, String>> getMapping(URL csv, String internalColumn, String externalTemplate) {
 		// TODO may use a specific executor service here
-		return CompletableFuture.supplyAsync(() -> {
-			try {
-				return mappings.get(new Key(csv, internalColumn, externalTemplate));
-			}
-			catch (ExecutionException e) {
-				throw new IllegalStateException(String.format("Unable to get mapping from %s (internal column = %s, external column = %s)", csv, internalColumn, externalTemplate), e);
-			}
-		});
+		synchronized (requestedMappings) {
+			final CompletableFuture<Map<String, String>> mapCompletableFuture = CompletableFuture.supplyAsync(() -> {
+				try {
+					return mappings.get(new Key(csv, internalColumn, externalTemplate));
+				}
+				catch (ExecutionException e) {
+					throw new IllegalStateException(String.format("Unable to get mapping from %s (internal column = %s, external column = %s)", csv, internalColumn, externalTemplate), e);
+				}
+			});
 
+			requestedMappings.add(mapCompletableFuture);
+
+			return mapCompletableFuture;
+		}
 	}
 
 	@Override

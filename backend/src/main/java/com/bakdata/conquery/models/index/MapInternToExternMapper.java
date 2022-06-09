@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.index;
 
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -27,12 +28,15 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.TestOnly;
 
 @Slf4j
 @CPSType(id = "CSV_MAP", base = InternToExternMapper.class)
 @RequiredArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
+@FieldNameConstants
 public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, NamespacedIdentifiable<InternToExternMapperId> {
 
 
@@ -67,13 +71,15 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	//Manager only
 	@JsonIgnore
+	@Getter(onMethod_ = {@TestOnly})
 	private CompletableFuture<Map<String, String>> int2ext = null;
 
 
 	@Override
 	public synchronized void init() {
-		// this class gets resolved only on the ManagerNode
-		if (int2ext == null) {
+		// This class gets resolved only on the ManagerNode
+		if (int2ext == null || int2ext.isCompletedExceptionally()) {
+			// Either the mapping has not been initialized or it has been evicted
 			int2ext = mapIndex.getMapping(csv, internalColumn, externalTemplate);
 		}
 	}
@@ -91,6 +97,18 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 		catch (ExecutionException | InterruptedException | TimeoutException e) {
 			log.warn("Unable to get mapping for {} from {}. Returning nothing.", internalValue, this, e);
 			return "";
+		}
+		catch (CancellationException e) {
+			log.trace("Reinitializing mapper because previous mapping was cancelled/evicted", e);
+			init();
+			try {
+				// Retry again
+				return int2ext.get(1, TimeUnit.MINUTES).getOrDefault(internalValue, "");
+			}
+			catch (Exception ex) {
+				log.warn("Reinitializing mapper did not work. Returning empty mapping", e);
+				return "";
+			}
 		}
 	}
 

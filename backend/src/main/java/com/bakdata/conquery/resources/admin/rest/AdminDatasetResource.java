@@ -217,4 +217,10 @@ public class AdminDatasetResource extends HAdmin {
 		processor.updateMatchingStats(dataset);
 	}
 
+	@POST
+	@Path("clear-internToExtern-cache")
+	public void clearInternToExternCache() {
+		processor.clearInternToExternCache(namespace);
+	}
+
 }
