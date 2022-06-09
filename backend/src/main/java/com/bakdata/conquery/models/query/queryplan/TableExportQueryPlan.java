@@ -5,38 +5,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.ValidityDateContainer;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * The QueryPlan creates a full dump of the given table within a certain
  * date range.
  */
 @RequiredArgsConstructor
+@ToString
 public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final QueryPlan<? extends EntityResult> subPlan;
-	private final CDateRange dateRange;
-	private final List<ConceptNode> tables;
+	private final CDateSet dateRange;
+	private final Map<CQTable, QPNode> tables;
+
+	@ToString.Exclude
 	private final Map<Column, Integer> positions;
 
-	private static Column findValidityDateColumn(Connector connector, ValidityDateContainer dateColumn) {
+	public static Column findValidityDateColumn(Connector connector, ValidityDateContainer dateColumn) {
 		// if no dateColumn is provided, we use the default instead which is always the first one.
 		// Set to null if none-available in the connector.
 		if (dateColumn != null) {
@@ -79,9 +77,11 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 		final int totalColumns = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
-		for (ConceptNode exportDescription : tables) {
-			final QPNode query = exportDescription; //TODO pull from actual queries instead.
-			final CQTable cqTable = exportDescription.getTable();
+		for (Map.Entry<CQTable, QPNode> entry : tables.entrySet()) {
+
+			final CQTable cqTable = entry.getKey();
+			final Column validityDateColumn = findValidityDateColumn(cqTable.getConnector(), cqTable.getDateColumn());
+			final QPNode query = entry.getValue();
 
 			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, cqTable.getConnector().getTable())) {
 
@@ -97,18 +97,18 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 				for (int event = start; event < end; event++) {
 
 					// Export Full-table if it has no validity date.
-					if (cqTable.getDateColumn() != null
-						&& !bucket.eventIsContainedIn(event, cqTable.getDateColumn().getValue().getColumn(), CDateSet.create(dateRange))) {
+					if (validityDateColumn != null
+						&& !bucket.eventIsContainedIn(event, validityDateColumn, dateRange)) {
 						continue;
 					}
 
-					if (filterRow(ctx, entity, query, bucket, event)) {
+					if (!isRowIncluded(ctx, entity, query, bucket, event)) {
 						continue;
 					}
 
-					final Object[] entry = collectRow(totalColumns, cqTable, bucket, event);
+					final Object[] resultRow = collectRow(totalColumns, cqTable, bucket, event, validityDateColumn);
 
-					results.add(entry);
+					results.add(resultRow);
 				}
 			}
 		}
@@ -116,27 +116,26 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return Optional.of(new MultilineEntityResult(entity.getId(), results));
 	}
 
-	private boolean filterRow(QueryExecutionContext ctx, Entity entity, QPNode query, Bucket bucket, int event) {
+	private boolean isRowIncluded(QueryExecutionContext ctx, Entity entity, QPNode query, Bucket bucket, int event) {
 		query.init(entity, ctx);
 
 		if (!query.isOfInterest(entity)) {
-			return true;
+			return false;
 		}
 
 		query.nextTable(ctx, bucket.getTable());
 		query.nextBlock(bucket);
 
 		if (!query.isOfInterest(bucket)) {
-			return true;
+			return false;
 		}
 
 		query.acceptEvent(bucket, event);
 
-		return !query.isContained();
+		return query.isContained();
 	}
 
-	private Object[] collectRow(int totalColumns, CQTable exportDescription, Bucket bucket, int event) {
-		final Column validityDateColumn = findValidityDateColumn(exportDescription.getConnector(), exportDescription.getDateColumn());
+	private Object[] collectRow(int totalColumns, CQTable exportDescription, Bucket bucket, int event, Column validityDateColumn) {
 
 		final Object[] entry = new Object[totalColumns];
 		entry[1] = exportDescription.getConnector().getTable().getLabel();
@@ -157,11 +156,4 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return entry;
 	}
 
-	@RequiredArgsConstructor
-	@Getter
-	public static class TableExportDescription {
-		private final Table table;
-		@Nullable
-		private final Column validityDateColumn;
-	}
 }

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1.query;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,6 +24,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefKeys;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -33,13 +33,12 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan.TableExportDescription;
-import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
-import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -89,29 +88,20 @@ public class TableExportQuery extends Query {
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
 
-
-		List<ConceptNode> resolvedConnectors = new ArrayList<>();
+		final Map<CQTable, QPNode> resolved = new HashMap<>(tables.size());
 
 		for (CQConcept cqConcept : tables) {
 			for (CQTable table : cqConcept.getTables()) {
-
-				Connector connector = table.getConnector();
-
-				// if no dateColumn is provided, we use the default instead which is always the first one.
-				// Set to null if none-available in the connector.
-				final Column validityDateColumn = TableExportQueryPlan.findValidityDateColumn(connector, table.getDateColumn());
-
-				final TableExportDescription exportDescription = new TableExportDescription(connector.getTable(), validityDateColumn);
-
-				resolvedConnectors.add(new ConceptNode(new Leaf(),cqConcept.getElements(),table,null));
+				// We use this query just to properly Construct a QPNode, filtering is done manually inside our QueryPlan
+				final ConceptQuery tableFilterQuery = new ConceptQuery(cqConcept, DateAggregationMode.NONE);
+				resolved.put(table, tableFilterQuery.createQueryPlan(context).getChild());
 			}
-
 		}
 
 		return new TableExportQueryPlan(
 				query.createQueryPlan(context),
-				CDateRange.of(dateRange),
-				resolvedConnectors,
+				CDateSet.create(CDateRange.of(dateRange)),
+				resolved,
 				positions
 		);
 	}
