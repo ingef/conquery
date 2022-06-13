@@ -148,7 +148,7 @@ public class IdTests {
 
 					}
 					catch (NoSuchMethodException e) {
-						return fail(" does not implement the method 'getId()'");
+						return fail(cl.getName() + " does not implement the method 'getId()'");
 					}
 
 					if (Modifier.isAbstract(idClazz.getModifiers())) {
@@ -157,7 +157,7 @@ public class IdTests {
 
 						}
 						catch (NoSuchMethodException e) {
-							return fail(cl + " does not implement the method 'createId()' unable to retrieve specific id class");
+							return fail(cl.getName() + " does not implement the method 'createId()' unable to retrieve specific id class");
 						}
 					}
 

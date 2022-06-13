@@ -37,6 +37,7 @@ import org.jetbrains.annotations.TestOnly;
 @RequiredArgsConstructor
 @ToString(onlyExplicitlyIncluded = true)
 @FieldNameConstants
+@Getter
 public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> implements InternToExternMapper, NamespacedIdentifiable<InternToExternMapperId> {
 
 
@@ -46,24 +47,19 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	private MapIndexService mapIndex;
 
 	@NsIdRef
-	@Getter
 	@Setter
 	@NotNull
 	private Dataset dataset;
 
-	@Getter
 	@ToString.Include
 	@NotEmpty
 	private final String name;
-	@Getter
 	@ToString.Include
 	@NotNull
 	private final URL csv;
-	@Getter
 	@ToString.Include
 	@NotEmpty
 	private final String internalColumn;
-	@Getter
 	@ToString.Include
 	@NotEmpty
 	private final String externalTemplate;

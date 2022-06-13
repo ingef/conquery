@@ -9,12 +9,11 @@ import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@AllArgsConstructor
-@Getter
-@EqualsAndHashCode(callSuper = false)
+@Data
 public class TableId extends Id<Table> implements NamespacedId {
 
 	private final DatasetId dataset;
