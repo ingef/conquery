@@ -44,7 +44,7 @@ export const RawDataBadge = ({ event }: Props) => {
           }
         }}
       >
-        DATA
+        {event.source}
       </Badge>
     </SxWithTooltip>
   );
