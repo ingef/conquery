@@ -186,9 +186,25 @@ export function getDiffInDays(d1: Date, d2: Date) {
 }
 
 /**
+ * A custom string format we're using that allows a list of day intervals
+ * we call this format a "date set"
+ *
+ * Open end intervals are supported using -∞ and +∞
+ *
+ * Examples:
+ * dateStr: "{2020-01-01/2020-01-03}"
  * dateStr: "{2020-01-01/2020-01-31,2020-02-01/2020-02-28}"
+ * dateStr: "{-∞/2020-01-31,2020-02-01/2020-02-28,2020-05-01/+∞}"
+ *
+ * @param dateStr a date set
+ * @returns
+ * - the first date of the first interval or null in case of infinity
+ * - the last date of the last interval or null in case of infinity
  */
-export function getFirstAndLastDateOfRange(dateRangeStr: string) {
+export function getFirstAndLastDateOfRange(dateRangeStr: string): {
+  first: Date | null;
+  last: Date | null;
+} {
   const dateStrTrimmed = dateRangeStr.slice(1, dateRangeStr.length - 1);
 
   const ranges = dateStrTrimmed.split(",");
