@@ -184,3 +184,16 @@ export const testRegexes = (
 export function getDiffInDays(d1: Date, d2: Date) {
   return Math.abs(differenceInCalendarDays(d1, d2)) + 1;
 }
+
+/**
+ * dateStr: "{2020-01-01/2020-01-31,2020-02-01/2020-02-28}"
+ */
+export function getFirstAndLastDateOfRange(dateRangeStr: string) {
+  const dateStrTrimmed = dateRangeStr.slice(1, dateRangeStr.length - 1);
+
+  const ranges = dateStrTrimmed.split(",");
+  const first = parseStdDate(ranges[0].split("/")[0]);
+  const last = parseStdDate(ranges[ranges.length - 1].split("/")[1]);
+
+  return { first, last };
+}

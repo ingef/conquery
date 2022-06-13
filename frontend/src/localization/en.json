@@ -443,6 +443,27 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
-    "history": "History"
+    "history": "History",
+    "marked": "with status",
+    "events_one": "Event",
+    "events_other": "Events",
+    "downloadButtonLabel": "Download list",
+    "nextButtonLabel": "Next entity",
+    "prevButtonLabel": "Previous entity",
+    "downloadEntityData": "CSV",
+    "detail": {
+      "summary": "Summary",
+      "detail": "Details",
+      "full": "Full"
+    },
+    "settings": {
+      "headline": "History session settings",
+      "selectStatusHeadline": "Possible status values",
+      "selectStatusPlaceholder": "Options ...",
+      "selectStatusTooltip": "Set possible status values, that may be assigned to individual entites during the history session."
+    },
+    "load": {
+      "error": "Couldn't load history for this file."
+    }
   }
 }

@@ -3,7 +3,9 @@ import styled from "@emotion/styled";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
+import { History } from "../entity-history/History";
 import type { TabT } from "../pane/types";
+import Preview from "../preview/Preview";
 import ActivateTooltip from "../tooltip/ActivateTooltip";
 import Tooltip from "../tooltip/Tooltip";
 
@@ -37,9 +39,19 @@ const Content = ({ rightTabs }: ContentPropsT) => {
     (state) => state.tooltip.displayTooltip,
   );
 
+  const isPreviewOpen = useSelector<StateT, boolean>(
+    (state) => state.preview.isOpen,
+  );
+
+  const isHistoryOpen = useSelector<StateT, boolean>(
+    (state) => state.entityHistory.isOpen,
+  );
+
   return (
     <DndProvider>
       <Root>
+        {isHistoryOpen && <History />}
+        {isPreviewOpen && <Preview />}
         <SplitPane
           split="vertical"
           allowResize={displayTooltip}

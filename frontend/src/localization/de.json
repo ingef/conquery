@@ -442,6 +442,27 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
-    "history": "Historie"
+    "history": "Historie",
+    "marked": "mit Status",
+    "events_one": "Ereignis",
+    "events_other": "Ereignisse",
+    "downloadButtonLabel": "Liste herunterladen",
+    "nextButtonLabel": "Weiterblättern",
+    "prevButtonLabel": "Zurückblättern",
+    "downloadEntityData": "CSV",
+    "detail": {
+      "summary": "Zusammenfassung",
+      "detail": "Details",
+      "full": "Alle Ereignisse"
+    },
+    "settings": {
+      "headline": "Historie-Einstellungen",
+      "selectStatusHeadline": "Möglicher Status pro Eintrag",
+      "selectStatusPlaceholder": "Optionen ...",
+      "selectStatusTooltip": "Hier werden die möglichen Status-Werte festgelegt, die danach an die einzelnen Entitäten vergeben werden können."
+    },
+    "load": {
+      "error": "Konnte Historie für diese Datei nicht laden."
+    }
   }
 }
