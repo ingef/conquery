@@ -143,6 +143,11 @@
     "databases"
   ],
   "jest": {
+    "globals": {
+      "ts-jest": {
+        "isolatedModules": false
+      }
+    },
     "setupFiles": [
       "./src/test/setup.ts"
     ]
