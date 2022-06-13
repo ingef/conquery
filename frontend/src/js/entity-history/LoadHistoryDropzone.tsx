@@ -21,11 +21,15 @@ export interface LoadingPayload {
 
 interface Props {
   className?: string;
-  onLoad: (payload: LoadingPayload) => void;
+  onLoadFromFile: (payload: LoadingPayload) => void;
   children: React.ReactNode;
 }
 
-export const LoadHistoryDropzone = ({ className, onLoad, children }: Props) => {
+export const LoadHistoryDropzone = ({
+  className,
+  onLoadFromFile,
+  children,
+}: Props) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
@@ -68,7 +72,7 @@ export const LoadHistoryDropzone = ({ className, onLoad, children }: Props) => {
       return;
     }
 
-    onLoad({
+    onLoadFromFile({
       label: file.name,
       loadedEntityIds,
       loadedEntityStatus,

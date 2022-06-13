@@ -10,6 +10,7 @@ import WithTooltip from "../tooltip/WithTooltip";
 import type { DetailLevel } from "./DetailControl";
 import { RowDates } from "./RowDates";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
+import { RawDataBadge } from "./timeline/RawDataBadge";
 
 const Root = styled("div")`
   overflow-y: auto;
@@ -51,15 +52,6 @@ const VerticalLine = styled("div")`
   width: 2px;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   margin: 10px 5px;
-`;
-
-const Badge = styled("div")`
-  border-radius: ${({ theme }) => theme.borderRadius};
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  padding: 1px 4px;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: white;
-  font-weight: 700;
 `;
 
 const YearHead = styled("div")`
@@ -163,32 +155,7 @@ export const Timeline = memo(({ className, detailLevel }: Props) => {
                               <EventItem key={index}>
                                 <Bullet />
                                 <RowDates dates={row.dates} />
-                                <SxWithTooltip
-                                  place="right"
-                                  html={
-                                    <pre
-                                      style={{
-                                        textAlign: "left",
-                                        fontSize: "12px",
-                                      }}
-                                    >
-                                      {JSON.stringify(row, null, 2)}
-                                    </pre>
-                                  }
-                                >
-                                  <Badge
-                                    style={{ cursor: "pointer" }}
-                                    onClick={() => {
-                                      if (navigator.clipboard) {
-                                        navigator.clipboard.writeText(
-                                          JSON.stringify(row, null, 2),
-                                        );
-                                      }
-                                    }}
-                                  >
-                                    DATA
-                                  </Badge>
-                                </SxWithTooltip>
+                                <RawDataBadge event={row} />
                                 {Object.keys(row)
                                   .slice(detailLevel === "full" ? 4 : 8)
                                   .reverse()

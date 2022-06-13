@@ -84,7 +84,7 @@ export const History = () => {
     setCurrentEntityStatus,
   } = useEntityStatus({ currentEntityId });
 
-  const onLoad = useCallback(
+  const onLoadFromFile = useCallback(
     ({
       label,
       loadedEntityIds,
@@ -117,7 +117,7 @@ export const History = () => {
           currentEntityIndex={currentEntityIndex}
           entityStatusOptions={entityStatusOptions}
           setEntityStatusOptions={setEntityStatusOptions}
-          onLoad={onLoad}
+          onLoadFromFile={onLoadFromFile}
         />
         <Main>
           {currentEntityId && (
