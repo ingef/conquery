@@ -28,10 +28,4 @@ public class SimpleResultInfo extends ResultInfo {
 	public String defaultColumnName(PrintSettings printSettings) {
 		return name;
 	}
-
-	@Override
-	public Optional<Function<Object, Object>> getValueMapper() {
-		// TODO may provide ids through this
-		return Optional.empty();
-	}
 }

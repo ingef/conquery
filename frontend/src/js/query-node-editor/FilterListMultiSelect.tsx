@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from "react";
 
 import { usePostFilterValuesResolve } from "../api/api";
 import type {
-  FilterIdT,
+  FilterT,
   PostFilterResolveResponseT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
@@ -15,7 +15,7 @@ import UploadFilterListModal from "./UploadFilterListModal";
 import { filterSuggestionToSelectOption } from "./suggestionsHelper";
 
 interface FilterContextT extends FiltersContextT {
-  filterId: FilterIdT;
+  filterId: FilterT["id"];
 }
 
 interface PropsT {
@@ -136,6 +136,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
   defaultValue,
   onChange,
   label,
+  tooltip,
   indexPrefix,
   options,
   disabled,
@@ -245,6 +246,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
         value={value}
         onChange={onChange}
         label={label}
+        tooltip={tooltip}
         options={options}
         total={total}
         loading={loading}

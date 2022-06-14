@@ -2,7 +2,7 @@ import { FC } from "react";
 import { useFormContext, useFormState } from "react-hook-form";
 import { useSelector } from "react-redux";
 
-import { DatasetIdT } from "../api/types";
+import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
@@ -23,7 +23,7 @@ const isButtonEnabled = ({
   datasetId,
   isValid,
 }: {
-  datasetId: DatasetIdT | null;
+  datasetId: DatasetT["id"] | null;
   queryRunner: QueryRunnerStateT | null;
   isValid: boolean;
 }) => {

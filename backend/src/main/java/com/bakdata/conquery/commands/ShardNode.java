@@ -13,6 +13,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
@@ -148,12 +149,13 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	 * @return a preconfigured binary object mapper
 	 */
 	public ObjectMapper createInternalObjectMapper() {
-		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
-		injectableValues.add(Validator.class, validator);
+		injectableValues.add(Validator.class, getValidator());
 
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class,SerdesTarget.SHARD));
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
 		return objectMapper;
@@ -242,7 +244,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
 
-		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
+		ObjectMapper om = createInternalObjectMapper();
 		config.configureObjectMapper(om);
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);

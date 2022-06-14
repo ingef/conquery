@@ -1,6 +1,7 @@
 package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
+import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
@@ -19,9 +20,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.CsvResultRenderer;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -35,7 +36,7 @@ public class ResultCsvResource {
 
 	public static final String GET_RESULT_PATH_METHOD = "getAsCsv";
 	@Inject
-	private ResultCsvProcessor processor;
+	private CsvResultRenderer processor;
 	@Inject
 	private ConqueryConfig config;
 
@@ -52,16 +53,16 @@ public class ResultCsvResource {
 	@GET
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
-	public Response getAsCsv(
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getAsCsv(
 			@Auth Subject subject,
-			@PathParam(DATASET) Dataset datasetId,
+			@PathParam(DATASET) Dataset dataset,
 			@PathParam(QUERY) ManagedExecution<?> execution,
 			@HeaderParam("subject-agent") String userAgent,
 			@QueryParam("charset") String queryCharset,
-			@QueryParam("pretty") Optional<Boolean> pretty)
-	{
+			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, datasetId, subject.getId(), subject.getName());
-		return processor.getResult(subject, datasetId, (ManagedExecution<?> & SingleTableResult) execution, userAgent, queryCharset, pretty.orElse(Boolean.TRUE));
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset.getId(), subject.getId(), subject.getName());
+
+		return processor.createResult(subject, (E) execution, dataset, pretty.orElse(Boolean.TRUE), determineCharset(userAgent, queryCharset));
 	}
 }

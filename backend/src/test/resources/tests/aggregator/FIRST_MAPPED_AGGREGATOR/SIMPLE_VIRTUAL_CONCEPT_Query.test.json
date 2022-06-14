@@ -19,6 +19,13 @@
             ]
         }
     },
+    "internToExternMappings": {
+        "name": "test_map",
+        "type": "CSV_MAP",
+        "internalColumn": "internal",
+        "externalTemplate": "External: {{external}} {{external2}}",
+        "csv": "classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"
+    },
     "concepts": [
         {
             "label": "concept",
@@ -35,12 +42,7 @@
                         "name": "select",
                         "type": "FIRST",
                         "column": "table.value",
-                        "mapping": {
-                            "type": "CSV_MAP",
-                            "internalColumn": "internal",
-                            "externalTemplate": "External: {{external}}",
-                            "csv": "classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"
-                        }
+                        "mapping": "test_map"
                     }
                 }
             ]

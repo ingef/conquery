@@ -40,12 +40,12 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
 
 public class ExcelRenderer {
 
-	private final static Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
-            ResultType.DateT.class, ExcelRenderer::writeDateCell,
-            ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
-            ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
-            ResultType.NumericT.class, ExcelRenderer::writeNumericCell
-    );
+	private static final Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
+			ResultType.DateT.class, ExcelRenderer::writeDateCell,
+			ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
+			ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
+			ResultType.NumericT.class, ExcelRenderer::writeNumericCell
+	);
 	public static final int CHARACTER_WIDTH_DIVISOR = 256;
 	public static final int AUTOFILTER_SPACE_WIDTH = 3;
 
@@ -292,8 +292,12 @@ public class ExcelRenderer {
 
 	// Type specific cell writers
     private static void writeStringCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		cell.setCellValue(info.getType().printNullable(settings, info.getValueMapper().map(m -> m.apply(value)).orElse(value)));
-    }
+		cell.setCellValue(
+				info.getType().printNullable(
+						settings,
+						value
+				));
+	}
 
     /**
      * Is not used at the moment because at least the german Excel does not seem to understand its own boolean format.

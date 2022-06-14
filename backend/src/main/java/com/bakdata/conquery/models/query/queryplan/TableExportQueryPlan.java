@@ -56,12 +56,11 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 			return Optional.empty();
 		}
 
-		List<Object[]> results = new ArrayList<>();
+		final List<Object[]> results = new ArrayList<>();
 
 		final int totalColumns = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
 		for (TableExportDescription exportDescription : tables) {
-
 
 			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, exportDescription.getTable())) {
 
@@ -77,11 +76,13 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 				for (int event = start; event < end; event++) {
 
 					// Export Full-table if it has no validity date.
-					if (exportDescription.getValidityDateColumn() != null && !bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), CDateSet.create(dateRange))) {
+					if (exportDescription.getValidityDateColumn() != null
+						&& !bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), CDateSet.create(dateRange))) {
 						continue;
 					}
 
-					Object[] entry = new Object[totalColumns];
+					final Object[] entry = new Object[totalColumns];
+					entry[1] = exportDescription.getTable().getName(); // TODO Or Id or Label?
 
 					for (Column column : exportDescription.getTable().getColumns()) {
 
@@ -89,7 +90,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 							continue;
 						}
 
-						if(column.equals(exportDescription.getValidityDateColumn())){
+						if (column.equals(exportDescription.getValidityDateColumn())) {
 							entry[0] = List.of(bucket.getAsDateRange(event, column));
 						}
 						else {

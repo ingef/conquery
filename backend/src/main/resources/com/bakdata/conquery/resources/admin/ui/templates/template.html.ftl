@@ -95,9 +95,9 @@
 	</div>
 	
 	<script type="application/javascript">
-
-		function rest (url, options) {
-			return fetch(
+<#noparse>
+		async function rest (url, options) {
+			var res = await fetch(
 				url,
 				{
 					method: 'get',
@@ -107,9 +107,14 @@
 					},
 					...options
 				}
-			)
+			);
+			var body = await res.json();
+			if(!res.ok) {
+			    alert(`Error\nSTATUS: ${res.status}\nBODY: ${JSON.stringify(body)}`)
+			}
+			return res;
 		}
-
+</#noparse>
 		function logout(){
 			event.preventDefault();
 			rest('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/logout')

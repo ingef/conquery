@@ -20,6 +20,7 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.PathParamInjector;
+import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -118,8 +119,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
 		storage = new MetaStorage(config.getStorage(), datasetRegistry);
 
-		datasetRegistry.injectInto(environment.getObjectMapper());
-		storage.injectInto(environment.getObjectMapper());
+
+		final ObjectMapper objectMapper = environment.getObjectMapper();
+		customizeApiObjectMapper(objectMapper);
 
 
 		jobManager = new JobManager("ManagerNode", config.isFailOnError());
@@ -147,8 +149,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		authController = new AuthorizationController(storage, config.getAuthorizationRealms());
 		environment.lifecycle().manage(authController);
 
-		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
-		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
+		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), objectMapper);
+		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), objectMapper);
 
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
@@ -178,6 +180,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			Throwables.throwIfUnchecked(e);
 			throw new RuntimeException(e);
 		}
+
 		environment.admin().addTask(formScanner);
 		environment.admin().addTask(
 				new QueryCleanupTask(storage, Duration.of(
@@ -192,6 +195,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
+
 	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig resourceConfig) {
 		RESTServer.configure(config, resourceConfig);
 		resourceConfig.register(PathParamInjector.class);
@@ -204,23 +208,46 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	/**
-	 * Create a new internal object mapper for binary serdes that is equipped with {@link ManagerNode} related injectables
+	 * Customize the mapper from the environment, that is used in the REST-API.
+	 * In contrast to the internal object mapper this uses textual JSON representation
+	 * instead of the binary smile format. It also does not expose internal fields through serialization.
+	 * <p>
+	 * Internal and external mapper have in common that they might process the same classes/objects and that
+	 * they are configured to understand certain Conquery specific data types.
+	 *
+	 * @param objectMapper to be configured (should be a JSON mapper)
+	 */
+	public void customizeApiObjectMapper(ObjectMapper objectMapper) {
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
+
+		final MutableInjectableValues injectableValues = new MutableInjectableValues();
+		objectMapper.setInjectableValues(injectableValues);
+		injectableValues.add(Validator.class, getValidator());
+
+		getDatasetRegistry().injectInto(objectMapper);
+		getStorage().injectInto(objectMapper);
+	}
+
+	/**
+	 * Create a new internal object mapper for binary (de-)serialization that is equipped with {@link ManagerNode} related injectables
 	 * and configured to use the {@link InternalOnly} view.
 	 * <p>
 	 * TODO we need to distinguish between internal persistence and internal communication (manager<->shard). ATM we persist unnecessary fields.
 	 *
 	 * @return a preconfigured binary object mapper
+	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper)
 	 */
 	public ObjectMapper createInternalObjectMapper() {
-		final ObjectMapper objectMapper = config.configureObjectMapper(Jackson.BINARY_MAPPER.copy());
+		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.BINARY_MAPPER.copy());
 
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
-		injectableValues.add(Validator.class, validator);
-		datasetRegistry.injectInto(objectMapper);
-		storage.injectInto(objectMapper);
+		injectableValues.add(Validator.class, getValidator());
+		getDatasetRegistry().injectInto(objectMapper);
+		getStorage().injectInto(objectMapper);
 
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
 		return objectMapper;
@@ -309,7 +336,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
 
-		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
+		ObjectMapper om = createInternalObjectMapper();
 		config.configureObjectMapper(om);
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));

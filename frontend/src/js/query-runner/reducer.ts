@@ -2,7 +2,7 @@ import { getType } from "typesafe-actions";
 
 import type {
   ColumnDescription,
-  DatasetIdT,
+  DatasetT,
   GetQueryResponseDoneT,
 } from "../api/types";
 import type { Action } from "../app/actions";
@@ -27,6 +27,7 @@ interface APICallType {
 
 interface QueryResultT extends APICallType {
   datasetId?: string;
+  resultLabel?: string;
   resultCount?: number | null;
   resultUrls?: string[];
   resultColumns?: ColumnDescription[] | null;
@@ -42,6 +43,23 @@ export interface QueryRunnerStateT {
   queryResult: QueryResultT | null;
 }
 
+const getQueryResult = (
+  data: GetQueryResponseDoneT,
+  datasetId: DatasetT["id"],
+) => {
+  return {
+    datasetId,
+    loading: false,
+    success: true,
+    error: null,
+    resultLabel: data.label,
+    resultCount: data.numberOfResults,
+    resultUrls: data.resultUrls,
+    resultColumns: data.columnDescriptions,
+    queryType: data.queryType,
+  };
+};
+
 export default function createQueryRunnerReducer(type: QueryTypeT) {
   const initialState: QueryRunnerStateT = {
     runningQuery: null,
@@ -53,22 +71,6 @@ export default function createQueryRunnerReducer(type: QueryTypeT) {
 
   const queryTypeMatches = (action: { payload: { queryType: QueryTypeT } }) => {
     return action.payload.queryType === type;
-  };
-
-  const getQueryResult = (
-    data: GetQueryResponseDoneT,
-    datasetId: DatasetIdT,
-  ) => {
-    return {
-      datasetId,
-      loading: false,
-      success: true,
-      error: null,
-      resultCount: data.numberOfResults,
-      resultUrls: data.resultUrls,
-      resultColumns: data.columnDescriptions,
-      queryType: data.queryType,
-    };
   };
 
   return (

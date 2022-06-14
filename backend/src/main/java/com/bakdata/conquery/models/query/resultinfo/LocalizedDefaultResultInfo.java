@@ -58,11 +58,6 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public Optional<Function<Object, Object>> getValueMapper() {
-		return Optional.empty();
-	}
-
-	@Override
 	public String toString() {
 		return "LocalizedDefaultResultInfo{" +
 			   "localizedLabelProvider=" + localizedLabelProvider.apply(Locale.ROOT) +

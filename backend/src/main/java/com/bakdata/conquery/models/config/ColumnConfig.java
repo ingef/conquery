@@ -77,26 +77,22 @@ public class ColumnConfig {
 	 *
 	 * Also Name of output column for {@link FrontendConfig.UploadConfig#getIdResultInfos()}, ergo output csv-Columns.
 	 */
-	@InternalOnly
 	private String field;
 
 	/**
 	 * Pad-String when uploading data, this avoids problems with some tools truncating leading zeros or similar.
 	 */
-	@InternalOnly
 	private String pad = null;
 
 	/**
 	 * In conjunction with pad, the length of the padded string.
 	 */
-	@InternalOnly
 	@Builder.Default
 	private int length = -1;
 
 	/**
 	 * Set to true, if the column should be resolvable in upload. This can be used to add supplemental information to an entity, for example it's data-source, which would not be unique among entities.
 	 */
-	@InternalOnly
 	@Builder.Default
 	private boolean resolvable = false;
 

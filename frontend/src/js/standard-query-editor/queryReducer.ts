@@ -10,7 +10,7 @@ import type {
   TableConfigT,
   FilterConfigT,
   RangeFilterValueT,
-  FilterIdT,
+  FilterT,
   ConceptIdT,
   SelectOptionT,
 } from "../api/types";
@@ -485,7 +485,7 @@ const resetGroupDates = (
 const isRangeFilterConfig = (
   filter: FilterConfigT,
 ): filter is {
-  filter: FilterIdT;
+  filter: FilterT["id"];
   value: RangeFilterValueT;
   type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE";
 } =>
@@ -496,8 +496,8 @@ const isRangeFilterConfig = (
 const isMultiSelectFilterConfig = (
   filter: FilterConfigT,
 ): filter is {
-  filter: FilterIdT;
-  value: FilterIdT[];
+  filter: FilterT["id"];
+  value: FilterT["id"][];
   type: "MULTI_SELECT" | "BIG_MULTI_SELECT";
 } =>
   (filter.type === "MULTI_SELECT" || filter.type === "BIG_MULTI_SELECT") &&
