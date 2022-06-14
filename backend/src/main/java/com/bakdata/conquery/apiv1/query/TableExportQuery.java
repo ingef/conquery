@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -74,10 +73,18 @@ public class TableExportQuery extends Query {
 	protected Query query;
 	@NotNull
 	private Range<LocalDate> dateRange = Range.all();
+
 	@NotEmpty
 	@Valid
 	private List<CQConcept> tables;
 
+	/**
+	 * We collect the positions for each Column of the output in here.
+	 * Multiple columns can map to the same output position:
+	 * - ValidityDate-Columns are merged into a single Date-Column
+	 * - SecondaryIds are collected into a Column per SecondaryId
+	 * - The remaining columns are arbitrarily ordered, but usually grouped by their source table.
+	 */
 	@InternalOnly
 	@NsIdRefKeys
 	private Map<Column, Integer> positions;
@@ -88,20 +95,20 @@ public class TableExportQuery extends Query {
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
 
-		final Map<CQTable, QPNode> resolved = new HashMap<>(tables.size());
+		final Map<CQTable, QPNode> filterQueryNodes = new HashMap<>(tables.size());
 
 		for (CQConcept cqConcept : tables) {
 			for (CQTable table : cqConcept.getTables()) {
-				// We use this query just to properly Construct a QPNode, filtering is done manually inside our QueryPlan
+				// We use this query just to properly Construct a QPNode, filtering is done manually inside TableQueryPlan
 				final ConceptQuery tableFilterQuery = new ConceptQuery(cqConcept, DateAggregationMode.NONE);
-				resolved.put(table, tableFilterQuery.createQueryPlan(context).getChild());
+				filterQueryNodes.put(table, tableFilterQuery.createQueryPlan(context).getChild());
 			}
 		}
 
 		return new TableExportQueryPlan(
 				query.createQueryPlan(context),
 				CDateSet.create(CDateRange.of(dateRange)),
-				resolved,
+				filterQueryNodes,
 				positions
 		);
 	}
@@ -131,34 +138,41 @@ public class TableExportQuery extends Query {
 			  .filter(Objects::nonNull)
 			  .distinct()
 			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
-			  // First position is dates, so
 			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
 
 
 		for (CQConcept concept : tables) {
 			for (CQTable table : concept.getTables()) {
 
-				final Connector connector = table.getConnector();
-				final Column validityDateColumn = TableExportQueryPlan.findValidityDateColumn(connector, table.getDateColumn());
+				final Column validityDateColumn = table.findValidityDateColumn();
 
 				if (validityDateColumn != null) {
 					positions.putIfAbsent(validityDateColumn, 0);
 				}
 
 				// Set column positions, set SecondaryId positions to precomputed ones.
-				for (Column column : connector.getTable().getColumns()) {
-					positions.computeIfAbsent(column, col -> col.getSecondaryId() != null
-															 ? secondaryIdPositions.get(col.getSecondaryId())
-															 : currentPosition.getAndIncrement());
+				for (Column column : table.getConnector().getTable().getColumns()) {
+					if (positions.containsKey(column)) {
+						continue;
+					}
+
+					if (column.getSecondaryId() != null) {
+						positions.putIfAbsent(column, secondaryIdPositions.get(column.getSecondaryId()));
+						continue;
+					}
+
+					positions.put(column, currentPosition.getAndIncrement());
 				}
 			}
 
 		}
 
-		resultInfos = createResultInfos(currentPosition.get(), secondaryIdPositions, positions);
+		resultInfos = createResultInfos(secondaryIdPositions, positions, getTables());
 	}
 
-	private List<ResultInfo> createResultInfos(int size, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions) {
+	private static List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions, @NotEmpty @Valid List<CQConcept> tables) {
+
+		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt();
 
 		ResultInfo[] infos = new ResultInfo[size];
 
@@ -171,11 +185,11 @@ public class TableExportQuery extends Query {
 			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.SecondaryIdT.INSTANCE);
 		}
 
-		final Map<Column, Concept<?>> conceptColumns = getTables().stream()
-																  .flatMap(con -> con.getTables().stream())
-																  .filter(tbl -> tbl.getConnector().getColumn() != null)
-																  .collect(Collectors.toMap(tbl -> tbl.getConnector().getColumn(), tbl -> tbl.getConcept()
-																																			 .getConcept()));
+		final Set<Column> conceptColumns = tables.stream()
+												 .flatMap(con -> con.getTables().stream())
+												 .filter(tbl -> tbl.getConnector().getColumn() != null)
+												 .map(tbl -> tbl.getConnector().getColumn())
+												 .collect(Collectors.toSet());
 
 		for (Map.Entry<Column, Integer> entry : positions.entrySet()) {
 
@@ -189,17 +203,11 @@ public class TableExportQuery extends Query {
 				continue;
 			}
 
-			// Columns that are used to build concepts are marked as PrimaryColumn.
+			// Columns that are used to build concepts are marked as ConceptColumnT.
 
-
-			final ResultType resultType;
-
-			if (conceptColumns.containsKey(column)) {
-				resultType = ResultType.ConceptColumnT.INSTANCE;
-			}
-			else {
-				resultType = ResultType.resolveResultType(column.getType());
-			}
+			final ResultType resultType = conceptColumns.contains(column)
+										  ? ResultType.ConceptColumnT.INSTANCE
+										  : ResultType.resolveResultType(column.getType());
 
 			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType);
 		}

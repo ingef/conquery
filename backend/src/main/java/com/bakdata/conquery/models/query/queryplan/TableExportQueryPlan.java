@@ -6,10 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
-import com.bakdata.conquery.apiv1.query.concept.filter.ValidityDateContainer;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -33,20 +31,6 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	@ToString.Exclude
 	private final Map<Column, Integer> positions;
-
-	public static Column findValidityDateColumn(Connector connector, ValidityDateContainer dateColumn) {
-		// if no dateColumn is provided, we use the default instead which is always the first one.
-		// Set to null if none-available in the connector.
-		if (dateColumn != null) {
-			return dateColumn.getValue().getColumn();
-		}
-
-		if (!connector.getValidityDates().isEmpty()) {
-			return connector.getValidityDates().get(0).getColumn();
-		}
-
-		return null;
-	}
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
@@ -80,7 +64,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		for (Map.Entry<CQTable, QPNode> entry : tables.entrySet()) {
 
 			final CQTable cqTable = entry.getKey();
-			final Column validityDateColumn = findValidityDateColumn(cqTable.getConnector(), cqTable.getDateColumn());
+			final Column validityDateColumn = cqTable.findValidityDateColumn();
 			final QPNode query = entry.getValue();
 
 			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, cqTable.getConnector().getTable())) {
@@ -96,7 +80,6 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 				for (int event = start; event < end; event++) {
 
-					// Export Full-table if it has no validity date.
 					if (validityDateColumn != null
 						&& !bucket.eventIsContainedIn(event, validityDateColumn, dateRange)) {
 						continue;
