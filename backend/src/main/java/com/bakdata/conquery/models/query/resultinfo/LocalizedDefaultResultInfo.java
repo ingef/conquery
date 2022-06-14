@@ -1,11 +1,13 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 
 import c10n.C10N;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -22,9 +24,9 @@ import lombok.RequiredArgsConstructor;
  * Where the example class might look like this.
  * <pre>
  *  import c10n.annotations.*;
- *  
+ *
  *  public interface ExampleC10n {
- *  	
+ *
  *  	&#064;En("example")
  *  	&#064;De("Beispiel")
  *  	String example();
@@ -42,8 +44,11 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	@Getter
 	private final ResultType type;
 
-	public LocalizedDefaultResultInfo(Function<Locale, String> localizedLabelProvider, ResultType type) {
-		this(localizedLabelProvider,localizedLabelProvider, type);
+	@Getter
+	private final List<SemanticType> semantics;
+
+	public LocalizedDefaultResultInfo(Function<Locale, String> localizedLabelProvider, ResultType type, List<SemanticType> semantics) {
+		this(localizedLabelProvider, localizedLabelProvider, type, semantics);
 	}
 
 	@Override
@@ -59,9 +64,9 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	@Override
 	public String toString() {
 		return "LocalizedDefaultResultInfo{" +
-				"localizedLabelProvider=" + localizedLabelProvider.apply(Locale.ROOT) +
-				", localizedDefaultLabelProvider=" + localizedDefaultLabelProvider.apply(Locale.ROOT) +
-				", type=" + type +
-				'}';
+			   "localizedLabelProvider=" + localizedLabelProvider.apply(Locale.ROOT) +
+			   ", localizedDefaultLabelProvider=" + localizedDefaultLabelProvider.apply(Locale.ROOT) +
+			   ", type=" + type +
+			   '}';
 	}
 }

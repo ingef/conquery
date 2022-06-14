@@ -31,7 +31,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -39,6 +38,8 @@ import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan.TableExportDescription;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -50,14 +51,14 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * TableExportQuery can be used to export raw data from selected {@link Connector}s, for selected {@link com.bakdata.conquery.models.query.entity.Entity}s.
- *
+ * <p>
  * Output format is lightly structured:
  * 1: Contains the {@link com.bakdata.conquery.models.datasets.concepts.ValidityDate} if one is available for the event.
  * 2: Contains the source {@link com.bakdata.conquery.models.datasets.Table}s label.
  * 3 - X: Contain the SecondaryId columns de-duplicated.
  * Following: Columns of all tables, (except for SecondaryId Columns), grouped by tables. The order is not guaranteed.
- *
- * Columns used in Connectors to build Concepts, are marked with {@link ResultType.ConceptColumnT} in {@link FullExecutionStatus#getColumnDescriptions()}.
+ * <p>
+ * Columns used in Connectors to build Concepts, are marked with {@link SemanticType.ConceptColumnT} in {@link FullExecutionStatus#getColumnDescriptions()}.
  */
 @Slf4j
 @Getter
@@ -164,7 +165,7 @@ public class TableExportQuery extends Query {
 		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
 			SecondaryIdDescription desc = e.getKey();
 			Integer pos = e.getValue();
-			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.SecondaryIdT.INSTANCE);
+			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.StringT.INSTANCE, List.of(new SemanticType.SecondaryIdT(desc)));
 		}
 
 		Set<Column> primaryColumns = getTables().stream()
@@ -185,11 +186,13 @@ public class TableExportQuery extends Query {
 			}
 
 			// Columns that are used to build concepts are marked as PrimaryColumn.
-			final ResultType resultType = primaryColumns.contains(column) ?
-										  ResultType.ConceptColumnT.INSTANCE :
-										  ResultType.resolveResultType(column.getType());
+			final ResultType resultType = ResultType.resolveResultType(column.getType());
 
-			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType);
+			infos[position] = new SimpleResultInfo(
+					column.getTable().getLabel() + " " + column.getLabel(),
+					resultType,
+					primaryColumns.contains(column) ? List.of(new SemanticType.ConceptColumnT(null /* TODO */)) : List.of()
+			);
 		}
 
 		return List.of(infos);

@@ -1,8 +1,11 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.List;
+
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.types.SemanticType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -37,6 +40,9 @@ public class ColumnDescriptor {
 	 * The datatype that corresponds to this column.
 	 */
 	private String type;
+
+	private List<SemanticType> semantics;
+
 	/**
 	 * Similar to {@link ColumnDescriptor#userConceptLabel} this holds the submitted {@link SelectId}.
 	 */

@@ -1,7 +1,10 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import com.bakdata.conquery.models.externalservice.ResultType;
+import java.util.List;
+
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -15,6 +18,7 @@ public class SimpleResultInfo extends ResultInfo {
 
 	private final String name;
 	private final ResultType type;
+	private final List<SemanticType> semantics;
 
 	@Override
 	public String userColumnName(PrintSettings printSettings) {

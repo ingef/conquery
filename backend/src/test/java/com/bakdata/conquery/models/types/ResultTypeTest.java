@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.externalservice;
+package com.bakdata.conquery.models.types;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,9 +41,9 @@ public class ResultTypeTest {
 		return List.of(
 			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, true,	"Yes"),
 			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, false,	"No"),
-			Arguments.of(PRETTY, ResultType.CategoricalT.INSTANCE, "test", "test"),
-			Arguments.of(PRETTY, ResultType.ResolutionT.INSTANCE, Resolution.COMPLETE.name(), "complete"),
-			Arguments.of(PRETTY_DE, ResultType.ResolutionT.INSTANCE, Resolution.COMPLETE.name(), "Gesamt"),
+			Arguments.of(PRETTY, ResultType.StringT.INSTANCE, "test", "test"),
+			Arguments.of(PRETTY, ResultType.StringT.INSTANCE, Resolution.COMPLETE.name(), "complete"),
+			Arguments.of(PRETTY_DE, ResultType.StringT.INSTANCE, Resolution.COMPLETE.name(), "Gesamt"),
 			Arguments.of(PRETTY, ResultType.DateT.INSTANCE, LocalDate.of(2013, 7, 12).toEpochDay(), "2013-07-12"),
 			Arguments.of(PRETTY_DE, ResultType.DateT.INSTANCE, LocalDate.of(2013, 7, 12).toEpochDay(), "12.07.2013"),
 			Arguments.of(PRETTY, ResultType.DateRangeT.INSTANCE, List.of(Long.valueOf(LocalDate.of(2013, 7, 12).toEpochDay()).intValue(), Long.valueOf(LocalDate.of(2013, 7, 12).toEpochDay()).intValue()), "2013-07-12"),
@@ -62,14 +62,14 @@ public class ResultTypeTest {
 			
 			Arguments.of(PLAIN, ResultType.BooleanT.INSTANCE, true,	"1"),
 			Arguments.of(PLAIN, ResultType.BooleanT.INSTANCE, false,	"0"),
-			Arguments.of(PLAIN, ResultType.CategoricalT.INSTANCE, "test", "test"),
+			Arguments.of(PLAIN, ResultType.StringT.INSTANCE, "test", "test"),
 			Arguments.of(PLAIN, ResultType.DateT.INSTANCE, LocalDate.of(2013, 7, 12).toEpochDay(), "2013-07-12"),
 			Arguments.of(PLAIN, ResultType.IntegerT.INSTANCE, 51839274, "51839274"),
 			Arguments.of(PLAIN, ResultType.MoneyT.INSTANCE, 51839274L, "51839274"),
 			Arguments.of(PLAIN, ResultType.NumericT.INSTANCE, 0.2, "0.2"),
 			Arguments.of(PLAIN, ResultType.NumericT.INSTANCE, new BigDecimal("716283712389817246892743124.12312"), "716283712389817246892743124.12312"),
 			Arguments.of(PLAIN, ResultType.StringT.INSTANCE, "test", "test"),
-			Arguments.of(PLAIN, ResultType.CategoricalT.INSTANCE, Resolution.COMPLETE.name(), "COMPLETE"),
+			Arguments.of(PLAIN, ResultType.StringT.INSTANCE, Resolution.COMPLETE.name(), "COMPLETE"),
 			Arguments.of(PLAIN, ResultType.StringT.INSTANCE, ImmutableMap.of("a", 2, "c", 1), "{a=2, c=1}")
 		);
 	}

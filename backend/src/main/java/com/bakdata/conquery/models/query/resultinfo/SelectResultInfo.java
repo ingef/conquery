@@ -1,10 +1,13 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
+import java.util.List;
+
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -18,6 +21,11 @@ public class SelectResultInfo extends ResultInfo {
 	private final Select select;
 	@NonNull
 	private final CQConcept cqConcept;
+
+	@Override
+	public List<SemanticType> getSemantics() {
+		return List.of(new SemanticType.SelectResultT(select));
+	}
 
 	@Override
 	public ResultType getType() {

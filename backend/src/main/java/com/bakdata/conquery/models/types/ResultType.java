@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.externalservice;
+package com.bakdata.conquery.models.types;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,7 +11,6 @@ import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -124,34 +123,7 @@ public abstract class ResultType {
 		}
 	}
 
-	@CPSType(id = "CATEGORICAL", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class CategoricalT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final CategoricalT INSTANCE = new CategoricalT();
-	}
 
-	@CPSType(id = "RESOLUTION", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class ResolutionT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final ResolutionT INSTANCE = new ResolutionT();
-
-		@Override
-		public String print(PrintSettings cfg, Object f) {
-			if (f instanceof Resolution) {
-				return ((Resolution) f).toString(cfg.getLocale());
-			}
-			try {
-				// If the object was parsed as a simple string, try to convert it to a
-				// DateContextMode to get Internationalization
-				return Resolution.valueOf(f.toString()).toString(cfg.getLocale());
-			}
-			catch (Exception e) {
-				throw new IllegalArgumentException(f + " is not a valid resolution.", e);
-			}
-		}
-	}
 
 	@CPSType(id = "DATE", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -220,26 +192,7 @@ public abstract class ResultType {
 		public static final StringT INSTANCE = new StringT();
 	}
 
-	@CPSType(id = "ID", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class IdT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final IdT INSTANCE = new IdT();
-	}
 
-	@CPSType(id = "SECONDARY_ID", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class SecondaryIdT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final SecondaryIdT INSTANCE = new SecondaryIdT();
-	}
-
-	@CPSType(id = "CONCEPT_COLUMN", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class ConceptColumnT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final ConceptColumnT INSTANCE = new ConceptColumnT();
-	}
 
 	@CPSType(id = "MONEY", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)

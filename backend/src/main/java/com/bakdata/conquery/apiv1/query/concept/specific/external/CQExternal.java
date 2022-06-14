@@ -19,7 +19,6 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -29,6 +28,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.Constant
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -107,7 +107,7 @@ public class CQExternal extends CQElement {
 				final ConstantValueAggregator aggregator = new ConstantValueAggregator(null, new ResultType.ListT(ResultType.StringT.INSTANCE));
 				plan.registerAggregator(aggregator);
 
-				if(extraAggregators.put(column, aggregator) != null){
+				if (extraAggregators.put(column, aggregator) != null) {
 					log.error("Multiple Aggregators for same Column");
 				}
 			}
@@ -352,7 +352,7 @@ public class CQExternal extends CQElement {
 
 			String column = values[0][col];
 
-			resultInfos.add(new SimpleResultInfo(column, new ResultType.ListT(ResultType.StringT.INSTANCE)));
+			resultInfos.add(new SimpleResultInfo(column, new ResultType.ListT(ResultType.StringT.INSTANCE), List.of()));
 		}
 
 		return resultInfos;

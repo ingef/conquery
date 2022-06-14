@@ -1,11 +1,12 @@
 package com.bakdata.conquery.io.result;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -17,12 +18,10 @@ import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @UtilityClass
 public class ResultTestUtil {
@@ -34,8 +33,6 @@ public class ResultTestUtil {
 				ResultType.BooleanT.INSTANCE,
 				ResultType.IntegerT.INSTANCE,
 				ResultType.NumericT.INSTANCE,
-				ResultType.CategoricalT.INSTANCE,
-				ResultType.ResolutionT.INSTANCE,
 				ResultType.DateT.INSTANCE,
 				ResultType.DateRangeT.INSTANCE,
 				ResultType.StringT.INSTANCE,
@@ -47,7 +44,7 @@ public class ResultTestUtil {
 	}
 
 
-	public static List<ResultInfo> ID_FIELDS = List.of("id1", "id2").stream().map(n  -> new SimpleResultInfo(n, ResultType.IdT.getINSTANCE())).collect(Collectors.toList());
+	public static List<ResultInfo> ID_FIELDS = List.of("id1", "id2").stream().map(n  -> new SimpleResultInfo(n, ResultType.StringT.getINSTANCE(), List.of(new SemanticType.IdT("ID")))).collect(Collectors.toList());
 
 	@NotNull
 	public static List<EntityResult> getTestEntityResults() {

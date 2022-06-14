@@ -24,13 +24,12 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -173,7 +172,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		for (ResultInfo header : config.getFrontend().getQueryUpload().getIdResultInfos()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(uniqNamer.getUniqueName(header))
-												   .type(ResultType.IdT.INSTANCE.typeInfo())
+												   .type(header.getType().typeInfo())
+												   .semantics(header.getSemantics())
 												   .build());
 		}
 
@@ -262,7 +262,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 						  .forEach(label -> sb.append(label).append(" "));
 
 			// Last entry will output one Space that we don't want
-			if(sb.length() > 0) {
+			if (sb.length() > 0) {
 				sb.deleteCharAt(sb.length() - 1);
 			}
 
@@ -271,7 +271,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 				sb.append(" ").append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).furtherConcepts());
 			}
 		}
-
 
 
 		// Fallback to id if nothing could be extracted from the query description
