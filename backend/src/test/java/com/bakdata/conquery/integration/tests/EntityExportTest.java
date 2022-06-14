@@ -92,7 +92,6 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		final FullExecutionStatus resultUrls = allEntityDataResponse.readEntity(FullExecutionStatus.class);
 
 
-
 		final Optional<URL> csvUrl = resultUrls.getResultUrls().stream()
 											   .filter(url -> url.getFile().endsWith(".csv"))
 											   .findFirst();

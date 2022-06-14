@@ -17,7 +17,8 @@ import lombok.Data;
 /**
  * This class represents a concept filter parameter as it is presented to the front end.
  */
-@Data @Builder
+@Data
+@Builder
 public class FETable {
 	@NotNull
 	private TableId id;

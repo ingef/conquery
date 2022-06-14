@@ -33,37 +33,6 @@ public class JacksonTest {
 		assertThat(Jackson.MAPPER.writeValueAsString(list))
 			.isEqualTo("[\"singular\"]");
 	}
-	
-	@Test
-	public void testBiMapSerialization() throws JSONException, IOException {
-		BiMap<String, String> map = HashBiMap.create();
-		map.put("a", "1");
-		map.put("b", "2");
-		SerializationTestUtil
-			.forType(new TypeReference<BiMap<String, String>>() {})
-			.test(map);
-	}
-	
-	@Test
-	public void testNonStrictNumbers() throws JSONException, IOException {
-		SerializationTestUtil.forType(Double.class).test(Double.NaN, null);
-		SerializationTestUtil.forType(Double.class).test(Double.NEGATIVE_INFINITY, null);
-		SerializationTestUtil.forType(Double.class).test(Double.POSITIVE_INFINITY, null);
-		SerializationTestUtil.forType(Double.class).test(Double.MAX_VALUE);
-		SerializationTestUtil.forType(Double.class).test(Double.MIN_VALUE);
-		SerializationTestUtil
-				.forType(EntityResult.class)
-				.test(
-						new MultilineEntityResult(4, List.of(
-								new Object[]{0, 1, 2},
-								new Object[]{Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
-						)),
-						new MultilineEntityResult(4, List.of(
-								new Object[]{0, 1, 2},
-								new Object[]{null, null, null}
-						))
-				);
-	}
 
 	@Test
 	public void testInternalOnly() throws JsonProcessingException {

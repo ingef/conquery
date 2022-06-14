@@ -10,6 +10,7 @@ import c10n.C10N;
 import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -21,6 +22,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
+
+import java.util.function.Function;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -218,6 +222,24 @@ public abstract class ResultType {
 	public static class StringT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final StringT INSTANCE = new StringT();
+
+		/**
+		 * Function that allows a select to transform the internal value to an external representation.
+		 * The returned value can be null.
+		 */
+		private Function<Object, String> valueMapper;
+
+		public StringT(Function<Object, String> valueMapper) {
+			this.valueMapper = valueMapper;
+		}
+
+		@Override
+		protected String print(PrintSettings cfg, @NonNull Object f) {
+			if (valueMapper == null) {
+				return super.print(cfg, f);
+			}
+			return super.print(cfg, valueMapper.apply(f));
+		}
 	}
 
 	@CPSType(id = "ID", base = ResultType.class)
@@ -275,10 +297,10 @@ public abstract class ResultType {
 				throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
 			}
 			// Not sure if this escaping is enough
-			String listDelimEscape = cfg.getListElementEscaper() + cfg.getListFormat().getSeparator();
-			StringJoiner joiner = new StringJoiner(cfg.getListFormat().getSeparator(), cfg.getListFormat().getStart(), cfg.getListFormat().getEnd());
+			final LocaleConfig.ListFormat listFormat = cfg.getListFormat();
+			StringJoiner joiner = listFormat.createListJoiner();
 			for (Object obj : (List<?>) f) {
-				joiner.add(elementType.print(cfg, obj).replace(cfg.getListFormat().getSeparator(), listDelimEscape));
+				joiner.add(listFormat.escapeListElement(elementType.print(cfg, obj)));
 			}
 			return joiner.toString();
 		}

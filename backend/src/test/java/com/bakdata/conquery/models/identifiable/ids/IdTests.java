@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId.Parser;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil.Parser;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -132,46 +132,53 @@ public class IdTests {
 	
 	public static Stream<Arguments> reflectionTest() {
 		return CPSTypeIdResolver
-			.SCAN_RESULT
-			.getClassesImplementing(Identifiable.class.getName()).loadClasses()
-			.stream()
-			.filter(cl -> !cl.isInterface())
-			.filter(cl -> !Modifier.isAbstract(cl.getModifiers()))
-			//filter test classes
-			.filter(cl -> !cl.toString().toLowerCase().contains("test"))
-			.map(cl -> {
-				Class<?> current = cl;
-				while(current != null) {
-					String name = current.getSimpleName();
-					
-					
-					//special exceptions for this test
-					if(name.endsWith("Information")) {
-						name = name.substring(0, name.length()-11);
-					}
-					if(name.endsWith("Permission")) {
-						name = "Permission";
-					}
-					
+				.SCAN_RESULT
+				.getClassesImplementing(Identifiable.class.getName()).loadClasses()
+				.stream()
+				.filter(cl -> !cl.isInterface())
+				.filter(cl -> !Modifier.isAbstract(cl.getModifiers()))
+				//filter test classes
+				.filter(cl -> !cl.toString().toLowerCase().contains("test"))
+				.map(cl -> {
+
+					Class<?> idClazz = null;
+					// Try to get the specific Id
 					try {
-						return Arguments.of(
-							cl,
-							Class.forName("com.bakdata.conquery.models.identifiable.ids.specific."+name+"Id")
-						);
-					} catch(ClassNotFoundException e) {
-						current = current.getSuperclass();
+						idClazz = cl.getMethod("getId").getReturnType();
+
 					}
-				}
-				
-				return fail("Could not find id class for "+cl);
-			});
+					catch (NoSuchMethodException e) {
+						return fail(cl.getName() + " does not implement the method 'getId()'");
+					}
+
+					if (Modifier.isAbstract(idClazz.getModifiers())) {
+						try {
+							idClazz = cl.getMethod("createId").getReturnType();
+
+						}
+						catch (NoSuchMethodException e) {
+							return fail(cl.getName() + " does not implement the method 'createId()' unable to retrieve specific id class");
+						}
+					}
+
+					String packageString = "com.bakdata.conquery.models.identifiable.ids.specific.";
+					if (!idClazz.getName().startsWith(packageString)) {
+						return fail("The id class " + idClazz + " is not located in the package " + packageString + ". Please clean that up.");
+					}
+
+					return Arguments.of(
+							cl,
+							idClazz
+					);
+				});
 	}
-	
-	@ParameterizedTest @MethodSource
-	public void reflectionTest(Class<?> modelClass, Class<? extends IId<?>> expectedIdClass) {
-		
-		Class<? extends IId<?>> idClass = IId.findIdClass(modelClass);
+
+	@ParameterizedTest
+	@MethodSource
+	public void reflectionTest(Class<?> modelClass, Class<? extends Id<?>> expectedIdClass) {
+
+		Class<? extends Id<?>> idClass = IdUtil.findIdClass(modelClass);
 		assertThat(idClass).isSameAs(expectedIdClass);
-		assertThat(IId.createParser(idClass)).isInstanceOf(Parser.class);
+		assertThat(IdUtil.createParser(idClass)).isInstanceOf(Parser.class);
 	}
 }

@@ -33,7 +33,8 @@ Check the README in `/frontend` for details.
 #### Steps
 To test frontend and backend together you can start the setup that is used for end-to-end tests.
 
-First build the backend using `conquery/scripts/build_backend_version.sh` or download a JAR from the [release page](https://github.com/bakdata/conquery/releases) and place it in `conquery/executable/target/`.
+First build the backend using `conquery/scripts/build_backend_version.sh` or download a JAR from
+the [release page](https://github.com/bakdata/conquery/releases) and place it in `conquery/executable/target/`.
 
 Build the frontend by running:
 

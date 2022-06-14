@@ -70,7 +70,8 @@ public class ExecutionManager {
 		// Initialize the query / create subqueries
 		try {
 			execution.initExecutable(datasets, config);
-		}catch (Exception e){
+		}
+		catch (Exception e) {
 			log.error("Failed to initialize Query[{}]", execution.getId(), e);
 
 			//TODO we don't want to store completely faulty queries but is that right like this?
@@ -116,7 +117,7 @@ public class ExecutionManager {
 	 */
 	public <R extends ShardResult, E extends ManagedExecution<R>> void handleQueryResult(R result) {
 
-		final MetaStorage metaStorage = datasetRegistry.getMetaStorage();
+		MetaStorage metaStorage = datasetRegistry.getMetaStorage();
 
 		final E query = (E) metaStorage.getExecution(result.getQueryId());
 

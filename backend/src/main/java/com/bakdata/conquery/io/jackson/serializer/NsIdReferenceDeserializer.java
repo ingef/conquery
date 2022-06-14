@@ -1,11 +1,14 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
+import static com.bakdata.conquery.io.jackson.serializer.SerdesTarget.MANAGER_AND_SHARD;
+
 import java.io.IOException;
 import java.util.InputMismatchException;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.core.JsonParser;
@@ -26,11 +29,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @AllArgsConstructor
 @NoArgsConstructor
-public class NsIdReferenceDeserializer<ID extends NamespacedId & IId<T>, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
+public class NsIdReferenceDeserializer<ID extends Id<T> & NamespacedId, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
 
 	private Class<?> type;
 	private JsonDeserializer<?> beanDeserializer;
 	private Class<ID> idClass;
+	private SerdesTarget fieldTarget;
 
 	@Override
 	public T deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
@@ -40,8 +44,19 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId & IId<T>, T exten
 	@SuppressWarnings("unchecked")
 	@Override
 	public T deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
+		final SerdesTarget omTarget = (SerdesTarget) ctxt.getAttribute(SerdesTarget.class);
+
+		if (omTarget == null) {
+			throw new IllegalStateException("Deserialization target not set. Don't know in whose context to deserialize.");
+		}
+
 		if (parser.getCurrentToken() != JsonToken.VALUE_STRING) {
 			return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
+		}
+
+		if (!omTarget.shouldDeserializeField(fieldTarget)) {
+			log.trace("Skipping deserialization on instance (target={}) for field (target={}). Id was: {}", omTarget, fieldTarget, log.isTraceEnabled() ? parser.getText(): "trace not enabled");
+			return null;
 		}
 
 		ID id = ctxt.readValue(parser, idClass);
@@ -78,13 +93,17 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId & IId<T>, T exten
 			type = type.getContentType();
 		}
 		Class<T> cl = (Class<T>) type.getRawClass();
-		Class<ID> idClass = IId.findIdClass(cl);
+		Class<ID> idClass = IdUtil.findIdClass(cl);
 
+		// Get the serdes target, but don't evaluate it yet (however it might be possible to return a noop deserializer here)
+		final NsIdRef annotation = property.getAnnotation(NsIdRef.class);
+		final SerdesTarget serdesTarget = annotation != null ? annotation.serdesTarget() : MANAGER_AND_SHARD;
 
 		return new NsIdReferenceDeserializer<>(
 				cl,
 				ctxt.getFactory().createBeanDeserializer(ctxt, type, descr),
-				idClass
+				idClass,
+				serdesTarget
 		);
 	}
 

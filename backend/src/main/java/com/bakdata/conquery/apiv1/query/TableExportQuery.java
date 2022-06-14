@@ -50,13 +50,13 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * TableExportQuery can be used to export raw data from selected {@link Connector}s, for selected {@link com.bakdata.conquery.models.query.entity.Entity}s.
- *
+ * <p>
  * Output format is lightly structured:
  * 1: Contains the {@link com.bakdata.conquery.models.datasets.concepts.ValidityDate} if one is available for the event.
  * 2: Contains the source {@link com.bakdata.conquery.models.datasets.Table}s label.
  * 3 - X: Contain the SecondaryId columns de-duplicated.
  * Following: Columns of all tables, (except for SecondaryId Columns), grouped by tables. The order is not guaranteed.
- *
+ * <p>
  * Columns used in Connectors to build Concepts, are marked with {@link ResultType.ConceptColumnT} in {@link FullExecutionStatus#getColumnDescriptions()}.
  */
 @Slf4j
