@@ -82,6 +82,18 @@ public class MapIndexService implements Injectable {
 					// Clean up the substitution by removing repeated white spaces
 					String externalValueCleaned = externalValue.replaceAll("\\s+", " ");
 
+					if (int2ext.containsKey(internalValue)) {
+						log.warn(
+								"Skipping mapping '{}'->'{}' in row {}, because there was already a mapping '{}'->'{}'",
+								internalValue,
+								externalValueCleaned,
+								csvParser.getContext().currentLine(),
+								internalValue,
+								int2ext.get(internalValue)
+						);
+						continue;
+					}
+
 					int2ext.put(internalValue, externalValueCleaned);
 				}
 			}
