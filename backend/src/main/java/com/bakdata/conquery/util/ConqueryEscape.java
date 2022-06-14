@@ -3,6 +3,7 @@ package com.bakdata.conquery.util;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
+import java.util.OptionalInt;
 import java.util.stream.IntStream;
 
 import lombok.NonNull;
@@ -40,31 +41,28 @@ public class ConqueryEscape {
 	}
 
 	public static String escape(@NonNull String word) {
-		if (word.isEmpty()) {
+		final int unescapedCharSequenceLength =
+				(int) word.chars()
+						  // Check if the character is larger than a byte
+						  .takeWhile(c -> c >= 0x100 || c < 0)
+						  //or if that byte needs encoding
+						  .takeWhile(c -> dontNeedEncoding((byte) (c & 0x00FF)))
+						  .count();
+
+		if (unescapedCharSequenceLength == word.length()) {
 			return word;
 		}
 
+		// Convert it to the encoding we expect to consume
+		byte[] bytes = word.getBytes(StandardCharsets.UTF_8);
+		// Prepare the buffer for the encoded word
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(bytes.length + 5);
+		// Since we encountered the first character that needs encoding, we can assume
+		// that until here the byte index and the char index point to the same character
+		baos.write(bytes, 0, unescapedCharSequenceLength);
 
-		// start escaping if a caracter is found that needs escaping
-		for (int i = 0; i < word.length(); i++) {
-			final char c = word.charAt(i);
-
-			// Check if the character is larger than a byte or if that byte needs encoding
-			if (((c >> 8) & 0xFF) != 0 || !dontNeedEncoding((byte) (c & 0x00FF))) {
-				// Convert it to the encoding we expect to consume
-				byte[] bytes = word.getBytes(StandardCharsets.UTF_8);
-				// Prepare the buffer for the encoded word
-				ByteArrayOutputStream baos = new ByteArrayOutputStream(bytes.length + 5);
-				// Since we encountered the first character that needs encoding, we can assume
-				// that until here the byte index and the char index point to the same character
-				baos.write(bytes, 0, i);
-
-				// Then write the rest and escape
-				return escapeRequired(bytes, i, baos);
-			}
-		}
-
-		return word;
+		// Then write the rest and escape
+		return escapeRequired(bytes, unescapedCharSequenceLength, baos);
 	}
 
 
