@@ -5,7 +5,12 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 import javax.ws.rs.client.Client;
@@ -13,6 +18,9 @@ import javax.ws.rs.client.Client;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.jackson.PathParamInjector;
+import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -43,7 +51,6 @@ import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -51,16 +58,18 @@ import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 /**
  * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to
  * {@link ShardNode}s and respectively the {@link Worker}s hosted on them. The {@link ManagerNode} can also
- * forward queries or results to statistic backends. Finally it collects the results of queries for access over the api.
+ * forward queries or results to statistic backends. Finally, it collects the results of queries for access over the api.
  */
 @Slf4j
 @Getter
@@ -108,10 +117,11 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// Instantiate DatasetRegistry and MetaStorage so they are ready for injection into the object mapper (API + Storage)
 		// The validator is already injected at this point see Conquery.java
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
-		storage = new MetaStorage(datasetRegistry);
+		storage = new MetaStorage(config.getStorage(), datasetRegistry);
 
-		datasetRegistry.injectInto(environment.getObjectMapper());
-		storage.injectInto(environment.getObjectMapper());
+
+		final ObjectMapper objectMapper = environment.getObjectMapper();
+		customizeApiObjectMapper(objectMapper);
 
 
 		jobManager = new JobManager("ManagerNode", config.isFailOnError());
@@ -123,7 +133,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// Initialization of internationalization
 		I18n.init();
 
-		RESTServer.configure(config, environment.jersey().getResourceConfig());
+		final DropwizardResourceConfig resourceConfig = environment.jersey().getResourceConfig();
+		configureApiServlet(config, resourceConfig);
 
 		maintenanceService = environment.lifecycle()
 										.scheduledExecutorService("Maintenance Service")
@@ -138,8 +149,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		authController = new AuthorizationController(storage, config.getAuthorizationRealms());
 		environment.lifecycle().manage(authController);
 
-		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), environment.getObjectMapper());
-		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
+		unprotectedAuthAdmin = AuthServlet.generalSetup(environment.metrics(), config, environment.admin(), objectMapper);
+		unprotectedAuthApi = AuthServlet.generalSetup(environment.metrics(), config, environment.servlets(), objectMapper);
 
 		// Create AdminServlet first to make it available to the realms
 		admin = new AdminServlet(this);
@@ -169,6 +180,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			Throwables.throwIfUnchecked(e);
 			throw new RuntimeException(e);
 		}
+
 		environment.admin().addTask(formScanner);
 		environment.admin().addTask(
 				new QueryCleanupTask(storage, Duration.of(
@@ -183,9 +195,67 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
+
+	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig resourceConfig) {
+		RESTServer.configure(config, resourceConfig);
+		resourceConfig.register(PathParamInjector.class);
+		resourceConfig.register(new AbstractBinder() {
+			@Override
+			protected void configure() {
+				bind(datasetRegistry).to(DatasetRegistry.class);
+			}
+		});
+	}
+
+	/**
+	 * Customize the mapper from the environment, that is used in the REST-API.
+	 * In contrast to the internal object mapper this uses textual JSON representation
+	 * instead of the binary smile format. It also does not expose internal fields through serialization.
+	 * <p>
+	 * Internal and external mapper have in common that they might process the same classes/objects and that
+	 * they are configured to understand certain Conquery specific data types.
+	 *
+	 * @param objectMapper to be configured (should be a JSON mapper)
+	 */
+	public void customizeApiObjectMapper(ObjectMapper objectMapper) {
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
+
+		final MutableInjectableValues injectableValues = new MutableInjectableValues();
+		objectMapper.setInjectableValues(injectableValues);
+		injectableValues.add(Validator.class, getValidator());
+
+		getDatasetRegistry().injectInto(objectMapper);
+		getStorage().injectInto(objectMapper);
+	}
+
+	/**
+	 * Create a new internal object mapper for binary (de-)serialization that is equipped with {@link ManagerNode} related injectables
+	 * and configured to use the {@link InternalOnly} view.
+	 * <p>
+	 * TODO we need to distinguish between internal persistence and internal communication (manager<->shard). ATM we persist unnecessary fields.
+	 *
+	 * @return a preconfigured binary object mapper
+	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper)
+	 */
+	public ObjectMapper createInternalObjectMapper() {
+		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.BINARY_MAPPER.copy());
+
+
+		final MutableInjectableValues injectableValues = new MutableInjectableValues();
+		objectMapper.setInjectableValues(injectableValues);
+		injectableValues.add(Validator.class, getValidator());
+		getDatasetRegistry().injectInto(objectMapper);
+		getStorage().injectInto(objectMapper);
+
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
+		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
+		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
+		return objectMapper;
+	}
+
 	private void loadMetaStorage() {
 		log.info("Opening MetaStorage");
-		storage.openStores(config.getStorage());
+		storage.openStores(createInternalObjectMapper());
 		log.info("Loading MetaStorage");
 		storage.loadData();
 		log.info("MetaStorage loaded {}", storage);
@@ -193,13 +263,26 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		datasetRegistry.setMetaStorage(storage);
 	}
 
+	@SneakyThrows(InterruptedException.class)
 	public void loadNamespaces() {
-		final Collection<NamespaceStorage> storages = config.getStorage().loadNamespaceStorages();
-		final ObjectWriter objectWriter =
-				config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER)).writerWithView(InternalOnly.class);
 
-		for (NamespaceStorage namespaceStorage : storages) {
-			Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), objectWriter);
+
+		Queue<Namespace> namespacesDone = new ConcurrentLinkedQueue<>();
+		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+
+		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
+		final Collection<NamespaceStorage> namespaceStorages = config.getStorage().discoverNamespaceStorages();
+		for (NamespaceStorage namespaceStorage : namespaceStorages) {
+			loaders.submit(() -> {
+				namespacesDone.add(Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), createInternalObjectMapper()));
+			});
+		}
+
+
+		loaders.shutdown();
+		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
+			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", namespacesDone.size(), namespaceStorages.size()
+																															- namespacesDone.size());
 		}
 	}
 
@@ -253,7 +336,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
 
-		ObjectMapper om = Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER);
+		ObjectMapper om = createInternalObjectMapper();
 		config.configureObjectMapper(om);
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));

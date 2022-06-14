@@ -1,14 +1,18 @@
 import { getType } from "typesafe-actions";
 
-import type { TableT } from "../api/types";
+import type { ColumnDescription, TableT } from "../api/types";
 import type { Action } from "../app/actions";
 
 import {
   closeHistory,
-  initHistoryData,
+  loadHistoryData,
   loadDefaultHistoryParamsSuccess,
   openHistory,
+  resetCurrentEntity,
 } from "./actions";
+
+// TODO: This is quite inaccurate
+export type EntityEvent = { [key: string]: any };
 
 export type EntityHistoryStateT = {
   defaultParams: {
@@ -16,20 +20,26 @@ export type EntityHistoryStateT = {
   };
   isLoading: boolean;
   isOpen: boolean;
+  columns: ColumnDescription[];
+  label: string;
   entityIds: string[];
   currentEntityId: string | null;
-  currentEntityData: string[][];
+  currentEntityData: EntityEvent[];
+  currentEntityCsvUrl: string;
 };
 
 const initialState: EntityHistoryStateT = {
   defaultParams: {
     sources: [],
   },
+  label: "",
+  columns: [], // TODO: Make them currentEntityColumns and do something useful with them
   isLoading: false,
   isOpen: false,
   entityIds: [],
   currentEntityId: null,
   currentEntityData: [],
+  currentEntityCsvUrl: "",
 };
 
 export default function reducer(
@@ -44,15 +54,22 @@ export default function reducer(
           sources: action.payload.sources,
         },
       };
-    case getType(initHistoryData.request):
+    case getType(loadHistoryData.request):
       return { ...state, isLoading: true };
-    case getType(initHistoryData.failure):
+    case getType(loadHistoryData.failure):
       return { ...state, isLoading: false };
-    case getType(initHistoryData.success):
+    case getType(loadHistoryData.success):
       return {
         ...state,
         ...action.payload,
         isLoading: false,
+      };
+    case getType(resetCurrentEntity):
+      return {
+        ...state,
+        currentEntityId: null,
+        currentEntityData: [],
+        currentEntityCsvUrl: "",
       };
     case getType(openHistory):
       return { ...state, isOpen: true };

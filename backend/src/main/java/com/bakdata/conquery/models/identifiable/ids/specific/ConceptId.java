@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AllArgsConstructor;
@@ -31,10 +31,10 @@ public class ConceptId extends ConceptElementId<Concept<?>> implements Namespace
 		dataset.collectComponents(components);
 		components.add(name);
 	}
-	
-	public static enum Parser implements IId.Parser<ConceptId> {
+
+	public static enum Parser implements IdUtil.Parser<ConceptId> {
 		INSTANCE;
-		
+
 		@Override
 		public ConceptId parseInternally(IdIterator parts) {
 			String name = parts.next();

@@ -34,10 +34,6 @@ public class SuccinctTrieTest {
 	}
 
 
-	public static Stream<String> data() throws IOException {
-		return In.resource(SuccinctTrieTest.class, "SuccinctTrieTest.data").streamLines();
-	}
-
 	@Test
 	public void assertionTest() {
 		List<String> words = new ArrayList<String>();
@@ -71,24 +67,6 @@ public class SuccinctTrieTest {
 		assertThat(direct.getId("is".getBytes())).isEqualTo(2);
 		assertThat(direct.getId("ha".getBytes())).isEqualTo(4);
 		assertThat(direct.getId("h".getBytes())).isEqualTo(-1);
-	}
-
-	@Test
-	public void serializationTest()
-			throws IOException, JSONException {
-
-		final CentralRegistry registry = new CentralRegistry();
-		registry.register(Dataset.PLACEHOLDER);
-
-		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "testDict");
-
-		data().forEach(value -> dict.put(value.getBytes()));
-
-		dict.compress();
-		SerializationTestUtil
-				.forType(Dictionary.class)
-				.registry(registry)
-				.test(dict);
 	}
 
 	@ParameterizedTest(name = "seed: {0}")

@@ -21,8 +21,8 @@ public final class ValidatorHelper {
 	public static <V extends ConstraintViolation<?>> void failOnError(Logger log, Set<V> violations) {
 		final Optional<String> violationString = createViolationsString(violations, log.isTraceEnabled());
 
-		if (violationString.isPresent()){
-			throw new ValidationException();
+		if (violationString.isPresent()) {
+			throw new ValidationException(violationString.get());
 		}
 	}
 

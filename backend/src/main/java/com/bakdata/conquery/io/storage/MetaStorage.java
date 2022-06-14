@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class MetaStorage implements ConqueryStorage, Injectable {
+
+	private final StoreFactory storageFactory;
 
 	private IdentifiableStore<ManagedExecution<?>> executions;
 
@@ -40,13 +43,13 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 	@Getter
 	protected final DatasetRegistry datasetRegistry;
 
-	public void openStores(StoreFactory storageFactory) {
-		authUser = storageFactory.createUserStore(centralRegistry, "meta", this);
-		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this);
-		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this);
+	public void openStores(ObjectMapper mapper) {
+		authUser = storageFactory.createUserStore(centralRegistry, "meta", this, mapper);
+		authRole = storageFactory.createRoleStore(centralRegistry, "meta", this, mapper);
+		authGroup = storageFactory.createGroupStore(centralRegistry, "meta", this, mapper);
 		// Executions depend on users
-		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, "meta");
-		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, "meta");
+		executions = storageFactory.createExecutionsStore(centralRegistry, datasetRegistry, "meta", mapper);
+		formConfigs = storageFactory.createFormConfigStore(centralRegistry, datasetRegistry, "meta", mapper);
 
 	}
 

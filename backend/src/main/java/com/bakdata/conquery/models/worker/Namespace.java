@@ -2,23 +2,27 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.index.MapIndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.AccessLevel;
@@ -39,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class Namespace implements Closeable {
 
-	private final ObjectWriter objectWriter;
+	private final ObjectMapper objectMapper;
 	@ToString.Include
 	private final NamespaceStorage storage;
 
@@ -60,16 +64,33 @@ public class Namespace implements Closeable {
 
 	private final FilterSearch filterSearch;
 
-	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, ObjectWriter objectWriter){
+	private final MapIndexService indexService;
+
+	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
+	private final List<Injectable> injectables;
+
+	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, ObjectMapper objectMapper) {
+
+		// Prepare namespace dependent Jackson injectables
+		List<Injectable> injectables = new ArrayList<>();
+		final MapIndexService indexService = new MapIndexService(config.getCsv().createCsvParserSettings());
+		injectables.add(indexService);
+		injectables.forEach(i -> i.injectInto(objectMapper));
+
+		// Open and load the stores
+		storage.openStores(objectMapper);
+		storage.loadData();
 
 		ExecutionManager executionManager = new ExecutionManager(datasetRegistry);
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 
 		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getSearch());
 
-		final Namespace namespace = new Namespace(objectWriter, storage, executionManager, jobManager, filterSearch);
+
+		final Namespace namespace = new Namespace(objectMapper, storage, executionManager, jobManager, filterSearch, indexService, injectables);
 
 		datasetRegistry.add(namespace);
+
 
 		return namespace;
 	}
@@ -112,7 +133,7 @@ public class Namespace implements Closeable {
 	public synchronized void addWorker(WorkerInformation info) {
 		Objects.requireNonNull(info.getConnectedShardNode(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
 
-		info.setObjectWriter(objectWriter);
+		info.setObjectWriter(objectMapper.writer());
 
 		workers.add(info);
 
@@ -202,5 +223,9 @@ public class Namespace implements Closeable {
 
 	public int getNumberOfEntities() {
 		return getStorage().getPrimaryDictionary().getSize();
+	}
+
+	public void clearInternToExternCache() {
+		indexService.evictCache();
 	}
 }

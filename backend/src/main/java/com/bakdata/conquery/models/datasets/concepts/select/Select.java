@@ -1,15 +1,18 @@
 package com.bakdata.conquery.models.datasets.concepts.select;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,12 +48,14 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 
 	@Override
 	public SelectId createId() {
-		if(holder instanceof Connector) {
-			return new ConnectorSelectId(((Connector)holder).getId(), getName());
+		if (holder instanceof Connector) {
+			return new ConnectorSelectId(((Connector) holder).getId(), getName());
 		}
 		return new ConceptSelectId(holder.findConcept().getId(), getName());
 	}
 
+	public void init() {
+	}
 
 	@NotNull
 	@JsonIgnore

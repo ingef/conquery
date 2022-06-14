@@ -81,13 +81,13 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	/**
 	 * If true, Frontend should use Connector as default when using {@link com.bakdata.conquery.resources.api.QueryResource.EntityPreview}.
 	 */
-	private  boolean defaultForEntityPreview = false;
+	private boolean defaultForEntityPreview = false;
 
 	@JsonIgnore
 	public List<Select> getDefaultSelects() {
 		return getSelects()
-					   .stream().filter(Select::isDefault)
-					   .collect(Collectors.toList());
+				.stream().filter(Select::isDefault)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -130,5 +130,9 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	@Override
 	public Dataset getDataset() {
 		return getConcept().getDataset();
+	}
+
+	public void init() {
+		getSelects().forEach(Select::init);
 	}
 }

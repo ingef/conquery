@@ -5,37 +5,45 @@ import { useDispatch, useSelector } from "react-redux";
 import type { ColumnDescription } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
-import { openHistory, useInitHistorySession } from "../entity-history/actions";
+import { openHistory, useNewHistorySession } from "../entity-history/actions";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import IconButton from "./IconButton";
 
 const SxIconButton = styled(IconButton)`
   white-space: nowrap;
+  padding: 5px 6px;
 `;
 
 interface PropsT {
   columns: ColumnDescription[];
+  label: string;
   url: string;
   className?: string;
 }
 
-const HistoryButton = ({ url, columns, className, ...restProps }: PropsT) => {
+const HistoryButton = ({
+  url,
+  label,
+  columns,
+  className,
+  ...restProps
+}: PropsT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const isLoading = useSelector<StateT, boolean>(
-    (state) => state.preview.isLoading,
+    (state) => state.entityHistory.isLoading,
   );
 
   const getAuthorizedUrl = useGetAuthorizedUrl();
-  const initHistorySession = useInitHistorySession();
+  const newHistorySession = useNewHistorySession();
 
   return (
     <WithTooltip text={t("history.history")} className={className}>
       <SxIconButton
-        icon={isLoading ? "spinner" : "book"}
+        icon={isLoading ? "spinner" : "id-badge"}
         onClick={async () => {
-          await initHistorySession(getAuthorizedUrl(url), columns);
+          await newHistorySession(getAuthorizedUrl(url), columns, label);
           dispatch(openHistory());
         }}
         {...restProps}

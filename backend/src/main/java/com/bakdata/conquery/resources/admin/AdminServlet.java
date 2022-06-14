@@ -8,9 +8,11 @@ import java.util.Collections;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
+import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
@@ -85,7 +87,8 @@ public class AdminServlet {
 				manager.getConfig(),
 				manager.getValidator(),
 				manager.getDatasetRegistry(),
-				manager.getJobManager()
+				manager.getJobManager(),
+				manager::createInternalObjectMapper
 		);
 
 
@@ -96,14 +99,16 @@ public class AdminServlet {
 			protected void configure() {
 				bind(adminProcessor).to(AdminProcessor.class);
 				bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
+				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 			}
 		});
 
 		// inject required services
 		jerseyConfigUI.register(new UIProcessor(adminProcessor));
-		
+
 		jerseyConfig.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
 		jerseyConfigUI.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
+		jerseyConfig.register(PathParamInjector.class);
 	}
 
 	public void register(ManagerNode manager) {

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
 import java.util.Locale;
+import java.util.Optional;
 import java.util.function.Function;
 
 import c10n.C10N;
@@ -59,9 +60,9 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	@Override
 	public String toString() {
 		return "LocalizedDefaultResultInfo{" +
-				"localizedLabelProvider=" + localizedLabelProvider.apply(Locale.ROOT) +
-				", localizedDefaultLabelProvider=" + localizedDefaultLabelProvider.apply(Locale.ROOT) +
-				", type=" + type +
-				'}';
+			   "localizedLabelProvider=" + localizedLabelProvider.apply(Locale.ROOT) +
+			   ", localizedDefaultLabelProvider=" + localizedDefaultLabelProvider.apply(Locale.ROOT) +
+			   ", type=" + type +
+			   '}';
 	}
 }

@@ -153,12 +153,12 @@ public class ConceptsProcessor {
 						 .collect(Collectors.toList());
 	}
 
-	public Stream<ConnectorId> getEntityPreviewDefaultConnectors(Dataset dataset){
+	public Stream<ConnectorId> getEntityPreviewDefaultConnectors(Dataset dataset) {
 		return namespaces.get(dataset.getId()).getStorage().getAllConcepts().stream()
-				.map(Concept::getConnectors)
-				.flatMap(Collection::stream)
-				.filter(Connector::isDefaultForEntityPreview)
-				.map(Identifiable::getId);
+						 .map(Concept::getConnectors)
+						 .flatMap(Collection::stream)
+						 .filter(Connector::isDefaultForEntityPreview)
+						 .map(Identifiable::getId);
 	}
 
 	/**
