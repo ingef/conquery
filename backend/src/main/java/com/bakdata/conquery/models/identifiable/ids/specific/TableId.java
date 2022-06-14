@@ -13,7 +13,9 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Data
+@AllArgsConstructor
+@Getter
+@EqualsAndHashCode(callSuper = false)
 public class TableId extends Id<Table> implements NamespacedId {
 
 	private final DatasetId dataset;
