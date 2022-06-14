@@ -42,7 +42,6 @@ public class MapIndexService implements Injectable {
 
 	private final Queue<CompletableFuture<Map<String, String>>> requestedMappings = new LinkedList<>();
 
-	// TODO provide a way to evict mappings
 	private final LoadingCache<Key, Map<String, String>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<Key, Map<String, String>>() {
 		@Override
 		public Map<String, String> load(@NotNull Key key) throws Exception {
