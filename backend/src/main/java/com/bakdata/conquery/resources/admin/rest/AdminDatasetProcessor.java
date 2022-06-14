@@ -15,8 +15,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -28,6 +26,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -388,9 +387,29 @@ public class AdminDatasetProcessor {
 		namespace.getStorage().addInternToExternMapper(internToExternMapper);
 	}
 
-	public void deleteInternToExternMapping(InternToExternMapper internToExternMapper) {
+	public List<ConceptId> deleteInternToExternMapping(InternToExternMapper internToExternMapper, boolean force) {
 		final Namespace namespace = datasetRegistry.get(internToExternMapper.getDataset().getId());
-		namespace.getStorage().removeInternToExternMapper(internToExternMapper.getId());
+
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
+															.filter(
+																	c -> c.getSelects().stream()
+																		  .filter(MappableSingleColumnSelect.class::isInstance)
+
+																		  .map(MappableSingleColumnSelect.class::cast)
+																		  .map(MappableSingleColumnSelect::getMapping)
+																		  .anyMatch(internToExternMapper::equals)
+															)
+															.collect(Collectors.toList());
+
+		if (force || dependentConcepts.isEmpty()) {
+			for (Concept<?> concept : dependentConcepts) {
+				deleteConcept(concept);
+			}
+
+			namespace.getStorage().removeInternToExternMapper(internToExternMapper.getId());
+		}
+
+		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
 	}
 
 	public void clearInternToExternCache(Namespace namespace) {

@@ -16,6 +16,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -177,8 +178,8 @@ public class AdminDatasetResource extends HAdmin {
 
 	@DELETE
 	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
-	public void deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper) {
-		processor.deleteInternToExternMapping(internToExternMapper);
+	public void deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper, @QueryParam("force") @DefaultValue("false") boolean force) {
+		processor.deleteInternToExternMapping(internToExternMapper, force);
 	}
 
 	@GET
