@@ -11,12 +11,12 @@ Each `*.import.json` has to contain exactly one [ImportDescriptor](#Type-ImportD
 
 ## Base OutputDescription
 
+
 Different types of OutputDescription can be used by setting `operation` to one of the following values:
 
-### COMPOUND_DATE_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/CompoundDateRangeOutput.java#L22-L26)</sup></sub></sup>
 
-Output creating delegating store of start and end-Column neighbours. <p> This output will still parse and validate the
-data to ensure that some assertions are held (ie.: only open when allowOpen is set, and start <= end).
+### COMPOUND_DATE_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/CompoundDateRangeOutput.java#L22-L26)</sup></sub></sup>
+Output creating delegating store of start and end-Column neighbours. <p> This output will still parse and validate the data to ensure that some assertions are held (ie.: only open when allowOpen is set, and start <= end).
 
 <details><summary>Details</summary><p>
 
