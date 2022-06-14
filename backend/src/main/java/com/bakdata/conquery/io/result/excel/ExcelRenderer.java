@@ -40,12 +40,12 @@ import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTTableStyleInfo;
 
 public class ExcelRenderer {
 
-	private final static Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
-            ResultType.DateT.class, ExcelRenderer::writeDateCell,
-            ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
-            ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
-            ResultType.NumericT.class, ExcelRenderer::writeNumericCell
-    );
+	private static final Map<Class<? extends ResultType>, TypeWriter> TYPE_WRITER_MAP = Map.of(
+			ResultType.DateT.class, ExcelRenderer::writeDateCell,
+			ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
+			ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
+			ResultType.NumericT.class, ExcelRenderer::writeNumericCell
+	);
 	public static final int CHARACTER_WIDTH_DIVISOR = 256;
 	public static final int AUTOFILTER_SPACE_WIDTH = 3;
 

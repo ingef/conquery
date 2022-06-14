@@ -371,7 +371,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                     setValue(field.name, tab, setValueConfig)
                   }
                   options={field.tabs.map((tab) => ({
-                    label: tab.title[locale] || "",
+                    label: () => tab.title[locale] || "",
                     value: tab.name,
                     tooltip: tab.tooltip ? tab.tooltip[locale] : undefined,
                   }))}

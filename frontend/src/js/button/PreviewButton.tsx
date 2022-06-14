@@ -1,18 +1,19 @@
 import styled from "@emotion/styled";
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { ColumnDescription } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { AuthTokenContext } from "../authorization/AuthTokenProvider";
-import { useOpenPreview } from "../preview/actions";
+import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
+import { openPreview, useLoadPreviewData } from "../preview/actions";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import IconButton from "./IconButton";
 
 const SxIconButton = styled(IconButton)`
   white-space: nowrap;
+  padding: 5px 6px;
 `;
 
 interface PropsT {
@@ -27,24 +28,23 @@ const PreviewButton: FC<PropsT> = ({
   className,
   ...restProps
 }) => {
-  const { authToken } = useContext(AuthTokenContext);
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
   const isLoading = useSelector<StateT, boolean>(
     (state) => state.preview.isLoading,
   );
-  const { t } = useTranslation();
 
-  const openPreview = useOpenPreview();
-  const onOpenPreview = (url: string) => openPreview(url, columns);
-
-  const href = `${url}?access_token=${encodeURIComponent(
-    authToken,
-  )}&charset=utf-8&pretty=false`;
+  const loadPreviewData = useLoadPreviewData();
+  const getAuthorizedUrl = useGetAuthorizedUrl();
 
   return (
     <WithTooltip text={t("preview.preview")} className={className}>
       <SxIconButton
         icon={isLoading ? "spinner" : "search"}
-        onClick={() => onOpenPreview(href)}
+        onClick={async () => {
+          await loadPreviewData(getAuthorizedUrl(url), columns);
+          dispatch(openPreview());
+        }}
         {...restProps}
       />
     </WithTooltip>

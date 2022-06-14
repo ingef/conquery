@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
@@ -15,13 +16,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.zip.GZIPInputStream;
 
+import javax.validation.ValidationException;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.preproc.Preprocessed;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.models.preproc.PreprocessingJob;
@@ -183,21 +185,35 @@ public class PreprocessorCommand extends ConqueryCommand {
 			}
 		}
 
-		List<PreprocessingJob> missing = new ArrayList<>();
+		List<PreprocessingJob> broken = new ArrayList<>();
 
-		for (PreprocessingJob job : jobs) {
+		for (Iterator<PreprocessingJob> iterator = jobs.iterator(); iterator.hasNext(); ) {
+			final PreprocessingJob job = iterator.next();
+
+			try {
+				ValidatorHelper.failOnError(log, environment.getValidator().validate(job.getDescriptor()));
+			}
+			catch (ValidationException exception) {
+				log.error("Descriptor {} is not valid.", job.getDescriptor(), exception);
+				broken.add(job);
+				iterator.remove();
+				continue;
+			}
+
 			for (TableInputDescriptor input : job.getDescriptor().getInputs()) {
+
 				final File sourceFile = Preprocessor.resolveSourceFile(input.getSourceFile(), job.getCsvDirectory(), job.getTag());
 				if (!sourceFile.exists()) {
 					log.error("Did not find file `{}` for Preprocessing[{}].", sourceFile, job);
-					missing.add(job);
+					broken.add(job);
+					iterator.remove();
 				}
 			}
 		}
 
 		// This will halt preprocessing immediately.
-		if (isStrict && !missing.isEmpty()) {
-			log.error("FAILED Preprocessing, files are missing.");
+		if (isStrict && !broken.isEmpty()) {
+			log.error("FAILED Preprocessing, files are missing or invalid.");
 			doFail();
 		}
 
@@ -240,9 +256,9 @@ public class PreprocessorCommand extends ConqueryCommand {
 			success.forEach(desc -> log.info("\tSucceeded Preprocessing for {}", desc));
 		}
 
-		if (!missing.isEmpty()) {
-			log.warn("Did not find {} Files", missing.size());
-			missing.forEach(desc -> log.warn("\tDid not find file for {}", desc));
+		if (!broken.isEmpty()) {
+			log.warn("Did not find {} Files", broken.size());
+			broken.forEach(desc -> log.warn("\tDid not find file for {}", desc));
 		}
 
 		if (isFailed()) {

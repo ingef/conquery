@@ -37,9 +37,9 @@ import org.apache.commons.text.StringSubstitutor;
 @CPSBase
 @ToString(onlyExplicitlyIncluded = true)
 public abstract class ConqueryError extends RuntimeException implements ConqueryErrorInfo {
-	
+
 	private static final String NO_MEASSAGE = "Unable to provide error message. No message template was provided by error.";
-	
+
 	@VariableDefaultValue
 	@NotNull
 	@ToString.Include
@@ -52,10 +52,10 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	 * Since Jackson does not seem to be able to deserialize throwable with super.cause set. We have our own member
 	 */
 	private ConqueryError conqueryCause;
-	
-	
+
+
 	public ConqueryError(String messageTemplate, Map<String, String> context) {
-		this(messageTemplate,context,null);
+		this(messageTemplate, context, null);
 	}
 
 	public ConqueryError(String messageTemplate, Map<String, String> context, ConqueryError conqueryCause) {
@@ -63,12 +63,12 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		this.messageTemplate = messageTemplate;
 		this.context = context;
 	}
-	
+
 	@Override
 	@JsonIgnore
 	@ToString.Include
 	public String getMessage() {
-		if(messageTemplate == null) {
+		if (messageTemplate == null) {
 			return NO_MEASSAGE;
 		}
 		return new StringSubstitutor(context).replace(messageTemplate);
@@ -84,7 +84,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	public final String getCode() {
 		return this.getClass().getAnnotation(CPSType.class).id();
 	}
-	
+
 	/**
 	 * Wraps the {@link Throwable} into an {@link ConqueryError}.
 	 */
@@ -92,20 +92,34 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		return t instanceof ConqueryError ? (ConqueryError) t : new ConqueryError.UnknownError(t);
 	}
 
-	public static abstract class NoContextError extends ConqueryError {
+	public abstract static class NoContextError extends ConqueryError {
 
 		public NoContextError(String message) {
 			super(message, Collections.emptyMap());
 		}
 	}
 
-	public static abstract class ContextError extends ConqueryError {
+	public static class ContextError extends ConqueryError {
 
 		public ContextError(String messageTemplate) {
 			this(messageTemplate, null);
 		}
+
 		public ContextError(String messageTemplate, ConqueryError cause) {
 			super(messageTemplate, new Flat3Map<>(), cause);
+		}
+
+		public ContextError(String messageTemplate, Map<String, String> context, ConqueryError cause) {
+			super(messageTemplate, context, cause);
+		}
+
+		public static ConqueryError fromErrorInfo(ConqueryErrorInfo info) {
+			if (info instanceof ConqueryError) {
+				return (ConqueryError) info;
+			}
+
+			return new ConqueryError.ContextError(info.getMessage(), info.getContext(), null);
+
 		}
 	}
 
@@ -139,9 +153,9 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE")
 	public static class ExecutionCreationResolveError extends ContextError {
 
-		private final static String FAILED_ELEMENT = "ELEMENT";
-		private final static String FAILED_ELEMENT_CLASS = "ELEMENT_CLASS";
-		private final static String TEMPLATE = "Could not find an ${" + FAILED_ELEMENT_CLASS + "} element called '${" + FAILED_ELEMENT + "}'";
+		private static final String FAILED_ELEMENT = "ELEMENT";
+		private static final String FAILED_ELEMENT_CLASS = "ELEMENT_CLASS";
+		private static final String TEMPLATE = "Could not find an ${" + FAILED_ELEMENT_CLASS + "} element called '${" + FAILED_ELEMENT + "}'";
 
 		/**
 		 * Constructor for deserialization.
@@ -162,9 +176,11 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL")
 	public static class ExternalResolveError extends ContextError {
 
-		private final static String FORMAT_ROW_LENGTH = "formatRowLength";
-		private final static String DATA_ROW_LENGTH = "dataRowLength";
-		private final static String TEMPLATE = "There are ${" + FORMAT_ROW_LENGTH + "} columns in the format but ${" + DATA_ROW_LENGTH + "} in at least one row";
+		private static final String FORMAT_ROW_LENGTH = "formatRowLength";
+		private static final String DATA_ROW_LENGTH = "dataRowLength";
+		private static final String
+				TEMPLATE =
+				"There are ${" + FORMAT_ROW_LENGTH + "} columns in the format but ${" + DATA_ROW_LENGTH + "} in at least one row";
 
 		/**
 		 * Constructor for deserialization.
@@ -184,9 +200,11 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_FORMAT")
 	public static class ExternalResolveFormatError extends ContextError {
 
-		private final static String FORMAT_ROW_LENGTH = "formatRowLength";
-		private final static String DATA_ROW_LENGTH = "dataRowLength";
-		private final static String TEMPLATE = "There are ${" + FORMAT_ROW_LENGTH + "} columns in the format but ${" + DATA_ROW_LENGTH + "} in at least one row";
+		private static final String FORMAT_ROW_LENGTH = "formatRowLength";
+		private static final String DATA_ROW_LENGTH = "dataRowLength";
+		private static final String
+				TEMPLATE =
+				"There are ${" + FORMAT_ROW_LENGTH + "} columns in the format but ${" + DATA_ROW_LENGTH + "} in at least one row";
 
 		/**
 		 * Constructor for deserialization.
@@ -206,7 +224,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_EMPTY")
 	public static class ExternalResolveEmptyError extends ContextError {
 
-		private final static String TEMPLATE = "None of the provided values could be resolved.";
+		private static final String TEMPLATE = "None of the provided values could be resolved.";
 
 		/**
 		 * Constructor for deserialization.
@@ -231,9 +249,9 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_CREATION_PLAN_DATECONTEXT_MISMATCH")
 	public static class ExecutionCreationPlanDateContextError extends ContextError {
 
-		private final static String ALIGNMENT = "alignment";
-		private final static String RESOLUTION = "resolution";
-		private final static String TEMPLATE = "Alignment ${" + ALIGNMENT + "} and resolution ${" + RESOLUTION + "} are not compatible.";
+		private static final String ALIGNMENT = "alignment";
+		private static final String RESOLUTION = "resolution";
+		private static final String TEMPLATE = "Alignment ${" + ALIGNMENT + "} and resolution ${" + RESOLUTION + "} are not compatible.";
 
 		/**
 		 * Constructor for deserialization.
@@ -256,8 +274,8 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_JOB")
 	public static class ExecutionJobErrorWrapper extends ContextError {
 
-		private final static String ENTITY = "entity";
-		private final static String TEMPLATE = "Failed to run query job for entity ${" + ENTITY + "}";
+		private static final String ENTITY = "entity";
+		private static final String TEMPLATE = "Failed to run query job for entity ${" + ENTITY + "}";
 
 
 		/**
@@ -270,7 +288,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 
 		private ExecutionJobErrorWrapper(ConqueryError e) {
-			super(TEMPLATE,e);
+			super(TEMPLATE, e);
 		}
 
 		public ExecutionJobErrorWrapper(Entity entity, ConqueryError e) {
@@ -279,7 +297,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 		}
 	}
-	
+
 	/**
 	 * Unspecified execution processing error.
 	 */
@@ -290,7 +308,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 			super("An unexpected error occured during the execution.");
 		}
 	}
-	
+
 	/**
 	 * Timeout during processing.
 	 */

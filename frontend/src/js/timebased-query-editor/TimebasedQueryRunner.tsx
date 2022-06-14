@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 
-import { DatasetIdT, QueryIdT } from "../api/types";
+import type { DatasetT, QueryIdT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import QueryRunner from "../query-runner/QueryRunner";
 import { useStartQuery, useStopQuery } from "../query-runner/actions";
@@ -10,7 +10,7 @@ import { allConditionsFilled } from "./helpers";
 import { TimebasedQueryStateT } from "./reducer";
 
 const selectIsButtonEnabled =
-  (datasetId: DatasetIdT | null, queryRunner: QueryRunnerStateT | null) =>
+  (datasetId: DatasetT["id"] | null, queryRunner: QueryRunnerStateT | null) =>
   (state: StateT) => {
     if (!queryRunner) return false;
 
@@ -23,7 +23,7 @@ const selectIsButtonEnabled =
   };
 
 const TimebasedQueryRunner = () => {
-  const datasetId = useSelector<StateT, DatasetIdT | null>(
+  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
     (state) => state.datasets.selectedDatasetId,
   );
   const queryRunner = useSelector<StateT, QueryRunnerStateT>(

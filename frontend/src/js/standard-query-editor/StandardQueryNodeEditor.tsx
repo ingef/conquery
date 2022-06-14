@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 
-import { ConceptIdT, CurrencyConfigT, DatasetIdT } from "../api/types";
+import type { ConceptIdT, CurrencyConfigT, DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { tableIsEditable } from "../model/table";
@@ -35,7 +35,7 @@ interface Props {
 }
 
 const StandardQueryNodeEditor = ({ editedNode, setEditedNode }: Props) => {
-  const datasetId = useSelector<StateT, DatasetIdT | null>(
+  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
     (state) => state.datasets.selectedDatasetId,
   );
   const node = useSelector<StateT, StandardQueryNodeT | null>((state) =>

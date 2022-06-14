@@ -12,10 +12,8 @@ import FaIcon from "../icon/FaIcon";
 
 import ActivateTooltip from "./ActivateTooltip";
 import TooltipEntries from "./TooltipEntries";
-import {
-  toggleDisplayTooltip as toggleTooltip,
-  toggleAdditionalInfos as toggleInfos,
-} from "./actions";
+import { TooltipHeader } from "./TooltipHeader";
+import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import type { AdditionalInfosType } from "./reducer";
 
 const Root = styled("div")`
@@ -28,21 +26,6 @@ const Root = styled("div")`
   background: ${({ theme }) => theme.col.bgAlt};
 `;
 
-const Header = styled("h2")`
-  background-color: white;
-  height: 40px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #ccc;
-  margin: 0;
-  padding: 0 20px;
-  font-size: ${({ theme }) => theme.font.sm};
-  letter-spacing: 1px;
-  line-height: 38px;
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
 const Content = styled("div")`
   padding: 12px 20px 10px;
   width: 100%;
@@ -124,16 +107,6 @@ const InfoHeadline = styled("h4")`
   line-height: 1.3;
 `;
 
-const StyledIconButton = styled(IconButton)`
-  position: absolute;
-  padding: 6px 15px;
-  top: 45px;
-  right: 0;
-  border-right: 0;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-`;
-
 const Tooltip = () => {
   const { t } = useTranslation();
 
@@ -151,7 +124,6 @@ const Tooltip = () => {
   );
 
   const dispatch = useDispatch();
-  const onToggleDisplayTooltip = () => dispatch(toggleTooltip());
   const onToggleAdditionalInfos = () => dispatch(toggleInfos());
 
   if (!displayTooltip) return <ActivateTooltip />;
@@ -178,12 +150,7 @@ const Tooltip = () => {
 
   return (
     <Root>
-      <StyledIconButton
-        frame
-        onClick={onToggleDisplayTooltip}
-        icon="angle-left"
-      />
-      <Header>{t("tooltip.headline")}</Header>
+      <TooltipHeader />
       <Content>
         <TooltipEntries
           matchingEntries={matchingEntries}

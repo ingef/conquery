@@ -67,14 +67,13 @@
     "submit": "Expand"
   },
   "dropzone": {
-    "dragElementPlease": "Add an element",
-    "dragQuery": "Add a query",
-    "explanation": "You'll create a query in this area",
-    "drop": "Drop",
-    "aConcept": "a concept",
-    "aQuery": "a previous query",
-    "aConceptList": "a concept list",
-    "intoThisArea": "into this area"
+      "dragElementPlease": "Add an element",
+      "dragQuery": "Add a query",
+      "explanation": "You'll create a query in this area",
+      "dropIntoThisArea": "Drop one of the following to get started",
+      "aConcept": "a concept",
+      "aQuery": "a previous query",
+      "aConceptList": "a concept list"
   },
   "datasetSelector": {
     "label": "Data sets",
@@ -432,15 +431,39 @@
     "tabPreviousQueries": "Select previous queries and use them in the Editor, Timebased Editor and Form Editor. Select stored forms and use them in the Form Editor.",
     "tabQueryEditor": "In the Editor, a query may be built and sent.",
     "tabTimebasedEditor": "In the Timebased Editor, a time-based query may be built and sent. That means, previous queries may be combined using time based relations, such as 'before' and 'after'.",
-    "tabFormEditor": "The Form Editor allows for further analysis and statistics of previous queries.",
-    "datasetSelector": "Select the data set – concept trees, previous queries and forms will be loaded.",
-    "excludeTimestamps": "If selected, will avoid using the date values from this concept within a query.",
-    "excludeFromSecondaryId": "If selected, will avoid using this concept in the analysis layer, should an analysis layer be selected.",
-    "editConceptName": "Edit concept name",
-    "queryEditorExclude": "If selected, will return results which do not include the concepts from this column.",
-    "queryEditorDate": "Select a date range for the concepts of this column.",
-    "editorDropzoneAnd": "Drop concepts here to connect them logically via AND. Click to select a concept list.",
-    "editorDropzoneOr": "Drop concepts here to connect them logically via OR. Click to select a concept list.",
-    "queryNodeDetails": "Detail-Einstellungen bearbeiten"
-  }
+      "tabFormEditor": "The Form Editor allows for further analysis and statistics of previous queries.",
+      "datasetSelector": "Select the data set – concept trees, previous queries and forms will be loaded.",
+      "excludeTimestamps": "If selected, will avoid using the date values from this concept within a query.",
+      "excludeFromSecondaryId": "If selected, will avoid using this concept in the analysis layer, should an analysis layer be selected.",
+      "editConceptName": "Edit concept name",
+      "queryEditorExclude": "If selected, will return results which do not include the concepts from this column.",
+      "queryEditorDate": "Select a date range for the concepts of this column.",
+      "editorDropzoneAnd": "Drop concepts here to connect them logically via AND. Click to select a concept list.",
+      "editorDropzoneOr": "Drop concepts here to connect them logically via OR. Click to select a concept list.",
+      "queryNodeDetails": "Detail-Einstellungen bearbeiten"
+  },
+    "history": {
+        "history": "History",
+        "marked": "with status",
+        "events_one": "Event",
+        "events_other": "Events",
+        "downloadButtonLabel": "Download list",
+        "nextButtonLabel": "Next entity",
+        "prevButtonLabel": "Previous entity",
+        "downloadEntityData": "CSV",
+        "detail": {
+            "summary": "Summary",
+            "detail": "Details",
+            "full": "Full"
+        },
+        "settings": {
+            "headline": "History session settings",
+            "selectStatusHeadline": "Possible status values",
+            "selectStatusPlaceholder": "Options ...",
+            "selectStatusTooltip": "Set possible status values, that may be assigned to individual entites during the history session."
+        },
+        "load": {
+            "error": "Couldn't load history for this file."
+        }
+    }
 }

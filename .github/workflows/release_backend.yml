@@ -28,7 +28,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: Build
-        run: ./scripts/build_version.sh
+        run: ./scripts/build_backend_version.sh
       - name: Release
         uses: softprops/action-gh-release@v1
         with:

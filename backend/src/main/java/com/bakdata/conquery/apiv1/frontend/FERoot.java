@@ -5,6 +5,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.validation.Valid;
+
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import lombok.Getter;
 
@@ -14,5 +16,5 @@ import lombok.Getter;
 @Getter
 public class FERoot {
 	private final Set<FESecondaryId> secondaryIds = new HashSet<>();
-	private final Map<Id<?>, FENode> concepts = new LinkedHashMap<>();
+	private final Map<Id<?>, @Valid FENode> concepts = new LinkedHashMap<>();
 }

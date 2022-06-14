@@ -5,6 +5,7 @@ import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 
 import { SelectFileButton } from "../button/SelectFileButton";
+import FaIcon from "../icon/FaIcon";
 
 import Dropzone, { ChildArgs, PossibleDroppableObject } from "./Dropzone";
 
@@ -31,6 +32,11 @@ const SxSelectFileButton = styled(SelectFileButton)`
   position: absolute;
   top: 5px;
   right: 10px;
+`;
+
+const SxFaIcon = styled(FaIcon)`
+  height: 10px;
+  padding-right: 3px;
 `;
 
 interface PropsT<DroppableObject> {
@@ -103,6 +109,7 @@ const DropzoneWithFileInput = <
         <>
           {showFileSelectButton && (
             <SxSelectFileButton onClick={onOpenFileDialog}>
+              <SxFaIcon icon="file" regular gray />
               {t("inputMultiSelect.openFileDialog")}
             </SxSelectFileButton>
           )}

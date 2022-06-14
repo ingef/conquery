@@ -3,11 +3,11 @@ import { useContext, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
+import { useIsCacheEnabled } from "../common/feature-flags/useIsCacheEnabled";
 import {
   getCachedEtagResource,
   storeEtagResource,
 } from "../common/helpers/etagCache";
-import { useIsCacheEnabled } from "../common/useIsCacheEnabled";
 import { isIDPEnabled, isLoginDisabled } from "../environment";
 
 export const useApiUnauthorized = <T>(

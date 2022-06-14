@@ -30,7 +30,6 @@ import io.dropwizard.validation.MinDuration;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 @CPSType(base = AuthenticationRealmFactory.class, id = "LOCAL_AUTHENTICATION")
 @Getter
@@ -120,14 +119,8 @@ public class LocalAuthenticationConfig implements AuthenticationRealmFactory {
 	}
 
 	public void registerAuthenticationAdminResources(DropwizardResourceConfig jerseyConfig, UserAuthenticationManagementProcessor userProcessor) {
-		jerseyConfig.register(new AbstractBinder() {
+		jerseyConfig.register(userProcessor);
 
-			@Override
-			protected void configure() {
-				this.bind(userProcessor).to(UserAuthenticationManagementProcessor.class);
-			}
-
-		});
 		jerseyConfig.register(UserAuthenticationManagementResource.class);
 	}
 }

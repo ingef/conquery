@@ -12,12 +12,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.ValidityDateContainer;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -47,7 +49,15 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * A TABLE_EXPORT creates a full export of the given tables. It ignores selects completely.
+ * TableExportQuery can be used to export raw data from selected {@link Connector}s, for selected {@link com.bakdata.conquery.models.query.entity.Entity}s.
+ * <p>
+ * Output format is lightly structured:
+ * 1: Contains the {@link com.bakdata.conquery.models.datasets.concepts.ValidityDate} if one is available for the event.
+ * 2: Contains the source {@link com.bakdata.conquery.models.datasets.Table}s label.
+ * 3 - X: Contain the SecondaryId columns de-duplicated.
+ * Following: Columns of all tables, (except for SecondaryId Columns), grouped by tables. The order is not guaranteed.
+ * <p>
+ * Columns used in Connectors to build Concepts, are marked with {@link ResultType.ConceptColumnT} in {@link FullExecutionStatus#getColumnDescriptions()}.
  */
 @Slf4j
 @Getter
@@ -84,10 +94,7 @@ public class TableExportQuery extends Query {
 			// Set to null if none-available in the connector.
 			final Column validityDateColumn = findValidityDateColumn(connector, table.getDateColumn());
 
-			final TableExportDescription exportDescription = new TableExportDescription(
-					connector.getTable(),
-					validityDateColumn
-			);
+			final TableExportDescription exportDescription = new TableExportDescription(connector.getTable(), validityDateColumn);
 
 			resolvedConnectors.add(exportDescription);
 		}
@@ -109,7 +116,8 @@ public class TableExportQuery extends Query {
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context);
 
-		AtomicInteger currentPosition = new AtomicInteger(1); // First is dates
+		// First is dates, second is source id
+		AtomicInteger currentPosition = new AtomicInteger(2);
 
 		positions = new HashMap<>();
 
@@ -138,25 +146,31 @@ public class TableExportQuery extends Query {
 			// Set column positions, set SecondaryId positions to precomputed ones.
 			for (Column column : connector.getTable().getColumns()) {
 				positions.computeIfAbsent(column, col -> col.getSecondaryId() != null
-														  ? secondaryIdPositions.get(col.getSecondaryId())
-														  : currentPosition.getAndIncrement());
+														 ? secondaryIdPositions.get(col.getSecondaryId())
+														 : currentPosition.getAndIncrement());
 			}
 		}
 
 		resultInfos = createResultInfos(currentPosition.get(), secondaryIdPositions, positions);
 	}
 
-	private static List<ResultInfo> createResultInfos(int size, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions) {
+	private List<ResultInfo> createResultInfos(int size, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions) {
 
 		ResultInfo[] infos = new ResultInfo[size];
 
 		infos[0] = ConqueryConstants.DATES_INFO;
+		infos[1] = ConqueryConstants.SOURCE_INFO;
 
 		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
 			SecondaryIdDescription desc = e.getKey();
 			Integer pos = e.getValue();
-			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.IdT.INSTANCE);
+			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.SecondaryIdT.INSTANCE);
 		}
+
+		Set<Column> primaryColumns = getTables().stream()
+												.map(tbl -> tbl.getTable().getColumn())
+												.filter(Objects::nonNull)
+												.collect(Collectors.toSet());
 
 		for (Map.Entry<Column, Integer> entry : positions.entrySet()) {
 
@@ -170,7 +184,12 @@ public class TableExportQuery extends Query {
 				continue;
 			}
 
-			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), ResultType.resolveResultType(column.getType()));
+			// Columns that are used to build concepts are marked as PrimaryColumn.
+			final ResultType resultType = primaryColumns.contains(column) ?
+										  ResultType.ConceptColumnT.INSTANCE :
+										  ResultType.resolveResultType(column.getType());
+
+			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType);
 		}
 
 		return List.of(infos);

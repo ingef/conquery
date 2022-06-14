@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import type { DatasetIdT } from "../api/types";
+import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { validateQueryLength, validateQueryDates } from "../model/query";
 import QueryRunner from "../query-runner/QueryRunner";
@@ -14,7 +14,7 @@ function validateQueryStartStop({ startQuery, stopQuery }: QueryRunnerStateT) {
   return !startQuery.loading && !stopQuery.loading;
 }
 
-function validateDataset(datasetId: DatasetIdT | null) {
+function validateDataset(datasetId: DatasetT["id"] | null) {
   return datasetId !== null;
 }
 
@@ -31,7 +31,7 @@ function useButtonTooltip(hasQueryValidDates: boolean) {
 }
 
 const StandardQueryRunner = () => {
-  const datasetId = useSelector<StateT, DatasetIdT | null>(
+  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
     (state) => state.datasets.selectedDatasetId,
   );
   const query = useSelector<StateT, StandardQueryStateT>(

@@ -24,7 +24,7 @@ const Text = styled("p")<{
   border-radius: ${({ theme }) => theme.borderRadius};
   margin: 0;
   padding: 0 10px;
-  line-height: 20px;
+  line-height: 18px;
   color: ${({ theme, red, disabled }) =>
     red ? theme.col.red : disabled ? theme.col.gray : theme.col.black};
   display: inline-flex;
@@ -32,15 +32,15 @@ const Text = styled("p")<{
   flex-wrap: nowrap;
   align-items: center;
 
+  border: 1px solid transparent;
   background-color: ${({ theme, isOpen }) =>
-    isOpen ? theme.col.grayVeryLight : "transparent"};
+    isOpen ? theme.col.grayVeryLight : theme.col.bg};
 
-  ${({ theme, isOpen, disabled }) =>
+  ${({ theme, disabled }) =>
     !disabled &&
     css`
       &:hover {
-        background-color: ${theme.col.blueGrayVeryLight};
-        opacity: ${isOpen ? "0.9" : "1"};
+        border-color: ${theme.col.blueGray};
       }
     `};
 `;

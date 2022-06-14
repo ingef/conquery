@@ -52,7 +52,6 @@ public class MetaIdReferenceDeserializer<ID extends Id<T>, T extends Identifiabl
 			Optional<T> result = centralRegistry.getOptional(id);
 
 			if (result.isEmpty()) {
-				log.warn("CentralRegistry=`{}`", centralRegistry);
 				throw new IdReferenceResolvingException(parser, "Could not find entry `" + id + "` of type " + type.getName(), id.toString(), type);
 			}
 

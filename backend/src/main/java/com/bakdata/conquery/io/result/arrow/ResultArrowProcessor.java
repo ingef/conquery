@@ -5,7 +5,6 @@ import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
@@ -87,14 +86,21 @@ public class ResultArrowProcessor {
 		final List<ResultInfo> resultInfosId = config.getFrontend().getQueryUpload().getIdResultInfos();
 		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
-		StreamingOutput out = output -> renderToStream(
-				writerProducer.apply(output),
-				settings,
-				config.getArrow().getBatchSize(),
-				resultInfosId,
-				resultInfosExec,
-				exec.streamResults()
-		);
+		StreamingOutput out = output -> {
+			try {
+				renderToStream(
+						writerProducer.apply(output),
+						settings,
+						config.getArrow().getBatchSize(),
+						resultInfosId,
+						resultInfosExec,
+						exec.streamResults()
+				);
+			}
+			finally {
+				log.trace("DONE downloading data for `{}`", exec.getId());
+			}
+		};
 
 		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
