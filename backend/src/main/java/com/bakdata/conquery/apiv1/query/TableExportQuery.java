@@ -172,7 +172,7 @@ public class TableExportQuery extends Query {
 
 	private static List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions, @NotEmpty @Valid List<CQConcept> tables) {
 
-		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt();
+		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
 		ResultInfo[] infos = new ResultInfo[size];
 
