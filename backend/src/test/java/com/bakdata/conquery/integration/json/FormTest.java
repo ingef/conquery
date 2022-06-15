@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -111,9 +112,10 @@ public class FormTest extends ConqueryTestSpec {
 				.isEmpty();
 
 
-		ManagedExecution<?>
-				managedForm =
-				support.getNamespace().getExecutionManager().runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig(), false);
+		ManagedForm managedForm = (ManagedForm) support
+				.getNamespace()
+				.getExecutionManager()
+				.runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig(), false);
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {
@@ -127,7 +129,7 @@ public class FormTest extends ConqueryTestSpec {
 
 		log.info("{} QUERIES EXECUTED", getLabel());
 
-		checkResults(support, (ManagedForm) managedForm, support.getTestUser());
+		checkResults(support, managedForm, support.getTestUser());
 	}
 
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedForm managedForm, User user) throws IOException {
@@ -148,6 +150,21 @@ public class FormTest extends ConqueryTestSpec {
 
 		CsvLineStreamRenderer renderer = new CsvLineStreamRenderer(config.getCsv().createWriter(), PRINT_SETTINGS);
 
+		if (managedForm instanceof SingleTableResult) {
+			checkSingleResult((ManagedForm & SingleTableResult) managedForm, config, renderer);
+		}
+		else {
+			checkMultipleResult(managedMapping, config, renderer);
+		}
+
+	}
+
+	/**
+	 * Checks result of subqueries instead of form result.
+	 *
+	 * @see FormTest#checkSingleResult(ManagedForm, ConqueryConfig, CsvLineStreamRenderer)
+	 */
+	private void checkMultipleResult(Map<String, List<ManagedQuery>> managedMapping, ConqueryConfig config, CsvLineStreamRenderer renderer) throws IOException {
 		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
 			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfos();
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
@@ -167,6 +184,31 @@ public class FormTest extends ConqueryTestSpec {
 							  .readLines()
 					);
 		}
+	}
+
+	/**
+	 * The form produces only one result, so the result is directly requested.
+	 *
+	 * @see FormTest#checkMultipleResult(Map, ConqueryConfig, CsvLineStreamRenderer)
+	 */
+	private <F extends ManagedForm & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, CsvLineStreamRenderer renderer)
+			throws IOException {
+		log.info("{} CSV TESTING: {}", getLabel(), managedForm.getLabel());
+		List<String> actual =
+				renderer.toStream(
+								config.getFrontend().getQueryUpload().getIdResultInfos(),
+								managedForm.getResultInfos(),
+								managedForm.streamResults()
+						)
+						.collect(Collectors.toList());
+
+		assertThat(actual)
+				.as("Checking result " + managedForm.getLabel())
+				.containsExactlyInAnyOrderElementsOf(
+						In.stream(expectedCsv.values().iterator().next().stream())
+						  .withUTF8()
+						  .readLines()
+				);
 	}
 
 	private void importConcepts(StandaloneSupport support) throws JSONException, IOException {
