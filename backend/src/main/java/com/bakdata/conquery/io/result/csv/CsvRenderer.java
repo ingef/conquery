@@ -33,13 +33,12 @@ public class CsvRenderer {
 	}
 
 	private void createCSVBody(PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results) {
-		results
-				.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
-				.sorted(Map.Entry.comparingByKey())
-				.forEach(res -> res
-						.getValue()
-						.streamValues()
-						.forEach(result -> printLine(cfg, res.getKey(), infos, result)));
+		results.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
+			   .sorted(Map.Entry.comparingByKey())
+			   .forEach(res -> res
+					   .getValue()
+					   .streamValues()
+					   .forEach(result -> printLine(cfg, res.getKey(), infos, result)));
 	}
 
 
