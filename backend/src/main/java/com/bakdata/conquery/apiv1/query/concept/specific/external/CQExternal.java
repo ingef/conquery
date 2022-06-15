@@ -1,12 +1,15 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.external;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -31,10 +34,13 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Streams;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -42,6 +48,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @CPSType(id = "EXTERNAL", base = CQElement.class)
+@NoArgsConstructor
 public class CQExternal extends CQElement {
 
 	private static final String FORMAT_EXTRA = "EXTRA";
@@ -55,20 +62,27 @@ public class CQExternal extends CQElement {
 	 *
 	 * @implSpec Every name we do not know is implicitly ignored.
 	 */
-	@Getter
+	@Getter(AccessLevel.PUBLIC)
 	@NotEmpty
-	private final List<String> format;
+	private List<String> format;
 
-	@Getter
+	@Getter(AccessLevel.PUBLIC)
 	@NotEmpty
-	private final String[][] values;
+	private String[][] values;
+
+	@Getter(AccessLevel.PUBLIC)
+	private boolean oneRowPerEntity = false;
 
 	/**
 	 * Maps from Entity to the computed time-frame.
 	 */
-	@Getter
+	@Getter(AccessLevel.PRIVATE)
 	@InternalOnly
 	private Map<Integer, CDateSet> valuesResolved;
+
+	@Getter(AccessLevel.PRIVATE)
+	@InternalOnly
+	private String[] headers;
 
 	/**
 	 * Contains the uploaded additional data for each column for each entity.
@@ -78,14 +92,14 @@ public class CQExternal extends CQElement {
 	 * @implNote FK: I would prefer to implement this as a guava table, but they cannot be deserialized with Jackson so we implement the Table manually.
 	 */
 	@InternalOnly
-	@Getter
+	@Getter(AccessLevel.PRIVATE)
 	private Map<Integer, Map<String, List<String>>> extra;
 
-	public CQExternal(@NotEmpty List<String> format, @NotEmpty String[][] values) {
+	public CQExternal(List<String> format, @NotEmpty String[][] values, boolean oneRowPerEntity) {
 		this.format = format;
 		this.values = values;
+		this.oneRowPerEntity = oneRowPerEntity;
 	}
-
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
@@ -93,27 +107,56 @@ public class CQExternal extends CQElement {
 			throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
 		}
 
-		// Allocate at once, the maximum possible size
-		final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(format.size());
+		final String[] extraHeaders = Streams.zip(
+													 Arrays.stream(headers),
+													 format.stream(),
+													 (header, format) -> format.equals(FORMAT_EXTRA) ? header : null
+											 )
+											 .filter(Objects::nonNull)
+											 .toArray(String[]::new);
 
-		if (extra != null) {
-			for (int col = 0; col < format.size(); col++) {
-				if (!format.get(col).equals(FORMAT_EXTRA)) {
-					continue;
-				}
+		if (!oneRowPerEntity) {
 
-				final String column = values[0][col];
-
-				final ConstantValueAggregator aggregator = new ConstantValueAggregator(null, new ResultType.ListT(ResultType.StringT.INSTANCE));
-				plan.registerAggregator(aggregator);
-
-				if(extraAggregators.put(column, aggregator) != null){
-					log.error("Multiple Aggregators for same Column");
-				}
+			final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(extraHeaders.length);
+			for (String extraHeader : extraHeaders) {
+				// Just allocating, the result type is irrelevant here
+				extraAggregators.put(extraHeader, new ConstantValueAggregator<>(null, null));
 			}
+			extraAggregators.values().forEach(plan::registerAggregator);
+
+			return new ExternalNode<>(
+					context.getStorage().getDataset().getAllIdsTable(),
+					valuesResolved,
+					extra,
+					extraHeaders,
+					extraAggregators
+			);
+
 		}
 
-		return new ExternalNode(context.getStorage().getDataset().getAllIdsTable(), valuesResolved, extra, extraAggregators);
+		// Remove zero element Lists and substitute one element Lists by containing String
+		final Map<Integer, Map<String, String>> extraFlat = extra.entrySet().stream()
+																 .collect(Collectors.toMap(
+																		 Map.Entry::getKey,
+																		 entityToRowMap -> entityToRowMap.getValue().entrySet().stream()
+																										 .filter(headerToValue -> !headerToValue.getValue()
+																																				.isEmpty())
+																										 .collect(Collectors.toMap(
+																												 Map.Entry::getKey,
+																												 headerToValue -> headerToValue.getValue()
+																																			   .get(0)
+																										 ))
+																 ));
+
+		final Map<String, ConstantValueAggregator<String>> extraAggregators = new HashMap<>(extraHeaders.length);
+		for (String extraHeader : extraHeaders) {
+			// Just allocating, the result type is irrelevant here
+			extraAggregators.put(extraHeader, new ConstantValueAggregator<>(null, null));
+		}
+		extraAggregators.values().forEach(plan::registerAggregator);
+
+		return new ExternalNode<>(context.getStorage().getDataset().getAllIdsTable(), valuesResolved, extraFlat, extraHeaders, extraAggregators);
+
 	}
 
 	/**
@@ -170,11 +213,17 @@ public class CQExternal extends CQElement {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
+		headers = values[0];
+
+		// Try to create a Set. Fails with IllegalArgumentException if duplicates exists TODO use ConqueryError
+		Set.of(headers);
+
 		final ResolveStatistic resolved =
 				resolveEntities(values, format,
 								context.getNamespace().getStorage().getIdMapping(),
 								context.getConfig().getFrontend().getQueryUpload(),
-								context.getConfig().getLocale().getDateReader()
+								context.getConfig().getLocale().getDateReader(),
+								oneRowPerEntity
 				);
 
 		if (resolved.getResolved().isEmpty()) {
@@ -221,7 +270,7 @@ public class CQExternal extends CQElement {
 	/**
 	 * Helper method to try and resolve entities in values using the specified format.
 	 */
-	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, FrontendConfig.UploadConfig queryUpload, @NotNull DateReader dateReader) {
+	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, FrontendConfig.UploadConfig queryUpload, @NotNull DateReader dateReader, boolean oneRowPerEntity) {
 		final Map<Integer, CDateSet> resolved = new Int2ObjectOpenHashMap<>();
 
 		final List<String[]> unresolvedDate = new ArrayList<>();
@@ -272,6 +321,18 @@ public class CQExternal extends CQElement {
 									 .computeIfAbsent(entry.getKey(), (ignored) -> new ArrayList<>())
 									 .add(entry.getValue());
 				}
+			}
+		}
+
+		if (oneRowPerEntity) {
+			// Check that there is at most one value per entity and per column
+			final boolean alright = extraDataByEntity.values().stream()
+													 .map(Map::values)
+													 .flatMap(Collection::stream)
+													 .map(List::size)
+													 .allMatch(s -> s <= 1);
+			if (!alright) {
+				throw new ConqueryError.ExternalResolveOnePerRowError();
 			}
 		}
 
@@ -350,9 +411,11 @@ public class CQExternal extends CQElement {
 				continue;
 			}
 
-			String column = values[0][col];
+			String column = headers[col];
 
-			resultInfos.add(new SimpleResultInfo(column, new ResultType.ListT(ResultType.StringT.INSTANCE)));
+			resultInfos.add(new SimpleResultInfo(column, oneRowPerEntity ?
+														 ResultType.StringT.INSTANCE :
+														 new ResultType.ListT(ResultType.StringT.INSTANCE)));
 		}
 
 		return resultInfos;
