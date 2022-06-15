@@ -60,6 +60,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		final List<Object[]> results = new ArrayList<>();
 
 		final int totalColumns = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
+		final int entityId = entity.getId();
 
 		for (Map.Entry<CQTable, QPNode> entry : tables.entrySet()) {
 
@@ -69,9 +70,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, cqTable.getConnector().getTable())) {
 
-				int entityId = entity.getId();
-
-				if (!bucket.containsEntity(entityId)) {
+				if (!shouldEvaluateBucket(query, bucket, entity, ctx)) {
 					continue;
 				}
 
@@ -85,7 +84,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 						continue;
 					}
 
-					if (!isRowIncluded(ctx, entity, query, bucket, event)) {
+					if (!isRowIncluded(query, bucket, entity, event, ctx)) {
 						continue;
 					}
 
@@ -99,7 +98,12 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return Optional.of(new MultilineEntityResult(entity.getId(), results));
 	}
 
-	private boolean isRowIncluded(QueryExecutionContext ctx, Entity entity, QPNode query, Bucket bucket, int event) {
+	/**
+	 * Test if the Bucket should even be evaluated for the {@link QPNode}.
+	 *
+	 * Note that we are cramming a few things together at once, but it's probably not such a huge waste of compute time since there are only a few Buckets per Entity.
+	 */
+	private boolean shouldEvaluateBucket(QPNode query, Bucket bucket, Entity entity, QueryExecutionContext ctx) {
 		query.init(entity, ctx);
 
 		if (!query.isOfInterest(entity)) {
@@ -112,6 +116,18 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		if (!query.isOfInterest(bucket)) {
 			return false;
 		}
+
+		return true;
+	}
+
+	/**
+	 * We execute the QPNode on a single row as though it was a whole query. To check if the event-row should be included.
+	 */
+	private boolean isRowIncluded(QPNode query, Bucket bucket, Entity entity, int event, QueryExecutionContext ctx) {
+		query.init(entity, ctx);
+
+		query.nextTable(ctx, bucket.getTable());
+		query.nextBlock(bucket);
 
 		query.acceptEvent(bucket, event);
 
