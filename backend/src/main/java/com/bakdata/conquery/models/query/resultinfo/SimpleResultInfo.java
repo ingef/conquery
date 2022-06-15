@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 import java.util.Collections;
 import java.util.Set;
-
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;

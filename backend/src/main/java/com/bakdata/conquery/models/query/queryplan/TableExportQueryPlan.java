@@ -76,7 +76,8 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 				for (int event = start; event < end; event++) {
 
 					// Export Full-table if it has no validity date.
-					if (exportDescription.getValidityDateColumn() != null && !bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), CDateSet.create(dateRange))) {
+					if (exportDescription.getValidityDateColumn() != null
+						&& !bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), CDateSet.create(dateRange))) {
 						continue;
 					}
 
@@ -89,7 +90,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 							continue;
 						}
 
-						if(column.equals(exportDescription.getValidityDateColumn())){
+						if (column.equals(exportDescription.getValidityDateColumn())) {
 							entry[0] = List.of(bucket.getAsDateRange(event, column));
 						}
 						else {

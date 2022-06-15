@@ -21,4 +21,9 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 @JsonDeserialize(using = NsIdReferenceDeserializer.class)
 @Target({ElementType.FIELD, ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
 public @interface NsIdRef {
+	/**
+	 * Sets the scope on which nodes a {@link NamespacedId} should be resolved.
+	 * If a reference is encountered on a node outside the scope (e.g. {@code @NsIdRef(serdesTarget=MANAGER)} on a {@link com.bakdata.conquery.commands.ShardNode}) the field will resolve to {@code null}.
+	 */
+	SerdesTarget serdesTarget () default SerdesTarget.MANAGER_AND_SHARD;
 }

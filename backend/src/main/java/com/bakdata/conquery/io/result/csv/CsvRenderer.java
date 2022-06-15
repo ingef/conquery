@@ -1,5 +1,10 @@
 package com.bakdata.conquery.io.result.csv;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -10,17 +15,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.*;
-import java.util.stream.Stream;
-
 @RequiredArgsConstructor
 @Slf4j
 public class CsvRenderer {
 
 	private final CsvWriter writer;
 	private final PrintSettings cfg;
-
-
 
 	public void toCSV(List<ResultInfo> idHeaders, List<ResultInfo> infos, Stream<EntityResult> resultStream) {
 
@@ -37,9 +37,9 @@ public class CsvRenderer {
 				.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
 				.sorted(Map.Entry.comparingByKey())
 				.forEach(res -> res
-								.getValue()
-								.streamValues()
-								.forEach(result -> printLine(cfg, res.getKey(), infos, result)));
+						.getValue()
+						.streamValues()
+						.forEach(result -> printLine(cfg, res.getKey(), infos, result)));
 	}
 
 
@@ -50,8 +50,9 @@ public class CsvRenderer {
 			for (int i = 0; i < infos.size(); i++) {
 				writer.addValue(infos.get(i).getType().printNullable(cfg, value[i]));
 			}
-		} catch (Exception e) {
-			throw new IllegalStateException("Unable to print line " + Arrays.deepToString(value) + " with result infos " + infos, e);
+		}
+		catch (Exception e) {
+			throw new IllegalStateException("Unable to print line " + Arrays.deepToString(value), e);
 		}
 
 		writer.writeValuesToRow();

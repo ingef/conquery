@@ -3,6 +3,9 @@ package com.bakdata.conquery.models.query.resultinfo;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import java.util.Optional;
+import java.util.function.Function;
+
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -85,7 +88,7 @@ public class SelectResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public String toString(){
+	public String toString() {
 		return "SelectResultInfo[" + select.getName() + ", " + select.getResultType() + "]";
 	}
 }

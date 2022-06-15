@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.resultinfo;
 
 import java.util.Locale;
 import java.util.Set;
+import java.util.Optional;
 import java.util.function.Function;
 
 import c10n.C10N;
