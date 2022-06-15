@@ -21,7 +21,10 @@ public class ConqueryEscapeTest {
 			"a_a,a_a",
 			"a-a,a-a",
 			"a/a,a$2fa",
-			"a a,a$20a"
+			"a a,a$20a",
+			"`az{,$60az$7b", // Range border characters
+			"@AZ[,$40AZ$5b",
+			"/09:,$2f09$3a"
 	})
 	public void testEscaping(String in, String expectedEscaped) {
 		String escaped1 = ConqueryEscape.escape(in);
