@@ -120,7 +120,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 		}
 
 		if (createExists()) {
-			resultInfos.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE, List.of()));
+			resultInfos.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE, Set.of()));
 		}
 
 		return resultInfos;

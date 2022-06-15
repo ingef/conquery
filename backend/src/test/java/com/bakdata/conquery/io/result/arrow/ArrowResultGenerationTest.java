@@ -223,9 +223,6 @@ public class ArrowResultGenerationTest {
             sb.append("}");
             return sb.toString();
         }
-        if (type.equals(ResultType.StringT.INSTANCE)) {
-            return type.printNullable(settings, obj);
-        }
         if(obj instanceof Collection) {
             Collection<?> col = (Collection<?>) obj;
             // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method

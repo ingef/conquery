@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.List;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -41,7 +41,7 @@ public class ColumnDescriptor {
 	 */
 	private String type;
 
-	private List<SemanticType> semantics;
+	private Set<SemanticType> semantics;
 
 	/**
 	 * Similar to {@link ColumnDescriptor#userConceptLabel} this holds the submitted {@link SelectId}.

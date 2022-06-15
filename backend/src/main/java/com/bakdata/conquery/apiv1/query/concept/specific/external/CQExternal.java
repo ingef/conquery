@@ -352,7 +352,7 @@ public class CQExternal extends CQElement {
 
 			String column = values[0][col];
 
-			resultInfos.add(new SimpleResultInfo(column, new ResultType.ListT(ResultType.StringT.INSTANCE), List.of()));
+			resultInfos.add(new SimpleResultInfo(column, new ResultType.ListT(ResultType.StringT.INSTANCE)));
 		}
 
 		return resultInfos;

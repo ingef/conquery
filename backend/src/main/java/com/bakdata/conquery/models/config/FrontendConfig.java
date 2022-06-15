@@ -99,7 +99,7 @@ public class FrontendConfig {
 							  locale -> col.getLabel().getOrDefault(locale.getLanguage(), col.getField()),
 							  locale -> col.getField(),
 							  ResultType.StringT.getINSTANCE(),
-							  List.of(new SemanticType.IdT(col.getName()))
+							  Set.of(new SemanticType.IdT(col.getName()))
 					  ))
 					  .collect(Collectors.toUnmodifiableList());
 		}

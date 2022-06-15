@@ -165,7 +165,7 @@ public class TableExportQuery extends Query {
 		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
 			SecondaryIdDescription desc = e.getKey();
 			Integer pos = e.getValue();
-			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.StringT.INSTANCE, List.of(new SemanticType.SecondaryIdT(desc)));
+			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.StringT.INSTANCE, Set.of(new SemanticType.SecondaryIdT(desc)));
 		}
 
 		Set<Column> primaryColumns = getTables().stream()
@@ -191,7 +191,7 @@ public class TableExportQuery extends Query {
 			infos[position] = new SimpleResultInfo(
 					column.getTable().getLabel() + " " + column.getLabel(),
 					resultType,
-					primaryColumns.contains(column) ? List.of(new SemanticType.ConceptColumnT(null /* TODO */)) : List.of()
+					primaryColumns.contains(column) ? Set.of(new SemanticType.ConceptColumnT(null /* TODO */)) : Collections.emptySet()
 			);
 		}
 

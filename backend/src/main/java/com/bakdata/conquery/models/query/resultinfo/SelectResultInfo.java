@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.List;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -23,8 +23,8 @@ public class SelectResultInfo extends ResultInfo {
 	private final CQConcept cqConcept;
 
 	@Override
-	public List<SemanticType> getSemantics() {
-		return List.of(new SemanticType.SelectResultT(select));
+	public Set<SemanticType> getSemantics() {
+		return Set.of(new SemanticType.SelectResultT(select));
 	}
 
 	@Override

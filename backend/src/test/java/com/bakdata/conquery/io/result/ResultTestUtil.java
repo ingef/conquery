@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.result;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -44,7 +45,7 @@ public class ResultTestUtil {
 	}
 
 
-	public static List<ResultInfo> ID_FIELDS = List.of("id1", "id2").stream().map(n  -> new SimpleResultInfo(n, ResultType.StringT.getINSTANCE(), List.of(new SemanticType.IdT("ID")))).collect(Collectors.toList());
+	public static List<ResultInfo> ID_FIELDS = List.of("id1", "id2").stream().map(n  -> new SimpleResultInfo(n, ResultType.StringT.getINSTANCE(), Set.of(new SemanticType.IdT("ID")))).collect(Collectors.toList());
 
 	@NotNull
 	public static List<EntityResult> getTestEntityResults() {

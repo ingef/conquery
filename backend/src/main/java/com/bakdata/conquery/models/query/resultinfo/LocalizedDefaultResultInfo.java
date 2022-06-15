@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.Function;
 
 import c10n.C10N;
@@ -45,9 +45,9 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	private final ResultType type;
 
 	@Getter
-	private final List<SemanticType> semantics;
+	private final Set<SemanticType> semantics;
 
-	public LocalizedDefaultResultInfo(Function<Locale, String> localizedLabelProvider, ResultType type, List<SemanticType> semantics) {
+	public LocalizedDefaultResultInfo(Function<Locale, String> localizedLabelProvider, ResultType type, Set<SemanticType> semantics) {
 		this(localizedLabelProvider, localizedLabelProvider, type, semantics);
 	}
 

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.Set;
 
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
@@ -18,7 +19,11 @@ public class SimpleResultInfo extends ResultInfo {
 
 	private final String name;
 	private final ResultType type;
-	private final List<SemanticType> semantics;
+	private final Set<SemanticType> semantics;
+
+	public SimpleResultInfo(String name, ResultType type) {
+		this(name, type, Collections.emptySet());
+	}
 
 	@Override
 	public String userColumnName(PrintSettings printSettings) {

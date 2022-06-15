@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.List;
+import java.util.Set;
 
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -36,7 +36,7 @@ public abstract class ResultInfo {
 	public abstract ResultType getType();
 
 	@ToString.Include
-	public abstract List<SemanticType> getSemantics();
+	public abstract Set<SemanticType> getSemantics();
 
 	public <T> void addAppendix(Class<T> cl, T obj) {
 		appendices.putInstance(cl, obj);
