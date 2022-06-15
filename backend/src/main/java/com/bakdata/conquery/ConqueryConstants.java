@@ -6,6 +6,7 @@ import java.util.Set;
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.ResultHeadersC10n;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -35,7 +36,7 @@ public class ConqueryConstants {
 	public static final ResultInfo DATE_RANGE_INFO =
 			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).dateRange(), ResultType.DateRangeT.INSTANCE, Set.of());
 	public static final ResultInfo RESOLUTION_INFO =
-			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).resolution(), ResultType.StringT.INSTANCE, Set.of(new SemanticType.ResolutionT()));
+			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).resolution(), new ResultType.StringT(Resolution::localizeValue), Set.of(new SemanticType.ResolutionT()));
 	public static final ResultInfo EVENT_DATE_INFO =
 			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).eventDate(), ResultType.DateT.INSTANCE, Set.of());
 

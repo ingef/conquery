@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.function.BiFunction;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.Results;
@@ -21,9 +22,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-
-
-import java.util.function.Function;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -199,9 +197,9 @@ public abstract class ResultType {
 		 * Function that allows a select to transform the internal value to an external representation.
 		 * The returned value can be null.
 		 */
-		private Function<Object, String> valueMapper;
+		private BiFunction<Object, PrintSettings, String> valueMapper;
 
-		public StringT(Function<Object, String> valueMapper) {
+		public StringT(BiFunction<Object, PrintSettings, String> valueMapper) {
 			this.valueMapper = valueMapper;
 		}
 
@@ -210,7 +208,7 @@ public abstract class ResultType {
 			if (valueMapper == null) {
 				return super.print(cfg, f);
 			}
-			return super.print(cfg, valueMapper.apply(f));
+			return super.print(cfg, valueMapper.apply(f, cfg));
 		}
 	}
 
