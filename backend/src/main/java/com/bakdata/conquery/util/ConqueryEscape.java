@@ -3,7 +3,6 @@ package com.bakdata.conquery.util;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.BitSet;
-import java.util.OptionalInt;
 import java.util.stream.IntStream;
 
 import lombok.NonNull;
@@ -11,8 +10,8 @@ import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
- * We use a custom escaping for the parts an {@link com.bakdata.conquery.models.identifiable.ids.IId} consists of.
- * This way, we ensure, that the {@link com.bakdata.conquery.models.identifiable.ids.IId#JOIN_CHAR} is not confused and that the resulting id
+ * We use a custom escaping for the parts an {@link com.bakdata.conquery.models.identifiable.ids.Id} consists of.
+ * This way, we ensure, that the {@link com.bakdata.conquery.models.identifiable.ids.IdUtil#JOIN_CHAR} is not confused and that the resulting id
  * can be used safely in a URL path or query without further encoding.
  */
 @UtilityClass
@@ -27,9 +26,9 @@ public class ConqueryEscape {
 		// adapted from java.net.UrlEncoder
 		dontNeedEncoding = new BitSet(256);
 
-		IntStream.range('a', 'z').forEach(dontNeedEncoding::set);
-		IntStream.range('A', 'Z').forEach(dontNeedEncoding::set);
-		IntStream.range('0', '9').forEach(dontNeedEncoding::set);
+		IntStream.rangeClosed('a', 'z').forEach(dontNeedEncoding::set);
+		IntStream.rangeClosed('A', 'Z').forEach(dontNeedEncoding::set);
+		IntStream.rangeClosed('0', '9').forEach(dontNeedEncoding::set);
 
 		// We have only a few characters that won't encode unlike UrlEncode
 		dontNeedEncoding.set('-');
