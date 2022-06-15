@@ -15,8 +15,46 @@
         "tables": [
             "/tests/form/shared/vers_stamm.table.json"
         ],
-        "previousQueryResults": [
-            "tests/form/ARX_FORM/SIMPLE/query_results_1.csv"
+        "previousQueries": [
+            {
+                "type": "CONCEPT_QUERY",
+                "root": {
+                    "type": "EXTERNAL",
+                    "oneRowPerEntity": true,
+                    "format": [
+                        "ID",
+                        "EVENT_DATE",
+                        "EXTRA",
+                        "EXTRA"
+                    ],
+                    "values": [
+                        [
+                            "result",
+                            "dates",
+                            "age",
+                            "sex"
+                        ],
+                        [
+                            3,
+                            "2013-11-10",
+                            6,
+                            "f"
+                        ],
+                        [
+                            6,
+                            "2013-11-10",
+                            7,
+                            "f"
+                        ],
+                        [
+                            1,
+                            "2012-01-01",
+                            8,
+                            "m"
+                        ]
+                    ]
+                }
+            }
         ]
     }
 }

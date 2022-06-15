@@ -98,11 +98,14 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 
 		// Define attributes for the column
 		Arrays.stream(headers).forEach(header -> data.getDefinition().setAttributeType(header, AttributeType.INSENSITIVE_ATTRIBUTE));
-
+		data.getDefinition().setAttributeType("sex", AttributeType.Hierarchy.create(List.of(
+				new String[]{"f", "*"},
+				new String[]{"m", "*"}
+		)));
 
 		// Configure ARX
 		ARXConfiguration config = ARXConfiguration.create();
-		config.addPrivacyModel(new KAnonymity(5));
+		config.addPrivacyModel(new KAnonymity(2));
 		config.setSuppressionLimit(0.02d);
 
 		// Run ARX
