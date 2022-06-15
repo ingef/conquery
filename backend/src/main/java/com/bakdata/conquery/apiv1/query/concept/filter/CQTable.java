@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.CheckForNull;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -70,7 +71,7 @@ public class CQTable {
 		filters.forEach(f -> f.resolve(context));
 	}
 
-
+	@CheckForNull
 	public Column findValidityDateColumn() {
 
 		// if no dateColumn is provided, we use the default instead which is always the first one.
