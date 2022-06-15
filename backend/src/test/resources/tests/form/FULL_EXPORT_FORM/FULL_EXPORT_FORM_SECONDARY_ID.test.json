@@ -15,15 +15,12 @@
         }
       },
       {
-        "type": "AND",
-        "children": {
-          "type": "CONCEPT",
-          "ids": "geschlecht",
-          "tables": {
-            "id": "geschlecht.geschlecht",
-            "dateColumn" : {
-              "value" : "geschlecht.geschlecht.erster_tag"
-            }
+        "type": "CONCEPT",
+        "ids": "geschlecht",
+        "tables": {
+          "id": "geschlecht.geschlecht",
+          "dateColumn" : {
+            "value" : "geschlecht.geschlecht.erster_tag"
           }
         }
       }
