@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.google.common.base.Functions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,13 +52,12 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 
 		@Override
 		public void execute() throws Exception {
+			final ProgressReporter progressReporter = getProgressReporter().subJob(worker.getStorage().getAllConcepts().size());
 			if (worker.getStorage().getAllCBlocks().isEmpty()) {
 				log.debug("Worker {} is empty, skipping.", worker);
-				getProgressReporter().done();
+				progressReporter.done();
 				return;
 			}
-
-			getProgressReporter().setMax(worker.getStorage().getAllConcepts().size());
 
 			log.info("BEGIN update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
 
@@ -72,7 +72,10 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 						  .stream()
 						  .collect(Collectors.toMap(
 								  Functions.identity(),
-								  concept -> CompletableFuture.runAsync(() -> calculateConceptMatches(concept, messages, worker), worker.getJobsExecutorService())
+								  concept -> CompletableFuture.runAsync(() -> {
+									  calculateConceptMatches(concept, messages, worker);
+									  progressReporter.report(1);
+								  }, worker.getJobsExecutorService())
 						  ));
 
 
@@ -115,7 +118,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 				worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
 			}
 
-			getProgressReporter().done();
+			progressReporter.done();
 		}
 
 
