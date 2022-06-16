@@ -193,7 +193,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator);
+		context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, validator);
 		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode
