@@ -41,7 +41,6 @@ import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -249,12 +248,12 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		List<ResultInfo> resultInfos = new ArrayList<>();
 
 		for (Select select : selects) {
-			resultInfos.add(new SelectResultInfo(select, this));
+			resultInfos.add(select.getResultInfo(this));
 		}
 
 		for (CQTable table : tables) {
 			for (Select sel : table.getSelects()) {
-				resultInfos.add(new SelectResultInfo(sel, this));
+				resultInfos.add(sel.getResultInfo(this));
 			}
 		}
 

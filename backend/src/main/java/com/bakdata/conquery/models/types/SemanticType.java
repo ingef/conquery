@@ -40,29 +40,16 @@ public abstract class SemanticType {
 	@CPSType(id = "CATEGORICAL", base = SemanticType.class)
 	@Data
 	public static class CategoricalT extends SemanticType {
-
+		//TODO maybe try and embed the universe?
 	}
 
+	/**
+	 * Column contains {@link com.bakdata.conquery.models.forms.util.Resolution} from an {@link com.bakdata.conquery.apiv1.forms.export_form.ExportForm}.
+	 */
 	@CPSType(id = "RESOLUTION", base = SemanticType.class)
 	@Data
 	public static class ResolutionT extends SemanticType {
 
-		//TODO what do?
-		//TODO FK: This is probably better as a separate ResultInfo?
-		//		@Override
-		//		public String print(PrintSettings cfg, Object f) {
-		//			if (f instanceof Resolution) {
-		//				return ((Resolution) f).toString(cfg.getLocale());
-		//			}
-		//			try {
-		//				// If the object was parsed as a simple string, try to convert it to a
-		//				// DateContextMode to get Internationalization
-		//				return Resolution.valueOf(f.toString()).toString(cfg.getLocale());
-		//			}
-		//			catch (Exception e) {
-		//				throw new IllegalArgumentException(f + " is not a valid resolution.", e);
-		//			}
-		//		}
 	}
 
 	/**
