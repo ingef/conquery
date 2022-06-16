@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.util.Resolution;
@@ -42,8 +43,8 @@ public class ResultTypeTest {
 			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, true,	"Yes"),
 			Arguments.of(PRETTY, ResultType.BooleanT.INSTANCE, false,	"No"),
 			Arguments.of(PRETTY, ResultType.StringT.INSTANCE, "test", "test"),
-			Arguments.of(PRETTY, ResultType.StringT.INSTANCE, Resolution.COMPLETE.name(), "complete"),
-			Arguments.of(PRETTY_DE, ResultType.StringT.INSTANCE, Resolution.COMPLETE.name(), "Gesamt"),
+			Arguments.of(PRETTY, ConqueryConstants.RESOLUTION_INFO.getType(), Resolution.COMPLETE.name(), "complete"),
+			Arguments.of(PRETTY_DE, ConqueryConstants.RESOLUTION_INFO.getType(), Resolution.COMPLETE.name(), "Gesamt"),
 			Arguments.of(PRETTY, ResultType.DateT.INSTANCE, LocalDate.of(2013, 7, 12).toEpochDay(), "2013-07-12"),
 			Arguments.of(PRETTY_DE, ResultType.DateT.INSTANCE, LocalDate.of(2013, 7, 12).toEpochDay(), "12.07.2013"),
 			Arguments.of(PRETTY, ResultType.DateRangeT.INSTANCE, List.of(Long.valueOf(LocalDate.of(2013, 7, 12).toEpochDay()).intValue(), Long.valueOf(LocalDate.of(2013, 7, 12).toEpochDay()).intValue()), "2013-07-12"),

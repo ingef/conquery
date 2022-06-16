@@ -48,7 +48,7 @@ public class ExcelResultRenderTest {
 		// Suppress java.lang.NoClassDefFoundError: com/bakdata/conquery/io/jackson/serializer/CurrencyUnitDeserializer
 		setStorage(new NonPersistentStoreFactory());
 	}};
-	List<String> printIdFields = List.of("id1", "id2");
+	private static final List<String> printIdFields = List.of("id1", "id2");
 
 
 	@Test
