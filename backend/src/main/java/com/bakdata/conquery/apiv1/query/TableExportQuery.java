@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1.query;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,11 +19,12 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQUnfilteredTable;
-import com.bakdata.conquery.apiv1.query.concept.filter.ValidityDateContainer;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefKeys;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -32,11 +32,12 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan.TableExportDescription;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -72,10 +73,18 @@ public class TableExportQuery extends Query {
 	protected Query query;
 	@NotNull
 	private Range<LocalDate> dateRange = Range.all();
+
 	@NotEmpty
 	@Valid
-	private List<CQUnfilteredTable> tables;
+	private List<CQConcept> tables;
 
+	/**
+	 * We collect the positions for each Column of the output in here.
+	 * Multiple columns can map to the same output position:
+	 * - ValidityDate-Columns are merged into a single Date-Column
+	 * - SecondaryIds are collected into a Column per SecondaryId
+	 * - The remaining columns are arbitrarily ordered, but usually grouped by their source table.
+	 */
 	@InternalOnly
 	@NsIdRefKeys
 	private Map<Column, Integer> positions;
@@ -85,24 +94,21 @@ public class TableExportQuery extends Query {
 
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
-		List<TableExportDescription> resolvedConnectors = new ArrayList<>();
 
-		for (CQUnfilteredTable table : tables) {
-			Connector connector = table.getTable();
+		final Map<CQTable, QPNode> filterQueryNodes = new HashMap<>(tables.size());
 
-			// if no dateColumn is provided, we use the default instead which is always the first one.
-			// Set to null if none-available in the connector.
-			final Column validityDateColumn = findValidityDateColumn(connector, table.getDateColumn());
-
-			final TableExportDescription exportDescription = new TableExportDescription(connector.getTable(), validityDateColumn);
-
-			resolvedConnectors.add(exportDescription);
+		for (CQConcept cqConcept : tables) {
+			for (CQTable table : cqConcept.getTables()) {
+				// We use this query just to properly Construct a QPNode, filtering is done manually inside TableQueryPlan
+				final ConceptQuery tableFilterQuery = new ConceptQuery(cqConcept, DateAggregationMode.NONE);
+				filterQueryNodes.put(table, tableFilterQuery.createQueryPlan(context).getChild());
+			}
 		}
 
 		return new TableExportQueryPlan(
 				query.createQueryPlan(context),
-				CDateRange.of(dateRange),
-				resolvedConnectors,
+				CDateSet.create(CDateRange.of(dateRange)),
+				filterQueryNodes,
 				positions
 		);
 	}
@@ -125,36 +131,48 @@ public class TableExportQuery extends Query {
 
 		// SecondaryIds are pulled to the front and grouped over all tables
 		tables.stream()
-			  .map(cqUnfilteredTable -> cqUnfilteredTable.getTable().getTable().getColumns())
+			  .flatMap(con -> con.getTables().stream())
+			  .map(cqUnfilteredTable -> cqUnfilteredTable.getConnector().getTable().getColumns())
 			  .flatMap(Arrays::stream)
 			  .map(Column::getSecondaryId)
 			  .filter(Objects::nonNull)
 			  .distinct()
 			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
-			  // First position is dates, so
 			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
 
 
-		for (CQUnfilteredTable table : tables) {
-			Connector connector = table.getTable();
-			final Column validityDateColumn = findValidityDateColumn(connector, table.getDateColumn());
+		for (CQConcept concept : tables) {
+			for (CQTable table : concept.getTables()) {
 
-			if (validityDateColumn != null) {
-				positions.putIfAbsent(validityDateColumn, 0);
+				final Column validityDateColumn = table.findValidityDateColumn();
+
+				if (validityDateColumn != null) {
+					positions.putIfAbsent(validityDateColumn, 0);
+				}
+
+				// Set column positions, set SecondaryId positions to precomputed ones.
+				for (Column column : table.getConnector().getTable().getColumns()) {
+					if (positions.containsKey(column)) {
+						continue;
+					}
+
+					if (column.getSecondaryId() != null) {
+						positions.putIfAbsent(column, secondaryIdPositions.get(column.getSecondaryId()));
+						continue;
+					}
+
+					positions.put(column, currentPosition.getAndIncrement());
+				}
 			}
 
-			// Set column positions, set SecondaryId positions to precomputed ones.
-			for (Column column : connector.getTable().getColumns()) {
-				positions.computeIfAbsent(column, col -> col.getSecondaryId() != null
-														 ? secondaryIdPositions.get(col.getSecondaryId())
-														 : currentPosition.getAndIncrement());
-			}
 		}
 
-		resultInfos = createResultInfos(currentPosition.get(), secondaryIdPositions, positions);
+		resultInfos = createResultInfos(secondaryIdPositions, positions, getTables());
 	}
 
-	private List<ResultInfo> createResultInfos(int size, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions) {
+	private static List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions, @NotEmpty @Valid List<CQConcept> tables) {
+
+		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
 		ResultInfo[] infos = new ResultInfo[size];
 
@@ -167,10 +185,11 @@ public class TableExportQuery extends Query {
 			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.SecondaryIdT.INSTANCE);
 		}
 
-		Set<Column> primaryColumns = getTables().stream()
-												.map(tbl -> tbl.getTable().getColumn())
-												.filter(Objects::nonNull)
-												.collect(Collectors.toSet());
+		final Set<Column> conceptColumns = tables.stream()
+												 .flatMap(con -> con.getTables().stream())
+												 .filter(tbl -> tbl.getConnector().getColumn() != null)
+												 .map(tbl -> tbl.getConnector().getColumn())
+												 .collect(Collectors.toSet());
 
 		for (Map.Entry<Column, Integer> entry : positions.entrySet()) {
 
@@ -184,29 +203,16 @@ public class TableExportQuery extends Query {
 				continue;
 			}
 
-			// Columns that are used to build concepts are marked as PrimaryColumn.
-			final ResultType resultType = primaryColumns.contains(column) ?
-										  ResultType.ConceptColumnT.INSTANCE :
-										  ResultType.resolveResultType(column.getType());
+			// Columns that are used to build concepts are marked as ConceptColumnT.
+
+			final ResultType resultType = conceptColumns.contains(column)
+										  ? ResultType.ConceptColumnT.INSTANCE
+										  : ResultType.resolveResultType(column.getType());
 
 			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType);
 		}
 
 		return List.of(infos);
-	}
-
-	private static Column findValidityDateColumn(Connector connector, ValidityDateContainer dateColumn) {
-		// if no dateColumn is provided, we use the default instead which is always the first one.
-		// Set to null if none-available in the connector.
-		if (dateColumn != null) {
-			return dateColumn.getValue().getColumn();
-		}
-
-		if (!connector.getValidityDates().isEmpty()) {
-			return connector.getValidityDates().get(0).getColumn();
-		}
-
-		return null;
 	}
 
 	@Override
