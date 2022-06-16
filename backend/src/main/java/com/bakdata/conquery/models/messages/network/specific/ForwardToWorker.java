@@ -6,6 +6,8 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.jobs.ReactingJob;
+import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
@@ -29,7 +31,8 @@ import lombok.ToString;
  * Messages are sent serialized and only deserialized when they are being processed. This ensures that messages that were sent just shortly before to setup state later messages depend upon is correct.
  */
 @CPSType(id="FORWARD_TO_WORKER", base=NetworkMessage.class)
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED) @Getter
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
 @ToString(of = {"workerId", "text"})
 public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
@@ -64,9 +67,11 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
 		if(message instanceof SlowMessage){
 			((SlowMessage) message).setProgressReporter(progressReporter);
+			worker.getJobManager().addSlowJob(new SimpleJob(message.toString(), () -> message.react(worker)));
+			return;
 		}
 
-		message.react(worker);
+		worker.getJobManager().addFastJob(new SimpleJob(message.toString(), () -> message.react(worker)));
 	}
 
 	private static WorkerMessage deserializeMessage(byte[] messageRaw, ObjectMapper binaryMapper) throws java.io.IOException {
