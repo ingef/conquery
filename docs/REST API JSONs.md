@@ -792,6 +792,217 @@ Supported Fields:
 
 ---
 
+## Base ResultType
+
+
+Different types of ResultType can be used by setting `type` to one of the following values:
+
+
+### BOOLEAN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L78)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$BooleanT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### DATE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L130)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$DateT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### DATE_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L152-L155)</sup></sub></sup>
+A DateRange is provided by in a query result as two ints in a list, both standing for an epoch day (see {@link LocalDate#toEpochDay()}). The first int describes the included lower bound of the range. The second int descibes the included upper bound.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$DateRangeT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### INTEGER<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L98)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$IntegerT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### LIST<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L233)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$ListT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L236) | elementType | [@NonNull ResultType](#Base-ResultType) | ? |  |  | 
+</p></details>
+
+### MONEY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L217)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$MoneyT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### NUMERIC<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L113)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$NumericT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### STRING<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L190)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$StringT`
+
+No fields can be set for this type.
+
+</p></details>
+
+
+
+---
+
+## Base SemanticType
+
+
+Different types of SemanticType can be used by setting `type` to one of the following values:
+
+
+### CATEGORICAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L37-L39)</sup></sub></sup>
+Column contains a fixed set of String values.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$CategoricalT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### CONCEPT_COLUMN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L89-L93)</sup></sub></sup>
+Column contains values used by a Connector of a Concept. Only used for {@link com.bakdata.conquery.apiv1.query.TableExportQuery}.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$ConceptColumnT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L98) | concept | ID of `@NsIdRef Concept<?>` | ? |  |  | 
+</p></details>
+
+### EVENT_DATE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L17-L19)</sup></sub></sup>
+Column containing primary Event dates. There should only ever be one EVENT_DATE per Query.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$EventDateT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L55-L59)</sup></sub></sup>
+Column contains an Entity's Id of a kind. <p> See {@link com.bakdata.conquery.models.config.ColumnConfig} / {@link com.bakdata.conquery.models.config.FrontendConfig.UploadConfig}for the source of this.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$IdT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L64) | kind | `String` | ? |  |  | 
+</p></details>
+
+### RESOLUTION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L46-L48)</sup></sub></sup>
+Column contains {@link com.bakdata.conquery.models.forms.util.Resolution} from an {@link com.bakdata.conquery.apiv1.forms.export_form.ExportForm}.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$ResolutionT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### SECONDARY_ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L67-L69)</sup></sub></sup>
+Column contains values of a {@link SecondaryIdDescription}.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$SecondaryIdT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L74) | secondaryId | ID of `@NsIdRef SecondaryIdDescription` | ? |  |  | 
+</p></details>
+
+### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L78-L80)</sup></sub></sup>
+Column contains the results of a {@link Select}.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$SelectResultT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L85) | select | ID of `@NsIdRef Select` | ? |  |  | 
+</p></details>
+
+### SOURCES<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L26-L30)</sup></sub></sup>
+Column contains the source of the result line. <p> At the moment, only used in {@link com.bakdata.conquery.apiv1.query.TableExportQuery}.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$SourcesT`
+
+No fields can be set for this type.
+
+</p></details>
+
+
+
+---
+
 ## Other Types
 
 ### Type AutocompleteRequest<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L66)</sup></sub></sup>
