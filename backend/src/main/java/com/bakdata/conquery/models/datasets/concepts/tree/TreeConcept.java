@@ -57,6 +57,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private final IdMap<ConceptTreeChildId, ConceptTreeChild> allChildren = new IdMap<>();
 	@Getter
 	@Setter
+	@Valid
 	private List<ConceptTreeChild> children = Collections.emptyList();
 	@JsonIgnore
 	@Getter
@@ -122,7 +123,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		for (int i = 0; i < openList.size(); i++) {
 			ConceptTreeChild ctc = openList.get(i);
 
-			errors.addAll(validator.validate(ctc));
+			//errors.addAll(validator.validate(ctc));
 
 			try {
 				ctc.setLocalId(localIdMap.size());
