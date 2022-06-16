@@ -29,9 +29,9 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -40,6 +40,8 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -58,7 +60,7 @@ import lombok.extern.slf4j.Slf4j;
  * 3 - X: Contain the SecondaryId columns de-duplicated.
  * Following: Columns of all tables, (except for SecondaryId Columns), grouped by tables. The order is not guaranteed.
  * <p>
- * Columns used in Connectors to build Concepts, are marked with {@link ResultType.ConceptColumnT} in {@link FullExecutionStatus#getColumnDescriptions()}.
+ * Columns used in Connectors to build Concepts, are marked with {@link SemanticType.ConceptColumnT} in {@link FullExecutionStatus#getColumnDescriptions()}.
  */
 @Slf4j
 @Getter
@@ -182,14 +184,15 @@ public class TableExportQuery extends Query {
 		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
 			SecondaryIdDescription desc = e.getKey();
 			Integer pos = e.getValue();
-			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.SecondaryIdT.INSTANCE);
+			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.StringT.INSTANCE, Set.of(new SemanticType.SecondaryIdT(desc)));
 		}
 
-		final Set<Column> conceptColumns = tables.stream()
-												 .flatMap(con -> con.getTables().stream())
-												 .filter(tbl -> tbl.getConnector().getColumn() != null)
-												 .map(tbl -> tbl.getConnector().getColumn())
-												 .collect(Collectors.toSet());
+		final Map<Column, Concept<?>> conceptColumns =
+				tables.stream()
+					  .flatMap(con -> con.getTables().stream())
+					  .filter(tbl -> tbl.getConnector().getColumn() != null)
+					  .collect(Collectors.toMap(tbl -> tbl.getConnector().getColumn(), tbl -> tbl.getConnector().getConcept()));
+
 
 		for (Map.Entry<Column, Integer> entry : positions.entrySet()) {
 
@@ -203,13 +206,16 @@ public class TableExportQuery extends Query {
 				continue;
 			}
 
-			// Columns that are used to build concepts are marked as ConceptColumnT.
+			// Columns that are used to build concepts are marked as PrimaryColumn.
+			final ResultType resultType = ResultType.resolveResultType(column.getType());
 
-			final ResultType resultType = conceptColumns.contains(column)
-										  ? ResultType.ConceptColumnT.INSTANCE
-										  : ResultType.resolveResultType(column.getType());
-
-			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType);
+			infos[position] = new SimpleResultInfo(
+					column.getTable().getLabel() + " " + column.getLabel(),
+					resultType,
+					conceptColumns.containsKey(column)
+					? Set.of(new SemanticType.ConceptColumnT(conceptColumns.get(column)))
+					: Collections.emptySet()
+			);
 		}
 
 		return List.of(infos);

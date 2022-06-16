@@ -1,23 +1,19 @@
 package com.bakdata.conquery.io.result.csv;
 
-import com.bakdata.conquery.models.config.LocaleConfig;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.univocity.parsers.csv.CsvWriter;
-import kotlin.jvm.functions.Function2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -37,13 +33,12 @@ public class CsvRenderer {
 	}
 
 	private void createCSVBody(PrintSettings cfg, List<ResultInfo> infos, Stream<EntityResult> results) {
-		results
-				.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
-				.sorted(Map.Entry.comparingByKey())
-				.forEach(res -> res
-						.getValue()
-						.streamValues()
-						.forEach(result -> printLine(cfg, res.getKey(), infos, result)));
+		results.map(result -> Pair.of(cfg.getIdMapper().map(result), result))
+			   .sorted(Map.Entry.comparingByKey())
+			   .forEach(res -> res
+					   .getValue()
+					   .streamValues()
+					   .forEach(result -> printLine(cfg, res.getKey(), infos, result)));
 	}
 
 

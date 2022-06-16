@@ -1,14 +1,19 @@
 package com.bakdata.conquery.models.forms.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.OptionalInt;
+
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.internationalization.DateContextResolutionC10n;
 import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.RequiredArgsConstructor;
-
-import java.util.*;
 
 /**
  * Defines the granularity into which a given date range mask is chunked.
@@ -54,7 +59,8 @@ public enum Resolution implements Localized {
 			return List.of(
 					Alignment.YEAR,
 					Alignment.QUARTER,
-					Alignment.DAY);
+					Alignment.DAY
+			);
 		}
 	},
 
@@ -73,7 +79,8 @@ public enum Resolution implements Localized {
 		protected List<Alignment> getCompatibleAlignments() {
 			return List.of(
 					Alignment.QUARTER,
-					Alignment.DAY);
+					Alignment.DAY
+			);
 		}
 	},
 
@@ -144,5 +151,19 @@ public enum Resolution implements Localized {
 		thisAndCoarser.add(this);
 		return thisAndCoarserSubdivisions = Collections.unmodifiableList(thisAndCoarser);
 
+	}
+
+	public static String localizeValue(Object value, PrintSettings cfg) {
+		if (value instanceof Resolution) {
+			return ((Resolution) value).toString(cfg.getLocale());
+		}
+		try {
+			// If the object was parsed as a simple string, try to convert it to a
+			// DateContextMode to get Internationalization
+			return Resolution.valueOf(value.toString()).toString(cfg.getLocale());
+		}
+		catch (Exception e) {
+			throw new IllegalArgumentException(value + " is not a valid resolution.", e);
+		}
 	}
 }
