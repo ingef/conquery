@@ -39,7 +39,7 @@ public class StringTypeEncoded implements StringStore {
 	private Encoding encoding;
 
 	/**
-	 * Cache element lookups and as they might be time consuming, when a trie traversal is necessary (See {@link com.bakdata.conquery.util.dict.SuccinctTrie}).
+	 * Cache element lookups and as they might be time-consuming, when a trie traversal is necessary (See {@link com.bakdata.conquery.util.dict.SuccinctTrie}).
 	 */
 	@JsonIgnore
 	private final LoadingCache<Integer,String> elementCache;
