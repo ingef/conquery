@@ -48,11 +48,6 @@ public class Conquery extends Application<ConqueryConfig> {
 
 		confMapper.setConfig(confMapper.getDeserializationConfig().withView(InternalOnly.class));
 
-		// check for java compiler, needed for the class generation
-		if (ToolProvider.getSystemJavaCompiler() == null) {
-			throw new IllegalStateException("Conquery requires to be run on either a JDK or a ServerJRE");
-		}
-
 		// main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);
 
