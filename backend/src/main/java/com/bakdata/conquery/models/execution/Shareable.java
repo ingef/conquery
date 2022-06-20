@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.util.QueryUtils;
 import org.slf4j.Logger;
@@ -30,16 +30,16 @@ public interface  Shareable extends Authorized {
 	 * Sets the flag that indicated if an instance is shared among groups.
 	 */
 	void setShared(boolean shared);
-	
-	default  <ID extends IId<?>, S extends Identifiable<? extends ID> & Shareable & Authorized> Consumer<ShareInformation> sharer(
-		MetaStorage storage,
-		Subject subject) {
-		if(!(this instanceof Identifiable<?>)) {
+
+	default <ID extends Id<?>, S extends Identifiable<? extends ID> & Shareable & Authorized> Consumer<ShareInformation> sharer(
+			MetaStorage storage,
+			Subject subject) {
+		if (!(this instanceof Identifiable<?>)) {
 			log.warn("Cannot share {} ({}) because it does not implement Identifiable", this.getClass(), this.toString());
 			return QueryUtils.getNoOpEntryPoint();
 		}
 		return (patch) -> {
-			if(patch != null && patch.getGroups() != null) {
+			if (patch != null && patch.getGroups() != null) {
 				S shareable = (S) this;
 				// Collect groups that do not have access to this instance and remove their probable permission
 				for (Group group1 : storage.getAllGroups()) {

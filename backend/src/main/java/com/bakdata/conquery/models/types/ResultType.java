@@ -1,17 +1,18 @@
-package com.bakdata.conquery.models.externalservice;
+package com.bakdata.conquery.models.types;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.function.BiFunction;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -124,34 +125,7 @@ public abstract class ResultType {
 		}
 	}
 
-	@CPSType(id = "CATEGORICAL", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class CategoricalT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final CategoricalT INSTANCE = new CategoricalT();
-	}
 
-	@CPSType(id = "RESOLUTION", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class ResolutionT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final ResolutionT INSTANCE = new ResolutionT();
-
-		@Override
-		public String print(PrintSettings cfg, Object f) {
-			if (f instanceof Resolution) {
-				return ((Resolution) f).toString(cfg.getLocale());
-			}
-			try {
-				// If the object was parsed as a simple string, try to convert it to a
-				// DateContextMode to get Internationalization
-				return Resolution.valueOf(f.toString()).toString(cfg.getLocale());
-			}
-			catch (Exception e) {
-				throw new IllegalArgumentException(f + " is not a valid resolution.", e);
-			}
-		}
-	}
 
 	@CPSType(id = "DATE", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -218,28 +192,27 @@ public abstract class ResultType {
 	public static class StringT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final StringT INSTANCE = new StringT();
+
+		/**
+		 * Function that allows a select to transform the internal value to an external representation.
+		 * The returned value can be null.
+		 */
+		private BiFunction<Object, PrintSettings, String> valueMapper;
+
+		public StringT(BiFunction<Object, PrintSettings, String> valueMapper) {
+			this.valueMapper = valueMapper;
+		}
+
+		@Override
+		protected String print(PrintSettings cfg, @NonNull Object f) {
+			if (valueMapper == null) {
+				return super.print(cfg, f);
+			}
+			return super.print(cfg, valueMapper.apply(f, cfg));
+		}
 	}
 
-	@CPSType(id = "ID", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class IdT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final IdT INSTANCE = new IdT();
-	}
 
-	@CPSType(id = "SECONDARY_ID", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class SecondaryIdT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final SecondaryIdT INSTANCE = new SecondaryIdT();
-	}
-
-	@CPSType(id = "CONCEPT_COLUMN", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class ConceptColumnT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final ConceptColumnT INSTANCE = new ConceptColumnT();
-	}
 
 	@CPSType(id = "MONEY", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -275,10 +248,10 @@ public abstract class ResultType {
 				throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
 			}
 			// Not sure if this escaping is enough
-			String listDelimEscape = cfg.getListElementEscaper() + cfg.getListFormat().getSeparator();
-			StringJoiner joiner = new StringJoiner(cfg.getListFormat().getSeparator(), cfg.getListFormat().getStart(), cfg.getListFormat().getEnd());
+			final LocaleConfig.ListFormat listFormat = cfg.getListFormat();
+			StringJoiner joiner = listFormat.createListJoiner();
 			for (Object obj : (List<?>) f) {
-				joiner.add(elementType.print(cfg, obj).replace(cfg.getListFormat().getSeparator(), listDelimEscape));
+				joiner.add(listFormat.escapeListElement(elementType.print(cfg, obj)));
 			}
 			return joiner.toString();
 		}

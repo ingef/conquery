@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 import io.dropwizard.jersey.validation.Validators;
 import jetbrains.exodus.env.Environment;
@@ -40,6 +41,7 @@ public class SerializingStoreDumpTest {
 	private File tmpDir;
 	private Environment env;
 	private XodusStoreFactory config;
+	private ObjectMapper objectMapper;
 
 	// Test data
 	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"));
@@ -52,6 +54,7 @@ public class SerializingStoreDumpTest {
 		tmpDir = Files.createTempDir();
 		config = new XodusStoreFactory();
 		env = Environments.newInstance(tmpDir, config.getXodus().createConfig());
+		objectMapper = Jackson.BINARY_MAPPER.copy();
 	}
 
 	@AfterEach
@@ -62,9 +65,11 @@ public class SerializingStoreDumpTest {
 
 	private <KEY, VALUE> SerializingStore<KEY, VALUE> createSerializedStore(XodusStoreFactory config, Environment environment, Validator validator, StoreInfo<KEY,VALUE> storeId) {
 		return new SerializingStore<>(
-				new XodusStore(environment, storeId.getName(), (e) -> {}, (e) -> {}),
+				new XodusStore(environment, storeId.getName(), (e) -> {
+				}, (e) -> {
+				}),
 				validator,
-				config.getObjectMapper(),
+				objectMapper,
 				storeId.getKeyType(),
 				storeId.getValueType(),
 				config.isValidateOnWrite(),

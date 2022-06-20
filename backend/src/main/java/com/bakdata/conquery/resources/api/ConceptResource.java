@@ -64,7 +64,6 @@ public class ConceptResource extends HConcepts {
 	}
 
 
-
 	@Getter
 	@Setter
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)

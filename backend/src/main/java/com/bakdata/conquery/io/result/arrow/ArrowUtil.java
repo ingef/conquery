@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.arrow.memory.RootAllocator;

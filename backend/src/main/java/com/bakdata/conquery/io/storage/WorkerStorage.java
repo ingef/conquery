@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,21 +22,21 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(of = "worker")
 public class WorkerStorage extends NamespacedStorage {
 
-    private SingletonStore<WorkerInformation> worker;
-    private IdentifiableStore<Bucket> buckets;
-    private IdentifiableStore<CBlock> cBlocks;
+	private SingletonStore<WorkerInformation> worker;
+	private IdentifiableStore<Bucket> buckets;
+	private IdentifiableStore<CBlock> cBlocks;
 
-    public WorkerStorage(Validator validator, String pathName) {
-        super(validator, pathName);
-    }
+	public WorkerStorage(StoreFactory storageFactory, Validator validator, String pathName) {
+		super(storageFactory, validator, pathName);
+	}
 
 	@Override
-	public void openStores(StoreFactory storageFactory) {
-		super.openStores(storageFactory);
+	public void openStores(ObjectMapper objectMapper) {
+		super.openStores(objectMapper);
 
-		worker = storageFactory.createWorkerInformationStore(getPathName());
-		buckets = storageFactory.createBucketStore(centralRegistry, getPathName());
-		cBlocks = storageFactory.createCBlockStore(centralRegistry, getPathName());
+		worker = getStorageFactory().createWorkerInformationStore(getPathName(), objectMapper);
+		buckets = getStorageFactory().createBucketStore(centralRegistry, getPathName(), objectMapper);
+		cBlocks = getStorageFactory().createCBlockStore(centralRegistry, getPathName(), objectMapper);
 
 		decorateWorkerStore(worker);
 		decorateBucketStore(buckets);

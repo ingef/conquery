@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -29,7 +30,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
@@ -47,7 +48,7 @@ public class FrontEndConceptBuilder {
 	public static FERoot createRoot(NamespaceStorage storage, Subject subject) {
 
 		FERoot root = new FERoot();
-		Map<IId<?>, FENode> roots = root.getConcepts();
+		Map<Id<?>, FENode> roots = root.getConcepts();
 		
 		List<? extends Concept<?>> allConcepts = new ArrayList<>(storage.getAllConcepts());
 		// Remove any hidden concepts
@@ -142,17 +143,17 @@ public class FrontEndConceptBuilder {
 	}
 
 	@Nullable
-	private static FENode createStructureNode(StructureNode cn, Map<IId<?>, FENode> roots) {
+	private static FENode createStructureNode(StructureNode cn, Map<Id<?>, FENode> roots) {
 		List<ConceptId> unstructured = new ArrayList<>();
-		for(ConceptId id : cn.getContainedRoots()) {
-			if(!roots.containsKey(id)) {
+		for (ConceptId id : cn.getContainedRoots()) {
+			if (!roots.containsKey(id)) {
 				log.trace("Concept from structure node can not be found: {}", id);
 				continue;
 			}
 			unstructured.add(id);
 		}
-		
-		if(unstructured.isEmpty()) {
+
+		if (unstructured.isEmpty()) {
 			return null;
 		}
 		
@@ -165,12 +166,10 @@ public class FrontEndConceptBuilder {
 			.additionalInfos(cn.getAdditionalInfos())
 			.parent(cn.getParent() == null ? null : cn.getParent().getId())
 			.children(
-				ArrayUtils.addAll(
-					cn.getChildren().stream()
-						.map(IdentifiableImpl::getId)
-						.toArray(IId[]::new),
-						unstructured.toArray(IId[]::new)
-				)
+					Stream.concat(
+							cn.getChildren().stream().map(IdentifiableImpl::getId),
+							unstructured.stream()
+					).toArray(Id[]::new)
 			)
 			.build();
 	}

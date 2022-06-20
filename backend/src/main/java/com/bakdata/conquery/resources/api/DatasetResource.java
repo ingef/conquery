@@ -21,7 +21,7 @@ import lombok.Setter;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Path("datasets/{" + DATASET + "}")
 public class DatasetResource extends HDatasets {
-	
+
 	@Inject
 	protected ConceptsProcessor processor;
 

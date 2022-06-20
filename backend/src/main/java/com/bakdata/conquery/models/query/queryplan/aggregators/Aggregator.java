@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators;
 
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
+import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**

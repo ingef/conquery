@@ -28,6 +28,7 @@ public class IdRefrenceTest {
 	public void testListReferences() throws IOException {
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 		mapper.setInjectableValues(new MutableInjectableValues());
+		mapper.setConfig(mapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 
 		CentralRegistry registry = new CentralRegistry();
 		Dataset dataset = new Dataset();
@@ -40,9 +41,9 @@ public class IdRefrenceTest {
 
 		final DatasetRegistry datasetRegistry = new DatasetRegistry(0);
 
-		final MetaStorage metaStorage = new MetaStorage(datasetRegistry);
+		final MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory(),datasetRegistry);
 
-		metaStorage.openStores(new NonPersistentStoreFactory());
+		metaStorage.openStores(null);
 		datasetRegistry.setMetaStorage(metaStorage);
 
 

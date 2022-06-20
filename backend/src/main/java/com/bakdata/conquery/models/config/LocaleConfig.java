@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -83,7 +84,6 @@ public class LocaleConfig {
 	 * Container to describe the format of a list
 	 */
 	@Data
-	@RequiredArgsConstructor
 	@Slf4j
 	public static class ListFormat {
 		@NonNull
@@ -96,6 +96,16 @@ public class LocaleConfig {
 		@NonNull
 		@Size(min = 0, max = 1)
 		private final String end;
+
+		private final String listElementEscaper = "\\";
+
+		@Getter(lazy = true)
+		private final String listDelimEscape = makeListDelimiterEscape();
+
+		private String makeListDelimiterEscape() {
+			return listElementEscaper + separator;
+		}
+
 
 		/**
 		 * Manually parse value as {@link CDateSet} using the reader for {@link CDateRange}.
@@ -130,6 +140,14 @@ public class LocaleConfig {
 			}
 
 			return out;
+		}
+
+		public StringJoiner createListJoiner() {
+			return new StringJoiner(separator, start, end);
+		}
+
+		public String escapeListElement(@NonNull String elem) {
+			return elem.replace(separator, getListDelimEscape());
 		}
 	}
 

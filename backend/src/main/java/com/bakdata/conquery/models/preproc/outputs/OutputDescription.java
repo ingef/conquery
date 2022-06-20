@@ -45,6 +45,7 @@ public abstract class OutputDescription {
 	/**
 	 * Set the {@link TableInputDescriptor} as parent of an {@link OutputDescription}
 	 * Used in {@link CompoundDateRangeOutput} to check if the neighbour-columns exist in the table
+	 *
 	 * @implNote BackReference set here because Jackson does not support for fields in interfaces and abstract classes see also https://github.com/FasterXML/jackson-databind/issues/3304
 	 */
 	@JsonBackReference

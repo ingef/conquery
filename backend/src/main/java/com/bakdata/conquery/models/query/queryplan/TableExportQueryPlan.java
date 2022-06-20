@@ -5,31 +5,31 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * The QueryPlan creates a full dump of the given table within a certain
  * date range.
  */
 @RequiredArgsConstructor
+@ToString
 public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final QueryPlan<? extends EntityResult> subPlan;
-	private final CDateRange dateRange;
-	private final List<TableExportDescription> tables;
+	private final CDateSet dateRange;
+	private final Map<CQTable, QPNode> tables;
+
+	@ToString.Exclude
 	private final Map<Column, Integer> positions;
 
 	@Override
@@ -52,6 +52,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 		Optional<? extends EntityResult> result = subPlan.execute(ctx, entity);
 
+
 		if (result.isEmpty() || tables.isEmpty()) {
 			return Optional.empty();
 		}
@@ -59,60 +60,99 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		final List<Object[]> results = new ArrayList<>();
 
 		final int totalColumns = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
+		final int entityId = entity.getId();
 
-		for (TableExportDescription exportDescription : tables) {
+		for (Map.Entry<CQTable, QPNode> entry : tables.entrySet()) {
 
-			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, exportDescription.getTable())) {
+			final CQTable cqTable = entry.getKey();
+			final Column validityDateColumn = cqTable.findValidityDateColumn();
+			final QPNode query = entry.getValue();
 
-				int entityId = entity.getId();
+			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, cqTable.getConnector().getTable())) {
 
-				if (!bucket.containsEntity(entityId)) {
+				if (!shouldEvaluateBucket(query, bucket, entity, ctx)) {
 					continue;
 				}
 
-				int start = bucket.getEntityStart(entityId);
-				int end = bucket.getEntityEnd(entityId);
+				final int start = bucket.getEntityStart(entityId);
+				final int end = bucket.getEntityEnd(entityId);
 
 				for (int event = start; event < end; event++) {
 
-					// Export Full-table if it has no validity date.
-					if (exportDescription.getValidityDateColumn() != null && !bucket.eventIsContainedIn(event, exportDescription.getValidityDateColumn(), CDateSet.create(dateRange))) {
+					if (validityDateColumn != null
+						&& !bucket.eventIsContainedIn(event, validityDateColumn, dateRange)) {
 						continue;
 					}
 
-					final Object[] entry = new Object[totalColumns];
-					entry[1] = exportDescription.getTable().getName(); // TODO Or Id or Label?
-
-					for (Column column : exportDescription.getTable().getColumns()) {
-
-						if (!bucket.has(event, column)) {
-							continue;
-						}
-
-						if(column.equals(exportDescription.getValidityDateColumn())){
-							entry[0] = List.of(bucket.getAsDateRange(event, column));
-						}
-						else {
-							entry[positions.get(column)] = bucket.createScriptValue(event, column);
-						}
+					if (!isRowIncluded(query, bucket, entity, event, ctx)) {
+						continue;
 					}
 
-					results.add(entry);
+					final Object[] resultRow = collectRow(totalColumns, cqTable, bucket, event, validityDateColumn);
+
+					results.add(resultRow);
 				}
 			}
 		}
 
-		return Optional.of(new MultilineEntityResult(
-				entity.getId(),
-				results
-		));
+		return Optional.of(new MultilineEntityResult(entity.getId(), results));
 	}
 
-	@RequiredArgsConstructor
-	@Getter
-	public static class TableExportDescription {
-		private final Table table;
-		@Nullable
-		private final Column validityDateColumn;
+	/**
+	 * Test if the Bucket should even be evaluated for the {@link QPNode}.
+	 *
+	 * Note that we are cramming a few things together at once, but it's probably not such a huge waste of compute time since there are only a few Buckets per Entity.
+	 */
+	private boolean shouldEvaluateBucket(QPNode query, Bucket bucket, Entity entity, QueryExecutionContext ctx) {
+		query.init(entity, ctx);
+
+		if (!query.isOfInterest(entity)) {
+			return false;
+		}
+
+		query.nextTable(ctx, bucket.getTable());
+		query.nextBlock(bucket);
+
+		if (!query.isOfInterest(bucket)) {
+			return false;
+		}
+
+		return true;
 	}
+
+	/**
+	 * We execute the QPNode on a single row as though it was a whole query. To check if the event-row should be included.
+	 */
+	private boolean isRowIncluded(QPNode query, Bucket bucket, Entity entity, int event, QueryExecutionContext ctx) {
+		query.init(entity, ctx);
+
+		query.nextTable(ctx, bucket.getTable());
+		query.nextBlock(bucket);
+
+		query.acceptEvent(bucket, event);
+
+		return query.isContained();
+	}
+
+	private Object[] collectRow(int totalColumns, CQTable exportDescription, Bucket bucket, int event, Column validityDateColumn) {
+
+		final Object[] entry = new Object[totalColumns];
+		entry[1] = exportDescription.getConnector().getTable().getLabel();
+
+		for (Column column : exportDescription.getConnector().getTable().getColumns()) {
+
+			if (!bucket.has(event, column)) {
+				continue;
+			}
+
+			if (column.equals(validityDateColumn)) {
+				entry[0] = List.of(bucket.getAsDateRange(event, column));
+			}
+			else {
+				entry[positions.get(column)] = bucket.createScriptValue(event, column);
+			}
+		}
+		return entry;
+	}
+
 }

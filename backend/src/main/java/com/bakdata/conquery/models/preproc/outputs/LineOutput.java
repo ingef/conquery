@@ -40,6 +40,7 @@ public class LineOutput extends OutputDescription {
 			}
 		};
 	}
+
 	@Override
 	public MajorTypeId getResultType() {
 		return MajorTypeId.INTEGER;

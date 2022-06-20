@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 
@@ -30,9 +30,9 @@ public class ConnectorSelectId extends SelectId implements NamespacedId {
 		return connector.getDataset();
 	}
 
-	public enum Parser implements IId.Parser<ConnectorSelectId> {
+	public enum Parser implements IdUtil.Parser<ConnectorSelectId> {
 		INSTANCE;
-		
+
 		@Override
 		public ConnectorSelectId parseInternally(IdIterator parts) {
 			String name = parts.next();

@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.identifiable.ids.AId;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import lombok.AllArgsConstructor;
@@ -11,26 +11,28 @@ import lombok.Getter;
 
 import java.util.List;
 
-@AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class ImportId extends AId<Import> implements NamespacedId {
+@AllArgsConstructor
+@Getter
+@EqualsAndHashCode(callSuper = false)
+public class ImportId extends Id<Import> implements NamespacedId {
 
 	private final TableId table;
 	private final String tag;
-	
+
 	@Override
 	public DatasetId getDataset() {
 		return table.getDataset();
 	}
-	
+
 	@Override
 	public void collectComponents(List<Object> components) {
 		table.collectComponents(components);
 		components.add(tag);
 	}
-	
-	public static enum Parser implements IId.Parser<ImportId> {
+
+	public static enum Parser implements IdUtil.Parser<ImportId> {
 		INSTANCE;
-		
+
 		@Override
 		public ImportId parseInternally(IdIterator parts) {
 			String tag = parts.next();

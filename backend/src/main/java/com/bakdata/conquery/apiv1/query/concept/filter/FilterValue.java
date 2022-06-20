@@ -11,6 +11,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
@@ -174,7 +175,7 @@ public abstract class FilterValue<VALUE> {
 	 * The resolved filter instructs the frontend on how to render and serialize the filter value using the {@link Filter#createFrontendConfig()} method. The filter must implement {@link GroupFilter} and provide the type information of the value to correctly deserialize the received object.
 	 */
 	public static class GroupFilterDeserializer extends StdDeserializer<GroupFilterValue> {
-		private final NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer = new NsIdReferenceDeserializer<>(Filter.class, null, FilterId.class);
+		private final NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer = new NsIdReferenceDeserializer<>(Filter.class, null, FilterId.class, SerdesTarget.MANAGER_AND_SHARD);
 
 		protected GroupFilterDeserializer() {
 			super(GroupFilterValue.class);
@@ -193,7 +194,7 @@ public abstract class FilterValue<VALUE> {
 			final Filter<?> filter = nsIdDeserializer.deserialize(filterTraverse, ctxt);
 
 			if (!(filter instanceof GroupFilter)) {
-				throw InvalidTypeIdException.from(filterNode.traverse(), GroupFilter.class, String.format("Expected filter of type %s but was: %s", GroupFilter.class, filter.getClass()));
+				throw InvalidTypeIdException.from(filterNode.traverse(), GroupFilter.class, String.format("Expected filter of type %s but was: %s", GroupFilter.class, filter != null ? filter.getClass() : null));
 			}
 			GroupFilter groupFilter = (GroupFilter) filter;
 
