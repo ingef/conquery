@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @CPSType(id = "UPDATE_MATCHING_STATS", base = NamespacedMessage.class)
 @Slf4j
-public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
+public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 
 	@Override

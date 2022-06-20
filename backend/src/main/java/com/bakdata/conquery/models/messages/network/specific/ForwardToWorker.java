@@ -4,9 +4,7 @@ import java.util.Objects;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -63,15 +61,16 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 		Worker worker = Objects.requireNonNull(context.getWorkers().getWorker(workerId));
 		ConqueryMDC.setLocation(worker.toString());
 
-		WorkerMessage message = deserializeMessage(messageRaw, context.getWorkers().getBinaryMapper());
 
-		if(message instanceof SlowMessage){
-			((SlowMessage) message).setProgressReporter(progressReporter);
-			worker.getJobManager().addSlowJob(new SimpleJob(message.toString(), () -> message.react(worker)));
-			return;
-		}
+		// Jobception: this is to ensure that no subsequent message is deserialized before one message is processed
+		worker.getJobManager().addSlowJob(new SimpleJob("Deserialize and process WorkerMessage", () -> {
 
-		worker.getJobManager().addFastJob(new SimpleJob(message.toString(), () -> message.react(worker)));
+			WorkerMessage message = deserializeMessage(messageRaw, context.getWorkers().getBinaryMapper());
+
+
+				message.setProgressReporter(progressReporter);
+				message.react(worker);
+		}));
 	}
 
 	private static WorkerMessage deserializeMessage(byte[] messageRaw, ObjectMapper binaryMapper) throws java.io.IOException {
