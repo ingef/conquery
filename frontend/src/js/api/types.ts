@@ -311,22 +311,58 @@ export interface PostQueriesResponseT {
 }
 
 export type ColumnDescriptionKind =
+  | "INTEGER"
+  | "NUMERIC"
   | "BOOLEAN"
   | "STRING"
-  | "INTEGER"
   | "MONEY"
-  | "NUMERIC"
   | "DATE"
   | "DATE_RANGE"
-  | "LIST[DATE_RANGE]"
-  | "CATEGORICAL"
-  | "RESOLUTION"
-  | "SECONDARY_ID"
-  | "CONCEPT_COLUMN";
+  | "LIST[DATE_RANGE]";
+
+interface ColumnDescriptionSemanticConceptColumn {
+  type: "CONCEPT_COLUMN";
+  concept: string;
+}
+interface ColumnDescriptionSemanticSelect {
+  type: "SELECT";
+  select: string;
+}
+interface ColumnDescriptionSemanticSecondaryId {
+  type: "SECONDARY_ID";
+  secondaryId: string;
+}
+interface ColumnDescriptionSemanticId {
+  type: "ID";
+  kind: string;
+}
+interface ColumnDescriptionSemanticEventDate {
+  type: "EVENT_DATE";
+}
+interface ColumnDescriptionSemanticSources {
+  type: "SOURCES";
+}
+interface ColumnDescriptionSemanticCategorical {
+  type: "CATEGORICAL";
+}
+interface ColumnDescriptionSemanticResolution {
+  type: "RESOLUTION";
+}
+
+export type ColumnDescriptionSemantic =
+  | ColumnDescriptionSemanticId
+  | ColumnDescriptionSemanticSecondaryId
+  | ColumnDescriptionSemanticSelect
+  | ColumnDescriptionSemanticConceptColumn
+  | ColumnDescriptionSemanticEventDate
+  | ColumnDescriptionSemanticSources
+  | ColumnDescriptionSemanticCategorical // Probably won't be used by us
+  | ColumnDescriptionSemanticResolution; // Probably won't be used by us
 
 export interface ColumnDescription {
-  label: string;
+  label: string; // Matches column name in CSV
   type: ColumnDescriptionKind;
+  semantics: ColumnDescriptionSemantic[];
 
   // NOT USED BY US:
   defaultLabel: string;
