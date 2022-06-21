@@ -4,19 +4,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 
-import org.apache.mina.core.buffer.IoBuffer;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.ProtocolEncoderAdapter;
-import org.apache.mina.filter.codec.ProtocolEncoderOutput;
-
-import com.bakdata.conquery.util.SimplePool;
+import com.bakdata.conquery.util.WeakPool;
 import com.google.common.primitives.Ints;
-
 import io.dropwizard.util.Size;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.buffer.IoBuffer;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolEncoderAdapter;
+import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 
 @Slf4j @RequiredArgsConstructor
 public class ChunkWriter extends ProtocolEncoderAdapter {
@@ -24,10 +22,10 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 	public static final int HEADER_SIZE = Integer.BYTES + Byte.BYTES + 2*Long.BYTES;
 	public static final byte LAST_MESSAGE = 1;
 	public static final byte CONTINUED_MESSAGE = 0;
-	
+
 	@Getter @Setter
 	private int bufferSize = Ints.checkedCast(Size.megabytes(32).toBytes());
-	private SimplePool<IoBuffer> bufferPool = new SimplePool<>(()->IoBuffer.allocate(bufferSize));
+	private final WeakPool<IoBuffer> bufferPool = new WeakPool<>(()->IoBuffer.allocate(bufferSize));
 	@SuppressWarnings("rawtypes")
 	private final CQCoder coder;
 
