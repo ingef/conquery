@@ -6,7 +6,8 @@ on:
       - "backend/**"
 
 jobs:
-  tests:
+  run_tests:
+    needs: build_backend
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -24,8 +25,19 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+      - name: Download ARX
+        run: curl  https://github.com/arx-deidentifier/arx/releases/download/v3.9.0/libarx-3.9.0.jar -OL
+      - name: Register ARX
+        run: >
+          mvn install:install-file
+          -Dfile=./libarx-3.9.0.jar
+          -DgroupId=de.deidentifier
+          -DartifactId=arx
+          -Dversion=3.9.0
+          -Dpackaging=jar
+          -DgeneratePom=true
       - name: Build Backend
-        run: mvn -T 1C install -pl backend -DskipTests
+        run: mvn -T 1C package -pl ${{ inputs.pom-project }} -DskipTests -am
       - name: Unit Test
         run: mvn test -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
       - name: Programmatic Integration Tests

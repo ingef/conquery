@@ -1,14 +1,22 @@
-name: "End-To-End Tests"
+name: Reusable backend build workflow
 
 on:
-  pull_request:
-    paths:
-      - "**"
+  workflow_call:
+    inputs:
+      pom-project:
+        required: true
+        type: string
 
+    outputs:
+      artifact-name:
+        description: "Name of the produced artifact jar"
+        value: ${{ jobs.build-backend.outputs.artifact-name }}
 jobs:
-  end-to-end-test:
+  build-backend:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    outputs:
+      artifact-name: ${{ steps.set-output.outputs.artifact-name }}
     steps:
       - name: Cache local Maven repository
         uses: actions/cache@v2
@@ -17,16 +25,13 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-
       - uses: actions/checkout@v2
         with:
           submodules: true
-
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
           java-version: 11
-
       - name: Download ARX
         run: curl  https://github.com/arx-deidentifier/arx/releases/download/v3.9.0/libarx-3.9.0.jar -OL
       - name: Register ARX
@@ -38,30 +43,15 @@ jobs:
           -Dversion=3.9.0
           -Dpackaging=jar
           -DgeneratePom=true
-
       - name: Build Backend
-        run: ./scripts/build_backend_no_version.sh
-
-      - name: Build Frontend
-        run: ./scripts/build_frontend.sh
-
-      - name: Cypress run
-        # This is a preconfigured action, maintained by cypress, to run e2e tests
-        # https://github.com/cypress-io/github-action
-        uses: cypress-io/github-action@v2
+        run: mvn -T 1C package -pl ${{ inputs.pom-project }} -DskipTests -am
+      - name: Set artifact name
+        run: echo "artifactName=backend-jar-${{ env.GITHUB_SHA }}" >> $GITHUB_ENV
+      - uses: actions/upload-artifact@v3
         with:
-          working-directory: .
-          start: bash ./scripts/run_e2e_all.sh
-          wait-on: "http://localhost:8000"
-
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: cypress/screenshots
-
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: cypress-videos
-          path: cypress/videos
+          name: ${{ env.artifactName }}
+          path: ./${{ inputs.pom-project }}/target/${{ inputs.pom-project }}*.jar
+          retention-days: 1
+      - name: Set output
+        id: set-output
+        run: echo "::set-output name=artifact-name::${{ env.artifactName }}"
