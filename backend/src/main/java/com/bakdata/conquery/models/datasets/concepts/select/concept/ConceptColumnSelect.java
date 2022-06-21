@@ -1,9 +1,12 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept;
 
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -37,13 +40,35 @@ public class ConceptColumnSelect extends Select {
 
 	@Override
 	public ResultType getResultType() {
-		return new ResultType.ListT(new ResultType.StringT(this::printValue));
+		return new ResultType.ListT(new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings)));
 	}
 
-	private String printValue(Object o, PrintSettings printSettings) {
-		final int[] mostSpecificChild = (int[]) o;
+	public static String printValue(Concept concept, Object rawValue, PrintSettings printSettings) {
 
-		final ConceptTreeNode<?> node = concept.getElementByLocalId(mostSpecificChild);
+		if (rawValue == null) {
+			return null;
+		}
+
+		if (!(concept instanceof TreeConcept)) {
+			return Objects.toString(rawValue);
+		}
+
+		final TreeConcept tree = (TreeConcept) concept;
+
+		final int[] mostSpecificChild;
+
+		if (rawValue instanceof List) {
+			mostSpecificChild = ((List<Integer>) rawValue).stream().mapToInt(i -> i).toArray();
+		}
+		else if (rawValue instanceof int[]) {
+			mostSpecificChild = ((int[]) rawValue);
+		}
+		else {
+			return Objects.toString(rawValue);
+		}
+
+
+		final ConceptTreeNode<?> node = tree.getElementByLocalId(mostSpecificChild);
 
 		if (!printSettings.isPrettyPrint()) {
 			return node.getId().toStringWithoutDataset();

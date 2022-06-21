@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -127,20 +128,30 @@ public class TableExportQuery extends Query {
 		// First is dates, second is source id
 		AtomicInteger currentPosition = new AtomicInteger(2);
 
+
+		Map<SecondaryIdDescription, Integer> secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
+
 		positions = new HashMap<>();
 
-		Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
+		calculateColumnPositions(currentPosition, tables, secondaryIdPositions, positions);
 
-		// SecondaryIds are pulled to the front and grouped over all tables
-		tables.stream()
-			  .flatMap(con -> con.getTables().stream())
-			  .map(cqUnfilteredTable -> cqUnfilteredTable.getConnector().getTable().getColumns())
-			  .flatMap(Arrays::stream)
-			  .map(Column::getSecondaryId)
-			  .filter(Objects::nonNull)
-			  .distinct()
-			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
-			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
+		resultInfos = createResultInfos(secondaryIdPositions, positions, getTables());
+	}
+
+	private static Map<Column, Concept> calculateColumnConnectorMapping(@NotEmpty @Valid List<CQConcept> tables) {
+		Map<Column,Concept> col2Connector = new HashMap<>();
+
+		for (CQConcept concept : tables) {
+			for (CQTable cqTable : concept.getTables()) {
+				for (Column column : cqTable.getConnector().getTable().getColumns()) {
+					col2Connector.put(column, cqTable.getConnector().getConcept());
+				}
+			}
+		}
+		return col2Connector;
+	}
+
+	private static void calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions) {
 
 
 		for (CQConcept concept : tables) {
@@ -154,6 +165,7 @@ public class TableExportQuery extends Query {
 
 				// Set column positions, set SecondaryId positions to precomputed ones.
 				for (Column column : table.getConnector().getTable().getColumns()) {
+
 					if (positions.containsKey(column)) {
 						continue;
 					}
@@ -166,10 +178,23 @@ public class TableExportQuery extends Query {
 					positions.put(column, currentPosition.getAndIncrement());
 				}
 			}
-
 		}
+	}
 
-		resultInfos = createResultInfos(secondaryIdPositions, positions, getTables());
+	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
+		Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
+
+		// SecondaryIds are pulled to the front and grouped over all tables
+		tables.stream()
+			  .flatMap(con -> con.getTables().stream())
+			  .map(cqUnfilteredTable -> cqUnfilteredTable.getConnector().getTable().getColumns())
+			  .flatMap(Arrays::stream)
+			  .map(Column::getSecondaryId)
+			  .filter(Objects::nonNull)
+			  .distinct()
+			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
+			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
+		return secondaryIdPositions;
 	}
 
 	private static List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions, @NotEmpty @Valid List<CQConcept> tables) {
@@ -187,7 +212,8 @@ public class TableExportQuery extends Query {
 			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.StringT.INSTANCE, Set.of(new SemanticType.SecondaryIdT(desc)));
 		}
 
-		final Map<Column, Concept<?>> conceptColumns =
+
+		final Map<Column, Concept<?>> connectorColumns =
 				tables.stream()
 					  .flatMap(con -> con.getTables().stream())
 					  .filter(tbl -> tbl.getConnector().getColumn() != null)
@@ -205,16 +231,20 @@ public class TableExportQuery extends Query {
 			if (position == 0 || column.getSecondaryId() != null) {
 				continue;
 			}
+			final boolean isConceptColumn = connectorColumns.containsKey(column);
+			final Concept<?> concept = isConceptColumn ? connectorColumns.get(column).getConcept() : null;
 
 			// Columns that are used to build concepts are marked as PrimaryColumn.
-			final ResultType resultType = ResultType.resolveResultType(column.getType());
+			final ResultType resultType =
+					isConceptColumn
+					? new ResultType.StringT((o, printSettings) -> ConceptColumnSelect.printValue(concept, o, printSettings))
+					: ResultType.resolveResultType(column.getType());
+
 
 			infos[position] = new SimpleResultInfo(
 					column.getTable().getLabel() + " " + column.getLabel(),
 					resultType,
-					conceptColumns.containsKey(column)
-					? Set.of(new SemanticType.ConceptColumnT(conceptColumns.get(column)))
-					: Collections.emptySet()
+					isConceptColumn ? Set.of(new SemanticType.ConceptColumnT(concept)) : Collections.emptySet()
 			);
 		}
 

@@ -79,7 +79,7 @@
       "connectors": [
         {
           "name": "connector",
-          "table": "table1",
+          "column": "table1.code",
           "validityDates": {
             "label": "datum",
             "column": "table1.datum"
@@ -92,7 +92,7 @@
         },
         {
           "label": "connector2",
-          "table": "table2",
+          "column": "table2.code",
           "validityDates": {
             "label": "datum",
             "column": "table2.datum"
@@ -101,6 +101,17 @@
             "name": "value",
             "column": "table2.value",
             "type": "NUMBER"
+          }
+        }
+      ],
+      "children": [
+        {
+          "label": "A Child",
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "a"
+            ]
           }
         }
       ]
@@ -132,6 +143,10 @@
           {
             "name": "datum",
             "type": "DATE_RANGE"
+          },
+          {
+            "name": "code",
+            "type": "STRING"
           }
         ]
       },
@@ -155,6 +170,10 @@
           {
             "name": "datum",
             "type": "DATE_RANGE"
+          },
+          {
+            "name": "code",
+            "type": "STRING"
           }
         ]
       }
