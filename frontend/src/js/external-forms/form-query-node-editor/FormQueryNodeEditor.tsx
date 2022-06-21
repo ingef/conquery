@@ -101,7 +101,7 @@ const FormQueryNodeEditor = (props: PropsT) => {
     editedNode.tables.length > 1 &&
     editedNode.tables.some((table) => tableIsEditable(table));
 
-  if (!datasetId) {
+  if (!datasetId || !editedNode) {
     return null;
   }
 

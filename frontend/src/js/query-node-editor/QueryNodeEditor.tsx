@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { useCallback, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
@@ -21,11 +20,11 @@ import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import EditableText from "../ui-components/EditableText";
 import type { ModeT } from "../ui-components/InputRange";
 
 import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";
+import NodeName from "./NodeName";
 import ResetAndClose from "./ResetAndClose";
 
 const Root = styled("div")`
@@ -85,10 +84,6 @@ const Header = styled("div")`
   padding-right: 10px;
 `;
 
-const NodeName = styled("div")`
-  padding: 10px 15px;
-`;
-
 export interface QueryNodeEditorPropsT {
   name: string;
   node: StandardQueryNodeT;
@@ -130,8 +125,6 @@ const RIGHT_SIDE_WIDTH = 400;
 const RIGHT_SIDE_WIDTH_COMPACT = 150;
 
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
-  const { t } = useTranslation();
-  const [editingLabel, setEditingLabel] = useState<boolean>(false);
   const [selectedTableIdx, setSelectedTableIdx] = useState<number | null>(null);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -159,9 +152,12 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
 
   useHotkeys("esc", props.onCloseModal);
 
-  if (!node) return null;
-
   const showClearReset = !nodeHasEmptySettings(node);
+  const nodeNameMaxWidth =
+    parentWidth -
+    (isCompact || !showClearReset
+      ? RIGHT_SIDE_WIDTH_COMPACT
+      : RIGHT_SIDE_WIDTH);
 
   return (
     <Root
@@ -175,31 +171,13 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
       <ContentWrap>
         <Header>
           <NodeName
-            style={{
-              maxWidth:
-                parentWidth -
-                (isCompact || !showClearReset
-                  ? RIGHT_SIDE_WIDTH_COMPACT
-                  : RIGHT_SIDE_WIDTH),
-            }}
-          >
-            {nodeIsConceptQueryNode(node) && (
-              <EditableText
-                large
-                loading={false}
-                text={node.label}
-                tooltip={t("help.editConceptName")}
-                selectTextOnMount={true}
-                editing={editingLabel}
-                onSubmit={(value) => {
-                  props.onUpdateLabel(value);
-                  setEditingLabel(false);
-                }}
-                onToggleEdit={() => setEditingLabel(!editingLabel)}
-              />
-            )}
-            {!nodeIsConceptQueryNode(node) && (node.label || node.id)}
-          </NodeName>
+            maxWidth={nodeNameMaxWidth}
+            allowEditing={nodeIsConceptQueryNode(node)}
+            label={
+              nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
+            }
+            onUpdateLabel={props.onUpdateLabel}
+          />
           <ResetAndClose
             isCompact={isCompact}
             onClose={props.onCloseModal}

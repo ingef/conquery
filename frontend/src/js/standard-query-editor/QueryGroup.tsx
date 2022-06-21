@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { DateRangeT, QueryT } from "../api/types";
@@ -50,29 +51,60 @@ const isDateActive = (dateRange?: DateRangeT) => {
 interface PropsT {
   group: QueryGroupType;
   andIdx: number;
-  onDropNode: (node: StandardQueryNodeT) => void;
-  onDropFile: (file: File) => void;
+  onDropOrNode: (node: StandardQueryNodeT, andIdx: number) => void;
+  onDropConceptListFile: (file: File, andIdx: number) => void;
   onDeleteNode: (idx: number) => void;
   onEditClick: (orIdx: number) => void;
-  onExcludeClick: () => void;
   onExpandClick: (q: QueryT) => void;
-  onDateClick: () => void;
-  onDeleteGroup: () => void;
+  onExcludeClick: (andIdx: number) => void;
+  onDateClick: (andIdx: number) => void;
+  onDeleteGroup: (andIdx: number) => void;
   onLoadPreviousQuery: (id: PreviousQueryT["id"]) => void;
   onToggleTimestamps: (orIdx: number) => void;
   onToggleSecondaryIdExclude: (orIdx: number) => void;
 }
 
-const QueryGroup = (props: PropsT) => {
+const QueryGroup = ({
+  andIdx,
+  onExcludeClick,
+  onDateClick,
+  onDeleteGroup,
+  onDropOrNode,
+  onDropConceptListFile,
+  ...props
+}: PropsT) => {
   const { t } = useTranslation();
+
+  const onDropNode = useCallback(
+    (item: StandardQueryNodeT) => {
+      onDropOrNode(item, andIdx);
+    },
+    [andIdx, onDropOrNode],
+  );
+  const excludeClick = useCallback(
+    () => onExcludeClick(andIdx),
+    [andIdx, onExcludeClick],
+  );
+  const deleteGroup = useCallback(
+    () => onDeleteGroup(andIdx),
+    [andIdx, onDeleteGroup],
+  );
+  const dateClick = useCallback(
+    () => onDateClick(andIdx),
+    [andIdx, onDateClick],
+  );
+  const onDropFile = useCallback(
+    (file: File) => onDropConceptListFile(file, andIdx),
+    [andIdx, onDropConceptListFile],
+  );
 
   return (
     <Root>
       <SxWithTooltip text={t("help.editorDropzoneOr")} lazy>
         <QueryEditorDropzone
           key={props.group.elements.length + 1}
-          onDropNode={props.onDropNode}
-          onDropFile={props.onDropFile}
+          onDropNode={onDropNode}
+          onDropFile={onDropFile}
           onLoadPreviousQuery={props.onLoadPreviousQuery}
         />
       </SxWithTooltip>
@@ -81,15 +113,15 @@ const QueryGroup = (props: PropsT) => {
         <QueryGroupActions
           excludeActive={!!props.group.exclude}
           dateActive={isDateActive(props.group.dateRange)}
-          onExcludeClick={props.onExcludeClick}
-          onDeleteGroup={props.onDeleteGroup}
-          onDateClick={props.onDateClick}
+          onExcludeClick={excludeClick}
+          onDeleteGroup={deleteGroup}
+          onDateClick={dateClick}
         />
         {props.group.elements.map((node, orIdx) => (
           <div key={`or-${orIdx}`}>
             <QueryNode
               node={node}
-              andIdx={props.andIdx}
+              andIdx={andIdx}
               orIdx={orIdx}
               onDeleteNode={() => props.onDeleteNode(orIdx)}
               onEditClick={() => props.onEditClick(orIdx)}

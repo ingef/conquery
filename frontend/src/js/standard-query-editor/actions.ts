@@ -118,31 +118,34 @@ export const useExpandPreviousQuery = () => {
   const { loadQuery } = useLoadQuery();
   const { t } = useTranslation();
 
-  return async (rootConcepts: TreesT, query: QueryT) => {
-    if (!isAndQuery(query)) {
-      throw new Error("Cant expand query, because root is not AND");
-    }
+  return useCallback(
+    async (rootConcepts: TreesT, query: QueryT) => {
+      if (!isAndQuery(query)) {
+        throw new Error("Cant expand query, because root is not AND");
+      }
 
-    const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
+      const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
 
-    dispatch(
-      expandPreviousQuery({
-        rootConcepts,
-        query,
-        expandErrorMessage: t("queryEditor.couldNotExpandNode"),
-      }),
-    );
+      dispatch(
+        expandPreviousQuery({
+          rootConcepts,
+          query,
+          expandErrorMessage: t("queryEditor.couldNotExpandNode"),
+        }),
+      );
 
-    await Promise.all(
-      nestedPreviousQueryIds.map((queryId) => loadQuery(queryId)),
-    );
+      await Promise.all(
+        nestedPreviousQueryIds.map((queryId) => loadQuery(queryId)),
+      );
 
-    dispatch(
-      setSelectedSecondaryId({
-        secondaryId: query.secondaryId ? query.secondaryId : null,
-      }),
-    );
-  };
+      dispatch(
+        setSelectedSecondaryId({
+          secondaryId: query.secondaryId ? query.secondaryId : null,
+        }),
+      );
+    },
+    [dispatch, t, loadQuery],
+  );
 };
 
 export const updateNodeLabel = createAction("query-editor/UPDATE_NODE_LABEL")<{

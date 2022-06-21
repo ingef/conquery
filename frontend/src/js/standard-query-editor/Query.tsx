@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -67,7 +67,7 @@ const Query = ({
   const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query,
   );
-  const isEmptyQuery = query.length === 0;
+  const isEmptyQuery = useMemo(() => query.length === 0, [query.length]);
   const isQueryWithSingleElement =
     query.length === 1 && query[0].elements.length === 1;
 
@@ -97,15 +97,23 @@ const Query = ({
     },
     [dispatch],
   );
-  const onDropOrNode = (
-    item: DragItemQuery | DragItemConceptTreeNode,
-    andIdx: number,
-  ) => dispatch(dropOrNode({ item, andIdx }));
-  const onDeleteNode = (andIdx: number, orIdx: number) =>
-    dispatch(deleteNode({ andIdx, orIdx }));
-  const onDeleteGroup = (andIdx: number) => dispatch(deleteGroup({ andIdx }));
-  const onToggleExcludeGroup = (andIdx: number) =>
-    dispatch(toggleExcludeGroup({ andIdx }));
+  const onDropOrNode = useCallback(
+    (item: DragItemQuery | DragItemConceptTreeNode, andIdx: number) =>
+      dispatch(dropOrNode({ item, andIdx })),
+    [dispatch],
+  );
+  const onDeleteNode = useCallback(
+    (andIdx: number, orIdx: number) => dispatch(deleteNode({ andIdx, orIdx })),
+    [dispatch],
+  );
+  const onDeleteGroup = useCallback(
+    (andIdx: number) => dispatch(deleteGroup({ andIdx })),
+    [dispatch],
+  );
+  const onToggleExcludeGroup = useCallback(
+    (andIdx: number) => dispatch(toggleExcludeGroup({ andIdx })),
+    [dispatch],
+  );
   const onToggleTimestamps = (andIdx: number, orIdx: number) =>
     dispatch(toggleTimestamps({ andIdx, orIdx }));
   const onToggleSecondaryIdExclude = (andIdx: number, orIdx: number) =>
@@ -123,17 +131,20 @@ const Query = ({
     number | null
   >(null);
 
+  const onExpandPreviousQuery = useCallback(
+    (q: QueryT) => {
+      if (isQueryWithSingleElement) {
+        expandPreviousQuery(rootConcepts, q);
+      } else {
+        setQueryToExpand(q);
+      }
+    },
+    [expandPreviousQuery, isQueryWithSingleElement, rootConcepts],
+  );
+
   if (!datasetId) {
     return null;
   }
-
-  const onExpandPreviousQuery = (q: QueryT) => {
-    if (isQueryWithSingleElement) {
-      expandPreviousQuery(rootConcepts, q);
-    } else {
-      setQueryToExpand(q);
-    }
-  };
 
   return (
     <Container>
@@ -164,24 +175,22 @@ const Query = ({
           <QueryHeader />
           <Groups>
             {query.map((group, andIdx) => (
-              <>
+              <Fragment key={andIdx}>
                 <QueryGroup
                   key={andIdx}
                   group={group}
                   andIdx={andIdx}
-                  onDropNode={(item) => onDropOrNode(item, andIdx)}
-                  onDropFile={(file: File) =>
-                    onDropConceptListFile(file, andIdx)
-                  }
+                  onDropOrNode={onDropOrNode}
+                  onDropConceptListFile={onDropConceptListFile}
+                  onDeleteGroup={onDeleteGroup}
+                  onExcludeClick={onToggleExcludeGroup}
+                  onDateClick={setQueryGroupModalAndIdx}
+                  onExpandClick={onExpandPreviousQuery}
+                  onLoadPreviousQuery={onLoadQuery}
                   onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
-                  onDeleteGroup={() => onDeleteGroup(andIdx)}
                   onEditClick={(orIdx: number) =>
                     setEditedNode({ andIdx, orIdx })
                   }
-                  onExpandClick={onExpandPreviousQuery}
-                  onExcludeClick={() => onToggleExcludeGroup(andIdx)}
-                  onDateClick={() => setQueryGroupModalAndIdx(andIdx)}
-                  onLoadPreviousQuery={onLoadQuery}
                   onToggleTimestamps={(orIdx: number) =>
                     onToggleTimestamps(andIdx, orIdx)
                   }
@@ -192,7 +201,7 @@ const Query = ({
                 <QueryGroupConnector key={`${andIdx}.and`}>
                   {t("common.and")}
                 </QueryGroupConnector>
-              </>
+              </Fragment>
             ))}
             <QueryAndDropzone
               onLoadQuery={onLoadQuery}

@@ -74,6 +74,8 @@ const SecondaryIdSelector: FC = () => {
     [query, loadedSecondaryIds],
   );
 
+  const availableSecondaryIdsString = JSON.stringify(availableSecondaryIds);
+
   useEffect(() => {
     const activeSecondaryIdNotFound =
       !!selectedSecondaryId &&
@@ -85,7 +87,7 @@ const SecondaryIdSelector: FC = () => {
     if (activeSecondaryIdNotFound) {
       onSetSelectedSecondaryId(null);
     }
-  }, [JSON.stringify(availableSecondaryIds), onSetSelectedSecondaryId]);
+  }, [availableSecondaryIdsString, onSetSelectedSecondaryId]);
 
   const options = useMemo(
     () => [
@@ -99,7 +101,7 @@ const SecondaryIdSelector: FC = () => {
         description: id.description,
       })),
     ],
-    [JSON.stringify(availableSecondaryIds), t],
+    [availableSecondaryIdsString, t],
   );
 
   if (options.length < 2) {
