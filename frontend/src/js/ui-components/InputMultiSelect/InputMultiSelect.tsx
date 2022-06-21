@@ -119,8 +119,6 @@ const InputMultiSelect = ({
     },
   });
 
-  console.log(label, selectedItems);
-
   useDebounce(
     () => {
       if (onLoadMore && !loading) {
