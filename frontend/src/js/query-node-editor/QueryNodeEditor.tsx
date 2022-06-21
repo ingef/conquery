@@ -6,13 +6,11 @@ import { useTranslation } from "react-i18next";
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
   ConceptIdT,
-  CurrencyConfigT,
   DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
-import { TransparentButton } from "../button/TransparentButton";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import {
   nodeHasEmptySettings,
@@ -23,13 +21,12 @@ import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import WithTooltip from "../tooltip/WithTooltip";
 import EditableText from "../ui-components/EditableText";
 import type { ModeT } from "../ui-components/InputRange";
 
 import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";
-import ResetAllSettingsButton from "./ResetAllSettingsButton";
+import ResetAndClose from "./ResetAndClose";
 
 const Root = styled("div")`
   padding: 10px;
@@ -88,13 +85,6 @@ const Header = styled("div")`
   padding-right: 10px;
 `;
 
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-`;
-
-const CloseButton = styled(TransparentButton)``;
-
 const NodeName = styled("div")`
   padding: 10px 15px;
 `;
@@ -108,7 +98,6 @@ export interface QueryNodeEditorPropsT {
   blocklistedTables?: string[];
   allowlistedSelects?: SelectorResultType[];
   blocklistedSelects?: SelectorResultType[];
-  currencyConfig: CurrencyConfigT;
 
   onCloseModal: () => void;
   onUpdateLabel: (label: string) => void;
@@ -152,12 +141,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     }
   };
 
-  function close() {
-    if (!node) return;
-
-    props.onCloseModal();
-  }
-
   // To make sure that Close button is always visible and to consider
   // that QueryNodeEditor may be contained in a horizontally resizeable panel
   // that's resized independent of the window width.
@@ -174,7 +157,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     parentRef.current,
   );
 
-  useHotkeys("esc", close);
+  useHotkeys("esc", props.onCloseModal);
 
   if (!node) return null;
 
@@ -217,21 +200,12 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             )}
             {!nodeIsConceptQueryNode(node) && (node.label || node.id)}
           </NodeName>
-          <Row>
-            {showClearReset && (
-              <ResetAllSettingsButton
-                text={t("queryNodeEditor.clearAllSettings")}
-                icon="trash"
-                onClick={() => props.onResetAllSettings({ useDefaults: false })}
-                compact={isCompact}
-              />
-            )}
-            <WithTooltip text={t("common.saveAndCloseEsc")}>
-              <CloseButton small onClick={close}>
-                {t("common.save")}
-              </CloseButton>
-            </WithTooltip>
-          </Row>
+          <ResetAndClose
+            isCompact={isCompact}
+            onClose={props.onCloseModal}
+            onResetAllSettings={props.onResetAllSettings}
+            showClearReset={showClearReset}
+          />
         </Header>
         <Wrapper>
           <ScrollContainer ref={scrollContainerRef}>
@@ -257,7 +231,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             <ContentColumn
               node={node}
               datasetId={props.datasetId}
-              currencyConfig={props.currencyConfig}
               selectedTableIdx={selectedTableIdx}
               allowlistedSelects={props.allowlistedSelects}
               blocklistedSelects={props.blocklistedSelects}

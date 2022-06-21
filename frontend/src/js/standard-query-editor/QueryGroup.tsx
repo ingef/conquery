@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 
-import { DateRangeT, QueryT } from "../api/types";
-import { PreviousQueryIdT } from "../previous-queries/list/reducer";
+import type { DateRangeT, QueryT } from "../api/types";
+import type { PreviousQueryT } from "../previous-queries/list/reducer";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryEditorDropzone from "./QueryEditorDropzone";
@@ -58,7 +58,7 @@ interface PropsT {
   onExpandClick: (q: QueryT) => void;
   onDateClick: () => void;
   onDeleteGroup: () => void;
-  onLoadPreviousQuery: (id: PreviousQueryIdT) => void;
+  onLoadPreviousQuery: (id: PreviousQueryT["id"]) => void;
   onToggleTimestamps: (orIdx: number) => void;
   onToggleSecondaryIdExclude: (orIdx: number) => void;
 }

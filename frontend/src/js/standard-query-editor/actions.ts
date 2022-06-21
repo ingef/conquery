@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { ActionType, createAction } from "typesafe-actions";
@@ -250,26 +251,29 @@ export const useLoadFilterSuggestions = (
   const dispatch = useDispatch();
   const postPrefixForSuggestions = usePostPrefixForSuggestions();
 
-  return async (
-    params: PostPrefixForSuggestionsParams,
-    tableIdx: number,
-    filterIdx: number,
-    { returnOnly }: { returnOnly?: boolean } = {},
-  ) => {
-    if (!editedNode) return null;
+  return useCallback(
+    async (
+      params: PostPrefixForSuggestionsParams,
+      tableIdx: number,
+      filterIdx: number,
+      { returnOnly }: { returnOnly?: boolean } = {},
+    ) => {
+      if (!editedNode) return null;
 
-    const context = { ...editedNode, tableIdx, filterIdx, page: params.page };
+      const context = { ...editedNode, tableIdx, filterIdx, page: params.page };
 
-    const suggestions = await postPrefixForSuggestions(params);
+      const suggestions = await postPrefixForSuggestions(params);
 
-    if (!returnOnly) {
-      dispatch(
-        loadFilterSuggestionsSuccess(successPayload(suggestions, context)),
-      );
-    }
+      if (!returnOnly) {
+        dispatch(
+          loadFilterSuggestionsSuccess(successPayload(suggestions, context)),
+        );
+      }
 
-    return suggestions;
-  };
+      return suggestions;
+    },
+    [dispatch, editedNode, postPrefixForSuggestions],
+  );
 };
 
 export const setSelectedSecondaryId = createAction(

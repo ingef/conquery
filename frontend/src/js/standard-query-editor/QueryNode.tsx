@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useRef, FC } from "react";
+import { useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -123,7 +123,7 @@ const nodeHasActiveSecondaryId = (
   }
 };
 
-const QueryNode: FC<PropsT> = ({
+const QueryNode = ({
   node,
   andIdx,
   orIdx,
@@ -132,7 +132,7 @@ const QueryNode: FC<PropsT> = ({
   onDeleteNode,
   onToggleTimestamps,
   onToggleSecondaryIdExclude,
-}) => {
+}: PropsT) => {
   const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(node);
   const ref = useRef<HTMLDivElement | null>(null);

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -10,17 +10,17 @@ import { exists } from "../common/helpers/exists";
 import { TreesT } from "../concept-trees/reducer";
 import { useDatasetId } from "../dataset/selectors";
 import { useLoadQuery } from "../previous-queries/list/actions";
-import { PreviousQueryIdT } from "../previous-queries/list/reducer";
+import { PreviousQueryT } from "../previous-queries/list/reducer";
 import QueryGroupModal from "../query-group-modal/QueryGroupModal";
 import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
-import WithTooltip from "../tooltip/WithTooltip";
 import { initUploadConceptListModal } from "../upload-concept-list-modal/actions";
 
 import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
+import QueryAndDropzone from "./QueryAndDropzone";
 import QueryEditorDropzone from "./QueryEditorDropzone";
-import QueryFooter from "./QueryFooter";
 import QueryGroup from "./QueryGroup";
 import QueryHeader from "./QueryHeader";
+import SecondaryIdSelector from "./SecondaryIdSelector";
 import {
   dropAndNode,
   dropOrNode,
@@ -38,14 +38,6 @@ const Container = styled("div")`
   height: 100%;
   display: flex;
   flex-direction: column;
-`;
-
-const PaddedTop = styled("div")`
-  padding-top: 70px;
-`;
-
-const SxWithTooltip = styled(WithTooltip)`
-  display: block !important;
 `;
 
 const Groups = styled("div")`
@@ -88,17 +80,23 @@ const Query = ({
   const { loadQuery } = useLoadQuery();
   const expandPreviousQuery = useExpandPreviousQuery();
 
-  const onDropAndNode = (item: DragItemQuery | DragItemConceptTreeNode) =>
-    dispatch(dropAndNode({ item }));
-  const onDropConceptListFile = async (file: File, andIdx: number | null) => {
-    // Need to wait until file is processed.
-    // Because if file is empty, modal would close automatically
-    const rows = await getUniqueFileRows(file);
+  const onDropAndNode = useCallback(
+    (item: DragItemQuery | DragItemConceptTreeNode) =>
+      dispatch(dropAndNode({ item })),
+    [dispatch],
+  );
+  const onDropConceptListFile = useCallback(
+    async (file: File, andIdx: number | null) => {
+      // Need to wait until file is processed.
+      // Because if file is empty, modal would close automatically
+      const rows = await getUniqueFileRows(file);
 
-    dispatch(initUploadConceptListModal({ rows, filename: file.name }));
+      dispatch(initUploadConceptListModal({ rows, filename: file.name }));
 
-    return dispatch(openQueryUploadConceptListModal({ andIdx }));
-  };
+      return dispatch(openQueryUploadConceptListModal({ andIdx }));
+    },
+    [dispatch],
+  );
   const onDropOrNode = (
     item: DragItemQuery | DragItemConceptTreeNode,
     andIdx: number,
@@ -112,9 +110,12 @@ const Query = ({
     dispatch(toggleTimestamps({ andIdx, orIdx }));
   const onToggleSecondaryIdExclude = (andIdx: number, orIdx: number) =>
     dispatch(toggleSecondaryIdExclude({ andIdx, orIdx }));
-  const onLoadQuery = (queryId: PreviousQueryIdT) => {
-    loadQuery(queryId);
-  };
+  const onLoadQuery = useCallback(
+    (queryId: PreviousQueryT["id"]) => {
+      loadQuery(queryId);
+    },
+    [loadQuery],
+  );
 
   const [queryToExpand, setQueryToExpand] = useState<QueryT | null>(null);
 
@@ -162,45 +163,44 @@ const Query = ({
         <>
           <QueryHeader />
           <Groups>
-            {query.map((group, andIdx) => [
-              <QueryGroup
-                key={andIdx}
-                group={group}
-                andIdx={andIdx}
-                onDropNode={(item) => onDropOrNode(item, andIdx)}
-                onDropFile={(file: File) => onDropConceptListFile(file, andIdx)}
-                onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
-                onDeleteGroup={() => onDeleteGroup(andIdx)}
-                onEditClick={(orIdx: number) =>
-                  setEditedNode({ andIdx, orIdx })
-                }
-                onExpandClick={onExpandPreviousQuery}
-                onExcludeClick={() => onToggleExcludeGroup(andIdx)}
-                onDateClick={() => setQueryGroupModalAndIdx(andIdx)}
-                onLoadPreviousQuery={onLoadQuery}
-                onToggleTimestamps={(orIdx: number) =>
-                  onToggleTimestamps(andIdx, orIdx)
-                }
-                onToggleSecondaryIdExclude={(orIdx: number) =>
-                  onToggleSecondaryIdExclude(andIdx, orIdx)
-                }
-              />,
-              <QueryGroupConnector key={`${andIdx}.and`}>
-                {t("common.and")}
-              </QueryGroupConnector>,
-            ])}
-            <PaddedTop>
-              <SxWithTooltip text={t("help.editorDropzoneAnd")} lazy>
-                <QueryEditorDropzone
-                  isAnd
-                  onDropNode={onDropAndNode}
-                  onDropFile={(file) => onDropConceptListFile(file, null)}
+            {query.map((group, andIdx) => (
+              <>
+                <QueryGroup
+                  key={andIdx}
+                  group={group}
+                  andIdx={andIdx}
+                  onDropNode={(item) => onDropOrNode(item, andIdx)}
+                  onDropFile={(file: File) =>
+                    onDropConceptListFile(file, andIdx)
+                  }
+                  onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
+                  onDeleteGroup={() => onDeleteGroup(andIdx)}
+                  onEditClick={(orIdx: number) =>
+                    setEditedNode({ andIdx, orIdx })
+                  }
+                  onExpandClick={onExpandPreviousQuery}
+                  onExcludeClick={() => onToggleExcludeGroup(andIdx)}
+                  onDateClick={() => setQueryGroupModalAndIdx(andIdx)}
                   onLoadPreviousQuery={onLoadQuery}
+                  onToggleTimestamps={(orIdx: number) =>
+                    onToggleTimestamps(andIdx, orIdx)
+                  }
+                  onToggleSecondaryIdExclude={(orIdx: number) =>
+                    onToggleSecondaryIdExclude(andIdx, orIdx)
+                  }
                 />
-              </SxWithTooltip>
-            </PaddedTop>
+                <QueryGroupConnector key={`${andIdx}.and`}>
+                  {t("common.and")}
+                </QueryGroupConnector>
+              </>
+            ))}
+            <QueryAndDropzone
+              onLoadQuery={onLoadQuery}
+              onDropAndNode={onDropAndNode}
+              onDropConceptListFile={onDropConceptListFile}
+            />
           </Groups>
-          <QueryFooter />
+          <SecondaryIdSelector />
         </>
       )}
     </Container>
