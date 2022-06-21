@@ -13,7 +13,7 @@ import lombok.ToString;
 
 @CPSType(id="REMOVE_CONCEPT", base=NamespacedMessage.class)
 @RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter @ToString
-public class RemoveConcept extends WorkerMessage.Slow {
+public class RemoveConcept extends WorkerMessage {
 
 	@NsIdRef
 	private final Concept<?> concept;

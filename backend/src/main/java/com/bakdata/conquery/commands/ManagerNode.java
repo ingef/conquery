@@ -314,7 +314,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext>
 					job =
 					new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
-							jobManager,
 							new NetworkSession(session),
 							datasetRegistry, config.getCluster().getBackpressure()
 					));

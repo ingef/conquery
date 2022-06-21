@@ -99,7 +99,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		concept = new TreeConcept();
 		concept.setLabel("concept");
-		concept.setValidator(support.getValidator());
 
 		concept.setDataset(support.getDataset());
 

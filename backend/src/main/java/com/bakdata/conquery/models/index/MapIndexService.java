@@ -101,7 +101,6 @@ public class MapIndexService implements Injectable {
 				throw ioException;
 			}
 
-
 			log.info("Finished parsing mapping {} with {} entries", key, int2ext.size());
 			return int2ext;
 		}
