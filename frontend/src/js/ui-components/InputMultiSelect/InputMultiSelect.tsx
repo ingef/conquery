@@ -101,6 +101,8 @@ const InputMultiSelect = ({
   const [inputValue, setInputValue] = useState("");
   const { t } = useTranslation();
 
+  const [syncingState, setSyncingState] = useState(false);
+
   const {
     getSelectedItemProps,
     getDropdownProps,
@@ -114,6 +116,7 @@ const InputMultiSelect = ({
     initialSelectedItems: defaultValue || [],
     onSelectedItemsChange: (changes) => {
       if (changes.selectedItems) {
+        setSyncingState(true);
         onChange(changes.selectedItems);
       }
     },
@@ -238,9 +241,11 @@ const InputMultiSelect = ({
   const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
 
   useSyncWithValueFromAbove({
-    inputValueFromAbove: value,
+    value,
     selectedItems,
     setSelectedItems,
+    syncingState,
+    setSyncingState,
   });
 
   const clearStaleSearch = () => {
@@ -272,19 +277,15 @@ const InputMultiSelect = ({
       >
         <ItemsInputContainer>
           {selectedItems.map((option, index) => {
-            const selectedItemProps = getSelectedItemProps({
-              selectedItem: option,
-              index,
-            });
-
             return (
               <SelectedItem
                 key={`${option.value}${index}`}
+                index={index}
                 option={option}
                 active={index === activeIndex}
                 disabled={disabled}
-                {...selectedItemProps}
-                onRemoveClick={() => removeSelectedItem(option)}
+                getSelectedItemProps={getSelectedItemProps}
+                removeSelectedItem={removeSelectedItem}
               />
             );
           })}

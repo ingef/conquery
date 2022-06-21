@@ -42,7 +42,7 @@ interface PropsT {
   onChange: (value: SelectOptionT[]) => void;
 }
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = 25;
 
 const getPageToLoad = (
   prevPageLoaded: number | null,
