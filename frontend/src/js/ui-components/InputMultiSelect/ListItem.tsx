@@ -1,6 +1,6 @@
-import { memo, useMemo } from "react";
+import { memo } from "react";
 
-import { SelectOptionT } from "../../api/types";
+import type { SelectOptionT } from "../../api/types";
 import { SxSelectListOption } from "../InputSelect/InputSelectComponents";
 
 interface Props {
@@ -11,14 +11,10 @@ interface Props {
 }
 
 const ListItem = ({ item, index, highlightedIndex, getItemProps }: Props) => {
-  const { ref: itemPropsRef, ...itemProps } = useMemo(
-    () =>
-      getItemProps({
-        index,
-        item: item,
-      }),
-    [getItemProps, index, item],
-  );
+  const { ref: itemPropsRef, ...itemProps } = getItemProps({
+    index,
+    item: item,
+  });
 
   return (
     <SxSelectListOption
