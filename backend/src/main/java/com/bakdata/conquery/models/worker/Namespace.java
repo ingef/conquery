@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.worker;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.index.MapIndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -190,7 +192,7 @@ public class Namespace implements Closeable {
 			workerBuckets = createWorkerBucketsMap();
 		}
 
-		return workerBuckets;
+		return new WorkerToBucketsMap(Collections.unmodifiableMap(workerBuckets.getMap()));
 	}
 
 	private synchronized WorkerToBucketsMap createWorkerBucketsMap() {
@@ -206,18 +208,26 @@ public class Namespace implements Closeable {
 	public synchronized void addBucketsToWorker(@NonNull WorkerId id, @NonNull Set<BucketId> bucketIds) {
 		// Ensure that add and remove are not executed at the same time.
 		// We don't make assumptions about the underlying implementation regarding thread safety
-		synchronized (this) {
-			WorkerToBucketsMap map = getWorkerBucketsMap();
-			map.addBucketForWorker(id, bucketIds);
-			storage.setWorkerToBucketsMap(map);
-		}
+		WorkerToBucketsMap map = getWorkerBucketsMap();
+		map.addBucketForWorker(id, bucketIds);
+		storage.setWorkerToBucketsMap(map);
+
+		sendUpdatedWorkerInformation();
 	}
 
 	public synchronized void removeBucketAssignmentsForImportFormWorkers(@NonNull Import imp) {
-		synchronized (this) {
-			WorkerToBucketsMap map = getWorkerBucketsMap();
-			map.removeBucketsOfImport(imp.getId());
-			storage.setWorkerToBucketsMap(map);
+		WorkerToBucketsMap map = getWorkerBucketsMap();
+		map.removeBucketsOfImport(imp.getId());
+		storage.setWorkerToBucketsMap(map);
+
+		sendUpdatedWorkerInformation();
+	}
+
+
+	private synchronized void sendUpdatedWorkerInformation() {
+		// While we hold the lock on the namespace distribute the new, consistent state among the workers
+		for (WorkerInformation w : getWorkers()) {
+			w.send(new UpdateWorkerBucket(w));
 		}
 	}
 

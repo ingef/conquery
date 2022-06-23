@@ -450,11 +450,6 @@ public class ImportJob extends Job {
 
 				namespace.addResponsibility(bucket);
 			}
-
-			// While we hold the lock on the namespace distribute the new, consistent state among the workers
-			for (WorkerInformation w : namespace.getWorkers()) {
-				w.send(new UpdateWorkerBucket(w));
-			}
 		}
 	}
 
