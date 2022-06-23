@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.index.MapIndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -183,16 +184,12 @@ public class Namespace implements Closeable {
 	}
 
 	public Set<BucketId> getBucketsForWorker(WorkerId workerId) {
-		return getWorkerBucketsMap().getBucketsForWorker(workerId);
-	}
 
-	private WorkerToBucketsMap getWorkerBucketsMap() {
-		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
+		final WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
 		if (workerBuckets == null) {
-			workerBuckets = createWorkerBucketsMap();
+			return Collections.emptySet();
 		}
-
-		return new WorkerToBucketsMap(Collections.unmodifiableMap(workerBuckets.getMap()));
+		return workerBuckets.getBucketsForWorker(workerId);
 	}
 
 	private synchronized WorkerToBucketsMap createWorkerBucketsMap() {
@@ -205,20 +202,34 @@ public class Namespace implements Closeable {
 		return storage.getWorkerBuckets();
 	}
 
+	/**
+	 * Updates the Worker-to-Buckets map, persist it and distributes the update to the shards.
+	 *
+	 * @see Namespace#removeBucketAssignmentsForImportFormWorkers(Import)
+	 */
 	public synchronized void addBucketsToWorker(@NonNull WorkerId id, @NonNull Set<BucketId> bucketIds) {
 		// Ensure that add and remove are not executed at the same time.
 		// We don't make assumptions about the underlying implementation regarding thread safety
-		WorkerToBucketsMap map = getWorkerBucketsMap();
-		map.addBucketForWorker(id, bucketIds);
-		storage.setWorkerToBucketsMap(map);
+		WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
+		if (workerBuckets == null) {
+			workerBuckets = createWorkerBucketsMap();
+		}
+		workerBuckets.addBucketForWorker(id, bucketIds);
+
+		storage.setWorkerToBucketsMap(workerBuckets);
 
 		sendUpdatedWorkerInformation();
 	}
 
-	public synchronized void removeBucketAssignmentsForImportFormWorkers(@NonNull Import imp) {
-		WorkerToBucketsMap map = getWorkerBucketsMap();
-		map.removeBucketsOfImport(imp.getId());
-		storage.setWorkerToBucketsMap(map);
+	public synchronized void removeBucketAssignmentsForImportFormWorkers(@NonNull Import importId) {
+
+		final WorkerToBucketsMap workerBuckets = storage.getWorkerBuckets();
+		if (workerBuckets == null) {
+			return;
+		}
+		workerBuckets.removeBucketsOfImport(importId.getId());
+
+		storage.setWorkerToBucketsMap(workerBuckets);
 
 		sendUpdatedWorkerInformation();
 	}
