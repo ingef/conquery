@@ -3,12 +3,16 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,19 +28,26 @@ import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
+import com.bakdata.conquery.apiv1.query.TableExportQuery;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -69,7 +80,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Subject subject) {
+	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Subject subject, boolean system) {
 
 		log.info("Query posted on Dataset[{}] by User[{{}].", dataset.getId(), subject.getId());
 
@@ -113,7 +124,9 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final Optional<ManagedExecution<?>> execution = executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, subject.getUser()));
+			final Optional<ManagedExecution<?>>
+					execution =
+					executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, subject.getUser()));
 
 			if (execution.isPresent()) {
 				return execution.get();
@@ -121,7 +134,7 @@ public class QueryProcessor {
 		}
 
 		// Execute the query
-		return executionManager.runQuery(datasetRegistry, query, subject.getUser(), dataset, config);
+		return executionManager.runQuery(datasetRegistry, query, subject.getUser(), dataset, config, system);
 	}
 
 	/**
@@ -153,7 +166,9 @@ public class QueryProcessor {
 
 		// If the user is not the owner of the execution, we definitely create a new Execution, so the owner can cancel it
 		if (!user.isOwner(execution)) {
-			final ManagedExecution<?> newExecution = executionManager.createExecution(datasetRegistry,execution.getSubmitted(),user,execution.getDataset());
+			final ManagedExecution<?>
+					newExecution =
+					executionManager.createExecution(datasetRegistry, execution.getSubmitted(), user, execution.getDataset(), false);
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
 			storage.updateExecution(newExecution);
@@ -190,6 +205,7 @@ public class QueryProcessor {
 						 .filter(q -> q.getDataset().equals(datasetId))
 						 // to exclude subtypes from somewhere else
 						 .filter(QueryProcessor::canFrontendRender)
+						 .filter(Predicate.not(ManagedExecution::isSystem))
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
@@ -198,7 +214,7 @@ public class QueryProcessor {
 									 subject
 							 );
 							 if (mq.isReadyToDownload(datasetAbilities)) {
-								 setDownloadUrls(status, config.getResultProviders(), mq, uriBuilder, allProviders);
+								 status.setResultUrls(getDownloadUrls(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
 							 return status;
 						 });
@@ -209,23 +225,18 @@ public class QueryProcessor {
 	 * Sets the result urls for the given result renderer. Result urls are only rendered for providers that match the
 	 * result type of the execution.
 	 *
-	 * @param status       The status that is edited.
 	 * @param renderer     The renderer that are requested for a result url generation.
 	 * @param exec         The execution that is used for generating the url
 	 * @param uriBuilder   The Uribuilder with the base configuration to generate the urls
 	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
-	 * @param <S>          The type of the provided and returned status
 	 * @return The modified status
 	 */
-	public static <S extends ExecutionStatus> S setDownloadUrls(S status, List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public static List<URL> getDownloadUrls(List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 
-		List<URL> resultUrls = renderer.stream()
-									   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
-									   .flatMap(Collection::stream).collect(Collectors.toList());
+		return renderer.stream()
+					   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
+					   .flatMap(Collection::stream).collect(Collectors.toList());
 
-		status.setResultUrls(resultUrls);
-
-		return status;
 	}
 
 
@@ -233,6 +244,7 @@ public class QueryProcessor {
 	 * Test if the query is structured in a way the Frontend can render it.
 	 */
 	private static boolean canFrontendRender(ManagedExecution<?> q) {
+		//TODO FK: should this be used to fill into canExpand instead of hiding the Executions?
 		if (!(q instanceof ManagedQuery)) {
 			return false;
 		}
@@ -331,7 +343,7 @@ public class QueryProcessor {
 		final FullExecutionStatus status = query.buildStatusFull(storage, subject, datasetRegistry, config);
 
 		if (query.isReadyToDownload(datasetAbilities)) {
-			setDownloadUrls(status, config.getResultProviders(), query, url, allProviders);
+			status.setResultUrls(getDownloadUrls(config.getResultProviders(), query, url, allProviders));
 		}
 		return status;
 	}
@@ -360,7 +372,7 @@ public class QueryProcessor {
 		// We only create the Query, really no need to execute it as it's only useful for composition.
 		final ManagedQuery execution =
 				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
-											   .createExecution(datasetRegistry, query, subject.getUser(), dataset));
+											   .createExecution(datasetRegistry, query, subject.getUser(), dataset, false));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 
@@ -376,5 +388,52 @@ public class QueryProcessor {
 				statistic.getUnresolvedId(),
 				statistic.getUnreadableDate()
 		);
+	}
+
+	/**
+	 * Execute a {@link TableExportQuery} for a single Entity on some Connectors.
+	 *
+	 * @return
+	 * @implNote we don't do anything special here, this request could also be made manually. We however want to encapsulate this behaviour to shield the frontend from knowing too much about the query engine.
+	 */
+	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
+
+		final ConceptQuery entitySelectQuery =
+				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}})));
+
+		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
+		exportQuery.setTables(
+				sources.stream()
+					   .map(source -> {
+						   final CQConcept cqConcept = new CQConcept();
+						   cqConcept.setElements(List.of(source.getConcept()));
+						   final CQTable cqTable = new CQTable();
+						   cqTable.setConcept(cqConcept);
+						   cqTable.setConnector(source);
+						   cqConcept.setTables(List.of(cqTable));
+
+						   return cqConcept;
+					   })
+					   .collect(Collectors.toList())
+		);
+
+		final ManagedExecution<?> execution = postQuery(dataset, exportQuery, subject, true);
+
+
+		// collect id immediately so it does not get sucked into closure
+		final ManagedExecutionId id = execution.getId();
+
+		while (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+			log.trace("Still waiting for {}", id);
+		}
+
+		if (execution.getState() == ExecutionState.FAILED) {
+			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
+		}
+
+
+		// Use the provided format name to find the respective provider.
+		return getQueryFullStatus(execution, subject, uriBuilder, true);
+
 	}
 }

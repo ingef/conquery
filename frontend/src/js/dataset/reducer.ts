@@ -1,23 +1,20 @@
 import { getType } from "typesafe-actions";
 
-import type { DatasetIdT } from "../api/types";
+import type { DatasetT } from "../api/types";
 import type { Action } from "../app/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
 import { loadDatasets, selectDatasetInput, saveQuery } from "./actions";
-
-export type DatasetT = {
-  id: DatasetIdT;
-  label: string;
-  query?: StandardQueryStateT;
-};
 
 export type DatasetStateT = {
   pristine: boolean;
   loading: boolean;
   error: string | null;
   data: DatasetT[];
-  selectedDatasetId: DatasetIdT | null;
+  selectedDatasetId: DatasetT["id"] | null;
+  locallySavedQueries: {
+    [datasetId: DatasetT["id"]]: StandardQueryStateT;
+  };
 };
 
 const initialState: DatasetStateT = {
@@ -26,6 +23,7 @@ const initialState: DatasetStateT = {
   error: null,
   data: [],
   selectedDatasetId: null,
+  locallySavedQueries: {},
 };
 
 const saveQueryInDataset = (
@@ -33,7 +31,7 @@ const saveQueryInDataset = (
   action: {
     payload: {
       query: StandardQueryStateT;
-      previouslySelectedDatasetId: DatasetIdT;
+      previouslySelectedDatasetId: DatasetT["id"];
     };
   },
 ): DatasetStateT => {
@@ -41,25 +39,12 @@ const saveQueryInDataset = (
 
   if (!query || query.length === 0) return state;
 
-  const selectedDataset = state.data.find(
-    (db) => db.id === previouslySelectedDatasetId,
-  );
-
-  if (!selectedDataset) return state;
-
-  const selectedDatasetIdx = state.data.indexOf(selectedDataset);
-
-  // Save query next to the dataset - so it can be reloaded again
   return {
     ...state,
-    data: [
-      ...state.data.slice(0, selectedDatasetIdx),
-      {
-        ...state.data[selectedDatasetIdx],
-        query,
-      },
-      ...state.data.slice(selectedDatasetIdx + 1),
-    ],
+    locallySavedQueries: {
+      ...state.locallySavedQueries,
+      [previouslySelectedDatasetId]: query,
+    },
   };
 };
 

@@ -1,12 +1,12 @@
 import { memo, useMemo } from "react";
 
-import {
+import type {
   ConceptIdT,
   CurrencyConfigT,
-  DatasetIdT,
-  FilterIdT,
+  DatasetT,
+  FilterT,
   PostFilterSuggestionsResponseT,
-  TableIdT,
+  TableT,
 } from "../api/types";
 import { FilterWithValueType } from "../standard-query-editor/types";
 import InputRange, { ModeT } from "../ui-components/InputRange";
@@ -15,9 +15,9 @@ import InputSelect from "../ui-components/InputSelect/InputSelect";
 import FilterListMultiSelect from "./FilterListMultiSelect";
 
 export interface FiltersContextT {
-  datasetId: DatasetIdT;
+  datasetId: DatasetT["id"];
   treeId: ConceptIdT;
-  tableId: TableIdT;
+  tableId: TableT["id"];
 }
 
 export interface BaseTableFilterProps {
@@ -29,7 +29,7 @@ export interface BaseTableFilterProps {
   onSetFilterValue: (filterIdx: number, value: unknown) => void;
   onLoadFilterSuggestions: (
     tableIdx: number,
-    filterId: FilterIdT,
+    filterId: FilterT["id"],
     prefix: string,
     page: number,
     pageSize: number,
@@ -73,6 +73,7 @@ const TableFilter = ({
               onSetFilterValue(filterIdx, value?.value || null)
             }
             label={filter.label}
+            tooltip={filter.tooltip}
             options={filter.options}
             disabled={excludeTable}
           />
@@ -85,6 +86,7 @@ const TableFilter = ({
             value={filter.value || []}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
+            tooltip={filter.tooltip}
             options={filter.options}
             disabled={excludeTable}
             allowDropFile={!!filter.allowDropFile}
@@ -99,8 +101,10 @@ const TableFilter = ({
             defaultValue={filter.defaultValue}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
+            tooltip={filter.tooltip}
             options={filter.options}
             disabled={!!excludeTable}
+            creatable={!!filter.creatable}
             allowDropFile={!!filter.allowDropFile}
             total={filter.total}
             onLoad={(prefix, page, pageSize, config) =>
@@ -125,6 +129,7 @@ const TableFilter = ({
             limits={{ min: filter.min, max: filter.max }}
             unit={filter.unit}
             label={filter.label}
+            tooltip={filter.tooltip}
             mode={filter.mode || "range"}
             disabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
@@ -142,6 +147,7 @@ const TableFilter = ({
             limits={{ min: filter.min, max: filter.max }}
             unit={filter.unit}
             label={filter.label}
+            tooltip={filter.tooltip}
             mode={filter.mode || "range"}
             stepSize={filter.precision || 0.1}
             disabled={!!excludeTable}
@@ -160,6 +166,7 @@ const TableFilter = ({
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             unit={filter.unit}
             label={filter.label}
+            tooltip={filter.tooltip}
             mode={filter.mode || "range"}
             disabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}

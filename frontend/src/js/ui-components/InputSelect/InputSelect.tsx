@@ -35,12 +35,14 @@ interface Props {
   clearable?: boolean;
   smallMenu?: boolean;
   className?: string;
+  dataTestId?: string;
   value: SelectOptionT | null;
   optional?: boolean;
   onChange: (value: SelectOptionT | null) => void;
 }
 
 const InputSelect = ({
+  dataTestId,
   options,
   placeholder,
   label,
@@ -212,7 +214,10 @@ const InputSelect = ({
   );
 
   const Select = (
-    <SelectContainer className={exists(label) ? undefined : className}>
+    <SelectContainer
+      className={exists(label) ? undefined : className}
+      data-test-id={dataTestId}
+    >
       <Control
         {...comboboxProps}
         disabled={disabled}

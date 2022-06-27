@@ -11,8 +11,10 @@
     <artifactId>backend</artifactId>
 
     <properties>
-        <mock-server.version>5.11.1</mock-server.version>
-    </properties>
+		<mock-server.version>5.11.1</mock-server.version>
+		<apache-poi.version>5.2.2</apache-poi.version>
+		<apache-arrow.version>8.0.0</apache-arrow.version>
+	</properties>
 
     <build>
         <resources>
@@ -184,7 +186,7 @@
         <dependency>
             <groupId>org.apache.shiro</groupId>
             <artifactId>shiro-core</artifactId>
-            <version>1.8.0</version>
+			<version>1.9.0</version>
         </dependency>
         <dependency>
             <groupId>io.dropwizard</groupId>
@@ -255,22 +257,27 @@
         <dependency>
             <groupId>org.apache.arrow</groupId>
             <artifactId>arrow-vector</artifactId>
-            <version>6.0.1</version>
+			<version>${apache-arrow.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.arrow</groupId>
             <artifactId>arrow-memory-netty</artifactId>
-            <version>6.0.1</version>
+			<version>${apache-arrow.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi</artifactId>
-            <version>5.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>5.0.0</version>
-        </dependency>
-    </dependencies>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>${apache-poi.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>${apache-poi.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.auto.service</groupId>
+			<artifactId>auto-service</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+	</dependencies>
 </project>

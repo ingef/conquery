@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import type { DatasetIdT } from "../api/types";
+import type { DatasetT } from "../api/types";
 import ConceptTreeList from "../concept-trees/ConceptTreeList";
 import ConceptTreeSearchBox from "../concept-trees/ConceptTreeSearchBox";
 import { useAreTreesAvailable } from "../concept-trees/selectors";
@@ -20,7 +20,7 @@ const LeftPane = () => {
   const activeTab = useSelector<StateT, string>(
     (state) => state.panes.left.activeTab,
   );
-  const selectedDatasetId = useSelector<StateT, DatasetIdT | null>(
+  const selectedDatasetId = useSelector<StateT, DatasetT["id"] | null>(
     (state) => state.datasets.selectedDatasetId,
   );
   const areTreesAvailable = useAreTreesAvailable();

@@ -5,13 +5,13 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.InjectingCentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -41,23 +41,23 @@ public class PreprocessedReader implements AutoCloseable {
 	@Getter
 	private LastRead lastRead = LastRead.BEGIN;
 	private final JsonParser parser;
-	private final Map<IId<?>, Identifiable<?>> replacements = new HashMap<>();
+	private final Map<Id<?>, Identifiable<?>> replacements = new HashMap<>();
 
-	public PreprocessedReader(InputStream inputStream) throws IOException {
+	public PreprocessedReader(InputStream inputStream, ObjectMapper objectMapper) throws IOException {
 		final InjectingCentralRegistry injectingCentralRegistry = new InjectingCentralRegistry(replacements);
 		final SingletonNamespaceCollection namespaceCollection = new SingletonNamespaceCollection(injectingCentralRegistry);
 
-		parser = namespaceCollection.injectIntoNew(Jackson.BINARY_MAPPER.copy())
+		parser = namespaceCollection.injectIntoNew(objectMapper)
 				.enable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
 				.getFactory()
 				.createParser(inputStream);
 	}
 
-	public void addReplacement(IId<?> id, Identifiable<?> replacement) {
+	public void addReplacement(Id<?> id, Identifiable<?> replacement) {
 		this.replacements.put(id, replacement);
 	}
 
-	public <K extends IId<?>, V extends Identifiable<?>> void addAllReplacements(Map<K, V> replacements) {
+	public <K extends Id<?>, V extends Identifiable<?>> void addAllReplacements(Map<K, V> replacements) {
 		this.replacements.putAll(replacements);
 	}
 

@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { useDispatch, useSelector, useStore } from "react-redux";
 
 import { useGetForms } from "../api/api";
-import type { DatasetIdT, DatasetT } from "../api/types";
+import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { usePrevious } from "../common/helpers/usePrevious";
 import { useActiveLang } from "../localization/useActiveLang";
@@ -17,7 +17,7 @@ import type { DynamicFormValues } from "./form/Form";
 import { collectAllFormFields, getInitialValue } from "./helper";
 import { selectFormConfig } from "./stateSelectors";
 
-const useLoadForms = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
+const useLoadForms = ({ datasetId }: { datasetId: DatasetT["id"] | null }) => {
   const store = useStore();
   const getForms = useGetForms();
   const dispatch = useDispatch();
@@ -94,7 +94,9 @@ const useInitializeForm = () => {
   }, [methods, defaultValues]);
 
   const previousConfig = usePrevious(config);
-  useEffect(
+  // Layout effect to re-initialize the new form before all other children effects
+  // that load values into the fields, for example.
+  useLayoutEffect(
     function resetOnFormChange() {
       if (previousConfig?.type !== config?.type) {
         onReset();
@@ -107,7 +109,7 @@ const useInitializeForm = () => {
 };
 
 const FormsTab = () => {
-  const datasetId = useSelector<StateT, DatasetIdT | null>(
+  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
     (state) => state.datasets.selectedDatasetId,
   );
   const previousDatasetId = usePrevious(datasetId);

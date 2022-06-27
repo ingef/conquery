@@ -1,7 +1,8 @@
 package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultTestUtil.*;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.*;
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.generateFields;
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,19 +19,19 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.FieldVector;
@@ -83,8 +84,6 @@ public class ArrowResultGenerationTest {
                         new Field("BOOLEAN", FieldType.nullable(ArrowType.Bool.INSTANCE), null),
                         new Field("INTEGER", FieldType.nullable(new ArrowType.Int(32, true)), null),
                         new Field("NUMERIC", FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null),
-                        new Field("CATEGORICAL", FieldType.nullable(new ArrowType.Utf8()), null),
-                        new Field("STRING_LOCALIZED", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("DATE", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
                         new Field("DATE_RANGE",
                                 FieldType.nullable(ArrowType.Struct.INSTANCE),
@@ -221,9 +220,6 @@ public class ArrowResultGenerationTest {
             }
             sb.append("}");
             return sb.toString();
-        }
-        if (type instanceof ResultType.StringLocalizedT) {
-            return type.printNullable(settings, obj);
         }
         if(obj instanceof Collection) {
             Collection<?> col = (Collection<?>) obj;

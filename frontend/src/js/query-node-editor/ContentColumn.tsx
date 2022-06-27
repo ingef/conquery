@@ -3,9 +3,9 @@ import { FC, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
-import {
+import type {
   CurrencyConfigT,
-  DatasetIdT,
+  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
@@ -57,7 +57,7 @@ const ContentCellGroup = styled(ContentCell)`
 
 interface PropsT {
   node: StandardQueryNodeT;
-  datasetId: DatasetIdT;
+  datasetId: DatasetT["id"];
   currencyConfig: CurrencyConfigT;
   selectedTableIdx: number | null;
   blocklistedSelects?: SelectorResultType[];

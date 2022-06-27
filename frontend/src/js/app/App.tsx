@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
 
+import { useIsCacheEnabled } from "../common/feature-flags/useIsCacheEnabled";
 import { clearIndexedDBCache } from "../common/helpers/indexedDBCache";
-import { useIsCacheEnabled } from "../common/useIsCacheEnabled";
 import Header from "../header/Header";
 import SnackMessage from "../snack-message/SnackMessage";
 import { useStartup } from "../startup/useStartup";

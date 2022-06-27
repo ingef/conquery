@@ -72,19 +72,20 @@
           ],
           "filters": [
             {
-              "id": "studio",
-              "label": "Production Studio",
-              "type": "MULTI_SELECT",
-              "description": "The studio producing the movie",
-              "options": [
-                {
-                  "value": "universal",
-                  "label": "Universal Studios"
-                },
-                {
-                  "value": "paramount",
-                  "label": "Paramount Pictures"
-                },
+                "id": "studio",
+                "label": "Production Studio",
+                "type": "MULTI_SELECT",
+                "tooltip": "Test tooltip for the production studio that includes a nice<br />line break.",
+                "description": "The studio producing the movie",
+                "options": [
+                    {
+                        "value": "universal",
+                        "label": "Universal Studios"
+                    },
+                    {
+                        "value": "paramount",
+                        "label": "Paramount Pictures"
+                    },
                 {
                   "value": "warner_bros",
                   "label": "Warner Bros."
@@ -103,52 +104,56 @@
                 }
               ]
             },
-            {
-              "id": "production_country",
-              "label": "Production Country",
-              "type": "BIG_MULTI_SELECT",
-              "allowDropFile": true,
-              "options": [
-                {
-                  "value": "GER",
-                  "label": "Germany"
-                },
-                {
-                  "value": "USA",
-                  "label": "United States (USA)"
+              {
+                  "id": "production_country",
+                  "label": "Production Country",
+                  "tooltip": "Test tooltip for the production country",
+                  "type": "BIG_MULTI_SELECT",
+                  "allowDropFile": true,
+                  "options": [
+                      {
+                          "value": "GER",
+                          "label": "Germany"
+                      },
+                      {
+                          "value": "USA",
+                          "label": "United States (USA)"
                 }
               ]
             },
-            {
-              "id": "words",
-              "label": "Words",
-              "type": "BIG_MULTI_SELECT",
-              "allowDropFile": true,
-              "options": [
-                {
-                  "value": "GER",
-                  "label": "Germany"
-                },
-                {
-                  "value": "USA",
-                  "label": "United States (USA)"
-                }
+              {
+                  "id": "words",
+                  "label": "Words",
+                  "type": "BIG_MULTI_SELECT",
+                  "tooltip": "A very long multi select tooltip to really check out how long-line tooltips work in here",
+                  "allowDropFile": true,
+                  "options": [
+                      {
+                          "value": "GER",
+                          "label": "Germany"
+                      },
+                      {
+                          "value": "USA",
+                          "label": "United States (USA)"
+                      }
               ]
             },
-            {
-              "id": "budget",
-              "label": "Budget",
-              "type": "MONEY_RANGE",
-              "unit": "EUR",
-              "description": "The movie's total budget",
-              "min": 1
-            }
+              {
+                  "id": "budget",
+                  "label": "Budget",
+                  "tooltip": "A money range tooltip, let's see how that works.",
+                  "type": "MONEY_RANGE",
+                  "unit": "EUR",
+                  "description": "The movie's total budget",
+                  "min": 1
+              }
           ]
         },
         {
           "connectorId": "tv_series",
           "id": "tv_series",
           "label": "TV Series",
+          "selects": [],
           "dateColumn": {
             "id": "385623",
             "options": [
@@ -244,16 +249,17 @@
               "type": "BIG_MULTI_SELECT",
               "options": []
             },
-            {
-              "id": "series_count",
-              "label": "Number of series",
-              "type": "INTEGER_RANGE",
-              "distinct": true,
-              "unit": "#",
-              "description": "The total number of series",
-              "pattern": "^(?!-)\\d*$",
-              "min": 1
-            }
+              {
+                  "id": "series_count",
+                  "label": "Number of series",
+                  "type": "INTEGER_RANGE",
+                  "tooltip": "An integer range tooltip, let's see how that works.",
+                  "distinct": true,
+                  "unit": "#",
+                  "description": "The total number of series",
+                  "pattern": "^(?!-)\\d*$",
+                  "min": 1
+              }
           ]
         }
       ]
@@ -277,6 +283,7 @@
             ]
           },
           "supportedSecondaryIds": ["fun_fall_id", "fun2_fall_id"],
+          "selects": [],
           "filters": [
             {
               "id": "award_type",
@@ -310,7 +317,7 @@
         "australia"
       ],
       "detailsAvailable": true,
-      "tables": [{}]
+      "tables": []
     }
   }
 }

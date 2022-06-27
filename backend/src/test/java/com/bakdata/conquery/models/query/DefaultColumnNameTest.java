@@ -31,8 +31,8 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.SneakyThrows;
@@ -224,8 +224,6 @@ public class DefaultColumnNameTest {
 			setLabel("TestConceptLabel");
 			setDataset(DATASET);
 			setSelects(List.of(new TestUniversalSelect(this)));
-			validator = VALIDATOR;
-
 		}
 
 		public Select extractSelect(CQConcept cq) {

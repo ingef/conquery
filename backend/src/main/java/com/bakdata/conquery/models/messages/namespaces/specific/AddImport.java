@@ -6,15 +6,15 @@ import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="ADD_IMPORT", base=NamespacedMessage.class)
-@Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @Slf4j
-public class AddImport extends WorkerMessage.Slow {
+@Getter
+public class AddImport extends WorkerMessage {
 
 	private final Import imp;
 
