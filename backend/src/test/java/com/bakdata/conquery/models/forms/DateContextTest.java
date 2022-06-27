@@ -26,7 +26,7 @@ public class DateContextTest {
 		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(ExportForm.ResolutionAndAlignment.of(COMPLETE, NO_ALIGN)));
 
 		assertThat(contexts).containsExactly(
-			new DateContext(mask, FeatureGroup.OUTCOME, null, null, COMPLETE)
+			new DateContext(mask, FeatureGroup.SINGLE_GROUP, null, null, COMPLETE)
 		);
 	}
 
@@ -43,7 +43,7 @@ public class DateContextTest {
 			CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)),
 			CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 4, 21))
 		);
-		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.OUTCOME);
+		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
 	
 	@Test
@@ -58,7 +58,7 @@ public class DateContextTest {
 			CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)),
 			CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 4, 21))
 		);
-		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.OUTCOME);
+		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
 
 	@Test
@@ -84,7 +84,7 @@ public class DateContextTest {
 			CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 3, 31)),
 			CDateRange.of(LocalDate.of(2003, 4, 1), LocalDate.of(2003, 4, 21))
 		);
-		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.OUTCOME);
+		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
 	
 	@Test
@@ -103,7 +103,7 @@ public class DateContextTest {
 			CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 3, 31)),
 			CDateRange.of(LocalDate.of(2003, 4, 1), LocalDate.of(2003, 4, 21))
 		);
-		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.OUTCOME);
+		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
 
 	@Test

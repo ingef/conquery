@@ -25,19 +25,6 @@
                 ]
               }
             ],
-            "outcomes": [
-              {
-                "ids": [
-                  "alter"
-                ],
-                "type": "CONCEPT",
-                "tables": [
-                  {
-                    "id": "alter.alter"
-                  }
-                ]
-              }
-            ],
             "timeCountAfter" : 4,
             "timeCountBefore" : 4,
             "indexPlacement" : "BEFORE"

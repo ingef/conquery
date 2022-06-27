@@ -79,7 +79,7 @@ public class DateContext {
 			int index = 0;
 			for (CDateRange quarterInMask : divider.apply(dateRangeMask)) {
 				index++;
-				DateContext dc = new DateContext(quarterInMask, FeatureGroup.OUTCOME,
+				DateContext dc = new DateContext(quarterInMask, FeatureGroup.SINGLE_GROUP,
 					// For now there is no index for complete
 					mode.getResolution().equals(Resolution.COMPLETE) ? null : index, null, mode.getResolution());
 				dcList.add(dc);
@@ -210,6 +210,8 @@ public class DateContext {
 	 * @param featureTime the time units to be included.
 	 * @param timeUnit  The time unit.
 	 * @return The feature range.
+	 *
+	 * TODO Replace this and the following function by a function with an interface like this: private static CDateRange generateRelativeRange(int event, boolean indexIncluded, int relativeAmount, CalendarUnit timeUnit)
 	 */
 	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, CalendarUnit timeUnit) {
 		if(featureTime <= 0){

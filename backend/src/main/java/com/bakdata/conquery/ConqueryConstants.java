@@ -4,8 +4,11 @@ import java.util.Arrays;
 import java.util.Set;
 
 import c10n.C10N;
+import com.bakdata.conquery.apiv1.forms.FeatureGroup;
+import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.internationalization.ResultHeadersC10n;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
@@ -40,20 +43,13 @@ public class ConqueryConstants {
 	public static final ResultInfo EVENT_DATE_INFO =
 			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).eventDate(), ResultType.DateT.INSTANCE, Set.of());
 
-	public static final ResultInfo FEATURE_DATE_RANGE_INFO =
-			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).featureDateRange(), ResultType.DateRangeT.INSTANCE, Set.of());
 	public static final ResultInfo
-			OUTCOME_DATE_RANGE_INFO =
-			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).outcomeDateRange(), ResultType.DateRangeT.INSTANCE, Set.of());
+			OBSERVATION_SCOPE_INFO =
+			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).observationScope(), new ResultType.StringT(FeatureGroup::localizeValue), Set.of());
 
 	public static final String PRIMARY_DICTIONARY = "PRIMARY_DICTIONARY";
 
 	public static class AuthenticationUtil {
 		public static final String REALM_NAME = "CONQUERY";
 	}
-	
-	public static DictionaryId getPrimaryDictionary(Dataset dataset) {
-		return DictionaryId.Parser.INSTANCE.parse(Arrays.asList(dataset.getName(), PRIMARY_DICTIONARY));
-	}
-
 }
