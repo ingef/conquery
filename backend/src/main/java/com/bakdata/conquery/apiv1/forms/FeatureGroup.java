@@ -6,6 +6,8 @@ import c10n.C10N;
 import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.internationalization.ResultHeadersC10n;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -36,12 +38,17 @@ public enum FeatureGroup implements Localized {
 		}
 	};
 
-	@CPSType(id = "OBSERVATION_SCOPE", base = Localized.Provider.class)
-	public static class LocalizationProvider implements Localized.Provider {
-
-		@Override
-		public String localize(Object o, Locale locale) {
-			return FeatureGroup.valueOf((String) o).toString(locale);
+	public static String localizeValue(Object value, PrintSettings cfg) {
+		if (value instanceof Resolution) {
+			return ((Resolution) value).toString(cfg.getLocale());
+		}
+		try {
+			// If the object was parsed as a simple string, try to convert it to a
+			// FeatureGroup to get Internationalization
+			return FeatureGroup.valueOf((String) value).toString(cfg.getLocale());
+		}
+		catch (Exception e) {
+			throw new IllegalArgumentException(value + " is not a valid resolution.", e);
 		}
 	}
 }
