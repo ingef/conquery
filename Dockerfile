@@ -7,7 +7,7 @@ WORKDIR /app
 RUN ./scripts/build_backend_version.sh
 
 
-FROM eclipse-temurin:11.0.15_10-jre-alpine AS runner
+FROM openjdk:11.0.12-buster AS runner
 
 WORKDIR /app
 COPY --from=builder /app/executable/target/executable*jar ./conquery.jar
