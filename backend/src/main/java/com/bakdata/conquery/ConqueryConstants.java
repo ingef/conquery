@@ -1,16 +1,11 @@
 package com.bakdata.conquery;
 
-import java.util.Arrays;
 import java.util.Set;
 
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
-import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.internationalization.ResultHeadersC10n;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.util.Resolution;
-import com.bakdata.conquery.models.forms.util.Resolution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
@@ -32,7 +27,6 @@ public class ConqueryConstants {
 			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).source(), ResultType.StringT.INSTANCE, Set.of(new SemanticType.SourcesT(), new SemanticType.CategoricalT()));
 
 	// Form related constants
-	public static final String CONTEXT_INDEX = "index";
 	public static final String SINGLE_RESULT_TABLE_NAME = "results";
 	public static final ResultInfo CONTEXT_INDEX_INFO =
 			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).index(), ResultType.IntegerT.INSTANCE, Set.of());
@@ -48,8 +42,4 @@ public class ConqueryConstants {
 			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).observationScope(), new ResultType.StringT(FeatureGroup::localizeValue), Set.of());
 
 	public static final String PRIMARY_DICTIONARY = "PRIMARY_DICTIONARY";
-
-	public static class AuthenticationUtil {
-		public static final String REALM_NAME = "CONQUERY";
-	}
 }

@@ -8,8 +8,6 @@ import java.util.StringJoiner;
 import java.util.function.BiFunction;
 
 import c10n.C10N;
-import com.bakdata.conquery.apiv1.forms.FeatureGroup;
-import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -23,7 +21,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
@@ -206,25 +203,8 @@ public abstract class ResultType {
 			this.valueMapper = valueMapper;
 		}
 
-		/**
-	 * Result type for columns that allow mapping localized form.
-	 * For this to work. The objects in a column of this type should implement the
-	 * {@link Localized} interface. This ResultType must then have a {@link Localized.Provider},
-	 * that understands the raw deserialized form of the objects to localize. This is because
-	 * we have a rather loose coupling here, as all results are just deserialized in to an Object-Array.
-	 */
-	@CPSType(id = "STRING_LOCALIZED", base = ResultType.class)
-	@RequiredArgsConstructor(onConstructor = @__({@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)}))
-	public static class StringLocalizedT extends PrimitiveResultType {
-		private final Localized.Provider localizationProvider;
 
 		@Override
-		public String print(PrintSettings cfg, Object f) {
-			return localizationProvider.localize(f, cfg.getLocale());
-		}
-	}
-
-	@Override
 		protected String print(PrintSettings cfg, @NonNull Object f) {
 			if (valueMapper == null) {
 				return super.print(cfg, f);
