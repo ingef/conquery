@@ -3,9 +3,7 @@ package com.bakdata.conquery.apiv1.forms;
 import java.util.Locale;
 
 import c10n.C10N;
-import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.internationalization.ResultHeadersC10n;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.PrintSettings;
 import lombok.Getter;
@@ -18,7 +16,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Getter
 @RequiredArgsConstructor
-public enum FeatureGroup implements Localized {
+public enum FeatureGroup {
 	FEATURE() {
 		@Override
 		public String toString(Locale locale) {
@@ -37,6 +35,8 @@ public enum FeatureGroup implements Localized {
 			return "";
 		}
 	};
+
+	public abstract String toString(Locale locale);
 
 	public static String localizeValue(Object value, PrintSettings cfg) {
 		if (value instanceof Resolution) {
