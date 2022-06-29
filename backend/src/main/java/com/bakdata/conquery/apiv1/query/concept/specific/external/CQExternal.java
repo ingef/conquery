@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,6 +35,7 @@ import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Functions;
 import com.google.common.collect.Streams;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -101,22 +103,6 @@ public class CQExternal extends CQElement {
 		this.onlySingles = onlySingles;
 	}
 
-	@JsonIgnore
-	@ValidationMethod(message = "Headers are not unique")
-	@SuppressWarnings("unused")
-	public boolean isHeadersUnique() {
-		try {
-			// Try to create a Set. Fails with IllegalArgumentException if duplicates exists.
-			// Ignore return value.
-			Set.of(values[0]);
-			return true;
-		}
-		catch (IllegalArgumentException e) {
-			log.warn("Headers are not unique.", e);
-		}
-		return false;
-	}
-
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		if (valuesResolved == null) {
@@ -132,24 +118,13 @@ public class CQExternal extends CQElement {
 											 .toArray(String[]::new);
 
 		if (!onlySingles) {
-
-			final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(extraHeaders.length);
-			for (String extraHeader : extraHeaders) {
-				// Just allocating, the result type is irrelevant here
-				extraAggregators.put(extraHeader, new ConstantValueAggregator<>(null, null));
-			}
-			extraAggregators.values().forEach(plan::registerAggregator);
-
-			return new ExternalNode<>(
-					context.getStorage().getDataset().getAllIdsTable(),
-					valuesResolved,
-					extra,
-					extraHeaders,
-					extraAggregators
-			);
-
+			return createExternalNodeOnlySingle(context, plan, extraHeaders);
 		}
 
+		return createExternalNode(context, plan, extraHeaders);
+	}
+
+	private ExternalNode<String> createExternalNode(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
 		// Remove zero element Lists and substitute one element Lists by containing String
 		final Map<Integer, Map<String, String>> extraFlat = extra.entrySet().stream()
 																 .collect(Collectors.toMap(
@@ -172,7 +147,23 @@ public class CQExternal extends CQElement {
 		extraAggregators.values().forEach(plan::registerAggregator);
 
 		return new ExternalNode<>(context.getStorage().getDataset().getAllIdsTable(), valuesResolved, extraFlat, extraHeaders, extraAggregators);
+	}
 
+	private ExternalNode<List<String>> createExternalNodeOnlySingle(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
+		final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(extraHeaders.length);
+		for (String extraHeader : extraHeaders) {
+			// Just allocating, the result type is irrelevant here
+			extraAggregators.put(extraHeader, new ConstantValueAggregator<>(null, null));
+		}
+		extraAggregators.values().forEach(plan::registerAggregator);
+
+		return new ExternalNode<>(
+				context.getStorage().getDataset().getAllIdsTable(),
+				valuesResolved,
+				extra,
+				extraHeaders,
+				extraAggregators
+		);
 	}
 
 	/**
@@ -342,8 +333,7 @@ public class CQExternal extends CQElement {
 			final boolean alright = extraDataByEntity.values().stream()
 													 .map(Map::values)
 													 .flatMap(Collection::stream)
-													 .map(List::size)
-													 .allMatch(s -> s <= 1);
+													 .allMatch(l -> l.size() <= 1);
 			if (!alright) {
 				throw new ConqueryError.ExternalResolveOnePerRowError();
 			}
@@ -440,5 +430,26 @@ public class CQExternal extends CQElement {
 	public boolean isAllSameLength() {
 		final int expected = format.size();
 		return Arrays.stream(values).mapToInt(a -> a.length).allMatch(v -> expected == v);
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Headers are not unique")
+	public boolean isHeadersUnique() {
+		Set<String> uniqueNames = new HashSet<>();
+		Set<String> duplicates = new HashSet<>();
+
+		for (String header : values[0]) {
+			if (!uniqueNames.add(header)) {
+				duplicates.add(header);
+			}
+		}
+
+		if (duplicates.isEmpty()) {
+			return true;
+		}
+
+		log.error("Duplicate Headers {}", duplicates);
+
+		return false;
 	}
 }
