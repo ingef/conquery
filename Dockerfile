@@ -7,7 +7,7 @@ WORKDIR /app
 RUN ./scripts/build_backend_version.sh
 
 
-FROM openjdk:11.0.12-slim AS runner
+FROM openjdk:11.0.12-buster AS runner
 
 WORKDIR /app
 COPY --from=builder /app/executable/target/executable*jar ./conquery.jar

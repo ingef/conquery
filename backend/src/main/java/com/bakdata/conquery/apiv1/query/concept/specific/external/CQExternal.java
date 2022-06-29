@@ -22,7 +22,6 @@ import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -32,6 +31,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.Constant
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Streams;

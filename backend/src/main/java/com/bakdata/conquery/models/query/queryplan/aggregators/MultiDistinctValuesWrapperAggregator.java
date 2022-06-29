@@ -7,9 +7,9 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
 import lombok.ToString;
 import org.apache.commons.lang3.ArrayUtils;
