@@ -1,10 +1,16 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
+import java.util.Collections;
+import java.util.Set;
+
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
+import com.google.common.collect.ImmutableSet;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -19,6 +25,21 @@ public class SelectResultInfo extends ResultInfo {
 	@NonNull
 	private final CQConcept cqConcept;
 
+	@Getter(AccessLevel.PACKAGE)
+	private final Set<SemanticType> additionalSemantics;
+
+	public SelectResultInfo(Select select, CQConcept cqConcept) {
+		this(select, cqConcept, Collections.emptySet());
+	}
+
+	@Override
+	public Set<SemanticType> getSemantics() {
+		return ImmutableSet.<SemanticType>builder()
+						   .addAll(additionalSemantics)
+						   .add(new SemanticType.SelectResultT(select))
+						   .build();
+	}
+
 	@Override
 	public ResultType getType() {
 		return select.getResultType();
@@ -27,12 +48,12 @@ public class SelectResultInfo extends ResultInfo {
 	@Override
 	public ColumnDescriptor asColumnDescriptor(PrintSettings settings, UniqueNamer uniqueNamer) {
 		return ColumnDescriptor.builder()
-				.label(uniqueNamer.getUniqueName(this))
-				.defaultLabel(defaultColumnName(settings))
-				.userConceptLabel(userColumnName(settings))
-				.type(getType().typeInfo())
-				.selectId(select.getId())
-				.build();
+							   .label(uniqueNamer.getUniqueName(this))
+							   .defaultLabel(defaultColumnName(settings))
+							   .userConceptLabel(userColumnName(settings))
+							   .type(getType().typeInfo())
+							   .selectId(select.getId())
+							   .build();
 	}
 
 	@Override
@@ -77,7 +98,7 @@ public class SelectResultInfo extends ResultInfo {
 	}
 
 	@Override
-	public String toString(){
+	public String toString() {
 		return "SelectResultInfo[" + select.getName() + ", " + select.getResultType() + "]";
 	}
 }

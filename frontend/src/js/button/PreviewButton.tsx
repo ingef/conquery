@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import type { ColumnDescription } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { AuthTokenContext } from "../authorization/AuthTokenProvider";
+import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { openPreview, useLoadPreviewData } from "../preview/actions";
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -13,6 +13,7 @@ import IconButton from "./IconButton";
 
 const SxIconButton = styled(IconButton)`
   white-space: nowrap;
+  padding: 5px 6px;
 `;
 
 interface PropsT {
@@ -34,27 +35,20 @@ const PreviewButton: FC<PropsT> = ({
   );
 
   const loadPreviewData = useLoadPreviewData();
-  const previewUrl = useAuthorizedPreviewUrl(url);
+  const getAuthorizedUrl = useGetAuthorizedUrl();
 
   return (
     <WithTooltip text={t("preview.preview")} className={className}>
       <SxIconButton
         icon={isLoading ? "spinner" : "search"}
         onClick={async () => {
-          await loadPreviewData(previewUrl, columns);
+          await loadPreviewData(getAuthorizedUrl(url), columns);
           dispatch(openPreview());
         }}
         {...restProps}
       />
     </WithTooltip>
   );
-};
-const useAuthorizedPreviewUrl = (url: string) => {
-  const { authToken } = useContext(AuthTokenContext);
-
-  const encodedAuthToken = encodeURIComponent(authToken);
-
-  return `${url}?access_token=${encodedAuthToken}&charset=utf-8&pretty=false`;
 };
 
 export default PreviewButton;

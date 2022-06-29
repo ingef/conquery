@@ -5,6 +5,7 @@ import conceptTreesOpen, {
 } from "../concept-trees-open/reducer";
 import conceptTrees, { ConceptTreesStateT } from "../concept-trees/reducer";
 import datasets, { DatasetStateT } from "../dataset/reducer";
+import entityHistory, { EntityHistoryStateT } from "../entity-history/reducer";
 import type { Form } from "../external-forms/config-types";
 import {
   activeFormReducer,
@@ -83,6 +84,7 @@ export type StateT = {
       [formName: string]: Form;
     };
   };
+  entityHistory: EntityHistoryStateT;
 };
 
 const buildAppReducer = () => {
@@ -103,6 +105,7 @@ const buildAppReducer = () => {
     snackMessage,
     preview,
     user,
+    entityHistory,
     queryEditor: combineReducers({
       query: queryReducer,
       selectedSecondaryId: selectedSecondaryIdsReducer,

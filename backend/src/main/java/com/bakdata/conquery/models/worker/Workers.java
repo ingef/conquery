@@ -10,6 +10,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
@@ -62,7 +65,8 @@ public class Workers extends IdResolveContext {
 	}
 
 	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
-		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, failOnError, entityBucketSize);
+		final Worker worker =
+				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, Jackson.copyMapperAndInjectables(binaryMapper));
 
 		addWorker(worker);
 
@@ -70,7 +74,9 @@ public class Workers extends IdResolveContext {
 	}
 
 	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError) {
-		final Worker worker = Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize);
+		final Worker
+				worker =
+				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, binaryMapper);
 
 		addWorker(worker);
 

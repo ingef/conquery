@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -31,7 +32,8 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements NamespacedIdentifiable<FilterId> {
 
 	private String unit;
-	private String description;
+	@JsonAlias("description")
+	private String tooltip;
 	@JsonBackReference
 	private Connector connector;
 	private String pattern;
@@ -49,7 +51,7 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 		FEFilter f = FEFilter.builder()
 							 .id(getId())
 							 .label(getLabel())
-							 .description(getDescription())
+							 .tooltip(getTooltip())
 							 .unit(getUnit())
 							 .allowDropFile(getAllowDropFile())
 							 .pattern(getPattern())

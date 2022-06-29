@@ -7,7 +7,10 @@ import { useSelector, useDispatch } from "react-redux";
 
 import type { ColumnDescription, ColumnDescriptionKind } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { getDiffInDays, parseStdDate } from "../common/helpers/dateHelper";
+import {
+  getDiffInDays,
+  getFirstAndLastDateOfRange,
+} from "../common/helpers/dateHelper";
 
 import { Cell } from "./Cell";
 import DateCell from "./DateCell";
@@ -104,16 +107,6 @@ function detectColumnTypesByHeader(
   resultColumns: ColumnDescription[],
 ) {
   return line.map((cell) => detectColumnType(cell, resultColumns));
-}
-
-function getFirstAndLastDateOfRange(dateStr: string) {
-  const dateStrTrimmed = dateStr.slice(1, dateStr.length - 1);
-
-  const ranges = dateStrTrimmed.split(",");
-  const first = parseStdDate(ranges[0].split("/")[0]);
-  const last = parseStdDate(ranges[ranges.length - 1].split("/")[1]);
-
-  return { first, last };
 }
 
 function getMinMaxDates(

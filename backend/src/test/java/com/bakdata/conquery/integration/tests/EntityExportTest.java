@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -89,11 +89,12 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
 				.isEqualTo(Response.Status.Family.SUCCESSFUL);
 
-		final URL[] resultUrls = allEntityDataResponse.readEntity(URL[].class);
+		final FullExecutionStatus resultUrls = allEntityDataResponse.readEntity(FullExecutionStatus.class);
 
-		assertThat(resultUrls).isNotEmpty();
 
-		final Optional<URL> csvUrl = Arrays.stream(resultUrls).filter(url -> url.getFile().endsWith(".csv")).findFirst();
+		final Optional<URL> csvUrl = resultUrls.getResultUrls().stream()
+											   .filter(url -> url.getFile().endsWith(".csv"))
+											   .findFirst();
 
 		assertThat(csvUrl).isPresent();
 
@@ -108,7 +109,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 
 		assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
-				.isEqualTo(List.of("result,dates,test_table test_column,test_table2 test_column", "3,2013-11-10,A1,"));
+				.isEqualTo(List.of("result,dates,source,test_table test_column,test_table2 test_column", "3,2013-11-10,test_table,A1,"));
 
 
 	}

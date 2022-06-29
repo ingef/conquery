@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="REMOVE_TABLE", base=NamespacedMessage.class) @Slf4j
 @AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString(callSuper=true)
-public class RemoveTable extends WorkerMessage.Slow {
+public class RemoveTable extends WorkerMessage {
 
 	@NsIdRef
 	private Table table;

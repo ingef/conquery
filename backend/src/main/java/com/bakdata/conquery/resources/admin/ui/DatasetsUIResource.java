@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -66,16 +67,17 @@ public class DatasetsUIResource {
 				new DatasetInfos(
 						namespace.getDataset(),
 						namespace.getStorage().getSecondaryIds(),
+						namespace.getStorage().getInternToExternMappers(),
 						namespace.getStorage().getTables().stream()
-								.map(table -> new TableInfos(
-										table.getId(),
-										table.getName(),
-										table.getLabel(),
-										StringUtils.abbreviate(table.findImports(namespace.getStorage())
-												.map(Import::getName)
-												.collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
-										table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
-								))
+								 .map(table -> new TableInfos(
+										 table.getId(),
+										 table.getName(),
+										 table.getLabel(),
+										 StringUtils.abbreviate(table.findImports(namespace.getStorage())
+																	 .map(Import::getName)
+																	 .collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
+										 table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
+								 ))
 								.collect(Collectors.toList()),
 						namespace.getStorage().getAllConcepts(),
 						// total size of dictionaries
@@ -132,6 +134,7 @@ public class DatasetsUIResource {
 
 		private Dataset ds;
 		private Collection<SecondaryIdDescription> secondaryIds;
+		private Collection<InternToExternMapper> internToExternMappers;
 		private Collection<TableInfos> tables;
 		private Collection<? extends Concept<?>> concepts;
 		private long dictionariesSize;

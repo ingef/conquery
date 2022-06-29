@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -18,24 +18,27 @@ const ProjectItemsTypeFilter: FC<Props> = ({ className }) => {
   const { t } = useTranslation();
   const OPTIONS: {
     value: ProjectItemsTypeFilterStateT;
-    label: ReactNode;
+    label: () => ReactNode;
     tooltip?: string;
-  }[] = [
-    {
-      value: "all",
-      label: t("projectItemsFilter.all"),
-    },
-    {
-      value: "queries",
-      label: <QuerySymbol />,
-      tooltip: t("projectItemsTypeFilter.queries"),
-    },
-    {
-      value: "configs",
-      label: <FormSymbol />,
-      tooltip: t("projectItemsTypeFilter.configs"),
-    },
-  ];
+  }[] = useMemo(
+    () => [
+      {
+        value: "all",
+        label: () => t("projectItemsFilter.all"),
+      },
+      {
+        value: "queries",
+        label: () => <QuerySymbol />,
+        tooltip: t("projectItemsTypeFilter.queries"),
+      },
+      {
+        value: "configs",
+        label: () => <FormSymbol />,
+        tooltip: t("projectItemsTypeFilter.configs"),
+      },
+    ],
+    [t],
+  );
 
   const selectedFilter = useSelector<StateT, string>(
     (state) => state.projectItemsTypeFilter,

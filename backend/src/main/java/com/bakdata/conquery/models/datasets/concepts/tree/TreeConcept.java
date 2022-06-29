@@ -7,9 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -22,20 +23,14 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.util.CalculatedValue;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.OptBoolean;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.TestOnly;
 
 /**
  * This is a single node or concept in a concept tree.
@@ -50,12 +45,10 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Getter
 	private final int[] prefix = new int[]{0};
 	@JsonIgnore
-	private List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
-	@JsonIgnore
-	@Getter
-	private IdMap<ConceptTreeChildId, ConceptTreeChild> allChildren = new IdMap<>();
+	private final List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
 	@Getter
 	@Setter
+	@Valid
 	private List<ConceptTreeChild> children = Collections.emptyList();
 	@JsonIgnore
 	@Getter
@@ -65,20 +58,14 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Getter
 	@Setter
 	@JsonManagedReference
+	@Valid
 	private List<UniversalSelect> selects = new ArrayList<>();
 	@JsonIgnore
 	@Getter
 	@Setter
 	private TreeChildPrefixIndex childIndex;
 	@JsonIgnore
-	private Map<Import, ConceptTreeCache> caches = new ConcurrentHashMap<>();
-
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@EqualsAndHashCode.Exclude
-	@JsonIgnore
-	@NotNull
-	@Setter(onMethod = @__(@TestOnly))
-	protected Validator validator;
+	private final Map<Import, ConceptTreeCache> caches = new ConcurrentHashMap<>();
 
 	@Override
 	public Concept<?> findConcept() {
@@ -101,6 +88,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 	@Override
 	public void initElements() throws ConfigurationException, JSONException {
+		super.initElements();
 		this.setLocalId(0);
 		localIdMap.add(this);
 
@@ -119,12 +107,9 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		for (int i = 0; i < openList.size(); i++) {
 			ConceptTreeChild ctc = openList.get(i);
 
-			errors.addAll(validator.validate(ctc));
-
 			try {
 				ctc.setLocalId(localIdMap.size());
 				localIdMap.add(ctc);
-				allChildren.add(ctc);
 				ctc.setDepth(ctc.getParent().getDepth() + 1);
 
 				ctc.init();
@@ -134,7 +119,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 				throw new RuntimeException("Error trying to consolidate the node " + ctc.getLabel() + " in " + this.getLabel(), e);
 			}
 
-			openList.addAll(((ConceptTreeNode) openList.get(i)).getChildren());
+			openList.addAll((openList.get(i)).getChildren());
 		}
 		ValidatorHelper.failOnError(log, errors);
 	}
@@ -195,9 +180,9 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		return best;
 	}
 
-	@Override
-	public ConceptTreeChild getChildById(ConceptTreeChildId conceptTreeChildId) {
-		return allChildren.getOrFail(conceptTreeChildId);
+	@JsonIgnore
+	public Stream<ConceptTreeChild> getAllChildren(){
+		return localIdMap.stream().filter(ConceptTreeChild.class::isInstance).map(ConceptTreeChild.class::cast);
 	}
 
 
@@ -207,11 +192,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 	public void removeImportCache(Import imp) {
 		caches.remove(imp);
-	}
-
-	@Override
-	public int countElements() {
-		return 1 + allChildren.size();
 	}
 
 	/**

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -90,11 +91,17 @@ public class CSVConfig {
 
 	/**
 	 * Creates a new CSV writer using the global settings from {@link ConqueryConfig} and an existing writer object to write through.
+	 *
 	 * @param writer The writer to write through.
 	 * @return The newly created writer.
 	 */
 	public CsvWriter createWriter(@NonNull Writer writer) {
 		return new CsvWriter(writer, createCsvWriterSettings());
+	}
+
+
+	public CsvWriter createWriter(@NonNull OutputStream out) {
+		return new CsvWriter(out, createCsvWriterSettings());
 	}
 
 }

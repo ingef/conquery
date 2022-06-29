@@ -29,8 +29,9 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQUnfilteredTable;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
@@ -397,7 +398,7 @@ public class QueryProcessor {
 	 * @return
 	 * @implNote we don't do anything special here, this request could also be made manually. We however want to encapsulate this behaviour to shield the frontend from knowing too much about the query engine.
 	 */
-	public List<URL> getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
+	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
 		final ConceptQuery entitySelectQuery =
 				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, false)));
@@ -405,7 +406,16 @@ public class QueryProcessor {
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
 		exportQuery.setTables(
 				sources.stream()
-					   .map(source -> new CQUnfilteredTable(source, null))
+					   .map(source -> {
+						   final CQConcept cqConcept = new CQConcept();
+						   cqConcept.setElements(List.of(source.getConcept()));
+						   final CQTable cqTable = new CQTable();
+						   cqTable.setConcept(cqConcept);
+						   cqTable.setConnector(source);
+						   cqConcept.setTables(List.of(cqTable));
+
+						   return cqConcept;
+					   })
 					   .collect(Collectors.toList())
 		);
 
@@ -425,7 +435,7 @@ public class QueryProcessor {
 
 
 		// Use the provided format name to find the respective provider.
-		return getDownloadUrls(config.getResultProviders(), execution, uriBuilder, true);
+		return getQueryFullStatus(execution, subject, uriBuilder, true);
 
 	}
 }

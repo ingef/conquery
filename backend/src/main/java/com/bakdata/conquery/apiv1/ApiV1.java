@@ -39,7 +39,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(manager.getDatasetRegistry());
 		environment.register(manager.getStorage());
 
-		environment.register(new ConceptsProcessor(manager.getDatasetRegistry()));
+		environment.register(new ConceptsProcessor(manager.getDatasetRegistry(), manager.getValidator()));
 		environment.register(new MeProcessor(manager.getStorage(), datasets));
 		environment.register(new QueryProcessor(datasets, manager.getStorage(), manager.getConfig()));
 		environment.register(new FormConfigProcessor(manager.getValidator(), manager.getStorage(), datasets));

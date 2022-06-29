@@ -44,12 +44,15 @@ export function useLoadPreviewData() {
   return async (
     url: string,
     columns: ColumnDescription[],
+    { noLoading }: { noLoading: boolean } = { noLoading: false },
   ): Promise<PreviewData | null> => {
     if (currentPreviewData && dataLoadedForResultUrl === url) {
       return currentPreviewData;
     }
 
-    dispatch(loadCSVForPreview.request());
+    if (!noLoading) {
+      dispatch(loadCSVForPreview.request());
+    }
 
     try {
       const result = await loadCSV(url);

@@ -1,11 +1,18 @@
-package com.bakdata.conquery.models.externalservice;
+package com.bakdata.conquery.models.types;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.StringJoiner;
+import java.util.function.BiFunction;
 
 import c10n.C10N;
 import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -15,12 +22,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.StringJoiner;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
@@ -84,7 +85,7 @@ public abstract class ResultType {
 		public String print(PrintSettings cfg, Object f) {
 			Preconditions.checkArgument(f instanceof Boolean, "Expected boolean value, but got %s", f.getClass().getName());
 
-			if(cfg.isPrettyPrint()) {
+			if (cfg.isPrettyPrint()) {
 				//TODO this might be incredibly slow, probably better to cache this in the instance but we need to not use Singletons for that
 				return (Boolean) f ? C10N.get(Results.class, cfg.getLocale()).True() : C10N.get(Results.class, cfg.getLocale()).False();
 			}
@@ -117,40 +118,14 @@ public abstract class ResultType {
 
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			if(cfg.isPrettyPrint()) {
+			if (cfg.isPrettyPrint()) {
 				return cfg.getDecimalFormat().format(f);
 			}
 			return f.toString();
 		}
 	}
 
-	@CPSType(id = "CATEGORICAL", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class CategoricalT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final CategoricalT INSTANCE = new CategoricalT();
-	}
 
-	@CPSType(id = "RESOLUTION", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class ResolutionT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final ResolutionT INSTANCE = new ResolutionT();
-
-		@Override
-		public String print(PrintSettings cfg, Object f) {
-			if (f instanceof Resolution) {
-				return ((Resolution) f).toString(cfg.getLocale());
-			}
-			try {
-				// If the object was parsed as a simple string, try to convert it to a
-				// DateContextMode to get Internationalization
-				return Resolution.valueOf(f.toString()).toString(cfg.getLocale());
-			} catch (Exception e) {
-				throw new IllegalArgumentException(f + " is not a valid resolution.", e);
-			}
-		}
-	}
 
 	@CPSType(id = "DATE", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -160,7 +135,7 @@ public abstract class ResultType {
 
 		@Override
 		public String print(PrintSettings cfg, @NonNull Object f) {
-			if(!(f instanceof Number)) {
+			if (!(f instanceof Number)) {
 				throw new IllegalStateException("Expected an Number but got an '" + f.getClass().getName() + "' with the value: " + f);
 			}
 			final Number number = (Number) f;
@@ -186,11 +161,11 @@ public abstract class ResultType {
 
 		@Override
 		public String print(PrintSettings cfg, @NonNull Object f) {
-			if(!(f instanceof List)) {
+			if (!(f instanceof List)) {
 				throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
 			}
 			List<?> list = (List<?>) f;
-			if(list.size() != 2) {
+			if (list.size() != 2) {
 				throw new IllegalStateException("Expected a list with 2 elements, one min, one max. The list was: " + list);
 			}
 			final DateTimeFormatter dateFormat = cfg.getDateFormatter();
@@ -202,7 +177,7 @@ public abstract class ResultType {
 			// Compute minString first because we need it either way
 			String minString = min == null || min == Integer.MIN_VALUE ? "-∞" : ResultType.DateT.print(min, dateFormat);
 
-			if (cfg.isPrettyPrint() && min != null && min.equals(max)){
+			if (cfg.isPrettyPrint() && min != null && min.equals(max)) {
 				// If the min and max are the same we print it like a singe date, not a range (only in pretty printing)
 				return minString;
 			}
@@ -217,14 +192,28 @@ public abstract class ResultType {
 	public static class StringT extends PrimitiveResultType {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final StringT INSTANCE = new StringT();
+
+		/**
+		 * Function that allows a select to transform the internal value to an external representation.
+		 * The returned value can be null.
+		 */
+		private BiFunction<Object, PrintSettings, String> valueMapper;
+
+		public StringT(BiFunction<Object, PrintSettings, String> valueMapper) {
+			this.valueMapper = valueMapper;
+		}
+
+
+		@Override
+		protected String print(PrintSettings cfg, @NonNull Object f) {
+			if (valueMapper == null) {
+				return super.print(cfg, f);
+			}
+			return super.print(cfg, valueMapper.apply(f, cfg));
+		}
 	}
 
-	@CPSType(id = "ID", base = ResultType.class)
-	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class IdT extends PrimitiveResultType {
-		@Getter(onMethod_ = @JsonCreator)
-		public static final IdT INSTANCE = new IdT();
-	}
+
 
 	@CPSType(id = "MONEY", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -256,14 +245,14 @@ public abstract class ResultType {
 		@Override
 		public String print(PrintSettings cfg, @NonNull Object f) {
 			// Jackson deserializes collections as lists instead of an array, if the type is not given
-			if(!(f instanceof List)) {
+			if (!(f instanceof List)) {
 				throw new IllegalStateException(String.format("Expected a List got %s (Type: %s, as string: %s)", f, f.getClass().getName(), f));
 			}
 			// Not sure if this escaping is enough
-			String listDelimEscape = cfg.getListElementEscaper() + cfg.getListFormat().getSeparator();
-			StringJoiner joiner = new StringJoiner(cfg.getListFormat().getSeparator(), cfg.getListFormat().getStart(),cfg.getListFormat().getEnd());
-			for(Object obj : (List<?>) f) {
-				joiner.add(elementType.print(cfg,obj).replace(cfg.getListFormat().getSeparator(), listDelimEscape));
+			final LocaleConfig.ListFormat listFormat = cfg.getListFormat();
+			StringJoiner joiner = listFormat.createListJoiner();
+			for (Object obj : (List<?>) f) {
+				joiner.add(listFormat.escapeListElement(elementType.print(cfg, obj)));
 			}
 			return joiner.toString();
 		}

@@ -78,7 +78,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		environment.register(ResultExcelResource.class);
 	}
 
-	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty) {
 		ConqueryMDC.setLocation(subject.getName());
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
@@ -102,7 +102,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		StreamingOutput out = output -> {
 			excelRenderer.renderToStream(
 					config.getFrontend().getQueryUpload().getIdResultInfos(),
-					(ManagedExecution<?> & SingleTableResult) exec,
+					exec,
 					output
 			);
 			log.trace("FINISHED downloading {}", exec.getId());

@@ -4,7 +4,9 @@ import { useTranslation } from "react-i18next";
 
 import type { ColumnDescription } from "../api/types";
 import DownloadButton from "../button/DownloadButton";
+import HistoryButton from "../button/HistoryButton";
 import PreviewButton from "../button/PreviewButton";
+import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
@@ -27,11 +29,15 @@ const LgText = styled(Text)`
 `;
 
 const SxDownloadButton = styled(DownloadButton)`
-  margin-left: 10px;
+  margin-left: 7px;
 `;
 
 const SxPreviewButton = styled(PreviewButton)`
-  margin-left: 10px;
+  margin-left: 7px;
+`;
+
+const SxHistoryButton = styled(HistoryButton)`
+  margin-left: 7px;
 `;
 
 const Bold = styled("span")`
@@ -39,6 +45,7 @@ const Bold = styled("span")`
 `;
 
 interface PropsT {
+  resultLabel: string;
   resultUrls: string[];
   resultCount?: number | null; // For forms, won't usually have a count
   resultColumns?: ColumnDescription[] | null; // For forms, won't usually have resultColumns
@@ -46,12 +53,14 @@ interface PropsT {
 }
 
 const QueryResults: FC<PropsT> = ({
+  resultLabel,
   resultUrls,
   resultCount,
   resultColumns,
   queryType,
 }) => {
   const { t } = useTranslation();
+  const isHistoryEnabled = useIsHistoryEnabled();
   const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
 
   return (
@@ -68,6 +77,13 @@ const QueryResults: FC<PropsT> = ({
             ? t("queryRunner.resultCountSecondaryIdQuery")
             : t("queryRunner.resultCount")}
         </LgText>
+      )}
+      {isHistoryEnabled && !!csvUrl && exists(resultColumns) && (
+        <SxHistoryButton
+          columns={resultColumns}
+          url={csvUrl}
+          label={resultLabel}
+        />
       )}
       {!!csvUrl && exists(resultColumns) && (
         <SxPreviewButton columns={resultColumns} url={csvUrl} />

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.config;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
@@ -72,9 +73,7 @@ public class CsvResultRenderer implements ResultRendererProvider {
 		return List.of(ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec));
 	}
 
-	public Response createResult(Subject subject, ManagedExecution<?> execRaw, Dataset dataset, boolean pretty, Charset charset) {
-
-		final ManagedQuery exec = (ManagedQuery) execRaw;
+	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty, Charset charset) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
