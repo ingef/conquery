@@ -71,7 +71,7 @@ public class CQExternal extends CQElement {
 	private String[][] values;
 
 	@Getter(AccessLevel.PUBLIC)
-	private boolean oneRowPerEntity = false;
+	private boolean onlySingles = false;
 
 	/**
 	 * Maps from Entity to the computed time-frame.
@@ -95,10 +95,26 @@ public class CQExternal extends CQElement {
 	@Getter(AccessLevel.PRIVATE)
 	private Map<Integer, Map<String, List<String>>> extra;
 
-	public CQExternal(List<String> format, @NotEmpty String[][] values, boolean oneRowPerEntity) {
+	public CQExternal(List<String> format, @NotEmpty String[][] values, boolean onlySingles) {
 		this.format = format;
 		this.values = values;
-		this.oneRowPerEntity = oneRowPerEntity;
+		this.onlySingles = onlySingles;
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Headers are not unique")
+	@SuppressWarnings("unused")
+	public boolean isHeadersUnique() {
+		try {
+			// Try to create a Set. Fails with IllegalArgumentException if duplicates exists.
+			// Ignore return value.
+			Set.of(values[0]);
+			return true;
+		}
+		catch (IllegalArgumentException e) {
+			log.warn("Headers are not unique.", e);
+		}
+		return false;
 	}
 
 	@Override
@@ -115,7 +131,7 @@ public class CQExternal extends CQElement {
 											 .filter(Objects::nonNull)
 											 .toArray(String[]::new);
 
-		if (!oneRowPerEntity) {
+		if (!onlySingles) {
 
 			final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(extraHeaders.length);
 			for (String extraHeader : extraHeaders) {
@@ -215,15 +231,12 @@ public class CQExternal extends CQElement {
 	public void resolve(QueryResolveContext context) {
 		headers = values[0];
 
-		// Try to create a Set. Fails with IllegalArgumentException if duplicates exists TODO use ConqueryError
-		Set.of(headers);
-
 		final ResolveStatistic resolved =
 				resolveEntities(values, format,
 								context.getNamespace().getStorage().getIdMapping(),
 								context.getConfig().getFrontend().getQueryUpload(),
 								context.getConfig().getLocale().getDateReader(),
-								oneRowPerEntity
+								onlySingles
 				);
 
 		if (resolved.getResolved().isEmpty()) {
@@ -270,7 +283,7 @@ public class CQExternal extends CQElement {
 	/**
 	 * Helper method to try and resolve entities in values using the specified format.
 	 */
-	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, FrontendConfig.UploadConfig queryUpload, @NotNull DateReader dateReader, boolean oneRowPerEntity) {
+	public static ResolveStatistic resolveEntities(@NotEmpty String[][] values, @NotEmpty List<String> format, EntityIdMap mapping, FrontendConfig.UploadConfig queryUpload, @NotNull DateReader dateReader, boolean onlySingles) {
 		final Map<Integer, CDateSet> resolved = new Int2ObjectOpenHashMap<>();
 
 		final List<String[]> unresolvedDate = new ArrayList<>();
@@ -324,7 +337,7 @@ public class CQExternal extends CQElement {
 			}
 		}
 
-		if (oneRowPerEntity) {
+		if (onlySingles) {
 			// Check that there is at most one value per entity and per column
 			final boolean alright = extraDataByEntity.values().stream()
 													 .map(Map::values)
@@ -413,7 +426,7 @@ public class CQExternal extends CQElement {
 
 			String column = headers[col];
 
-			resultInfos.add(new SimpleResultInfo(column, oneRowPerEntity ?
+			resultInfos.add(new SimpleResultInfo(column, onlySingles ?
 														 ResultType.StringT.INSTANCE :
 														 new ResultType.ListT(ResultType.StringT.INSTANCE)));
 		}
