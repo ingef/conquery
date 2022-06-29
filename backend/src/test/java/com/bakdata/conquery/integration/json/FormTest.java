@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -141,7 +142,7 @@ public class FormTest extends ConqueryTestSpec {
 
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		PrintSettings
-				PRINT_SETTINGS =
+				printSettings =
 				new PrintSettings(
 						false,
 						Locale.ENGLISH,
@@ -150,12 +151,11 @@ public class FormTest extends ConqueryTestSpec {
 						idPrinter::createId
 				);
 
-
 		if (managedForm instanceof SingleTableResult) {
-			checkSingleResult((ManagedForm & SingleTableResult) managedForm, config, renderer);
+			checkSingleResult((ManagedForm & SingleTableResult) managedForm, config, printSettings);
 		}
 		else {
-			checkMultipleResult(managedMapping, config, renderer);
+			checkMultipleResult(managedMapping, config, printSettings);
 		}
 
 	}
@@ -163,9 +163,9 @@ public class FormTest extends ConqueryTestSpec {
 	/**
 	 * Checks result of subqueries instead of form result.
 	 *
-	 * @see FormTest#checkSingleResult(ManagedForm, ConqueryConfig, CsvLineStreamRenderer)
+	 * @see FormTest#checkSingleResult(ManagedForm, ConqueryConfig, PrintSettings)
 	 */
-	private void checkMultipleResult(Map<String, List<ManagedQuery>> managedMapping, ConqueryConfig config, CsvLineStreamRenderer renderer) throws IOException {
+	private void checkMultipleResult(Map<String, List<ManagedQuery>> managedMapping, ConqueryConfig config, PrintSettings printSettings) throws IOException {
 		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
 			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfos();
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
@@ -175,11 +175,15 @@ public class FormTest extends ConqueryTestSpec {
 			final CsvWriter writer = config.getCsv().createWriter(output);
 
 			CsvRenderer renderer =
-					new CsvRenderer(writer, PRINT_SETTINGS);
+					new CsvRenderer(writer, printSettings);
 
-			renderer.toCSV(config.getFrontend().getQueryUpload().getIdResultInfos(), resultInfos, managed.getValue()
-																										 .stream()
-																										 .flatMap(ManagedQuery::streamResults));
+			renderer.toCSV(
+					config.getFrontend().getQueryUpload().getIdResultInfos(),
+					resultInfos,
+					managed.getValue()
+						   .stream()
+						   .flatMap(ManagedQuery::streamResults)
+			);
 
 			writer.close();
 			output.close();
@@ -197,20 +201,31 @@ public class FormTest extends ConqueryTestSpec {
 	/**
 	 * The form produces only one result, so the result is directly requested.
 	 *
-	 * @see FormTest#checkMultipleResult(Map, ConqueryConfig, CsvLineStreamRenderer)
+	 * @see FormTest#checkMultipleResult(Map, ConqueryConfig, PrintSettings)
 	 */
-	private <F extends ManagedForm & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, CsvLineStreamRenderer renderer)
+	private <F extends ManagedForm & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
 			throws IOException {
 		log.info("{} CSV TESTING: {}", getLabel(), managedForm.getLabel());
-		List<String> actual =
-				renderer.toStream(
-								config.getFrontend().getQueryUpload().getIdResultInfos(),
-								managedForm.getResultInfos(),
-								managedForm.streamResults()
-						)
-						.collect(Collectors.toList());
 
-		assertThat(actual)
+
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+		final CsvWriter writer = config.getCsv().createWriter(output);
+
+
+		CsvRenderer renderer =
+				new CsvRenderer(writer, printSettings);
+
+		renderer.toCSV(
+				config.getFrontend().getQueryUpload().getIdResultInfos(),
+				managedForm.getResultInfos(),
+				managedForm.streamResults()
+		);
+
+		writer.close();
+		output.close();
+
+		assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
 				.as("Checking result " + managedForm.getLabel())
 				.containsExactlyInAnyOrderElementsOf(
 						In.stream(expectedCsv.values().iterator().next().stream())

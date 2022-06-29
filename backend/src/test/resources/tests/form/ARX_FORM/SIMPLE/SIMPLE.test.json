@@ -20,7 +20,7 @@
                 "type": "CONCEPT_QUERY",
                 "root": {
                     "type": "EXTERNAL",
-                    "oneRowPerEntity": true,
+                    "onlySingles": true,
                     "format": [
                         "ID",
                         "EVENT_DATE",
