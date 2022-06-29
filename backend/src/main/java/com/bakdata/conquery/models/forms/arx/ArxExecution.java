@@ -1,10 +1,13 @@
 package com.bakdata.conquery.models.forms.arx;
 
+import static com.bakdata.conquery.models.types.SemanticType.IdentificationT;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -29,12 +32,12 @@ import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.MoreCollectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.deidentifier.arx.ARXAnonymizer;
 import org.deidentifier.arx.ARXConfiguration;
 import org.deidentifier.arx.ARXResult;
-import org.deidentifier.arx.AttributeType;
 import org.deidentifier.arx.Data;
 import org.deidentifier.arx.DataHandle;
 import org.deidentifier.arx.criteria.KAnonymity;
@@ -78,10 +81,17 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 		// Convert to ARX data format
 		Data.DefaultData data = Data.create();
 
-		// Write header
+		// Write header (attributes)
 		final List<ResultInfo> resultInfos = super.getResultInfos();
 		final String[] headers = resultInfos.stream().map(info -> info.defaultColumnName(printSettings)).toArray(String[]::new);
 		data.add(headers);
+
+		// Prepare attribute types based on the result infos
+		final Map<String, AttributeTypeBuilder> attrToType = resultInfos.stream()
+																		.collect(Collectors.toMap(
+																				i -> i.defaultColumnName(printSettings),
+																				ArxExecution::createAttributeTypeBuilder
+																		));
 
 		// Add data. Convert everything into a string
 		super.streamResults()
@@ -94,14 +104,20 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 									}
 									return stringData;
 								}))
-			 .forEach(data::add);
+			 .forEach(row -> {
+				 // Add row to ARX data container
+				 data.add(row);
+
+				 // Register each value to corresponding attribute type
+				 for (int i = 0; i < headers.length; i++) {
+					 attrToType.get(headers[i]).register(row[i]);
+				 }
+
+			 });
+
 
 		// Define attributes for the column
-		Arrays.stream(headers).forEach(header -> data.getDefinition().setAttributeType(header, AttributeType.INSENSITIVE_ATTRIBUTE));
-		data.getDefinition().setAttributeType("sex", AttributeType.Hierarchy.create(List.of(
-				new String[]{"f", "*"},
-				new String[]{"m", "*"}
-		)));
+		Arrays.stream(headers).forEach(header -> data.getDefinition().setAttributeType(header, attrToType.get(header).build()));
 
 		// Configure ARX
 		ARXConfiguration config = ARXConfiguration.create();
@@ -133,9 +149,23 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 		super.finish(storage, executionState);
 	}
 
+	private static AttributeTypeBuilder createAttributeTypeBuilder(ResultInfo info) {
+		final Optional<IdentificationT>
+				identType =
+				info.getSemantics().stream().filter(IdentificationT.class::isInstance).map(IdentificationT.class::cast).collect(MoreCollectors.toOptional());
+		return identType
+				.map(IdentificationT::getAttributeType)
+				.map(AttributeTypeBuilder.Fixed::new)
+				.map(AttributeTypeBuilder.class::cast)
+				// for now use a flat "hierarchy" for every attribute that is not further annotated
+				.orElse(new AttributeTypeBuilder.Flat());
+	}
+
 	@Override
 	public List<ResultInfo> getResultInfos() {
-		// After the anonymization everything is a String for now
+		// After the anonymization everything is a String for now.
+		// Within ARX everything regarding anonymization is handled as a string type.
+		// Other types only affect value presentation in a view (sorting, ...)
 		return super.getResultInfos()
 					.stream()
 					.map(resultInfo -> new SimpleResultInfo(resultInfo.defaultColumnName(printSettings), ResultType.StringT.INSTANCE))

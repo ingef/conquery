@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -30,7 +29,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -226,7 +224,7 @@ public class FormTest extends ConqueryTestSpec {
 		output.close();
 
 		assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
-				.as("Checking result " + managedForm.getLabel())
+				.as("Checking result " + managedForm.getLabelWithoutAutoLabelSuffix())
 				.containsExactlyInAnyOrderElementsOf(
 						In.stream(expectedCsv.values().iterator().next().stream())
 						  .withUTF8()
