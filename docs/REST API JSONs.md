@@ -912,7 +912,21 @@ No fields can be set for this type.
 Different types of SemanticType can be used by setting `type` to one of the following values:
 
 
-### CATEGORICAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L37-L39)</sup></sub></sup>
+### ARX_ATTR<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L104-L106)</sup></sub></sup>
+Column
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$IdentificationT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L111) | attributeType | `AttributeType` | ? |  |  | 
+</p></details>
+
+### CATEGORICAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L38-L40)</sup></sub></sup>
 Column contains a fixed set of String values.
 
 <details><summary>Details</summary><p>
@@ -923,7 +937,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### CONCEPT_COLUMN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L89-L93)</sup></sub></sup>
+### CONCEPT_COLUMN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L90-L94)</sup></sub></sup>
 Column contains values used by a Connector of a Concept. Only used for {@link com.bakdata.conquery.apiv1.query.TableExportQuery}.
 
 <details><summary>Details</summary><p>
@@ -934,10 +948,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L98) | concept | ID of `@NsIdRef Concept<?>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L99) | concept | ID of `@NsIdRef Concept<?>` | ? |  |  | 
 </p></details>
 
-### EVENT_DATE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L17-L19)</sup></sub></sup>
+### EVENT_DATE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L18-L20)</sup></sub></sup>
 Column containing primary Event dates. There should only ever be one EVENT_DATE per Query.
 
 <details><summary>Details</summary><p>
@@ -948,7 +962,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L55-L59)</sup></sub></sup>
+### ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L56-L60)</sup></sub></sup>
 Column contains an Entity's Id of a kind. <p> See {@link com.bakdata.conquery.models.config.ColumnConfig} / {@link com.bakdata.conquery.models.config.FrontendConfig.UploadConfig}for the source of this.
 
 <details><summary>Details</summary><p>
@@ -959,10 +973,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L64) | kind | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L65) | kind | `String` | ? |  |  | 
 </p></details>
 
-### RESOLUTION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L46-L48)</sup></sub></sup>
+### RESOLUTION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L47-L49)</sup></sub></sup>
 Column contains {@link com.bakdata.conquery.models.forms.util.Resolution} from an {@link com.bakdata.conquery.apiv1.forms.export_form.ExportForm}.
 
 <details><summary>Details</summary><p>
@@ -973,7 +987,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### SECONDARY_ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L67-L69)</sup></sub></sup>
+### SECONDARY_ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L68-L70)</sup></sub></sup>
 Column contains values of a {@link SecondaryIdDescription}.
 
 <details><summary>Details</summary><p>
@@ -984,10 +998,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L74) | secondaryId | ID of `@NsIdRef SecondaryIdDescription` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L75) | secondaryId | ID of `@NsIdRef SecondaryIdDescription` | ? |  |  | 
 </p></details>
 
-### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L78-L80)</sup></sub></sup>
+### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L79-L81)</sup></sub></sup>
 Column contains the results of a {@link Select}.
 
 <details><summary>Details</summary><p>
@@ -998,10 +1012,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L85) | select | ID of `@NsIdRef Select` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L86) | select | ID of `@NsIdRef Select` | ? |  |  | 
 </p></details>
 
-### SOURCES<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L26-L30)</sup></sub></sup>
+### SOURCES<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L27-L31)</sup></sub></sup>
 Column contains the source of the result line. <p> At the moment, only used in {@link com.bakdata.conquery.apiv1.query.TableExportQuery}.
 
 <details><summary>Details</summary><p>
