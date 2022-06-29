@@ -228,7 +228,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		 */
 		@JsonCreator
 		public ExternalResolveOnePerRowError() {
-			super("External was flagged as one row per entity, but at least one entity span over multiple rows");
+			super("External was flagged as one row per entity, but at least one entity spans multiple rows");
 		}
 	}
 
