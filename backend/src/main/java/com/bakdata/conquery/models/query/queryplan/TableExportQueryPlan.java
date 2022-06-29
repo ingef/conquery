@@ -26,12 +26,24 @@ import lombok.ToString;
 @ToString
 public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
+	/**
+	 * Query used to filter for Entities. If subPlan is contained, tables will be exported for it.
+	 */
 	private final QueryPlan<? extends EntityResult> subPlan;
+
+	//TODO FK: Implement this as ValidityDateNode in QPNode instead.
 	private final CDateSet dateRange;
 	private final Map<CQTable, QPNode> tables;
 
 	@ToString.Exclude
 	private final Map<Column, Integer> positions;
+
+	/**
+	 * If true, Connector {@link Column}s will be output raw.
+	 * If false, the {@link com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId} will be output.
+	 */
+	private final boolean rawConceptValues;
+
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
@@ -149,17 +161,17 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 			final int position = positions.get(column);
 
-			if (column.equals(exportDescription.getConnector().getColumn())) {
+			if (column.equals(validityDateColumn)) {
+				entry[position] = List.of(bucket.getAsDateRange(event, column));
+				continue;
+			}
+
+			if (!rawConceptValues && column.equals(exportDescription.getConnector().getColumn())) {
 				final int[] mostSpecificChild = cblock.getEventMostSpecificChild(event);
 				entry[position] = mostSpecificChild;
 				continue;
 			}
-
-			if (column.equals(validityDateColumn)) {
-				entry[0] = List.of(bucket.getAsDateRange(event, column));
-				continue;
-			}
-
+			
 			entry[position] = bucket.createScriptValue(event, column);
 		}
 		return entry;

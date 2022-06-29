@@ -81,6 +81,8 @@ public class TableExportQuery extends Query {
 	@Valid
 	private List<CQConcept> tables;
 
+	private boolean rawConceptValues = true;
+
 	/**
 	 * We collect the positions for each Column of the output in here.
 	 * Multiple columns can map to the same output position:
@@ -112,7 +114,8 @@ public class TableExportQuery extends Query {
 				query.createQueryPlan(context),
 				CDateSet.create(CDateRange.of(dateRange)),
 				filterQueryNodes,
-				positions
+				positions,
+				rawConceptValues
 		);
 	}
 
@@ -135,7 +138,7 @@ public class TableExportQuery extends Query {
 
 		calculateColumnPositions(currentPosition, tables, secondaryIdPositions, positions);
 
-		resultInfos = createResultInfos(secondaryIdPositions, positions, getTables());
+		resultInfos = createResultInfos(secondaryIdPositions, positions, getTables(), rawConceptValues);
 	}
 
 	private static Map<Column, Concept> calculateColumnConnectorMapping(@NotEmpty @Valid List<CQConcept> tables) {
@@ -194,10 +197,11 @@ public class TableExportQuery extends Query {
 			  .distinct()
 			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
 			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
+
 		return secondaryIdPositions;
 	}
 
-	private static List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions, @NotEmpty @Valid List<CQConcept> tables) {
+	private static List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions, @NotEmpty @Valid List<CQConcept> tables, boolean rawConceptColumns) {
 
 		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
@@ -236,7 +240,7 @@ public class TableExportQuery extends Query {
 
 			// Columns that are used to build concepts are marked as PrimaryColumn.
 			final ResultType resultType =
-					isConceptColumn
+					isConceptColumn && !rawConceptColumns
 					? new ResultType.StringT((o, printSettings) -> ConceptColumnSelect.printValue(concept, o, printSettings))
 					: ResultType.resolveResultType(column.getType());
 
