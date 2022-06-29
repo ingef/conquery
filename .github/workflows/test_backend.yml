@@ -7,7 +7,6 @@ on:
 
 jobs:
   run_tests:
-    needs: build_backend
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -37,7 +36,7 @@ jobs:
           -Dpackaging=jar
           -DgeneratePom=true
       - name: Build Backend
-        run: mvn -T 1C package -pl ${{ inputs.pom-project }} -DskipTests -am
+        run: mvn -T 1C install -pl backend -DskipTests -am
       - name: Unit Test
         run: mvn test -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
       - name: Programmatic Integration Tests
