@@ -9,7 +9,6 @@ import javax.validation.Validator;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
@@ -83,18 +82,39 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	@Override
 	public void loadData() {
-		super.loadData();
+		dataset.loadData();
+		secondaryIds.loadData();
+		tables.loadData();
+
+		dictionaries.loadData();
+
+		imports.loadData();
 
 		internToExternMappers.loadData();
+
+		concepts.loadData();
+
+		primaryDictionary.loadData();
+
 		idMapping.loadData();
 		structure.loadData();
+
 		workerToBuckets.loadData();
-		primaryDictionary.loadData();
+
+		log.info("Done reading {}", getDataset());
 	}
 
 	@Override
 	public void clear() {
-		super.clear();
+		centralRegistry.clear();
+
+		dataset.clear();
+		secondaryIds.clear();
+		tables.clear();
+		dictionaries.clear();
+		imports.clear();
+		concepts.clear();
+
 		internToExternMappers.clear();
 		idMapping.clear();
 		structure.clear();
@@ -105,7 +125,12 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	@Override
 	public void removeStorage() {
-		super.removeStorage();
+		dataset.removeStore();
+		secondaryIds.removeStore();
+		tables.removeStore();
+		dictionaries.removeStore();
+		imports.removeStore();
+		concepts.removeStore();
 
 		internToExternMappers.removeStore();
 		idMapping.removeStore();
@@ -117,7 +142,12 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	@Override
 	public void close() throws IOException {
-		super.close();
+		dataset.close();
+		secondaryIds.close();
+		tables.close();
+		dictionaries.close();
+		imports.close();
+		concepts.close();
 
 		internToExternMappers.close();
 		idMapping.close();
