@@ -29,8 +29,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	@JsonIgnore
 	protected final BiFunction<Object, PrintSettings, String> mapper;
 
-	public MappableSingleColumnSelect(@NsIdRef Column column,
-									  @Nullable InternToExternMapper mapping){
+	public MappableSingleColumnSelect(Column column, @Nullable InternToExternMapper mapping){
 		super(column);
 		this.mapping = mapping;
 
