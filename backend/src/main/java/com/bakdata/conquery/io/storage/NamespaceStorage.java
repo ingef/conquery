@@ -113,9 +113,10 @@ public class NamespaceStorage extends NamespacedStorage {
 		loadGraph.putEdge(dataset, primaryDictionary);
 
 		loadGraph.putEdge(secondaryIds, tables);
-		loadGraph.putEdge(tables, secondaryIds);
 
+		loadGraph.putEdge(tables, imports);
 		loadGraph.putEdge(tables, concepts);
+
 		loadGraph.putEdge(internToExternMappers, concepts);
 
 		loadGraph.putEdge(concepts, structure);
