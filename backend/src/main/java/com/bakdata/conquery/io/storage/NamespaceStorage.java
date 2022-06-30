@@ -7,6 +7,7 @@ import java.util.Objects;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
@@ -19,8 +20,12 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.MutableGraph;
+import com.google.common.graph.Traverser;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class NamespaceStorage extends NamespacedStorage {
@@ -44,7 +49,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	public Dictionary getPrimaryDictionaryRaw() {
 		final Dictionary dictionary = primaryDictionary.get();
 
-		if(dictionary == null){
+		if (dictionary == null) {
 			log.trace("No prior PrimaryDictionary, creating one");
 			final MapDictionary newPrimary = new MapDictionary(getDataset(), ConqueryConstants.PRIMARY_DICTIONARY);
 
@@ -82,26 +87,43 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	@Override
 	public void loadData() {
-		dataset.loadData();
-		secondaryIds.loadData();
-		tables.loadData();
 
-		dictionaries.loadData();
+		final MutableGraph<KeyIncludingStore<?, ?>> loadGraph = getStoreDependencies();
 
-		imports.loadData();
-
-		internToExternMappers.loadData();
-
-		concepts.loadData();
-
-		primaryDictionary.loadData();
-
-		idMapping.loadData();
-		structure.loadData();
-
-		workerToBuckets.loadData();
+		//TODO this can also be used to load data in parallel
+		for (KeyIncludingStore<?, ?> store : Traverser.forGraph(loadGraph).breadthFirst(dataset)) {
+			store.loadData();
+		}
 
 		log.info("Done reading {}", getDataset());
+	}
+
+	@NotNull
+	private MutableGraph<KeyIncludingStore<?, ?>> getStoreDependencies() {
+		MutableGraph<KeyIncludingStore<?, ?>> loadGraph =
+				GraphBuilder.directed()
+							.allowsSelfLoops(false)
+							.build();
+
+		loadGraph.addNode(dataset);
+
+		loadGraph.putEdge(dataset, secondaryIds);
+		loadGraph.putEdge(dataset, dictionaries);
+		loadGraph.putEdge(dataset, internToExternMappers);
+		loadGraph.putEdge(dataset, primaryDictionary);
+
+		loadGraph.putEdge(secondaryIds, tables);
+		loadGraph.putEdge(tables, secondaryIds);
+
+		loadGraph.putEdge(tables, concepts);
+		loadGraph.putEdge(internToExternMappers, concepts);
+
+		loadGraph.putEdge(concepts, structure);
+
+		loadGraph.putEdge(dictionaries,idMapping);
+
+		loadGraph.putEdge(imports, workerToBuckets);
+		return loadGraph;
 	}
 
 	@Override
@@ -162,7 +184,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 
-	public void updatePrimaryDictionary(Dictionary dictionary){
+	public void updatePrimaryDictionary(Dictionary dictionary) {
 		primaryDictionary.update(dictionary);
 	}
 
