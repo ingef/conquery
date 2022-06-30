@@ -1,10 +1,10 @@
 package com.bakdata.conquery.io.storage;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -19,7 +19,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Preconditions;
+import com.google.common.graph.Graph;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.MutableGraph;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -27,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class MetaStorage implements ConqueryStorage, Injectable {
+public class MetaStorage extends ConqueryStorage implements Injectable {
 
 	private final StoreFactory storageFactory;
 
@@ -54,41 +56,22 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 	}
 
 	@Override
-	public void loadData() {
-		Preconditions.checkNotNull(authUser, "User storage was not created");
-		Preconditions.checkNotNull(authRole, "Role storage was not created");
-		Preconditions.checkNotNull(authGroup, "Group storage was not created");
-		Preconditions.checkNotNull(executions, "Execution storage was not created");
-		Preconditions.checkNotNull(formConfigs, "FormConfig storage was not created");
+	protected Graph<KeyIncludingStore<?, ?>> getStoreDependencies() {
+		final MutableGraph<KeyIncludingStore<?, ?>> storeOrder = GraphBuilder.directed()
+																			 .allowsSelfLoops(false).build();
 
-		authUser.loadData();
-		authRole.loadData();
-		authGroup.loadData();
+		storeOrder.addNode(authUser);
 
-		executions.loadData();
-		formConfigs.loadData();
-	}
+		storeOrder.putEdge(authUser, authRole);
+		storeOrder.putEdge(authRole, authGroup);
 
-	@Override
-	public void clear() {
-		centralRegistry.clear();
+		storeOrder.putEdge(authGroup, executions);
+		storeOrder.putEdge(authUser, executions);
+		storeOrder.putEdge(authRole, executions);
 
-		executions.clear();
-		formConfigs.clear();
+		storeOrder.putEdge(executions, formConfigs);
 
-		authUser.clear();
-		authRole.clear();
-		authGroup.clear();
-	}
-
-	@Override
-	public void removeStorage() {
-		executions.removeStore();
-		formConfigs.removeStore();
-
-		authUser.removeStore();
-		authRole.removeStore();
-		authGroup.removeStore();
+		return storeOrder;
 	}
 
 	public void addExecution(ManagedExecution<?> query) {
@@ -192,14 +175,6 @@ public class MetaStorage implements ConqueryStorage, Injectable {
 	@SneakyThrows
 	public void addFormConfig(FormConfig formConfig) {
 		formConfigs.add(formConfig);
-	}
-
-	public void close() throws IOException {
-		executions.close();
-		formConfigs.close();
-		authUser.close();
-		authRole.close();
-		authGroup.close();
 	}
 
 	@Override

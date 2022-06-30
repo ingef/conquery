@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.storage;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -20,9 +19,7 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
-import com.google.common.graph.Traverser;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -85,99 +82,23 @@ public class NamespaceStorage extends NamespacedStorage {
 		decorateIdMapping(idMapping);
 	}
 
-	@Override
-	public void loadData() {
-
-		final MutableGraph<KeyIncludingStore<?, ?>> loadGraph = getStoreDependencies();
-
-		//TODO this can also be used to load data in parallel
-		for (KeyIncludingStore<?, ?> store : Traverser.forGraph(loadGraph).breadthFirst(dataset)) {
-			store.loadData();
-		}
-
-		log.info("Done reading {}", getDataset());
-	}
 
 	@NotNull
-	private MutableGraph<KeyIncludingStore<?, ?>> getStoreDependencies() {
-		MutableGraph<KeyIncludingStore<?, ?>> loadGraph =
-				GraphBuilder.directed()
-							.allowsSelfLoops(false)
-							.build();
+	protected MutableGraph<KeyIncludingStore<?, ?>> getStoreDependencies() {
+		MutableGraph<KeyIncludingStore<?, ?>> loadGraph = super.getStoreDependencies();
 
-		loadGraph.addNode(dataset);
-
-		loadGraph.putEdge(dataset, secondaryIds);
-		loadGraph.putEdge(dataset, dictionaries);
 		loadGraph.putEdge(dataset, internToExternMappers);
-		loadGraph.putEdge(dataset, primaryDictionary);
-
-		loadGraph.putEdge(secondaryIds, tables);
-
-		loadGraph.putEdge(tables, imports);
-		loadGraph.putEdge(tables, concepts);
-
 		loadGraph.putEdge(internToExternMappers, concepts);
+
+		loadGraph.putEdge(dataset, primaryDictionary);
 
 		loadGraph.putEdge(concepts, structure);
 
-		loadGraph.putEdge(dictionaries,idMapping);
+		loadGraph.putEdge(dictionaries, idMapping);
 
 		loadGraph.putEdge(imports, workerToBuckets);
+
 		return loadGraph;
-	}
-
-	@Override
-	public void clear() {
-		centralRegistry.clear();
-
-		dataset.clear();
-		secondaryIds.clear();
-		tables.clear();
-		dictionaries.clear();
-		imports.clear();
-		concepts.clear();
-
-		internToExternMappers.clear();
-		idMapping.clear();
-		structure.clear();
-		workerToBuckets.clear();
-		primaryDictionary.clear();
-
-	}
-
-	@Override
-	public void removeStorage() {
-		dataset.removeStore();
-		secondaryIds.removeStore();
-		tables.removeStore();
-		dictionaries.removeStore();
-		imports.removeStore();
-		concepts.removeStore();
-
-		internToExternMappers.removeStore();
-		idMapping.removeStore();
-		structure.removeStore();
-		workerToBuckets.removeStore();
-		primaryDictionary.removeStore();
-
-	}
-
-	@Override
-	public void close() throws IOException {
-		dataset.close();
-		secondaryIds.close();
-		tables.close();
-		dictionaries.close();
-		imports.close();
-		concepts.close();
-
-		internToExternMappers.close();
-		idMapping.close();
-		structure.close();
-		workerToBuckets.close();
-		primaryDictionary.close();
-
 	}
 
 	public EntityIdMap getIdMapping() {
