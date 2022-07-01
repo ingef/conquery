@@ -57,7 +57,7 @@
 	        .filter(i => !!i)
 	        .forEach(i => {
                 var li = document.createElement("li");
-                li.setAttribute("class", "list-group-item");
+                li.setAttribute("class", "list-group-item p-1");
                 li.innerHTML = i
 	            instanceList.appendChild(li)
 	        });
