@@ -62,8 +62,10 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 
 		storeOrder.addNode(authUser);
 
-		storeOrder.putEdge(authUser, authRole);
+		storeOrder.putEdge(authRole, authUser);
+		storeOrder.putEdge(authUser, authGroup);
 		storeOrder.putEdge(authRole, authGroup);
+
 
 		storeOrder.putEdge(authGroup, executions);
 		storeOrder.putEdge(authUser, executions);
