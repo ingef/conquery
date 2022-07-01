@@ -60,6 +60,9 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Getter
 	private final BucketManager bucketManager;
 
+	@Getter
+	private final ObjectMapper communicationMapper;
+
 
 	public Worker(
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
@@ -67,13 +70,14 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			@NonNull ExecutorService jobsExecutorService,
 			boolean failOnError,
 			int entityBucketSize,
-			ObjectMapper objectMapper
-	) {
+			ObjectMapper persistenceMapper,
+			ObjectMapper communicationMapper) {
 		this.storage = storage;
 		this.jobsExecutorService = jobsExecutorService;
+		this.communicationMapper = communicationMapper;
 
 
-		storage.openStores(objectMapper);
+		storage.openStores(persistenceMapper);
 		storage.loadData();
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
@@ -91,7 +95,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			@NonNull Validator validator,
 			boolean failOnError,
 			int entityBucketSize,
-			ObjectMapper objectMapper) {
+			ObjectMapper persistenceMapper,
+			ObjectMapper communicationMapper) {
 
 		WorkerStorage workerStorage = new WorkerStorage(config, validator, "worker_" + directory);
 
@@ -101,13 +106,13 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
 
-		workerStorage.openStores(objectMapper);
+		workerStorage.openStores(persistenceMapper);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
 		workerStorage.close();
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, objectMapper);
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper);
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {
