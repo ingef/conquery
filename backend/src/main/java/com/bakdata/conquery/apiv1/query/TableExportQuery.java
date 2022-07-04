@@ -131,31 +131,15 @@ public class TableExportQuery extends Query {
 		// First is dates, second is source id
 		AtomicInteger currentPosition = new AtomicInteger(2);
 
+		final Map<SecondaryIdDescription, Integer> secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
 
-		Map<SecondaryIdDescription, Integer> secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
-
-		positions = new HashMap<>();
-
-		calculateColumnPositions(currentPosition, tables, secondaryIdPositions, positions);
+		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions);
 
 		resultInfos = createResultInfos(secondaryIdPositions, positions, getTables(), rawConceptValues);
 	}
 
-	private static Map<Column, Concept> calculateColumnConnectorMapping(@NotEmpty @Valid List<CQConcept> tables) {
-		Map<Column,Concept> col2Connector = new HashMap<>();
-
-		for (CQConcept concept : tables) {
-			for (CQTable cqTable : concept.getTables()) {
-				for (Column column : cqTable.getConnector().getTable().getColumns()) {
-					col2Connector.put(column, cqTable.getConnector().getConcept());
-				}
-			}
-		}
-		return col2Connector;
-	}
-
-	private static void calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions) {
-
+	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
+		final Map<Column, Integer> positions = new HashMap<>();
 
 		for (CQConcept concept : tables) {
 			for (CQTable table : concept.getTables()) {
@@ -182,6 +166,8 @@ public class TableExportQuery extends Query {
 				}
 			}
 		}
+
+		return positions;
 	}
 
 	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
@@ -190,12 +176,12 @@ public class TableExportQuery extends Query {
 		// SecondaryIds are pulled to the front and grouped over all tables
 		tables.stream()
 			  .flatMap(con -> con.getTables().stream())
-			  .map(cqUnfilteredTable -> cqUnfilteredTable.getConnector().getTable().getColumns())
-			  .flatMap(Arrays::stream)
+			  .flatMap(table -> Arrays.stream(table.getConnector().getTable().getColumns()))
 			  .map(Column::getSecondaryId)
 			  .filter(Objects::nonNull)
 			  .distinct()
 			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
+			  // Using for each and not a collector allows us to guarantee sorted insertion.
 			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
 
 		return secondaryIdPositions;

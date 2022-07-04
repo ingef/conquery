@@ -64,7 +64,6 @@ public class ConceptColumnsAggregator extends Aggregator<Set<Integer>> {
 			final int[] mostSpecificChild = cblock.getEventMostSpecificChild(event);
 
 			entries.add(mostSpecificChild[mostSpecificChild.length - 1]);
-
 		}
 	}
 
