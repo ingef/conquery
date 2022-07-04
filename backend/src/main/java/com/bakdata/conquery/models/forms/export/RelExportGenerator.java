@@ -24,22 +24,15 @@ public class RelExportGenerator {
 
 		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(mode.getForm().getResolvedResolutions(), mode.getTimeUnit().getAlignment());
 
-		return generate(mode.getForm().getPrerequisite(), mode.getResolvedFeatures(), mode.getResolvedOutcomes(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), resolutionsAndAlignments);
+		return generate(mode.getForm().getPrerequisite(), mode.getResolvedFeatures(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), resolutionsAndAlignments);
 	}
 	
-	public static RelativeFormQuery generate(Query query, ArrayConceptQuery features, ArrayConceptQuery outcomes, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
+	public static RelativeFormQuery generate(Query query, ArrayConceptQuery features, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
 
 		return new RelativeFormQuery(
-			query, 
-			setInfos(
-				features,
-					FeatureGroup.FEATURE
-			),
-			setInfos(
-				outcomes,
-					FeatureGroup.OUTCOME
-			),
-			indexSelector, 
+			query,
+			features,
+			indexSelector,
 			indexPlacement, 
 			timeCountBefore, 
 			timeCountAfter, 

@@ -36,7 +36,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * This class constructs the concept tree as it is presented to the front end.
@@ -107,9 +106,9 @@ public class FrontEndConceptBuilder {
 				.description(c.getDescription())
 				.label(c.getLabel())
 				.additionalInfos(c.getAdditionalInfos())
-				.matchingEntries(matchingStats.countEvents())
-				.matchingEntities(matchingStats.countEntities())
-				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
+				.matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
+				.matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
+				.dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
 				.detailsAvailable(Boolean.TRUE)
 				.codeListResolvable(c.countElements() > 1)
 				.parent(structureParent)
@@ -181,9 +180,9 @@ public class FrontEndConceptBuilder {
 				.description(ce.getDescription())
 				.label(ce.getLabel())
 				.additionalInfos(ce.getAdditionalInfos())
-				.matchingEntries(matchingStats.countEvents())
-				.matchingEntities(matchingStats.countEntities())
-				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
+				.matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
+				.matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
+				.dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
 				.build();
 		
 		if(ce instanceof ConceptTreeNode) {

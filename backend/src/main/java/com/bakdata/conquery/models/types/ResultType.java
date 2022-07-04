@@ -203,6 +203,7 @@ public abstract class ResultType {
 			this.valueMapper = valueMapper;
 		}
 
+
 		@Override
 		protected String print(PrintSettings cfg, @NonNull Object f) {
 			if (valueMapper == null) {

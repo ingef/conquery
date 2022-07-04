@@ -162,7 +162,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	}
 
 	@Override
-	public void messageReceived(IoSession session, Object message) throws Exception {
+	public void messageReceived(IoSession session, Object message) {
 		setLocation(session);
 		if (!(message instanceof MessageToShardNode)) {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
@@ -183,17 +183,17 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	}
 
 	@Override
-	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
+	public void exceptionCaught(IoSession session, Throwable cause) {
 		setLocation(session);
 		log.error("cought exception", cause);
 	}
 
 	@Override
-	public void sessionOpened(IoSession session) throws Exception {
+	public void sessionOpened(IoSession session) {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator);
+		context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, validator);
 		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode
@@ -208,25 +208,25 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	}
 
 	@Override
-	public void sessionClosed(IoSession session) throws Exception {
+	public void sessionClosed(IoSession session) {
 		setLocation(session);
 		log.info("Disconnected from ManagerNode");
 	}
 
 	@Override
-	public void sessionCreated(IoSession session) throws Exception {
+	public void sessionCreated(IoSession session) {
 	}
 
 	@Override
-	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
+	public void sessionIdle(IoSession session, IdleStatus status) {
 	}
 
 	@Override
-	public void messageSent(IoSession session, Object message) throws Exception {
+	public void messageSent(IoSession session, Object message) {
 	}
 
 	@Override
-	public void inputClosed(IoSession session) throws Exception {
+	public void inputClosed(IoSession session) {
 	}
 
 	@Override
@@ -245,7 +245,6 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		}
 
 		ObjectMapper om = createInternalObjectMapper();
-		config.configureObjectMapper(om);
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
