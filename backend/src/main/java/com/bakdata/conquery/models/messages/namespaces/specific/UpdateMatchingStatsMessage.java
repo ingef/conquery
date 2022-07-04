@@ -138,7 +138,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 
 						for (int event = bucket.getEntityStart(entity); event < entityEnd; event++) {
 
-							final int[] localIds = cBlock.getEventMostSpecificChild(event);
+							final int[] localIds = cBlock.getPathToMostSpecificChild(event);
 
 
 							if (!(concept instanceof TreeConcept) || localIds == null) {

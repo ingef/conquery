@@ -167,8 +167,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 			}
 
 			if (!rawConceptValues && column.equals(exportDescription.getConnector().getColumn())) {
-				final int[] mostSpecificChild = cblock.getEventMostSpecificChild(event);
-				entry[position] = mostSpecificChild;
+				entry[position] = cblock.getMostSpecificChildLocalId(event);
 				continue;
 			}
 			

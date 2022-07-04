@@ -104,12 +104,21 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	}
 
 
-	public int[] getEventMostSpecificChild(int event) {
+	public int[] getPathToMostSpecificChild(int event) {
 		if (mostSpecificChildren == null) {
 			return null;
 		}
 
 		return mostSpecificChildren[event];
+	}
+
+	public int getMostSpecificChildLocalId(int event) {
+		if (mostSpecificChildren == null) {
+			return -1;
+		}
+
+		int[] mostSpecificChild = mostSpecificChildren[event];
+		return mostSpecificChild[mostSpecificChild.length - 1];
 	}
 
 	public CDateRange getEntityDateRange(int entity) {
@@ -347,11 +356,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * Helper method for calculateEntityDateIndices, swapping {@link Integer#MIN_VALUE}/{@link Integer#MAX_VALUE} for higher performance.
 	 */
 	private static CDateRange createClosed(int max, int min, CDateRange in) {
-		if(max == Integer.MIN_VALUE && min == Integer.MAX_VALUE){
+		if (max == Integer.MIN_VALUE && min == Integer.MAX_VALUE) {
 			return in;
 		}
 
-		if (max == Integer.MIN_VALUE){
+		if (max == Integer.MIN_VALUE) {
 			return in.spanClosed(CDateRange.atLeast(min));
 		}
 

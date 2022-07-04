@@ -61,9 +61,8 @@ public class ConceptColumnsAggregator extends Aggregator<Set<Integer>> {
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
 		if (bucket.has(event, column)) {
-			final int[] mostSpecificChild = cblock.getEventMostSpecificChild(event);
-
-			entries.add(mostSpecificChild[mostSpecificChild.length - 1]);
+			final int mostSpecificChild = cblock.getMostSpecificChildLocalId(event);
+			entries.add(mostSpecificChild);
 		}
 	}
 
