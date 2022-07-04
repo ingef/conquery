@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.concept;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -55,20 +54,9 @@ public class ConceptColumnSelect extends Select {
 
 		final TreeConcept tree = (TreeConcept) concept;
 
-		final int[] mostSpecificChild;
+		int localId = (int) rawValue;
 
-		if (rawValue instanceof List) {
-			mostSpecificChild = ((List<Integer>) rawValue).stream().mapToInt(i -> i).toArray();
-		}
-		else if (rawValue instanceof int[]) {
-			mostSpecificChild = ((int[]) rawValue);
-		}
-		else {
-			return Objects.toString(rawValue);
-		}
-
-
-		final ConceptTreeNode<?> node = tree.getElementByLocalId(mostSpecificChild);
+		final ConceptTreeNode<?> node = tree.getElementByLocalId(localId);
 
 		if (!printSettings.isPrettyPrint()) {
 			return node.getId().toStringWithoutDataset();

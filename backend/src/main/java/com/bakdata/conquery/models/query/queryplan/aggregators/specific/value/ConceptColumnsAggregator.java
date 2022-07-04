@@ -1,13 +1,11 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -16,12 +14,14 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.collect.ImmutableSet;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.ToString;
 
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
-public class ConceptColumnsAggregator extends Aggregator<Set<int[]>> {
+public class ConceptColumnsAggregator extends Aggregator<Set<Integer>> {
 
-	private final Set<int[]> entries = new HashSet<>();
+	private final IntSet entries = new IntOpenHashSet();
 	private final TreeConcept concept;
 
 	private Column column;
@@ -49,7 +49,7 @@ public class ConceptColumnsAggregator extends Aggregator<Set<int[]>> {
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		this.cblock = cblocks.get(bucket);
+		cblock = cblocks.get(bucket);
 	}
 
 	@Override
@@ -62,15 +62,14 @@ public class ConceptColumnsAggregator extends Aggregator<Set<int[]>> {
 	public void acceptEvent(Bucket bucket, int event) {
 		if (bucket.has(event, column)) {
 			final int[] mostSpecificChild = cblock.getEventMostSpecificChild(event);
-			final ConceptTreeNode<?> element = concept.getElementByLocalId(mostSpecificChild);
 
-			entries.add(mostSpecificChild);
+			entries.add(mostSpecificChild[mostSpecificChild.length - 1]);
 
 		}
 	}
 
 	@Override
-	public Set<int[]> createAggregationResult() {
+	public Set<Integer> createAggregationResult() {
 		return entries.isEmpty() ? null : ImmutableSet.copyOf(entries);
 	}
 

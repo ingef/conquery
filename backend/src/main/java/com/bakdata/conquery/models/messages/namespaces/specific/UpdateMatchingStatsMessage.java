@@ -153,7 +153,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 								continue;
 							}
 
-							ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalId(localIds);
+							ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
 
 							while (element != null) {
 								results.computeIfAbsent(((ConceptElement<?>) element), (ignored) -> new MatchingStats.Entry())
