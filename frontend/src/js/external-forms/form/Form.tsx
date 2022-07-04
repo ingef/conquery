@@ -6,7 +6,7 @@ import type { SelectOptionT } from "../../api/types";
 import { useActiveLang } from "../../localization/useActiveLang";
 import FormHeader from "../FormHeader";
 import type { Form as FormType } from "../config-types";
-import { isFormField, isOptionalField } from "../helper";
+import { getFieldKey, isOptionalField } from "../helper";
 
 import Field from "./Field";
 
@@ -37,10 +37,7 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
         <SxFormHeader description={config.description[activeLang]!} />
       )}
       {config.fields.map((field, i) => {
-        const key =
-          isFormField(field) && field.type !== "GROUP"
-            ? field.name
-            : field.type + i;
+        const key = getFieldKey(config.type, field, i);
         const optional = isOptionalField(field);
 
         return (
