@@ -12,10 +12,12 @@ import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Stopwatch;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Slf4j
+@ToString(of = "store")
 public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
@@ -104,7 +106,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				}
 			}
 		});
-		log.debug("\tloaded store {}: {} entries, {} within {}",
+		log.debug(
+				"\tloaded store {}: {} entries, {} within {}",
 				this,
 				cache.values().size(),
 				BinaryByteUnit.format(totalSize.get()),
@@ -117,10 +120,6 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return cache.values();
 	}
 
-	@Override
-	public String toString() {
-		return "cached " + store.toString();
-	}
 
 	@Override
 	public Collection<KEY> getAllKeys() {

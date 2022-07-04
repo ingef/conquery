@@ -93,7 +93,7 @@ public class XodusStore {
 	public void clear() {
 		environment.executeInExclusiveTransaction(t -> {
 			Cursor cursor = store.openCursor(t);
-			while(cursor.getNext()){
+			while (cursor.getNext()) {
 				cursor.deleteCurrent();
 			}
 		});
@@ -101,7 +101,7 @@ public class XodusStore {
 
 	public void deleteStore() {
 		log.debug("Deleting store {} from environment {}", store.getName(), environment.getLocation());
-		environment.executeInTransaction(t -> environment.removeStore(store.getName(),t));
+		environment.executeInTransaction(t -> environment.removeStore(store.getName(), t));
 		storeRemoveHook.accept(this);
 	}
 
@@ -115,6 +115,6 @@ public class XodusStore {
 
 	@Override
 	public String toString() {
-		return "XodusStore[" + environment.getLocation() + ":" +store.getName() +"}";
+		return "XodusStore(" + store.getName() + ":" + environment.getLocation() + ")";
 	}
 }

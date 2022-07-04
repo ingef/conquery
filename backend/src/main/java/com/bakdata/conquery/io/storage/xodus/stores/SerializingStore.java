@@ -39,7 +39,7 @@ import lombok.extern.slf4j.Slf4j;
  * @param <VALUE> type of values.
  */
 @Slf4j
-@ToString(of = "store")
+@ToString(of = {"valueType", "store"})
 public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	public static final String DUMP_FILE_EXTENTION = "json";
