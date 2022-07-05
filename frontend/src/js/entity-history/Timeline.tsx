@@ -1,9 +1,10 @@
 import styled from "@emotion/styled";
 import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import NumberFormat from "react-number-format";
 import { useSelector } from "react-redux";
 
-import { ColumnDescription } from "../api/types";
+import { ColumnDescription, CurrencyConfigT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import { Heading4 } from "../headings/Headings";
@@ -144,6 +145,12 @@ export const Timeline = memo(
       (state) => state.entityHistory.columns,
     );
 
+    console.log(columns);
+
+    const currencyConfig = useSelector<StateT, CurrencyConfigT>(
+      (state) => state.startup.config.currency,
+    );
+
     const columnBuckets = useMemo(() => {
       return {
         ids: columns.filter(
@@ -157,7 +164,10 @@ export const Timeline = memo(
           (c) =>
             c.semantics.length > 0 && c.semantics[0].type === "CONCEPT_COLUMN",
         ),
-        rest: columns.filter((c) => c.semantics.length === 0),
+        money: columns.filter((c) => c.type === "MONEY"),
+        rest: columns.filter(
+          (c) => c.type !== "MONEY" && c.semantics.length === 0,
+        ),
       };
     }, [columns]);
 
@@ -224,6 +234,14 @@ export const Timeline = memo(
                                 .map((c) => c.label)
                                 .join(", ");
 
+                              const applicableMoney =
+                                columnBuckets.money.filter((column) =>
+                                  exists(row[column.label]),
+                                );
+                              const moneyTooltip = applicableMoney
+                                .map((c) => c.label)
+                                .join(", ");
+
                               const applicableRest = columnBuckets.rest.filter(
                                 (column) => exists(row[column.label]),
                               );
@@ -255,6 +273,30 @@ export const Timeline = memo(
                                                 <span>{row[column.label]}</span>
                                               ),
                                             )}
+                                          </ColBucket>
+                                        </>
+                                      )}
+                                    {contentFilter.money &&
+                                      applicableMoney.length > 0 && (
+                                        <>
+                                          <WithTooltip text={moneyTooltip}>
+                                            <SxFaIcon
+                                              icon="money-bill-alt"
+                                              active
+                                              tiny
+                                            />
+                                          </WithTooltip>
+                                          <ColBucket>
+                                            {applicableMoney.map((column) => (
+                                              <NumberFormat
+                                                {...currencyConfig}
+                                                displayType="text"
+                                                value={
+                                                  parseInt(row[column.label]) /
+                                                  100
+                                                }
+                                              />
+                                            ))}
                                           </ColBucket>
                                         </>
                                       )}

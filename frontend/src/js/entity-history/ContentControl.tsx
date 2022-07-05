@@ -22,7 +22,7 @@ const BottomBorder = styled("div")<{ active?: boolean }>`
 `;
 
 export type ContentFilterValue = Record<
-  "secondaryId" | "concept" | "rest",
+  "secondaryId" | "concept" | "money" | "rest",
   boolean
 >;
 
@@ -45,6 +45,11 @@ const ContentControl = ({ value, onChange }: Props) => {
         key: "concept" as const,
         icon: "folder" as const,
         tooltip: t("history.content.concept"),
+      },
+      {
+        key: "money" as const,
+        icon: "money-bill-alt" as const,
+        tooltip: t("history.content.money"),
       },
       {
         key: "rest" as const,
@@ -82,6 +87,7 @@ export const useContentControl = () => {
   const [contentFilter, setContentFilter] = useState<ContentFilterValue>({
     secondaryId: true,
     concept: true,
+    money: true,
     rest: true,
   });
 
