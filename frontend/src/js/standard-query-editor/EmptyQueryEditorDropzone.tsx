@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import FaIcon from "../icon/FaIcon";
@@ -19,7 +20,6 @@ const TextInitial = styled("div")`
 const ArrowRight = styled(FaIcon)`
   font-size: 140px;
   color: ${({ theme }) => theme.col.grayLight};
-  margin-left: -70px;
   grid-area: arrow;
 `;
 const Headline = styled("h2")`
@@ -54,7 +54,7 @@ const IconInABox = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-export const EmptyQueryEditorDropzone = () => {
+export const EmptyQueryEditorDropzone = memo(() => {
   const { t } = useTranslation();
 
   return (
@@ -89,4 +89,4 @@ export const EmptyQueryEditorDropzone = () => {
       </Description>
     </TextInitial>
   );
-};
+});

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.ResourceConstants.SECONDARY_ID;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +16,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -38,6 +38,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.bakdata.conquery.util.io.FileUtil;
@@ -100,6 +101,19 @@ public class AdminDatasetResource extends HAdmin {
 	}
 
 	@POST
+	@Path("secondaryId")
+	public void addSecondaryId(SecondaryIdDescription secondaryId) {
+		processor.addSecondaryId(namespace, secondaryId);
+	}
+
+
+	@POST
+	@Path("internToExtern")
+	public void addInternToExternMapping(InternToExternMapper internToExternMapper) {
+		processor.addInternToExternMapping(namespace, internToExternMapper);
+	}
+
+	@POST
 	@Path("tables")
 	public void addTable(Table table) {
 		processor.addTable(table, namespace);
@@ -138,6 +152,7 @@ public class AdminDatasetResource extends HAdmin {
 			processor.addImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
 		}
 		catch (IOException err) {
+			log.warn("Unable to process import", err);
 			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied.", importFile), err, Status.BAD_REQUEST);
 		}
 	}
@@ -155,16 +170,16 @@ public class AdminDatasetResource extends HAdmin {
 		processor.updateConcept(namespace.getDataset(), concept);
 	}
 
-	@POST
-	@Path("secondaryId")
-	public void addSecondaryId(SecondaryIdDescription secondaryId) {
-		processor.addSecondaryId(namespace, secondaryId);
-	}
-
 	@DELETE
 	@Path("secondaryId/{" + SECONDARY_ID + "}")
 	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId) {
 		processor.deleteSecondaryId(secondaryId);
+	}
+
+	@DELETE
+	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
+	public void deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper, @QueryParam("force") @DefaultValue("false") boolean force) {
+		processor.deleteInternToExternMapping(internToExternMapper, force);
 	}
 
 	@GET
@@ -201,6 +216,12 @@ public class AdminDatasetResource extends HAdmin {
 	@Consumes(MediaType.WILDCARD)
 	public void updateMatchingStats(@PathParam(DATASET) Dataset dataset) {
 		processor.updateMatchingStats(dataset);
+	}
+
+	@POST
+	@Path("clear-internToExtern-cache")
+	public void clearInternToExternCache() {
+		processor.clearInternToExternCache(namespace);
 	}
 
 }

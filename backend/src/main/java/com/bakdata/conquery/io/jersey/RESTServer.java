@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.auth.web.AuthorizationExceptionMapper;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
@@ -44,7 +45,5 @@ public class RESTServer {
 		//disable all browser caching if not expressly wanted
 		jersey.register(CachingFilter.class);
 		jersey.register(LocaleFilter.class);
-
-		jersey.register(new PathParamInjector());
 	}
 }

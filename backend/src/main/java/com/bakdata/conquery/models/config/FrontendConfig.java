@@ -19,13 +19,14 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.FullIdPrinter;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.VersionInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -87,6 +88,7 @@ public class FrontendConfig {
 
 		/**
 		 * Localized header for output CSV.
+		 *
 		 * @return
 		 */
 		@JsonIgnore
@@ -94,9 +96,11 @@ public class FrontendConfig {
 			return ids.stream()
 					  .filter(ColumnConfig::isPrint)
 					  .map(col -> new LocalizedDefaultResultInfo(
-					  		locale -> col.getLabel().getOrDefault(locale.getLanguage(),col.getField()),
-							locale -> col.getField(),
-							ResultType.IdT.getINSTANCE()))
+							  locale -> col.getLabel().getOrDefault(locale.getLanguage(), col.getField()),
+							  locale -> col.getField(),
+							  ResultType.StringT.getINSTANCE(),
+							  Set.of(new SemanticType.IdT(col.getName()))
+					  ))
 					  .collect(Collectors.toUnmodifiableList());
 		}
 

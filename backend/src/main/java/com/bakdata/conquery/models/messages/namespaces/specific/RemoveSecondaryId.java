@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="REMOVE_SECONDARYID", base=NamespacedMessage.class) @Slf4j
 @AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString(callSuper=true)
-public class RemoveSecondaryId extends WorkerMessage.Slow {
+public class RemoveSecondaryId extends WorkerMessage {
 
 	@NsIdRef
 	private SecondaryIdDescription secondaryId;

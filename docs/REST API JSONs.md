@@ -342,7 +342,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/ExportForm.java#L56) | timeMode | `@NotNull @Valid Mode` | `null` |  |  | 
 </p></details>
 
-### FULL_EXPORT_FORM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L44)</sup></sub></sup>
+### FULL_EXPORT_FORM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L41)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -354,12 +354,12 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/Form.java#L31-L34) | values | `JsonNode` | `null` |  | Raw form config (basically the raw format of this form), that is used by the backend at the moment to create a {@link com.bakdata.conquery.models.forms.configs.FormConfig} upon start of this form (see {@link ManagedForm#start()}). | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L56) | dateRange | `@Valid Range<LocalDate>` |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L49) | queryGroupId | ID of `ManagedExecution` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L60) | tables | list of [CQElement](#Base-CQElement) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L53) | dateRange | `@Valid Range<LocalDate>` |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L46) | queryGroupId | ID of `ManagedExecution` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L57) | tables | list of [CONCEPT](#CONCEPT) | `[]` |  |  | 
 </p></details>
 
-### RELATIVE_FORM_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L31)</sup></sub></sup>
+### RELATIVE_FORM_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L32)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -370,18 +370,17 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L37) | features | [ARRAY_CONCEPT_QUERY](#ARRAY_CONCEPT_QUERY) | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L43) | indexPlacement | one of BEFORE, NEUTRAL, AFTER | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L41) | indexSelector | one of EARLIEST, LATEST, RANDOM | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L39) | outcomes | [ARRAY_CONCEPT_QUERY](#ARRAY_CONCEPT_QUERY) | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L35) | query | `@NotNull @Valid Query` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L51) | resolutionsAndAlignmentMap | list of `ResolutionAndAlignment` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L47) | timeCountAfter | `@javax.validation.constraints.Min(0) int` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L45) | timeCountBefore | `@javax.validation.constraints.Min(0) int` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L49) | timeUnit | one of DAYS, QUARTERS, YEARS | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L38) | features | [ARRAY_CONCEPT_QUERY](#ARRAY_CONCEPT_QUERY) | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L42) | indexPlacement | one of BEFORE, NEUTRAL, AFTER | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L40) | indexSelector | one of EARLIEST, LATEST, RANDOM | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L36) | query | `@NotNull @Valid Query` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L50) | resolutionsAndAlignmentMap | list of `ResolutionAndAlignment` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L46) | timeCountAfter | `@javax.validation.constraints.Min(0) int` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L44) | timeCountBefore | `@javax.validation.constraints.Min(0) int` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L48) | timeUnit | one of DAYS, QUARTERS, YEARS | ? |  |  | 
 </p></details>
 
-### SECONDARY_ID_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L37)</sup></sub></sup>
+### SECONDARY_ID_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L38)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -392,16 +391,16 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L50) | dateAggregationMode | one of NONE, MERGE, INTERSECT, LOGICAL | `"MERGE"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L54-L56) | query | [CONCEPT_QUERY](#CONCEPT_QUERY) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L43) | root | [@NotNull CQElement](#Base-CQElement) | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L46) | secondaryId | ID of `@NsIdRef @NotNull SecondaryIdDescription` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L60) | withSecondaryId | list of ID of `@NsIdRefCollection Set<Column>` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L64) | withoutSecondaryId | list of ID of `@NsIdRefCollection Set<Table>` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L51) | dateAggregationMode | one of NONE, MERGE, INTERSECT, LOGICAL | `"MERGE"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L55-L57) | query | [CONCEPT_QUERY](#CONCEPT_QUERY) | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L44) | root | [@NotNull CQElement](#Base-CQElement) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L47) | secondaryId | ID of `@NsIdRef @NotNull SecondaryIdDescription` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L61) | withSecondaryId | list of ID of `@NsIdRefCollection Set<Column>` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L65) | withoutSecondaryId | list of ID of `@NsIdRefCollection Set<Table>` | ␀ |  |  | 
 </p></details>
 
-### TABLE_EXPORT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L49-L51)</sup></sub></sup>
-A TABLE_EXPORT creates a full export of the given tables. It ignores selects completely.
+### TABLE_EXPORT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L54-L64)</sup></sub></sup>
+TableExportQuery can be used to export raw data from selected {@link Connector}s, for selected {@link com.bakdata.conquery.models.query.entity.Entity}s. <p> Output format is lightly structured: 1: Contains the {@link com.bakdata.conquery.models.datasets.concepts.ValidityDate} if one is available for the event. 2: Contains the source {@link com.bakdata.conquery.models.datasets.Table}s label. 3 - X: Contain the SecondaryId columns de-duplicated. Following: Columns of all tables, (except for SecondaryId Columns), grouped by tables. The order is not guaranteed. <p> Columns used in Connectors to build Concepts, are marked with {@link SemanticType.ConceptColumnT} in {@link FullExecutionStatus#getColumnDescriptions()}.
 
 <details><summary>Details</summary><p>
 
@@ -411,10 +410,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L63) | dateRange | `@NotNull Range<LocalDate>` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L69) | positions | map from `Column` to `int` or `null` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L59) | query | `@NonNull Query` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L65) | tables | list of `CQUnfilteredTable` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L76) | dateRange | `@NotNull Range<LocalDate>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L83-L89) | positions | map from `Column` to `int` or `null` | ? |  | We collect the positions for each Column of the output in here. Multiple columns can map to the same output position: - ValidityDate-Columns are merged into a single Date-Column - SecondaryIds are collected into a Column per SecondaryId - The remaining columns are arbitrarily ordered, but usually grouped by their source table. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L72) | query | `@NonNull Query` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L79) | tables | list of [CONCEPT](#CONCEPT) | ? |  |  | 
 </p></details>
 
 
@@ -472,7 +471,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/CQElement.java#L32-L34) | label | `String` | ? |  | Allows the user to define labels. | 
 </p></details>
 
-### CONCEPT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L55)</sup></sub></sup>
+### CONCEPT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L54)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -484,12 +483,12 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/CQElement.java#L32-L34) | label | `String` | `null` |  | Allows the user to define labels. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L86) | aggregateEventDates | `@javax.validation.constraints.NotNull boolean` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L62-L64) | elements | list of ID of `ConceptElement<?>` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L83) | excludeFromSecondaryId | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L80) | excludeFromTimeAggregation | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L76) | selects | list of ID of `Select` | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L70) | tables | list of [CQTable](#Type-CQTable) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L85) | aggregateEventDates | `@javax.validation.constraints.NotNull boolean` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L61-L63) | elements | list of ID of `ConceptElement<?>` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L82) | excludeFromSecondaryId | `boolean` | `false` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L79) | excludeFromTimeAggregation | `boolean` | `false` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L75) | selects | list of ID of `Select` | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQConcept.java#L69) | tables | list of [CQTable](#Type-CQTable) | `[]` |  |  | 
 </p></details>
 
 ### DATE_RESTRICTION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/specific/CQDateRestriction.java#L31)</sup></sub></sup>
@@ -638,7 +637,7 @@ Supported Fields:
 Different types of FilterValue can be used by setting `type` to one of the following values:
 
 
-### BIG_MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L71)</sup></sub></sup>
+### BIG_MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L72)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -649,11 +648,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L45) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L50) | value | `@NotNull VALUE` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L46) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L51) | value | `@NotNull VALUE` | `null` |  |  | 
 </p></details>
 
-### GROUP<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L148-L152)</sup></sub></sup>
+### GROUP<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L149-L153)</sup></sub></sup>
 A filter value that consists of multiple inputs that are grouped together into one form. <p> See TestGroupFilter in the tests for an example.
 
 <details><summary>Details</summary><p>
@@ -664,11 +663,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L45) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L50) | value | `@NotNull VALUE` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L46) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L51) | value | `@NotNull VALUE` | ? |  |  | 
 </p></details>
 
-### INTEGER<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L98)</sup></sub></sup>
+### INTEGER<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L99)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -679,11 +678,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L45) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L50) | value | `@NotNull VALUE` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L46) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L51) | value | `@NotNull VALUE` | `null` |  |  | 
 </p></details>
 
-### INTEGER_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L107)</sup></sub></sup>
+### INTEGER_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L108)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -694,11 +693,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L45) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L50) | value | `@NotNull VALUE` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L46) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L51) | value | `@NotNull VALUE` | `null` |  |  | 
 </p></details>
 
-### MONEY_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L116-L119)</sup></sub></sup>
+### MONEY_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L117-L120)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -709,11 +708,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L45) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L50) | value | `@NotNull VALUE` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L46) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L51) | value | `@NotNull VALUE` | `null` |  |  | 
 </p></details>
 
-### MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L62)</sup></sub></sup>
+### MULTI_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L63)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -724,11 +723,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L45) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L50) | value | `@NotNull VALUE` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L46) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L51) | value | `@NotNull VALUE` | `null` |  |  | 
 </p></details>
 
-### REAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L130)</sup></sub></sup>
+### REAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L131)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -739,11 +738,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L45) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L50) | value | `@NotNull VALUE` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L46) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L51) | value | `@NotNull VALUE` | `null` |  |  | 
 </p></details>
 
-### REAL_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L139)</sup></sub></sup>
+### REAL_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L140)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -754,11 +753,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L45) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L50) | value | `@NotNull VALUE` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L46) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L51) | value | `@NotNull VALUE` | `null` |  |  | 
 </p></details>
 
-### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L80)</sup></sub></sup>
+### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L81)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -769,11 +768,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L45) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L50) | value | `@NotNull VALUE` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L46) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L51) | value | `@NotNull VALUE` | `null` |  |  | 
 </p></details>
 
-### STRING<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L89)</sup></sub></sup>
+### STRING<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L90)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -784,8 +783,219 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L45) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L50) | value | `@NotNull VALUE` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L46) | filter | ID of `@NotNull @NsIdRef Filter<VALUE>` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/FilterValue.java#L51) | value | `@NotNull VALUE` | `null` |  |  | 
+</p></details>
+
+
+
+---
+
+## Base ResultType
+
+
+Different types of ResultType can be used by setting `type` to one of the following values:
+
+
+### BOOLEAN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L78)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$BooleanT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### DATE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L130)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$DateT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### DATE_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L152-L155)</sup></sub></sup>
+A DateRange is provided by in a query result as two ints in a list, both standing for an epoch day (see {@link LocalDate#toEpochDay()}). The first int describes the included lower bound of the range. The second int descibes the included upper bound.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$DateRangeT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### INTEGER<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L98)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$IntegerT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### LIST<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L234)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$ListT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L237) | elementType | [@NonNull ResultType](#Base-ResultType) | ? |  |  | 
+</p></details>
+
+### MONEY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L218)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$MoneyT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### NUMERIC<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L113)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$NumericT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### STRING<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/ResultType.java#L190)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.ResultType$StringT`
+
+No fields can be set for this type.
+
+</p></details>
+
+
+
+---
+
+## Base SemanticType
+
+
+Different types of SemanticType can be used by setting `type` to one of the following values:
+
+
+### CATEGORICAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L37-L39)</sup></sub></sup>
+Column contains a fixed set of String values.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$CategoricalT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### CONCEPT_COLUMN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L89-L93)</sup></sub></sup>
+Column contains values used by a Connector of a Concept. Only used for {@link com.bakdata.conquery.apiv1.query.TableExportQuery}.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$ConceptColumnT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L98) | concept | ID of `@NsIdRef Concept<?>` | ? |  |  | 
+</p></details>
+
+### EVENT_DATE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L17-L19)</sup></sub></sup>
+Column containing primary Event dates. There should only ever be one EVENT_DATE per Query.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$EventDateT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L55-L59)</sup></sub></sup>
+Column contains an Entity's Id of a kind. <p> See {@link com.bakdata.conquery.models.config.ColumnConfig} / {@link com.bakdata.conquery.models.config.FrontendConfig.UploadConfig}for the source of this.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$IdT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L64) | kind | `String` | ? |  |  | 
+</p></details>
+
+### RESOLUTION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L46-L48)</sup></sub></sup>
+Column contains {@link com.bakdata.conquery.models.forms.util.Resolution} from an {@link com.bakdata.conquery.apiv1.forms.export_form.ExportForm}.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$ResolutionT`
+
+No fields can be set for this type.
+
+</p></details>
+
+### SECONDARY_ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L67-L69)</sup></sub></sup>
+Column contains values of a {@link SecondaryIdDescription}.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$SecondaryIdT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L74) | secondaryId | ID of `@NsIdRef SecondaryIdDescription` | ? |  |  | 
+</p></details>
+
+### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L78-L80)</sup></sub></sup>
+Column contains the results of a {@link Select}.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$SelectResultT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L85) | select | ID of `@NsIdRef Select` | ? |  |  | 
+</p></details>
+
+### SOURCES<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L26-L30)</sup></sub></sup>
+Column contains the source of the result line. <p> At the moment, only used in {@link com.bakdata.conquery.apiv1.query.TableExportQuery}.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$SourcesT`
+
+No fields can be set for this type.
+
 </p></details>
 
 
@@ -810,7 +1020,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L69) | text | `@NonNull Optional<String>` | ? |  |  | 
 </p></details>
 
-### Type CQTable<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L23)</sup></sub></sup>
+### Type CQTable<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L25)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -821,13 +1031,13 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L38) | connector | ID of `@NsIdRef Connector` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L42) | dateColumn | [ValidityDateContainer](#Type-ValidityDateContainer) | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L27) | filters | list of [FilterValue<?>](#Base-FilterValue) | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L31) | selects | list of ID of `Select` | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L40) | connector | ID of `@NsIdRef Connector` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L44) | dateColumn | [ValidityDateContainer](#Type-ValidityDateContainer) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L29) | filters | list of [FilterValue<?>](#Base-FilterValue) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L33) | selects | list of ID of `Select` | `[]` |  |  | 
 </p></details>
 
-### Type ConceptCodeList<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L68)</sup></sub></sup>
+### Type ConceptCodeList<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L67)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -838,10 +1048,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L72) | concepts | list of `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L71) | concepts | list of `String` | ? |  |  | 
 </p></details>
 
-### Type CurrencyConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L202)</sup></sub></sup>
+### Type CurrencyConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L206)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -852,10 +1062,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L207) | decimalScale | `int` | `2` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L206) | decimalSeparator | `String` | `","` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L204) | prefix | `String` | `"€"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L205) | thousandSeparator | `String` | `"."` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L211) | decimalScale | `int` | `2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L210) | decimalSeparator | `String` | `","` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L208) | prefix | `String` | `"€"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L209) | thousandSeparator | `String` | `"."` |  |  | 
 </p></details>
 
 ### Type ExecutionStatus<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/ExecutionStatus.java#L19)</sup></sub></sup>
@@ -974,7 +1184,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### Type FrontendConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L44)</sup></sub></sup>
+### Type FrontendConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L45)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -985,9 +1195,9 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L54) | currency | [CurrencyConfig](#Type-CurrencyConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L58) | queryUpload | `UploadConfig` |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L53) | version | `String` | `"0.0.0-SNAPSHOT"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L55) | currency | [CurrencyConfig](#Type-CurrencyConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L59) | queryUpload | `UploadConfig` |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L54) | version | `String` | `"0.0.0-SNAPSHOT"` |  |  | 
 </p></details>
 
 ### Type FullExecutionStatus<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FullExecutionStatus.java#L19-L23)</sup></sub></sup>
@@ -1028,7 +1238,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FullExecutionStatus.java#L48-L50) | query | [QueryDescription](#Base-QueryDescription) | `null` |  | Is set to the query description if the user can expand all included concepts. | 
 </p></details>
 
-### Type IdLabel<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/IdLabel.java#L13-L16)</sup></sub></sup>
+### Type IdLabel<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/IdLabel.java#L10-L14)</sup></sub></sup>
 Container class for the frontend to provide a tuple of id and a corresponding label.
 
 <details><summary>Details</summary><p>

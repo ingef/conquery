@@ -54,7 +54,9 @@ public class AbsoluteFormQuery extends Query {
 			query.createQueryPlan(context),
 			new FormQueryPlan(
 					DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
-					features.createQueryPlan(context))
+					features.createQueryPlan(context),
+					false
+			)
 		);
 	}
 	

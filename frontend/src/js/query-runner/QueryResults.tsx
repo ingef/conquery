@@ -29,15 +29,15 @@ const LgText = styled(Text)`
 `;
 
 const SxDownloadButton = styled(DownloadButton)`
-  margin-left: 10px;
+  margin-left: 7px;
 `;
 
 const SxPreviewButton = styled(PreviewButton)`
-  margin-left: 10px;
+  margin-left: 7px;
 `;
 
 const SxHistoryButton = styled(HistoryButton)`
-  margin-left: 10px;
+  margin-left: 7px;
 `;
 
 const Bold = styled("span")`
@@ -45,6 +45,7 @@ const Bold = styled("span")`
 `;
 
 interface PropsT {
+  resultLabel: string;
   resultUrls: string[];
   resultCount?: number | null; // For forms, won't usually have a count
   resultColumns?: ColumnDescription[] | null; // For forms, won't usually have resultColumns
@@ -52,6 +53,7 @@ interface PropsT {
 }
 
 const QueryResults: FC<PropsT> = ({
+  resultLabel,
   resultUrls,
   resultCount,
   resultColumns,
@@ -77,7 +79,11 @@ const QueryResults: FC<PropsT> = ({
         </LgText>
       )}
       {isHistoryEnabled && !!csvUrl && exists(resultColumns) && (
-        <SxHistoryButton columns={resultColumns} url={csvUrl} />
+        <SxHistoryButton
+          columns={resultColumns}
+          url={csvUrl}
+          label={resultLabel}
+        />
       )}
       {!!csvUrl && exists(resultColumns) && (
         <SxPreviewButton columns={resultColumns} url={csvUrl} />

@@ -92,7 +92,6 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		final FullExecutionStatus resultUrls = allEntityDataResponse.readEntity(FullExecutionStatus.class);
 
 
-
 		final Optional<URL> csvUrl = resultUrls.getResultUrls().stream()
 											   .filter(url -> url.getFile().endsWith(".csv"))
 											   .findFirst();
@@ -110,7 +109,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 
 		assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
-				.isEqualTo(List.of("result,dates,test_table test_column,test_table2 test_column", "3,2013-11-10,A1,"));
+				.isEqualTo(List.of("result,dates,source,test_table test_column,test_table2 test_column", "3,2013-11-10,test_table,A1,"));
 
 
 	}
