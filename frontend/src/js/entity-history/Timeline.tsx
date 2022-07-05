@@ -133,7 +133,7 @@ const Box = styled("div")`
   width: 3px;
   height: 8px;
   margin-left: 1px;
-  background-color: ${({ theme }) => theme.col.blueGrayLight};
+  background-color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
 const SxRawDataBadge = styled(RawDataBadge)`
