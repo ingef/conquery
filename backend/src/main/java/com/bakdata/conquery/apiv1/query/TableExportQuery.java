@@ -191,7 +191,7 @@ public class TableExportQuery extends Query {
 
 		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
-		ResultInfo[] infos = new ResultInfo[size];
+		final ResultInfo[] infos = new ResultInfo[size];
 
 		infos[0] = ConqueryConstants.DATES_INFO;
 		infos[1] = ConqueryConstants.SOURCE_INFO;
@@ -215,27 +215,39 @@ public class TableExportQuery extends Query {
 			// 0 Position is date, already covered
 			final int position = entry.getValue();
 
-			// SecondaryIds are pulled to the front, already covered.
 			final Column column = entry.getKey();
-
+			// SecondaryIds and date columns are pulled to the front, thus already covered.
 			if (position == 0 || column.getSecondaryId() != null) {
 				continue;
 			}
-			final boolean isConceptColumn = connectorColumns.containsKey(column);
-			final Concept<?> concept = isConceptColumn ? connectorColumns.get(column).getConcept() : null;
 
-			// Columns that are used to build concepts are marked as PrimaryColumn.
-			final ResultType resultType =
-					isConceptColumn && !rawConceptColumns
-					? new ResultType.StringT((o, printSettings) -> ConceptColumnSelect.printValue(concept, o, printSettings))
-					: ResultType.resolveResultType(column.getType());
+			// Columns that are used to build concepts are marked as ConceptColumn.
+			if (connectorColumns.containsKey(column)) {
+				final Concept<?> concept =  connectorColumns.get(column).getConcept();
+
+				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
+				final ResultType resultType =
+						rawConceptColumns
+						? ResultType.resolveResultType(column.getType())
+						: new ResultType.StringT((o, printSettings) -> ConceptColumnSelect.printValue(concept, o, printSettings));
+
+				infos[position] = new SimpleResultInfo(
+						column.getTable().getLabel() + " " + column.getLabel(),
+						resultType,
+						Set.of(new SemanticType.ConceptColumnT(concept))
+				);
+			}
+			else {
+				final ResultType resultType = ResultType.resolveResultType(column.getType());
 
 
-			infos[position] = new SimpleResultInfo(
-					column.getTable().getLabel() + " " + column.getLabel(),
-					resultType,
-					isConceptColumn ? Set.of(new SemanticType.ConceptColumnT(concept)) : Collections.emptySet()
-			);
+				infos[position] = new SimpleResultInfo(
+						column.getTable().getLabel() + " " + column.getLabel(),
+						resultType,
+						Collections.emptySet()
+				);
+
+			}
 		}
 
 		return List.of(infos);

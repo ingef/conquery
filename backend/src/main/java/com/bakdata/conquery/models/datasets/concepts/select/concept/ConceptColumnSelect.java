@@ -18,8 +18,15 @@ import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Setter;
+import lombok.ToString;
 
+/**
+ * Select collecting the concept-Elements for a whole concept.
+ *
+ * When prettyPrint is true, the name of the Concept Element is used. Else, the ConceptElementId is returned.
+ */
 @CPSType(id = "CONCEPT_VALUES", base = Select.class)
+@ToString
 public class ConceptColumnSelect extends Select {
 
 	@JsonBackReference

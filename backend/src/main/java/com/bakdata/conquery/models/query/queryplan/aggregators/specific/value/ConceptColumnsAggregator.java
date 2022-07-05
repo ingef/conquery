@@ -74,6 +74,7 @@ public class ConceptColumnsAggregator extends Aggregator<Set<Integer>> {
 
 	@Override
 	public ResultType getResultType() {
+		// ResultInfo is created manually
 		throw new IllegalStateException();
 	}
 }
