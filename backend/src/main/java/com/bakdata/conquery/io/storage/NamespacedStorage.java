@@ -162,7 +162,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 
 
 				 if (concept instanceof TreeConcept) {
-					 ((TreeConcept) concept).getAllChildren().values().forEach(centralRegistry::register);
+					 ((TreeConcept) concept).getAllChildren().forEach(centralRegistry::register);
 				 }
 			 })
 			 .onRemove(concept -> {
@@ -176,7 +176,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 				 }
 
 				 if (concept instanceof TreeConcept) {
-					 ((TreeConcept) concept).getAllChildren().values().forEach(centralRegistry::remove);
+					 ((TreeConcept) concept).getAllChildren().forEach(centralRegistry::remove);
 				 }
 			 });
 	}

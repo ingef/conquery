@@ -74,7 +74,7 @@ public class LocaleConfig {
 	@NotNull
 	@NotEmpty
 	private List<ListFormat> listFormats = List.of(
-			new ListFormat("", "; ", ""),
+			new ListFormat("", " ; ", ""),
 			new ListFormat("", ", ", ""),
 			new ListFormat("{", ",", "}"),
 			new ListFormat("[", ",", "]")

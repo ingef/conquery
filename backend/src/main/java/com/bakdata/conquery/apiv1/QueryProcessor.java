@@ -357,7 +357,9 @@ public class QueryProcessor {
 				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
 										   datasetRegistry.get(dataset.getId()).getStorage().getIdMapping(),
 										   config.getFrontend().getQueryUpload(),
-										   config.getLocale().getDateReader()
+										   config.getLocale().getDateReader(),
+										   upload.isOneRowPerEntity()
+
 				);
 
 		// Resolving nothing is a problem thus we fail.
@@ -367,7 +369,7 @@ public class QueryProcessor {
 												  .build());
 		}
 
-		final ConceptQuery query = new ConceptQuery(new CQExternal(upload.getFormat(), upload.getValues()));
+		final ConceptQuery query = new ConceptQuery(new CQExternal(upload.getFormat(), upload.getValues(), upload.isOneRowPerEntity()));
 
 		// We only create the Query, really no need to execute it as it's only useful for composition.
 		final ManagedQuery execution =
@@ -399,7 +401,7 @@ public class QueryProcessor {
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
 		final ConceptQuery entitySelectQuery =
-				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}})));
+				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, false)));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
 		exportQuery.setRawConceptValues(false);

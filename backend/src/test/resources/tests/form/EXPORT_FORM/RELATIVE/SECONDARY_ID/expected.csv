@@ -1,7 +1,7 @@
-result,resolution,index,event_date,feature_date_range,explicitly set select Table1 Ausgabe Alter
-1,complete,,2012-03-01,2011-04-01/2012-03-31,55
-1,year,0,2012-03-01,2011-04-01/2012-03-31,55
-1,quarter,-3,2012-03-01,2011-04-01/2011-06-30,
-1,quarter,-2,2012-03-01,2011-07-01/2011-09-30,
-1,quarter,-1,2012-03-01,2011-10-01/2011-12-31,
-1,quarter,0,2012-03-01,2012-01-01/2012-03-31,55
+result,resolution,index,event_date,date_range,scope,explicitly set select Table1 Ausgabe Alter
+1,complete,,2012-03-01,2011-04-01/2012-03-31,feature_date_range,55
+1,year,0,2012-03-01,2011-04-01/2012-03-31,feature_date_range,55
+1,quarter,-3,2012-03-01,2011-04-01/2011-06-30,feature_date_range,
+1,quarter,-2,2012-03-01,2011-07-01/2011-09-30,feature_date_range,
+1,quarter,-1,2012-03-01,2011-10-01/2011-12-31,feature_date_range,
+1,quarter,0,2012-03-01,2012-01-01/2012-03-31,feature_date_range,55

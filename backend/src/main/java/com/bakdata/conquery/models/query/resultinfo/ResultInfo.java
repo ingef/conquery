@@ -50,6 +50,7 @@ public abstract class ResultInfo {
 							   .defaultLabel(defaultColumnName(settings))
 							   .userConceptLabel(userColumnName(settings))
 							   .type(getType().typeInfo())
+							   .semantics(getSemantics())
 							   .build();
 	}
 }

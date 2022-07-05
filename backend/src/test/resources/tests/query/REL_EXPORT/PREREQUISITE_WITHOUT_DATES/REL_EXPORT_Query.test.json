@@ -49,26 +49,6 @@
                 }
             }
         },
-        "outcomes": {
-            "type": "ARRAY_CONCEPT_QUERY",
-            "childQueries": {
-                "type": "CONCEPT_QUERY",
-                "root": {
-                    "type": "CONCEPT",
-                    "ids": [
-                        "concept.child1"
-                    ],
-                    "selects": [
-                        "concept.exists"
-                    ],
-                    "tables": [
-                        {
-                            "id": "concept.connector"
-                        }
-                    ]
-                }
-            }
-        },
         "indexSelector": "EARLIEST",
         "indexPlacement": "BEFORE",
         "timeCountBefore": 4,

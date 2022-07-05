@@ -9,7 +9,6 @@ import java.util.OptionalInt;
 import c10n.C10N;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.internationalization.DateContextResolutionC10n;
-import com.bakdata.conquery.internationalization.Localized;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -24,7 +23,7 @@ import lombok.RequiredArgsConstructor;
  * edge context.
  */
 @RequiredArgsConstructor
-public enum Resolution implements Localized {
+public enum Resolution {
 	/**
 	 * For returning contexts with a single {@link CDateRange} for the entire
 	 * {@link FeatureGroup}.

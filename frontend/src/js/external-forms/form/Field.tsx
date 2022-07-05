@@ -27,7 +27,12 @@ import FormConceptGroup from "../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../form-concept-group/formConceptGroupState";
 import FormQueryDropzone from "../form-query-dropzone/FormQueryDropzone";
 import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
-import { getInitialValue, isFormField, isOptionalField } from "../helper";
+import {
+  getFieldKey,
+  getInitialValue,
+  isFormField,
+  isOptionalField,
+} from "../helper";
 import { getErrorForField } from "../validators";
 
 import type { DynamicFormValues } from "./Form";
@@ -88,6 +93,7 @@ const ConnectedField = <T extends Object>({
     rules: {
       validate: (value) => getErrorForField(t, formField, value) || true,
     },
+    shouldUnregister: true,
   });
 
   // TODO: REFINE COLORS
@@ -334,8 +340,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             }}
           >
             {field.fields.map((f, i) => {
-              const key =
-                isFormField(f) && f.type !== "GROUP" ? f.name : f.type + i;
+              const key = getFieldKey(formType, f, i);
               const nestedFieldOptional = isOptionalField(f);
 
               return (
@@ -379,10 +384,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 {tabToShow && tabToShow.fields.length > 0 ? (
                   <NestedFields>
                     {tabToShow.fields.map((f, i) => {
-                      const key =
-                        isFormField(f) && f.type !== "GROUP"
-                          ? f.name
-                          : f.type + i;
+                      const key = getFieldKey(formType, f, i);
                       const nestedFieldOptional = isOptionalField(f);
 
                       return (
