@@ -167,18 +167,15 @@ export const Timeline = memo(
 
     const columnBuckets = useMemo(() => {
       return {
-        ids: columns.filter(
-          (c) => c.semantics.length > 0 && c.semantics[0].type === "ID",
+        money: columns.filter((c) => c.type === "MONEY"),
+        concepts: columns.filter(
+          (c) =>
+            c.semantics.length > 0 && c.semantics[0].type === "CONCEPT_COLUMN",
         ),
         secondaryIds: columns.filter(
           (c) =>
             c.semantics.length > 0 && c.semantics[0].type === "SECONDARY_ID",
         ),
-        concepts: columns.filter(
-          (c) =>
-            c.semantics.length > 0 && c.semantics[0].type === "CONCEPT_COLUMN",
-        ),
-        money: columns.filter((c) => c.type === "MONEY"),
         rest: columns.filter(
           (c) => c.type !== "MONEY" && c.semantics.length === 0,
         ),
