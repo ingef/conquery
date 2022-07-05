@@ -60,7 +60,8 @@ const Main = styled("div")`
 `;
 
 const SxSourcesControl = styled(SourcesControl)`
-  width: 440px;
+  flex-shrink: 0;
+  width: 450px;
 `;
 
 export interface EntityIdsStatus {
@@ -142,14 +143,14 @@ export const History = () => {
             />
           )}
           <Controls>
+            <DetailControl
+              detailLevel={detailLevel}
+              setDetailLevel={setDetailLevel}
+            />
             <SxSourcesControl
               options={options}
               sourcesFilter={sourcesFilter}
               setSourcesFilter={setSourcesFilter}
-            />
-            <DetailControl
-              detailLevel={detailLevel}
-              setDetailLevel={setDetailLevel}
             />
             <ContentControl value={contentFilter} onChange={setContentFilter} />
             <DownloadEntityDataButton />
