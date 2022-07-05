@@ -36,7 +36,7 @@ public interface QueryDescription extends Visitable {
 	/**
 	 * Transforms the submitted query to an {@link ManagedExecution}.
 	 * In this step some external dependencies are resolve (such as {@link CQExternal}).
-	 * However steps that require add or manipulates queries programmatically based on the submitted query
+	 * However, steps that require add or manipulates queries programmatically based on the submitted query
 	 * should be done in an extra init procedure (see {@link ManagedForm#doInitExecutable(DatasetRegistry, ConqueryConfig)}.
 	 * These steps are executed right before the execution of the query and not necessary in this creation phase.
 	 *
@@ -92,10 +92,10 @@ public interface QueryDescription extends Visitable {
 
 		subject.authorize(concepts, Ability.READ);
 
+		// Check reused query permissions
 		final Set<ManagedExecution<?>> collectedExecutions = collectRequiredQueries().stream()
 																					 .map(storage::getExecution)
 																					 .filter(Objects::nonNull)
-
 																					 .collect(Collectors.toSet());
 		subject.authorize(collectedExecutions, Ability.READ);
 
