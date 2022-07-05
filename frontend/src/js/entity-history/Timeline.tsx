@@ -98,6 +98,14 @@ const SxHeading4 = styled(Heading4)`
   margin: 0;
 `;
 
+const TinyText = styled("p")`
+  margin: 0;
+  font-size: ${({ theme }) => theme.font.tiny};
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.col.gray};
+  line-height: 0.9;
+`;
+
 const ColBucket = styled("div")`
   color: black;
   display: inline-flex;
@@ -270,7 +278,12 @@ export const Timeline = memo(
                                           <ColBucket>
                                             {applicableSecondaryIds.map(
                                               (column) => (
-                                                <span>{row[column.label]}</span>
+                                                <div>
+                                                  <TinyText>
+                                                    {column.label}
+                                                  </TinyText>
+                                                  {row[column.label]}
+                                                </div>
                                               ),
                                             )}
                                           </ColBucket>
