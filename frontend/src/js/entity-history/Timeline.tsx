@@ -50,6 +50,7 @@ const EventItemContent = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
   box-shadow: 0 0 0 1px ${({ theme }) => theme.col.grayLight};
   padding: 15px 10px 5px;
+  gap: 5px;
 `;
 
 const Bullet = styled("div")`
@@ -101,6 +102,7 @@ const SxHeading4 = styled(Heading4)`
 const TinyText = styled("p")`
   margin: 0;
   font-size: ${({ theme }) => theme.font.tiny};
+  font-weight: 700;
   text-transform: uppercase;
   color: ${({ theme }) => theme.col.gray};
   line-height: 0.9;
@@ -113,6 +115,10 @@ const ColBucket = styled("div")`
   gap: 0 10px;
   padding: 1px 4px;
 `;
+
+const ColBucketCode = styled((props: any) => (
+  <ColBucket as="code" {...props} />
+))``;
 
 const Boxes = styled("div")`
   display: flex;
@@ -263,6 +269,30 @@ export const Timeline = memo(
                                   <RowDates dates={row.dates} />
                                   <EventItemContent>
                                     <SxRawDataBadge event={row} />
+                                    {contentFilter.money &&
+                                      applicableMoney.length > 0 && (
+                                        <>
+                                          <WithTooltip text={moneyTooltip}>
+                                            <SxFaIcon
+                                              icon="money-bill-alt"
+                                              active
+                                              tiny
+                                            />
+                                          </WithTooltip>
+                                          <ColBucketCode>
+                                            {applicableMoney.map((column) => (
+                                              <NumberFormat
+                                                {...currencyConfig}
+                                                displayType="text"
+                                                value={
+                                                  parseInt(row[column.label]) /
+                                                  100
+                                                }
+                                              />
+                                            ))}
+                                          </ColBucketCode>
+                                        </>
+                                      )}
                                     {contentFilter.secondaryId &&
                                       applicableSecondaryIds.length > 0 && (
                                         <>
@@ -286,30 +316,6 @@ export const Timeline = memo(
                                                 </div>
                                               ),
                                             )}
-                                          </ColBucket>
-                                        </>
-                                      )}
-                                    {contentFilter.money &&
-                                      applicableMoney.length > 0 && (
-                                        <>
-                                          <WithTooltip text={moneyTooltip}>
-                                            <SxFaIcon
-                                              icon="money-bill-alt"
-                                              active
-                                              tiny
-                                            />
-                                          </WithTooltip>
-                                          <ColBucket>
-                                            {applicableMoney.map((column) => (
-                                              <NumberFormat
-                                                {...currencyConfig}
-                                                displayType="text"
-                                                value={
-                                                  parseInt(row[column.label]) /
-                                                  100
-                                                }
-                                              />
-                                            ))}
                                           </ColBucket>
                                         </>
                                       )}
