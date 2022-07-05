@@ -457,6 +457,7 @@
       "full": "Full"
     },
     "content": {
+      "money": "Money",
       "secondaryId": "IDs from analysis layer",
       "concept": "Concepts",
       "rest": "Additional infos"

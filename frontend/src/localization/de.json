@@ -456,6 +456,7 @@
       "full": "Alle Ereignisse"
     },
     "content": {
+      "money": "Geldbeträge",
       "secondaryId": "IDs aus Analyse-Ebene",
       "concept": "Konzepte",
       "rest": "Zusatzinfos"

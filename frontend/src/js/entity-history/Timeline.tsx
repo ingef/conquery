@@ -96,7 +96,7 @@ const QuarterHead = styled("div")<{ empty?: boolean }>`
   color: ${({ theme, empty }) =>
     empty ? theme.col.grayLight : theme.col.gray};
   display: grid;
-  grid-template-columns: 120px 1fr;
+  grid-template-columns: 150px 1fr;
 `;
 
 const SxHeading4 = styled(Heading4)`
@@ -133,7 +133,7 @@ const Box = styled("div")`
   width: 3px;
   height: 8px;
   margin-left: 1px;
-  background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
+  background-color: ${({ theme }) => theme.col.blueGrayLight};
 `;
 
 const SxRawDataBadge = styled(RawDataBadge)`
@@ -213,12 +213,12 @@ export const Timeline = memo(
                   return (
                     <QuarterGroup key={quarter}>
                       <QuarterHead empty={filteredEvents.length === 0}>
-                        <span>
+                        <SxHeading4>
                           Q{quarter} – {filteredEvents.length}{" "}
                           {t("history.events", {
                             count: filteredEvents.length,
                           })}
-                        </span>
+                        </SxHeading4>
                         {detailLevel === "summary" && (
                           <Boxes>
                             {new Array(filteredEvents.length)
