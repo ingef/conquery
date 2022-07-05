@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
+import lombok.Setter;
 import org.deidentifier.arx.ARXAnonymizer;
 
 /**
@@ -35,6 +36,7 @@ import org.deidentifier.arx.ARXAnonymizer;
  * @see ArxExecution which intercepts the result of the execution and processes it using ARX.
  */
 @CPSType(id = "ARX_FORM", base = QueryDescription.class)
+@Setter
 public class ArxForm extends Form {
 
 
@@ -47,13 +49,15 @@ public class ArxForm extends Form {
 	 */
 	@Getter
 	@Min(2)
-	private int kAnonymitiyParam = 2;
+	@JsonProperty("kAnonymityParam")
+	private int kAnonymityParam = 2;
 
 	/**
 	 * @see org.deidentifier.arx.ARXConfiguration#setSuppressionLimit(double)
 	 */
 	@Getter
-	//@DecimalMax(value = "1", inclusive = false)
+	@DecimalMax(value = "1")
+	@DecimalMin(value = "0")
 	private double suppressionLimit = 0.02;
 
 
@@ -89,6 +93,7 @@ public class ArxForm extends Form {
 	}
 
 	@Override
+	@JsonIgnore
 	public String getLocalizedTypeLabel() {
 		return "ARX Anonymization";
 	}

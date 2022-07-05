@@ -125,7 +125,7 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 
 		// Configure ARX
 		ARXConfiguration config = ARXConfiguration.create();
-		config.addPrivacyModel(new KAnonymity(form.getKAnonymitiyParam()));
+		config.addPrivacyModel(new KAnonymity(form.getKAnonymityParam()));
 		config.setSuppressionLimit(form.getSuppressionLimit());
 
 		// Run ARX
