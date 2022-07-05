@@ -45,7 +45,7 @@ const Controls = styled("div")`
 
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 18px;
   margin: 0 20px;
 `;
 
@@ -60,7 +60,7 @@ const Main = styled("div")`
 `;
 
 const SxSourcesControl = styled(SourcesControl)`
-  width: 500px;
+  width: 440px;
 `;
 
 export interface EntityIdsStatus {
