@@ -19,11 +19,13 @@ const SxWithTooltip = styled(WithTooltip)`
 
 interface Props {
   event: EntityEvent;
+  className?: string;
 }
 
-export const RawDataBadge = ({ event }: Props) => {
+export const RawDataBadge = ({ className, event }: Props) => {
   return (
     <SxWithTooltip
+      className={className}
       place="right"
       html={
         <pre

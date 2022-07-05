@@ -17,7 +17,7 @@ export const RowDates = ({ dates }: Props) => {
     <code style={{ flexShrink: 0 }}>{format(dates.from)}</code>
   ) : (
     <code style={{ flexShrink: 0 }}>
-      {format(dates.from)} - {format(dates.to)}
+      {format(dates.from)} {format(dates.to)}
     </code>
   );
 };

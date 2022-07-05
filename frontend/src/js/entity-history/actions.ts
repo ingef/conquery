@@ -65,6 +65,7 @@ export const loadHistoryData = createAsyncAction(
     currentEntityCsvUrl: string;
     currentEntityData: EntityEvent[];
     currentEntityId: string;
+    uniqueSources: string[];
     entityIds?: string[];
     label?: string;
     columns?: ColumnDescription[];
@@ -106,7 +107,6 @@ export function useNewHistorySession() {
       entityId: entityIds[0],
       entityIds,
       years: [],
-      columns,
       label,
     });
   };
@@ -125,12 +125,10 @@ export function useUpdateHistorySession() {
   return async ({
     entityId,
     entityIds,
-    columns,
     label,
   }: {
     entityId: string;
     entityIds?: string[];
-    columns?: ColumnDescription[];
     years?: number[];
     label?: string;
   }) => {
@@ -158,14 +156,18 @@ export function useUpdateHistorySession() {
       );
 
       const currentEntityDataProcessed = transformEntityData(currentEntityData);
+      const uniqueSources = [
+        ...new Set(currentEntityDataProcessed.map((row) => row.source)),
+      ];
 
       dispatch(
         loadHistoryData.success({
           currentEntityCsvUrl: csvUrl,
           currentEntityData: currentEntityDataProcessed,
           currentEntityId: entityId,
+          columns: entityResult.columnDescriptions,
+          uniqueSources,
           ...(entityIds ? { entityIds } : {}),
-          ...(columns ? { columns } : {}),
           ...(label ? { label } : {}),
         }),
       );
@@ -175,7 +177,7 @@ export function useUpdateHistorySession() {
   };
 }
 
-const transformEntityData = (data: { [key: string]: any }[]) => {
+const transformEntityData = (data: { [key: string]: any }[]): EntityEvent[] => {
   return data
     .map((row) => {
       const { first, last } = getFirstAndLastDateOfRange(row["dates"]);

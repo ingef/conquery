@@ -3,10 +3,14 @@ import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
+import { ColumnDescription } from "../api/types";
 import type { StateT } from "../app/reducers";
+import { exists } from "../common/helpers/exists";
 import { Heading4 } from "../headings/Headings";
+import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
 
+import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import { RowDates } from "./RowDates";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
@@ -31,17 +35,26 @@ const EventItemList = styled("div")`
 `;
 
 const EventItem = styled("div")`
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: auto 60px 1fr;
   gap: 3px;
   font-size: ${({ theme }) => theme.font.xs};
-  padding: 3px 0;
+  padding: 5px 0;
   position: relative;
+`;
+const EventItemContent = styled("div")`
+  display: grid;
+  grid-template-columns: auto 1fr;
+  position: relative;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  box-shadow: 0 0 0 1px ${({ theme }) => theme.col.grayLight};
+  padding: 15px 10px 5px;
 `;
 
 const Bullet = styled("div")`
   width: 8px;
   height: 8px;
+  margin: 4px 0;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   border-radius: 50%;
   flex-shrink: 0;
@@ -71,10 +84,10 @@ const QuarterGroup = styled("div")`
   padding-top: 7px;
   background-color: white;
 `;
-const QuarterHead = styled("div")`
-  font-weight: 700;
+const QuarterHead = styled("div")<{ empty?: boolean }>`
+  font-weight: ${({ empty }) => (empty ? "normal" : "bold")};
   font-size: ${({ theme }) => theme.font.xs};
-  color: black;
+  color: ${({ theme, empty }) => (empty ? theme.col.gray : theme.col.black)};
   display: grid;
   grid-template-columns: 120px 1fr;
 `;
@@ -83,9 +96,13 @@ const SxHeading4 = styled(Heading4)`
   flex-shrink: 0;
   margin: 0;
 `;
-const SxWithTooltip = styled(WithTooltip)`
+
+const ColBucket = styled("div")`
   color: black;
-  flex-shrink: 0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+  padding: 1px 4px;
 `;
 
 const Boxes = styled("div")`
@@ -99,98 +116,197 @@ const Box = styled("div")`
   background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
 `;
 
+const SxRawDataBadge = styled(RawDataBadge)`
+  position: absolute;
+  top: -5px;
+  left: -5px;
+`;
+
+const SxFaIcon = styled(FaIcon)`
+  width: 20px !important;
+  text-align: center;
+`;
+
 interface Props {
   className?: string;
   detailLevel: DetailLevel;
+  sources: Set<string>;
+  contentFilter: ContentFilterValue;
 }
 
-export const Timeline = memo(({ className, detailLevel }: Props) => {
-  const { t } = useTranslation();
-  const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
-    (state) => state.entityHistory.currentEntityData,
-  );
+export const Timeline = memo(
+  ({ className, detailLevel, sources, contentFilter }: Props) => {
+    const { t } = useTranslation();
+    const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
+      (state) => state.entityHistory.currentEntityData,
+    );
+    const columns = useSelector<StateT, ColumnDescription[]>(
+      (state) => state.entityHistory.columns,
+    );
 
-  const bucketedEntityDataByYearAndQuarter = useTimeBucketedDataDesc(data);
+    const columnBuckets = useMemo(() => {
+      return {
+        ids: columns.filter(
+          (c) => c.semantics.length > 0 && c.semantics[0].type === "ID",
+        ),
+        secondaryIds: columns.filter(
+          (c) =>
+            c.semantics.length > 0 && c.semantics[0].type === "SECONDARY_ID",
+        ),
+        concepts: columns.filter(
+          (c) =>
+            c.semantics.length > 0 && c.semantics[0].type === "CONCEPT_COLUMN",
+        ),
+        rest: columns.filter((c) => c.semantics.length === 0),
+      };
+    }, [columns]);
 
-  return (
-    <Root className={className}>
-      {bucketedEntityDataByYearAndQuarter.map(({ year, quarterwiseData }) => {
-        const totalEvents = quarterwiseData.reduce(
-          (all, data) => all + data.events.length,
-          0,
-        );
-        return (
-          <YearGroup key={year}>
-            <YearHead>
-              <SxHeading4>{year}</SxHeading4> – {totalEvents}{" "}
-              {t("history.events", { count: totalEvents })}
-            </YearHead>
-            {quarterwiseData.map(({ quarter, events }) => {
-              return (
-                <QuarterGroup key={quarter}>
-                  <QuarterHead>
-                    <span>
-                      Q{quarter} – {events.length}{" "}
-                      {t("history.events", { count: events.length })}
-                    </span>
-                    {detailLevel === "summary" && (
-                      <Boxes>
-                        {new Array(events.length).fill(0).map((_, i) => (
-                          <Box key={i} />
-                        ))}
-                      </Boxes>
+    const bucketedEntityDataByYearAndQuarter = useTimeBucketedDataDesc(data);
+
+    return (
+      <Root className={className}>
+        {bucketedEntityDataByYearAndQuarter.map(({ year, quarterwiseData }) => {
+          const totalEvents = quarterwiseData.reduce(
+            (all, data) => all + data.events.length,
+            0,
+          );
+          return (
+            <YearGroup key={year}>
+              <YearHead>
+                <SxHeading4>{year}</SxHeading4> – {totalEvents}{" "}
+                {t("history.events", { count: totalEvents })}
+              </YearHead>
+              {quarterwiseData.map(({ quarter, events }) => {
+                const filteredEvents = events.filter((e) =>
+                  sources.has(e.source),
+                );
+
+                return (
+                  <QuarterGroup key={quarter}>
+                    <QuarterHead empty={filteredEvents.length === 0}>
+                      <span>
+                        Q{quarter} – {filteredEvents.length}{" "}
+                        {t("history.events", { count: filteredEvents.length })}
+                      </span>
+                      {detailLevel === "summary" && (
+                        <Boxes>
+                          {new Array(filteredEvents.length)
+                            .fill(0)
+                            .map((_, i) => (
+                              <Box key={i} />
+                            ))}
+                        </Boxes>
+                      )}
+                    </QuarterHead>
+                    {detailLevel !== "summary" && filteredEvents.length > 0 && (
+                      <EventTimeline>
+                        <VerticalLine />
+                        <EventItemList>
+                          {filteredEvents
+                            .slice(
+                              0,
+                              detailLevel === "detail" ? 3 : events.length,
+                            )
+                            .map((row, index) => {
+                              const applicableSecondaryIds =
+                                columnBuckets.secondaryIds.filter((column) =>
+                                  exists(row[column.label]),
+                                );
+                              const secondaryIdsTooltip = applicableSecondaryIds
+                                .map((c) => c.label)
+                                .join(", ");
+
+                              const applicableConcepts =
+                                columnBuckets.concepts.filter((column) =>
+                                  exists(row[column.label]),
+                                );
+                              const conceptsTooltip = applicableConcepts
+                                .map((c) => c.label)
+                                .join(", ");
+
+                              const applicableRest = columnBuckets.rest.filter(
+                                (column) => exists(row[column.label]),
+                              );
+                              const restTooltip = applicableRest
+                                .map((c) => c.label)
+                                .join(", ");
+
+                              return (
+                                <EventItem key={index}>
+                                  <Bullet />
+                                  <RowDates dates={row.dates} />
+                                  <EventItemContent>
+                                    <SxRawDataBadge event={row} />
+                                    {contentFilter.secondaryId &&
+                                      applicableSecondaryIds.length > 0 && (
+                                        <>
+                                          <WithTooltip
+                                            text={secondaryIdsTooltip}
+                                          >
+                                            <SxFaIcon
+                                              icon="microscope"
+                                              active
+                                              tiny
+                                            />
+                                          </WithTooltip>
+                                          <ColBucket>
+                                            {applicableSecondaryIds.map(
+                                              (column) => (
+                                                <span>{row[column.label]}</span>
+                                              ),
+                                            )}
+                                          </ColBucket>
+                                        </>
+                                      )}
+                                    {contentFilter.concept &&
+                                      applicableConcepts.length > 0 && (
+                                        <>
+                                          <WithTooltip text={conceptsTooltip}>
+                                            <SxFaIcon
+                                              icon="folder"
+                                              active
+                                              tiny
+                                            />
+                                          </WithTooltip>
+                                          <ColBucket>
+                                            {applicableConcepts.map(
+                                              (column) => (
+                                                <span>{row[column.label]}</span>
+                                              ),
+                                            )}
+                                          </ColBucket>
+                                        </>
+                                      )}
+                                    {contentFilter.rest &&
+                                      applicableRest.length > 0 && (
+                                        <>
+                                          <WithTooltip text={restTooltip}>
+                                            <SxFaIcon icon="info" active tiny />
+                                          </WithTooltip>
+                                          <ColBucket>
+                                            {applicableRest.map((column) => (
+                                              <span>{row[column.label]}</span>
+                                            ))}
+                                          </ColBucket>
+                                        </>
+                                      )}
+                                  </EventItemContent>
+                                </EventItem>
+                              );
+                            })}
+                        </EventItemList>
+                      </EventTimeline>
                     )}
-                  </QuarterHead>
-                  {detailLevel !== "summary" && (
-                    <EventTimeline>
-                      <VerticalLine />
-                      <EventItemList>
-                        {events
-                          .slice(
-                            0,
-                            detailLevel === "detail" ? 3 : events.length,
-                          )
-                          .map((row, index) => {
-                            return (
-                              <EventItem key={index}>
-                                <Bullet />
-                                <RowDates dates={row.dates} />
-                                <RawDataBadge event={row} />
-                                {Object.keys(row)
-                                  .slice(detailLevel === "full" ? 4 : 8)
-                                  .reverse()
-                                  .map((key, index, array) => (
-                                    <SxWithTooltip
-                                      key={key}
-                                      place="top"
-                                      text={
-                                        detailLevel === "full" ? key : undefined
-                                      }
-                                    >
-                                      <span style={{ flexShrink: 0 }}>
-                                        {`${row[key]}${
-                                          index !== array.length - 1
-                                            ? " | "
-                                            : ""
-                                        }`}
-                                      </span>
-                                    </SxWithTooltip>
-                                  ))}
-                              </EventItem>
-                            );
-                          })}
-                      </EventItemList>
-                    </EventTimeline>
-                  )}
-                </QuarterGroup>
-              );
-            })}
-          </YearGroup>
-        );
-      })}
-    </Root>
-  );
-});
+                  </QuarterGroup>
+                );
+              })}
+            </YearGroup>
+          );
+        })}
+      </Root>
+    );
+  },
+);
 
 const useTimeBucketedDataDesc = (
   data: EntityHistoryStateT["currentEntityData"],

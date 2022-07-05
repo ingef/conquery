@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
@@ -7,11 +7,13 @@ import SplitPane from "react-split-pane";
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 
+import ContentControl, { useContentControl } from "./ContentControl";
 import { DetailControl, DetailLevel } from "./DetailControl";
 import { DownloadEntityDataButton } from "./DownloadEntityDataButton";
 import { EntityHeader } from "./EntityHeader";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
+import SourcesControl from "./SourcesControl";
 import { Timeline } from "./Timeline";
 import { useUpdateHistorySession } from "./actions";
 
@@ -43,7 +45,7 @@ const Controls = styled("div")`
 
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 15px;
   margin: 0 20px;
 `;
 
@@ -57,6 +59,10 @@ const Main = styled("div")`
   padding: 55px 0 10px;
 `;
 
+const SxSourcesControl = styled(SourcesControl)`
+  width: 500px;
+`;
+
 export interface EntityIdsStatus {
   [entityId: string]: SelectOptionT[];
 }
@@ -68,8 +74,14 @@ export const History = () => {
   const currentEntityId = useSelector<StateT, string | null>(
     (state) => state.entityHistory.currentEntityId,
   );
+
   const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
   const updateHistorySession = useUpdateHistorySession();
+
+  const { options, sourcesSet, sourcesFilter, setSourcesFilter } =
+    useSourcesControl();
+
+  const { contentFilter, setContentFilter } = useContentControl();
 
   const currentEntityIndex = useMemo(() => {
     return currentEntityId ? entityIds.indexOf(currentEntityId) : 0;
@@ -130,10 +142,16 @@ export const History = () => {
             />
           )}
           <Controls>
+            <SxSourcesControl
+              options={options}
+              sourcesFilter={sourcesFilter}
+              setSourcesFilter={setSourcesFilter}
+            />
             <DetailControl
               detailLevel={detailLevel}
               setDetailLevel={setDetailLevel}
             />
+            <ContentControl value={contentFilter} onChange={setContentFilter} />
             <DownloadEntityDataButton />
           </Controls>
           <ErrorBoundary
@@ -141,7 +159,11 @@ export const History = () => {
               return <div>Something went wrong here.</div>;
             }}
           >
-            <SxTimeline detailLevel={detailLevel} />
+            <SxTimeline
+              detailLevel={detailLevel}
+              sources={sourcesSet}
+              contentFilter={contentFilter}
+            />
           </ErrorBoundary>
         </Main>
       </SplitPane>
@@ -182,5 +204,40 @@ const useEntityStatus = ({
     setEntityIdsStatus,
     currentEntityStatus,
     setCurrentEntityStatus,
+  };
+};
+
+const useSourcesControl = () => {
+  const [sourcesFilter, setSourcesFilter] = useState<SelectOptionT[]>([]);
+  const uniqueSources = useSelector<StateT, string[]>(
+    (state) => state.entityHistory.uniqueSources,
+  );
+
+  const defaultSources = useMemo(
+    () =>
+      uniqueSources.map((s) => ({
+        label: s,
+        value: s,
+      })),
+    [uniqueSources],
+  );
+
+  const sourcesSet = useMemo(
+    () => new Set(sourcesFilter.map((o) => o.value as string)),
+    [sourcesFilter],
+  );
+
+  useEffect(
+    function takeDefaultIfEmpty() {
+      setSourcesFilter((curr) => (curr.length === 0 ? defaultSources : curr));
+    },
+    [defaultSources],
+  );
+
+  return {
+    options: defaultSources,
+    sourcesSet,
+    sourcesFilter,
+    setSourcesFilter,
   };
 };
