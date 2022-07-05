@@ -53,11 +53,9 @@ public class CQReusedQuery extends CQElement {
 	private boolean excludeFromSecondaryId = false;
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
-		if(query != null) {
-			requiredQueries.add(query);
-			query.getQuery().collectRequiredQueries(requiredQueries);
-		}
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+		// We won't look deeper into the reference query here for now
+		requiredQueries.add(queryId);
 	}
 
 	@Override

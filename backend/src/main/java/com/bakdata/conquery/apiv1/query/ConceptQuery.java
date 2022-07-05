@@ -12,6 +12,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -62,7 +63,7 @@ public class ConceptQuery extends Query {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		root.collectRequiredQueries(requiredQueries);
 	}
 
