@@ -203,8 +203,6 @@ public class FormTest extends ConqueryTestSpec {
 	 */
 	private <F extends ManagedForm & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
 			throws IOException {
-		log.info("{} CSV TESTING: {}", getLabel(), managedForm.getLabel());
-
 
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 

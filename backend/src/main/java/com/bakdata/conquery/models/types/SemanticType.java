@@ -102,7 +102,7 @@ public abstract class SemanticType {
 	}
 
 	/**
-	 * Column
+	 * Column is annotated with a specific identification type.
 	 */
 	@CPSType(id = "ARX_ATTR", base = SemanticType.class)
 	@Data

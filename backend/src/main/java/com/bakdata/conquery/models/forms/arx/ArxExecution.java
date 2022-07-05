@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.apiv1.forms.ArxForm;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -52,7 +53,7 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 	@JsonIgnore
 	ARXResult result;
 
-	public ArxExecution(Form form, User user, Dataset submittedDataset) {
+	public ArxExecution(ArxForm form, User user, Dataset submittedDataset) {
 		super(form, user, submittedDataset);
 	}
 
@@ -95,15 +96,15 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 
 		// Add data. Convert everything into a string
 		super.streamResults()
-			 .flatMap(row -> row.listResultLines().stream()
-								.map(line -> {
-									String[] stringData = new String[resultInfos.size()];
-									for (int cellIdx = 0; cellIdx < resultInfos.size(); cellIdx++) {
-										final ResultInfo resultInfo = resultInfos.get(cellIdx);
-										stringData[cellIdx] = resultInfo.getType().printNullable(printSettings, line[cellIdx]);
-									}
-									return stringData;
-								}))
+			 .flatMap(row -> row.listResultLines().stream())
+			 .map(line -> {
+				 String[] stringData = new String[resultInfos.size()];
+				 for (int cellIdx = 0; cellIdx < resultInfos.size(); cellIdx++) {
+					 final ResultInfo resultInfo = resultInfos.get(cellIdx);
+					 stringData[cellIdx] = resultInfo.getType().printNullable(printSettings, line[cellIdx]);
+				 }
+				 return stringData;
+			 })
 			 .forEach(row -> {
 				 // Add row to ARX data container
 				 data.add(row);
@@ -112,23 +113,26 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 				 for (int i = 0; i < headers.length; i++) {
 					 attrToType.get(headers[i]).register(row[i]);
 				 }
-
 			 });
 
 
 		// Define attributes for the column
-		Arrays.stream(headers).forEach(header -> data.getDefinition().setAttributeType(header, attrToType.get(header).build()));
+		for (String header : headers) {
+			data.getDefinition().setAttributeType(header, attrToType.get(header).build());
+		}
+
+		ArxForm form = (ArxForm) getSubmittedForm();
 
 		// Configure ARX
 		ARXConfiguration config = ARXConfiguration.create();
-		config.addPrivacyModel(new KAnonymity(2));
-		config.setSuppressionLimit(0.02d);
+		config.addPrivacyModel(new KAnonymity(form.getKAnonymitiyParam()));
+		config.setSuppressionLimit(form.getSuppressionLimit());
 
 		// Run ARX
 		ARXAnonymizer anonymizer = new ARXAnonymizer();
-		anonymizer.setMaximumSnapshotSizeDataset(0.2);
-		anonymizer.setMaximumSnapshotSizeSnapshot(0.2);
-		anonymizer.setHistorySize(200);
+		anonymizer.setMaximumSnapshotSizeDataset(form.getMaximumSnapshotSizeDataset());
+		anonymizer.setMaximumSnapshotSizeSnapshot(form.getMaximumSnapshotSizeSnapshot());
+		anonymizer.setHistorySize(form.getHistorySize());
 
 		try {
 			result = anonymizer.anonymize(data, config);
@@ -168,7 +172,7 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 		// Other types only affect value presentation in a view (sorting, ...)
 		return super.getResultInfos()
 					.stream()
-					.map(resultInfo -> new SimpleResultInfo(resultInfo.defaultColumnName(printSettings), ResultType.StringT.INSTANCE))
+					.map(resultInfo -> new SimpleResultInfo(resultInfo.defaultColumnName(printSettings), ResultType.StringT.INSTANCE, resultInfo.getSemantics()))
 					.collect(Collectors.toList());
 	}
 
