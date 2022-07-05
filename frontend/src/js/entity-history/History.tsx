@@ -54,9 +54,16 @@ const Main = styled("div")`
   height: 100%;
   display: grid;
   gap: 10px 0;
-  grid-template-areas: "header control" "timeline timeline";
-  grid-template-rows: auto 1fr;
+  grid-template-areas: "header control" "line line" "timeline timeline";
+  grid-template-rows: auto auto 1fr;
   padding: 55px 0 10px;
+`;
+
+const HorizontalLine = styled("div")`
+  grid-area: line;
+  height: 1px;
+  background-color: ${({ theme }) => theme.col.grayLight};
+  width: 100%;
 `;
 
 const SxSourcesControl = styled(SourcesControl)`
@@ -155,6 +162,7 @@ export const History = () => {
             <ContentControl value={contentFilter} onChange={setContentFilter} />
             <DownloadEntityDataButton />
           </Controls>
+          <HorizontalLine />
           <ErrorBoundary
             fallbackRender={() => {
               return <div>Something went wrong here.</div>;
