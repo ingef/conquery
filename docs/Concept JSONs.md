@@ -453,8 +453,8 @@ These are used to define selects, that can be used to create additional CSV colu
 Different types of Select can be used by setting `type` to one of the following values:
 
 
-### CONCEPT_VALUES<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/concept/ConceptColumnSelect.java#L22)</sup></sub></sup>
-
+### CONCEPT_VALUES<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/concept/ConceptColumnSelect.java#L23-L27)</sup></sub></sup>
+Select collecting the concept-Elements for a whole concept. When prettyPrint is true, the name of the Concept Element is used. Else, the ConceptElementId is returned.
 
 <details><summary>Details</summary><p>
 
