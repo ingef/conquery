@@ -21,8 +21,9 @@ const Root = styled("div")`
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 5px 20px 5px 10px;
-  display: flex;
-  flex-direction: column;
+  display: inline-grid;
+  grid-template-columns: 100px auto;
+  grid-auto-rows: minmax(min-content, max-content);
   gap: 10px;
 `;
 
@@ -37,7 +38,7 @@ const EventItemList = styled("div")`
 
 const EventItem = styled("div")`
   display: grid;
-  grid-template-columns: auto 60px 1fr;
+  grid-template-columns: auto 45px 1fr;
   gap: 3px;
   font-size: ${({ theme }) => theme.font.xs};
   padding: 5px 0;
@@ -50,7 +51,9 @@ const EventItemContent = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
   box-shadow: 0 0 0 1px ${({ theme }) => theme.col.grayLight};
   padding: 15px 10px 5px;
+  margin-top: 5px;
   gap: 5px;
+  background-color: white;
 `;
 
 const Bullet = styled("div")`
@@ -70,26 +73,28 @@ const VerticalLine = styled("div")`
 `;
 
 const YearHead = styled("div")`
-  display: flex;
-  gap: 5px;
-  align-items: center;
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme }) => theme.col.gray};
+  padding: 10px;
+`;
+const StickyWrap = styled("div")`
+  position: sticky;
+  top: 0;
+  left: 0;
 `;
 const YearGroup = styled("div")`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   padding: 7px;
-  box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.2);
-  background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
-const QuarterGroup = styled("div")`
-  padding-top: 7px;
-  background-color: white;
-`;
+const QuarterGroup = styled("div")``;
 const QuarterHead = styled("div")<{ empty?: boolean }>`
   font-weight: ${({ empty }) => (empty ? "normal" : "bold")};
   font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme, empty }) => (empty ? theme.col.gray : theme.col.black)};
+  color: ${({ theme, empty }) =>
+    empty ? theme.col.grayLight : theme.col.gray};
   display: grid;
   grid-template-columns: 120px 1fr;
 `;
@@ -159,8 +164,6 @@ export const Timeline = memo(
       (state) => state.entityHistory.columns,
     );
 
-    console.log(columns);
-
     const currencyConfig = useSelector<StateT, CurrencyConfigT>(
       (state) => state.startup.config.currency,
     );
@@ -192,173 +195,190 @@ export const Timeline = memo(
             0,
           );
           return (
-            <YearGroup key={year}>
+            <>
               <YearHead>
-                <SxHeading4>{year}</SxHeading4> – {totalEvents}{" "}
-                {t("history.events", { count: totalEvents })}
+                <StickyWrap>
+                  <SxHeading4>{year}</SxHeading4>
+                  <div>
+                    {totalEvents} {t("history.events", { count: totalEvents })}
+                  </div>
+                </StickyWrap>
               </YearHead>
-              {quarterwiseData.map(({ quarter, events }) => {
-                const filteredEvents = events.filter((e) =>
-                  sources.has(e.source),
-                );
+              <YearGroup key={year}>
+                {quarterwiseData.map(({ quarter, events }) => {
+                  const filteredEvents = events.filter((e) =>
+                    sources.has(e.source),
+                  );
 
-                return (
-                  <QuarterGroup key={quarter}>
-                    <QuarterHead empty={filteredEvents.length === 0}>
-                      <span>
-                        Q{quarter} – {filteredEvents.length}{" "}
-                        {t("history.events", { count: filteredEvents.length })}
-                      </span>
-                      {detailLevel === "summary" && (
-                        <Boxes>
-                          {new Array(filteredEvents.length)
-                            .fill(0)
-                            .map((_, i) => (
-                              <Box key={i} />
-                            ))}
-                        </Boxes>
-                      )}
-                    </QuarterHead>
-                    {detailLevel !== "summary" && filteredEvents.length > 0 && (
-                      <EventTimeline>
-                        <VerticalLine />
-                        <EventItemList>
-                          {filteredEvents
-                            .slice(
-                              0,
-                              detailLevel === "detail" ? 3 : events.length,
-                            )
-                            .map((row, index) => {
-                              const applicableSecondaryIds =
-                                columnBuckets.secondaryIds.filter((column) =>
-                                  exists(row[column.label]),
-                                );
-                              const secondaryIdsTooltip = applicableSecondaryIds
-                                .map((c) => c.label)
-                                .join(", ");
+                  return (
+                    <QuarterGroup key={quarter}>
+                      <QuarterHead empty={filteredEvents.length === 0}>
+                        <span>
+                          Q{quarter} – {filteredEvents.length}{" "}
+                          {t("history.events", {
+                            count: filteredEvents.length,
+                          })}
+                        </span>
+                        {detailLevel === "summary" && (
+                          <Boxes>
+                            {new Array(filteredEvents.length)
+                              .fill(0)
+                              .map((_, i) => (
+                                <Box key={i} />
+                              ))}
+                          </Boxes>
+                        )}
+                      </QuarterHead>
+                      {detailLevel !== "summary" && filteredEvents.length > 0 && (
+                        <EventTimeline>
+                          <VerticalLine />
+                          <EventItemList>
+                            {filteredEvents
+                              .slice(
+                                0,
+                                detailLevel === "detail" ? 3 : events.length,
+                              )
+                              .map((row, index) => {
+                                const applicableSecondaryIds =
+                                  columnBuckets.secondaryIds.filter((column) =>
+                                    exists(row[column.label]),
+                                  );
+                                const secondaryIdsTooltip =
+                                  applicableSecondaryIds
+                                    .map((c) => c.label)
+                                    .join(", ");
 
-                              const applicableConcepts =
-                                columnBuckets.concepts.filter((column) =>
-                                  exists(row[column.label]),
-                                );
-                              const conceptsTooltip = applicableConcepts
-                                .map((c) => c.label)
-                                .join(", ");
+                                const applicableConcepts =
+                                  columnBuckets.concepts.filter((column) =>
+                                    exists(row[column.label]),
+                                  );
+                                const conceptsTooltip = applicableConcepts
+                                  .map((c) => c.label)
+                                  .join(", ");
 
-                              const applicableMoney =
-                                columnBuckets.money.filter((column) =>
-                                  exists(row[column.label]),
-                                );
-                              const moneyTooltip = applicableMoney
-                                .map((c) => c.label)
-                                .join(", ");
+                                const applicableMoney =
+                                  columnBuckets.money.filter((column) =>
+                                    exists(row[column.label]),
+                                  );
+                                const moneyTooltip = applicableMoney
+                                  .map((c) => c.label)
+                                  .join(", ");
 
-                              const applicableRest = columnBuckets.rest.filter(
-                                (column) => exists(row[column.label]),
-                              );
-                              const restTooltip = applicableRest
-                                .map((c) => c.label)
-                                .join(", ");
+                                const applicableRest =
+                                  columnBuckets.rest.filter((column) =>
+                                    exists(row[column.label]),
+                                  );
+                                const restTooltip = applicableRest
+                                  .map((c) => c.label)
+                                  .join(", ");
 
-                              return (
-                                <EventItem key={index}>
-                                  <Bullet />
-                                  <RowDates dates={row.dates} />
-                                  <EventItemContent>
-                                    <SxRawDataBadge event={row} />
-                                    {contentFilter.money &&
-                                      applicableMoney.length > 0 && (
-                                        <>
-                                          <WithTooltip text={moneyTooltip}>
-                                            <SxFaIcon
-                                              icon="money-bill-alt"
-                                              active
-                                              tiny
-                                            />
-                                          </WithTooltip>
-                                          <ColBucketCode>
-                                            {applicableMoney.map((column) => (
-                                              <NumberFormat
-                                                {...currencyConfig}
-                                                displayType="text"
-                                                value={
-                                                  parseInt(row[column.label]) /
-                                                  100
-                                                }
+                                return (
+                                  <EventItem key={index}>
+                                    <Bullet />
+                                    <RowDates dates={row.dates} />
+                                    <EventItemContent>
+                                      <SxRawDataBadge event={row} />
+                                      {contentFilter.money &&
+                                        applicableMoney.length > 0 && (
+                                          <>
+                                            <WithTooltip text={moneyTooltip}>
+                                              <SxFaIcon
+                                                icon="money-bill-alt"
+                                                active
+                                                tiny
                                               />
-                                            ))}
-                                          </ColBucketCode>
-                                        </>
-                                      )}
-                                    {contentFilter.secondaryId &&
-                                      applicableSecondaryIds.length > 0 && (
-                                        <>
-                                          <WithTooltip
-                                            text={secondaryIdsTooltip}
-                                          >
-                                            <SxFaIcon
-                                              icon="microscope"
-                                              active
-                                              tiny
-                                            />
-                                          </WithTooltip>
-                                          <ColBucket>
-                                            {applicableSecondaryIds.map(
-                                              (column) => (
-                                                <div>
-                                                  <TinyText>
-                                                    {column.label}
-                                                  </TinyText>
-                                                  {row[column.label]}
-                                                </div>
-                                              ),
-                                            )}
-                                          </ColBucket>
-                                        </>
-                                      )}
-                                    {contentFilter.concept &&
-                                      applicableConcepts.length > 0 && (
-                                        <>
-                                          <WithTooltip text={conceptsTooltip}>
-                                            <SxFaIcon
-                                              icon="folder"
-                                              active
-                                              tiny
-                                            />
-                                          </WithTooltip>
-                                          <ColBucket>
-                                            {applicableConcepts.map(
-                                              (column) => (
+                                            </WithTooltip>
+                                            <ColBucketCode>
+                                              {applicableMoney.map((column) => (
+                                                <NumberFormat
+                                                  {...currencyConfig}
+                                                  displayType="text"
+                                                  value={
+                                                    parseInt(
+                                                      row[column.label],
+                                                    ) / 100
+                                                  }
+                                                />
+                                              ))}
+                                            </ColBucketCode>
+                                          </>
+                                        )}
+                                      {contentFilter.secondaryId &&
+                                        applicableSecondaryIds.length > 0 && (
+                                          <>
+                                            <WithTooltip
+                                              text={secondaryIdsTooltip}
+                                            >
+                                              <SxFaIcon
+                                                icon="microscope"
+                                                active
+                                                tiny
+                                              />
+                                            </WithTooltip>
+                                            <ColBucket>
+                                              {applicableSecondaryIds.map(
+                                                (column) => (
+                                                  <div>
+                                                    <TinyText>
+                                                      {column.label}
+                                                    </TinyText>
+                                                    {row[column.label]}
+                                                  </div>
+                                                ),
+                                              )}
+                                            </ColBucket>
+                                          </>
+                                        )}
+                                      {contentFilter.concept &&
+                                        applicableConcepts.length > 0 && (
+                                          <>
+                                            <WithTooltip text={conceptsTooltip}>
+                                              <SxFaIcon
+                                                icon="folder"
+                                                active
+                                                tiny
+                                              />
+                                            </WithTooltip>
+                                            <ColBucket>
+                                              {applicableConcepts.map(
+                                                (column) => (
+                                                  <span>
+                                                    {row[column.label]}
+                                                  </span>
+                                                ),
+                                              )}
+                                            </ColBucket>
+                                          </>
+                                        )}
+                                      {contentFilter.rest &&
+                                        applicableRest.length > 0 && (
+                                          <>
+                                            <WithTooltip text={restTooltip}>
+                                              <SxFaIcon
+                                                icon="info"
+                                                active
+                                                tiny
+                                              />
+                                            </WithTooltip>
+                                            <ColBucket>
+                                              {applicableRest.map((column) => (
                                                 <span>{row[column.label]}</span>
-                                              ),
-                                            )}
-                                          </ColBucket>
-                                        </>
-                                      )}
-                                    {contentFilter.rest &&
-                                      applicableRest.length > 0 && (
-                                        <>
-                                          <WithTooltip text={restTooltip}>
-                                            <SxFaIcon icon="info" active tiny />
-                                          </WithTooltip>
-                                          <ColBucket>
-                                            {applicableRest.map((column) => (
-                                              <span>{row[column.label]}</span>
-                                            ))}
-                                          </ColBucket>
-                                        </>
-                                      )}
-                                  </EventItemContent>
-                                </EventItem>
-                              );
-                            })}
-                        </EventItemList>
-                      </EventTimeline>
-                    )}
-                  </QuarterGroup>
-                );
-              })}
-            </YearGroup>
+                                              ))}
+                                            </ColBucket>
+                                          </>
+                                        )}
+                                    </EventItemContent>
+                                  </EventItem>
+                                );
+                              })}
+                          </EventItemList>
+                        </EventTimeline>
+                      )}
+                    </QuarterGroup>
+                  );
+                })}
+              </YearGroup>
+            </>
           );
         })}
       </Root>
