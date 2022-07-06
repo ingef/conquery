@@ -19,6 +19,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSample
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -65,7 +66,7 @@ public class RelativeFormQuery extends Query {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		query.collectRequiredQueries(requiredQueries);
 		features.collectRequiredQueries(requiredQueries);
 	}

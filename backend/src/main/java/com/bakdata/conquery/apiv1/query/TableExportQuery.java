@@ -32,6 +32,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -117,7 +118,7 @@ public class TableExportQuery extends Query {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		query.collectRequiredQueries(requiredQueries);
 	}
 
