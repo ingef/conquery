@@ -67,7 +67,7 @@ public abstract class ConqueryStorage implements Closeable {
 		final KeyIncludingStore<?, ?> root = findRootNode(loadGraph);
 
 		for (KeyIncludingStore<?, ?> store : Traverser.forGraph(getStoreDependencies()).depthFirstPostOrder(root)) {
-			store.clear();
+			store.removeStore();
 		}
 	}
 
