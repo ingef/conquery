@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.Validator;
@@ -15,6 +15,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -74,7 +75,7 @@ public class AdminDatasetProcessor {
 	private final Validator validator;
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
-	private final Supplier<ObjectMapper> internalObjectMapperCreator;
+	private final Function<Class<? extends View>,ObjectMapper> internalObjectMapperCreator;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 
 	/**
@@ -88,11 +89,10 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		final ObjectMapper objectMapper = internalObjectMapperCreator.get();
-
 		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), validator, "dataset_" + name);
-		datasetStorage.openStores(objectMapper);
+		final ObjectMapper persistenceMapper = internalObjectMapperCreator.apply(View.Persistence.Manager.class);
+		datasetStorage.openStores(persistenceMapper);
 		datasetStorage.loadData();
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
@@ -103,7 +103,7 @@ public class AdminDatasetProcessor {
 				getDatasetRegistry(),
 				datasetStorage,
 				config,
-				objectMapper
+				internalObjectMapperCreator
 		);
 
 		// for now we just add one worker to every ShardNode

@@ -21,7 +21,6 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
@@ -78,7 +77,6 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 
 			final ObjectMapper om = Jackson.BINARY_MAPPER.copy();
-			om.setConfig(om.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 			try (final PreprocessedReader parser = new PreprocessedReader(new GZIPInputStream(new FileInputStream(preprocessingJob.getPreprocessedFile())), om)) {
 
 				PreprocessedHeader header = parser.readHeader();

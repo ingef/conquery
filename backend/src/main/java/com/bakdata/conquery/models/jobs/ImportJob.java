@@ -65,7 +65,7 @@ public class ImportJob extends Job {
 	public static ImportJob createOrUpdate(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, boolean update)
 			throws IOException {
 
-		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getObjectMapper())) {
+		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getPreprocessMapper())) {
 
 			final Dataset ds = namespace.getDataset();
 

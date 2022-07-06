@@ -11,12 +11,13 @@ import javax.validation.constraints.NotEmpty;
 import com.bakdata.conquery.apiv1.frontend.FEFilter;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.QueryContextResolvable;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.AllArgsConstructor;
@@ -71,7 +72,8 @@ public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFil
 		@Min(1)
 		private long repetitions;
 
-		@InternalOnly
+
+		@JsonView(View.InternalCommunication.class)
 		private String[] resolvedValues;
 
 		@Override
