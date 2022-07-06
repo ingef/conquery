@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.jobs;
 
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.*;
@@ -27,7 +25,6 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -272,7 +269,7 @@ public class ImportJob extends Job {
 
 		log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
 
-		applyDictionaryMappings(sharedDictionaryMappings, container.getStores());
+		remapToSharedDictionary(sharedDictionaryMappings, container.getStores());
 
 
 		Import imp = createImport(header, container.getStores(), table.getColumns(), container.size());
@@ -298,14 +295,12 @@ public class ImportJob extends Job {
 
 		workerAssignments.forEach(namespace::addBucketsToWorker);
 
-		getProgressReporter().done();
 	}
 
 	/**
 	 * select, then send buckets.
 	 */
-	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore[] storesSorted)
-			throws JsonProcessingException {
+	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore[] storesSorted) {
 
 		Map<WorkerId, Set<BucketId>> newWorkerAssignments = new HashMap<>();
 
@@ -330,8 +325,6 @@ public class ImportJob extends Job {
 
 			subJob.report(1);
 		}
-
-		subJob.done();
 
 		return newWorkerAssignments;
 	}
@@ -457,7 +450,13 @@ public class ImportJob extends Job {
 	/**
 	 * Apply new positions into incoming shared dictionaries.
 	 */
-	private void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values) {
+	private void remapToSharedDictionary(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values) {
+
+		if (mappings.isEmpty()) {
+			log.trace("No columns with shared dictionary appear to be in the import.");
+			return;
+		}
+
 		final ProgressReporter subJob = getProgressReporter().subJob(mappings.size());
 
 		for (Map.Entry<String, DictionaryMapping> entry : mappings.entrySet()) {
