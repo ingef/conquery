@@ -156,8 +156,9 @@ public class IntrospectionDelegatingRealmTest {
 		AuthenticationInfo info = REALM.doGetAuthenticationInfo(USER1_TOKEN_WRAPPED);
 		
 		assertThat(info)
-			.usingRecursiveComparison()
-			.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
+				.usingRecursiveComparison()
+				.ignoringFields(ConqueryAuthenticationInfo.Fields.credentials)
+				.ignoringFieldsOfTypes(User.ShiroUserAdapter.class)
 			.isEqualTo(new ConqueryAuthenticationInfo(USER_1, USER1_TOKEN_WRAPPED, REALM, true));
 		assertThat(STORAGE.getAllUsers()).containsOnly(new User(USER_1_NAME, USER_1_NAME, STORAGE));
 	}

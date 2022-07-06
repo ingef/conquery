@@ -109,7 +109,7 @@ public class QueryProcessor {
 		query.visit(consumerChain);
 
 
-		query.authorize(subject, dataset, visitors);
+		query.authorize(subject, dataset, visitors, storage);
 		// After all authorization checks we can now use the actual subject to invoke the query and do not to bubble down the Userish in methods
 
 		ExecutionMetrics.reportNamespacedIds(visitors.getInstance(NamespacedIdentifiableCollector.class).getIdentifiables(), primaryGroupName);
