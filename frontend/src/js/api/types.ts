@@ -400,13 +400,15 @@ export interface PostConceptResolveResponseT {
 }
 
 export interface PostFilterResolveResponseT {
-  unknownCodes?: string[];
+  resolvedConcepts: null; // TODO: Weird that this unnecessary field comes back, we're not using it
+  unknownCodes: string[];
   resolvedFilter?: {
     filterId: FilterT["id"];
     tableId: TableT["id"];
     value: {
       label: string;
       value: string;
+      optionValue: string;
     }[];
   };
 }
