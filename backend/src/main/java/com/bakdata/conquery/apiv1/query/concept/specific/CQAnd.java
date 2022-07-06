@@ -16,7 +16,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.QueryUtils;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.Setter;
@@ -46,8 +47,8 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	@Getter @Setter
 	private Optional<Boolean> createExists = Optional.empty();
 
-	@InternalOnly
 	@Getter @Setter
+	@JsonView(View.InternalCommunication.class)
 	private DateAggregationAction dateAction;
 
 	@Override

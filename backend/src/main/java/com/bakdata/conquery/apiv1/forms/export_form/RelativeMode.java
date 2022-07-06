@@ -1,6 +1,5 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -10,7 +9,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.export.RelExportGenerator;
@@ -23,7 +22,7 @@ import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import io.dropwizard.validation.ValidationMethod;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -43,7 +42,7 @@ public class RelativeMode extends Mode {
 	@NotEmpty
 	private List<CQElement> features;
 
-	@InternalOnly
+	@JsonView(View.InternalCommunication.class)
 	private ArrayConceptQuery resolvedFeatures;
 
 	@Override

@@ -19,7 +19,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -35,7 +35,7 @@ import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Functions;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.Streams;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -79,11 +79,11 @@ public class CQExternal extends CQElement {
 	 * Maps from Entity to the computed time-frame.
 	 */
 	@Getter(AccessLevel.PRIVATE)
-	@InternalOnly
+	@JsonView(View.InternalCommunication.class)
 	private Map<Integer, CDateSet> valuesResolved;
 
 	@Getter(AccessLevel.PRIVATE)
-	@InternalOnly
+	@JsonView(View.InternalCommunication.class)
 	private String[] headers;
 
 	/**
@@ -93,8 +93,8 @@ public class CQExternal extends CQElement {
 	 *
 	 * @implNote FK: I would prefer to implement this as a guava table, but they cannot be deserialized with Jackson so we implement the Table manually.
 	 */
-	@InternalOnly
 	@Getter(AccessLevel.PRIVATE)
+	@JsonView(View.InternalCommunication.class)
 	private Map<Integer, Map<String, List<String>>> extra;
 
 	public CQExternal(List<String> format, @NotEmpty String[][] values, boolean onlySingles) {

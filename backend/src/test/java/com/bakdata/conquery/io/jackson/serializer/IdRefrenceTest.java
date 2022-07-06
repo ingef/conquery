@@ -28,7 +28,6 @@ public class IdRefrenceTest {
 	public void testListReferences() throws IOException {
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 		mapper.setInjectableValues(new MutableInjectableValues());
-		mapper.setConfig(mapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 
 		CentralRegistry registry = new CentralRegistry();
 		Dataset dataset = new Dataset();
