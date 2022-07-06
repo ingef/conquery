@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
@@ -16,7 +15,7 @@ public class FirstValueSelect extends MappableSingleColumnSelect {
 
 	@JsonCreator
 	public FirstValueSelect(@NsIdRef Column column,
-							@NsIdRef(serdesTarget = SerdesTarget.MANAGER) InternToExternMapper mapping) {
+							@NsIdRef InternToExternMapper mapping) {
 		super(column, mapping);
 	}
 
