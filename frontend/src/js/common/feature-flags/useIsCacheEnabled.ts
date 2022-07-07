@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 
 export const useIsCacheEnabled = () => {
@@ -7,5 +8,5 @@ export const useIsCacheEnabled = () => {
   const params = new URLSearchParams(search);
   const cache = params.get("cache");
 
-  return !!cache && cache === "1";
+  return useMemo(() => !!cache && cache === "1", [cache]);
 };

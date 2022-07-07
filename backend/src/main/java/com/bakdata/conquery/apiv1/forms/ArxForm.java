@@ -104,8 +104,8 @@ public class ArxForm extends Form {
 	}
 
 	@Override
-	public Set<ManagedExecution<?>> collectRequiredQueries() {
-		return Set.of(queryGroup);
+	public Set<ManagedExecutionId> collectRequiredQueries() {
+		return Set.of(queryGroupId);
 	}
 
 	@Override

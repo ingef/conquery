@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
@@ -52,13 +52,13 @@ interface PropsT {
   onDateClick: () => void;
 }
 
-const QueryGroupActions: FC<PropsT> = ({
+const QueryGroupActions = ({
   excludeActive,
   dateActive,
   onExcludeClick,
   onDeleteGroup,
   onDateClick,
-}) => {
+}: PropsT) => {
   const { t } = useTranslation();
 
   return (
@@ -96,4 +96,4 @@ const QueryGroupActions: FC<PropsT> = ({
   );
 };
 
-export default QueryGroupActions;
+export default memo(QueryGroupActions);

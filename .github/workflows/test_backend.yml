@@ -21,8 +21,9 @@ jobs:
         with:
           submodules: true
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
+          distribution: adopt-hotspot
           java-version: 11
       - name: Download ARX
         run: curl  https://github.com/arx-deidentifier/arx/releases/download/v3.9.0/libarx-3.9.0.jar -OL

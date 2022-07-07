@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { forwardRef } from "react";
+import { forwardRef, memo } from "react";
 import ReactMarkdown from "react-markdown";
 
 import type { SelectOptionT } from "../../api/types";
@@ -52,4 +52,4 @@ const SelectListOption = forwardRef<HTMLDivElement, Props>(
   },
 );
 
-export default SelectListOption;
+export default memo(SelectListOption);

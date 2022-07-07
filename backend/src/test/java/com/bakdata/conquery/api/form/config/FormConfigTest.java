@@ -46,6 +46,7 @@ import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -232,7 +233,7 @@ public class FormConfigTest {
 		}
 
 		@Override
-		public Set<ManagedExecution<?>> collectRequiredQueries() {
+		public Set<ManagedExecutionId> collectRequiredQueries() {
 			return Collections.emptySet();
 		}
 

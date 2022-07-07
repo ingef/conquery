@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { Fragment, useRef, useState } from "react";
+import { Fragment, memo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
@@ -18,13 +18,13 @@ import {
   Menu,
   ResetButton,
   SelectContainer,
-  SxSelectListOption,
   VerticalSeparator,
 } from "../InputSelect/InputSelectComponents";
 import Labeled from "../Labeled";
 import EmptyPlaceholder from "../SelectEmptyPlaceholder";
 import TooManyValues from "../TooManyValues";
 
+import ListItem from "./ListItem";
 import LoadMoreSentinel from "./LoadMoreSentinel";
 import MenuActionBar from "./MenuActionBar";
 import SelectedItem from "./SelectedItem";
@@ -101,6 +101,8 @@ const InputMultiSelect = ({
   const [inputValue, setInputValue] = useState("");
   const { t } = useTranslation();
 
+  const [syncingState, setSyncingState] = useState(false);
+
   const {
     getSelectedItemProps,
     getDropdownProps,
@@ -114,6 +116,7 @@ const InputMultiSelect = ({
     initialSelectedItems: defaultValue || [],
     onSelectedItemsChange: (changes) => {
       if (changes.selectedItems) {
+        setSyncingState(true);
         onChange(changes.selectedItems);
       }
     },
@@ -238,9 +241,11 @@ const InputMultiSelect = ({
   const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
 
   useSyncWithValueFromAbove({
-    inputValueFromAbove: value,
+    value,
     selectedItems,
     setSelectedItems,
+    syncingState,
+    setSyncingState,
   });
 
   const clearStaleSearch = () => {
@@ -272,19 +277,15 @@ const InputMultiSelect = ({
       >
         <ItemsInputContainer>
           {selectedItems.map((option, index) => {
-            const selectedItemProps = getSelectedItemProps({
-              selectedItem: option,
-              index,
-            });
-
             return (
               <SelectedItem
                 key={`${option.value}${index}`}
+                index={index}
                 option={option}
                 active={index === activeIndex}
                 disabled={disabled}
-                {...selectedItemProps}
-                onRemoveClick={() => removeSelectedItem(option)}
+                getSelectedItemProps={getSelectedItemProps}
+                removeSelectedItem={removeSelectedItem}
               />
             );
           })}
@@ -377,33 +378,26 @@ const InputMultiSelect = ({
           />
           <List>
             {!creatable && filteredOptions.length === 0 && <EmptyPlaceholder />}
-            {filteredOptions.map((option, index) => {
-              const { ref: itemPropsRef, ...itemProps } = getItemProps({
-                index,
-                item: filteredOptions[index],
-              });
-
-              return (
-                <Fragment key={`${option.value}${option.label}`}>
-                  <SxSelectListOption
-                    active={highlightedIndex === index}
-                    option={option}
-                    {...itemProps}
-                    ref={itemPropsRef}
-                  />
-                  {index === getSentinelInsertIndex(filteredOptions.length) &&
-                    exists(onLoadMore) && (
-                      <LoadMoreSentinel
-                        onLoadMore={() => {
-                          if (!loading) {
-                            onLoadMore(inputValue);
-                          }
-                        }}
-                      />
-                    )}
-                </Fragment>
-              );
-            })}
+            {filteredOptions.map((option, index) => (
+              <Fragment key={`${option.value}${option.label}`}>
+                <ListItem
+                  index={index}
+                  highlightedIndex={highlightedIndex}
+                  item={filteredOptions[index]}
+                  getItemProps={getItemProps}
+                />
+                {index === getSentinelInsertIndex(filteredOptions.length) &&
+                  exists(onLoadMore) && (
+                    <LoadMoreSentinel
+                      onLoadMore={() => {
+                        if (!loading) {
+                          onLoadMore(inputValue);
+                        }
+                      }}
+                    />
+                  )}
+              </Fragment>
+            ))}
           </List>
         </Menu>
       ) : (
@@ -449,4 +443,4 @@ const InputMultiSelect = ({
   );
 };
 
-export default InputMultiSelect;
+export default memo(InputMultiSelect);
