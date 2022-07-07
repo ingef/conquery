@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
@@ -16,8 +16,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 public class DistinctSelect extends MappableSingleColumnSelect {
 
 	@JsonCreator
-	public DistinctSelect(@NsIdRef Column column,
-						  @NsIdRef(serdesTarget = SerdesTarget.MANAGER) InternToExternMapper mapping) {
+	public DistinctSelect(@NsIdRef Column column, @View.ApiManagerPersistence @NsIdRef InternToExternMapper mapping) {
 		super(column, mapping);
 	}
 
