@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 
@@ -30,7 +31,9 @@ public class RequiredData {
 	private ResourceFile idMapping;
 
 	/**
-	 * If true and concept will be automatically created for every table
+	 * If true a concept will be automatically created for every table.
+	 *
+	 * @see LoadingUtil#importTables(StandaloneSupport, List, boolean)
 	 */
 	private boolean autoConcept;
 }
