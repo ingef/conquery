@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Slf4j
-@ToString(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 public class DictionaryMapping {
 
 	@ToString.Include
@@ -35,6 +35,8 @@ public class DictionaryMapping {
 	private final int numberOfNewIds;
 
 	public static DictionaryMapping createAndImport(Dictionary from, Dictionary to) {
+
+		log.debug("Importing values from `{}` into `{}`", from, to);
 
 		int newIds = 0;
 
@@ -58,7 +60,7 @@ public class DictionaryMapping {
 			}
 
 			if (log.isTraceEnabled()) {
-				log.trace("Remapping: `{}` => `{}` ({} = {})", value.length, to.getElement(targetId).length, id, targetId);
+				log.trace("Remapping(`{}` into `{}`): `{}` => `{}` ({} = {})", from, to, new String(value), new String(to.getElement(targetId)), id, targetId);
 			}
 
 			if (source2Target.put(id, targetId) != -1) {

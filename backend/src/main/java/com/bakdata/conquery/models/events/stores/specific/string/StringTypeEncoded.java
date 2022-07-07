@@ -109,7 +109,7 @@ public class StringTypeEncoded implements StringStore {
 				String decoded = encoding.decode(next);
 
 				if (log.isTraceEnabled()) {
-					log.trace("`{}` => `{}`", new String(next), decoded);
+					log.trace("`{}` ={}=> `{}` ()", new String(next), encoding, decoded);
 				}
 
 				return decoded;
