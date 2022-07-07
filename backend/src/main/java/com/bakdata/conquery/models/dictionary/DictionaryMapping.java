@@ -58,7 +58,7 @@ public class DictionaryMapping {
 			}
 
 			if (log.isTraceEnabled()) {
-				log.trace("Remapping: `{}` => `{}` ({} = {})", value, to.getElement(targetId), id, targetId);
+				log.trace("Remapping: `{}` => `{}` ({} = {})", value.length, to.getElement(targetId).length, id, targetId);
 			}
 
 			if (source2Target.put(id, targetId) != -1) {

@@ -26,8 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Compacted String store, that uses two methods to reduce memory footprint:
- *  1. Use a byte efficient encoding string for the actual string. See {@link Encoding}
- *  2. Store the byte string in an appropriate data structure. See {{@link Dictionary and sub classes}}
+ * 1. Use a byte efficient encoding string for the actual string. See {@link Encoding}
+ * 2. Store the byte string in an appropriate data structure. See {{@link Dictionary and sub classes}}
  */
 @Getter
 @Setter
@@ -44,7 +44,7 @@ public class StringTypeEncoded implements StringStore {
 	 * Cache element lookups and as they might be time-consuming, when a trie traversal is necessary (See {@link com.bakdata.conquery.util.dict.SuccinctTrie}).
 	 */
 	@JsonIgnore
-	private final LoadingCache<Integer,String> elementCache;
+	private final LoadingCache<Integer, String> elementCache;
 
 	@JsonCreator
 	public StringTypeEncoded(StringTypeDictionary subType, Encoding encoding) {
@@ -52,14 +52,14 @@ public class StringTypeEncoded implements StringStore {
 		this.subType = subType;
 		this.encoding = encoding;
 		elementCache = CacheBuilder.newBuilder()
-				.softValues()
-				.build(new CacheLoader<Integer, String>() {
-					@Override
-					@ParametersAreNonnullByDefault
-					public String load(Integer key) throws Exception {
-						return encoding.decode(subType.getElement(key));
-					}
-				});
+								   .softValues()
+								   .build(new CacheLoader<Integer, String>() {
+									   @Override
+									   @ParametersAreNonnullByDefault
+									   public String load(Integer key) throws Exception {
+										   return encoding.decode(subType.getElement(key));
+									   }
+								   });
 	}
 
 	@Override
@@ -108,8 +108,8 @@ public class StringTypeEncoded implements StringStore {
 				byte[] next = subIt.next();
 				String decoded = encoding.decode(next);
 
-				if(log.isTraceEnabled()){
-					log.trace("`{}` => `{}`", next, decoded);
+				if (log.isTraceEnabled()) {
+					log.trace("`{}` => `{}`", new String(next), decoded);
 				}
 
 				return decoded;
@@ -187,7 +187,7 @@ public class StringTypeEncoded implements StringStore {
 	 * We use common Encodings in the reversed way. What the encoding sees as "encoded" data,
 	 * is actually our raw data. On this raw data the decoding of the chosen encoding applied, which
 	 * yield a smaller representation for storage in the memory.
-	 *
+	 * <p>
 	 * To use this technique all string in the dictionary must only use the dictionary that is inherent
 	 * to the chosen encoding.
 	 */
