@@ -23,7 +23,7 @@ import lombok.ToString;
 /**
  * Select collecting the concept-Elements for a whole concept.
  *
- * When prettyPrint is true, the name of the Concept Element is used. Else, the ConceptElementId is returned.
+ * When prettyPrint is true, the label of the Concept Element is used. Else, the ConceptElementId is returned.
  */
 @CPSType(id = "CONCEPT_VALUES", base = Select.class)
 @ToString
