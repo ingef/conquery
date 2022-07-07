@@ -22,6 +22,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Compacted String store, that uses two methods to reduce memory footprint:
@@ -30,6 +31,7 @@ import lombok.SneakyThrows;
  */
 @Getter
 @Setter
+@Slf4j
 @CPSType(base = ColumnStore.class, id = "STRING_ENCODED")
 public class StringTypeEncoded implements StringStore {
 
@@ -103,7 +105,14 @@ public class StringTypeEncoded implements StringStore {
 
 			@Override
 			public String next() {
-				return encoding.decode(subIt.next());
+				byte[] next = subIt.next();
+				String decoded = encoding.decode(next);
+
+				if(log.isTraceEnabled()){
+					log.trace("`{}` => `{}`", next, decoded);
+				}
+
+				return decoded;
 			}
 		};
 	}

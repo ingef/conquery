@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Strings with common, but stripped prefix/suffix.
@@ -23,6 +24,7 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_PREFIX")
 @ToString(of = {"prefix", "suffix", "subType"})
+@Slf4j
 public class StringTypePrefixSuffix implements StringStore {
 
 	@Nonnull
@@ -81,7 +83,13 @@ public class StringTypePrefixSuffix implements StringStore {
 
 			@Override
 			public String next() {
-				return getPrefix() + subIt.next() + getSuffix();
+				final String next = subIt.next();
+
+				if (log.isTraceEnabled()){
+					log.trace("`{}`+`{}`+`{}`", getPrefix(), next, getSuffix());
+				}
+
+				return getPrefix() + next + getSuffix();
 			}
 		};
 	}

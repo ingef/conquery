@@ -57,6 +57,10 @@ public class DictionaryMapping {
 				newIds++;
 			}
 
+			if (log.isTraceEnabled()) {
+				log.trace("Remapping: `{}` => `{}` ({} = {})", value, to.getElement(targetId), id, targetId);
+			}
+
 			if (source2Target.put(id, targetId) != -1) {
 				log.error("Multiple ids map to same target");
 			}
