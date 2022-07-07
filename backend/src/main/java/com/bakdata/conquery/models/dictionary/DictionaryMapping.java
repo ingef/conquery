@@ -38,6 +38,11 @@ public class DictionaryMapping {
 
 		log.debug("Importing values from `{}` into `{}`", from, to);
 
+		if (log.isTraceEnabled()) {
+			from.iterator()
+				.forEachRemaining(entry -> log.trace("{} {}=`{}`", from.getId(), entry.getId(), entry.getValue()));
+		}
+
 		int newIds = 0;
 
 		Int2IntMap source2Target = new Int2IntOpenHashMap(from.size());
