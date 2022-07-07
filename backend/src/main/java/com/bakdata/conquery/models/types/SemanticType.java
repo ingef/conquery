@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.deidentifier.arx.AttributeType;
 
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
@@ -98,5 +99,15 @@ public abstract class SemanticType {
 		@NsIdRef
 		private final Concept<?> concept;
 
+	}
+
+	/**
+	 * Column is annotated with a specific identification type.
+	 */
+	@CPSType(id = "ARX_ATTR", base = SemanticType.class)
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	public static class IdentificationT extends SemanticType {
+		private final AttributeType attributeType;
 	}
 }

@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FC, useCallback } from "react";
+import { memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { QueryIdT } from "../api/types";
@@ -43,7 +43,7 @@ const Text = styled("p")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
-interface PropsT {
+interface Props {
   className?: string;
   isInitial?: boolean;
   isAnd?: boolean;
@@ -52,14 +52,14 @@ interface PropsT {
   onLoadPreviousQuery: (id: QueryIdT) => void;
 }
 
-const QueryEditorDropzone: FC<PropsT> = ({
+const QueryEditorDropzone = ({
   className,
   isAnd,
   isInitial,
   onLoadPreviousQuery,
   onDropFile,
   onDropNode,
-}) => {
+}: Props) => {
   const { t } = useTranslation();
   const onDrop = useCallback(
     (item: StandardQueryNodeT | DragItemFile) => {
@@ -95,4 +95,4 @@ const QueryEditorDropzone: FC<PropsT> = ({
   );
 };
 
-export default QueryEditorDropzone;
+export default memo(QueryEditorDropzone);

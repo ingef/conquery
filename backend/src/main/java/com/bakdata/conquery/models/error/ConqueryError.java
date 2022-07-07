@@ -228,7 +228,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		 */
 		@JsonCreator
 		public ExternalResolveOnePerRowError() {
-			super("External was flagged as one row per entity, but at least one entity spans multiple rows");
+			super("External was flagged as one row per entity, but at least one entity span over multiple rows");
 		}
 	}
 
@@ -306,6 +306,17 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 			this(e);
 			getContext().put(ENTITY, Integer.toString(entity.getId()));
 
+		}
+	}
+
+	/**
+	 * Execution processing error with individual context.
+	 */
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_PROCESSING_CONTEXT")
+	public static class ExecutionProcessingContextError extends ContextError {
+
+		public ExecutionProcessingContextError(String messageTemplate, Map<String, String> context, ConqueryError cause) {
+			super(messageTemplate, context, cause);
 		}
 	}
 

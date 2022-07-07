@@ -1,0 +1,126 @@
+{
+    "type": "FORM_TEST",
+    "label": "ARX-FORM SIMPLE",
+    "expectedCsv": {
+        "results": "tests/form/ARX_FORM/SIMPLE/expected.csv"
+    },
+    "form": {
+        "type": "ARX_FORM",
+        "queryGroup": "00000000-0000-0000-0000-000000000001"
+    },
+    "concepts": [
+        "/tests/form/shared/alter.concept.json"
+    ],
+    "content": {
+        "tables": [
+            "/tests/form/shared/vers_stamm.table.json"
+        ],
+        "previousQueries": [
+            {
+                "type": "CONCEPT_QUERY",
+                "root": {
+                    "type": "EXTERNAL",
+                    "onlySingles": true,
+                    "format": [
+                        "ID",
+                        "EVENT_DATE",
+                        "EXTRA",
+                        "EXTRA"
+                    ],
+                    "values": [
+                        [
+                            "result",
+                            "dates",
+                            "age",
+                            "sex"
+                        ],
+                        [
+                            1,
+                            "2013-11-10",
+                            6,
+                            "f"
+                        ],
+                        [
+                            2,
+                            "2013-11-10",
+                            6,
+                            "m"
+                        ],
+                        [
+                            3,
+                            "2013-11-10",
+                            7,
+                            "f"
+                        ],
+                        [
+                            4,
+                            "2012-01-01",
+                            8,
+                            "m"
+                        ],
+                        [
+                            5,
+                            "2012-01-01",
+                            6,
+                            "m"
+                        ],
+                        [
+                            6,
+                            "2012-01-01",
+                            7,
+                            "m"
+                        ],
+                        [
+                            7,
+                            "2012-01-01",
+                            6,
+                            "m"
+                        ],
+                        [
+                            8,
+                            "2014-11-10",
+                            6,
+                            "f"
+                        ],
+                        [
+                            9,
+                            "2014-11-10",
+                            6,
+                            "m"
+                        ],
+                        [
+                            10,
+                            "2014-11-10",
+                            7,
+                            "f"
+                        ],
+                        [
+                            11,
+                            "2014-11-10",
+                            8,
+                            "m"
+                        ],
+                        [
+                            12,
+                            "2014-11-10",
+                            6,
+                            "m"
+                        ],
+                        [
+                            13,
+                            "2014-11-10",
+                            7,
+                            "m"
+                        ],
+                        [
+                            14,
+                            "2014-11-10",
+                            6,
+                            "m"
+                        ]
+                    ]
+                }
+            }
+        ]
+    }
+}

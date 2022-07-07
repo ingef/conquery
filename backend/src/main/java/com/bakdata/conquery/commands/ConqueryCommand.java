@@ -1,12 +1,6 @@
 package com.bakdata.conquery.commands;
 
-import javax.validation.Validator;
-
-import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;

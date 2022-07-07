@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -22,8 +23,8 @@ import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -49,8 +50,8 @@ public class IntegrationTests {
 	static {
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 
-		MAPPER = mapper.setConfig(mapper.getDeserializationConfig().withView(InternalOnly.class))
-					   .setConfig(mapper.getSerializationConfig().withView(InternalOnly.class));
+		MAPPER = mapper.setConfig(mapper.getDeserializationConfig().withView(View.Persistence.class))
+					   .setConfig(mapper.getSerializationConfig().withView(View.Persistence.class));
 
 		CONFIG_WRITER = MAPPER.writerFor(ConqueryConfig.class);
 	}
@@ -100,6 +101,7 @@ public class IntegrationTests {
 		List<Class<?>> programmatic =
 				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 											 .filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
+						.filter(classInfo -> classInfo.implementsInterface(Serializable.class.getName()))
 											 .loadClasses();
 
 		return programmatic
