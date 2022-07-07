@@ -6,6 +6,8 @@ import java.util.Set;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.deidentifier.arx.AttributeType;
+import org.deidentifier.arx.DataType;
+import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
 
 /**
  * Helper classes that allow us to gather values for possible attribute hierarchies, while
@@ -32,6 +34,27 @@ public interface AttributeTypeBuilder {
 		@Override
 		public AttributeType build() {
 			return AttributeType.Hierarchy.create(values.stream().map(v -> new String[]{v, "*"}).toArray(String[][]::new));
+		}
+	}
+
+	class Date implements AttributeTypeBuilder {
+
+		private final Set<String> values = new HashSet<>();
+
+		@Override
+		public void register(String value) {
+			values.add(value);
+		}
+
+		@Override
+		public AttributeType build() {
+			return HierarchyBuilderDate.create(
+					DataType.DATE,
+					HierarchyBuilderDate.Granularity.DAY_MONTH_YEAR,
+					HierarchyBuilderDate.Granularity.MONTH_YEAR,
+					HierarchyBuilderDate.Granularity.YEAR,
+					HierarchyBuilderDate.Granularity.DECADE
+			).build(values.toArray(String[]::new));
 		}
 	}
 

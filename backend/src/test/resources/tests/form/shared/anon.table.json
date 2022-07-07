@@ -1,0 +1,22 @@
+{
+    "csv": "tests/form/shared/anon.csv",
+    "name": "anon",
+    "primaryColumn": {
+        "name": "id",
+        "type": "STRING"
+    },
+    "columns": [
+        {
+            "name": "date",
+            "type": "DATE"
+        },
+        {
+            "name": "age",
+            "type": "STRING"
+        },
+        {
+            "name": "sex",
+            "type": "STRING"
+        }
+    ]
+}

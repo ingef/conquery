@@ -81,7 +81,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		content = parseSubTree(support, rawContent, RequiredData.class);
 
-		LoadingUtil.importTables(support, content.getTables());
+		LoadingUtil.importTables(support, content.getTables(), content.isAutoConcept());
 		support.waitUntilWorkDone();
 
 

@@ -19,11 +19,18 @@ public class RequiredData {
 
 	private List<RequiredSecondaryId> secondaryIds = Collections.emptyList();
 
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private List<ResourceFile> previousQueryResults = Collections.emptyList();
 
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private List<JsonNode> previousQueries = Collections.emptyList(); // Is parsed as IQuery
 
 	private ResourceFile idMapping;
+
+	/**
+	 * If true and concept will be automatically created for every table
+	 */
+	private boolean autoConcept;
 }

@@ -39,8 +39,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.deidentifier.arx.ARXAnonymizer;
 import org.deidentifier.arx.ARXConfiguration;
 import org.deidentifier.arx.ARXResult;
+import org.deidentifier.arx.AttributeType;
 import org.deidentifier.arx.Data;
 import org.deidentifier.arx.DataHandle;
+import org.deidentifier.arx.DataType;
+import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
 import org.deidentifier.arx.criteria.KAnonymity;
 
 @Slf4j
@@ -60,7 +63,10 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 	@Override
 	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		super.doInitExecutable(datasetRegistry, config);
-		printSettings = new PrintSettings(true, Locale.ROOT, datasetRegistry, config, null);
+		/**
+		 *	Use GERMAN locale because {@link HierarchyBuilderDate.Granularity} is fixed to german formats
+		 */
+		printSettings = new PrintSettings(true, Locale.GERMAN, datasetRegistry, config, null);
 	}
 
 	@Override
@@ -154,14 +160,27 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 	}
 
 	private static AttributeTypeBuilder createAttributeTypeBuilder(ResultInfo info) {
+
+		// Check semantics for identification attributes
 		final Optional<IdentificationT>
-				identType =
-				info.getSemantics().stream().filter(IdentificationT.class::isInstance).map(IdentificationT.class::cast).collect(MoreCollectors.toOptional());
+				identType = info.getSemantics().stream()
+								.filter(IdentificationT.class::isInstance)
+								.map(IdentificationT.class::cast)
+								.collect(MoreCollectors.toOptional());
+
 		return identType
 				.map(IdentificationT::getAttributeType)
 				.map(AttributeTypeBuilder.Fixed::new)
 				.map(AttributeTypeBuilder.class::cast)
-				// for now use a flat "hierarchy" for every attribute that is not further annotated
+				// Special cases
+				.or( // Handle ResultType.DateT: Provide date hierarchy
+					 () -> {
+						 if (info.getType().equals(ResultType.DateT.INSTANCE)) {
+							 return Optional.of(new AttributeTypeBuilder.Date());
+						 }
+						 return Optional.empty();
+					 })
+				// Default case: use a flat "hierarchy" for every other attribute
 				.orElse(new AttributeTypeBuilder.Flat());
 	}
 

@@ -25,32 +25,36 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.LastValueSelect;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.index.InternToExternMapper;
-import com.bakdata.conquery.models.index.MapInternToExternMapper;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.NonNull;
@@ -107,12 +111,58 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importTables(StandaloneSupport support, List<RequiredTable> tables) throws JSONException {
+	public static void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 
 		for (RequiredTable rTable : tables) {
 			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry());
 			uploadTable(support, table);
+
+			if (autoConcept) {
+				final TreeConcept concept = new TreeConcept();
+				concept.setName(table.getName() + "_AUTO");
+
+				final ConceptTreeConnector connector = new ConceptTreeConnector();
+				connector.setConcept(concept);
+				connector.setName("connector");
+				connector.setTable(table);
+
+				List<Select> selects = new ArrayList<>();
+
+				for (Column column : table.getColumns()) {
+					selects.addAll(getAutoSelectsForColumn(column));
+				}
+
+				selects.forEach(select -> select.setHolder(connector));
+
+				connector.setSelects(selects);
+
+				concept.setConnectors(List.of(connector));
+
+				uploadConcept(support, table.getDataset(), concept);
+			}
 		}
+	}
+
+	private List<Select> getAutoSelectsForColumn(Column column) {
+		final String prefix = column.getName() + "_";
+
+		final LastValueSelect last = new LastValueSelect(column, null);
+		last.setName(prefix + LastValueSelect.class.getAnnotation(CPSType.class).id());
+		last.setColumn(column);
+
+
+		final FirstValueSelect first = new FirstValueSelect(column, null);
+		first.setName(prefix + FirstValueSelect.class.getAnnotation(CPSType.class).id());
+		first.setColumn(column);
+		final DistinctSelect distinct = new DistinctSelect(column, null);
+		distinct.setName(prefix + DistinctSelect.class.getAnnotation(CPSType.class).id());
+		distinct.setColumn(column);
+
+		return List.of(
+				last,
+				first,
+				distinct
+		);
 	}
 
 	private static void uploadTable(StandaloneSupport support, Table table) {

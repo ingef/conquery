@@ -2,22 +2,22 @@
     "csv": "tests/form/shared/abc.csv",
     "name": "table",
     "primaryColumn": {
-      "name": "pid",
-      "type": "STRING"
+        "name": "pid",
+        "type": "STRING"
     },
     "columns": [
-      {
-        "name": "second_id",
-        "type": "STRING",
-        "secondaryId": "secondary"
-      },
-      {
-        "name": "datum",
-        "type": "DATE"
-      },
-      {
-        "name": "column",
-        "type": "STRING"
-      }
+        {
+            "name": "second_id",
+            "type": "STRING",
+            "secondaryId": "secondary"
+        },
+        {
+            "name": "datum",
+            "type": "DATE"
+        },
+        {
+            "name": "column",
+            "type": "STRING"
+        }
     ]
-  }
+}
