@@ -297,8 +297,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/ArrayConceptQuery.java#L52) | resolvedDateAggregationMode | one of NONE, MERGE, INTERSECT, LOGICAL | ? |  |  | 
 </p></details>
 
-### ARX_FORM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L26)</sup></sub></sup>
-
+### ARX_FORM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L33-L37)</sup></sub></sup>
+Form that performs an anonymization using the ARX library on the result of the given execution.
 
 <details><summary>Details</summary><p>
 
@@ -308,10 +308,16 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/Form.java#L31-L34) | values | `JsonNode` | `null` |  | Raw form config (basically the raw format of this form), that is used by the backend at the moment to create a {@link com.bakdata.conquery.models.forms.configs.FormConfig} upon start of this form (see {@link ManagedForm#start()}). | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L80-L82) | historySize | `@javax.validation.constraints.Min(1) int` | `200` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L47-L49) | kAnonymityParam | `@javax.validation.constraints.Min(2) int` | `2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L64-L66) | maximumSnapshotSizeDataset | `@javax.validation.constraints.DecimalMax("1") @javax.validation.constraints.DecimalMin(value="0", inclusive=false) double` | `0.2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L72-L74) | maximumSnapshotSizeSnapshot | `@javax.validation.constraints.DecimalMax("1") @javax.validation.constraints.DecimalMin(value="0", inclusive=false) double` | `0.2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L43) | queryGroupId | ID of `ManagedExecution` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L55-L57) | suppressionLimit | `@javax.validation.constraints.DecimalMax("1") @javax.validation.constraints.DecimalMin("0") double` | `0.02` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/Form.java#L32-L35) | values | `JsonNode` | `null` |  | Raw form config (basically the raw format of this form), that is used by the backend at the moment to create a {@link com.bakdata.conquery.models.forms.configs.FormConfig} upon start of this form (see {@link ManagedForm#start()}). | 
 </p></details>
 
-### CONCEPT_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/ConceptQuery.java#L29)</sup></sub></sup>
+### CONCEPT_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/ConceptQuery.java#L31)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -913,7 +919,7 @@ Different types of SemanticType can be used by setting `type` to one of the foll
 
 
 ### ARX_ATTR<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L104-L106)</sup></sub></sup>
-Column
+Column is annotated with a specific identification type.
 
 <details><summary>Details</summary><p>
 
