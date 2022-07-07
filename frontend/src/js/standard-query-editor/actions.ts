@@ -21,6 +21,7 @@ import type { NodeResetConfig } from "../model/node";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
 
+import { expandNode } from "./expandNode";
 import { StandardQueryStateT } from "./queryReducer";
 import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
 
@@ -98,13 +99,29 @@ const findPreviousQueryIds = (node: QueryNodeT, queries = []): string[] => {
   }
 };
 
-export const expandPreviousQuery = createAction(
-  "query-editor/EXPAND_PREVIOUS_QUERY",
-)<{
+// Completely override all groups in the editor with the previous groups, but
+// a) merge elements with concept data from concept trees (esp. "tables")
+// b) load nested previous queries contained in that query,
+//    so they can also be expanded
+const createExpandedQueryState = async ({
+  rootConcepts,
+  query,
+  expandErrorMessage,
+}: {
   rootConcepts: TreesT;
   query: AndQueryT;
   expandErrorMessage: string;
-}>();
+}): Promise<StandardQueryStateT> => {
+  return Promise.all(
+    query.root.children.map((child) =>
+      expandNode(rootConcepts, child, expandErrorMessage),
+    ),
+  );
+};
+
+export const expandPreviousQuery = createAction(
+  "query-editor/EXPAND_PREVIOUS_QUERY",
+)<StandardQueryStateT>();
 
 const isAndQuery = (query: QueryT): query is AndQueryT => {
   return query.root.type === "AND";
@@ -126,13 +143,13 @@ export const useExpandPreviousQuery = () => {
 
       const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
 
-      dispatch(
-        expandPreviousQuery({
-          rootConcepts,
-          query,
-          expandErrorMessage: t("queryEditor.couldNotExpandNode"),
-        }),
-      );
+      const expandedQueryState = await createExpandedQueryState({
+        rootConcepts,
+        query,
+        expandErrorMessage: t("queryEditor.couldNotExpandNode"),
+      });
+
+      dispatch(expandPreviousQuery(expandedQueryState));
 
       await Promise.all(
         nestedPreviousQueryIds.map((queryId) => loadQuery(queryId)),

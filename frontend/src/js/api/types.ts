@@ -69,16 +69,18 @@ export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
   type: "MULTI_SELECT";
 }
 
+// Big = so many options that they need to be fetched async
+// using autocomplete, pagination, etc
 export interface BigMultiSelectFilterT extends MultiSelectFilterBaseT {
   type: "BIG_MULTI_SELECT";
   // Not needed in this format:
-  template: {
-    filePath: string; // "/.../import/stable/Referenzen/example.csv",
-    columns: string[];
-    columnValue: string; // Unclear, what that's even needed for
-    value: string;
-    optionValue: string;
-  };
+  // template: {
+  //   filePath: string; // "/.../import/stable/Referenzen/example.csv",
+  //   columns: string[];
+  //   columnValue: string; // Unclear, what that's even needed for
+  //   value: string;
+  //   optionValue: string;
+  // };
 }
 
 export type SelectFilterValueT = string | number;
