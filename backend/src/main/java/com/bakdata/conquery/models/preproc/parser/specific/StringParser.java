@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
@@ -117,10 +116,10 @@ public class StringParser extends Parser<Integer, StringStore> {
 		// Try all guesses and select the least memory intensive one.
 		//TODO FK: Simplify this, the guessers do a lot of weird lazy computation but implicit.
 		Guess guess = Stream.of(
-				new TrieTypeGuesser(this),
-				new MapTypeGuesser(this),
-				new NumberTypeGuesser(this, getConfig())
-		)
+									new TrieTypeGuesser(this),
+									new MapTypeGuesser(this),
+									new NumberTypeGuesser(this, getConfig())
+							)
 							.map(StringTypeGuesser::createGuess)
 							.filter(Objects::nonNull)
 							.min(Comparator.naturalOrder())
@@ -137,7 +136,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 		//wrap in prefix suffix
 		if (!Strings.isNullOrEmpty(prefix) || !Strings.isNullOrEmpty(suffix)) {
-			result = new StringTypePrefixSuffix(result, prefix, suffix);
+			result = new StringTypePrefixSuffix(result, Strings.nullToEmpty(prefix), Strings.nullToEmpty(suffix));
 		}
 
 		return result;

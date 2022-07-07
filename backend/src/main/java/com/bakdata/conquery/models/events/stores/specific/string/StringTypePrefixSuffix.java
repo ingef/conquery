@@ -81,7 +81,7 @@ public class StringTypePrefixSuffix implements StringStore {
 
 			@Override
 			public String next() {
-				return prefix + subIt.next();
+				return getPrefix() + subIt.next() + getSuffix();
 			}
 		};
 	}
