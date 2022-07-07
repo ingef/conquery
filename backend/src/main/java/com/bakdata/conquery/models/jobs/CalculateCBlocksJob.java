@@ -62,8 +62,6 @@ public class CalculateCBlocksJob extends Job {
 				.collect(Collectors.toList());
 
 		Futures.allAsList(futures).get();
-
-		getProgressReporter().done();
 	}
 
 	private CalculationInformationProcessor createInformationProcessor(CalculationInformation info) {

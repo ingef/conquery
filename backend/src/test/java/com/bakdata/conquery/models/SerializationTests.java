@@ -663,9 +663,9 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil.forType(Double.class)
 							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.POSITIVE_INFINITY, null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MAX_VALUE);
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(new Double(Double.MAX_VALUE));
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MIN_VALUE);
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(new Double(Double.MIN_VALUE));
 		SerializationTestUtil
 				.forType(EntityResult.class)
 				.objectMappers(getApiMapper(), getManagerInternalMapper())

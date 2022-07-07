@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events.stores.types;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.Range.IntegerRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -75,8 +77,8 @@ public class ColumnStoreSerializationTests {
 		when(shardNode.getConfig()).thenReturn(new ConqueryConfig());
 		when(shardNode.getValidator()).thenReturn(Validators.newValidator());
 
-		when(shardNode.createInternalObjectMapper()).thenCallRealMethod();
-		shardInternalMapper = shardNode.createInternalObjectMapper();
+		when(shardNode.createInternalObjectMapper(any())).thenCallRealMethod();
+		shardInternalMapper = shardNode.createInternalObjectMapper(View.Persistence.Shard.class);
 	}
 
 	@Test
