@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.messages.network.specific;
 import java.util.Objects;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
@@ -65,7 +64,7 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 		// Jobception: this is to ensure that no subsequent message is deserialized before one message is processed
 		worker.getJobManager().addSlowJob(new SimpleJob("Deserialize and process WorkerMessage", () -> {
 
-			WorkerMessage message = deserializeMessage(messageRaw, context.getWorkers().getBinaryMapper());
+			WorkerMessage message = deserializeMessage(messageRaw, worker.getCommunicationMapper());
 
 
 				message.setProgressReporter(progressReporter);
@@ -74,8 +73,6 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 	}
 
 	private static WorkerMessage deserializeMessage(byte[] messageRaw, ObjectMapper binaryMapper) throws java.io.IOException {
-		return binaryMapper.readerFor(WorkerMessage.class)
-						   .withView(InternalOnly.class)
-						   .readValue(messageRaw);
+		return binaryMapper.readerFor(WorkerMessage.class).readValue(messageRaw);
 	}
 }

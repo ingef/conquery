@@ -5,8 +5,8 @@ import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.index.InternToExternMapper;
@@ -23,7 +23,8 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	@Getter
 	@Valid
 	@Nullable
-	@NsIdRef(serdesTarget = SerdesTarget.MANAGER)
+	@View.ApiManagerPersistence
+	@NsIdRef
 	private final InternToExternMapper mapping;
 
 	@JsonIgnore

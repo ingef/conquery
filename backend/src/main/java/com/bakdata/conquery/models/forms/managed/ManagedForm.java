@@ -10,7 +10,6 @@ import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -66,7 +65,7 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 	/**
 	 * Subqueries that are send to the workers.
 	 */
-	@InternalOnly
+	@JsonIgnore
 	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 
 

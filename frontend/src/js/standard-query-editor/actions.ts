@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { ActionType, createAction } from "typesafe-actions";
@@ -117,31 +118,34 @@ export const useExpandPreviousQuery = () => {
   const { loadQuery } = useLoadQuery();
   const { t } = useTranslation();
 
-  return async (rootConcepts: TreesT, query: QueryT) => {
-    if (!isAndQuery(query)) {
-      throw new Error("Cant expand query, because root is not AND");
-    }
+  return useCallback(
+    async (rootConcepts: TreesT, query: QueryT) => {
+      if (!isAndQuery(query)) {
+        throw new Error("Cant expand query, because root is not AND");
+      }
 
-    const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
+      const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
 
-    dispatch(
-      expandPreviousQuery({
-        rootConcepts,
-        query,
-        expandErrorMessage: t("queryEditor.couldNotExpandNode"),
-      }),
-    );
+      dispatch(
+        expandPreviousQuery({
+          rootConcepts,
+          query,
+          expandErrorMessage: t("queryEditor.couldNotExpandNode"),
+        }),
+      );
 
-    await Promise.all(
-      nestedPreviousQueryIds.map((queryId) => loadQuery(queryId)),
-    );
+      await Promise.all(
+        nestedPreviousQueryIds.map((queryId) => loadQuery(queryId)),
+      );
 
-    dispatch(
-      setSelectedSecondaryId({
-        secondaryId: query.secondaryId ? query.secondaryId : null,
-      }),
-    );
-  };
+      dispatch(
+        setSelectedSecondaryId({
+          secondaryId: query.secondaryId ? query.secondaryId : null,
+        }),
+      );
+    },
+    [dispatch, t, loadQuery],
+  );
 };
 
 export const updateNodeLabel = createAction("query-editor/UPDATE_NODE_LABEL")<{
@@ -250,26 +254,29 @@ export const useLoadFilterSuggestions = (
   const dispatch = useDispatch();
   const postPrefixForSuggestions = usePostPrefixForSuggestions();
 
-  return async (
-    params: PostPrefixForSuggestionsParams,
-    tableIdx: number,
-    filterIdx: number,
-    { returnOnly }: { returnOnly?: boolean } = {},
-  ) => {
-    if (!editedNode) return null;
+  return useCallback(
+    async (
+      params: PostPrefixForSuggestionsParams,
+      tableIdx: number,
+      filterIdx: number,
+      { returnOnly }: { returnOnly?: boolean } = {},
+    ) => {
+      if (!editedNode) return null;
 
-    const context = { ...editedNode, tableIdx, filterIdx, page: params.page };
+      const context = { ...editedNode, tableIdx, filterIdx, page: params.page };
 
-    const suggestions = await postPrefixForSuggestions(params);
+      const suggestions = await postPrefixForSuggestions(params);
 
-    if (!returnOnly) {
-      dispatch(
-        loadFilterSuggestionsSuccess(successPayload(suggestions, context)),
-      );
-    }
+      if (!returnOnly) {
+        dispatch(
+          loadFilterSuggestionsSuccess(successPayload(suggestions, context)),
+        );
+      }
 
-    return suggestions;
-  };
+      return suggestions;
+    },
+    [dispatch, editedNode, postPrefixForSuggestions],
+  );
 };
 
 export const setSelectedSecondaryId = createAction(

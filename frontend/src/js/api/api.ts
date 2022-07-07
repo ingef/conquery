@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+
 import { apiUrl } from "../environment";
 import type {
   BaseFormConfigT,
@@ -42,52 +44,69 @@ function getProtectedUrl(url: string) {
 }
 
 export const useGetFrontendConfig = () => {
-  return useApi<GetFrontendConfigResponseT>({
-    url: getProtectedUrl("/config/frontend"),
-  });
+  const api = useApi<GetFrontendConfigResponseT>();
+
+  return useCallback(
+    () =>
+      api({
+        url: getProtectedUrl("/config/frontend"),
+      }),
+    [api],
+  );
 };
 
 export const useGetDatasets = () => {
-  return useApi<GetDatasetsResponseT>({ url: getProtectedUrl(`/datasets`) });
+  const api = useApi<GetDatasetsResponseT>();
+
+  return useCallback(() => api({ url: getProtectedUrl(`/datasets`) }), [api]);
 };
 
 export const useGetConcepts = () => {
-  const api = useApi<GetConceptsResponseT>({});
+  const api = useApi<GetConceptsResponseT>();
 
-  return (datasetId: DatasetT["id"]) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/concepts`),
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"]) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/concepts`),
+      }),
+    [api],
+  );
 };
 
 export const useGetConcept = () => {
-  const api = useApi<GetConceptResponseT>({});
+  const api = useApi<GetConceptResponseT>();
 
-  return (datasetId: DatasetT["id"], conceptId: ConceptIdT) =>
-    api(
-      {
-        url: getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}`),
-      },
-      {
-        etagCacheKey: `${datasetId}-${conceptId}`,
-      },
-    );
+  return useCallback(
+    (datasetId: DatasetT["id"], conceptId: ConceptIdT) =>
+      api(
+        {
+          url: getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}`),
+        },
+        {
+          etagCacheKey: `${datasetId}-${conceptId}`,
+        },
+      ),
+    [api],
+  );
 };
 
 // Same signature as postFormQueries
 export const usePostQueries = () => {
   const api = useApi<PostQueriesResponseT>();
 
-  return (
-    datasetId: DatasetT["id"],
-    query: StandardQueryStateT | ValidatedTimebasedQueryStateT,
-    options: { queryType: string; selectedSecondaryId?: string | null },
-  ) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/queries`),
-      method: "POST",
-      data: transformQueryToApi(query, options), // Into backend-compatible format
-    });
+  return useCallback(
+    (
+      datasetId: DatasetT["id"],
+      query: StandardQueryStateT | ValidatedTimebasedQueryStateT,
+      options: { queryType: string; selectedSecondaryId?: string | null },
+    ) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/queries`),
+        method: "POST",
+        data: transformQueryToApi(query, options), // Into backend-compatible format
+      }),
+    [api],
+  );
 };
 
 export interface FormQueryPostPayload {
@@ -99,81 +118,107 @@ export interface FormQueryPostPayload {
 export const usePostFormQueries = () => {
   const api = useApi<PostQueriesResponseT>();
 
-  return (datasetId: DatasetT["id"], query: FormQueryPostPayload) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/queries`),
-      method: "POST",
-      data: query,
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"], query: FormQueryPostPayload) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/queries`),
+        method: "POST",
+        data: query,
+      }),
+    [api],
+  );
 };
 
 export const useGetQuery = () => {
   const api = useApi<GetQueryResponseT>();
 
-  return (datasetId: DatasetT["id"], queryId: QueryIdT) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"], queryId: QueryIdT) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
+      }),
+    [api],
+  );
 };
 
 export const usePostQueryCancel = () => {
   const api = useApi<null>();
 
-  return (datasetId: DatasetT["id"], queryId: QueryIdT) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}/cancel`),
-      method: "POST",
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"], queryId: QueryIdT) =>
+      api({
+        url: getProtectedUrl(
+          `/datasets/${datasetId}/queries/${queryId}/cancel`,
+        ),
+        method: "POST",
+      }),
+    [api],
+  );
 };
 
 export const usePostQueryUpload = () => {
   const api = useApi<UploadQueryResponseT>();
 
-  return (datasetId: DatasetT["id"], data: QueryToUploadT) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/queries/upload`),
-      method: "POST",
-      data,
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"], data: QueryToUploadT) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/queries/upload`),
+        method: "POST",
+        data,
+      }),
+    [api],
+  );
 };
 
 export const useDeleteQuery = () => {
   const api = useApi<null>();
 
-  return (datasetId: DatasetT["id"], queryId: QueryIdT) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
-      method: "DELETE",
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"], queryId: QueryIdT) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
+        method: "DELETE",
+      }),
+    [api],
+  );
 };
 
 export const useGetForms = () => {
   const api = useApi<GetFormQueriesResponseT>();
 
-  return (datasetId: DatasetT["id"]) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/form-queries`),
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"]) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/form-queries`),
+      }),
+    [api],
+  );
 };
 
 export const useGetQueries = () => {
   const api = useApi<GetQueriesResponseT>();
 
-  return (datasetId: DatasetT["id"]) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/queries`),
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"]) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/queries`),
+      }),
+    [api],
+  );
 };
 
 export const usePatchQuery = () => {
   const api = useApi<null>();
 
-  return (datasetId: DatasetT["id"], queryId: QueryIdT, attributes: Object) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
-      method: "PATCH",
-      data: attributes,
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"], queryId: QueryIdT, attributes: Object) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
+        method: "PATCH",
+        data: attributes,
+      }),
+    [api],
+  );
 };
 
 export interface PostPrefixForSuggestionsParams {
@@ -188,58 +233,68 @@ export interface PostPrefixForSuggestionsParams {
 export const usePostPrefixForSuggestions = () => {
   const api = useApi<PostFilterSuggestionsResponseT>();
 
-  return ({
-    datasetId,
-    conceptId,
-    tableId,
-    filterId,
-    prefix,
-    page,
-    pageSize,
-  }: PostPrefixForSuggestionsParams) =>
-    api({
-      url: getProtectedUrl(
-        `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/autocomplete`,
-      ),
-      method: "POST",
-      data: { text: prefix, page, pageSize },
-    });
+  return useCallback(
+    ({
+      datasetId,
+      conceptId,
+      tableId,
+      filterId,
+      prefix,
+      page,
+      pageSize,
+    }: PostPrefixForSuggestionsParams) =>
+      api({
+        url: getProtectedUrl(
+          `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/autocomplete`,
+        ),
+        method: "POST",
+        data: { text: prefix, page, pageSize },
+      }),
+    [api],
+  );
 };
 
 export const usePostConceptsListToResolve = () => {
   const api = useApi<PostConceptResolveResponseT>();
 
-  return (datasetId: DatasetT["id"], conceptId: string, concepts: string[]) =>
-    api({
-      url: getProtectedUrl(
-        `/datasets/${datasetId}/concepts/${conceptId}/resolve`,
-      ),
-      method: "POST",
-      data: { concepts },
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"], conceptId: string, concepts: string[]) =>
+      api({
+        url: getProtectedUrl(
+          `/datasets/${datasetId}/concepts/${conceptId}/resolve`,
+        ),
+        method: "POST",
+        data: { concepts },
+      }),
+    [api],
+  );
 };
 
 export const usePostFilterValuesResolve = () => {
   const api = useApi<PostFilterResolveResponseT>();
 
-  return (
-    datasetId: DatasetT["id"],
-    conceptId: string,
-    tableId: string,
-    filterId: string,
-    values: string[],
-  ) =>
-    api({
-      url: getProtectedUrl(
-        `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/resolve`,
-      ),
-      method: "POST",
-      data: { values },
-    });
+  return useCallback(
+    (
+      datasetId: DatasetT["id"],
+      conceptId: string,
+      tableId: string,
+      filterId: string,
+      values: string[],
+    ) =>
+      api({
+        url: getProtectedUrl(
+          `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/resolve`,
+        ),
+        method: "POST",
+        data: { values },
+      }),
+    [api],
+  );
 };
 
 export const useGetMe = () => {
-  return useApi<GetMeResponseT>({ url: getProtectedUrl(`/me`) });
+  const api = useApi<GetMeResponseT>();
+  return useCallback(() => api({ url: getProtectedUrl(`/me`) }), [api]);
 };
 
 export const usePostLogin = () => {
@@ -248,13 +303,16 @@ export const usePostLogin = () => {
     method: "POST",
   });
 
-  return (user: string, password: string) =>
-    api({
-      data: {
-        user,
-        password,
-      },
-    });
+  return useCallback(
+    (user: string, password: string) =>
+      api({
+        data: {
+          user,
+          password,
+        },
+      }),
+    [api],
+  );
 };
 
 // This endpoint exists, but it's not used anymore,
@@ -263,95 +321,116 @@ export const usePostLogin = () => {
 export const usePostFormConfig = () => {
   const api = useApi<PostFormConfigsResponseT>();
 
-  return (datasetId: DatasetT["id"], data: BaseFormConfigT) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
-      method: "POST",
-      data,
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"], data: BaseFormConfigT) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
+        method: "POST",
+        data,
+      }),
+    [api],
+  );
 };
 
 export const useGetFormConfig = () => {
   const api = useApi<GetFormConfigResponseT>();
 
-  return (datasetId: DatasetT["id"], formConfigId: string) =>
-    api({
-      url: getProtectedUrl(
-        `/datasets/${datasetId}/form-configs/${formConfigId}`,
-      ),
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"], formConfigId: string) =>
+      api({
+        url: getProtectedUrl(
+          `/datasets/${datasetId}/form-configs/${formConfigId}`,
+        ),
+      }),
+    [api],
+  );
 };
 
 export const usePatchFormConfig = () => {
   const api = useApi<GetFormConfigResponseT>();
 
-  return (
-    datasetId: DatasetT["id"],
-    formConfigId: string,
-    data: Partial<FormConfigT>,
-  ) =>
-    api({
-      url: getProtectedUrl(
-        `/datasets/${datasetId}/form-configs/${formConfigId}`,
-      ),
-      method: "PATCH",
-      data,
-    });
+  return useCallback(
+    (
+      datasetId: DatasetT["id"],
+      formConfigId: string,
+      data: Partial<FormConfigT>,
+    ) =>
+      api({
+        url: getProtectedUrl(
+          `/datasets/${datasetId}/form-configs/${formConfigId}`,
+        ),
+        method: "PATCH",
+        data,
+      }),
+    [api],
+  );
 };
 
 export const useGetFormConfigs = () => {
   const api = useApi<GetFormConfigsResponseT>();
 
-  return (datasetId: DatasetT["id"]) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"]) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
+      }),
+    [api],
+  );
 };
 
 export const useDeleteFormConfig = () => {
   const api = useApi<null>();
 
-  return (datasetId: DatasetT["id"], formConfigId: string) =>
-    api({
-      url: getProtectedUrl(
-        `/datasets/${datasetId}/form-configs/${formConfigId}`,
-      ),
-      method: "DELETE",
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"], formConfigId: string) =>
+      api({
+        url: getProtectedUrl(
+          `/datasets/${datasetId}/form-configs/${formConfigId}`,
+        ),
+        method: "DELETE",
+      }),
+    [api],
+  );
 };
 
 export const useGetEntityHistoryDefaultParams = () => {
   const api = useApi<GetEntityHistoryDefaultParamsResponse>();
 
-  return (datasetId: DatasetT["id"]) =>
-    api({
-      url: getProtectedUrl(`/datasets/${datasetId}/entity-preview`),
-    });
+  return useCallback(
+    (datasetId: DatasetT["id"]) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/entity-preview`),
+      }),
+    [api],
+  );
 };
 
 export const useGetEntityHistory = () => {
   const api = useApi<GetEntityHistoryResponse>();
 
-  return (
-    datasetId: DatasetT["id"],
-    entityId: string,
-    sources: TableT["id"][],
-    time: {
-      min: string; // Format like "2020-01-01"
-      max: string; // Format like "2020-12-31"
-    } = {
-      min: "2015-01-01",
-      max: "2021-12-31",
-    },
-  ) =>
-    api({
-      method: "POST",
-      url: getProtectedUrl(`/datasets/${datasetId}/queries/entity`),
-      data: {
-        idKind: "PID", // TODO: Figure out which other strings are possible here
-        entityId,
-        time,
-        sources,
+  return useCallback(
+    (
+      datasetId: DatasetT["id"],
+      entityId: string,
+      sources: TableT["id"][],
+      time: {
+        min: string; // Format like "2020-01-01"
+        max: string; // Format like "2020-12-31"
+      } = {
+        min: "2015-01-01",
+        max: "2021-12-31",
       },
-    });
+    ) =>
+      api({
+        method: "POST",
+        url: getProtectedUrl(`/datasets/${datasetId}/queries/entity`),
+        data: {
+          idKind: "PID", // TODO: Figure out which other strings are possible here
+          entityId,
+          time,
+          sources,
+        },
+      }),
+    [api],
+  );
 };

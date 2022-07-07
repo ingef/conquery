@@ -52,12 +52,13 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 		@Override
 		public void execute() throws Exception {
-			final ProgressReporter progressReporter = getProgressReporter().subJob(worker.getStorage().getAllConcepts().size());
 			if (worker.getStorage().getAllCBlocks().isEmpty()) {
 				log.debug("Worker {} is empty, skipping.", worker);
-				progressReporter.done();
 				return;
 			}
+
+			final ProgressReporter progressReporter = getProgressReporter();
+			progressReporter.setMax(worker.getStorage().getAllConcepts().size());
 
 			log.info("BEGIN update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
 
@@ -118,7 +119,6 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 				worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
 			}
 
-			progressReporter.done();
 		}
 
 
@@ -171,8 +171,6 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 					log.error("Failed to collect the matching stats for {}", cBlock, e);
 				}
 			}
-
-			getProgressReporter().report(1);
 
 			log.trace("DONE calculating for `{}`", concept.getId());
 		}
