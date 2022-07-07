@@ -27,7 +27,7 @@ import lombok.ToString;
 public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	/**
-	 * Query used to filter for Entities. If subPlan is contained, tables will be exported for it.
+	 * Query used to export tables filtered by entity. If the subPlan evaluates as contained for an entity, the corresponding table contents will be exported.
 	 */
 	private final QueryPlan<? extends EntityResult> subPlan;
 
