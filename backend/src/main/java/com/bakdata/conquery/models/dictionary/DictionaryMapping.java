@@ -40,7 +40,7 @@ public class DictionaryMapping {
 
 		if (log.isTraceEnabled()) {
 			from.iterator()
-				.forEachRemaining(entry -> log.trace("{} {}=`{}`", from.getId(), entry.getId(), entry.getValue()));
+				.forEachRemaining(entry -> log.trace("{} {}=`{}`", from.getId(), entry.getId(), new String(entry.getValue())));
 		}
 
 		int newIds = 0;
