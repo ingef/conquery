@@ -81,6 +81,9 @@ public class TableExportQuery extends Query {
 	@Valid
 	private List<CQConcept> tables;
 
+	/**
+	 * @see TableExportQueryPlan#rawConceptValues
+	 */
 	private boolean rawConceptValues = true;
 
 	/**

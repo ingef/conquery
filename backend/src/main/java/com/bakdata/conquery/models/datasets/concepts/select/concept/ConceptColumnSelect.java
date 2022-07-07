@@ -6,6 +6,7 @@ import java.util.Set;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -13,7 +14,6 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptColumnsAggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -44,11 +44,13 @@ public class ConceptColumnSelect extends Select {
 		return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.ConceptColumnT(concept)));
 	}
 
-	@Override
-	public ResultType getResultType() {
-		return new ResultType.ListT(new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings)));
-	}
 
+	/**
+	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
+	 *
+	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
+	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} ()} is used to print.
+ 	 */
 	public static String printValue(Concept concept, Object rawValue, PrintSettings printSettings) {
 
 		if (rawValue == null) {

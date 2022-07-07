@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
@@ -18,6 +19,9 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.ToString;
 
+/**
+ * @see com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect
+ */
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class ConceptColumnsAggregator extends Aggregator<Set<Integer>> {
 
@@ -74,7 +78,6 @@ public class ConceptColumnsAggregator extends Aggregator<Set<Integer>> {
 
 	@Override
 	public ResultType getResultType() {
-		// ResultInfo is created manually
-		throw new IllegalStateException();
+		return new ResultType.ListT(new ResultType.StringT((o, printSettings) -> ConceptColumnSelect.printValue(concept, o, printSettings)));
 	}
 }
