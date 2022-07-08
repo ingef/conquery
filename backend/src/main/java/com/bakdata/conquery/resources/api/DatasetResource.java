@@ -24,7 +24,7 @@ import lombok.Setter;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class DatasetResource extends HDatasets {
 
-	private ConceptsProcessor processor;
+	private final ConceptsProcessor processor;
 
 	@GET
 	@Path("concepts")

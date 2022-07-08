@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Consumes(ExtraMimeTypes.JSON_STRING)
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
+@Path("permissions/{" + OWNER_ID + "}")
 public class PermissionResource {
 
 	private final AdminProcessor processor;

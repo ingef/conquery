@@ -102,8 +102,8 @@ public class AdminServlet {
 				bind(manager.getValidator()).to(Validator.class);
 				bind(manager.getJobManager()).to(JobManager.class);
 				bind(manager.getConfig()).to(ConqueryConfig.class);
-				bindAsContract(AdminProcessor.class);
-				bindAsContract(AdminDatasetProcessor.class);
+				bind(adminProcessor).to(AdminProcessor.class);
+				bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
 				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 			}
 		});

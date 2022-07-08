@@ -22,7 +22,7 @@ import lombok.Setter;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class DatasetsResource extends HAuthorized {
 
-	private ConceptsProcessor processor;
+	private final ConceptsProcessor processor;
 
 	@GET
 	public List<IdLabel<DatasetId>> getDatasets() {
