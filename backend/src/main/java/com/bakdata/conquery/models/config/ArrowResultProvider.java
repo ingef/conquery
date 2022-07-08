@@ -37,8 +37,8 @@ public class ArrowResultProvider implements ResultRendererProvider {
 		}
 
 		return List.of(
-				ResultArrowResource.getStreamDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec),
-				ResultArrowResource.getFileDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec)
+				ResultArrowResource.getFileDownloadURL(uriBuilder.clone(), (ManagedExecution<?> & SingleTableResult) exec),
+				ResultArrowResource.getStreamDownloadURL(uriBuilder.clone(), (ManagedExecution<?> & SingleTableResult) exec)
 		);
 	}
 

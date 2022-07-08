@@ -88,7 +88,6 @@ public class AdminServlet {
 		);
 
 		adminDatasetProcessor = new AdminDatasetProcessor(
-				manager.getStorage(),
 				manager.getConfig(),
 				manager.getValidator(),
 				manager.getDatasetRegistry(),

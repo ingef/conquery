@@ -40,6 +40,7 @@ import javax.inject.Inject;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class UIProcessor {
 
+	@Getter
 	private final AdminProcessor adminProcessor;
 
 	public DatasetRegistry getDatasetRegistry() {
