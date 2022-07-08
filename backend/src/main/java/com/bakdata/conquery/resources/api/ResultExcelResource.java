@@ -30,23 +30,21 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.auth.Auth;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Path("datasets/{" + DATASET + "}/result/")
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultExcelResource {
 
 	public static final String GET_RESULT_PATH_METHOD = "get";
 
+	private final DatasetRegistry datasetRegistry;
 
-	@Inject
-	private DatasetRegistry datasetRegistry;
+	private final ConqueryConfig config;
 
-	@Inject
-	private ConqueryConfig config;
-
-	@Inject
-	private ResultExcelProcessor processor;
+	private final ResultExcelProcessor processor;
 
 	@GET
 	@Path("{" + QUERY + "}.xlsx")

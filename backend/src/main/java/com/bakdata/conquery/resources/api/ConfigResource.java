@@ -15,11 +15,10 @@ import lombok.RequiredArgsConstructor;
 
 @Path("config")
 @Produces(AdditionalMediaTypes.JSON)
-
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ConfigResource {
 
-	@Inject
-	private ConqueryConfig config;
+	private final ConqueryConfig config;
 
 	@GET
 	@Path("frontend")

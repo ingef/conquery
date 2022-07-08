@@ -17,17 +17,17 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormProcessor;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.auth.Auth;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Path("datasets/{" + DATASET + "}/form-queries")
 @Consumes(AdditionalMediaTypes.JSON)
 @Produces(AdditionalMediaTypes.JSON)
-@PermitAll
 @Slf4j
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class FormResource {
 
-	@Inject
-	private FormProcessor processor;
+	private final FormProcessor processor;
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)

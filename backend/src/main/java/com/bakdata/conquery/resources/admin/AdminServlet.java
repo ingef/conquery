@@ -128,6 +128,8 @@ public class AdminServlet {
 			}
 		});
 
+		jerseyConfig.register(AdminPermissionFilter.class);
+		jerseyConfigUI.register(AdminPermissionFilter.class);
 		jerseyConfig.register(IdRefPathParamConverterProvider.class);
 		jerseyConfigUI.register(IdRefPathParamConverterProvider.class);
 		jerseyConfig.register(PathParamInjector.class);

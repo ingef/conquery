@@ -27,17 +27,17 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Path("datasets/{" + DATASET + "}/result/")
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultArrowResource {
-	@Inject
-	private ResultArrowProcessor processor;
-	@Inject
-	private DatasetRegistry datasetRegistry;
-	@Inject
-	private ConqueryConfig config;
+
+	private final ResultArrowProcessor processor;
+	private final DatasetRegistry datasetRegistry;
+	private final ConqueryConfig config;
 
 	@GET
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_FILE)
@@ -51,7 +51,7 @@ public class ResultArrowResource {
 
 		checkSingleTableResult(query);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), dataset.getId(), subject.getId(), subject.getName());
-		return processor.createResultFile(subject, query, dataset, pretty.orElse(false), datasetRegistry, config);
+		return processor.createResultFile(subject, query, dataset, pretty.orElse(false));
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
@@ -86,6 +86,6 @@ public class ResultArrowResource {
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset, subject.getId(), subject.getName());
-		return processor.createResultStream(subject, execution, dataset, pretty.orElse(false), datasetRegistry, config);
+		return processor.createResultStream(subject, execution, dataset, pretty.orElse(false));
 	}
 }

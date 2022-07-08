@@ -27,15 +27,17 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Path("datasets/{" + DATASET + "}/result/")
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultCsvResource {
 
 	public static final String GET_RESULT_PATH_METHOD = "getAsCsv";
-	@Inject
-	private ResultCsvProcessor processor;
+
+	private final ResultCsvProcessor processor;
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder

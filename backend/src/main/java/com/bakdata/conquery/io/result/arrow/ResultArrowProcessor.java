@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Function;
 
+import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -32,7 +33,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import lombok.experimental.UtilityClass;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.dictionary.DictionaryProvider;
@@ -42,14 +43,18 @@ import org.apache.arrow.vector.ipc.ArrowWriter;
 import org.apache.http.HttpStatus;
 
 @Slf4j
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultArrowProcessor {
 
 	// From https://www.iana.org/assignments/media-types/application/vnd.apache.arrow.file
 	public static final MediaType FILE_MEDIA_TYPE = new MediaType("application", "vnd.apache.arrow.file");
 	public static final MediaType STREAM_MEDIA_TYPE = new MediaType("application", "vnd.apache.arrow.stream");
 
+	private final DatasetRegistry datasetRegistry;
+	private final ConqueryConfig config;
 
-	public Response createResultFile(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+
+	public Response createResultFile(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
@@ -63,7 +68,7 @@ public class ResultArrowProcessor {
 		);
 	}
 
-	public Response createResultStream(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public Response createResultStream(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				subject,

@@ -27,16 +27,16 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
 
 @Slf4j
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultCsvProcessor {
 
-	@Inject
-	private ConqueryConfig config;
-	@Inject
-	private DatasetRegistry datasetRegistry;
+	private final ConqueryConfig config;
+	private final DatasetRegistry datasetRegistry;
 
 	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty, Charset charset) {
 

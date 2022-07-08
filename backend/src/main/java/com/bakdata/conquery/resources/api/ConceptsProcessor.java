@@ -64,14 +64,11 @@ import org.apache.commons.lang3.tuple.Pair;
 
 @Getter
 @Slf4j
-@NoArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ConceptsProcessor {
 
-	@Inject
-	private DatasetRegistry namespaces;
-	@Inject
-	private Validator validator;
+	private final DatasetRegistry namespaces;
+	private final Validator validator;
 
 	private final LoadingCache<Concept<?>, FEList> nodeCache =
 			CacheBuilder.newBuilder()

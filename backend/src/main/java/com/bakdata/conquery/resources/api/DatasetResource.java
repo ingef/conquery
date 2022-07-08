@@ -14,16 +14,17 @@ import com.bakdata.conquery.apiv1.frontend.FERoot;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.resources.hierarchies.HDatasets;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Path("datasets/{" + DATASET + "}")
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class DatasetResource extends HDatasets {
 
-	@Inject
-	protected ConceptsProcessor processor;
+	private ConceptsProcessor processor;
 
 	@GET
 	@Path("concepts")

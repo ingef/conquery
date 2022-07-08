@@ -4,6 +4,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import io.dropwizard.views.View;
+import lombok.RequiredArgsConstructor;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -16,10 +17,10 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 @Produces(MediaType.TEXT_HTML)
 @Path(USERS_PATH_ELEMENT)
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class UserUIResource {
 
-	@Inject
-	protected UIProcessor uiProcessor;
+	protected final UIProcessor uiProcessor;
 
 	@GET
 	public View getUsers() {

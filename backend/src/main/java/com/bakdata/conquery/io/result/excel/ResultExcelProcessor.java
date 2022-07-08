@@ -28,17 +28,14 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@NoArgsConstructor
-@AllArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 @Slf4j
 public class ResultExcelProcessor {
 
 	// Media type according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-	@Inject
-	private DatasetRegistry datasetRegistry;
-	@Inject
-	private ConqueryConfig config;
+	private final DatasetRegistry datasetRegistry;
+	private final ConqueryConfig config;
 
 
 	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty) {

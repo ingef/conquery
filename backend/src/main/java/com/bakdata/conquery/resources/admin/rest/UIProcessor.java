@@ -36,14 +36,11 @@ import javax.inject.Inject;
  * Wrapper processor that transforms internal representations of the {@link AdminProcessor} into
  * objects that are more convenient to handle with freemarker.
  */
-@NoArgsConstructor
-@AllArgsConstructor
 @Slf4j
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class UIProcessor {
 
-	@Inject
-	@Getter
-	private AdminProcessor adminProcessor;
+	private final AdminProcessor adminProcessor;
 
 	public DatasetRegistry getDatasetRegistry() {
 		return adminProcessor.getDatasetRegistry();

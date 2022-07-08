@@ -58,30 +58,25 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-@NoArgsConstructor
-@AllArgsConstructor
 @Getter
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AdminDatasetProcessor {
 
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
 	private static final String ABBREVIATION_MARKER = "\u2026";
 
-	@Inject
-	private MetaStorage storage; // TODO Remove
-	@Inject
-	private ConqueryConfig config;
-	@Inject
-	private Validator validator;
-	@Inject
-	private DatasetRegistry datasetRegistry;
-	@Inject
-	private JobManager jobManager;
+	private final ConqueryConfig config;
+	private final Validator validator;
+	private final DatasetRegistry datasetRegistry;
+	private final JobManager jobManager;
+
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 
 	/**
