@@ -205,8 +205,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				bind(datasetRegistry).to(DatasetRegistry.class);
 			}
 		});
-
-		resourceConfig.register(PathParamInjector.class);
 	}
 
 	/**

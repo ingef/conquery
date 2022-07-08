@@ -131,7 +131,6 @@ public class AdminServlet {
 		jerseyConfigUI.register(AdminPermissionFilter.class);
 		jerseyConfig.register(IdRefPathParamConverterProvider.class);
 		jerseyConfigUI.register(IdRefPathParamConverterProvider.class);
-		jerseyConfig.register(PathParamInjector.class);
 
 		// register features
 		final AuthCookieFilter authCookieFilter = manager.getConfig().getAuthentication().getAuthCookieFilter();

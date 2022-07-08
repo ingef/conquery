@@ -45,5 +45,6 @@ public class RESTServer {
 		//disable all browser caching if not expressly wanted
 		jersey.register(CachingFilter.class);
 		jersey.register(LocaleFilter.class);
+		jersey.register(PathParamInjector.class);
 	}
 }
