@@ -31,7 +31,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -44,12 +44,6 @@ public class ExcelResultProvider implements ResultRendererProvider {
 
 	// Media type according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
-	@JsonIgnore
-	private DatasetRegistry datasetRegistry;
-
-	@JsonIgnore
-	private ConqueryConfig config;
 
 	private boolean hidden = false;
 
@@ -69,16 +63,13 @@ public class ExcelResultProvider implements ResultRendererProvider {
 
 	@Override
 	public void registerResultResource(JerseyEnvironment environment, ManagerNode manager) {
-		setConfig(manager.getConfig());
-		setDatasetRegistry(manager.getDatasetRegistry());
 
-		//inject required services
-		environment.register(this);
-
+		// inject required services
+		environment.register(new DropwizardResourceConfig.SpecificBinder(this, ExcelResultProvider.class));
 		environment.register(ResultExcelResource.class);
 	}
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		ConqueryMDC.setLocation(subject.getName());
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 

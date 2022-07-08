@@ -51,6 +51,7 @@ public class PathParamInjector implements ContainerRequestFilter {
 				if (registry != null) {
 					registry.get(datasetId).getInjectables().forEach(i -> i.inject(values));
 				}
+			}
 			return values;
 		}
 

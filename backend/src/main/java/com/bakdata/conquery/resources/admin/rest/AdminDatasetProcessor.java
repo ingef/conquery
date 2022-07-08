@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -59,10 +58,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.glassfish.jersey.spi.Contract;
 
 
 @Slf4j
@@ -85,7 +82,6 @@ public class AdminDatasetProcessor {
 	private DatasetRegistry datasetRegistry;
 	@Inject
 	private JobManager jobManager;
-private final Function<Class<? extends View>,ObjectMapper> internalObjectMapperCreator;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 
 	/**
@@ -99,29 +95,7 @@ private final Function<Class<? extends View>,ObjectMapper> internalObjectMapperC
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		// Prepare empty storage
-		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), validator, "dataset_" + name);
-		final ObjectMapper persistenceMapper = internalObjectMapperCreator.apply(View.Persistence.Manager.class);
-		datasetStorage.openStores(persistenceMapper);
-		datasetStorage.loadData();
-		datasetStorage.updateDataset(dataset);
-		datasetStorage.updateIdMapping(new EntityIdMap());
-		datasetStorage.close();
-
-
-		Namespace.createAndRegister(
-				getDatasetRegistry(),
-				datasetStorage,
-				config,
-				internalObjectMapperCreator
-		);
-
-		// for now we just add one worker to every ShardNode
-		for (ShardNodeInformation node : datasetRegistry.getShardNodes().values()) {
-			node.send(new AddWorker(dataset));
-		}
-
-		return dataset;
+		return datasetRegistry.createNamespace(dataset).getDataset();
 	}
 
 	/**

@@ -53,12 +53,17 @@ import org.junit.jupiter.api.Test;
 public class StoredQueriesProcessorTest {
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 	// Marked Unused, but does inject itself.
-	public static final AuthorizationController AUTHORIZATION_CONTROLLER = new AuthorizationController(STORAGE,new DevelopmentAuthorizationConfig());
+	public static final AuthorizationController AUTHORIZATION_CONTROLLER = new AuthorizationController(STORAGE, new DevelopmentAuthorizationConfig());
 
-	private static final QueryProcessor processor = new QueryProcessor(new DatasetRegistry(0), STORAGE, new ConqueryConfig());
+	public static final ConqueryConfig CONFIG = new ConqueryConfig();
+	private static final QueryProcessor processor = new QueryProcessor(new DatasetRegistry(0, CONFIG, null), STORAGE, CONFIG);
 
-	private static final Dataset DATASET_0 = new Dataset() {{setName("dataset0");}};
-	private static final Dataset DATASET_1 = new Dataset() {{setName("dataset1");}};
+	private static final Dataset DATASET_0 = new Dataset() {{
+		setName("dataset0");
+	}};
+	private static final Dataset DATASET_1 = new Dataset() {{
+		setName("dataset1");
+	}};
 
 	private static final ManagedExecutionId QUERY_ID_0 = createExecutionId(DATASET_0, "0");
 	private static final ManagedExecutionId QUERY_ID_1 = createExecutionId(DATASET_1, "1");

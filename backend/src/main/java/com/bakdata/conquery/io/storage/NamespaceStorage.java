@@ -32,8 +32,8 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	protected SingletonStore<Dictionary> primaryDictionary;
 
-	public NamespaceStorage(StoreFactory storageFactory, Validator validator, String pathName) {
-		super(storageFactory, validator, pathName);
+	public NamespaceStorage(StoreFactory storageFactory, String pathName) {
+		super(storageFactory, pathName);
 	}
 
 	public EncodedDictionary getPrimaryDictionary() {

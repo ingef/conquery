@@ -70,7 +70,8 @@ public class ConceptsProcessor {
 
 	@Inject
 	private DatasetRegistry namespaces;
-	private final Validator validator;
+	@Inject
+	private Validator validator;
 
 	private final LoadingCache<Concept<?>, FEList> nodeCache =
 			CacheBuilder.newBuilder()

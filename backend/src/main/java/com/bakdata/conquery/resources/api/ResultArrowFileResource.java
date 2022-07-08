@@ -20,9 +20,11 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ArrowFileResultProvider;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,10 @@ public class ResultArrowFileResource {
 	private static final String GET_RESULT_PATH_METHOD = "get";
 	@Inject
 	private ArrowFileResultProvider processor;
+	@Inject
+	private DatasetRegistry datasetRegistry;
+	@Inject
+	private ConqueryConfig config;
 
 	@GET
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_FILE)
@@ -46,7 +52,7 @@ public class ResultArrowFileResource {
 
 		checkSingleTableResult(query);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), dataset.getId(), subject.getId(), subject.getName());
-		return processor.createResult(subject, query, dataset, pretty.orElse(false));
+		return processor.createResult(subject, query, dataset, pretty.orElse(false), datasetRegistry, config);
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

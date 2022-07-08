@@ -19,8 +19,6 @@ import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.PathParamInjector;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
@@ -46,8 +44,6 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
-import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
@@ -69,7 +65,7 @@ import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 /**
  * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to
@@ -121,7 +117,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		// Instantiate DatasetRegistry and MetaStorage, so they are ready for injection into the object mapper (API + Storage)
 		// The validator is already injected at this point see Conquery.java
-		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
+		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize(), config, this::createInternalObjectMapper);
 		storage = new MetaStorage(config.getStorage(), datasetRegistry);
 
 
@@ -164,7 +160,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 
 		// Register default components for the admin interface
-		admin.register(this);
+		admin.register();
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
@@ -202,8 +198,14 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig resourceConfig) {
 		RESTServer.configure(config, resourceConfig);
-		resourceConfig.register(storage);
-		resourceConfig.register(datasetRegistry);
+		resourceConfig.register(new AbstractBinder() {
+			@Override
+			protected void configure() {
+				bind(storage).to(MetaStorage.class);
+				bind(datasetRegistry).to(DatasetRegistry.class);
+			}
+		});
+
 		resourceConfig.register(PathParamInjector.class);
 	}
 
@@ -242,10 +244,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	/**
-	 * Create a new internal object mapper for binary (de-)serialization that is equipped with {@link ManagerNode} related injectables
-	 * and configured to use the {@link InternalOnly} view.
-	 * <p>
-	 * TODO we need to distinguish between internal persistence and internal communication (manager<->shard). ATM we persist unnecessary fields.
+	 * Create a new internal object mapper for binary (de-)serialization that is equipped with {@link ManagerNode} related injectables.
 	 *
 	 * @return a preconfigured binary object mapper
 	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper)

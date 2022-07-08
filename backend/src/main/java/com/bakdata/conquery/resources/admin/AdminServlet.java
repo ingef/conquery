@@ -5,13 +5,18 @@ import static com.bakdata.conquery.resources.ResourceConstants.ADMIN_UI_SERVLET_
 
 import java.util.Collections;
 
+import javax.validation.Validator;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
@@ -87,42 +92,61 @@ public class AdminServlet {
 				manager.getConfig(),
 				manager.getValidator(),
 				manager.getDatasetRegistry(),
-				manager.getJobManager(),
-				manager::createInternalObjectMapper
+				manager.getJobManager()
 		);
 
-		jerseyConfig.register(manager.getDatasetRegistry());
-		jerseyConfig.register(manager.getStorage());
-		jerseyConfig.register(manager.getValidator());
-		jerseyConfig.register(manager.getJobManager());
-		jerseyConfig.register(manager.getConfig());
 		jerseyConfig.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
+				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
+				bind(manager.getStorage()).to(MetaStorage.class);
+				bind(manager.getValidator()).to(Validator.class);
+				bind(manager.getJobManager()).to(JobManager.class);
+				bind(manager.getConfig()).to(ConqueryConfig.class);
 				bindAsContract(AdminProcessor.class);
 				bindAsContract(AdminDatasetProcessor.class);
 				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 			}
 		});
 
-		jerseyConfigUI.register(manager.getDatasetRegistry());
-		jerseyConfigUI.register(manager.getStorage());
-		jerseyConfigUI.register(manager.getValidator());
 		jerseyConfig.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
+				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
+				bind(manager.getStorage()).to(MetaStorage.class);
+				bind(manager.getValidator()).to(Validator.class);
 				bindAsContract(AdminProcessor.class);
 				bindAsContract(UIProcessor.class);
+			}
+		});
+
+		jerseyConfigUI.register(new AbstractBinder() {
+			@Override
+			protected void configure() {
+				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
+				bind(manager.getStorage()).to(MetaStorage.class);
 			}
 		});
 
 		jerseyConfig.register(IdRefPathParamConverterProvider.class);
 		jerseyConfigUI.register(IdRefPathParamConverterProvider.class);
 		jerseyConfig.register(PathParamInjector.class);
-		jerseyConfig.register(PathParamInjector.class);
+
+		// register features
+		final AuthCookieFilter authCookieFilter = manager.getConfig().getAuthentication().getAuthCookieFilter();
+		jerseyConfig
+				.register(new MultiPartFeature())
+				.register(IdParamConverter.Provider.INSTANCE)
+				.register(authCookieFilter)
+				.register(manager.getAuthController().getAuthenticationFilter());
+
+
+		jerseyConfigUI
+				.register(authCookieFilter)
+				.register(manager.getAuthController().getRedirectingAuthFilter());
 	}
 
-	public void register(ManagerNode manager) {
+	public void register() {
 
 		// register root resources
 		jerseyConfig
@@ -147,17 +171,5 @@ public class AdminServlet {
 				.register(ConceptsUIResource.class)
 				.register(AuthOverviewUIResource.class);
 
-		// register features
-		final AuthCookieFilter authCookieFilter = manager.getConfig().getAuthentication().getAuthCookieFilter();
-		jerseyConfig
-				.register(new MultiPartFeature())
-				.register(IdParamConverter.Provider.INSTANCE)
-				.register(authCookieFilter)
-				.register(manager.getAuthController().getAuthenticationFilter());
-
-
-		jerseyConfigUI
-				.register(authCookieFilter)
-				.register(manager.getAuthController().getRedirectingAuthFilter());
 	}
 }

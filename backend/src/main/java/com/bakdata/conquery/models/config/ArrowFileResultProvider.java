@@ -19,12 +19,11 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.api.ResultArrowFileResource;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -37,10 +36,6 @@ public class ArrowFileResultProvider implements ResultRendererProvider {
 
 	// From https://www.iana.org/assignments/media-types/application/vnd.apache.arrow.file
 	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.apache.arrow.file");
-	@JsonIgnore
-	private DatasetRegistry datasetRegistry;
-	@JsonIgnore
-	private ConqueryConfig config;
 
 	private boolean hidden = true;
 
@@ -58,7 +53,7 @@ public class ArrowFileResultProvider implements ResultRendererProvider {
 		return List.of(ResultArrowFileResource.getDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec));
 	}
 
-	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
+	public Response createResult(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
@@ -74,16 +69,9 @@ public class ArrowFileResultProvider implements ResultRendererProvider {
 
 	@Override
 	public void registerResultResource(JerseyEnvironment jersey, ManagerNode manager) {
-		setConfig(manager.getConfig());
-		setDatasetRegistry(manager.getDatasetRegistry());
 
 		//inject required services
-		jersey.register(new AbstractBinder() {
-			@Override
-			protected void configure() {
-				bindAsContract(ResultArrowFileProcessor.class);
-			}
-		});
+		jersey.register(new DropwizardResourceConfig.SpecificBinder(this, ArrowFileResultProvider.class));
 
 		jersey.register(ResultArrowFileResource.class);
 	}

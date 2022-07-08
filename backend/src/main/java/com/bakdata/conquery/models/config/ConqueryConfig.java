@@ -59,7 +59,7 @@ public class ConqueryConfig extends Configuration {
 	@NotNull
 	private List<ResultRendererProvider> resultProviders = List.of(
 			new ExcelResultProvider(),
-			new CsvResultRenderer(),
+			new CsvResultProvider(),
 			new ArrowFileResultProvider(),
 			new ArrowStreamResultProvider()
 	);

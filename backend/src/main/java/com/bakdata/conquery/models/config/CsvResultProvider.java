@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.config;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
@@ -14,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
-import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -32,31 +30,27 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import io.dropwizard.jersey.DropwizardResourceConfig;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
 
 @Slf4j
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResultCsvProcessor {
-
-	@Inject
-	private DatasetRegistry datasetRegistry;
-	@Inject
-	private ConqueryConfig config;
-
+@CPSType(base = ResultRendererProvider.class, id = "CSV")
+public class CsvResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
-	@Override
+
 	@SneakyThrows(MalformedURLException.class)
 	public Collection<URL> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 		if (!(exec instanceof SingleTableResult)) {
@@ -70,7 +64,7 @@ public class ResultCsvProcessor {
 		return List.of(ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec));
 	}
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty, Charset charset) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty, Charset charset, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
@@ -119,11 +113,8 @@ public class ResultCsvProcessor {
 
 	@Override
 	public void registerResultResource(JerseyEnvironment environment, ManagerNode manager) {
-		setDatasetRegistry(manager.getDatasetRegistry());
-		setConfig(manager.getConfig());
 
-
-		environment.register(this);
+		environment.register(new DropwizardResourceConfig.SpecificBinder(this, CsvResultProvider.class));
 		environment.register(ResultCsvResource.class);
 	}
 }
