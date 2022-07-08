@@ -51,6 +51,7 @@ public class BigStoreTest {
 		tmpDir = Files.createTempDirectory(BigStoreTest.class.getSimpleName()).toFile();
 		tmpDir.mkdirs();
 		env = Environments.newInstance(tmpDir);
+
 	}
 
 	@AfterEach

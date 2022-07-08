@@ -1,11 +1,10 @@
 import styled from "@emotion/styled";
-import { FC, memo, useMemo } from "react";
+import { FC, memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
-  CurrencyConfigT,
-  DatasetIdT,
+  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
@@ -31,8 +30,7 @@ const MaximizedCell = styled(ContentCell)`
 interface PropsT {
   node: ConceptQueryNodeType;
   tableIdx: number;
-  datasetId: DatasetIdT;
-  currencyConfig: CurrencyConfigT;
+  datasetId: DatasetT["id"];
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
 
@@ -56,7 +54,6 @@ const TableView: FC<PropsT> = ({
   node,
   tableIdx,
   datasetId,
-  currencyConfig,
   allowlistedSelects,
   blocklistedSelects,
 
@@ -85,6 +82,43 @@ const TableView: FC<PropsT> = ({
     [node.tree, table.id, datasetId],
   );
 
+  const setFilterValue = useCallback(
+    (filterIdx: number, value: unknown) =>
+      onSetFilterValue(tableIdx, filterIdx, value),
+    [tableIdx, onSetFilterValue],
+  );
+
+  const setFilterMode = useCallback(
+    (filterIdx: number, mode: ModeT) =>
+      onSwitchFilterMode(tableIdx, filterIdx, mode),
+    [tableIdx, onSwitchFilterMode],
+  );
+
+  const loadFilterSuggestions = useCallback(
+    (filterIdx, filterId, prefix, page, pageSize, config) =>
+      onLoadFilterSuggestions(
+        {
+          datasetId: datasetId,
+          conceptId: node.tree,
+          tableId: table.id,
+          filterId,
+          prefix,
+          page,
+          pageSize,
+        },
+        tableIdx,
+        filterIdx,
+        config,
+      ),
+
+    [onLoadFilterSuggestions, datasetId, node.tree, table.id, tableIdx],
+  );
+
+  const selectTableSelects = useCallback(
+    (value) => onSelectTableSelects(tableIdx, value),
+    [onSelectTableSelects, tableIdx],
+  );
+
   return (
     <Column>
       {displaySelects && (
@@ -94,9 +128,7 @@ const TableView: FC<PropsT> = ({
               selects={table.selects}
               allowlistedSelects={allowlistedSelects}
               blocklistedSelects={blocklistedSelects}
-              onSelectTableSelects={(value) =>
-                onSelectTableSelects(tableIdx, value)
-              }
+              onSelectTableSelects={selectTableSelects}
               excludeTable={table.exclude}
             />
           )}
@@ -117,36 +149,9 @@ const TableView: FC<PropsT> = ({
             filters={table.filters}
             excludeTable={table.exclude}
             context={filterContext}
-            onSetFilterValue={(filterIdx: number, value: unknown) =>
-              onSetFilterValue(tableIdx, filterIdx, value)
-            }
-            onSwitchFilterMode={(filterIdx, mode) =>
-              onSwitchFilterMode(tableIdx, filterIdx, mode)
-            }
-            onLoadFilterSuggestions={(
-              filterIdx,
-              filterId,
-              prefix,
-              page,
-              pageSize,
-              config,
-            ) =>
-              onLoadFilterSuggestions(
-                {
-                  datasetId: datasetId,
-                  conceptId: node.tree,
-                  tableId: table.id,
-                  filterId,
-                  prefix,
-                  page,
-                  pageSize,
-                },
-                tableIdx,
-                filterIdx,
-                config,
-              )
-            }
-            currencyConfig={currencyConfig}
+            onSetFilterValue={setFilterValue}
+            onSwitchFilterMode={setFilterMode}
+            onLoadFilterSuggestions={loadFilterSuggestions}
           />
         </MaximizedCell>
       )}

@@ -48,7 +48,7 @@ public class CopyOutput extends OutputDescription {
 	private MajorTypeId inputType;
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader) {
+	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
 		assertRequiredHeaders(headers, inputColumn);
 
 		final int column = headers.getInt(inputColumn);

@@ -11,23 +11,23 @@ import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.google.common.collect.ForwardingMap;
 
 /**
  * A typesafe mapping for the ID-system that does not allow a remapping of an existing key.
- * 
+ *
  * @implNote implementation of {@link Iterable} is dropped, because hibernate could not decide on how to validate this map (either with an map-extractor or an iterable-extractor).
  */
-public class IdMap<ID extends IId<? super V>, V extends Identifiable<? extends ID>> extends ForwardingMap <ID,V> {
+public class IdMap<ID extends Id<? super V>, V extends Identifiable<? extends ID>> extends ForwardingMap<ID, V> {
 
 	@Valid
 	private final ConcurrentMap<ID, V> map;
-	
+
 	public IdMap() {
 		map = new ConcurrentHashMap<ID, V>();
 	}
-	
+
 	public IdMap(Collection<V> collection) {
 		map = new ConcurrentHashMap<>();
 		for(V value : collection) {

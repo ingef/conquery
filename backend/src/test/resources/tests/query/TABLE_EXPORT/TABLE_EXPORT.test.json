@@ -6,16 +6,28 @@
     "type": "TABLE_EXPORT",
     "tables": [
       {
-        "id": "concept.connector",
-        "dateColumn": {
-          "value": "concept.connector.datum"
-        }
-      },
-      {
-        "id": "concept.connector2",
-        "dateColumn": {
-          "value": "concept.connector2.datum"
-        }
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.value",
+                "type": "REAL_RANGE",
+                "value": {
+                  "min": 1,
+                  "max": 1
+                }
+              }
+            ]
+          },
+          {
+            "id": "concept.connector2"
+          }
+        ]
       }
     ],
     "dateRange": {
@@ -95,9 +107,9 @@
     }
   ],
   "content": {
-    "secondaryIds" : {
-      "name" : "sid",
-      "label" : "SecondaryId"
+    "secondaryIds": {
+      "name": "sid",
+      "label": "SecondaryId"
     },
     "tables": [
       {
@@ -111,7 +123,7 @@
           {
             "name": "sid",
             "type": "STRING",
-            "secondaryId" : "sid"
+            "secondaryId": "sid"
           },
           {
             "name": "value",
@@ -134,7 +146,7 @@
           {
             "name": "sid",
             "type": "STRING",
-            "secondaryId" : "sid"
+            "secondaryId": "sid"
           },
           {
             "name": "value",

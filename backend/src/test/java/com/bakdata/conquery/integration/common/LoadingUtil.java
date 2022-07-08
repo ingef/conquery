@@ -33,14 +33,18 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.MapInternToExternMapper;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -59,7 +63,7 @@ import org.assertj.core.description.LazyTextDescription;
 @UtilityClass
 public class LoadingUtil {
 
-	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException {
+	public static void importPreviousQueries(StandaloneSupport support, RequiredData content, User user) throws IOException, JSONException {
 		// Load previous query results if available
 		int id = 1;
 		for (ResourceFile queryResults : content.getPreviousQueryResults()) {
@@ -68,10 +72,10 @@ public class LoadingUtil {
 			final CsvParser parser = support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createParser();
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(new String[0][]);
 
-			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data));
+			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
 			ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
-												 .createQuery(support.getDatasetRegistry(), q, queryId, user, support.getNamespace().getDataset());
+												 .createQuery(support.getDatasetRegistry(), query, queryId, user, support.getNamespace().getDataset(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -81,16 +85,15 @@ public class LoadingUtil {
 		}
 
 		for (JsonNode queryNode : content.getPreviousQueries()) {
-			ObjectMapper mapper = new SingletonNamespaceCollection(support.getNamespaceStorage().getCentralRegistry()).injectIntoNew(Jackson.MAPPER);
-			mapper = support.getDataset().injectIntoNew(mapper);
-			Query query = mapper.readerFor(Query.class).readValue(queryNode);
+
+			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class);
 			UUID queryId = new UUID(0L, id++);
 
-			ManagedExecution<?>
-					managed =
+			ManagedExecution<?> managed =
 					support.getNamespace()
 						   .getExecutionManager()
-						   .createQuery(support.getDatasetRegistry(), query, queryId, user, support.getNamespace().getDataset());
+						   .createQuery(support.getDatasetRegistry(), query, queryId, user, support.getNamespace().getDataset(), false);
+
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
 			if (managed.getState() == ExecutionState.FAILED) {
@@ -324,4 +327,28 @@ public class LoadingUtil {
 
 		return out;
 	}
+
+	public static void importInternToExternMappers(StandaloneSupport support, List<InternToExternMapper> internToExternMappers) {
+		for (InternToExternMapper internToExternMapper : internToExternMappers) {
+			uploadInternalToExternalMappings(support, internToExternMapper, Response.Status.Family.SUCCESSFUL);
+		}
+	}
+
+	private static void uploadInternalToExternalMappings(@NonNull StandaloneSupport support, @NonNull InternToExternMapper mapping, @NonNull Response.Status.Family expectedResponseFamily) {
+		final URI
+				conceptURI =
+				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addInternToExternMapping")
+							   .buildFromMap(Map.of(
+									   ResourceConstants.DATASET, support.getDataset().getId()
+							   ));
+
+		final Response response = support.getClient()
+										 .target(conceptURI)
+										 .request(MediaType.APPLICATION_JSON)
+										 .post(Entity.entity(mapping, MediaType.APPLICATION_JSON_TYPE));
+
+
+		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
+	}
+
 }

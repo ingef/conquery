@@ -46,6 +46,7 @@ import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -109,7 +110,7 @@ public class FormConfigTest {
 				when(namespaceMock.getDataset()).thenReturn(dataset1);
 			}
 			else {
-				throw new IllegalStateException("Unkown dataset id.");
+				throw new IllegalStateException("Unknown dataset id.");
 			}
 			return namespaceMock;
 		}).when(namespacesMock).get(any(DatasetId.class));
@@ -232,7 +233,7 @@ public class FormConfigTest {
 		}
 
 		@Override
-		public Set<ManagedExecution<?>> collectRequiredQueries() {
+		public Set<ManagedExecutionId> collectRequiredQueries() {
 			return Collections.emptySet();
 		}
 
@@ -268,7 +269,6 @@ public class FormConfigTest {
 		form2.setTimeMode(mode3);
 		mode3.setForm(form);
 		mode3.setFeatures(List.of(new CQConcept()));
-		mode3.setOutcomes(List.of(new CQConcept()));
 
 		TestForm form3 = new TestForm();
 		

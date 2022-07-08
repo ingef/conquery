@@ -267,6 +267,7 @@ const ProjectItem = forwardRef<HTMLDivElement, PropsT>(
                   <IconButton
                     icon="times"
                     bare
+                    data-test-id="project-item-delete-button"
                     onClick={() => {
                       if (mayDeleteRightAway) {
                         if (isFormConfig(item)) {

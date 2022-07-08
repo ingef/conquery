@@ -25,6 +25,7 @@ public class Jackson {
 
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
+
 		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
 	}
 

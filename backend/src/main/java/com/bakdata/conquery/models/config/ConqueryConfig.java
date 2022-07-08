@@ -58,8 +58,8 @@ public class ConqueryConfig extends Configuration {
 	@Valid
 	@NotNull
 	private List<ResultRendererProvider> resultProviders = List.of(
-			new XlsxResultProvider(),
-			new CsvResultRendererProvider(),
+			new ExcelResultProvider(),
+			new CsvResultRenderer(),
 			new ArrowFileResultProvider(),
 			new ArrowStreamResultProvider()
 	);
@@ -117,12 +117,7 @@ public class ConqueryConfig extends Configuration {
 	private boolean failOnError = false;
 
 	public void initialize(ManagerNode node) {
-		storage.init(node);
 		plugins.forEach(config -> config.initialize((node)));
-	}
-
-	public void initialize(ShardNode node) {
-		storage.init(node);
 	}
 
 	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {

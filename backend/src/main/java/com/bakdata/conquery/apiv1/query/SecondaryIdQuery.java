@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
@@ -21,7 +21,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -30,6 +30,9 @@ import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -54,15 +57,15 @@ public class SecondaryIdQuery extends Query {
 	/**
 	 * @apiNote not using {@link ConceptQuery} directly in the API-spec simplifies the API.
 	 */
-	@InternalOnly
+	@JsonView(View.InternalCommunication.class)
 	private ConceptQuery query;
 
-	@InternalOnly
 	@NsIdRefCollection
+	@JsonView(View.InternalCommunication.class)
 	private Set<Column> withSecondaryId;
 
-	@InternalOnly
 	@NsIdRefCollection
+	@JsonView(View.InternalCommunication.class)
 	private Set<Table> withoutSecondaryId;
 
 	@Override
@@ -72,7 +75,7 @@ public class SecondaryIdQuery extends Query {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		// Be aware, that this.query cannot be checked, as it does not exists at this point, however this.root exists
 		root.collectRequiredQueries(requiredQueries);
 	}
@@ -146,7 +149,7 @@ public class SecondaryIdQuery extends Query {
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		List<ResultInfo> resultInfos = new ArrayList<>();
-		resultInfos.add(new SimpleResultInfo(secondaryId.getName(), ResultType.IdT.INSTANCE));
+		resultInfos.add(new SimpleResultInfo(secondaryId.getName(), ResultType.StringT.INSTANCE, Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))));
 		resultInfos.addAll(query.getResultInfos());
 
 		return resultInfos;

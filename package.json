@@ -1,0 +1,11 @@
+{
+  "name": "conquery",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/bakdata/conquery.git",
+  "author": "Kai Rollmann <kai.rollmann@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "cypress": "^9.6.1"
+  }
+}

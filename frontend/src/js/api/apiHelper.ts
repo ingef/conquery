@@ -31,7 +31,7 @@ export const transformFilterValueToApi = (
     case "BIG_MULTI_SELECT":
     case "MULTI_SELECT":
       return filter.value
-        ? filter.value.map((v) => (v.value ? v.value : v))
+        ? filter.value.filter((v) => exists(v.value)).map((v) => v.value)
         : null;
     case "INTEGER_RANGE":
     case "MONEY_RANGE":

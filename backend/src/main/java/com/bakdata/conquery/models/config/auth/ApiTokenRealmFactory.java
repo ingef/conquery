@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.config.auth;
 
+import java.nio.file.Path;
+
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.HttpHeaders;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -17,12 +23,6 @@ import lombok.Data;
 import org.apache.http.util.CharArrayBuffer;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
-
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.HttpHeaders;
-import java.nio.file.Path;
 
 @CPSType(base = AuthenticationRealmFactory.class, id = "API_TOKEN")
 @Data
@@ -45,12 +45,8 @@ public class ApiTokenRealmFactory implements AuthenticationRealmFactory {
 		managerNode.getAuthController().getAuthenticationFilter().registerTokenExtractor(new ApiTokenExtractor());
 
 		JerseyEnvironment environment = managerNode.getEnvironment().jersey();
-		environment.register(new AbstractBinder() {
-			@Override
-			protected void configure() {
-				bind(apiTokenRealm).to(ApiTokenRealm.class);
-			}
-		});
+		environment.register(apiTokenRealm);
+
 		environment.register(ApiTokenResource.class);
 
 		return apiTokenRealm;

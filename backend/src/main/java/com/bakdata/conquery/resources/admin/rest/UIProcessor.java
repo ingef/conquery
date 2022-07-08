@@ -204,7 +204,7 @@ public class UIProcessor {
 				.mapToLong(con -> {
 					// Per event an int array is stored marking the path to the concept child.
 					final double avgDepth = con.getConcept()
-							.getAllChildren().stream()
+							.getAllChildren()
 							.mapToInt(ConceptTreeNode::getDepth)
 							.average()
 							.orElse(1d);

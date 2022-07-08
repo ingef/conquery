@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.google.common.collect.ImmutableSet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,8 +27,9 @@ public class WorkerToBucketsMap {
         // Don't modify the underlying map here
         Set<BucketId> buckets = map.get(workerId);
         if (buckets != null) {
-            return buckets;
-        }
+			// Don't allow modification
+			return Collections.unmodifiableSet(buckets);
+		}
         return Collections.emptySet();
     }
 

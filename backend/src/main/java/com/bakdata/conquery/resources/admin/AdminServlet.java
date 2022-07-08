@@ -87,7 +87,8 @@ public class AdminServlet {
 				manager.getConfig(),
 				manager.getValidator(),
 				manager.getDatasetRegistry(),
-				manager.getJobManager()
+				manager.getJobManager(),
+				manager::createInternalObjectMapper
 		);
 
 		jerseyConfig.register(manager.getDatasetRegistry());
@@ -100,6 +101,7 @@ public class AdminServlet {
 			protected void configure() {
 				bindAsContract(AdminProcessor.class);
 				bindAsContract(AdminDatasetProcessor.class);
+				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 			}
 		});
 
@@ -116,6 +118,7 @@ public class AdminServlet {
 
 		jerseyConfig.register(IdRefPathParamConverterProvider.class);
 		jerseyConfigUI.register(IdRefPathParamConverterProvider.class);
+		jerseyConfig.register(PathParamInjector.class);
 		jerseyConfig.register(PathParamInjector.class);
 	}
 

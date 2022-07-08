@@ -25,7 +25,6 @@ import com.bakdata.conquery.resources.api.FormResource;
 import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 @CPSType(base = ResourcesProvider.class, id = "ApiV1")
 public class ApiV1 implements ResourcesProvider {

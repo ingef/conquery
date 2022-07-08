@@ -5,9 +5,8 @@ import type { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import type { ModeT } from "../ui-components/InputRange";
 
-export type DatasetIdT = string;
 export interface DatasetT {
-  id: DatasetIdT;
+  id: string;
   label: string;
 }
 
@@ -32,11 +31,11 @@ export interface CurrencyConfigT {
   decimalScale: number;
 }
 
-export type FilterIdT = string;
 export interface FilterBaseT {
-  id: FilterIdT;
+  id: string;
   label: string;
   description?: string;
+  tooltip?: string;
 }
 
 export interface RangeFilterValueT {
@@ -63,6 +62,7 @@ export interface MultiSelectFilterBaseT extends FilterBaseT {
   total?: number; // Not coming via the API yet, but may come soon, will be set when loading more options via autocomplete
   defaultValue?: string[];
   allowDropFile: boolean;
+  creatable?: boolean;
 }
 
 export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
@@ -101,9 +101,8 @@ export type FilterT =
   | RangeFilterT
   | BigMultiSelectFilterT;
 
-export type TableIdT = string;
 export interface TableT {
-  id: TableIdT;
+  id: string;
   dateColumn: DateColumnT | null;
   connectorId: string; // TODO: Get rid of two ids here (unclear when which one should be used)
   label: string;
@@ -171,7 +170,7 @@ export interface ConceptElementT extends ConceptBaseT {
 export type ConceptT = ConceptElementT | ConceptStructT;
 
 export interface FilterConfigT {
-  filter: FilterIdT; // TODO: Rename this: "id"
+  filter: FilterT["id"]; // TODO: Rename this: "id"
   type:
     | "INTEGER_RANGE"
     | "REAL_RANGE"
@@ -188,7 +187,7 @@ export interface DateColumnConfigT {
 }
 
 export interface TableConfigT {
-  id: TableIdT;
+  id: TableT["id"];
   filters?: FilterConfigT[];
   dateColumn?: DateColumnConfigT;
   selects: SelectorIdT[];
@@ -321,17 +320,24 @@ export type ColumnDescriptionKind =
   | "DATE_RANGE"
   | "LIST[DATE_RANGE]"
   | "CATEGORICAL"
-  | "RESOLUTION";
+  | "RESOLUTION"
+  | "SECONDARY_ID"
+  | "CONCEPT_COLUMN";
 
 export interface ColumnDescription {
   label: string;
-  selectId: string | null;
   type: ColumnDescriptionKind;
+
+  // NOT USED BY US:
+  defaultLabel: string;
+  selectId: string | null;
+  userConceptLabel: string | null;
 }
 
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields
 export interface GetQueryResponseDoneT {
   status: "DONE" | "NEW"; // NEW might mean canceled (query not (yet) executed)
+  label: string;
   numberOfResults: number | null;
   resultUrls: string[];
   columnDescriptions: ColumnDescription[] | null;
@@ -396,8 +402,8 @@ export interface PostConceptResolveResponseT {
 export interface PostFilterResolveResponseT {
   unknownCodes?: string[];
   resolvedFilter?: {
-    filterId: FilterIdT;
-    tableId: TableIdT;
+    filterId: FilterT["id"];
+    tableId: TableT["id"];
     value: {
       label: string;
       value: string;
@@ -431,7 +437,7 @@ export interface UserGroupT {
 
 export interface GetMeResponseT {
   userName: string;
-  datasetAbilities: Record<DatasetIdT, PermissionsT>;
+  datasetAbilities: Record<DatasetT["id"], PermissionsT>;
   groups: UserGroupT[];
   hideLogoutButton?: boolean;
 }
@@ -452,4 +458,11 @@ export type UploadQueryResponseT = {
   resolved: number;
   unresolvedId: string[][];
   unreadableDate: string[][];
+};
+
+export type GetEntityHistoryDefaultParamsResponse = string[]; // connectors
+
+export type GetEntityHistoryResponse = {
+  resultUrls: string[];
+  columnDescriptions: ColumnDescription[];
 };

@@ -18,7 +18,7 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
@@ -41,11 +41,11 @@ import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
@@ -83,8 +83,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@JsonAlias("excludeFromSecondaryIdQuery")
 	private boolean excludeFromSecondaryId = false;
 
-	@InternalOnly
-	@NotNull
+	@JsonView(View.InternalCommunication.class)
 	private boolean aggregateEventDates;
 
 	@Override
@@ -249,12 +248,12 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		List<ResultInfo> resultInfos = new ArrayList<>();
 
 		for (Select select : selects) {
-			resultInfos.add(new SelectResultInfo(select, this));
+			resultInfos.add(select.getResultInfo(this));
 		}
 
 		for (CQTable table : tables) {
 			for (Select sel : table.getSelects()) {
-				resultInfos.add(new SelectResultInfo(sel, this));
+				resultInfos.add(sel.getResultInfo(this));
 			}
 		}
 

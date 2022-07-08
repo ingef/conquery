@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
@@ -16,10 +15,8 @@ import javax.validation.constraints.NotNull;
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
-import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQUnfilteredTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -58,7 +55,7 @@ public class FullExportForm extends Form {
 	private Range<LocalDate> dateRange = Range.all();
 
 	@NotEmpty
-	private List<CQElement> tables = ImmutableList.of();
+	private List<CQConcept> tables = ImmutableList.of();
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
@@ -72,19 +69,10 @@ public class FullExportForm extends Form {
 
 		// Forms are sent as an array of standard queries containing AND/OR of CQConcepts, we ignore everything and just convert the CQConcepts into CQUnfiltered for export.
 
-		final List<CQUnfilteredTable> unfilteredTables =
-				tables.stream()
-					  .flatMap(Visitable::stream)
-					  .filter(CQConcept.class::isInstance)
-					  .map(CQConcept.class::cast)
-					  .flatMap(concept -> concept.getTables().stream())
-					  .map(table -> new CQUnfilteredTable(table.getConnector(), table.getDateColumn()))
-					  .collect(Collectors.toList());
-
 		final TableExportQuery exportQuery = new TableExportQuery(queryGroup.getQuery());
 		exportQuery.setDateRange(getDateRange());
 
-		exportQuery.setTables(unfilteredTables);
+		exportQuery.setTables(tables);
 
 		final ManagedQuery managedQuery = new ManagedQuery(exportQuery, user, submittedDataset);
 
@@ -97,12 +85,8 @@ public class FullExportForm extends Form {
 	}
 
 	@Override
-	public Set<ManagedExecution<?>> collectRequiredQueries() {
-		if (queryGroup == null) {
-			return Collections.emptySet();
-		}
-
-		return Set.of(queryGroup);
+	public Set<ManagedExecutionId> collectRequiredQueries() {
+		return Set.of(queryGroupId);
 	}
 
 	@Override

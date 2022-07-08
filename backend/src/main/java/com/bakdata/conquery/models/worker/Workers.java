@@ -7,9 +7,11 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
@@ -44,25 +46,34 @@ public class Workers extends IdResolveContext {
 	private final ThreadPoolExecutor jobsThreadPool;
 	private final ThreadPoolDefinition queryThreadPoolDefinition;
 
-	@Getter
-	private final ObjectMapper binaryMapper;
+	private final Supplier<ObjectMapper> persistenceMapperSupplier;
+	private final Supplier<ObjectMapper> communicationMapperSupplier;
 
 	private final int entityBucketSize;
 
 	
-	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, ObjectMapper binaryMapper, int entityBucketSize) {
+	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, Supplier<ObjectMapper> persistenceMapperSupplier, Supplier<ObjectMapper> communicationMapperSupplier, int entityBucketSize) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
 		jobsThreadPool = queryThreadPoolDefinition.createService("Workers");
 
-		this.binaryMapper = injectIntoNew(binaryMapper);
+		this.persistenceMapperSupplier = persistenceMapperSupplier;
+		this.communicationMapperSupplier = communicationMapperSupplier;
 		this.entityBucketSize = entityBucketSize;
 
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
 	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
-		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, failOnError, entityBucketSize);
+
+		ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
+		this.injectInto(persistenceMapper);
+
+		ObjectMapper communicationMapper = communicationMapperSupplier.get();
+		this.injectInto(communicationMapper);
+
+		final Worker worker =
+				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper);
 
 		addWorker(worker);
 
@@ -70,7 +81,16 @@ public class Workers extends IdResolveContext {
 	}
 
 	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError) {
-		final Worker worker = Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize);
+
+		ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
+		this.injectInto(persistenceMapper);
+
+		ObjectMapper communicationMapper = communicationMapperSupplier.get();
+		this.injectInto(communicationMapper);
+
+		final Worker
+				worker =
+				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, persistenceMapper, communicationMapper);
 
 		addWorker(worker);
 

@@ -1,6 +1,5 @@
 package com.bakdata.conquery;
 
-import javax.tools.ToolProvider;
 import javax.validation.Validator;
 
 import ch.qos.logback.classic.Level;
@@ -11,7 +10,6 @@ import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.RecodeStoreCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -45,13 +43,6 @@ public class Conquery extends Application<ConqueryConfig> {
 	public void initialize(Bootstrap<ConqueryConfig> bootstrap) {
 		final ObjectMapper confMapper = bootstrap.getObjectMapper();
 		Jackson.configure(confMapper);
-
-		confMapper.setConfig(confMapper.getDeserializationConfig().withView(InternalOnly.class));
-
-		// check for java compiler, needed for the class generation
-		if (ToolProvider.getSystemJavaCompiler() == null) {
-			throw new IllegalStateException("Conquery requires to be run on either a JDK or a ServerJRE");
-		}
 
 		// main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);

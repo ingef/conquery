@@ -25,10 +25,14 @@ import { Description } from "../form-components/Description";
 import { Headline } from "../form-components/Headline";
 import FormConceptGroup from "../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../form-concept-group/formConceptGroupState";
-import FormMultiQueryDropzone from "../form-query-dropzone/FormMultiQueryDropzone";
 import FormQueryDropzone from "../form-query-dropzone/FormQueryDropzone";
 import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
-import { getInitialValue, isFormField, isOptionalField } from "../helper";
+import {
+  getFieldKey,
+  getInitialValue,
+  isFormField,
+  isOptionalField,
+} from "../helper";
 import { getErrorForField } from "../validators";
 
 import type { DynamicFormValues } from "./Form";
@@ -48,7 +52,6 @@ const BOTTOM_MARGIN = 7;
 //       SELECT: theme.col.palette[3],
 //       DATASET_SELECT: theme.col.palette[4],
 //       CHECKBOX: theme.col.palette[7],
-//       MULTI_RESULT_GROUP: theme.col.palette[5],
 //       RESULT_GROUP: theme.col.palette[5],
 //       TABS: theme.col.palette[9],
 //     }),
@@ -90,6 +93,7 @@ const ConnectedField = <T extends Object>({
     rules: {
       validate: (value) => getErrorForField(t, formField, value) || true,
     },
+    shouldUnregister: true,
   });
 
   // TODO: REFINE COLORS
@@ -256,25 +260,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           )}
         </ConnectedField>
       );
-    case "MULTI_RESULT_GROUP":
-      return (
-        <ConnectedField
-          formField={field}
-          control={control}
-          defaultValue={defaultValue}
-        >
-          {({ ref, ...fieldProps }) => (
-            <FormMultiQueryDropzone
-              label={field.label[locale] || ""}
-              dropzoneChildren={() => field.dropzoneLabel[locale]}
-              tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
-              value={fieldProps.value as DragItemQuery[]}
-              onChange={(value) => setValue(field.name, value, setValueConfig)}
-            />
-          )}
-        </ConnectedField>
-      );
     case "CHECKBOX":
       return (
         <ConnectedField
@@ -355,8 +340,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
             }}
           >
             {field.fields.map((f, i) => {
-              const key =
-                isFormField(f) && f.type !== "GROUP" ? f.name : f.type + i;
+              const key = getFieldKey(formType, f, i);
               const nestedFieldOptional = isOptionalField(f);
 
               return (
@@ -392,7 +376,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                     setValue(field.name, tab, setValueConfig)
                   }
                   options={field.tabs.map((tab) => ({
-                    label: tab.title[locale] || "",
+                    label: () => tab.title[locale] || "",
                     value: tab.name,
                     tooltip: tab.tooltip ? tab.tooltip[locale] : undefined,
                   }))}
@@ -400,10 +384,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 {tabToShow && tabToShow.fields.length > 0 ? (
                   <NestedFields>
                     {tabToShow.fields.map((f, i) => {
-                      const key =
-                        isFormField(f) && f.type !== "GROUP"
-                          ? f.name
-                          : f.type + i;
+                      const key = getFieldKey(formType, f, i);
                       const nestedFieldOptional = isOptionalField(f);
 
                       return (

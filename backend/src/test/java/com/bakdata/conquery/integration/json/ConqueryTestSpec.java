@@ -11,11 +11,13 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -77,10 +79,11 @@ public abstract class ConqueryTestSpec {
 	}
 
 	public static  <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+		final ObjectMapper om = Jackson.MAPPER.copy();
 		ObjectMapper mapper = support.getDataset().injectIntoNew(
 				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
 						.injectIntoNew(
-								Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
+								om.addHandler(new DatasetPlaceHolderFiller(support))
 						)
 		);
 
@@ -95,19 +98,24 @@ public abstract class ConqueryTestSpec {
 	}
 	
 	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		ObjectMapper mapper = support.getDataset().injectIntoNew(
-			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
-				Jackson.MAPPER.copy().addHandler(new DatasetPlaceHolderFiller(support))
-			)
+		final ObjectMapper om = Jackson.MAPPER.copy();
+		ObjectMapper mapper = support.getDataset().injectInto(
+				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
+						om.addHandler(new DatasetPlaceHolderFiller(support))
+				)
 		);
+		support.getNamespace().getInjectables().forEach(i -> i.injectInto(mapper));
+
+		mapper.setConfig(mapper.getDeserializationConfig().withView(View.Api.class));
+
 		List<T> result = new ArrayList<>(node.size());
-		for(var child : node) {
+		for (var child : node) {
 			T value;
 			try {
 				value = mapper.readerFor(expectedType).readValue(child);
 			}
-			catch(Exception e) {
-				if(child.isValueNode()) {
+			catch (Exception e) {
+				if (child.isValueNode()) {
 					String potentialPath = child.textValue();
 					try {
 						value = mapper.readerFor(expectedType).readValue(IntegrationTest.class.getResource(potentialPath));
@@ -141,7 +149,7 @@ public abstract class ConqueryTestSpec {
 
 		@Override
 		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) throws IOException {
-			IId.Parser parser = IId.<IId<Identifiable<?>>>createParser((Class) targetType);
+			IdUtil.Parser parser = IdUtil.<Id<Identifiable<?>>>createParser((Class) targetType);
 			return parser.parsePrefixed(support.getDataset().getId().toString(), valueToConvert);
 		}
 	}

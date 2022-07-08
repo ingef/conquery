@@ -193,7 +193,7 @@ public abstract class FilterValue<VALUE> {
 			final Filter<?> filter = nsIdDeserializer.deserialize(filterTraverse, ctxt);
 
 			if (!(filter instanceof GroupFilter)) {
-				throw InvalidTypeIdException.from(filterNode.traverse(), GroupFilter.class, String.format("Expected filter of type %s but was: %s", GroupFilter.class, filter.getClass()));
+				throw InvalidTypeIdException.from(filterNode.traverse(), GroupFilter.class, String.format("Expected filter of type %s but was: %s", GroupFilter.class, filter != null ? filter.getClass() : null));
 			}
 			GroupFilter groupFilter = (GroupFilter) filter;
 

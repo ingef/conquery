@@ -5,6 +5,16 @@ import type { FormField, GeneralField, Group } from "./config-types";
 
 const nonFormFieldTypes = new Set(["HEADLINE", "DESCRIPTION"]);
 
+export const getFieldKey = (
+  formType: string,
+  field: GeneralField,
+  idx: number,
+) => {
+  return isFormField(field) && field.type !== "GROUP"
+    ? formType + field.name
+    : formType + field.type + idx;
+};
+
 export const isOptionalField = (field: GeneralField) => {
   return (
     isFormField(field) &&
@@ -63,7 +73,6 @@ export function getInitialValue(
       }
     case "RESULT_GROUP":
       return undefined;
-    case "MULTI_RESULT_GROUP":
     case "CONCEPT_LIST":
       return [];
     case "DATE_RANGE":

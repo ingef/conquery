@@ -22,15 +22,20 @@ import lombok.RequiredArgsConstructor;
 
 public class PathParamInjector implements ContainerRequestFilter {
 
+	@Inject
+	public DatasetRegistry registry;
+
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
-		ObjectReaderInjector.set(new Modifier(requestContext.getUriInfo().getPathParameters()));
+		ObjectReaderInjector.set(new Modifier(requestContext.getUriInfo().getPathParameters(), registry));
 	}
 
 	@RequiredArgsConstructor
 	public static class Modifier extends ObjectReaderModifier implements Injectable {
 
 		private final MultivaluedMap<String, String> pathParams;
+
+		public final DatasetRegistry registry;
 
 		@Override
 		public ObjectReader modify(EndpointConfigBase<?> endpoint, MultivaluedMap<String, String> httpHeaders, JavaType resultType, ObjectReader reader, JsonParser p)
@@ -43,8 +48,9 @@ public class PathParamInjector implements ContainerRequestFilter {
 			if (pathParams.containsKey(ResourceConstants.DATASET)) {
 				final DatasetId datasetId = DatasetId.Parser.INSTANCE.parse(pathParams.getFirst(ResourceConstants.DATASET));
 				values.add(DatasetId.class, datasetId);
-			}
-
+				if (registry != null) {
+					registry.get(datasetId).getInjectables().forEach(i -> i.inject(values));
+				}
 			return values;
 		}
 

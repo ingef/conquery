@@ -12,11 +12,11 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.util.QueryUtils;
 import io.dropwizard.servlets.tasks.Task;
 import lombok.extern.slf4j.Slf4j;
@@ -85,6 +85,15 @@ public class QueryCleanupTask extends Task {
 					((ManagedForm) execution).getFlatSubQueries().values()
 											 .forEach(q -> q.getQuery().visit(reusedChecker));
 				}
+
+
+				if (execution.isSystem()) {
+					// System Queries will always be deleted.
+					toDelete.add(execution);
+					continue;
+				}
+
+				log.trace("{} is not system", execution.getId());
 
 				if (execution.isShared()) {
 					continue;

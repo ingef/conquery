@@ -3,7 +3,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { useDispatch, useSelector, useStore } from "react-redux";
 
 import { useGetForms } from "../api/api";
-import type { DatasetIdT, DatasetT } from "../api/types";
+import type { DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { usePrevious } from "../common/helpers/usePrevious";
 import { useActiveLang } from "../localization/useActiveLang";
@@ -17,7 +17,7 @@ import type { DynamicFormValues } from "./form/Form";
 import { collectAllFormFields, getInitialValue } from "./helper";
 import { selectFormConfig } from "./stateSelectors";
 
-const useLoadForms = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
+const useLoadForms = ({ datasetId }: { datasetId: DatasetT["id"] | null }) => {
   const store = useStore();
   const getForms = useGetForms();
   const dispatch = useDispatch();
@@ -93,21 +93,11 @@ const useInitializeForm = () => {
     methods.reset(defaultValues);
   }, [methods, defaultValues]);
 
-  const previousConfig = usePrevious(config);
-  useEffect(
-    function resetOnFormChange() {
-      if (previousConfig?.type !== config?.type) {
-        onReset();
-      }
-    },
-    [previousConfig, config, onReset],
-  );
-
   return { methods, config, datasetOptions, onReset };
 };
 
 const FormsTab = () => {
-  const datasetId = useSelector<StateT, DatasetIdT | null>(
+  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
     (state) => state.datasets.selectedDatasetId,
   );
   const previousDatasetId = usePrevious(datasetId);

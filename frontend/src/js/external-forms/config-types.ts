@@ -65,7 +65,6 @@ export type Field =
   | SelectField
   | DatasetSelectField
   | ResultGroupField
-  | MultiResultGroupField
   | ConceptListField
   | DateRangeField;
 // TODO: At some point, handle multi select as well
@@ -170,14 +169,6 @@ type DateRangeField = CommonField & {
 type ResultGroupFieldValidation = NOT_EMPTY_VALIDATION;
 type ResultGroupField = CommonField & {
   type: "RESULT_GROUP";
-  dropzoneLabel: TranslatableString;
-  validations?: ResultGroupFieldValidation[];
-};
-
-/* ------------------------------ */
-
-type MultiResultGroupField = CommonField & {
-  type: "MULTI_RESULT_GROUP";
   dropzoneLabel: TranslatableString;
   validations?: ResultGroupFieldValidation[];
 };

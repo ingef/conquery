@@ -1,15 +1,11 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -20,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Slf4j
-public class ImportBucket extends WorkerMessage.Slow {
+public class ImportBucket extends WorkerMessage {
 
 	private final String name;
 

@@ -1,35 +1,41 @@
+import styled from "@emotion/styled";
 import { memo, useMemo } from "react";
+import { useSelector } from "react-redux";
 
-import {
+import type {
   ConceptIdT,
   CurrencyConfigT,
-  DatasetIdT,
-  FilterIdT,
+  DatasetT,
+  FilterT,
   PostFilterSuggestionsResponseT,
-  TableIdT,
+  TableT,
 } from "../api/types";
+import { StateT } from "../app/reducers";
 import { FilterWithValueType } from "../standard-query-editor/types";
 import InputRange, { ModeT } from "../ui-components/InputRange";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import FilterListMultiSelect from "./FilterListMultiSelect";
 
+const Container = styled("div")`
+  margin-bottom: 10px;
+`;
+
 export interface FiltersContextT {
-  datasetId: DatasetIdT;
+  datasetId: DatasetT["id"];
   treeId: ConceptIdT;
-  tableId: TableIdT;
+  tableId: TableT["id"];
 }
 
 export interface BaseTableFilterProps {
   className?: string;
   context: FiltersContextT;
   excludeTable?: boolean;
-  currencyConfig: CurrencyConfigT;
   onSwitchFilterMode: (filterIdx: number, mode: ModeT) => void;
   onSetFilterValue: (filterIdx: number, value: unknown) => void;
   onLoadFilterSuggestions: (
     tableIdx: number,
-    filterId: FilterIdT,
+    filterId: FilterT["id"],
     prefix: string,
     page: number,
     pageSize: number,
@@ -48,11 +54,14 @@ const TableFilter = ({
   excludeTable,
   context,
   className,
-  currencyConfig,
   onLoadFilterSuggestions,
   onSetFilterValue,
   onSwitchFilterMode,
 }: TableFilterProps) => {
+  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
+    (state) => state.startup.config.currency,
+  );
+
   const filterContext = useMemo(
     () => ({ ...context, filterId: filter.id }),
     [context, filter.id],
@@ -73,6 +82,7 @@ const TableFilter = ({
               onSetFilterValue(filterIdx, value?.value || null)
             }
             label={filter.label}
+            tooltip={filter.tooltip}
             options={filter.options}
             disabled={excludeTable}
           />
@@ -85,6 +95,7 @@ const TableFilter = ({
             value={filter.value || []}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
+            tooltip={filter.tooltip}
             options={filter.options}
             disabled={excludeTable}
             allowDropFile={!!filter.allowDropFile}
@@ -99,8 +110,10 @@ const TableFilter = ({
             defaultValue={filter.defaultValue}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
+            tooltip={filter.tooltip}
             options={filter.options}
             disabled={!!excludeTable}
+            creatable={!!filter.creatable}
             allowDropFile={!!filter.allowDropFile}
             total={filter.total}
             onLoad={(prefix, page, pageSize, config) =>
@@ -125,6 +138,7 @@ const TableFilter = ({
             limits={{ min: filter.min, max: filter.max }}
             unit={filter.unit}
             label={filter.label}
+            tooltip={filter.tooltip}
             mode={filter.mode || "range"}
             disabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
@@ -142,6 +156,7 @@ const TableFilter = ({
             limits={{ min: filter.min, max: filter.max }}
             unit={filter.unit}
             label={filter.label}
+            tooltip={filter.tooltip}
             mode={filter.mode || "range"}
             stepSize={filter.precision || 0.1}
             disabled={!!excludeTable}
@@ -160,6 +175,7 @@ const TableFilter = ({
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             unit={filter.unit}
             label={filter.label}
+            tooltip={filter.tooltip}
             mode={filter.mode || "range"}
             disabled={!!excludeTable}
             onSwitchMode={(mode) => onSwitchFilterMode(filterIdx, mode)}
@@ -174,7 +190,7 @@ const TableFilter = ({
   })();
 
   return filterComponent ? (
-    <div className={className}>{filterComponent}</div>
+    <Container className={className}>{filterComponent}</Container>
   ) : null;
 };
 

@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.config;
 
 import java.util.Collection;
 
-import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.storage.IdentifiableStore;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -26,46 +24,60 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public interface StoreFactory {
 
-	default void init(ManagerNode managerNode) {};
-	default void init(ShardNode shardNode) {};
+	Collection<NamespaceStorage> discoverNamespaceStorages();
 
-	Collection<NamespaceStorage> loadNamespaceStorages();
-
-	Collection<WorkerStorage> loadWorkerStorages();
+	Collection<WorkerStorage> discoverWorkerStorages();
 
 	// NamespacedStorage (Important for serdes communication between manager and shards)
-	SingletonStore<Dataset> createDatasetStore(String pathName);
-	IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName);
-	IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName);
-	IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName);
-	IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName);
-	IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName);
+	SingletonStore<Dataset> createDatasetStore(String pathName, ObjectMapper objectMapper);
+
+	IdentifiableStore<SecondaryIdDescription> createSecondaryIdDescriptionStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+
+	IdentifiableStore<Table> createTableStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+
+	IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+
+	IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+
+	IdentifiableStore<Import> createImportStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
 
 	// WorkerStorage
-	IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName);
-	IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName);
-	SingletonStore<WorkerInformation> createWorkerInformationStore(String pathName);
+	IdentifiableStore<CBlock> createCBlockStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+
+	IdentifiableStore<Bucket> createBucketStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper);
+
+	SingletonStore<WorkerInformation> createWorkerInformationStore(String pathName, ObjectMapper objectMapper);
 
 	// NamespaceStorage
-	SingletonStore<EntityIdMap> createIdMappingStore(String pathName);
-	SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(String pathName);
-	SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry);
+	SingletonStore<EntityIdMap> createIdMappingStore(String pathName, ObjectMapper objectMapper);
+
+	SingletonStore<WorkerToBucketsMap> createWorkerToBucketsStore(String pathName, ObjectMapper objectMapper);
+
+	SingletonStore<StructureNode[]> createStructureStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
 
 	// MetaStorage
-    IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName);
-	IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName);
-	IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
-	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
-	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage);
+	IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper);
 
-	SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, CentralRegistry namespaceCollection);
+	IdentifiableStore<FormConfig> createFormConfigStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper);
+
+	IdentifiableStore<User> createUserStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper);
+
+	IdentifiableStore<Role> createRoleStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper);
+
+	IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper);
+
+	SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, CentralRegistry namespaceCollection, ObjectMapper objectMapper);
+
+	IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
 }

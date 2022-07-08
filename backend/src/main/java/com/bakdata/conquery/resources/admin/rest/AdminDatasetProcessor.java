@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -15,8 +16,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import com.bakdata.conquery.io.jackson.InternalOnly;
-import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Identifiable;
@@ -36,6 +37,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -51,7 +53,7 @@ import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -83,12 +85,13 @@ public class AdminDatasetProcessor {
 	private DatasetRegistry datasetRegistry;
 	@Inject
 	private JobManager jobManager;
-
+private final Function<Class<? extends View>,ObjectMapper> internalObjectMapperCreator;
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
 	 */
+	@SneakyThrows(IOException.class)
 	public synchronized Dataset addDataset(Dataset dataset) {
 
 		final String name = dataset.getName();
@@ -96,21 +99,22 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		NamespaceStorage datasetStorage = new NamespaceStorage(validator, "dataset_" + name);
-
-		datasetStorage.openStores(config.getStorage());
+		// Prepare empty storage
+		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), validator, "dataset_" + name);
+		final ObjectMapper persistenceMapper = internalObjectMapperCreator.apply(View.Persistence.Manager.class);
+		datasetStorage.openStores(persistenceMapper);
 		datasetStorage.loadData();
 		datasetStorage.updateDataset(dataset);
 		datasetStorage.updateIdMapping(new EntityIdMap());
+		datasetStorage.close();
 
-		final ObjectWriter mapper = config.configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER))
-										  .writerWithView(InternalOnly.class);
+
 		Namespace.createAndRegister(
-						getDatasetRegistry(),
-						datasetStorage,
-						config,
-						mapper
-				);
+				getDatasetRegistry(),
+				datasetStorage,
+				config,
+				internalObjectMapperCreator
+		);
 
 		// for now we just add one worker to every ShardNode
 		for (ShardNodeInformation node : datasetRegistry.getShardNodes().values()) {
@@ -376,5 +380,49 @@ public class AdminDatasetProcessor {
 
 	public EntityIdMap getIdMapping(Namespace namespace) {
 		return namespace.getStorage().getIdMapping();
+	}
+
+	public void addInternToExternMapping(Namespace namespace, InternToExternMapper internToExternMapper) {
+		internToExternMapper.setDataset(namespace.getDataset());
+
+		ValidatorHelper.failOnError(log, validator.validate(internToExternMapper));
+
+		if (namespace.getStorage().getInternToExternMapper(internToExternMapper.getId()) != null) {
+			throw new WebApplicationException("InternToExternMapping already exists", Response.Status.CONFLICT);
+		}
+
+		log.info("Received new InternToExternMapping[{}]", internToExternMapper.getId());
+
+		// We don't call internToExternMapper::init this is done by the first select that needs the mapping
+		namespace.getStorage().addInternToExternMapper(internToExternMapper);
+	}
+
+	public List<ConceptId> deleteInternToExternMapping(InternToExternMapper internToExternMapper, boolean force) {
+		final Namespace namespace = datasetRegistry.get(internToExternMapper.getDataset().getId());
+
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
+															.filter(
+																	c -> c.getSelects().stream()
+																		  .filter(MappableSingleColumnSelect.class::isInstance)
+
+																		  .map(MappableSingleColumnSelect.class::cast)
+																		  .map(MappableSingleColumnSelect::getMapping)
+																		  .anyMatch(internToExternMapper::equals)
+															)
+															.collect(Collectors.toList());
+
+		if (force || dependentConcepts.isEmpty()) {
+			for (Concept<?> concept : dependentConcepts) {
+				deleteConcept(concept);
+			}
+
+			namespace.getStorage().removeInternToExternMapper(internToExternMapper.getId());
+		}
+
+		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
+	public void clearInternToExternCache(Namespace namespace) {
+		namespace.clearInternToExternCache();
 	}
 }

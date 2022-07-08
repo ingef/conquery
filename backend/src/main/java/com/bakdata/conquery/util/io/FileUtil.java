@@ -4,25 +4,26 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Optional;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.StringJoiner;
 import java.util.regex.Pattern;
 
-import javax.ws.rs.WebApplicationException;
-
 import com.bakdata.conquery.ConqueryConstants;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 
 
 @UtilityClass
 public class FileUtil {
-    public static final Pattern SAVE_FILENAME_REPLACEMENT_MATCHER = Pattern.compile("[^a-zA-Z0-9äÄöÖüÜß \\.\\-]");
+	public static final Pattern SAVE_FILENAME_REPLACEMENT_MATCHER = Pattern.compile("[^a-zA-Z0-9äÄöÖüÜß .\\-]");
 
 
     public static String makeSafeFileName(String label, String fileExtension) {
@@ -31,31 +32,31 @@ public class FileUtil {
 
     public void deleteRecursive(Path path) throws IOException {
         Files.walkFileTree((path),
-                new SimpleFileVisitor<Path>() {
-                    @Override
-                    public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                       Files.delete(dir);
-                        return FileVisitResult.CONTINUE;
-                    }
+						   new SimpleFileVisitor<>() {
+							   @Override
+							   public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+								   Files.delete(dir);
+								   return FileVisitResult.CONTINUE;
+							   }
 
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                        Files.delete(file);
-                        return FileVisitResult.CONTINUE;
+							   @Override
+							   public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+								   Files.delete(file);
+								   return FileVisitResult.CONTINUE;
                     }
                 });
     }
 
 
-    /**
-     * Checks if the provided file is gzipped.
-     * @param file The file to check.
-     * @return True if it was gzipped.
-     * @throws IOException if an I/O error occurs.
-     */
-    public static boolean isGZipped(@NonNull File file) throws IOException {
-        return file.getName().endsWith(".csv.gz");
-    }
+	/**
+	 * Checks if the provided file is gzipped.
+	 *
+	 * @param file The file to check.
+	 * @return True if it was gzipped.
+	 */
+	public static boolean isGZipped(@NonNull File file) {
+		return file.getName().endsWith(".csv.gz");
+	}
 
 	/**
 	 * converts the provided cqpp file to an inputstream

@@ -64,7 +64,8 @@ public class ImportJob extends Job {
 
 	public static ImportJob createOrUpdate(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, boolean update)
 			throws IOException {
-		try (PreprocessedReader parser = new PreprocessedReader(inputStream)) {
+
+		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getPreprocessMapper())) {
 
 			final Dataset ds = namespace.getDataset();
 
@@ -268,7 +269,7 @@ public class ImportJob extends Job {
 
 		log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
 
-		applyDictionaryMappings(sharedDictionaryMappings, container.getStores());
+		remapToSharedDictionary(sharedDictionaryMappings, container.getStores());
 
 
 		Import imp = createImport(header, container.getStores(), table.getColumns(), container.size());
@@ -294,14 +295,12 @@ public class ImportJob extends Job {
 
 		workerAssignments.forEach(namespace::addBucketsToWorker);
 
-		getProgressReporter().done();
 	}
 
 	/**
 	 * select, then send buckets.
 	 */
-	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore[] storesSorted)
-			throws JsonProcessingException {
+	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore[] storesSorted) {
 
 		Map<WorkerId, Set<BucketId>> newWorkerAssignments = new HashMap<>();
 
@@ -326,8 +325,6 @@ public class ImportJob extends Job {
 
 			subJob.report(1);
 		}
-
-		subJob.done();
 
 		return newWorkerAssignments;
 	}
@@ -446,11 +443,6 @@ public class ImportJob extends Job {
 
 				namespace.addResponsibility(bucket);
 			}
-
-			// While we hold the lock on the namespace distribute the new, consistent state among the workers
-			for (WorkerInformation w : namespace.getWorkers()) {
-				w.send(new UpdateWorkerBucket(w));
-			}
 		}
 	}
 
@@ -458,7 +450,13 @@ public class ImportJob extends Job {
 	/**
 	 * Apply new positions into incoming shared dictionaries.
 	 */
-	private void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values) {
+	private void remapToSharedDictionary(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values) {
+
+		if (mappings.isEmpty()) {
+			log.trace("No columns with shared dictionary appear to be in the import.");
+			return;
+		}
+
 		final ProgressReporter subJob = getProgressReporter().subJob(mappings.size());
 
 		for (Map.Entry<String, DictionaryMapping> entry : mappings.entrySet()) {

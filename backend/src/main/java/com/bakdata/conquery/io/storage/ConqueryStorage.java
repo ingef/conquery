@@ -4,12 +4,13 @@ import java.io.Closeable;
 
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public interface ConqueryStorage extends Closeable {
 
 	CentralRegistry getCentralRegistry();
 
-	void openStores(StoreFactory storageFactory);
+	void openStores(ObjectMapper objectMapper);
 	
 	void loadData();
 

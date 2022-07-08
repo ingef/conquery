@@ -6,12 +6,7 @@ import java.util.Locale;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 
-import com.bakdata.conquery.io.result.ResultUtil;
-import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -39,35 +34,6 @@ public class ResultExcelProcessor {
 	private ConqueryConfig config;
 
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getExcelResult(Subject subject, E exec, DatasetId datasetId, boolean pretty) {
-		ConqueryMDC.setLocation(subject.getName());
-		final Namespace namespace = datasetRegistry.get(datasetId);
-		Dataset dataset = namespace.getDataset();
 
-		subject.authorize(dataset, Ability.READ);
-		subject.authorize(dataset, Ability.DOWNLOAD);
-		subject.authorize(exec, Ability.READ);
-
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject,exec,namespace);
-
-		final Locale locale = I18n.LOCALE.get();
-		PrintSettings settings = new PrintSettings(
-				pretty,
-				locale,
-				datasetRegistry,
-				config,
-				idPrinter::createId
-		);
-
-		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel(), settings);
-
-		StreamingOutput out = output -> excelRenderer.renderToStream(
-				config.getFrontend().getQueryUpload().getIdResultInfos(),
-				(ManagedExecution<?> & SingleTableResult)exec,
-				output
-		);
-
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx", MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
-	}
 
 }
