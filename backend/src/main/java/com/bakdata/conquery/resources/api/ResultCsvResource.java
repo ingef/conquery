@@ -20,13 +20,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.CsvResultProvider;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
@@ -37,11 +35,7 @@ public class ResultCsvResource {
 
 	public static final String GET_RESULT_PATH_METHOD = "getAsCsv";
 	@Inject
-	private CsvResultProvider processor;
-	@Inject
-	private ConqueryConfig config;
-	@Inject
-	private DatasetRegistry datasetRegistry;
+	private ResultCsvProcessor processor;
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
@@ -71,9 +65,7 @@ public class ResultCsvResource {
 				(E) execution,
 				dataset,
 				pretty.orElse(Boolean.TRUE),
-				determineCharset(userAgent, queryCharset),
-				datasetRegistry,
-				config
+				determineCharset(userAgent, queryCharset)
 		);
 	}
 }

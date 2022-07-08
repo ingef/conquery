@@ -41,8 +41,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.resources.api.ResultArrowFileResource;
-import com.bakdata.conquery.resources.api.ResultArrowStreamResource;
+import com.bakdata.conquery.resources.api.ResultArrowResource;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -204,8 +203,9 @@ public class StoredQueriesProcessorTest {
 			status.setResultUrls(List.of(
 					ResultExcelResource.getDownloadURL(URI_BUILDER.clone(), execMock),
 					ResultCsvResource.getDownloadURL(URI_BUILDER.clone(), execMock),
-					ResultArrowFileResource.getDownloadURL(URI_BUILDER.clone(), execMock),
-					ResultArrowStreamResource.getDownloadURL(URI_BUILDER.clone(), execMock)));
+					ResultArrowResource.getFileDownloadURL(URI_BUILDER.clone(), execMock),
+					ResultArrowResource.getStreamDownloadURL(URI_BUILDER.clone(), execMock)
+			));
 		}
 
 		return status;

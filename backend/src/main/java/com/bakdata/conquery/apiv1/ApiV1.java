@@ -75,7 +75,7 @@ public class ApiV1 implements ResourcesProvider {
 		jersey.register(MeResource.class);
 
 		for (ResultRendererProvider resultProvider : manager.getConfig().getResultProviders()) {
-			resultProvider.registerResultResource(jersey, manager);
+			resultProvider.registerResultResource(jersey.getResourceConfig(), manager);
 		}
 
 	}

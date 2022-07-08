@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelResultProvider;
@@ -45,7 +46,7 @@ public class ResultExcelResource {
 	private ConqueryConfig config;
 
 	@Inject
-	private ExcelResultProvider processor;
+	private ResultExcelProcessor processor;
 
 	@GET
 	@Path("{" + QUERY + "}.xlsx")
@@ -58,7 +59,7 @@ public class ResultExcelResource {
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), dataset, subject.getId(), subject.getName());
-		return processor.createResult(subject, (E) execution, dataset, pretty.orElse(true), datasetRegistry, config);
+		return processor.createResult(subject, (E) execution, dataset, pretty.orElse(true));
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

@@ -18,11 +18,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.config.ArrowStreamResultProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
@@ -30,24 +31,45 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Path("datasets/{" + DATASET + "}/result/")
-public class ResultArrowStreamResource {
-
-	private static final String GET_RESULT_PATH_METHOD = "get";
-
+public class ResultArrowResource {
+	@Inject
+	private ResultArrowProcessor processor;
 	@Inject
 	private DatasetRegistry datasetRegistry;
-
 	@Inject
 	private ConqueryConfig config;
 
-	@Inject
-	private ArrowStreamResultProvider processor;
+	@GET
+	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_FILE)
+	@Produces(AdditionalMediaTypes.ARROW_FILE)
+	public Response getFile(
+			@Auth Subject subject,
+			@PathParam(DATASET) Dataset dataset,
+			@PathParam(QUERY) ManagedExecution<?> query,
+			@HeaderParam("subject-agent") String userAgent,
+			@QueryParam("pretty") Optional<Boolean> pretty) {
 
-	public static URL getDownloadURL(UriBuilder uriBuilder, ManagedExecution<?> exec) throws MalformedURLException {
+		checkSingleTableResult(query);
+		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), dataset.getId(), subject.getId(), subject.getName());
+		return processor.createResultFile(subject, query, dataset, pretty.orElse(false), datasetRegistry, config);
+	}
+
+	public static <E extends ManagedExecution<?> & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
-				.path(ResultArrowStreamResource.class)
+				.path(ResultArrowResource.class)
 				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
-				.path(ResultArrowStreamResource.class, GET_RESULT_PATH_METHOD)
+				.path(ResultArrowResource.class, "getFile")
+				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
+				.build()
+				.toURL();
+	}
+
+
+	public static <E extends ManagedExecution<?> & SingleTableResult> URL getStreamDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+		return uriBuilder
+				.path(ResultArrowResource.class)
+				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
+				.path(ResultArrowResource.class, "getStream")
 				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
 				.build()
 				.toURL();
@@ -56,15 +78,14 @@ public class ResultArrowStreamResource {
 	@GET
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_STREAM)
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
-	public Response get(
+	public Response getStream(
 			@Auth Subject subject,
 			@PathParam(DATASET) Dataset dataset,
 			@PathParam(QUERY) ManagedExecution<?> execution,
 			@HeaderParam("subject-agent") String userAgent,
-			@QueryParam("pretty") Optional<Boolean> pretty)
-	{
+			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset, subject.getId(), subject.getName());
-		return processor.createResult(subject, execution, dataset, pretty.orElse(false), datasetRegistry, config);
+		return processor.createResultStream(subject, execution, dataset, pretty.orElse(false), datasetRegistry, config);
 	}
 }
