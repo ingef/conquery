@@ -31,13 +31,14 @@ import {
   TableWithFilterValueT,
 } from "./types";
 
-const isRangeFilterConfig = (
-  filter: FilterConfigT,
-): filter is {
+interface RangeFilterConfig {
   filter: FilterT["id"];
   value: RangeFilterValueT;
   type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE";
-} =>
+}
+const isRangeFilterConfig = (
+  filter: FilterConfigT,
+): filter is RangeFilterConfig =>
   filter.type === "INTEGER_RANGE" ||
   filter.type === "REAL_RANGE" ||
   filter.type === "MONEY_RANGE";
@@ -51,6 +52,27 @@ const isMultiSelectFilterConfig = (
 } =>
   (filter.type === "MULTI_SELECT" || filter.type === "BIG_MULTI_SELECT") &&
   filter.value instanceof Array;
+
+const mergeRangeFilter = (
+  savedFilter: RangeFilterWithValueType,
+  matchingFilter: RangeFilterConfig,
+): RangeFilterWithValueType => {
+  const filterDetails =
+    matchingFilter.value &&
+    !isEmpty(matchingFilter.value.min) &&
+    !isEmpty(matchingFilter.value.max) &&
+    matchingFilter.value.min === matchingFilter.value.max
+      ? {
+          mode: "exact" as const,
+          value: { exact: matchingFilter.value.min },
+        }
+      : { mode: "range" as const, value: matchingFilter.value };
+
+  return {
+    ...(savedFilter as RangeFilterWithValueType),
+    ...filterDetails,
+  };
+};
 
 // Merges filter values from `table` into declared filters from `savedTable`
 //
@@ -76,23 +98,7 @@ const mergeFiltersFromSavedConcept = (
     }
 
     if (isRangeFilterConfig(matchingFilter)) {
-      const filterDetails =
-        matchingFilter.value &&
-        !isEmpty(matchingFilter.value.min) &&
-        !isEmpty(matchingFilter.value.max) &&
-        matchingFilter.value.min === matchingFilter.value.max
-          ? {
-              mode: "exact" as const,
-              value: { exact: matchingFilter.value.min },
-            }
-          : { mode: "range" as const, value: matchingFilter.value };
-
-      const filter: RangeFilterWithValueType = {
-        ...(savedFilter as RangeFilterWithValueType),
-        ...filterDetails,
-      };
-
-      return filter;
+      return mergeRangeFilter(savedFilter, matchingFilter);
     }
 
     if (isMultiSelectFilterConfig(matchingFilter)) {
