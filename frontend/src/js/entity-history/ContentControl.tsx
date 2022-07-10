@@ -37,6 +37,11 @@ const ContentControl = ({ value, onChange }: Props) => {
   const options = useMemo(
     () => [
       {
+        key: "secondaryId" as const,
+        icon: "microscope" as const,
+        tooltip: t("history.content.secondaryId"),
+      },
+      {
         key: "money" as const,
         icon: "money-bill-alt" as const,
         tooltip: t("history.content.money"),
@@ -45,11 +50,6 @@ const ContentControl = ({ value, onChange }: Props) => {
         key: "concept" as const,
         icon: "folder" as const,
         tooltip: t("history.content.concept"),
-      },
-      {
-        key: "secondaryId" as const,
-        icon: "microscope" as const,
-        tooltip: t("history.content.secondaryId"),
       },
       {
         key: "rest" as const,

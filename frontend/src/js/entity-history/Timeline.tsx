@@ -102,6 +102,7 @@ const QuarterHead = styled("div")<{ empty?: boolean }>`
 const SxHeading4 = styled(Heading4)`
   flex-shrink: 0;
   margin: 0;
+  color: ${({ theme }) => theme.col.black};
 `;
 
 const TinyText = styled("p")`
@@ -278,31 +279,6 @@ export const Timeline = memo(
                                     <RowDates dates={row.dates} />
                                     <EventItemContent>
                                       <SxRawDataBadge event={row} />
-                                      {contentFilter.money &&
-                                        applicableMoney.length > 0 && (
-                                          <>
-                                            <WithTooltip text={moneyTooltip}>
-                                              <SxFaIcon
-                                                icon="money-bill-alt"
-                                                active
-                                                tiny
-                                              />
-                                            </WithTooltip>
-                                            <ColBucketCode>
-                                              {applicableMoney.map((column) => (
-                                                <NumberFormat
-                                                  {...currencyConfig}
-                                                  displayType="text"
-                                                  value={
-                                                    parseInt(
-                                                      row[column.label],
-                                                    ) / 100
-                                                  }
-                                                />
-                                              ))}
-                                            </ColBucketCode>
-                                          </>
-                                        )}
                                       {contentFilter.secondaryId &&
                                         applicableSecondaryIds.length > 0 && (
                                           <>
@@ -327,6 +303,31 @@ export const Timeline = memo(
                                                 ),
                                               )}
                                             </ColBucket>
+                                          </>
+                                        )}
+                                      {contentFilter.money &&
+                                        applicableMoney.length > 0 && (
+                                          <>
+                                            <WithTooltip text={moneyTooltip}>
+                                              <SxFaIcon
+                                                icon="money-bill-alt"
+                                                active
+                                                tiny
+                                              />
+                                            </WithTooltip>
+                                            <ColBucketCode>
+                                              {applicableMoney.map((column) => (
+                                                <NumberFormat
+                                                  {...currencyConfig}
+                                                  displayType="text"
+                                                  value={
+                                                    parseInt(
+                                                      row[column.label],
+                                                    ) / 100
+                                                  }
+                                                />
+                                              ))}
+                                            </ColBucketCode>
                                           </>
                                         )}
                                       {contentFilter.concept &&
