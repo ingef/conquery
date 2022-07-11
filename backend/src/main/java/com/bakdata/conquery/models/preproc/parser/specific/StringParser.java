@@ -187,7 +187,8 @@ public class StringParser extends Parser<Integer, StringStore> {
 			dictionary = trie;
 		}
 		else {
-			dictionary = Dictionary.copyUncompressed(trie);
+			dictionary = new MapDictionary(Dataset.PLACEHOLDER, name);
+			getDecoded().forEach(dictionary::add);
 		}
 
 		final IntegerStore indexType = decideIndexType();
