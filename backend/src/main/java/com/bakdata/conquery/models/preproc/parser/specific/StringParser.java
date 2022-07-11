@@ -4,28 +4,34 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.IntSummaryStatistics;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded.Encoding;
+import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumber;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefixSuffix;
 import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
-import com.bakdata.conquery.models.preproc.parser.specific.string.MapTypeGuesser;
-import com.bakdata.conquery.models.preproc.parser.specific.string.NumberTypeGuesser;
-import com.bakdata.conquery.models.preproc.parser.specific.string.StringTypeGuesser;
-import com.bakdata.conquery.models.preproc.parser.specific.string.StringTypeGuesser.Guess;
-import com.bakdata.conquery.models.preproc.parser.specific.string.TrieTypeGuesser;
+import com.bakdata.conquery.util.dict.SuccinctTrie;
 import com.google.common.base.Strings;
-import com.jakewharton.byteunits.BinaryByteUnit;
+import io.dropwizard.util.DataSize;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -58,6 +64,51 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 	public StringParser(ConqueryConfig config) {
 		super(config);
+	}
+
+	public static StringTypeNumber tryCreateNumberStringStore(StringParser stringParser, ConqueryConfig config) {
+		//check if the remaining strings are all numbers
+		Range<Integer> range = new Range.IntegerRange(0, 0);
+		IntegerParser numberParser = new IntegerParser(config);
+
+		if (stringParser.getStrings().keySet().parallelStream()
+						.anyMatch(key -> key.startsWith("0") && !"0".equals(key))) {
+			return null;
+		}
+
+		try {
+			//check that there are no leading zeroes that we would destroy
+
+			for (Map.Entry<String, Integer> e : stringParser.getStrings().entrySet()) {
+				int intValue = Integer.parseInt(e.getKey());
+				range = range.span(new Range.IntegerRange(intValue, intValue));
+
+				numberParser.addLine((long) intValue);
+			}
+		}
+		catch (NumberFormatException e) {
+			return null;
+		}
+
+		numberParser.setLines(stringParser.getLines());
+
+		/*
+		Do not use a number type if the range is much larger than the number if distinct values
+		e.g. if the column contains only 0 and 5M
+		 */
+
+		final int span = range.getMax() - range.getMin() + 1;
+
+		if (span > stringParser.getStrings().size()) {
+			return null;
+		}
+
+		IntegerStore decision = numberParser.findBestType();
+
+		Int2ObjectMap<String> inverse = new Int2ObjectOpenHashMap<>(stringParser.getStrings().size());
+		stringParser.getStrings().forEach((key, value) -> inverse.putIfAbsent((int) value, key));
+
+		return new StringTypeNumber(range, decision, inverse);
 	}
 
 	@Override
@@ -96,43 +147,13 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 		//remove prefix and suffix
 		if (!StringUtils.isEmpty(prefix) || !StringUtils.isEmpty(suffix)) {
+			stripPrefixSuffix();
 			log.debug("Reduced strings by the '{}' prefix and '{}' suffix", prefix, suffix);
-			Object2IntMap<String> oldStrings = strings;
-			strings = new Object2IntOpenHashMap<>(oldStrings.size());
-			for (Object2IntMap.Entry<String> e : oldStrings.object2IntEntrySet()) {
-				strings.put(
-						e.getKey().substring(
-								prefix.length(),
-								e.getKey().length() - suffix.length()
-						),
-						e.getIntValue()
-				);
-
-			}
 		}
 
 		decode();
 
-		// Try all guesses and select the least memory intensive one.
-		//TODO FK: Simplify this, the guessers do a lot of weird lazy computation but implicit.
-		Guess guess = Stream.of(
-									new TrieTypeGuesser(this),
-									new MapTypeGuesser(this),
-									new NumberTypeGuesser(this, getConfig())
-							)
-							.map(StringTypeGuesser::createGuess)
-							.filter(Objects::nonNull)
-							.min(Comparator.naturalOrder())
-							.orElseThrow();
-
-		log.debug(
-				"\tUsing {}(est. {})",
-				guess.getGuesser(),
-				BinaryByteUnit.format(guess.estimate())
-		);
-
-		StringStore result = guess.getType();
-
+		StringStore result = decideStorageType();
 
 		//wrap in prefix suffix
 		if (!Strings.isNullOrEmpty(prefix) || !Strings.isNullOrEmpty(suffix)) {
@@ -140,6 +161,60 @@ public class StringParser extends Parser<Integer, StringStore> {
 		}
 
 		return result;
+	}
+
+	private StringStore decideStorageType() {
+
+		StringTypeNumber numberType = tryCreateNumberStringStore(this, getConfig());
+
+		if (numberType != null) {
+			log.debug("Decided for {}", numberType);
+			return numberType;
+		}
+
+		final String name = UUID.randomUUID().toString();
+
+		SuccinctTrie trie = new SuccinctTrie(Dataset.PLACEHOLDER, name);
+
+		getDecoded().forEach(trie::add);
+
+		final long mapTypeEstimate = MapDictionary.estimateMemoryConsumption(getStrings().size(), getDecoded().stream().mapToLong(s -> s.length).sum());
+
+		Dictionary dictionary;
+
+		if (trie.estimateMemoryConsumption() < mapTypeEstimate) {
+			trie.compress();
+			dictionary = trie;
+		}
+		else {
+			dictionary = Dictionary.copyUncompressed(trie);
+		}
+
+		final IntegerStore indexType = decideIndexType();
+
+		log.debug(
+				"Decided for {} and {} (est. {})",
+				dictionary,
+				indexType,
+				DataSize.megabytes(indexType.estimateMemoryConsumptionBytes() + dictionary.estimateMemoryConsumption())
+		);
+
+		return new StringTypeEncoded(new StringTypeDictionary(indexType, dictionary), getEncoding());
+	}
+
+	private void stripPrefixSuffix() {
+		Object2IntMap<String> oldStrings = strings;
+		strings = new Object2IntOpenHashMap<>(oldStrings.size());
+		int stripLeading = prefix.length();
+		int stripTrailing = suffix.length();
+
+		for (Object2IntMap.Entry<String> e : oldStrings.object2IntEntrySet()) {
+			strings.put(
+					e.getKey().substring(stripLeading, e.getKey().length() - stripTrailing),
+					e.getIntValue()
+			);
+
+		}
 	}
 
 	/**
@@ -157,7 +232,9 @@ public class StringParser extends Parser<Integer, StringStore> {
 	private Encoding findEncoding() {
 		EnumSet<Encoding> bases = EnumSet.allOf(Encoding.class);
 		for (String value : strings.keySet()) {
+
 			bases.removeIf(encoding -> !encoding.canEncode(value));
+
 			if (bases.size() == 1) {
 				return bases.iterator().next();
 			}
