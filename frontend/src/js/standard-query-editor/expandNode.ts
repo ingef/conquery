@@ -8,6 +8,7 @@ import {
   RangeFilterValueT,
   SavedQueryNodeT,
   SelectFilterValueT,
+  SelectOptionT,
   SelectorT,
   TableConfigT,
 } from "../api/types";
@@ -16,7 +17,6 @@ import { isEmpty } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 import { TreesT } from "../concept-trees/reducer";
-import { isMultiSelectFilter } from "../model/filter";
 
 import {
   BigMultiSelectFilterWithValueType,
@@ -74,6 +74,61 @@ const mergeRangeFilter = (
   };
 };
 
+const mergeMultiSelectFilter = ({
+  savedFilter,
+  matchingFilter,
+}:
+  | {
+      savedFilter: MultiSelectFilterWithValueType;
+      matchingFilter: {
+        filter: FilterT["id"];
+        value: string[];
+        type: "MULTI_SELECT";
+      };
+    }
+  | {
+      savedFilter: BigMultiSelectFilterWithValueType;
+      matchingFilter: {
+        filter: FilterT["id"];
+        value: string[];
+        type: "BIG_MULTI_SELECT";
+      };
+    }): MultiSelectFilterWithValueType | BigMultiSelectFilterWithValueType => {
+  const fixedFilterType = {
+    type: savedFilter.type as typeof matchingFilter["type"], // matchingFilter.type is sometimes wrongly saying MULTI_SELECT
+  };
+
+  const basicFilter = {
+    ...savedFilter,
+    ...matchingFilter,
+    ...fixedFilterType,
+  };
+
+  if (matchingFilter.value.length === 0) {
+    return { ...basicFilter, value: [] };
+  }
+
+  const hasOptions = savedFilter.options.length > 0;
+
+  if (hasOptions) {
+    return {
+      ...basicFilter,
+      value: matchingFilter.value
+        .map((val) => savedFilter.options.find((op) => op.value === val))
+        .filter(exists),
+    };
+  } else {
+    return {
+      ...basicFilter,
+      // This actually is a string[], which will be used to resolve the filter values
+      // in useLoadBigMultiSelectValues (see actions)
+      // TODO: Figure out how to actually use string[] as a type here, without having to adjust
+      // the entire type hierarchy upwards
+      value: matchingFilter.value as unknown as SelectOptionT[],
+    };
+  }
+};
+
 // Merges filter values from `table` into declared filters from `savedTable`
 //
 // `savedTable` may define filters, but it won't have any filter values,
@@ -98,39 +153,33 @@ const mergeFiltersFromSavedConcept = (
     }
 
     if (isRangeFilterConfig(matchingFilter)) {
-      return mergeRangeFilter(savedFilter, matchingFilter);
+      return mergeRangeFilter(
+        savedFilter as RangeFilterWithValueType,
+        matchingFilter,
+      );
     }
 
     if (isMultiSelectFilterConfig(matchingFilter)) {
-      const filterDetails = {
-        ...matchingFilter,
-        type: savedFilter.type as typeof matchingFilter["type"], // matchingFilter.type is sometimes wrongly saying MULTI_SELECT
-        value: matchingFilter.value
-          .map((val) => {
-            if (!isMultiSelectFilter(savedFilter)) {
-              console.error(
-                `Filter: ${savedFilter} is not a multi-select filter, even though its matching filter was: ${matchingFilter}`,
-              );
-              return val;
-            } else {
-              // There is the possibility, that we have a BIG_MULTI_SELECT that loads options async.
-              // Then filter.options would be empty and we wouldn't find it
-              return savedFilter.options.find((op) => op.value === val) || val;
-            }
-          })
-          .filter(exists),
-      };
-
-      const multiSelectFilter:
-        | MultiSelectFilterWithValueType
-        | BigMultiSelectFilterWithValueType = {
-        ...(savedFilter as
-          | MultiSelectFilterWithValueType
-          | BigMultiSelectFilterWithValueType),
-        ...filterDetails,
-      };
-
-      return multiSelectFilter;
+      return mergeMultiSelectFilter({
+        savedFilter,
+        matchingFilter,
+      } as
+        | {
+            savedFilter: MultiSelectFilterWithValueType;
+            matchingFilter: {
+              filter: string;
+              type: "MULTI_SELECT";
+              value: string[];
+            };
+          }
+        | {
+            savedFilter: BigMultiSelectFilterWithValueType;
+            matchingFilter: {
+              filter: string;
+              type: "BIG_MULTI_SELECT";
+              value: string[];
+            };
+          });
     }
 
     const selectFilter: SelectFilterWithValueType = {
@@ -205,7 +254,10 @@ const mergeFromSavedConceptIntoNode = (
   {
     tables,
     selects,
-  }: { tables: TableWithFilterValueT[]; selects: SelectedSelectorT[] },
+  }: {
+    tables: TableWithFilterValueT[];
+    selects: SelectedSelectorT[];
+  },
 ) => {
   return {
     selects: mergeSelects(selects, node),
@@ -218,7 +270,6 @@ const expandQueryNode = (
   node: QueryConceptNodeT | SavedQueryNodeT,
   expandErrorMessage: string,
 ) => {
-  console.log(node);
   if (node.type === "SAVED_QUERY") {
     const queryNode: DragItemQuery = {
       ...node,
