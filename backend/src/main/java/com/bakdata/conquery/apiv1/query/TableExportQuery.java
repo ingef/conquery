@@ -30,10 +30,13 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -232,7 +235,7 @@ public class TableExportQuery extends Query {
 				final ResultType resultType =
 						rawConceptColumns
 						? ResultType.resolveResultType(column.getType())
-						: new ResultType.StringT((o, printSettings) -> ConceptColumnSelect.printValue(concept, o, printSettings));
+						: new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
 
 				infos[position] = new SimpleResultInfo(
 						column.getTable().getLabel() + " " + column.getLabel(),
@@ -254,6 +257,35 @@ public class TableExportQuery extends Query {
 		}
 
 		return List.of(infos);
+	}
+
+	/**
+	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
+	 *
+	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
+	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} ()} is used to print.
+	 */
+	public static String printValue(Concept concept, Object rawValue, PrintSettings printSettings) {
+
+		if (rawValue == null) {
+			return null;
+		}
+
+		if (!(concept instanceof TreeConcept)) {
+			return Objects.toString(rawValue);
+		}
+
+		final TreeConcept tree = (TreeConcept) concept;
+
+		int localId = (int) rawValue;
+
+		final ConceptTreeNode<?> node = tree.getElementByLocalId(localId);
+
+		if (!printSettings.isPrettyPrint()) {
+			return node.getId().toStringWithoutDataset();
+		}
+
+		return node.getName();
 	}
 
 	@Override
