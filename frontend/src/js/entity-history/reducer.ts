@@ -23,6 +23,7 @@ export type EntityHistoryStateT = {
   columns: ColumnDescription[];
   label: string;
   entityIds: string[];
+  uniqueSources: string[];
   currentEntityId: string | null;
   currentEntityData: EntityEvent[];
   currentEntityCsvUrl: string;
@@ -36,6 +37,7 @@ const initialState: EntityHistoryStateT = {
   columns: [], // TODO: Make them currentEntityColumns and do something useful with them
   isLoading: false,
   isOpen: false,
+  uniqueSources: [],
   entityIds: [],
   currentEntityId: null,
   currentEntityData: [],

@@ -7,8 +7,8 @@ import type { StateT } from "../app/reducers";
 
 import ConceptTreeListItem from "./ConceptTreeListItem";
 import ConceptTreesLoading from "./ConceptTreesLoading";
+import ConceptsProgressBar from "./ConceptsProgressBar";
 import EmptyConceptTreeList from "./EmptyConceptTreeList";
-import ProgressBar from "./ProgressBar";
 import { useLoadTree } from "./actions";
 import type { TreesT, SearchT } from "./reducer";
 import { useAreTreesAvailable } from "./selectors";
@@ -74,7 +74,7 @@ const ConceptTreeList: FC<PropsT> = ({ datasetId }) => {
       {!loading && !areTreesAvailable && !areDatasetsPristineOrLoading && (
         <EmptyConceptTreeList />
       )}
-      {!!anyTreeLoading && <ProgressBar trees={trees} />}
+      {!!anyTreeLoading && <ConceptsProgressBar trees={trees} />}
       {!anyTreeLoading &&
         rootConceptIds.map((conceptId, i) => (
           <ConceptTreeListItem
