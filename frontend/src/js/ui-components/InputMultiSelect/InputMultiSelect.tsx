@@ -181,6 +181,10 @@ const InputMultiSelect = ({
             ? { value: inputValue, label: inputValue }
             : changes.selectedItem;
 
+          if (selectedItem) {
+            addSelectedItem(selectedItem);
+          }
+
           return {
             ...changes,
             selectedItem,
@@ -209,8 +213,6 @@ const InputMultiSelect = ({
         case useCombobox.stateChangeTypes.InputBlur:
         case useCombobox.stateChangeTypes.ItemClick:
           if (action.selectedItem) {
-            addSelectedItem(action.selectedItem);
-
             const wasNewItemCreated =
               creatable &&
               action.selectedItem.value === inputValue &&
@@ -379,7 +381,7 @@ const InputMultiSelect = ({
           <List>
             {!creatable && filteredOptions.length === 0 && <EmptyPlaceholder />}
             {filteredOptions.map((option, index) => (
-              <Fragment key={`${option.value}${option.label}`}>
+              <Fragment key={`${index}${option.value}${option.label}`}>
                 <ListItem
                   index={index}
                   highlightedIndex={highlightedIndex}
