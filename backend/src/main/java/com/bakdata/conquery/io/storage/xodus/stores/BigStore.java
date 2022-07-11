@@ -33,12 +33,14 @@ import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.collections4.IteratorUtils;
 
 /**
  * Store for big files. Files are stored in chunks of 100MB, it therefore requires two stores: one for metadata maintained in {@link BigStoreMetaKeys} the other for the data. BigStoreMeta contains a list of {@link UUID} which describe a single value in the store, to be read in order.
  */
 @Getter
+@ToString(of = {"storeInfo", "metaXodusStore", "dataXodusStore"})
 public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 
 	public static final String META = "_META";
@@ -224,11 +226,6 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 		public Stream<byte[]> loadData(SerializingStore<UUID, byte[]> dataStore) {
 			return Arrays.stream(parts).map(dataStore::get);
 		}
-	}
-
-	@Override
-	public String toString() {
-		return "big " + storeInfo.getName() + "(" + storeInfo.getValueType().getSimpleName() + ")";
 	}
 
 

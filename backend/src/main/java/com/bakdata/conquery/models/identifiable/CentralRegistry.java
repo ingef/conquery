@@ -14,15 +14,18 @@ import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
 @SuppressWarnings({"rawtypes", "unchecked"})
 @NoArgsConstructor
-@ToString(of = "map")
 public class CentralRegistry implements Injectable {
+
+	@Override
+	public String toString() {
+		return "CentralRegistry(size=" + map.size() + ")";
+	}
 
 	private final IdMap map = new IdMap<>();
 	private final ConcurrentMap<Id<?>, Function<Id, Identifiable>> cacheables = new ConcurrentHashMap<>();

@@ -8,6 +8,7 @@ import SmallTabNavigation from "../small-tab-navigation/SmallTabNavigation";
 const Root = styled("div")`
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 `;
 
 export type DetailLevel = "summary" | "detail" | "full";

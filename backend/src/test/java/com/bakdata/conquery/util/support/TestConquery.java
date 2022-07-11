@@ -276,8 +276,8 @@ public class TestConquery {
 			busy |= namespace.getJobManager().isSlowWorkerBusy();
 		}
 
-		for (ShardNode slave : standaloneCommand.getShardNodes()) {
-			busy |= slave.isBusy();
+		for (ShardNode shard : standaloneCommand.getShardNodes()) {
+			busy |= shard.isBusy();
 		}
 		return busy;
 	}

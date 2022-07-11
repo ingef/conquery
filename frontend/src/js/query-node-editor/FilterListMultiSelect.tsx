@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 
 import { usePostFilterValuesResolve } from "../api/api";
 import type {
@@ -13,34 +13,6 @@ import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect
 import type { FiltersContextT } from "./TableFilter";
 import UploadFilterListModal from "./UploadFilterListModal";
 import { filterSuggestionToSelectOption } from "./suggestionsHelper";
-
-interface FilterContextT extends FiltersContextT {
-  filterId: FilterT["id"];
-}
-
-interface PropsT {
-  context: FilterContextT;
-
-  label: string;
-  indexPrefix?: number;
-  options: SelectOptionT[];
-  disabled?: boolean;
-  tooltip?: string;
-  allowDropFile?: boolean;
-  creatable?: boolean;
-
-  total?: number;
-  onLoad?: (
-    prefix: string,
-    page: number,
-    pageSize: number,
-    config?: { returnOnly?: boolean },
-  ) => Promise<PostFilterSuggestionsResponseT | null>;
-
-  value: SelectOptionT[];
-  defaultValue?: string[];
-  onChange: (value: SelectOptionT[]) => void;
-}
 
 const PAGE_SIZE = 25;
 
@@ -66,74 +38,36 @@ const getPageToLoad = (
     : prevPageLoaded + 1;
 };
 
-// Used, when a query gets expanded, to resolve the default filter values
-const useResolveDefaultFilterValues = ({
-  defaultValue,
-  onChange,
-  context,
-  postFilterValuesResolve,
-}: {
-  defaultValue?: PropsT["defaultValue"];
-  onChange: PropsT["onChange"];
-  context: PropsT["context"];
-  postFilterValuesResolve: ReturnType<typeof usePostFilterValuesResolve>;
-}) => {
-  const [resolvedDefaultValue, setResolvedDefaultValue] =
-    useState<boolean>(false);
-  const [resolvingDefaultValueLoading, setResolvingDefaultValueLoading] =
-    useState<boolean>(false);
+interface FilterContextT extends FiltersContextT {
+  filterId: FilterT["id"];
+}
 
-  useEffect(() => {
-    async function resolveDefaultValue() {
-      if (
-        resolvedDefaultValue ||
-        !exists(defaultValue) ||
-        resolvingDefaultValueLoading
-      )
-        return;
+interface PropsT {
+  context: FilterContextT;
 
-      setResolvingDefaultValueLoading(true);
+  label: string;
+  indexPrefix?: number;
+  options: SelectOptionT[];
+  disabled?: boolean;
+  tooltip?: string;
+  allowDropFile?: boolean;
+  creatable?: boolean;
 
-      try {
-        const r = await postFilterValuesResolve(
-          context.datasetId,
-          context.treeId,
-          context.tableId,
-          context.filterId,
-          defaultValue,
-        );
-        if (
-          r.resolvedFilter &&
-          r.resolvedFilter.value &&
-          r.resolvedFilter.value.length > 0
-        ) {
-          onChange(r.resolvedFilter.value);
-        }
-        setResolvedDefaultValue(true);
-      } catch (e) {
-        // Couldn't resolve default value for some reason, this shouldn't happen
-        // Log, reset value, continue
-        console.error(e);
-        onChange([]);
-      }
+  total?: number;
+  onLoad?: (
+    prefix: string,
+    page: number,
+    pageSize: number,
+    config?: { returnOnly?: boolean },
+  ) => Promise<PostFilterSuggestionsResponseT | null>;
 
-      setResolvingDefaultValueLoading(false);
-    }
-    resolveDefaultValue();
-  }, [
-    resolvedDefaultValue,
-    defaultValue,
-    context,
-    onChange,
-    postFilterValuesResolve,
-    resolvingDefaultValueLoading,
-  ]);
-};
+  value: SelectOptionT[];
+  onChange: (value: SelectOptionT[]) => void;
+}
 
 const FilterListMultiSelect: FC<PropsT> = ({
   context,
   value,
-  defaultValue,
   onChange,
   label,
   tooltip,
@@ -154,13 +88,6 @@ const FilterListMultiSelect: FC<PropsT> = ({
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const postFilterValuesResolve = usePostFilterValuesResolve();
   const [prevPageLoaded, setPrevPageLoaded] = useState<number | null>(null);
-
-  useResolveDefaultFilterValues({
-    defaultValue,
-    onChange,
-    context,
-    postFilterValuesResolve,
-  });
 
   const onLoadMore = async (
     prefix: string,
