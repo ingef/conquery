@@ -45,10 +45,13 @@ export const useSyncWithValueFromAbove = ({
 
     const takeFromAbove = valueChanged && weDontHaveValueAlreadySelected;
 
-    if (takeFromAbove && syncingState) {
+    if (syncingState) {
       // Helps prevent race conditions, when selecting options fast
       setSyncingState(false);
-    } else if (takeFromAbove) {
+      return;
+    }
+
+    if (takeFromAbove) {
       setSelectedItems(value);
     }
   }, [
