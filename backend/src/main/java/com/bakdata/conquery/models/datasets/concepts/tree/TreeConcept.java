@@ -189,12 +189,13 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private int nChildren = -1;
 
 	@Override
+	@JsonIgnore
 	public int countElements() {
 		if (nChildren > 0) {
 			return nChildren;
 		}
 
-		return nChildren = (int) getAllChildren().count();
+		return nChildren = 1 + (int) getAllChildren().count();
 	}
 
 	public void initializeIdCache(StringStore type, Import importId) {
