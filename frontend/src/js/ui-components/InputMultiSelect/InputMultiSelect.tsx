@@ -181,7 +181,10 @@ const InputMultiSelect = ({
             ? { value: inputValue, label: inputValue }
             : changes.selectedItem;
 
-          if (selectedItem) {
+          if (
+            selectedItem &&
+            !selectedItems.find((item) => selectedItem.value === item.value)
+          ) {
             addSelectedItem(selectedItem);
           }
 
