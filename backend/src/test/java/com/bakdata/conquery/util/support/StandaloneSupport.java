@@ -28,7 +28,6 @@ import io.dropwizard.setup.Environment;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -55,9 +54,7 @@ public class StandaloneSupport {
 		return testConquery.getStandaloneCommand().getManager().getAuthController();
 	}
 
-	@SneakyThrows
 	public void waitUntilWorkDone() {
-		Thread.sleep(100);
 		testConquery.waitUntilWorkDone();
 	}
 

@@ -11,24 +11,22 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import io.dropwizard.util.Duration;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Weakly cached store, using {@link LoadingCache} to maintain values. Is a wrapper around the supplied {@link Store}.
  */
 @Slf4j
-@ToString(of = "store")
-public class SoftCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
+public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private final LoadingCache<KEY, Optional<VALUE>> cache;
 
 	private final Store<KEY, VALUE> store;
 
-	public SoftCachedStore(Store<KEY, VALUE> store, Duration weakCacheDuration) {
+	public WeakCachedStore(Store<KEY, VALUE> store, Duration weakCacheDuration) {
 		this.store = store;
 		this.cache = CacheBuilder.newBuilder()
-				.softValues()
+				.weakValues()
 				.expireAfterAccess(
 						weakCacheDuration.getQuantity(),
 						weakCacheDuration.getUnit()
@@ -36,7 +34,7 @@ public class SoftCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				.build(new CacheLoader<KEY, Optional<VALUE>>() {
 					@Override
 					public Optional<VALUE> load(KEY key) throws Exception {
-						log.trace("Needing to load entry {} in ", key);
+						log.trace("Needing to load entry "+key+" in "+this);
 						return Optional.ofNullable(store.get(key));
 					}
 				});
@@ -84,7 +82,7 @@ public class SoftCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		cache.invalidate(key);
 		store.remove(key);
 	}
-
+	
 	@Override
 	public int count() {
 		return store.count();
@@ -97,11 +95,17 @@ public class SoftCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public Collection<VALUE> getAll() {
 		return store.getAll();
 	}
-
+	
 	@Override
 	public Collection<KEY> getAllKeys() {
 		return store.getAllKeys();
 	}
+	
+	@Override
+	public String toString() {
+		return "weakcached "+store.toString();
+	}
+
 
 	@Override
 	public void clear() {

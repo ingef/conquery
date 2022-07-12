@@ -389,7 +389,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			acceptor.dispose();
 		}
 		catch (Exception e) {
-			log.error("{} could not be closed", acceptor, e);
+			log.error(acceptor + " could not be closed", e);
 		}
 
 		for (ResourcesProvider provider : providers) {
@@ -397,7 +397,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				provider.close();
 			}
 			catch (Exception e) {
-				log.error("{} could not be closed", provider, e);
+				log.error(provider + " could not be closed", e);
 			}
 
 		}
@@ -405,7 +405,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 			storage.close();
 		}
 		catch (Exception e) {
-			log.error("{} could not be closed", storage, e);
+			log.error(storage + " could not be closed", e);
 		}
 
 		client.close();
