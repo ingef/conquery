@@ -109,9 +109,14 @@ public class Preprocessed {
 
 				log.trace("{} of size {}", key, dict.size());
 
+				StringBuilder msg = new StringBuilder();
+
+
 				for (int index = 0; index < dict.size(); index++) {
-					log.info("({}) {}=`{}`", key, index, StringEscapeUtils.escapeJava(new String(dict.getElement(index))));
+					msg.append(String.format("(%s) %s=`%s`%n", key, index, StringEscapeUtils.escapeJava(new String(dict.getElement(index)))));
 				}
+
+				log.info(msg.toString());
 			}
 		}
 
