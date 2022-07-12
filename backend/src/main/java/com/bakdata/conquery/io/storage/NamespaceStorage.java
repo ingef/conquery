@@ -1,12 +1,12 @@
 package com.bakdata.conquery.io.storage;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Objects;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
@@ -19,10 +19,8 @@ import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.graph.MutableGraph;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 public class NamespaceStorage extends NamespacedStorage {
@@ -46,7 +44,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	public Dictionary getPrimaryDictionaryRaw() {
 		final Dictionary dictionary = primaryDictionary.get();
 
-		if (dictionary == null) {
+		if(dictionary == null){
 			log.trace("No prior PrimaryDictionary, creating one");
 			final MapDictionary newPrimary = new MapDictionary(getDataset(), ConqueryConstants.PRIMARY_DICTIONARY);
 
@@ -82,23 +80,60 @@ public class NamespaceStorage extends NamespacedStorage {
 		decorateIdMapping(idMapping);
 	}
 
+	@Override
+	public void loadData() {
+		dataset.loadData();
+		secondaryIds.loadData();
+		tables.loadData();
+		dictionaries.loadData();
+		imports.loadData();
 
-	@NotNull
-	protected MutableGraph<KeyIncludingStore<?, ?>> getStoreDependencies() {
-		MutableGraph<KeyIncludingStore<?, ?>> loadGraph = super.getStoreDependencies();
+		internToExternMappers.loadData();
+		// Concepts depend on internToExternMappers
+		concepts.loadData();
 
-		loadGraph.putEdge(dataset, internToExternMappers);
-		loadGraph.putEdge(internToExternMappers, concepts);
+		idMapping.loadData();
+		structure.loadData();
+		workerToBuckets.loadData();
+		primaryDictionary.loadData();
 
-		loadGraph.putEdge(dataset, primaryDictionary);
+		log.info("Done reading {} / {}", dataset.get(), getClass().getName());
 
-		loadGraph.putEdge(concepts, structure);
+	}
 
-		loadGraph.putEdge(dictionaries, idMapping);
+	@Override
+	public void clear() {
+		super.clear();
+		internToExternMappers.clear();
+		idMapping.clear();
+		structure.clear();
+		workerToBuckets.clear();
+		primaryDictionary.clear();
 
-		loadGraph.putEdge(imports, workerToBuckets);
+	}
 
-		return loadGraph;
+	@Override
+	public void removeStorage() {
+		super.removeStorage();
+
+		internToExternMappers.removeStore();
+		idMapping.removeStore();
+		structure.removeStore();
+		workerToBuckets.removeStore();
+		primaryDictionary.removeStore();
+
+	}
+
+	@Override
+	public void close() throws IOException {
+		super.close();
+
+		internToExternMappers.close();
+		idMapping.close();
+		structure.close();
+		workerToBuckets.close();
+		primaryDictionary.close();
+
 	}
 
 	public EntityIdMap getIdMapping() {
@@ -106,7 +141,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	}
 
 
-	public void updatePrimaryDictionary(Dictionary dictionary) {
+	public void updatePrimaryDictionary(Dictionary dictionary){
 		primaryDictionary.update(dictionary);
 	}
 

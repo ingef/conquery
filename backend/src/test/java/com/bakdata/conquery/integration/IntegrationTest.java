@@ -67,7 +67,7 @@ public interface IntegrationTest {
 			}
 			catch (Exception e) {
 				ConqueryMDC.setLocation(name);
-				log.warn("FAILED integration test " + name, e);
+				log.info("FAILED integration test " + name, e);
 				throw e;
 			}
 			finally {
@@ -76,8 +76,5 @@ public interface IntegrationTest {
 			ConqueryMDC.setLocation(name);
 			log.info("SUCCESS integration test {}", name);
 		}
-
 	}
-
-
 }
