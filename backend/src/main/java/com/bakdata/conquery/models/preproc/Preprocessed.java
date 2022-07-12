@@ -34,6 +34,7 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntLists;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.text.StringEscapeUtils;
 
 @Data
 @Slf4j
@@ -109,8 +110,7 @@ public class Preprocessed {
 				log.trace("{} of size {}", key, dict.size());
 
 				for (int index = 0; index < dict.size(); index++) {
-					//					log.trace("{} : {} => `{}`", key, index, StringEscapeUtils.escapeJava(new String(dict.getElement(index))));
-										log.info("{} : {}", key, index);
+					log.info("({}) {}=`{}`", key, index, StringEscapeUtils.escapeJava(new String(dict.getElement(index))));
 				}
 			}
 		}
