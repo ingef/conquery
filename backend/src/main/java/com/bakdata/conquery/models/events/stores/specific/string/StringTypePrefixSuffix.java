@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -42,6 +43,11 @@ public class StringTypePrefixSuffix implements StringStore {
 		this.subType = subType;
 		this.prefix = prefix;
 		this.suffix = suffix;
+	}
+
+	@Override
+	public void setParent(Bucket bucket) {
+		subType.setParent(bucket);
 	}
 
 	@Override
