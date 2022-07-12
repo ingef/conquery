@@ -8,6 +8,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
@@ -46,6 +47,9 @@ public class StringTypeEncoded implements StringStore {
 	@JsonIgnore
 	private final LoadingCache<Integer, String> elementCache;
 
+	@JsonIgnore
+	private Bucket bucket;
+
 	@JsonCreator
 	public StringTypeEncoded(StringTypeDictionary subType, Encoding encoding) {
 		super();
@@ -60,6 +64,11 @@ public class StringTypeEncoded implements StringStore {
 										   return encoding.decode(subType.getElement(key));
 									   }
 								   });
+	}
+
+	@Override
+	public void setParent(Bucket bucket) {
+		this.bucket = bucket;
 	}
 
 	@Override
@@ -109,7 +118,7 @@ public class StringTypeEncoded implements StringStore {
 				String decoded = encoding.decode(next);
 
 				if (log.isTraceEnabled()) {
-					log.trace("`{}` ={}=> `{}` ({})", new String(next), encoding, decoded, subType.getDictionary().getId());
+					log.trace("`{}` ={}=> `{}` ({} / {})", new String(next), encoding, decoded, bucket.getId(), subType.getDictionary().getId());
 				}
 
 				return decoded;
