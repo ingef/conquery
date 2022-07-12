@@ -102,9 +102,14 @@ public class Preprocessed {
 		Map<String, Dictionary> dicts = collectDictionaries(columnStores);
 
 		if (log.isTraceEnabled()){
-			dicts.forEach((name, dict) -> {
-				dict.iterator().forEachRemaining(entry -> log.trace("{} : {} => `{}`", name, entry.getId(), new String(entry.getValue())));
-			});
+			for (Map.Entry<String, Dictionary> e : dicts.entrySet()) {
+				String key = e.getKey();
+				Dictionary dict = e.getValue();
+
+				for (int index = 0; index < dict.size(); index++) {
+					log.trace("{} : {} => `{}`", key, index, new String(dict.getElement(index)));
+				}
+			}
 		}
 
 		log.debug("Writing Headers");
@@ -275,7 +280,7 @@ public class Preprocessed {
 				throw new IllegalStateException("Columns are not aligned");
 			}
 
-			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
+//			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
 			columns[col].getParser().addLine(outRow[col]);
 		}
 
