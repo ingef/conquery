@@ -58,19 +58,18 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	@Override
 	protected Graph<KeyIncludingStore<?, ?>> getStoreDependencies() {
 		final MutableGraph<KeyIncludingStore<?, ?>> storeOrder = GraphBuilder.directed()
-																			 .allowsSelfLoops(false)
-																			 .build();
+																			 .allowsSelfLoops(false).build();
 
-
-		storeOrder.addNode(authRole);
+		storeOrder.addNode(authUser);
 
 		storeOrder.putEdge(authRole, authUser);
+		storeOrder.putEdge(authUser, authGroup);
 		storeOrder.putEdge(authRole, authGroup);
 
-		storeOrder.putEdge(authUser, authGroup);
 
-		storeOrder.putEdge(authUser, executions);
 		storeOrder.putEdge(authGroup, executions);
+		storeOrder.putEdge(authUser, executions);
+		storeOrder.putEdge(authRole, executions);
 
 		storeOrder.putEdge(executions, formConfigs);
 
