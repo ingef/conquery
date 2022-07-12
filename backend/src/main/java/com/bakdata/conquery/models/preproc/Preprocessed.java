@@ -101,6 +101,12 @@ public class Preprocessed {
 
 		Map<String, Dictionary> dicts = collectDictionaries(columnStores);
 
+		if (log.isTraceEnabled()){
+			dicts.forEach((name, dict) -> {
+				dict.iterator().forEachRemaining(entry -> log.trace("{} : {} => `{}`", name, entry.getId(), new String(entry.getValue())));
+			});
+		}
+
 		log.debug("Writing Headers");
 
 		int hash = descriptor.calculateValidityHash(job.getCsvDirectory(), job.getTag());
