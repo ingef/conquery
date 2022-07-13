@@ -196,7 +196,7 @@ public class ImportJob extends Job {
 	 * Create mappings for shared dictionaries dict.
 	 * This is not synchronized because the methods is called within the job execution.
 	 */
-	private static Map<String, DictionaryMapping> importDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+	private static Map<String, DictionaryMapping> importDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName, Table table) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
@@ -205,7 +205,7 @@ public class ImportJob extends Job {
 
 		final Map<String, DictionaryMapping> out = new HashMap<>();
 
-		log.trace("Importing Dictionaries");
+		log.debug("BEGIN importing {} Dictionaries", dicts.size());
 
 		for (Column column : columns) {
 
@@ -216,6 +216,7 @@ public class ImportJob extends Job {
 			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
 			// but could also be an error :/ Most likely the former
 			final Dictionary importDictionary = dicts.get(column.getName());
+
 			if (importDictionary == null) {
 				log.trace("No Dictionary for {}", column);
 				continue;
@@ -231,7 +232,7 @@ public class ImportJob extends Job {
 
 				final String sharedDictionaryName = column.getSharedDictionary();
 
-				log.debug("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
+				log.debug("Column[{}.{}.{}] part of shared Dictionary[{}]", table.getId(), importName, column.getName(), sharedDictionaryName);
 
 				final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
 				final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
@@ -283,7 +284,7 @@ public class ImportJob extends Job {
 		log.info("Importing Dictionaries");
 
 		Map<String, DictionaryMapping> sharedDictionaryMappings =
-				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
+				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName(), table);
 
 		log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
 

@@ -34,38 +34,38 @@ public class DictionaryMapping {
 	@ToString.Include
 	private final int numberOfNewIds;
 
-	public static DictionaryMapping createAndImport(Dictionary from, Dictionary to) {
+	public static DictionaryMapping createAndImport(Dictionary incoming, Dictionary into) {
 
-		log.debug("Importing values from `{}` into `{}`", from, to);
+		log.debug("Importing values from `{}` into `{}`", incoming, into);
 
 		if (log.isTraceEnabled()) {
-			from.iterator()
-				.forEachRemaining(entry -> log.trace("{} {}=`{}`", from.getId(), entry.getId(), new String(entry.getValue())));
+			incoming.iterator()
+					.forEachRemaining(entry -> log.trace("{} {}=`{}`", incoming.getId(), entry.getId(), new String(entry.getValue())));
 		}
 
 		int newIds = 0;
 
-		Int2IntMap source2Target = new Int2IntOpenHashMap(from.size());
+		Int2IntMap source2Target = new Int2IntOpenHashMap(incoming.size());
 
 		source2Target.defaultReturnValue(-1);
 
-		Int2IntMap target2Source = new Int2IntOpenHashMap(from.size());
+		Int2IntMap target2Source = new Int2IntOpenHashMap(incoming.size());
 
 		target2Source.defaultReturnValue(-1);
 
-		for (int id = 0; id < from.size(); id++) {
+		for (int id = 0; id < incoming.size(); id++) {
 
-			byte[] value = from.getElement(id);
-			int targetId = to.getId(value);
+			byte[] value = incoming.getElement(id);
+			int targetId = into.getId(value);
 
 			//if id was unknown until now
 			if (targetId == -1L) {
-				targetId = to.add(value);
+				targetId = into.add(value);
 				newIds++;
 			}
 
 			if (log.isTraceEnabled()) {
-				log.trace("Remapping(`{}` into `{}`): `{}` => `{}` ({} = {})", from, to, new String(value), new String(to.getElement(targetId)), id, targetId);
+				log.trace("Remapping(`{}` into `{}`): `{}` => `{}` ({} = {})", incoming, into, new String(value), new String(into.getElement(targetId)), id, targetId);
 			}
 
 			if (source2Target.put(id, targetId) != -1) {
@@ -78,7 +78,7 @@ public class DictionaryMapping {
 
 		}
 
-		return new DictionaryMapping(from, to, source2Target, target2Source, newIds);
+		return new DictionaryMapping(incoming, into, source2Target, target2Source, newIds);
 	}
 
 	public int source2Target(int sourceId) {
@@ -109,7 +109,13 @@ public class DictionaryMapping {
 
 			final int string = from.getString(event);
 
-			to.setInteger(event, source2Target(string));
+			int value = source2Target(string);
+
+			if (value == -1) {
+				log.warn("Missing mapping for {}", string);
+			}
+
+			to.setInteger(event, value);
 		}
 	}
 
