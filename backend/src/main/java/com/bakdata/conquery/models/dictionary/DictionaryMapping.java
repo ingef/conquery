@@ -38,11 +38,6 @@ public class DictionaryMapping {
 
 		log.debug("Importing values from `{}` into `{}`", incoming, into);
 
-		if (log.isTraceEnabled()) {
-			incoming.iterator()
-					.forEachRemaining(entry -> log.trace("{} {}=`{}`", incoming.getId(), entry.getId(), new String(entry.getValue())));
-		}
-
 		int newIds = 0;
 
 		Int2IntMap source2Target = new Int2IntOpenHashMap(incoming.size());
@@ -62,10 +57,6 @@ public class DictionaryMapping {
 			if (targetId == -1L) {
 				targetId = into.add(value);
 				newIds++;
-			}
-
-			if (log.isTraceEnabled()) {
-				log.trace("Remapping(`{}` into `{}`): `{}` => `{}` ({} = {})", incoming, into, new String(value), new String(into.getElement(targetId)), id, targetId);
 			}
 
 			if (source2Target.put(id, targetId) != -1) {

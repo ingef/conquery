@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -39,6 +40,7 @@ public interface StringStore extends ColumnStore {
 	 */
 	@RequiredArgsConstructor
 	@Getter
+	@Slf4j
 	static class StringStoreDescription implements StringStore {
 		private final Set<Integer> indices;
 		private final StringStore actual;
@@ -95,7 +97,7 @@ public interface StringStore extends ColumnStore {
 
 		@NotNull
 		public Stream<String> streamValues() {
-			return indices.stream().map(actual::getElement);
+			return indices.stream().map(actual::getElement).peek(val -> log.debug("{}", val));
 		}
 
 		@Override
