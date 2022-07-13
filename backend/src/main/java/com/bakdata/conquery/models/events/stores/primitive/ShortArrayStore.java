@@ -31,6 +31,7 @@ public class ShortArrayStore implements IntegerStore {
 	}
 
 	@Override
+	@ToString.Include
 	public int getLines() {
 		return values.length;
 	}

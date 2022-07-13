@@ -70,6 +70,8 @@ public class StringTypeDictionary implements ColumnStore {
 
 		final IntSet barrier = new IntOpenHashSet(dictionary.size());
 
+		log.trace("{}", this);
+
 		return IntStream.range(0, getLines())
 						.filter(this::has)
 						.map(this::getString)

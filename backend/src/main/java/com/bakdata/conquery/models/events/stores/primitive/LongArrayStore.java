@@ -21,6 +21,7 @@ public class LongArrayStore implements IntegerStore {
 	private final long[] values;
 
 	@Override
+	@ToString.Include
 	public int getLines() {
 		return values.length;
 	}
