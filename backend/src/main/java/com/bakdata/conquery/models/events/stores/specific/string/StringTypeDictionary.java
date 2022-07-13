@@ -63,7 +63,7 @@ public class StringTypeDictionary implements ColumnStore {
 		return dictionary.getId(value);
 	}
 
-	public Iterator<byte[]> iterator() {
+	public Iterator<byte[]> iteratorForLines(long lines) {
 		if (dictionary == null) {
 			return Collections.emptyIterator();
 		}
@@ -72,7 +72,7 @@ public class StringTypeDictionary implements ColumnStore {
 
 		log.trace("{}", this);
 
-		return IntStream.range(0, getLines())
+		return IntStream.range(0, (int) lines)
 						.filter(this::has)
 						.map(this::getString)
 						.peek(idx -> log.trace("{}", idx))

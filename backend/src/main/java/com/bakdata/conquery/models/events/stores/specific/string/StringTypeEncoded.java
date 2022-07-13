@@ -99,11 +99,11 @@ public class StringTypeEncoded implements StringStore {
 	}
 
 	@Override
-	public Iterator<String> iterator() {
+	public Iterator<String> iteratorForLines(long lines) {
 
 		Dictionary dictionary = subType.getDictionary();
 
-		return Iterators.transform(subType.iterator(), value -> {
+		return Iterators.transform(subType.iteratorForLines(lines), value -> {
 			final String decoded = encoding.decode(value);
 
 			if (log.isTraceEnabled()) {

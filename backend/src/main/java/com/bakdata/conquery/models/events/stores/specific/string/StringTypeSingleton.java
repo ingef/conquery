@@ -73,7 +73,7 @@ public class StringTypeSingleton implements StringStore {
 	}
 
 	@Override
-	public Iterator<String> iterator() {
+	public Iterator<String> iteratorForLines(long lines) {
 		if (singleValue == null) {
 			return Collections.emptyIterator();
 		}

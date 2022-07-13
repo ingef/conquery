@@ -1,8 +1,11 @@
 package com.bakdata.conquery.models.events.stores.root;
 
+import java.util.Iterator;
+
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * {@link ColumnStore} for dictionary encoded string values.
@@ -14,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @implSpec Every implementation must guarantee IDs between 0 and size.
  *
  */
-public interface StringStore extends Iterable<String>, ColumnStore {
+public interface StringStore extends ColumnStore {
 
 
 	int getString(int event);
@@ -26,6 +29,9 @@ public interface StringStore extends Iterable<String>, ColumnStore {
 	 * Number of distinct values in this Store.
 	 */
 	int size();
+
+	@NotNull
+	Iterator<String> iteratorForLines(long lines);
 
 	/**
 	 * Lookup the id of a value in the dictionary.

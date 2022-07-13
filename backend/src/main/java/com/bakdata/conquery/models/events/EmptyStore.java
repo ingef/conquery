@@ -174,7 +174,7 @@ public enum EmptyStore implements
 
 	@NotNull
 	@Override
-	public Iterator<String> iterator() {
+	public Iterator<String> iteratorForLines(long lines) {
 		return Collections.emptyIterator();
 	}
 }

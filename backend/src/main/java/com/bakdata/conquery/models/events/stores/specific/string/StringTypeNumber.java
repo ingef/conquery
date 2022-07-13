@@ -66,7 +66,7 @@ public class StringTypeNumber implements StringStore {
 	}
 
 	@Override
-	public Iterator<String> iterator() {
+	public Iterator<String> iteratorForLines(long lines) {
 		return IntStream
 					   .rangeClosed(
 							   range.getMin(),

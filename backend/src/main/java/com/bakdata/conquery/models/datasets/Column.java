@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.datasets;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -16,7 +18,6 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Labeled;
@@ -72,18 +73,6 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@Override
 	public ColumnId createId() {
 		return new ColumnId(table.getId(), getName());
-	}
-
-	//TODO try to remove this method methods, they are quite leaky
-	public ColumnStore getTypeFor(Import imp) {
-		if (!imp.getTable().equals(getTable())) {
-			throw new IllegalArgumentException(String.format("Import %s is not for same table as %s", imp.getTable().getId(), getTable().getId()));
-		}
-
-		return Objects.requireNonNull(
-				imp.getColumns()[getPosition()].getTypeDescription(),
-				() -> String.format("No description for Column/Import %s/%s", getId(), imp.getId())
-		);
 	}
 
 	@Override
@@ -164,7 +153,13 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	public Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage) {
 		return storage.getAllImports().stream()
 					  .filter(imp -> imp.getTable().equals(getTable()))
-					  .flatMap(imp -> StreamSupport.stream(((StringStore) getTypeFor(imp)).spliterator(), false))
+					  .flatMap(imp -> {
+						  final ImportColumn importColumn = imp.getColumns()[getPosition()];
+
+						  final Iterator<String> elements = ((StringStore) importColumn.getTypeDescription()).iteratorForLines(importColumn.getLines());
+						  // Wow jank
+						  return StreamSupport.stream(Spliterators.spliteratorUnknownSize(elements, Spliterator.ORDERED), false);
+					  })
 					  .map(value -> new FEValue(value, value))
 					  .onClose(() -> log.debug("DONE processing values for {}", getId()));
 	}

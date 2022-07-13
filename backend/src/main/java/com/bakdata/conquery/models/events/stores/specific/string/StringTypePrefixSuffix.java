@@ -74,8 +74,8 @@ public class StringTypePrefixSuffix implements StringStore {
 	}
 
 	@Override
-	public Iterator<String> iterator() {
-		Iterator<String> subIt = subType.iterator();
+	public Iterator<String> iteratorForLines(long lines) {
+		Iterator<String> subIt = subType.iteratorForLines(lines);
 
 		return Iterators.transform(subIt, next -> getPrefix() + next + getSuffix());
 	}
