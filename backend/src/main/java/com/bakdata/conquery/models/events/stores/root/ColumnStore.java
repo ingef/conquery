@@ -29,7 +29,7 @@ public interface ColumnStore {
 	 *
 	 * @param bucket bucket that should be set as parent
 	 * @implNote BackReference set here because Jackson does not support for fields in interfaces and abstract classes see also https://github.com/FasterXML/jackson-databind/issues/3304
-	*/
+	 */
 	@JsonBackReference
 	default void setParent(Bucket bucket) {
 
@@ -104,7 +104,8 @@ public interface ColumnStore {
 	 */
 	@JsonIgnore
 	default ColumnStore createDescription() {
-		return select(new int[0], new int[0]);
+		// It's really annoying, but StringStores need the actual values to work properly
+		return select(new int[]{0}, new int[]{getLines()});
 	}
 
 	/**
