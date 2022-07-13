@@ -42,7 +42,7 @@ public interface StringStore extends ColumnStore {
 	@RequiredArgsConstructor
 	@Getter
 	@Slf4j
-	@CPSType(id = "STRINGS_DESCRIPTION", base = StringStore.class)
+	@CPSType(id = "STRINGS_DESCRIPTION", base = ColumnStore.class)
 	static class StringStoreDescription implements StringStore {
 		private final Set<Integer> indices;
 		private final StringStore actual;
