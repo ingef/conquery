@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,18 +15,18 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * {@link ColumnStore} for dictionary encoded string values.
- *
+ * <p>
  * See also {@link MajorTypeId#STRING} and {@link com.bakdata.conquery.models.preproc.parser.specific.StringParser}.
- *
+ * <p>
  * This class has a lot of special methods for handling dictionary encoded values.
  *
  * @implSpec Every implementation must guarantee IDs between 0 and size.
- *
  */
 public interface StringStore extends ColumnStore {
 
 
 	int getString(int event);
+
 	void setString(int event, int value);
 
 	String getElement(int id);
@@ -41,6 +42,7 @@ public interface StringStore extends ColumnStore {
 	@RequiredArgsConstructor
 	@Getter
 	@Slf4j
+	@CPSType(id = "STRINGS_DESCRIPTION", base = StringStore.class)
 	static class StringStoreDescription implements StringStore {
 		private final Set<Integer> indices;
 		private final StringStore actual;
@@ -130,7 +132,7 @@ public interface StringStore extends ColumnStore {
 	default ColumnStore createDescription() {
 		Set<Integer> actual = new HashSet<>();
 		for (int event = 0; event < getLines(); event++) {
-			if (!has(event)){
+			if (!has(event)) {
 				continue;
 			}
 
@@ -152,12 +154,12 @@ public interface StringStore extends ColumnStore {
 
 	@JsonIgnore
 	Dictionary getUnderlyingDictionary();
+
 	@JsonIgnore
 	void setUnderlyingDictionary(Dictionary dictionary);
 
 	@JsonIgnore
 	boolean isDictionaryHolding();
-
 
 
 	/**
