@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -75,23 +76,8 @@ public class StringTypePrefixSuffix implements StringStore {
 	@Override
 	public Iterator<String> iterator() {
 		Iterator<String> subIt = subType.iterator();
-		return new Iterator<String>() {
-			@Override
-			public boolean hasNext() {
-				return subIt.hasNext();
-			}
 
-			@Override
-			public String next() {
-				final String next = subIt.next();
-
-				if (log.isTraceEnabled()){
-					log.trace("`{}`+`{}`+`{}`", getPrefix(), next, getSuffix());
-				}
-
-				return getPrefix() + next + getSuffix();
-			}
-		};
+		return Iterators.transform(subIt, next -> getPrefix() + next + getSuffix());
 	}
 
 

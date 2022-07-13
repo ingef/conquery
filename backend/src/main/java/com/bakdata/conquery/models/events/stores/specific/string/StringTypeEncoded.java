@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.stream.IntStream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -18,6 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Iterators;
 import com.google.common.io.BaseEncoding;
 import lombok.Getter;
 import lombok.NonNull;
@@ -101,23 +100,7 @@ public class StringTypeEncoded implements StringStore {
 
 	@Override
 	public Iterator<String> iterator() {
-
-		Dictionary dictionary = subType.getDictionary();
-		if (dictionary == null) {
-			return Collections.emptyIterator();
-		}
-
-		return IntStream.range(0, dictionary.size())
-				.mapToObj(idx -> {
-					final byte[] value = dictionary.getElement(idx);
-					final String decoded = encoding.decode(value);
-
-					if (log.isTraceEnabled()) {
-						log.trace("{}:`{}` ={}=> `{}` ({})", idx, new String(value), encoding, decoded, dictionary.getId());
-					}
-
-					return decoded;
-				}).iterator();
+		return Iterators.transform(subType.iterator(), encoding::decode);
 
 	}
 
