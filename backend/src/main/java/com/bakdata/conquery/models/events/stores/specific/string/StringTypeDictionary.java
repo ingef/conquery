@@ -1,17 +1,11 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.stream.IntStream;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -61,23 +55,6 @@ public class StringTypeDictionary implements ColumnStore {
 
 	public int getId(byte[] value) {
 		return dictionary.getId(value);
-	}
-
-	public Iterator<byte[]> iteratorForLines(long lines) {
-		if (dictionary == null) {
-			return Collections.emptyIterator();
-		}
-
-		final IntSet barrier = new IntOpenHashSet(dictionary.size());
-
-		log.trace("{}", this);
-
-		return IntStream.range(0, (int) lines)
-						.filter(this::has)
-						.map(this::getString)
-						.filter(barrier::add)
-						.mapToObj(dictionary::getElement)
-						.iterator();
 	}
 
 	@Override

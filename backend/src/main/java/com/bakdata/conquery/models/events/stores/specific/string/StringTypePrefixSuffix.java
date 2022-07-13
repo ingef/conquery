@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
 
 import javax.annotation.Nonnull;
 
@@ -11,7 +10,6 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -72,14 +70,6 @@ public class StringTypePrefixSuffix implements StringStore {
 	public void setIndexStore(IntegerStore indexStore) {
 		subType.setIndexStore(indexStore);
 	}
-
-	@Override
-	public Iterator<String> iteratorForLines(long lines) {
-		Iterator<String> subIt = subType.iteratorForLines(lines);
-
-		return Iterators.transform(subIt, next -> getPrefix() + next + getSuffix());
-	}
-
 
 	@Override
 	public StringTypePrefixSuffix select(int[] starts, int[] length) {

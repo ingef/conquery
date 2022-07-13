@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.IntStream;
 
 import javax.annotation.Nonnull;
 
@@ -64,18 +62,6 @@ public class StringTypeNumber implements StringStore {
 	public long estimateEventBits() {
 		return delegate.estimateEventBits();
 	}
-
-	@Override
-	public Iterator<String> iteratorForLines(long lines) {
-		return IntStream
-					   .rangeClosed(
-							   range.getMin(),
-							   range.getMax()
-					   )
-					   .mapToObj(Integer::toString)
-					   .iterator();
-	}
-
 
 	@Override
 	public String getElement(int id) {

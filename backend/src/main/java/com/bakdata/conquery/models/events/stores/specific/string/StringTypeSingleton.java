@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
-import java.util.Collections;
-import java.util.Iterator;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
@@ -10,7 +7,6 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -70,14 +66,6 @@ public class StringTypeSingleton implements StringStore {
 			return 0;
 		}
 		return -1;
-	}
-
-	@Override
-	public Iterator<String> iteratorForLines(long lines) {
-		if (singleValue == null) {
-			return Collections.emptyIterator();
-		}
-		return Iterators.singletonIterator(singleValue);
 	}
 
 	@Override

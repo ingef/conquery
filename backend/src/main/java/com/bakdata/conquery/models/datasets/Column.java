@@ -1,12 +1,8 @@
 package com.bakdata.conquery.models.datasets;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.validation.constraints.NotNull;
 
@@ -156,9 +152,8 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 					  .flatMap(imp -> {
 						  final ImportColumn importColumn = imp.getColumns()[getPosition()];
 
-						  final Iterator<String> elements = ((StringStore) importColumn.getTypeDescription()).iteratorForLines(importColumn.getLines());
-						  // Wow jank
-						  return StreamSupport.stream(Spliterators.spliteratorUnknownSize(elements, Spliterator.ORDERED), false);
+						  // StringStoreDescription only exists for this method.
+						  return  ((StringStore.StringStoreDescription) importColumn.getTypeDescription()).streamValues();
 					  })
 					  .map(value -> new FEValue(value, value))
 					  .onClose(() -> log.debug("DONE processing values for {}", getId()));
