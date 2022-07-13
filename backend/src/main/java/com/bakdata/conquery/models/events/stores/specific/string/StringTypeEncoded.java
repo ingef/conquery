@@ -100,8 +100,18 @@ public class StringTypeEncoded implements StringStore {
 
 	@Override
 	public Iterator<String> iterator() {
-		return Iterators.transform(subType.iterator(), encoding::decode);
 
+		Dictionary dictionary = subType.getDictionary();
+
+		return Iterators.transform(subType.iterator(), value -> {
+			final String decoded = encoding.decode(value);
+
+			if (log.isTraceEnabled()) {
+				log.trace("`{}` ={}=> `{}` ({})", new String(value), encoding, decoded, dictionary.getId());
+			}
+
+			return decoded;
+		});
 	}
 
 	@Override
