@@ -11,13 +11,20 @@ export function parseCSV(file: File, delimiter?: string) {
   });
 }
 
-export function loadCSV(url: string): Promise<ParseResult<string[]>> {
+export function loadCSV(
+  url: string,
+  { english }: { english?: boolean } = {},
+): Promise<ParseResult<string[]>> {
   return new Promise((resolve) => {
     Papa.parse<string[]>(url, {
-      downloadRequestHeaders: {
-        // Because we support different csv header versions depending on language
-        "Accept-Language": "en-US,en",
-      },
+      ...(english
+        ? {
+            downloadRequestHeaders: {
+              // Because we support different csv header versions depending on language
+              "Accept-Language": "en-US,en",
+            },
+          }
+        : {}),
       download: true,
       delimiter: ";",
       skipEmptyLines: true,

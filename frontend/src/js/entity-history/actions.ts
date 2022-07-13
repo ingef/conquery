@@ -150,7 +150,7 @@ export function useUpdateHistorySession() {
       }
 
       const authorizedCSVUrl = getAuthorizedUrl(csvUrl);
-      const csv = await loadCSV(authorizedCSVUrl);
+      const csv = await loadCSV(authorizedCSVUrl, { english: true });
       const currentEntityData = await parseCSVWithHeaderToObj(
         csv.data.map((r) => r.join(";")).join("\n"),
       );
