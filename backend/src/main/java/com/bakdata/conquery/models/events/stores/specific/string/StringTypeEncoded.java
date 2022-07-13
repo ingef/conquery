@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.stream.IntStream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -99,25 +101,24 @@ public class StringTypeEncoded implements StringStore {
 
 	@Override
 	public Iterator<String> iterator() {
-		Iterator<byte[]> subIt = subType.iterator();
-		return new Iterator<>() {
-			@Override
-			public boolean hasNext() {
-				return subIt.hasNext();
-			}
 
-			@Override
-			public String next() {
-				byte[] next = subIt.next();
-				String decoded = encoding.decode(next);
+		Dictionary dictionary = subType.getDictionary();
+		if (dictionary == null) {
+			return Collections.emptyIterator();
+		}
 
-				if (log.isTraceEnabled()) {
-					log.trace("`{}` ={}=> `{}` ({})", new String(next), encoding, decoded, subType.getDictionary().getId());
-				}
+		return IntStream.range(0, dictionary.size())
+				.mapToObj(idx -> {
+					final byte[] value = dictionary.getElement(idx);
+					final String decoded = encoding.decode(value);
 
-				return decoded;
-			}
-		};
+					if (log.isTraceEnabled()) {
+						log.trace("{}:`{}` ={}=> `{}` ({})", idx, new String(value), encoding, decoded, dictionary.getId());
+					}
+
+					return decoded;
+				}).iterator();
+
 	}
 
 	@Override

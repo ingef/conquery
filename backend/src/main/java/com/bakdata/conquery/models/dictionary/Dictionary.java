@@ -43,7 +43,7 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Name
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + "(id=" + getId() + "size=" + size() + ")";
+		return getClass().getSimpleName() + "(id=" + getId() + ", size=" + size() + ")";
 	}
 
 	public static MapDictionary copyUncompressed(Dictionary dict) {
