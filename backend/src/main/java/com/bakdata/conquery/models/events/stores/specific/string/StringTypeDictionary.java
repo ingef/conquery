@@ -75,10 +75,8 @@ public class StringTypeDictionary implements ColumnStore {
 		return IntStream.range(0, (int) lines)
 						.filter(this::has)
 						.map(this::getString)
-						.peek(idx -> log.trace("{}", idx))
 						.filter(barrier::add)
 						.mapToObj(dictionary::getElement)
-						.peek(val -> log.trace("`{}`", new String(val)))
 						.iterator();
 	}
 
