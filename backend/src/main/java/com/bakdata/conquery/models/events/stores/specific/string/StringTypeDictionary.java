@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.IntStream;
@@ -11,6 +10,8 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -67,19 +68,15 @@ public class StringTypeDictionary implements ColumnStore {
 			return Collections.emptyIterator();
 		}
 
-		final BitSet barrier = new BitSet(dictionary.size());
+		final IntSet barrier = new IntOpenHashSet(dictionary.size());
 
 		return IntStream.range(0, getLines())
 						.filter(this::has)
 						.map(this::getString)
-						.filter(id -> {
-							if (barrier.get(id)) {
-								return false;
-							}
-							barrier.set(id);
-							return true;
-						})
+						.peek(idx -> log.trace("{}", idx))
+						.filter(barrier::add)
 						.mapToObj(dictionary::getElement)
+						.peek(val -> log.trace("`{}`", new String(val)))
 						.iterator();
 	}
 
