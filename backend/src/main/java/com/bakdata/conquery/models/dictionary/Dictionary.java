@@ -12,26 +12,27 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 public abstract class Dictionary extends NamedImpl<DictionaryId> implements NamespacedIdentifiable<DictionaryId>, Iterable<DictionaryEntry> {
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	@NsIdRef
 	private Dataset dataset;
-	
+
 	public Dictionary(Dataset dataset, @NotNull String name) {
 		this.setName(name);
 		this.dataset = dataset;
 	}
-	
+
 	@Override
 	public DictionaryId createId() {
 		return new DictionaryId(dataset.getId(), getName());
 	}
 
 	public abstract int add(byte[] bytes);
-	
+
 	public abstract int put(byte[] bytes);
 
 	public abstract int getId(byte[] bytes);
@@ -42,12 +43,12 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Name
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()+"[size=" + size() + "]";
+		return getClass().getSimpleName() + "(id=" + getId() + "size=" + size() + ")";
 	}
 
 	public static MapDictionary copyUncompressed(Dictionary dict) {
 		MapDictionary newDict = new MapDictionary(dict.getDataset(), dict.getName());
-		for(DictionaryEntry e:dict) {
+		for (DictionaryEntry e : dict) {
 			newDict.add(e.getValue());
 		}
 		return newDict;
