@@ -72,7 +72,7 @@ public class LoadingUtil {
 			final CsvParser parser = support.getConfig().getCsv().withParseHeaders(false).withSkipHeader(false).createParser();
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(new String[0][]);
 
-			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data));
+			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
 			ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
 												 .createQuery(support.getDatasetRegistry(), query, queryId, user, support.getNamespace().getDataset(), false);

@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -37,7 +36,7 @@ public interface QueryDescription extends Visitable {
 	/**
 	 * Transforms the submitted query to an {@link ManagedExecution}.
 	 * In this step some external dependencies are resolve (such as {@link CQExternal}).
-	 * However steps that require add or manipulates queries programmatically based on the submitted query
+	 * However, steps that require add or manipulates queries programmatically based on the submitted query
 	 * should be done in an extra init procedure (see {@link ManagedForm#doInitExecutable(DatasetRegistry, ConqueryConfig)}.
 	 * These steps are executed right before the execution of the query and not necessary in this creation phase.
 	 *
@@ -52,7 +51,7 @@ public interface QueryDescription extends Visitable {
 	
 	/**
 	 * Initializes a submitted description using the provided context.
-	 * All parameters that are set in this phase must be annotated with {@link InternalOnly}.
+	 * All parameters that are set in this phase must be annotated with {@link com.bakdata.conquery.io.jackson.View.InternalCommunication}.
 	 * @param context Holds information which can be used for the initialize the description of the query to be executed.
 	 */
 	void resolve(QueryResolveContext context);
@@ -93,11 +92,12 @@ public interface QueryDescription extends Visitable {
 
 		subject.authorize(concepts, Ability.READ);
 
+		// Check reused query permissions
 		final Set<ManagedExecution<?>> collectedExecutions = collectRequiredQueries().stream()
 																					 .map(storage::getExecution)
 																					 .filter(Objects::nonNull)
-
 																					 .collect(Collectors.toSet());
+                                           
 		subject.authorize(collectedExecutions, Ability.READ);
 
 		// Check if the query contains parts that require to resolve external IDs. If so the subject must have the preserve_id permission on the dataset.

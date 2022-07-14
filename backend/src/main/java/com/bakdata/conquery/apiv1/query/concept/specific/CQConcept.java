@@ -18,7 +18,7 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
@@ -45,6 +45,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
@@ -82,8 +83,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@JsonAlias("excludeFromSecondaryIdQuery")
 	private boolean excludeFromSecondaryId = false;
 
-	@InternalOnly
-	@NotNull
+	@JsonView(View.InternalCommunication.class)
 	private boolean aggregateEventDates;
 
 	@Override

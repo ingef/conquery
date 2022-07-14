@@ -22,7 +22,7 @@ import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefKeys;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
@@ -45,6 +45,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -88,8 +89,8 @@ public class TableExportQuery extends Query {
 	 * - SecondaryIds are collected into a Column per SecondaryId
 	 * - The remaining columns are arbitrarily ordered, but usually grouped by their source table.
 	 */
-	@InternalOnly
 	@NsIdRefKeys
+	@JsonView(View.InternalCommunication.class)
 	private Map<Column, Integer> positions;
 
 	@JsonIgnore

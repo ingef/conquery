@@ -21,19 +21,21 @@ export interface LoadingPayload {
 
 interface Props {
   className?: string;
-  onLoad: (payload: LoadingPayload) => void;
+  onLoadFromFile: (payload: LoadingPayload) => void;
   children: React.ReactNode;
 }
 
-export const LoadHistoryDropzone = ({ className, onLoad, children }: Props) => {
+export const LoadHistoryDropzone = ({
+  className,
+  onLoadFromFile,
+  children,
+}: Props) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
   const onDrop = async ({ files }: DragItemFile) => {
     const file = files[0];
     const { data } = await parseCSV(file, ";");
-
-    console.log(data);
 
     if (data.length === 0) {
       dispatch(setMessage({ message: t("history.load.error") }));
@@ -68,7 +70,7 @@ export const LoadHistoryDropzone = ({ className, onLoad, children }: Props) => {
       return;
     }
 
-    onLoad({
+    onLoadFromFile({
       label: file.name,
       loadedEntityIds,
       loadedEntityStatus,

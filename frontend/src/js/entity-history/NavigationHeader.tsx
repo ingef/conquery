@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
+import ProgressBar from "../common/components/ProgressBar";
 import { Heading3 } from "../headings/Headings";
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -108,6 +109,7 @@ export const NavigationHeader = memo(
           <Count>{markedCount}</Count>
           <Text>{t("history.marked", { count: markedCount })}</Text>
         </StatsGrid>
+        <ProgressBar donePercent={100 * (markedCount / idsCount)} />
       </Root>
     );
   },

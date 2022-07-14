@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
@@ -16,6 +17,7 @@ import type { StandardQueryStateT } from "../standard-query-editor/queryReducer"
 
 import { setDatasetId } from "./globalDatasetHelper";
 import type { DatasetStateT } from "./reducer";
+import { useDatasetId } from "./selectors";
 
 export type DatasetActions = ActionType<
   typeof loadDatasets | typeof selectDatasetInput | typeof saveQuery
@@ -73,40 +75,56 @@ export const useSelectDataset = () => {
   const dispatch = useDispatch();
   const loadTrees = useLoadTrees();
   const { loadQueries } = useLoadQueries();
+  const previouslySelectedDatasetId = useDatasetId();
   const locallySavedQueries = useSelector<
     StateT,
     DatasetStateT["locallySavedQueries"]
   >((state) => state.datasets.locallySavedQueries);
+  const query = useSelector<StateT, StandardQueryStateT>(
+    (state) => state.queryEditor.query,
+  );
+  // Avoid constant re-renders when updating the query
+  const queryRef = useRef(query);
+  useEffect(() => {
+    queryRef.current = query;
+  }, [query]);
 
-  return (
-    datasetId: DatasetT["id"] | null,
-    previouslySelectedDatasetId: DatasetT["id"] | null,
-    query: StandardQueryStateT,
-  ) => {
-    if (previouslySelectedDatasetId) {
-      dispatch(saveQuery({ query, previouslySelectedDatasetId }));
-    }
-
-    dispatch(selectDatasetInput({ id: datasetId }));
-
-    // To allow loading trees to check whether they should abort or not
-    setDatasetId(datasetId);
-
-    // Load query if available, else clear
-    if (!exists(datasetId)) {
-      return dispatch(clearQuery());
-    } else {
-      const nextDatasetSavedQuery = locallySavedQueries[datasetId];
-
-      if (!nextDatasetSavedQuery) {
-        dispatch(clearQuery());
-      } else {
-        dispatch(loadSavedQuery({ query: nextDatasetSavedQuery }));
+  return useCallback(
+    (datasetId: DatasetT["id"] | null) => {
+      if (previouslySelectedDatasetId) {
+        dispatch(
+          saveQuery({ query: queryRef.current, previouslySelectedDatasetId }),
+        );
       }
 
-      loadTrees(datasetId);
+      dispatch(selectDatasetInput({ id: datasetId }));
 
-      return loadQueries(datasetId);
-    }
-  };
+      // To allow loading trees to check whether they should abort or not
+      setDatasetId(datasetId);
+
+      // Load query if available, else clear
+      if (!exists(datasetId)) {
+        return dispatch(clearQuery());
+      } else {
+        const nextDatasetSavedQuery = locallySavedQueries[datasetId];
+
+        if (!nextDatasetSavedQuery) {
+          dispatch(clearQuery());
+        } else {
+          dispatch(loadSavedQuery({ query: nextDatasetSavedQuery }));
+        }
+
+        loadTrees(datasetId);
+
+        return loadQueries(datasetId);
+      }
+    },
+    [
+      dispatch,
+      loadTrees,
+      loadQueries,
+      locallySavedQueries,
+      previouslySelectedDatasetId,
+    ],
+  );
 };
