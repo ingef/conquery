@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
@@ -111,6 +112,7 @@ public class ColumnStoreSerializationTests {
 
 				new StringTypeNumber(new IntegerRange(0, 7), ByteArrayStore.create(10)),
 				new StringTypeSingleton("a", BitSetStore.create(10)),
+				new StringStore.StringStoreDescription(Set.of(0), new StringTypeSingleton("a", BitSetStore.create(10))),
 				new DateRangeTypeDateRange(IntegerDateStore.create(10), IntegerDateStore.create(10)),
 				new DateRangeTypeQuarter(LongArrayStore.create(10)),
 				new IntegerDateStore(LongArrayStore.create(10)),
