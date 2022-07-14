@@ -97,6 +97,7 @@ public interface QueryDescription extends Visitable {
 																					 .map(storage::getExecution)
 																					 .filter(Objects::nonNull)
 																					 .collect(Collectors.toSet());
+                                           
 		subject.authorize(collectedExecutions, Ability.READ);
 
 		// Check if the query contains parts that require to resolve external IDs. If so the subject must have the preserve_id permission on the dataset.
