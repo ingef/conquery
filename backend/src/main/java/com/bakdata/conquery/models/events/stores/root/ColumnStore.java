@@ -104,8 +104,7 @@ public interface ColumnStore {
 	 */
 	@JsonIgnore
 	default ColumnStore createDescription() {
-		// It's really annoying, but StringStores need the actual values to work properly
-		return select(new int[]{0}, new int[]{getLines()});
+		return select(new int[0], new int[0]);
 	}
 
 	/**
