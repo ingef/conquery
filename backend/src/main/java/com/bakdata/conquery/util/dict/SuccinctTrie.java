@@ -31,7 +31,7 @@ import lombok.ToString;
  * overhead.
  */
 @CPSType(id = "SUCCINCT_TRIE", base = Dictionary.class)
-@ToString(of = "nodeCount", callSuper = true)
+@ToString(callSuper = true)
 @Getter
 public class SuccinctTrie extends Dictionary {
 

@@ -17,8 +17,10 @@ import com.google.common.math.DoubleMath;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import lombok.ToString;
 
 @CPSType(id = "MAP_DICTIONARY", base = Dictionary.class)
+@ToString(callSuper = true)
 public class MapDictionary extends Dictionary {
 
 	private Object2IntOpenHashMap<ByteArrayList> value2Id;

@@ -11,9 +11,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 public abstract class Dictionary extends NamedImpl<DictionaryId> implements NamespacedIdentifiable<DictionaryId>, Iterable<DictionaryEntry> {
 
 	@Getter
@@ -39,12 +41,8 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Name
 
 	public abstract byte[] getElement(int id);
 
+	@ToString.Include
 	public abstract int size();
-
-	@Override
-	public String toString() {
-		return getClass().getSimpleName() + "(id=" + getId() + ", size=" + size() + ")";
-	}
 
 	public static MapDictionary copyUncompressed(Dictionary dict) {
 		MapDictionary newDict = new MapDictionary(dict.getDataset(), dict.getName());
