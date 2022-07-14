@@ -10,8 +10,9 @@ import com.bakdata.conquery.models.events.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link ColumnStore} for dictionary encoded string values.
@@ -23,6 +24,8 @@ import org.jetbrains.annotations.NotNull;
  * @implSpec Every implementation must guarantee IDs between 0 and size.
  */
 public interface StringStore extends ColumnStore {
+
+	static final Logger log = LoggerFactory.getLogger(StringStore.class);
 
 
 	int getString(int event);
@@ -41,7 +44,6 @@ public interface StringStore extends ColumnStore {
 	 */
 	@RequiredArgsConstructor
 	@Getter
-	@Slf4j
 	@CPSType(id = "STRINGS_DESCRIPTION", base = ColumnStore.class)
 	static class StringStoreDescription implements StringStore {
 		private final Set<Integer> indices;
@@ -138,6 +140,8 @@ public interface StringStore extends ColumnStore {
 
 			actual.add(getString(event));
 		}
+
+		log.debug("Found {} actually used Strings", actual.size());
 
 		ColumnStore description = ColumnStore.super.createDescription();
 
