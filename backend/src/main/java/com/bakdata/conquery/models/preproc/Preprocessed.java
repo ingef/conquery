@@ -34,7 +34,6 @@ import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntLists;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.text.StringEscapeUtils;
 
 @Data
 @Slf4j
@@ -102,23 +101,6 @@ public class Preprocessed {
 
 		Map<String, Dictionary> dicts = collectDictionaries(columnStores);
 
-		if (log.isTraceEnabled()) {
-			for (Map.Entry<String, Dictionary> e : dicts.entrySet()) {
-				String key = e.getKey();
-				Dictionary dict = e.getValue();
-
-				log.trace("{} of size {}", key, dict.size());
-
-				StringBuilder msg = new StringBuilder();
-
-
-				for (int index = 0; index < dict.size(); index++) {
-					msg.append(String.format("(%s) %s=`%s`%n", key, index, StringEscapeUtils.escapeJava(new String(dict.getElement(index)))));
-				}
-
-				log.info(msg.toString());
-			}
-		}
 
 		log.debug("Writing Headers");
 
@@ -288,7 +270,7 @@ public class Preprocessed {
 				throw new IllegalStateException("Columns are not aligned");
 			}
 
-			//			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
+			log.trace("Registering `{}` for Column[{}]", outRow[col], columns[col].getName());
 			columns[col].getParser().addLine(outRow[col]);
 		}
 
