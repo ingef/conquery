@@ -2,7 +2,6 @@ package com.bakdata.conquery.io.jackson;
 
 import java.util.Locale;
 
-import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;

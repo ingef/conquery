@@ -221,6 +221,17 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 		}
 	}
 
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_ONE_PER_ROW")
+	public static class ExternalResolveOnePerRowError extends NoContextError {
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		public ExternalResolveOnePerRowError() {
+			super("External was flagged as one row per entity, but at least one entity spans multiple rows");
+		}
+	}
+
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_EMPTY")
 	public static class ExternalResolveEmptyError extends ContextError {
 

@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
@@ -38,29 +39,32 @@ export const useLoadTrees = () => {
   const getConcepts = useGetConcepts();
   const loadTree = useLoadTree();
 
-  return async (datasetId: DatasetT["id"]) => {
-    // CAREFUL: side effect!
-    resetAllTrees();
+  return useCallback(
+    async (datasetId: DatasetT["id"]) => {
+      // CAREFUL: side effect!
+      resetAllTrees();
 
-    dispatch(clearTrees());
-    dispatch(loadTrees.request());
+      dispatch(clearTrees());
+      dispatch(loadTrees.request());
 
-    try {
-      const result = await getConcepts(datasetId);
+      try {
+        const result = await getConcepts(datasetId);
 
-      dispatch(loadTrees.success(successPayload(result, {})));
+        dispatch(loadTrees.success(successPayload(result, {})));
 
-      if (!result.concepts) return;
+        if (!result.concepts) return;
 
-      for (const treeId of Object.keys(result.concepts)) {
-        if (result.concepts[treeId].detailsAvailable) {
-          loadTree(datasetId, treeId);
+        for (const treeId of Object.keys(result.concepts)) {
+          if (result.concepts[treeId].detailsAvailable) {
+            loadTree(datasetId, treeId);
+          }
         }
+      } catch (e) {
+        dispatch(loadTrees.failure(errorPayload(e as Error, {})));
       }
-    } catch (e) {
-      dispatch(loadTrees.failure(errorPayload(e as Error, {})));
-    }
-  };
+    },
+    [dispatch, getConcepts, loadTree],
+  );
 };
 
 export const loadTree = createAsyncAction(
@@ -81,28 +85,31 @@ export const useLoadTree = () => {
   const dispatch = useDispatch();
   const getConcept = useGetConcept();
 
-  return async (datasetId: DatasetT["id"], treeId: ConceptIdT) => {
-    await semaphore.acquire();
+  return useCallback(
+    async (datasetId: DatasetT["id"], treeId: ConceptIdT) => {
+      await semaphore.acquire();
 
-    // If the datasetId changed in the mean time, don't load the tree
-    if (datasetId !== getDatasetId()) {
-      console.log(`${datasetId} not matching, not loading ${treeId}`);
-      semaphore.release();
-      return;
-    }
+      // If the datasetId changed in the mean time, don't load the tree
+      if (datasetId !== getDatasetId()) {
+        console.log(`${datasetId} not matching, not loading ${treeId}`);
+        semaphore.release();
+        return;
+      }
 
-    dispatch(loadTree.request({ treeId }));
+      dispatch(loadTree.request({ treeId }));
 
-    try {
-      const result = await getConcept(datasetId, treeId);
+      try {
+        const result = await getConcept(datasetId, treeId);
 
-      semaphore.release();
-      dispatch(loadTree.success(successPayload(result, { treeId })));
-    } catch (e) {
-      semaphore.release();
-      dispatch(loadTree.failure(errorPayload(e as Error, { treeId })));
-    }
-  };
+        semaphore.release();
+        dispatch(loadTree.success(successPayload(result, { treeId })));
+      } catch (e) {
+        semaphore.release();
+        dispatch(loadTree.failure(errorPayload(e as Error, { treeId })));
+      }
+    },
+    [dispatch, getConcept],
+  );
 };
 
 export const searchTrees = createAsyncAction(

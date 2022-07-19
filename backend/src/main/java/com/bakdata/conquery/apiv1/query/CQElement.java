@@ -12,8 +12,8 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -66,11 +66,12 @@ public abstract class CQElement implements Visitable {
 
 	public abstract QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 
-	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {}
-	
-	
-	public Set<ManagedExecution<?>> collectRequiredQueries() {
-		Set<ManagedExecution<?>> set = new HashSet<>();
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+	}
+
+
+	public Set<ManagedExecutionId> collectRequiredQueries() {
+		Set<ManagedExecutionId> set = new HashSet<>();
 		this.collectRequiredQueries(set);
 		return set;
 	}

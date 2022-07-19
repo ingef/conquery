@@ -92,11 +92,13 @@ public class StoredQueriesProcessorTest {
 			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_4, DONE, DATASET_0),        // included
 			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED, DATASET_0),        // not included: wrong state
 			mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW, DATASET_0),                                                    // not included: wrong query structure
-			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd(){{setChildren(List.of(new CQConcept()));}}, DATASET_0),    // included, but secondaryId-Query
+			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd() {{
+				setChildren(List.of(new CQConcept()));
+			}}, DATASET_0),    // included, but secondaryId-Query
 			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_8, DONE, new CQConcept(), DATASET_0),    // not-included, wrong structure
-			mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0])), USERS[1], QUERY_ID_9, DONE, DATASET_0)        // included
+			mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0], false)), USERS[1], QUERY_ID_9, DONE, DATASET_0)        // included
 
-		);
+	);
 
 
 	@Test

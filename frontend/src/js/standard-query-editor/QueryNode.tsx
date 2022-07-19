@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useRef, FC } from "react";
+import { useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -8,7 +8,6 @@ import type { QueryT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import ErrorMessage from "../error-message/ErrorMessage";
 import {
   nodeHasNonDefaultSettings,
   nodeHasFilterValues,
@@ -16,9 +15,9 @@ import {
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
-import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryNodeActions from "./QueryNodeActions";
+import QueryNodeContent from "./QueryNodeContent";
 import { getRootNodeLabel } from "./helper";
 import { StandardQueryNodeT } from "./types";
 
@@ -45,48 +44,6 @@ const Root = styled("div")<{
   &:hover {
     background-color: ${({ theme }) => theme.col.bg};
   }
-`;
-
-const Node = styled("div")`
-  flex-grow: 1;
-  padding-top: 2px;
-`;
-
-const Label = styled("p")`
-  margin: 0;
-  word-break: break-word;
-  line-height: 1.2;
-  font-size: ${({ theme }) => theme.font.md};
-`;
-const Description = styled("p")`
-  margin: 3px 0 0;
-  word-break: break-word;
-  line-height: 1.2;
-  text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-`;
-
-const PreviousQueryLabel = styled("p")`
-  margin: 0 0 3px;
-  line-height: 1.2;
-  font-size: ${({ theme }) => theme.font.xs};
-  text-transform: uppercase;
-  font-weight: 700;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
-
-const StyledErrorMessage = styled(ErrorMessage)`
-  margin: 0;
-`;
-
-const RootNode = styled("p")`
-  margin: 0 0 4px;
-  line-height: 1;
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  word-break: break-word;
 `;
 
 interface PropsT {
@@ -123,7 +80,7 @@ const nodeHasActiveSecondaryId = (
   }
 };
 
-const QueryNode: FC<PropsT> = ({
+const QueryNode = ({
   node,
   andIdx,
   orIdx,
@@ -132,7 +89,7 @@ const QueryNode: FC<PropsT> = ({
   onDeleteNode,
   onToggleTimestamps,
   onToggleSecondaryIdExclude,
-}) => {
+}: PropsT) => {
   const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(node);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -216,29 +173,20 @@ const QueryNode: FC<PropsT> = ({
       active={hasNonDefaultSettings || hasFilterValues}
       onClick={!!node.error ? () => {} : onEditClick}
     >
-      <WithTooltip text={tooltipText}>
-        <Node>
-          {!nodeIsConceptQueryNode(node) && (
-            <PreviousQueryLabel>
-              {t("queryEditor.previousQuery")}
-            </PreviousQueryLabel>
-          )}
-          {node.error ? (
-            <StyledErrorMessage message={node.error} />
-          ) : (
-            <>
-              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-              <Label>
-                {node.label || (!nodeIsConceptQueryNode(node) && node.id)}
-              </Label>
-              {nodeIsConceptQueryNode(node) &&
-                (!node.ids || node.ids.length === 1) && (
-                  <Description>{node.description}</Description>
-                )}
-            </>
-          )}
-        </Node>
-      </WithTooltip>
+      <QueryNodeContent
+        error={node.error}
+        isConceptQueryNode={nodeIsConceptQueryNode(node)}
+        tooltipText={tooltipText}
+        label={
+          nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
+        }
+        description={
+          nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
+            ? node.description
+            : undefined
+        }
+        rootNodeLabel={rootNodeLabel}
+      />
       <QueryNodeActions
         excludeTimestamps={node.excludeTimestamps}
         onDeleteNode={onDeleteNode}

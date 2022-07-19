@@ -25,7 +25,7 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	@JsonIgnore
 	private transient ShardNodeInformation connectedShardNode;
 	@JsonIgnore
-	private transient ObjectWriter objectWriter;
+	private transient ObjectWriter communicationWriter;
 
 	@Min(0)
 	private int entityBucketSize;
@@ -43,6 +43,6 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 
 	@Override
 	public MessageToShardNode transform(WorkerMessage message) {
-		return ForwardToWorker.create(getId(), message, objectWriter);
+		return ForwardToWorker.create(getId(), message, communicationWriter);
 	}
 }

@@ -8,7 +8,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,8 +30,8 @@ public class CQNegation extends CQElement {
 	@Valid @NotNull @Getter @Setter
 	private CQElement child;
 
-	@InternalOnly
 	@Getter @Setter
+	@JsonView(View.InternalCommunication.class)
 	private DateAggregationAction dateAction;
 
 	@Override
