@@ -69,7 +69,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	 */
 	private Long lastResultCount;
 
-	//we don't want to store or send query results or other result metadata
+	//TODO this can actually be known ahead and reduced to speedup queries. -> Migrate to Set<WorkerId>
 	@JsonIgnore
 	private transient int involvedWorkers;
 	@JsonIgnore

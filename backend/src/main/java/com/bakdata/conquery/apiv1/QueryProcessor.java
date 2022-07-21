@@ -21,6 +21,8 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
+import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
@@ -50,8 +52,12 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
+import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -400,8 +406,10 @@ public class QueryProcessor {
 	 */
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
+		final CQExternal entitySelector = new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true);
+
 		final ConceptQuery entitySelectQuery =
-				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, false)));
+				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), entitySelector));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
 		exportQuery.setTables(
@@ -421,21 +429,64 @@ public class QueryProcessor {
 
 		final ManagedExecution<?> execution = postQuery(dataset, exportQuery, subject, true);
 
+		final List<SelectId> infoCardSelects = List.of(); //TODO pull these from config
 
-		// collect id immediately so it does not get sucked into closure
-		final ManagedExecutionId id = execution.getId();
+		final AbsoluteFormQuery infoCardQuery =
+				new AbsoluteFormQuery(
+						entitySelectQuery,
+						dateRange,
+						ArrayConceptQuery.createFromFeatures(
+								infoCardSelects.stream()
+											   .map(datasetRegistry::resolve)
+											   .map(select -> {
+												   CQConcept cqConcept = new CQConcept();
+												   cqConcept.setElements(List.of(select.getHolder().findConcept()));
+												   CQTable table = new CQTable();
+												   cqConcept.setTables(List.of(table));
 
-		while (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
-			log.trace("Still waiting for {}", id);
+												   //TODO assert that it's only Connector as holders
+												   table.setConnector(((Connector) select.getHolder()));
+
+												   table.setSelects(List.of(select));
+
+												   return cqConcept;
+											   })
+											   .collect(Collectors.toList())
+						),
+						List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
+				);
+
+		final ManagedExecution<?> infoCardExecution = postQuery(dataset, infoCardQuery, subject, true);
+
+
+		while(true){
+			//TODO this is quite ugly!?
+			if(execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+				log.trace("Still waiting for {}", execution.getId());
+				continue;
+			}
+
+			if(infoCardExecution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+				log.trace("Still waiting for {}", infoCardExecution.getId());
+				continue;
+			}
+
+			break;
 		}
+
 
 		if (execution.getState() == ExecutionState.FAILED) {
 			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
 		}
 
+		if (infoCardExecution.getState() == ExecutionState.FAILED) {
+			throw ConqueryError.ContextError.fromErrorInfo(infoCardExecution.getError());
+		}
+
+
+
 
 		// Use the provided format name to find the respective provider.
 		return getQueryFullStatus(execution, subject, uriBuilder, true);
-
 	}
 }
