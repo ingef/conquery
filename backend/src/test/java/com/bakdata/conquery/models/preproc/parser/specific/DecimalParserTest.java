@@ -5,9 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.DecimalArrayStore;
-import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
+import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +20,7 @@ class DecimalParserTest {
 		parser.addLine(BigDecimal.valueOf(10,1000));
 		parser.addLine(BigDecimal.valueOf(30,1000));
 
-		assertThat(parser.decideType()).isInstanceOf(DecimalTypeScaled.class);
+		assertThat(parser.decideType()).isInstanceOf(ScaledDecimalStore.class);
 
 		parser.addLine(BigDecimal.valueOf(2, 62));
 

@@ -17,13 +17,13 @@ import lombok.ToString;
 @CPSType(base = ColumnStore.class, id = "DECIMAL_SCALED")
 @Getter
 @ToString(of = {"scale", "subType"})
-public class DecimalTypeScaled implements DecimalStore {
+public class ScaledDecimalStore implements DecimalStore {
 
 	private final int scale;
 	private final IntegerStore subType;
 
 	@JsonCreator
-	public DecimalTypeScaled(int scale, IntegerStore subType) {
+	public ScaledDecimalStore(int scale, IntegerStore subType) {
 		this.scale = scale;
 		this.subType = subType;
 	}
@@ -39,8 +39,8 @@ public class DecimalTypeScaled implements DecimalStore {
 	}
 
 	@Override
-	public DecimalTypeScaled select(int[] starts, int[] length) {
-		return new DecimalTypeScaled(scale, subType.select(starts, length));
+	public ScaledDecimalStore select(int[] starts, int[] length) {
+		return new ScaledDecimalStore(scale, subType.select(starts, length));
 	}
 
 	@Override

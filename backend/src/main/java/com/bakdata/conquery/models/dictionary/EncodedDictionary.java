@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.dictionary;
 
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 
 /**
  * Handle class allowing direct encoded access to Dictionary without wrapping inside StringTypeEncoded.
@@ -10,9 +10,9 @@ import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncod
 public class EncodedDictionary {
 
 	private final Dictionary dict;
-	private final StringTypeEncoded.Encoding encoding;
+	private final EncodedStringStore.Encoding encoding;
 
-	public EncodedDictionary(Dictionary dict, StringTypeEncoded.Encoding encoding) {
+	public EncodedDictionary(Dictionary dict, EncodedStringStore.Encoding encoding) {
 		this.dict = dict;
 		this.encoding = encoding;
 	}

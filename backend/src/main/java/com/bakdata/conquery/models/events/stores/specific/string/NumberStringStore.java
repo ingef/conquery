@@ -24,7 +24,7 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_NUMBER")
 @ToString(of = "delegate")
-public class StringTypeNumber implements StringStore {
+public class NumberStringStore implements StringStore {
 
 	@Nonnull
 	protected IntegerStore delegate;
@@ -36,13 +36,13 @@ public class StringTypeNumber implements StringStore {
 	@JsonIgnore
 	private transient Map<Integer, String> dictionary;
 
-	public StringTypeNumber(Range<Integer> range, IntegerStore numberType, Map<Integer, String> dictionary) {
+	public NumberStringStore(Range<Integer> range, IntegerStore numberType, Map<Integer, String> dictionary) {
 		this(range, numberType);
 		this.dictionary = dictionary;
 	}
 
 	@JsonCreator
-	public StringTypeNumber(Range<Integer> range, IntegerStore numberType) {
+	public NumberStringStore(Range<Integer> range, IntegerStore numberType) {
 		super();
 		this.range = range;
 		this.delegate = numberType;
@@ -103,8 +103,8 @@ public class StringTypeNumber implements StringStore {
 	}
 
 	@Override
-	public StringTypeNumber select(int[] starts, int[] length) {
-		return new StringTypeNumber(range, delegate.select(starts, length));
+	public NumberStringStore select(int[] starts, int[] length) {
+		return new NumberStringStore(range, delegate.select(starts, length));
 	}
 
 

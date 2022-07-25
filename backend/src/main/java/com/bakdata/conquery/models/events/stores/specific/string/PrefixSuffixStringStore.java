@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(base = ColumnStore.class, id = "STRING_PREFIX")
 @ToString(of = {"prefix", "suffix", "subType"})
 @Slf4j
-public class StringTypePrefixSuffix implements StringStore {
+public class PrefixSuffixStringStore implements StringStore {
 
 	@Nonnull
 	protected StringStore subType;
@@ -36,7 +36,7 @@ public class StringTypePrefixSuffix implements StringStore {
 	private String suffix;
 
 	@JsonCreator
-	public StringTypePrefixSuffix(StringStore subType, String prefix, String suffix) {
+	public PrefixSuffixStringStore(StringStore subType, String prefix, String suffix) {
 		super();
 		this.subType = subType;
 		this.prefix = prefix;
@@ -72,8 +72,8 @@ public class StringTypePrefixSuffix implements StringStore {
 	}
 
 	@Override
-	public StringTypePrefixSuffix select(int[] starts, int[] length) {
-		return new StringTypePrefixSuffix(subType.select(starts, length), getPrefix(), getSuffix());
+	public PrefixSuffixStringStore select(int[] starts, int[] length) {
+		return new PrefixSuffixStringStore(subType.select(starts, length), getPrefix(), getSuffix());
 	}
 
 	@Override

@@ -18,17 +18,17 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * The {@link DateRangeTypeCompound} is almost similar to the {@link DateRangeTypeDateRange}.
- * While the {@link DateRangeTypeDateRange} stores the values of its <b>Stores</b>, the {@link DateRangeTypeCompound} does not need to store any
+ * The {@link CompoundDateRangeStore} is almost similar to the {@link DirectDateRangeStore}.
+ * While the {@link DirectDateRangeStore} stores the values of its <b>Stores</b>, the {@link CompoundDateRangeStore} does not need to store any
  * <b>Stores</b>, but only stores the references to these <b>Stores</b> and thus avoids storing these <b>Stores</b> more than once.
- * With {@link DateRangeTypeCompound}, these <b>Stores</b> are only restored after deserialization with the help of the parent {@link Bucket} and their
+ * With {@link CompoundDateRangeStore}, these <b>Stores</b> are only restored after deserialization with the help of the parent {@link Bucket} and their
  * references.
  */
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_COMPOUND")
 @Getter
 @Setter
 @ToString(of = {"startColumn", "endColumn"})
-public class DateRangeTypeCompound implements DateRangeStore {
+public class CompoundDateRangeStore implements DateRangeStore {
 
 
 	@NotNull
@@ -66,7 +66,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	@JsonIgnore
 	private Bucket parent;
 
-	public DateRangeTypeCompound(String startColumn, String endColumn, BooleanStore has) {
+	public CompoundDateRangeStore(String startColumn, String endColumn, BooleanStore has) {
 		setStartColumn(startColumn);
 		setEndColumn(endColumn);
 		setHas(has);
@@ -101,7 +101,7 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	}
 
 	/**
-	 * Estimated number of bits required to store a value of type {@link DateRangeTypeCompound}.
+	 * Estimated number of bits required to store a value of type {@link CompoundDateRangeStore}.
 	 *
 	 * @return always 0 because this store does not hold data of its own, but references its neighbouring stores.
 	 */
@@ -111,8 +111,8 @@ public class DateRangeTypeCompound implements DateRangeStore {
 	}
 
 	@Override
-	public DateRangeTypeCompound select(int[] starts, int[] length) {
-		return new DateRangeTypeCompound(getStartColumn(), getEndColumn(), has.select(starts, length));
+	public CompoundDateRangeStore select(int[] starts, int[] length) {
+		return new CompoundDateRangeStore(getStartColumn(), getEndColumn(), has.select(starts, length));
 	}
 
 	@Override

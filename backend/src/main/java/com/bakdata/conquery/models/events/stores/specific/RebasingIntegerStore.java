@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 @CPSType(base = ColumnStore.class, id = "REBASE")
 @Getter
 @ToString(of = {"min", "store"})
-public class RebasingStore implements IntegerStore {
+public class RebasingIntegerStore implements IntegerStore {
 
 	private final long min;
 
@@ -23,7 +23,7 @@ public class RebasingStore implements IntegerStore {
 
 	private final IntegerStore store;
 
-	public RebasingStore(long min, long root, IntegerStore store) {
+	public RebasingIntegerStore(long min, long root, IntegerStore store) {
 		this.min = min;
 		this.root = root;
 		this.store = store;
@@ -41,8 +41,8 @@ public class RebasingStore implements IntegerStore {
 	}
 
 	@Override
-	public RebasingStore select(int[] starts, int[] length) {
-		return new RebasingStore(min, root, store.select(starts, length));
+	public RebasingIntegerStore select(int[] starts, int[] length) {
+		return new RebasingIntegerStore(min, root, store.select(starts, length));
 	}
 
 	@Override

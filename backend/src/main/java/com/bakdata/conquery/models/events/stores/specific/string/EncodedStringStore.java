@@ -32,10 +32,10 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(base = ColumnStore.class, id = "STRING_ENCODED")
-public class StringTypeEncoded implements StringStore {
+public class EncodedStringStore implements StringStore {
 
 	@Nonnull
-	protected StringTypeDictionary subType;
+	protected DictionaryStore subType;
 	@NonNull
 	private Encoding encoding;
 
@@ -47,7 +47,7 @@ public class StringTypeEncoded implements StringStore {
 
 
 	@JsonCreator
-	public StringTypeEncoded(StringTypeDictionary subType, Encoding encoding) {
+	public EncodedStringStore(DictionaryStore subType, Encoding encoding) {
 		super();
 		this.subType = subType;
 		this.encoding = encoding;
@@ -138,8 +138,8 @@ public class StringTypeEncoded implements StringStore {
 	}
 
 	@Override
-	public StringTypeEncoded select(int[] starts, int[] length) {
-		return new StringTypeEncoded(subType.select(starts, length), getEncoding());
+	public EncodedStringStore select(int[] starts, int[] length) {
+		return new EncodedStringStore(subType.select(starts, length), getEncoding());
 	}
 
 	@Override

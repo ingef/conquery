@@ -18,13 +18,13 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_SINGLETON")
 @ToString(of = "singleValue")
-public class StringTypeSingleton implements StringStore {
+public class SingletonStringStore implements StringStore {
 
 	private final String singleValue;
 	private final BitSetStore delegate;
 
 	@JsonCreator
-	public StringTypeSingleton(String singleValue, BitSetStore delegate) {
+	public SingletonStringStore(String singleValue, BitSetStore delegate) {
 		super();
 		this.singleValue = singleValue;
 		this.delegate = delegate;
@@ -41,8 +41,8 @@ public class StringTypeSingleton implements StringStore {
 	}
 
 	@Override
-	public StringTypeSingleton select(int[] starts, int[] length) {
-		return new StringTypeSingleton(singleValue, delegate.select(starts, length));
+	public SingletonStringStore select(int[] starts, int[] length) {
+		return new SingletonStringStore(singleValue, delegate.select(starts, length));
 	}
 
 	@Override

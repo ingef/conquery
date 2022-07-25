@@ -18,13 +18,13 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString(of = {"minStore", "maxStore"})
-public class DateRangeTypeDateRange implements DateRangeStore {
+public class DirectDateRangeStore implements DateRangeStore {
 
 	private final DateStore minStore;
 	private final DateStore maxStore;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeDateRange(DateStore minStore, DateStore maxStore) {
+	public DirectDateRangeStore(DateStore minStore, DateStore maxStore) {
 		this.minStore = minStore;
 		this.maxStore = maxStore;
 	}
@@ -41,8 +41,8 @@ public class DateRangeTypeDateRange implements DateRangeStore {
 	}
 
 	@Override
-	public DateRangeTypeDateRange select(int[] starts, int[] length) {
-		return new DateRangeTypeDateRange(minStore.select(starts, length), maxStore.select(starts, length));
+	public DirectDateRangeStore select(int[] starts, int[] length) {
+		return new DirectDateRangeStore(minStore.select(starts, length), maxStore.select(starts, length));
 	}
 
 	@Override

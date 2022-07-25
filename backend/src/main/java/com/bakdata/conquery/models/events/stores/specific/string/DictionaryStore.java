@@ -21,14 +21,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(base = ColumnStore.class, id = "STRING_DICTIONARY")
 @NoArgsConstructor
-public class StringTypeDictionary implements ColumnStore {
+public class DictionaryStore implements ColumnStore {
 
 	protected IntegerStore numberType;
 
 	@NsIdRef
 	private Dictionary dictionary;
 
-	public StringTypeDictionary(IntegerStore store, Dictionary dictionary) {
+	public DictionaryStore(IntegerStore store, Dictionary dictionary) {
 		this.numberType = store;
 		this.dictionary = dictionary;
 	}
@@ -69,8 +69,8 @@ public class StringTypeDictionary implements ColumnStore {
 
 
 	@Override
-	public StringTypeDictionary select(int[] starts, int[] length) {
-		return new StringTypeDictionary(numberType.select(starts, length), dictionary);
+	public DictionaryStore select(int[] starts, int[] length) {
+		return new DictionaryStore(numberType.select(starts, length), dictionary);
 	}
 
 	public int getString(int event) {

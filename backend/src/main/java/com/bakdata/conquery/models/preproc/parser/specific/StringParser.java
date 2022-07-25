@@ -18,12 +18,12 @@ import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded.Encoding;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeNumber;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypePrefixSuffix;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeSingleton;
+import com.bakdata.conquery.models.events.stores.specific.string.DictionaryStore;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore.Encoding;
+import com.bakdata.conquery.models.events.stores.specific.string.NumberStringStore;
+import com.bakdata.conquery.models.events.stores.specific.string.PrefixSuffixStringStore;
+import com.bakdata.conquery.models.events.stores.specific.string.SingletonStringStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
@@ -66,7 +66,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 		super(config);
 	}
 
-	public static StringTypeNumber tryCreateNumberStringStore(StringParser stringParser, ConqueryConfig config) {
+	public static NumberStringStore tryCreateNumberStringStore(StringParser stringParser, ConqueryConfig config) {
 		//check if the remaining strings are all numbers
 		Range<Integer> range = new Range.IntegerRange(0, 0);
 		IntegerParser numberParser = new IntegerParser(config);
@@ -108,7 +108,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 		Int2ObjectMap<String> inverse = new Int2ObjectOpenHashMap<>(stringParser.getStrings().size());
 		stringParser.getStrings().forEach((key, value) -> inverse.putIfAbsent((int) value, key));
 
-		return new StringTypeNumber(range, decision, inverse);
+		return new NumberStringStore(range, decision, inverse);
 	}
 
 	@Override
@@ -140,7 +140,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 		// Is this a singleton?
 		if (strings.size() == 1) {
-			StringTypeSingleton type = new StringTypeSingleton(strings.keySet().iterator().next(), BitSetStore.create(getLines()));
+			SingletonStringStore type = new SingletonStringStore(strings.keySet().iterator().next(), BitSetStore.create(getLines()));
 
 			return type;
 		}
@@ -157,7 +157,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 		//wrap in prefix suffix
 		if (!Strings.isNullOrEmpty(prefix) || !Strings.isNullOrEmpty(suffix)) {
-			result = new StringTypePrefixSuffix(result, Strings.nullToEmpty(prefix), Strings.nullToEmpty(suffix));
+			result = new PrefixSuffixStringStore(result, Strings.nullToEmpty(prefix), Strings.nullToEmpty(suffix));
 		}
 
 		return result;
@@ -165,7 +165,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 	private StringStore decideStorageType() {
 
-		StringTypeNumber numberType = tryCreateNumberStringStore(this, getConfig());
+		NumberStringStore numberType = tryCreateNumberStringStore(this, getConfig());
 
 		if (numberType != null) {
 			log.debug("Decided for {}", numberType);
@@ -200,7 +200,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 				DataSize.megabytes(indexType.estimateMemoryConsumptionBytes() + dictionary.estimateMemoryConsumption())
 		);
 
-		return new StringTypeEncoded(new StringTypeDictionary(indexType, dictionary), getEncoding());
+		return new EncodedStringStore(new DictionaryStore(indexType, dictionary), getEncoding());
 	}
 
 	private void stripPrefixSuffix() {

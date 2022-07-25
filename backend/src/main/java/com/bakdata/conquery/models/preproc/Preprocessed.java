@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
@@ -219,7 +219,7 @@ public class Preprocessed {
 	private Dictionary encodePrimaryDictionary() {
 		log.debug("Encode primary Dictionary");
 
-		primaryColumn.applyEncoding(StringTypeEncoded.Encoding.UTF8);
+		primaryColumn.applyEncoding(EncodedStringStore.Encoding.UTF8);
 
 		MapDictionary primaryDict = new MapDictionary(Dataset.PLACEHOLDER, ConqueryConstants.PRIMARY_DICTIONARY);
 		primaryColumn.getDecoded().forEach(primaryDict::add);

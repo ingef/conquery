@@ -19,7 +19,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
@@ -126,7 +126,7 @@ public class CollectEntitiesCommand extends Command {
 
 				final PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
-				final EncodedDictionary primaryDictionary = new EncodedDictionary(dictionaries.getPrimaryDictionary(), StringTypeEncoded.Encoding.UTF8);
+				final EncodedDictionary primaryDictionary = new EncodedDictionary(dictionaries.getPrimaryDictionary(), EncodedStringStore.Encoding.UTF8);
 
 				add(primaryDictionary, new File(file.getParentFile(), "all_entities.csv"));
 				if (verbose) {
