@@ -62,6 +62,7 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.description.LazyTextDescription;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 @UtilityClass
@@ -118,51 +119,11 @@ public class LoadingUtil {
 			uploadTable(support, table);
 
 			if (autoConcept) {
-				final TreeConcept concept = new TreeConcept();
-				concept.setName(table.getName() + "_AUTO");
-
-				final ConceptTreeConnector connector = new ConceptTreeConnector();
-				connector.setConcept(concept);
-				connector.setName("connector");
-				connector.setTable(table);
-
-				List<Select> selects = new ArrayList<>();
-
-				for (Column column : table.getColumns()) {
-					selects.addAll(getAutoSelectsForColumn(column));
-				}
-
-				selects.forEach(select -> select.setHolder(connector));
-
-				connector.setSelects(selects);
-
-				concept.setConnectors(List.of(connector));
+				final TreeConcept concept = AutoConceptUtil.createConcept(table);
 
 				uploadConcept(support, table.getDataset(), concept);
 			}
 		}
-	}
-
-	private List<Select> getAutoSelectsForColumn(Column column) {
-		final String prefix = column.getName() + "_";
-
-		final LastValueSelect last = new LastValueSelect(column, null);
-		last.setName(prefix + LastValueSelect.class.getAnnotation(CPSType.class).id());
-		last.setColumn(column);
-
-
-		final FirstValueSelect first = new FirstValueSelect(column, null);
-		first.setName(prefix + FirstValueSelect.class.getAnnotation(CPSType.class).id());
-		first.setColumn(column);
-		final DistinctSelect distinct = new DistinctSelect(column, null);
-		distinct.setName(prefix + DistinctSelect.class.getAnnotation(CPSType.class).id());
-		distinct.setColumn(column);
-
-		return List.of(
-				last,
-				first,
-				distinct
-		);
 	}
 
 	private static void uploadTable(StandaloneSupport support, Table table) {
