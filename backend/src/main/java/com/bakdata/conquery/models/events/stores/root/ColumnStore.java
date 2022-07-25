@@ -103,8 +103,10 @@ public interface ColumnStore {
 	 * Create an empty store that's only a description of the transformation.
 	 */
 	@JsonIgnore
-	default ColumnStore createDescription() {
-		return select(new int[0], new int[0]);
+	<T extends ColumnStore> T createDescription();
+
+	public static <T extends ColumnStore> T emptyCopy(T store) {
+		return store.select(new int[0], new int[0]);
 	}
 
 	/**

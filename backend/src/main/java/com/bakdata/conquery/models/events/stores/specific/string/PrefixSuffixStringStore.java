@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -77,8 +78,18 @@ public class PrefixSuffixStringStore implements StringStore {
 	}
 
 	@Override
+	public PrefixSuffixStringStore createDescription() {
+		return new PrefixSuffixStringStore(subType.createDescription(), getPrefix(), getSuffix());
+	}
+
+	@Override
 	public int size() {
 		return subType.size();
+	}
+
+	@Override
+	public Stream<String> iterateValues() {
+		return subType.iterateValues().map(val -> getPrefix() + val + getSuffix());
 	}
 
 	@Override

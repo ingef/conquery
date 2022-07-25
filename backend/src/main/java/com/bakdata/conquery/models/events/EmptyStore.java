@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -56,6 +57,11 @@ public enum EmptyStore implements
 
 	@Override
 	public EmptyStore select(int[] starts, int[] length) {
+		return this;
+	}
+
+	@Override
+	public EmptyStore createDescription() {
 		return this;
 	}
 
@@ -142,6 +148,11 @@ public enum EmptyStore implements
 	@Override
 	public int size() {
 		return 0;
+	}
+
+	@Override
+	public Stream<String> iterateValues() {
+		return Stream.empty();
 	}
 
 	@Override

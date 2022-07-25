@@ -36,6 +36,11 @@ public class DirectDateRangeStore implements DateRangeStore {
 	}
 
 	@Override
+	public DirectDateRangeStore createDescription() {
+		return new DirectDateRangeStore(minStore.createDescription(), maxStore.createDescription());
+	}
+
+	@Override
 	public long estimateEventBits() {
 		return minStore.estimateEventBits() + maxStore.estimateEventBits();
 	}

@@ -45,6 +45,10 @@ public class LongArrayStore implements IntegerStore {
 		return new LongArrayStore(ColumnStore.selectArray(starts, ends, values, long[]::new), nullValue);
 	}
 
+	@Override
+	public LongArrayStore createDescription() {
+		return ColumnStore.emptyCopy(this);
+	}
 
 	@Override
 	public void setNull(int event) {

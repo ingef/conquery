@@ -34,6 +34,11 @@ public class ScaledDecimalStore implements DecimalStore {
 	}
 
 	@Override
+	public ScaledDecimalStore createDescription() {
+		return new ScaledDecimalStore(scale, subType.createDescription());
+	}
+
+	@Override
 	public long estimateEventBits() {
 		return subType.estimateEventBits();
 	}

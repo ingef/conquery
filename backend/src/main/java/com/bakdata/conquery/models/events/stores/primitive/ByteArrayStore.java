@@ -42,6 +42,11 @@ public class ByteArrayStore implements IntegerStore {
 		return Byte.SIZE;
 	}
 
+	@Override
+	public ByteArrayStore createDescription() {
+		return ColumnStore.emptyCopy(this);
+	}
+
 	public ByteArrayStore select(int[] starts, int[] ends) {
 		return new ByteArrayStore(ColumnStore.selectArray(starts, ends, values, byte[]::new), getNullValue());
 	}

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -87,6 +88,11 @@ public class EncodedStringStore implements StringStore {
 	}
 
 	@Override
+	public Stream<String> iterateValues() {
+		return getSubType().iterateStrings().map(encoding::decode);
+	}
+
+	@Override
 	public int getId(String value) {
 		// Make sure we can even decode before doing so
 		if (!encoding.canEncode(value)) {
@@ -140,6 +146,11 @@ public class EncodedStringStore implements StringStore {
 	@Override
 	public EncodedStringStore select(int[] starts, int[] length) {
 		return new EncodedStringStore(subType.select(starts, length), getEncoding());
+	}
+
+	@Override
+	public EncodedStringStore createDescription() {
+		return new EncodedStringStore((DictionaryStore) subType.createDescription(), getEncoding());
 	}
 
 	@Override

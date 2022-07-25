@@ -38,6 +38,11 @@ public class IntArrayStore implements IntegerStore {
 	}
 
 	@Override
+	public IntArrayStore createDescription() {
+		return ColumnStore.emptyCopy(this);
+	}
+
+	@Override
 	public long estimateEventBits() {
 		return Integer.SIZE;
 	}

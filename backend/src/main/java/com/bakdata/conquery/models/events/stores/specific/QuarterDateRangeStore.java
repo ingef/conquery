@@ -38,6 +38,11 @@ public class QuarterDateRangeStore implements DateRangeStore {
 		return store.getLines();
 	}
 
+	@Override
+	public QuarterDateRangeStore createDescription() {
+		return new QuarterDateRangeStore(store.createDescription());
+	}
+
 
 	public QuarterDateRangeStore select(int[] starts, int[] ends) {
 		return new QuarterDateRangeStore(store.select(starts, ends));

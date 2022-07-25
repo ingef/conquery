@@ -100,6 +100,11 @@ public class CompoundDateRangeStore implements DateRangeStore {
 
 	}
 
+	@Override
+	public CompoundDateRangeStore createDescription() {
+		return new CompoundDateRangeStore(getStartColumn(), getEndColumn(), has.createDescription());
+	}
+
 	/**
 	 * Estimated number of bits required to store a value of type {@link CompoundDateRangeStore}.
 	 *

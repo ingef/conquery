@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
@@ -41,6 +43,11 @@ public class SingletonStringStore implements StringStore {
 	}
 
 	@Override
+	public Stream<String> iterateValues() {
+		return Stream.of(singleValue);
+	}
+
+	@Override
 	public SingletonStringStore select(int[] starts, int[] length) {
 		return new SingletonStringStore(singleValue, delegate.select(starts, length));
 	}
@@ -53,6 +60,11 @@ public class SingletonStringStore implements StringStore {
 	@Override
 	public int getLines() {
 		return delegate.getLines();
+	}
+
+	@Override
+	public SingletonStringStore createDescription() {
+		return new SingletonStringStore(singleValue, delegate.createDescription());
 	}
 
 	@Override

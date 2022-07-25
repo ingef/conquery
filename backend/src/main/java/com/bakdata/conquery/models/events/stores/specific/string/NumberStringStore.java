@@ -1,11 +1,15 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -13,6 +17,7 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -73,10 +78,44 @@ public class NumberStringStore implements StringStore {
 		return range.getMax() - range.getMin() + 1;
 	}
 
+	@JsonView(View.Persistence.Manager.class)
+	private Set<Integer> usedValues;
+
+	private static Set<Integer> collectUsedStrings(NumberStringStore stringStore) {
+		Set<Integer> sampled = new HashSet<>();
+		for (int event = 0; event < stringStore.getLines(); event++) {
+			if (!stringStore.has(event)) {
+				continue;
+			}
+
+			sampled.add(stringStore.getString(event));
+		}
+		return sampled;
+	}
+
+	@Override
+	public NumberStringStore createDescription() {
+		NumberStringStore description = new NumberStringStore(getRange(), delegate.createDescription());
+
+		description.setUsedValues(collectUsedStrings(this));
+		return description;
+	}
+
+	@Override
+	public Stream<String> iterateValues() {
+		return usedValues.stream().map(val -> Integer.toString(val));
+	}
+
 	@Override
 	public int getId(String value) {
 		try {
-			return Integer.parseInt(value);
+			int parsed = Integer.parseInt(value);
+
+			if (!range.contains(parsed)) {
+				return -1;
+			}
+
+			return parsed;
 		}
 		catch (NumberFormatException e) {
 			return -1;

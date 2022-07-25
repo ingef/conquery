@@ -31,7 +31,6 @@ import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.events.stores.specific.CompoundDateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.DirectDateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.MoneyIntStore;
@@ -112,7 +111,6 @@ public class ColumnStoreSerializationTests {
 
 				new NumberStringStore(new IntegerRange(0, 7), ByteArrayStore.create(10)),
 				new SingletonStringStore("a", BitSetStore.create(10)),
-				new StringStore.StringStoreDescription(Set.of(0), new SingletonStringStore("a", BitSetStore.create(10))),
 				new DirectDateRangeStore(IntegerDateStore.create(10), IntegerDateStore.create(10)),
 				new QuarterDateRangeStore(LongArrayStore.create(10)),
 				new IntegerDateStore(LongArrayStore.create(10)),

@@ -153,7 +153,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 						  final ImportColumn importColumn = imp.getColumns()[getPosition()];
 
 						  // StringStoreDescription only exists for this method.
-						  return  ((StringStore.StringStoreDescription) importColumn.getTypeDescription()).streamValues();
+						  return  ((StringStore) importColumn.getTypeDescription()).iterateValues();
 					  })
 					  .map(value -> new FEValue(value, value))
 					  .onClose(() -> log.debug("DONE processing values for {}", getId()));

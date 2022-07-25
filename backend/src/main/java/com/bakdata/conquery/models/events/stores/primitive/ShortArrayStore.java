@@ -46,6 +46,11 @@ public class ShortArrayStore implements IntegerStore {
 	}
 
 	@Override
+	public ShortArrayStore createDescription() {
+		return ColumnStore.emptyCopy(this);
+	}
+
+	@Override
 	public void setNull(int event) {
 		values[event] = nullValue;
 	}

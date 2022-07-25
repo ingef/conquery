@@ -34,6 +34,11 @@ public class RebasingIntegerStore implements IntegerStore {
 		return store.getLines();
 	}
 
+	@Override
+	public RebasingIntegerStore createDescription() {
+		return new RebasingIntegerStore(min, root, store.createDescription());
+	}
+
 
 	@Override
 	public long estimateEventBits() {
