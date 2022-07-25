@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.Range;
@@ -52,6 +53,11 @@ import org.apache.commons.lang3.StringUtils;
 @ToString(callSuper = true, of = {"encoding", "prefix", "suffix"})
 public class StringParser extends Parser<Integer, StringStore> {
 
+	/**
+	 * It's either exactly `0`, or a string of digits, not starting with `0`.
+	 */
+	private static final Pattern DIGITS = Pattern.compile("(^0$)|(^[1-9][0-9]*$)");
+
 	private Object2IntMap<String> strings = new Object2IntOpenHashMap<>();
 
 	//TODO FK: this field is not used at the moment, but we want to use it to prune unused values, this would mean cleaning up strings and allowing Dictionary to set a specific valuie, not just setting it.
@@ -71,13 +77,13 @@ public class StringParser extends Parser<Integer, StringStore> {
 		Range<Integer> range = new Range.IntegerRange(0, 0);
 		IntegerParser numberParser = new IntegerParser(config);
 
-		if (stringParser.getStrings().keySet().parallelStream()
-						.anyMatch(key -> key.startsWith("0") && !"0".equals(key))) {
+
+		// Ensure there are only digits and no other leading zeroes.
+		if (stringParser.getStrings().keySet().parallelStream().allMatch(StringParser::isOnlyDigits)) {
 			return null;
 		}
 
 		try {
-			//check that there are no leading zeroes that we would destroy
 
 			for (Map.Entry<String, Integer> e : stringParser.getStrings().entrySet()) {
 				int intValue = Integer.parseInt(e.getKey());
@@ -97,7 +103,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 		e.g. if the column contains only 0 and 5M
 		 */
 
-		final int span = range.getMax() - range.getMin() + 1;
+		final long span = range.getMax() - range.getMin() + 1;
 
 		if (span > stringParser.getStrings().size()) {
 			return null;
@@ -109,6 +115,10 @@ public class StringParser extends Parser<Integer, StringStore> {
 		stringParser.getStrings().forEach((key, value) -> inverse.putIfAbsent((int) value, key));
 
 		return new NumberStringStore(range, decision, inverse);
+	}
+
+	public static boolean isOnlyDigits(String value) {
+		return DIGITS.matcher(value).matches();
 	}
 
 	@Override

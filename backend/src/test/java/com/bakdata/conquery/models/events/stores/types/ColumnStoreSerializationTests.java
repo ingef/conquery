@@ -15,7 +15,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.models.common.Range.IntegerRange;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -109,7 +109,7 @@ public class ColumnStoreSerializationTests {
 				new EncodedStringStore(new DictionaryStore(IntArrayStore.create(10), DICTIONARY), Encoding.Base16LowerCase),
 				new PrefixSuffixStringStore(new EncodedStringStore(new DictionaryStore(IntArrayStore.create(10), DICTIONARY), Encoding.Base16LowerCase), "a", "b"),
 
-				new NumberStringStore(new IntegerRange(0, 7), ByteArrayStore.create(10)),
+				new NumberStringStore(new Range.LongRange(0L, 7L), ByteArrayStore.create(10)),
 				new SingletonStringStore("a", BitSetStore.create(10)),
 				new DirectDateRangeStore(IntegerDateStore.create(10), IntegerDateStore.create(10)),
 				new QuarterDateRangeStore(LongArrayStore.create(10)),

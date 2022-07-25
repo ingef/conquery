@@ -34,23 +34,23 @@ public class DictionaryMapping {
 	@ToString.Include
 	private final int numberOfNewIds;
 
-	public static DictionaryMapping createAndImport(Dictionary incoming, Dictionary into) {
+	public static DictionaryMapping createAndImport(Dictionary from, Dictionary into) {
 
-		log.debug("Importing values from `{}` into `{}`", incoming, into);
+		log.debug("Importing values from `{}` into `{}`", from, into);
 
 		int newIds = 0;
 
-		Int2IntMap source2Target = new Int2IntOpenHashMap(incoming.size());
+		Int2IntMap source2Target = new Int2IntOpenHashMap(from.size());
 
 		source2Target.defaultReturnValue(-1);
 
-		Int2IntMap target2Source = new Int2IntOpenHashMap(incoming.size());
+		Int2IntMap target2Source = new Int2IntOpenHashMap(from.size());
 
 		target2Source.defaultReturnValue(-1);
 
-		for (int id = 0; id < incoming.size(); id++) {
+		for (int id = 0; id < from.size(); id++) {
 
-			byte[] value = incoming.getElement(id);
+			byte[] value = from.getElement(id);
 			int targetId = into.getId(value);
 
 			//if id was unknown until now
@@ -69,7 +69,7 @@ public class DictionaryMapping {
 
 		}
 
-		return new DictionaryMapping(incoming, into, source2Target, target2Source, newIds);
+		return new DictionaryMapping(from, into, source2Target, target2Source, newIds);
 	}
 
 	public int source2Target(int sourceId) {
@@ -103,7 +103,7 @@ public class DictionaryMapping {
 			int value = source2Target(string);
 
 			if (value == -1) {
-				log.warn("Missing mapping for {}", string);
+				throw new IllegalStateException(String.format("Missing mapping for %s", string));
 			}
 
 			to.setInteger(event, value);

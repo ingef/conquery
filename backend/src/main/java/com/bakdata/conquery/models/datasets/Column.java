@@ -152,7 +152,6 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 					  .flatMap(imp -> {
 						  final ImportColumn importColumn = imp.getColumns()[getPosition()];
 
-						  // StringStoreDescription only exists for this method.
 						  return  ((StringStore) importColumn.getTypeDescription()).iterateValues();
 					  })
 					  .map(value -> new FEValue(value, value))

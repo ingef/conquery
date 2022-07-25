@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -109,6 +110,10 @@ public class NumberStringStore implements StringStore {
 	@Override
 	public int getId(String value) {
 		try {
+			if (!StringParser.isOnlyDigits(value)){
+				return -1;
+			}
+
 			int parsed = Integer.parseInt(value);
 
 			if (!range.contains(parsed)) {

@@ -20,7 +20,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.ToString;
 
 @CPSType(id = "MAP_DICTIONARY", base = Dictionary.class)
-@ToString(callSuper = true)
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class MapDictionary extends Dictionary {
 
 	private Object2IntOpenHashMap<ByteArrayList> value2Id;
@@ -97,6 +97,7 @@ public class MapDictionary extends Dictionary {
 	}
 
 	@Override
+	@ToString.Include
 	public int size() {
 		return id2Value.size();
 	}
