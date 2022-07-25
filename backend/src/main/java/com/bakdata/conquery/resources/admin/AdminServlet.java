@@ -104,20 +104,9 @@ public class AdminServlet {
 				bind(manager.getConfig()).to(ConqueryConfig.class);
 				bind(adminProcessor).to(AdminProcessor.class);
 				bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
-				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
 			}
 		});
-
-		jerseyConfig.register(new AbstractBinder() {
-			@Override
-			protected void configure() {
-				bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
-				bind(manager.getStorage()).to(MetaStorage.class);
-				bind(manager.getValidator()).to(Validator.class);
-				bindAsContract(AdminProcessor.class);
-				bindAsContract(UIProcessor.class);
-			}
-		});
+		jerseyConfig.register(PathParamInjector.class);
 
 		jerseyConfigUI.register(new AbstractBinder() {
 			@Override

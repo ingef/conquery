@@ -196,15 +196,17 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
-	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig resourceConfig) {
-		RESTServer.configure(config, resourceConfig);
-		resourceConfig.register(new AbstractBinder() {
+	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig jerseyConfig) {
+		RESTServer.configure(config, jerseyConfig);
+		jerseyConfig.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
 				bind(storage).to(MetaStorage.class);
 				bind(datasetRegistry).to(DatasetRegistry.class);
 			}
 		});
+
+		jerseyConfig.register(PathParamInjector.class);
 	}
 
 	/**
