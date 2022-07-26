@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.types.ResultType;
+import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableSet;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -31,25 +32,24 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 	private Map<Bucket, CBlock> cblocks;
 	private CBlock cblock;
 
+	private final Map<Table, Connector> tableConnectors;
+
 	public ConceptElementsAggregator(TreeConcept concept) {
 		super();
 		this.concept = concept;
+		tableConnectors = concept.getConnectors().stream()
+								 .filter(conn -> conn.getColumn() != null)
+								 .collect(Collectors.toMap(Connector::getTable, Functions.identity()));
 	}
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
-		Optional<ConceptTreeConnector> maybeConnector =
-				concept.getConnectors().stream()
-					   .filter(conn -> conn.getTable().equals(currentTable))
-					   .findAny();
+		Connector connector = tableConnectors.get(currentTable);
 
-		if (maybeConnector.isEmpty()) {
-			cblocks = null;
+		if (connector == null) {
 			column = null;
 			return;
 		}
-
-		final ConceptTreeConnector connector = maybeConnector.get();
 
 		column = connector.getColumn();
 		cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, connector);
