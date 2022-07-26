@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Strings with common, but stripped prefix/suffix.
@@ -23,7 +24,8 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_PREFIX")
 @ToString(of = {"prefix", "suffix", "subType"})
-public class StringTypePrefixSuffix implements StringStore {
+@Slf4j
+public class PrefixSuffixStringStore implements StringStore {
 
 	@Nonnull
 	protected StringStore subType;
@@ -35,7 +37,7 @@ public class StringTypePrefixSuffix implements StringStore {
 	private String suffix;
 
 	@JsonCreator
-	public StringTypePrefixSuffix(StringStore subType, String prefix, String suffix) {
+	public PrefixSuffixStringStore(StringStore subType, String prefix, String suffix) {
 		super();
 		this.subType = subType;
 		this.prefix = prefix;
@@ -71,30 +73,23 @@ public class StringTypePrefixSuffix implements StringStore {
 	}
 
 	@Override
-	public Iterator<String> iterator() {
-		Iterator<String> subIt = subType.iterator();
-		return new Iterator<String>() {
-			@Override
-			public boolean hasNext() {
-				return subIt.hasNext();
-			}
-
-			@Override
-			public String next() {
-				return prefix + subIt.next() + suffix;
-			}
-		};
+	public PrefixSuffixStringStore select(int[] starts, int[] length) {
+		return new PrefixSuffixStringStore(subType.select(starts, length), getPrefix(), getSuffix());
 	}
 
-
 	@Override
-	public StringTypePrefixSuffix select(int[] starts, int[] length) {
-		return new StringTypePrefixSuffix(subType.select(starts, length), getPrefix(), getSuffix());
+	public PrefixSuffixStringStore createDescription() {
+		return new PrefixSuffixStringStore(subType.createDescription(), getPrefix(), getSuffix());
 	}
 
 	@Override
 	public int size() {
 		return subType.size();
+	}
+
+	@Override
+	public Stream<String> iterateValues() {
+		return subType.iterateValues().map(val -> getPrefix() + val + getSuffix());
 	}
 
 	@Override

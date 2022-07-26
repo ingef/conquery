@@ -19,12 +19,12 @@ import lombok.ToString;
 @CPSType(base = ColumnStore.class, id = "DATE_RANGE_QUARTER")
 @Getter
 @ToString(of = "store")
-public class DateRangeTypeQuarter implements DateRangeStore {
+public class QuarterDateRangeStore implements DateRangeStore {
 
 	private final IntegerStore store;
 
 	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-	public DateRangeTypeQuarter(IntegerStore store) {
+	public QuarterDateRangeStore(IntegerStore store) {
 		this.store = store;
 	}
 
@@ -38,9 +38,14 @@ public class DateRangeTypeQuarter implements DateRangeStore {
 		return store.getLines();
 	}
 
+	@Override
+	public QuarterDateRangeStore createDescription() {
+		return new QuarterDateRangeStore(store.createDescription());
+	}
 
-	public DateRangeTypeQuarter select(int[] starts, int[] ends) {
-		return new DateRangeTypeQuarter(store.select(starts, ends));
+
+	public QuarterDateRangeStore select(int[] starts, int[] ends) {
+		return new QuarterDateRangeStore(store.select(starts, ends));
 	}
 
 	@Override
