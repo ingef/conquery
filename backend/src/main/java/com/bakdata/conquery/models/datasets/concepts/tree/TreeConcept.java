@@ -26,7 +26,6 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -57,7 +56,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@NotNull
 	@Getter
 	@Setter
-	@JsonManagedReference
 	@Valid
 	private List<UniversalSelect> selects = new ArrayList<>();
 	@JsonIgnore
