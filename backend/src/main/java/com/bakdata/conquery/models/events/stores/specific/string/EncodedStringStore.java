@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -22,19 +22,21 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Compacted String store, that uses two methods to reduce memory footprint:
- *  1. Use a byte efficient encoding string for the actual string. See {@link Encoding}
- *  2. Store the byte string in an appropriate data structure. See {{@link Dictionary and sub classes}}
+ * 1. Use a byte efficient encoding string for the actual string. See {@link Encoding}
+ * 2. Store the byte string in an appropriate data structure. See {{@link Dictionary and sub classes}}
  */
 @Getter
 @Setter
+@Slf4j
 @CPSType(base = ColumnStore.class, id = "STRING_ENCODED")
-public class StringTypeEncoded implements StringStore {
+public class EncodedStringStore implements StringStore {
 
 	@Nonnull
-	protected StringTypeDictionary subType;
+	protected DictionaryStore subType;
 	@NonNull
 	private Encoding encoding;
 
@@ -42,23 +44,26 @@ public class StringTypeEncoded implements StringStore {
 	 * Cache element lookups and as they might be time-consuming, when a trie traversal is necessary (See {@link com.bakdata.conquery.util.dict.SuccinctTrie}).
 	 */
 	@JsonIgnore
-	private final LoadingCache<Integer,String> elementCache;
+	private final LoadingCache<Integer, String> elementCache;
+
 
 	@JsonCreator
-	public StringTypeEncoded(StringTypeDictionary subType, Encoding encoding) {
+	public EncodedStringStore(DictionaryStore subType, Encoding encoding) {
 		super();
 		this.subType = subType;
 		this.encoding = encoding;
 		elementCache = CacheBuilder.newBuilder()
-				.softValues()
-				.build(new CacheLoader<Integer, String>() {
-					@Override
-					@ParametersAreNonnullByDefault
-					public String load(Integer key) throws Exception {
-						return encoding.decode(subType.getElement(key));
-					}
-				});
+								   .softValues()
+								   .build(new CacheLoader<Integer, String>() {
+									   @Override
+									   @ParametersAreNonnullByDefault
+									   public String load(Integer key) throws Exception {
+										   return encoding.decode(subType.getElement(key));
+									   }
+								   });
 	}
+
+
 
 	@Override
 	@SneakyThrows
@@ -83,6 +88,11 @@ public class StringTypeEncoded implements StringStore {
 	}
 
 	@Override
+	public Stream<String> iterateValues() {
+		return getSubType().iterateStrings().map(encoding::decode);
+	}
+
+	@Override
 	public int getId(String value) {
 		// Make sure we can even decode before doing so
 		if (!encoding.canEncode(value)) {
@@ -90,22 +100,6 @@ public class StringTypeEncoded implements StringStore {
 		}
 
 		return subType.getId(encoding.encode(value));
-	}
-
-	@Override
-	public Iterator<String> iterator() {
-		Iterator<byte[]> subIt = subType.iterator();
-		return new Iterator<>() {
-			@Override
-			public boolean hasNext() {
-				return subIt.hasNext();
-			}
-
-			@Override
-			public String next() {
-				return encoding.decode(subIt.next());
-			}
-		};
 	}
 
 	@Override
@@ -150,8 +144,13 @@ public class StringTypeEncoded implements StringStore {
 	}
 
 	@Override
-	public StringTypeEncoded select(int[] starts, int[] length) {
-		return new StringTypeEncoded(subType.select(starts, length), getEncoding());
+	public EncodedStringStore select(int[] starts, int[] length) {
+		return new EncodedStringStore(subType.select(starts, length), getEncoding());
+	}
+
+	@Override
+	public EncodedStringStore createDescription() {
+		return new EncodedStringStore((DictionaryStore) subType.createDescription(), getEncoding());
 	}
 
 	@Override
@@ -178,7 +177,7 @@ public class StringTypeEncoded implements StringStore {
 	 * We use common Encodings in the reversed way. What the encoding sees as "encoded" data,
 	 * is actually our raw data. On this raw data the decoding of the chosen encoding applied, which
 	 * yield a smaller representation for storage in the memory.
-	 *
+	 * <p>
 	 * To use this technique all string in the dictionary must only use the dictionary that is inherent
 	 * to the chosen encoding.
 	 */

@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -46,8 +47,8 @@ public abstract class Form implements QueryDescription {
 
 
 	@Override
-	public void authorize(Subject subject, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors) {
-		QueryDescription.super.authorize(subject, submittedDataset, visitors);
+	public void authorize(Subject subject, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors, MetaStorage storage) {
+		QueryDescription.super.authorize(subject, submittedDataset, visitors, storage);
 		// Check if subject is allowed to create this form
 		subject.authorize(FormScanner.FRONTEND_FORM_CONFIGS.get(getFormType()), Ability.CREATE);
 	}

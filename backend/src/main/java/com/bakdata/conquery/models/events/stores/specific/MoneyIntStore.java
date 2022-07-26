@@ -28,6 +28,11 @@ public class MoneyIntStore implements MoneyStore {
 	}
 
 	@Override
+	public MoneyIntStore createDescription() {
+		return new MoneyIntStore(numberType.createDescription());
+	}
+
+	@Override
 	public MoneyIntStore select(int[] starts, int[] length) {
 		return new MoneyIntStore(numberType.select(starts, length));
 	}

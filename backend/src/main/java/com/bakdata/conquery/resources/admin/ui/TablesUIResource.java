@@ -7,6 +7,7 @@ import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import io.dropwizard.views.View;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,15 +25,16 @@ import static com.bakdata.conquery.resources.ResourceConstants.*;
 @Getter
 @Setter
 @Slf4j
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class TablesUIResource {
 
-	@PathParam(DATASET)
-	protected Dataset dataset;
-	@PathParam(TABLE)
-	protected Table table;
+	private final UIProcessor uiProcessor;
 
-	@Inject
-	protected UIProcessor uiProcessor;
+	@PathParam(DATASET)
+	private Dataset dataset;
+	@PathParam(TABLE)
+	private Table table;
+
 
 	@GET
 	public View getTableView() {

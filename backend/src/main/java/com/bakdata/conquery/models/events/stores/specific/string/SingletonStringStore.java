@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -10,7 +9,6 @@ import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -22,13 +20,13 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_SINGLETON")
 @ToString(of = "singleValue")
-public class StringTypeSingleton implements StringStore {
+public class SingletonStringStore implements StringStore {
 
 	private final String singleValue;
 	private final BitSetStore delegate;
 
 	@JsonCreator
-	public StringTypeSingleton(String singleValue, BitSetStore delegate) {
+	public SingletonStringStore(String singleValue, BitSetStore delegate) {
 		super();
 		this.singleValue = singleValue;
 		this.delegate = delegate;
@@ -45,8 +43,13 @@ public class StringTypeSingleton implements StringStore {
 	}
 
 	@Override
-	public StringTypeSingleton select(int[] starts, int[] length) {
-		return new StringTypeSingleton(singleValue, delegate.select(starts, length));
+	public Stream<String> iterateValues() {
+		return Stream.of(singleValue);
+	}
+
+	@Override
+	public SingletonStringStore select(int[] starts, int[] length) {
+		return new SingletonStringStore(singleValue, delegate.select(starts, length));
 	}
 
 	@Override
@@ -60,6 +63,11 @@ public class StringTypeSingleton implements StringStore {
 	}
 
 	@Override
+	public SingletonStringStore createDescription() {
+		return new SingletonStringStore(singleValue, delegate.createDescription());
+	}
+
+	@Override
 	public String createScriptValue(int event) {
 		return singleValue;
 	}
@@ -70,14 +78,6 @@ public class StringTypeSingleton implements StringStore {
 			return 0;
 		}
 		return -1;
-	}
-
-	@Override
-	public Iterator<String> iterator() {
-		if (singleValue == null) {
-			return Collections.emptyIterator();
-		}
-		return Iterators.singletonIterator(singleValue);
 	}
 
 	@Override

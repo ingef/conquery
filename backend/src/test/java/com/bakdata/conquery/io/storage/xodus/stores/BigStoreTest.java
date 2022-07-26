@@ -9,14 +9,13 @@ import java.io.SequenceInputStream;
 import java.nio.file.Files;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.io.storage.StoreMappings;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -53,7 +52,6 @@ public class BigStoreTest {
 		tmpDir.mkdirs();
 		env = Environments.newInstance(tmpDir);
 
-		MAPPER.setConfig(MAPPER.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 	}
 
 	@AfterEach
@@ -98,7 +96,7 @@ public class BigStoreTest {
 				store.getMetaStore().get(nDict.getId()).loadData(store.getDataStore()).map(ByteArrayInputStream::new).iterator())))
 					.hasSameContentAs(new ByteArrayInputStream(bytes));
 
-		EncodedDictionary copy = new EncodedDictionary(store.get(nDict.getId()), StringTypeEncoded.Encoding.UTF8);
+		EncodedDictionary copy = new EncodedDictionary(store.get(nDict.getId()), EncodedStringStore.Encoding.UTF8);
 		for (int v = 0; v < 1000000; v++) {
 			assertThat(copy.getId(Integer.toHexString(v))).isEqualTo(v);
 		}

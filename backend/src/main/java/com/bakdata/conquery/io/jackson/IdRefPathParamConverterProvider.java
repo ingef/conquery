@@ -3,22 +3,29 @@ package com.bakdata.conquery.io.jackson;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
+import javax.inject.Inject;
 import javax.ws.rs.ext.ParamConverter;
 import javax.ws.rs.ext.ParamConverterProvider;
 
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class IdRefPathParamConverterProvider implements ParamConverterProvider {
 
-	private final DatasetRegistry datasetRegistry;
-	private final CentralRegistry metaRegistry;
+	@Inject
+	private DatasetRegistry datasetRegistry;
+	@Inject
+	private MetaStorage metaStorage;
 
 	@Override
 	public <T> ParamConverter<T> getConverter(Class<T> rawType, Type genericType, Annotation[] annotations) {
@@ -28,7 +35,7 @@ public class IdRefPathParamConverterProvider implements ParamConverterProvider {
 
 		final Class<Id<T>> idClass = IdUtil.findIdClass(rawType);
 
-		if(idClass == null){
+		if (idClass == null) {
 			return null;
 		}
 
@@ -39,6 +46,6 @@ public class IdRefPathParamConverterProvider implements ParamConverterProvider {
 			return new NamespacedIdRefParamConverter(parser, datasetRegistry);
 		}
 
-		return new MetaIdRefParamConverter(parser, metaRegistry);
+		return new MetaIdRefParamConverter(parser, metaStorage.getCentralRegistry());
 	}
 }

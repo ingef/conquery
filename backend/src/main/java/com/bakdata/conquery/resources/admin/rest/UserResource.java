@@ -8,7 +8,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -20,14 +19,13 @@ import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import lombok.RequiredArgsConstructor;
 
 @Path(USERS_PATH_ELEMENT)
-public class UserResource extends HAdmin {
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
+public class UserResource {
 
-	@Inject
-	protected AdminProcessor processor;
+	protected final AdminProcessor processor;
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)

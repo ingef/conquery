@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Slf4j
-@ToString(onlyExplicitlyIncluded = true)
+@ToString(onlyExplicitlyIncluded = true, callSuper = true)
 public class DictionaryMapping {
 
 	@ToString.Include
@@ -34,7 +34,9 @@ public class DictionaryMapping {
 	@ToString.Include
 	private final int numberOfNewIds;
 
-	public static DictionaryMapping createAndImport(Dictionary from, Dictionary to) {
+	public static DictionaryMapping createAndImport(Dictionary from, Dictionary into) {
+
+		log.debug("Importing values from `{}` into `{}`", from, into);
 
 		int newIds = 0;
 
@@ -49,11 +51,11 @@ public class DictionaryMapping {
 		for (int id = 0; id < from.size(); id++) {
 
 			byte[] value = from.getElement(id);
-			int targetId = to.getId(value);
+			int targetId = into.getId(value);
 
 			//if id was unknown until now
 			if (targetId == -1L) {
-				targetId = to.add(value);
+				targetId = into.add(value);
 				newIds++;
 			}
 
@@ -67,7 +69,7 @@ public class DictionaryMapping {
 
 		}
 
-		return new DictionaryMapping(from, to, source2Target, target2Source, newIds);
+		return new DictionaryMapping(from, into, source2Target, target2Source, newIds);
 	}
 
 	public int source2Target(int sourceId) {
@@ -98,7 +100,13 @@ public class DictionaryMapping {
 
 			final int string = from.getString(event);
 
-			to.setInteger(event, source2Target(string));
+			int value = source2Target(string);
+
+			if (value == -1) {
+				throw new IllegalStateException(String.format("Missing mapping for %s", string));
+			}
+
+			to.setInteger(event, value);
 		}
 	}
 

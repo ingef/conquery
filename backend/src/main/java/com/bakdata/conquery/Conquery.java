@@ -1,6 +1,5 @@
 package com.bakdata.conquery;
 
-import javax.tools.ToolProvider;
 import javax.validation.Validator;
 
 import ch.qos.logback.classic.Level;
@@ -11,7 +10,6 @@ import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.RecodeStoreCommand;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -27,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -45,8 +44,6 @@ public class Conquery extends Application<ConqueryConfig> {
 	public void initialize(Bootstrap<ConqueryConfig> bootstrap) {
 		final ObjectMapper confMapper = bootstrap.getObjectMapper();
 		Jackson.configure(confMapper);
-
-		confMapper.setConfig(confMapper.getDeserializationConfig().withView(InternalOnly.class));
 
 		// main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);
@@ -67,6 +64,14 @@ public class Conquery extends Application<ConqueryConfig> {
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) {
 				configuration.configureObjectMapper(environment.getObjectMapper());
+
+				environment.jersey().register(new AbstractBinder() {
+					@Override
+					protected void configure() {
+						bind(environment.getValidator()).to(Validator.class);
+						bind(configuration).to(ConqueryConfig.class);
+					}
+				});
 			}
 
 			@Override

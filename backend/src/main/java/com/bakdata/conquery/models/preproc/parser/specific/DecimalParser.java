@@ -4,11 +4,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.DecimalArrayStore;
 import com.bakdata.conquery.models.events.stores.root.DecimalStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
-import com.bakdata.conquery.models.events.stores.specific.DecimalTypeScaled;
+import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
@@ -48,7 +47,7 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 	@Override
 	protected DecimalStore decideType() {
 
-		BigInteger unscaled = DecimalTypeScaled.unscale(maxScale, maxAbs);
+		BigInteger unscaled = ScaledDecimalStore.unscale(maxScale, maxAbs);
 		if (unscaled.bitLength() > 63) {
 			return DecimalArrayStore.create(getLines());
 		}
@@ -60,7 +59,7 @@ public class DecimalParser extends Parser<BigDecimal, DecimalStore> {
 		sub.setNullLines(getNullLines());
 		IntegerStore subDecision = sub.findBestType();
 
-		return new DecimalTypeScaled(maxScale, subDecision);
+		return new ScaledDecimalStore(maxScale, subDecision);
 	}
 
 	@Override

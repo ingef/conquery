@@ -17,12 +17,7 @@ public class CopyUserTest {
 
 	@Test
 	void testUserCopy(){
-		final DatasetRegistry registry = new DatasetRegistry(0);
-
-
 		MetaStorage storage = new NonPersistentStoreFactory().createMetaStorage();
-
-		registry.setMetaStorage(storage);
 
 		// Create test role
 		Role role = new Role("role", "role", storage);
@@ -44,7 +39,7 @@ public class CopyUserTest {
 		User copy = AuthorizationController.flatCopyUser(originUser, "copytest", storage);
 
 		// Check that it is not the same user
-		assertThat(copy).usingRecursiveComparison().ignoringFieldsOfTypes(ThreadLocal.class).isNotEqualTo(originUser);
+		assertThat(copy).usingRecursiveComparison().ignoringFieldsOfTypes(User.ShiroUserAdapter.class).isNotEqualTo(originUser);
 
 		// Check that the copy does not have any mappings
 		assertThat(group.containsMember(copy)).isFalse();

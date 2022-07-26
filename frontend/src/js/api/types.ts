@@ -69,16 +69,18 @@ export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
   type: "MULTI_SELECT";
 }
 
+// Big = so many options that they need to be fetched async
+// using autocomplete, pagination, etc
 export interface BigMultiSelectFilterT extends MultiSelectFilterBaseT {
   type: "BIG_MULTI_SELECT";
   // Not needed in this format:
-  template: {
-    filePath: string; // "/.../import/stable/Referenzen/example.csv",
-    columns: string[];
-    columnValue: string; // Unclear, what that's even needed for
-    value: string;
-    optionValue: string;
-  };
+  // template: {
+  //   filePath: string; // "/.../import/stable/Referenzen/example.csv",
+  //   columns: string[];
+  //   columnValue: string; // Unclear, what that's even needed for
+  //   value: string;
+  //   optionValue: string;
+  // };
 }
 
 export type SelectFilterValueT = string | number;
@@ -311,22 +313,58 @@ export interface PostQueriesResponseT {
 }
 
 export type ColumnDescriptionKind =
+  | "INTEGER"
+  | "NUMERIC"
   | "BOOLEAN"
   | "STRING"
-  | "INTEGER"
   | "MONEY"
-  | "NUMERIC"
   | "DATE"
   | "DATE_RANGE"
-  | "LIST[DATE_RANGE]"
-  | "CATEGORICAL"
-  | "RESOLUTION"
-  | "SECONDARY_ID"
-  | "CONCEPT_COLUMN";
+  | "LIST[DATE_RANGE]";
+
+interface ColumnDescriptionSemanticConceptColumn {
+  type: "CONCEPT_COLUMN";
+  concept: string;
+}
+interface ColumnDescriptionSemanticSelect {
+  type: "SELECT";
+  select: string;
+}
+interface ColumnDescriptionSemanticSecondaryId {
+  type: "SECONDARY_ID";
+  secondaryId: string;
+}
+interface ColumnDescriptionSemanticId {
+  type: "ID";
+  kind: string;
+}
+interface ColumnDescriptionSemanticEventDate {
+  type: "EVENT_DATE";
+}
+interface ColumnDescriptionSemanticSources {
+  type: "SOURCES";
+}
+interface ColumnDescriptionSemanticCategorical {
+  type: "CATEGORICAL";
+}
+interface ColumnDescriptionSemanticResolution {
+  type: "RESOLUTION";
+}
+
+export type ColumnDescriptionSemantic =
+  | ColumnDescriptionSemanticId
+  | ColumnDescriptionSemanticSecondaryId
+  | ColumnDescriptionSemanticSelect
+  | ColumnDescriptionSemanticConceptColumn
+  | ColumnDescriptionSemanticEventDate
+  | ColumnDescriptionSemanticSources
+  | ColumnDescriptionSemanticCategorical // Probably won't be used by us
+  | ColumnDescriptionSemanticResolution; // Probably won't be used by us
 
 export interface ColumnDescription {
-  label: string;
+  label: string; // Matches column name in CSV
   type: ColumnDescriptionKind;
+  semantics: ColumnDescriptionSemantic[];
 
   // NOT USED BY US:
   defaultLabel: string;
@@ -400,13 +438,15 @@ export interface PostConceptResolveResponseT {
 }
 
 export interface PostFilterResolveResponseT {
-  unknownCodes?: string[];
+  resolvedConcepts: null; // TODO: Weird that this unnecessary field comes back, we're not using it
+  unknownCodes: string[];
   resolvedFilter?: {
     filterId: FilterT["id"];
     tableId: TableT["id"];
     value: {
       label: string;
       value: string;
+      optionValue: string;
     }[];
   };
 }

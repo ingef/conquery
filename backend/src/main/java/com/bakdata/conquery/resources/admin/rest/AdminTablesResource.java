@@ -26,8 +26,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -36,10 +36,10 @@ import lombok.Setter;
 @Getter
 @Setter
 @Path("datasets/{" + DATASET + "}/tables/{" + TABLE + "}")
-public class AdminTablesResource extends HAdmin {
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
+public class AdminTablesResource {
 
-	@Inject
-	private AdminDatasetProcessor processor;
+	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
 	protected Dataset dataset;
@@ -48,9 +48,7 @@ public class AdminTablesResource extends HAdmin {
 	protected Table table;
 
 	@PostConstruct
-	@Override
 	public void init() {
-		super.init();
 		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
 	}
 

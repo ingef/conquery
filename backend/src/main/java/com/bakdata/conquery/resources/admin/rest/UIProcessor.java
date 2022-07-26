@@ -20,7 +20,9 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.ui.model.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -28,12 +30,14 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 /**
  * Wrapper processor that transforms internal representations of the {@link AdminProcessor} into
  * objects that are more convenient to handle with freemarker.
  */
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class UIProcessor {
 
 	@Getter

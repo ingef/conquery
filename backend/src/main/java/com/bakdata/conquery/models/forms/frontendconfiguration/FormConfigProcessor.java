@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
@@ -36,6 +37,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,16 +46,25 @@ import org.jetbrains.annotations.TestOnly;
 /**
  * Holds the logic that serves the endpoints defined in {@link FormConfigResource}.
  */
-@RequiredArgsConstructor
 @Slf4j
+@NoArgsConstructor
+@AllArgsConstructor
 public class FormConfigProcessor {
-	
-	private final Validator validator;
-	private final MetaStorage storage;
-	private final DatasetRegistry datasetRegistry;
+
+	@Inject
+	private Validator validator;
+	@Inject
+	private MetaStorage storage;
+	@Inject
+	private DatasetRegistry datasetRegistry;
+
 	@Getter(onMethod = @__({@TestOnly}))
-	private final static ObjectMapper MAPPER = Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);;
-	
+	private final static ObjectMapper
+			MAPPER =
+			Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);
+	;
+
+
 	/**
 	 * Return an overview of all form config available to the subject. The selection can be reduced by setting a specific formType.
 	 * The provided overview does not contain the configured values for the form, just the meta data.

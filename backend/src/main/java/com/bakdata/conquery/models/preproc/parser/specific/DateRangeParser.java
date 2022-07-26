@@ -4,17 +4,14 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
-import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeDateRange;
-import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeQuarter;
-import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.events.stores.specific.DirectDateRangeStore;
+import com.bakdata.conquery.models.events.stores.specific.QuarterDateRangeStore;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.util.DateReader;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 @ToString(callSuper = true)
@@ -67,7 +64,7 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 			quarterParser.setMaxValue(maxValue);
 			quarterParser.setMinValue(minValue);
 
-			return new DateRangeTypeQuarter(quarterParser.findBestType());
+			return new QuarterDateRangeStore(quarterParser.findBestType());
 		}
 
 
@@ -81,7 +78,7 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 			maxParser.setLines(getLines());
 		}
 
-		return new DateRangeTypeDateRange(minParser.findBestType(), maxParser.findBestType());
+		return new DirectDateRangeStore(minParser.findBestType(), maxParser.findBestType());
 	}
 
 	@Override

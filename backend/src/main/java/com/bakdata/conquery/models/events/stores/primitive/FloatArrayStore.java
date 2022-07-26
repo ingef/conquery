@@ -32,6 +32,12 @@ public class FloatArrayStore implements RealStore {
 		return new FloatArrayStore(new float[size]);
 	}
 
+
+	@Override
+	public FloatArrayStore createDescription() {
+		return ColumnStore.emptyCopy(this);
+	}
+
 	@Override
 	public long estimateEventBits() {
 		return Float.SIZE;
@@ -45,6 +51,7 @@ public class FloatArrayStore implements RealStore {
 	public void setReal(int event, double value) {
 		values[event] = (float) value;
 	}
+
 	@Override
 	public void setNull(int event) {
 		values[event] = nullValue;

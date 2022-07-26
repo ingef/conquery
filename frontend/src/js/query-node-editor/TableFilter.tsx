@@ -107,7 +107,6 @@ const TableFilter = ({
             indexPrefix={filterIdx + 1}
             context={filterContext}
             value={filter.value || []}
-            defaultValue={filter.defaultValue}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             tooltip={filter.tooltip}

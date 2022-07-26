@@ -37,14 +37,15 @@ import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.auth.Auth;
+import lombok.RequiredArgsConstructor;
 
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Produces(ExtraMimeTypes.JSON_STRING)
 @Path("/")
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AdminResource {
 
-	@Inject
-	private AdminProcessor processor;
+	private final AdminProcessor processor;
 
 	/**
 	 * Execute script and serialize value with {@link Objects#toString}.
