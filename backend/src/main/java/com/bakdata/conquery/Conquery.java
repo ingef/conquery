@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.StringSubstitutor;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -63,6 +64,14 @@ public class Conquery extends Application<ConqueryConfig> {
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) {
 				configuration.configureObjectMapper(environment.getObjectMapper());
+
+				environment.jersey().register(new AbstractBinder() {
+					@Override
+					protected void configure() {
+						bind(environment.getValidator()).to(Validator.class);
+						bind(configuration).to(ConqueryConfig.class);
+					}
+				});
 			}
 
 			@Override

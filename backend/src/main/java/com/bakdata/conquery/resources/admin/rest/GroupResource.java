@@ -1,27 +1,34 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
-import javax.inject.Inject;
-import javax.validation.constraints.NotEmpty;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.util.Collection;
 import java.util.List;
 
-import static com.bakdata.conquery.resources.ResourceConstants.*;
+import javax.inject.Inject;
+import javax.validation.constraints.NotEmpty;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
+import lombok.RequiredArgsConstructor;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Path(GROUPS_PATH_ELEMENT)
-public class GroupResource extends HAdmin {
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
+public class GroupResource {
 
-	@Inject
-	protected AdminProcessor processor;
+	private final AdminProcessor processor;
 
 	@GET
 	public Collection<Group> getGroups() {

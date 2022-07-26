@@ -30,14 +30,13 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@Setter
 @Produces({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
 @Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
 @Path("datasets/{" + DATASET + "}/concepts/{" + CONCEPT + "}")
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ConceptResource extends HConcepts {
 
-	@Inject
-	protected ConceptsProcessor processor;
+	private final ConceptsProcessor processor;
 
 	@GET
 	public Response getNode() {
