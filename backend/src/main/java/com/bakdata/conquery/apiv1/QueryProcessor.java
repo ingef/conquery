@@ -4,6 +4,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetA
 
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +32,6 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
@@ -46,9 +46,11 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.PreviewConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -81,6 +83,42 @@ public class QueryProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final MetaStorage storage;
 	private final ConqueryConfig config;
+
+	public static List<Select> getInfoCardSelects(PreviewConfig config, Dataset dataset, DatasetRegistry registry) {
+		final List<Select> infoCardSelects = new ArrayList<>();
+
+		for (SelectId selectId : config.getInfoCardSelects()) {
+			Select resolved = registry.resolve(selectId);
+
+			if (resolved == null) {
+				throw new ConqueryError.ExecutionCreationResolveError(selectId);
+			}
+
+			infoCardSelects.add(resolved);
+		}
+
+		final Set<Select> wrongDatasetSelects = infoCardSelects.stream()
+															   .filter(select -> !select.getDataset().equals(dataset))
+															   .collect(Collectors.toSet());
+
+		if (!wrongDatasetSelects.isEmpty()) {
+			log.error("The selects {} are not for dataset {}", wrongDatasetSelects, dataset.getId());
+			throw new ConqueryError.ExecutionCreationErrorUnspecified();
+		}
+
+
+		final Set<Select> nonConnectorSelects = infoCardSelects.stream()
+															   .filter(select -> !(select.getHolder() instanceof Connector))
+															   .collect(Collectors.toSet());
+
+		if (!nonConnectorSelects.isEmpty()) {
+			log.error("The selects {} are not connector-Selects", nonConnectorSelects);
+			throw new ConqueryError.ExecutionCreationErrorUnspecified();
+		}
+
+		return infoCardSelects;
+
+	}
 
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
@@ -215,10 +253,7 @@ public class QueryProcessor {
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
-							 OverviewExecutionStatus status = mq.buildStatusOverview(
-									 uriBuilder.clone(),
-									 subject
-							 );
+							 OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
 							 if (mq.isReadyToDownload(datasetAbilities)) {
 								 status.setResultUrls(getDownloadUrls(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
@@ -241,7 +276,8 @@ public class QueryProcessor {
 
 		return renderer.stream()
 					   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
-					   .flatMap(Collection::stream).collect(Collectors.toList());
+					   .flatMap(Collection::stream)
+					   .collect(Collectors.toList());
 
 	}
 
@@ -324,9 +360,7 @@ public class QueryProcessor {
 		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
-			datasetRegistry.get(query.getDataset().getId())
-						   .getExecutionManager()
-						   .execute(getDatasetRegistry(), query, config);
+			datasetRegistry.get(query.getDataset().getId()).getExecutionManager().execute(getDatasetRegistry(), query, config);
 		}
 	}
 
@@ -359,12 +393,13 @@ public class QueryProcessor {
 	 */
 	public ExternalUploadResult uploadEntities(Subject subject, Dataset dataset, ExternalUpload upload) {
 
-		final CQExternal.ResolveStatistic statistic =
-				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
-										   datasetRegistry.get(dataset.getId()).getStorage().getIdMapping(),
-										   config.getFrontend().getQueryUpload(),
-										   config.getLocale().getDateReader(),
-										   upload.isOneRowPerEntity()
+		final CQExternal.ResolveStatistic
+				statistic =
+				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(), datasetRegistry.get(dataset.getId())
+																								  .getStorage()
+																								  .getIdMapping(), config.getFrontend()
+																														 .getQueryUpload(), config.getLocale()
+																																				  .getDateReader(), upload.isOneRowPerEntity()
 
 				);
 
@@ -378,8 +413,10 @@ public class QueryProcessor {
 		final ConceptQuery query = new ConceptQuery(new CQExternal(upload.getFormat(), upload.getValues(), upload.isOneRowPerEntity()));
 
 		// We only create the Query, really no need to execute it as it's only useful for composition.
-		final ManagedQuery execution =
-				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
+		final ManagedQuery
+				execution =
+				((ManagedQuery) datasetRegistry.get(dataset.getId())
+											   .getExecutionManager()
 											   .createExecution(datasetRegistry, query, subject.getUser(), dataset, false));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
@@ -390,12 +427,7 @@ public class QueryProcessor {
 
 		execution.initExecutable(datasetRegistry, config);
 
-		return new ExternalUploadResult(
-				execution.getId(),
-				statistic.getResolved().size(),
-				statistic.getUnresolvedId(),
-				statistic.getUnreadableDate()
-		);
+		return new ExternalUploadResult(execution.getId(), statistic.getResolved().size(), statistic.getUnresolvedId(), statistic.getUnreadableDate());
 	}
 
 	/**
@@ -408,72 +440,37 @@ public class QueryProcessor {
 
 		final CQExternal entitySelector = new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true);
 
-		final ConceptQuery entitySelectQuery =
-				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), entitySelector));
+		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), entitySelector));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
-		exportQuery.setTables(
-				sources.stream()
-					   .map(source -> {
-						   final CQConcept cqConcept = new CQConcept();
-						   cqConcept.setElements(List.of(source.getConcept()));
-						   final CQTable cqTable = new CQTable();
-						   cqTable.setConcept(cqConcept);
-						   cqTable.setConnector(source);
-						   cqConcept.setTables(List.of(cqTable));
+		exportQuery.setTables(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
 
-						   return cqConcept;
-					   })
-					   .collect(Collectors.toList())
-		);
+		final ManagedQuery execution = (ManagedQuery) postQuery(dataset, exportQuery, subject, true);
 
-		final ManagedExecution<?> execution = postQuery(dataset, exportQuery, subject, true);
+		final List<Select> infoCardSelects = getInfoCardSelects(config.getPreview(), dataset, datasetRegistry);
 
-		final List<SelectId> infoCardSelects = List.of(); //TODO pull these from config
 
 		final AbsoluteFormQuery infoCardQuery =
-				new AbsoluteFormQuery(
-						entitySelectQuery,
-						dateRange,
-						ArrayConceptQuery.createFromFeatures(
-								infoCardSelects.stream()
-											   .map(datasetRegistry::resolve)
-											   .map(select -> {
-												   CQConcept cqConcept = new CQConcept();
-												   cqConcept.setElements(List.of(select.getHolder().findConcept()));
-												   CQTable table = new CQTable();
-												   cqConcept.setTables(List.of(table));
-
-												   //TODO assert that it's only Connector as holders
-												   table.setConnector(((Connector) select.getHolder()));
-
-												   table.setSelects(List.of(select));
-
-												   return cqConcept;
-											   })
-											   .collect(Collectors.toList())
-						),
-						List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
+				new AbsoluteFormQuery(entitySelectQuery, dateRange,
+									  ArrayConceptQuery.createFromFeatures(
+											  infoCardSelects.stream()
+															 .map(CQConcept::forSelect)
+															 .collect(Collectors.toList())),
+									  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
 				);
 
-		final ManagedExecution<?> infoCardExecution = postQuery(dataset, infoCardQuery, subject, true);
+		final ManagedQuery infoCardExecution = (ManagedQuery) postQuery(dataset, infoCardQuery, subject, true);
 
 
-		while(true){
-			//TODO this is quite ugly!?
-			if(execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
-				log.trace("Still waiting for {}", execution.getId());
-				continue;
-			}
-
-			if(infoCardExecution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
-				log.trace("Still waiting for {}", infoCardExecution.getId());
-				continue;
-			}
-
-			break;
+		if (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+			log.warn("Still waiting for {} after 10Seconds.", execution.getId());
+			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
 
+		if (infoCardExecution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+			log.warn("Still waiting for {} after 10Seconds aborting", infoCardExecution.getId());
+			throw new ConqueryError.ExecutionProcessingTimeoutError();
+		}
 
 		if (execution.getState() == ExecutionState.FAILED) {
 			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
@@ -484,9 +481,8 @@ public class QueryProcessor {
 		}
 
 
-
-
 		// Use the provided format name to find the respective provider.
 		return getQueryFullStatus(execution, subject, uriBuilder, true);
 	}
+
 }
