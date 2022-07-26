@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -41,23 +42,30 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@JsonIgnore
 	@Getter
 	private final int depth = 0;
+
 	@Getter
 	private final int[] prefix = new int[]{0};
+
 	@JsonIgnore
 	private final List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
+
 	@Getter
 	@Setter
 	@Valid
 	private List<ConceptTreeChild> children = Collections.emptyList();
+
 	@JsonIgnore
 	@Getter
 	@Setter
 	private int localId;
+
 	@NotNull
 	@Getter
 	@Setter
 	@Valid
+	@JsonManagedReference
 	private List<UniversalSelect> selects = new ArrayList<>();
+
 	@JsonIgnore
 	@Getter
 	@Setter

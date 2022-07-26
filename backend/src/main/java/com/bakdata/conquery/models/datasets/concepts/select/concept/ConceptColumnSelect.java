@@ -8,9 +8,11 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.Co
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.ConceptValuesAggregator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.Data;
 
 @CPSType(id = "CONCEPT_VALUES", base = Select.class)
-public class ConceptColumnSelect extends Select {
+@Data
+public class ConceptColumnSelect extends UniversalSelect {
 
 	private boolean resolved = false;
 
