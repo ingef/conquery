@@ -399,7 +399,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L67) | withoutSecondaryId | list of ID of `@NsIdRefCollection Set<Table>` | ␀ |  |  | 
 </p></details>
 
-### TABLE_EXPORT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L56-L66)</sup></sub></sup>
+### TABLE_EXPORT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L60-L70)</sup></sub></sup>
 TableExportQuery can be used to export raw data from selected {@link Connector}s, for selected {@link com.bakdata.conquery.models.query.entity.Entity}s. <p> Output format is lightly structured: 1: Contains the {@link com.bakdata.conquery.models.datasets.concepts.ValidityDate} if one is available for the event. 2: Contains the source {@link com.bakdata.conquery.models.datasets.Table}s label. 3 - X: Contain the SecondaryId columns de-duplicated. Following: Columns of all tables, (except for SecondaryId Columns), grouped by tables. The order is not guaranteed. <p> Columns used in Connectors to build Concepts, are marked with {@link SemanticType.ConceptColumnT} in {@link FullExecutionStatus#getColumnDescriptions()}.
 
 <details><summary>Details</summary><p>
@@ -410,10 +410,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L78) | dateRange | `@NotNull Range<LocalDate>` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L85-L91) | positions | map from `Column` to `int` or `null` | ? |  | We collect the positions for each Column of the output in here. Multiple columns can map to the same output position: - ValidityDate-Columns are merged into a single Date-Column - SecondaryIds are collected into a Column per SecondaryId - The remaining columns are arbitrarily ordered, but usually grouped by their source table. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L74) | query | `@NonNull Query` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L81) | tables | list of [CONCEPT](#CONCEPT) | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L82) | dateRange | `@NotNull Range<LocalDate>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L94-L100) | positions | map from `Column` to `int` or `null` | ? |  | We collect the positions for each Column of the output in here. Multiple columns can map to the same output position: - ValidityDate-Columns are merged into a single Date-Column - SecondaryIds are collected into a Column per SecondaryId - The remaining columns are arbitrarily ordered, but usually grouped by their source table. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L78) | query | `@NonNull Query` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L89-L91) | rawConceptValues | `boolean` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L85) | tables | list of [CONCEPT](#CONCEPT) | ? |  |  | 
 </p></details>
 
 

@@ -410,6 +410,8 @@ public class QueryProcessor {
 				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, false)));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
+		exportQuery.setRawConceptValues(false);
+
 		exportQuery.setTables(
 				sources.stream()
 					   .map(source -> {

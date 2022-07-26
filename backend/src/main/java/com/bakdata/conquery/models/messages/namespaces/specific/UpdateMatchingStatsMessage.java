@@ -141,7 +141,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 						for (int event = bucket.getEntityStart(entity); event < entityEnd; event++) {
 
-							final int[] localIds = cBlock.getEventMostSpecificChild(event);
+							final int[] localIds = cBlock.getPathToMostSpecificChild(event);
 
 
 							if (!(concept instanceof TreeConcept) || localIds == null) {
@@ -156,7 +156,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 								continue;
 							}
 
-							ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalId(localIds);
+							ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
 
 							while (element != null) {
 								results.computeIfAbsent(((ConceptElement<?>) element), (ignored) -> new MatchingStats.Entry())

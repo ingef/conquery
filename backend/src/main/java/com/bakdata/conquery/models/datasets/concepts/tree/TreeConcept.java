@@ -213,8 +213,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	 * @param ids the local id array to look for
 	 * @return the element matching the most specific local id in the array
 	 */
-	public ConceptTreeNode<?> getElementByLocalId(@NonNull int[] ids) {
+	public ConceptTreeNode<?> getElementByLocalIdPath(@NonNull int[] ids) {
 		int mostSpecific = ids[ids.length - 1];
-		return localIdMap.get(mostSpecific);
+		return getElementByLocalId(mostSpecific);
+	}
+
+	public ConceptTreeNode<?> getElementByLocalId(int localId) {
+		return localIdMap.get(localId);
 	}
 }

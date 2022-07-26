@@ -1,7 +1,7 @@
 {
   "type": "QUERY_TEST",
   "label": "TABLE_EXPORT Test",
-  "expectedCsv": "tests/query/TABLE_EXPORT/expected.csv",
+  "expectedCsv": "tests/query/TABLE_EXPORT/raw_expected.csv",
   "query": {
     "type": "TABLE_EXPORT",
     "tables": [
@@ -34,7 +34,6 @@
       "min": "2000-01-01",
       "max": "2020-12-31"
     },
-    "rawConceptValues" : false,
     "query": {
       "type": "CONCEPT_QUERY",
       "root": {
