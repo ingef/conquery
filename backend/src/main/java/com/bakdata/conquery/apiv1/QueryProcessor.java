@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -34,7 +33,6 @@ import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -438,11 +436,11 @@ public class QueryProcessor {
 	 */
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
-		final CQExternal entitySelector = new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true);
-
-		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), entitySelector));
+		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
+		exportQuery.setDateRange(dateRange);
+
 		exportQuery.setTables(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
 
 		final ManagedQuery execution = (ManagedQuery) postQuery(dataset, exportQuery, subject, true);
@@ -481,8 +479,13 @@ public class QueryProcessor {
 		}
 
 
-		// Use the provided format name to find the respective provider.
-		return getQueryFullStatus(execution, subject, uriBuilder, true);
+		PreviewFullExecutionStatus executionStatus = new PreviewFullExecutionStatus();
+		execution.setStatusFull(executionStatus, storage, subject, datasetRegistry );
+
+		executionStatus.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, true));
+
+		executionStatus.setInfocard(infoCardExecution.getId()); // TODO: Url to status info
+		return executionStatus;
 	}
 
 }
