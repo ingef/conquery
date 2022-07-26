@@ -263,7 +263,7 @@ public class TableExportQuery extends Query {
 	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
 	 *
 	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
-	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} ()} is used to print.
+	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
 	 */
 	public static String printValue(Concept concept, Object rawValue, PrintSettings printSettings) {
 
