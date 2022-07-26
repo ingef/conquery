@@ -37,6 +37,11 @@ public class ConceptValuesAggregator extends Aggregator<Set<Object>> {
 	}
 
 	@Override
+	public void collectRequiredTables(Set<Table> requiredTables) {
+		requiredTables.addAll(tableConnectors.keySet());
+	}
+
+	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		Connector connector = tableConnectors.get(currentTable);
 

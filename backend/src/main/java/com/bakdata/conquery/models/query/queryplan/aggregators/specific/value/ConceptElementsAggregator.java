@@ -43,6 +43,11 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 	}
 
 	@Override
+	public void collectRequiredTables(Set<Table> requiredTables) {
+		requiredTables.addAll(tableConnectors.keySet());
+	}
+
+	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		Connector connector = tableConnectors.get(currentTable);
 
