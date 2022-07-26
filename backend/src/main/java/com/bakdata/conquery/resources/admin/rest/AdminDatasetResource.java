@@ -40,9 +40,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.bakdata.conquery.util.io.FileUtil;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,21 +52,18 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Path("datasets/{" + DATASET + "}")
-public class AdminDatasetResource extends HAdmin {
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
+public class AdminDatasetResource {
 
-
-	@Inject
-	protected AdminDatasetProcessor processor;
-
+	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
-	protected Dataset dataset;
-	protected Namespace namespace;
+	private Dataset dataset;
+
+	private Namespace namespace;
 
 	@PostConstruct
-	@Override
 	public void init() {
-		super.init();
 		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
 	}
 

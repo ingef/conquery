@@ -13,6 +13,7 @@
         </thead>
         <tbody>
 		<#list permissionTemplateMap?keys as key>
+			<#assign abilities=permissionTemplateMap[key].getLeft()>
             <tr>
 				<td>${key}</td>
 				<td>
@@ -30,8 +31,13 @@
 						</div>
 					</#if>
 				</td>
-				<td>
-					<input id="${INSTANCES}${key}" type="text" name="fname">
+				<td id="${INSTANCES}${key}">
+					<#if abilities?has_content>
+                        <input type="text" class="form-control" name="fname" oninput="renderInstanceList(this)" placeholder="Instance1, Instance2, ...">
+                        <ul class="list-group">
+                            <!-- list for rendered instances -->
+                        </ul>
+					</#if>
 				</td>
 				<td><a href="#" onclick="submitPermission('${key}')"> <i class="fas fa-share"></i> </a> </td>
             </tr>
@@ -40,7 +46,24 @@
 	</table>
 	</div>
 	<script type="application/javascript">
-	function submitPermission(domain) {
+
+	function renderInstanceList(instanceListString) {
+	    // from the target input field render a list with the target instances cleaned from white spaces
+	    const instanceList = instanceListString.parentNode.getElementsByTagName("ul")[0];
+	    // reset list content
+	    instanceList.innerHTML = '';
+	    instanceListString.value.split(',')
+	        .map(i => i.trim())
+	        .filter(i => !!i)
+	        .forEach(i => {
+                var li = document.createElement("li");
+                li.setAttribute("class", "list-group-item p-1");
+                li.innerHTML = i
+	            instanceList.appendChild(li)
+	        });
+	}
+
+	async function submitPermission(domain) {
 		event.preventDefault();
 
 
@@ -51,7 +74,7 @@
 			let abilityCheckboxes =abilitySelector.getElementsByTagName('input');
 			for(let cb of abilityCheckboxes ) {
 				if(cb.checked){
-					abilities.push(cb.value)
+					abilities.push(cb.value.trim())
 				}
 			}
 			if(abilityCheckboxes.length > 0 && abilities.length == 0 ) {
@@ -61,16 +84,29 @@
 			abilityJoin = abilities.join(",");
 		}
 
-		let instanceInput = document.getElementById("${INSTANCES}"+domain).value;
+        // Collection only only as a member if a permission supports abilities and thus targets
+		let instanceInput = document.getElementById("${INSTANCES}"+domain).getElementsByTagName("ul");
+
+
+		if(instanceInput.length != 0) {
+		    // Permission can have targets
+		    instances = Array.from(instanceInput[0].children,c => c.innerHTML).join(",");
+		}
+		else {
+		    // Permission does not support abilities and targets (e.g. super permission)
+		    instances = null;
+		}
 		
-		permission = [domain, abilityJoin, instanceInput].join(":")
+		permission = [domain, abilityJoin, instances].join(":")
 		console.log("Sending Permission: " + permission);
-		fetch('/admin/permissions/${ownerId}',
+		await fetch('/admin/permissions/${ownerId}',
 			{
 				method: 'post',
 				credentials: 'same-origin',
 				headers: {'Content-Type': 'text/plain'},
-				body: permission}).then(function(){location.reload()})
+				body: permission
+			});
+		location.reload();
 	}
 	</script>
 </#macro>

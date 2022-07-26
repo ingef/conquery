@@ -49,16 +49,17 @@ import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Path("datasets/{" + DATASET + "}/queries")
 @Consumes(AdditionalMediaTypes.JSON)
 @Produces(AdditionalMediaTypes.JSON)
 @Slf4j
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class QueryResource {
 
-	@Inject
-	private QueryProcessor processor;
+	private final QueryProcessor processor;
 
 	@Context
 	protected HttpServletRequest servletRequest;

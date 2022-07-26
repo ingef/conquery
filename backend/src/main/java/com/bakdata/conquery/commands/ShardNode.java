@@ -10,10 +10,9 @@ import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
@@ -37,7 +36,9 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -104,7 +105,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 		workers = new Workers(
 				getConfig().getQueries().getExecutionPool(),
-				createInternalObjectMapper(),
+				() -> createInternalObjectMapper(View.Persistence.Shard.class),
+				() -> createInternalObjectMapper(View.InternalCommunication.class),
 				getConfig().getCluster().getEntityBucketSize()
 		);
 
@@ -142,22 +144,34 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 
 	/**
-	 * Pendant to {@link ManagerNode#createInternalObjectMapper()}.
+	 * Pendant to {@link ManagerNode#createInternalObjectMapper(Class)}.
 	 * <p>
 	 * TODO May move to {@link ConqueryCommand}
 	 *
 	 * @return a preconfigured binary object mapper
 	 */
-	public ObjectMapper createInternalObjectMapper() {
+	public ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
 		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
 		injectableValues.add(Validator.class, getValidator());
 
-		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class,SerdesTarget.SHARD));
-		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
-		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
+
+		// Set serialization config
+		SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
+
+		serializationConfig = serializationConfig.withView(viewClass);
+
+		objectMapper.setConfig(serializationConfig);
+
+		// Set deserialization config
+		DeserializationConfig deserializationConfig = objectMapper.getDeserializationConfig();
+
+		deserializationConfig = deserializationConfig.withView(viewClass);
+
+		objectMapper.setConfig(deserializationConfig);
+		
 		return objectMapper;
 	}
 
@@ -244,7 +258,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
 
-		ObjectMapper om = createInternalObjectMapper();
+		ObjectMapper om = createInternalObjectMapper(View.InternalCommunication.class);
 
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));

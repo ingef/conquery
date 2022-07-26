@@ -1,20 +1,24 @@
 package com.bakdata.conquery.models.events.stores.specific.string;
 
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.IntStream;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -26,7 +30,7 @@ import lombok.ToString;
 @Setter
 @CPSType(base = ColumnStore.class, id = "STRING_NUMBER")
 @ToString(of = "delegate")
-public class StringTypeNumber implements StringStore {
+public class NumberStringStore implements StringStore {
 
 	@Nonnull
 	protected IntegerStore delegate;
@@ -38,13 +42,13 @@ public class StringTypeNumber implements StringStore {
 	@JsonIgnore
 	private transient Map<Integer, String> dictionary;
 
-	public StringTypeNumber(Range<Integer> range, IntegerStore numberType, Map<Integer, String> dictionary) {
+	public NumberStringStore(Range<Integer> range, IntegerStore numberType, Map<Integer, String> dictionary) {
 		this(range, numberType);
 		this.dictionary = dictionary;
 	}
 
 	@JsonCreator
-	public StringTypeNumber(Range<Integer> range, IntegerStore numberType) {
+	public NumberStringStore(Range<Integer> range, IntegerStore numberType) {
 		super();
 		this.range = range;
 		this.delegate = numberType;
@@ -66,18 +70,6 @@ public class StringTypeNumber implements StringStore {
 	}
 
 	@Override
-	public Iterator<String> iterator() {
-		return IntStream
-					   .rangeClosed(
-							   range.getMin(),
-							   range.getMax()
-					   )
-					   .mapToObj(Integer::toString)
-					   .iterator();
-	}
-
-
-	@Override
 	public String getElement(int id) {
 		return Integer.toString(id);
 	}
@@ -87,10 +79,48 @@ public class StringTypeNumber implements StringStore {
 		return range.getMax() - range.getMin() + 1;
 	}
 
+	@JsonView(View.Persistence.Manager.class)
+	private Set<Integer> usedValues;
+
+	private static Set<Integer> collectUsedStrings(NumberStringStore stringStore) {
+		Set<Integer> sampled = new HashSet<>();
+		for (int event = 0; event < stringStore.getLines(); event++) {
+			if (!stringStore.has(event)) {
+				continue;
+			}
+
+			sampled.add(stringStore.getString(event));
+		}
+		return sampled;
+	}
+
+	@Override
+	public NumberStringStore createDescription() {
+		NumberStringStore description = new NumberStringStore(getRange(), delegate.createDescription());
+
+		description.setUsedValues(collectUsedStrings(this));
+		return description;
+	}
+
+	@Override
+	public Stream<String> iterateValues() {
+		return usedValues.stream().map(val -> Integer.toString(val));
+	}
+
 	@Override
 	public int getId(String value) {
 		try {
-			return Integer.parseInt(value);
+			if (!StringParser.isOnlyDigits(value)){
+				return -1;
+			}
+
+			int parsed = Integer.parseInt(value);
+
+			if (!range.contains(parsed)) {
+				return -1;
+			}
+
+			return parsed;
 		}
 		catch (NumberFormatException e) {
 			return -1;
@@ -117,8 +147,8 @@ public class StringTypeNumber implements StringStore {
 	}
 
 	@Override
-	public StringTypeNumber select(int[] starts, int[] length) {
-		return new StringTypeNumber(range, delegate.select(starts, length));
+	public NumberStringStore select(int[] starts, int[] length) {
+		return new NumberStringStore(range, delegate.select(starts, length));
 	}
 
 

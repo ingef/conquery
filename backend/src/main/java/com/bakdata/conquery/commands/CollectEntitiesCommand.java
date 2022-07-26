@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,13 +17,11 @@ import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
-import com.bakdata.conquery.models.preproc.Preprocessed;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessedReader;
@@ -122,7 +119,6 @@ public class CollectEntitiesCommand extends Command {
 		@Override
 		public void execute() throws Exception {
 			final ObjectMapper om = Jackson.BINARY_MAPPER.copy();
-			om.setConfig(om.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
 			try (final PreprocessedReader parser = new PreprocessedReader(new GZIPInputStream(new FileInputStream(file)), om)) {
 				parser.addReplacement(Dataset.PLACEHOLDER.getId(), Dataset.PLACEHOLDER);
 				final PreprocessedHeader header = parser.readHeader();
@@ -130,7 +126,7 @@ public class CollectEntitiesCommand extends Command {
 
 				final PreprocessedDictionaries dictionaries = parser.readDictionaries();
 
-				final EncodedDictionary primaryDictionary = new EncodedDictionary(dictionaries.getPrimaryDictionary(), StringTypeEncoded.Encoding.UTF8);
+				final EncodedDictionary primaryDictionary = new EncodedDictionary(dictionaries.getPrimaryDictionary(), EncodedStringStore.Encoding.UTF8);
 
 				add(primaryDictionary, new File(file.getParentFile(), "all_entities.csv"));
 				if (verbose) {

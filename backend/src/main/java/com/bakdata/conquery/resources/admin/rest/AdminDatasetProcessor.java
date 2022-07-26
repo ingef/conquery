@@ -6,15 +6,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -53,7 +54,9 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.univocity.parsers.csv.CsvParser;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -61,20 +64,19 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-@RequiredArgsConstructor
 @Getter
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AdminDatasetProcessor {
 
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
 	private static final String ABBREVIATION_MARKER = "\u2026";
 
-	private final MetaStorage storage; // TODO Remove
 	private final ConqueryConfig config;
 	private final Validator validator;
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
-	private final Supplier<ObjectMapper> internalObjectMapperCreator;
+
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 
 	/**
@@ -88,30 +90,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		final ObjectMapper objectMapper = internalObjectMapperCreator.get();
-
-		// Prepare empty storage
-		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), validator, "dataset_" + name);
-		datasetStorage.openStores(objectMapper);
-		datasetStorage.loadData();
-		datasetStorage.updateDataset(dataset);
-		datasetStorage.updateIdMapping(new EntityIdMap());
-		datasetStorage.close();
-
-
-		Namespace.createAndRegister(
-				getDatasetRegistry(),
-				datasetStorage,
-				config,
-				objectMapper
-		);
-
-		// for now we just add one worker to every ShardNode
-		for (ShardNodeInformation node : datasetRegistry.getShardNodes().values()) {
-			node.send(new AddWorker(dataset));
-		}
-
-		return dataset;
+		return datasetRegistry.createNamespace(dataset).getDataset();
 	}
 
 	/**

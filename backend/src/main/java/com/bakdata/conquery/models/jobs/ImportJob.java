@@ -1,10 +1,29 @@
 package com.bakdata.conquery.models.jobs;
 
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IntSummaryStatistics;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.BadRequestException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.*;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.ImportColumn;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import com.bakdata.conquery.models.events.Bucket;
@@ -14,8 +33,15 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdMutex;
-import com.bakdata.conquery.models.identifiable.ids.specific.*;
-import com.bakdata.conquery.models.messages.namespaces.specific.*;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
+import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedDictionaries;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
@@ -26,8 +52,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -35,15 +59,6 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * This is the main routine to load data into Conquery.
@@ -68,7 +83,7 @@ public class ImportJob extends Job {
 	public static ImportJob createOrUpdate(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, boolean update)
 			throws IOException {
 
-		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getObjectMapper())) {
+		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getPreprocessMapper())) {
 
 			final Dataset ds = namespace.getDataset();
 
@@ -181,7 +196,7 @@ public class ImportJob extends Job {
 	 * Create mappings for shared dictionaries dict.
 	 * This is not synchronized because the methods is called within the job execution.
 	 */
-	private static Map<String, DictionaryMapping> importDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName) {
+	private static Map<String, DictionaryMapping> importDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName, Table table) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
@@ -190,7 +205,7 @@ public class ImportJob extends Job {
 
 		final Map<String, DictionaryMapping> out = new HashMap<>();
 
-		log.trace("Importing Dictionaries");
+		log.debug("BEGIN importing {} Dictionaries", dicts.size());
 
 		for (Column column : columns) {
 
@@ -201,6 +216,7 @@ public class ImportJob extends Job {
 			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
 			// but could also be an error :/ Most likely the former
 			final Dictionary importDictionary = dicts.get(column.getName());
+
 			if (importDictionary == null) {
 				log.trace("No Dictionary for {}", column);
 				continue;
@@ -216,7 +232,7 @@ public class ImportJob extends Job {
 
 				final String sharedDictionaryName = column.getSharedDictionary();
 
-				log.trace("Column[{}.{}] part of shared Dictionary[{}]", importName, column.getName(), sharedDictionaryName);
+				log.debug("Column[{}.{}.{}] part of shared Dictionary[{}]", table.getId(), importName, column.getName(), sharedDictionaryName);
 
 				final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
 				final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
@@ -268,11 +284,11 @@ public class ImportJob extends Job {
 		log.info("Importing Dictionaries");
 
 		Map<String, DictionaryMapping> sharedDictionaryMappings =
-				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName());
+				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName(), table);
 
 		log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
 
-		applyDictionaryMappings(sharedDictionaryMappings, container.getStores());
+		remapToSharedDictionary(sharedDictionaryMappings, container.getStores());
 
 
 		Import imp = createImport(header, container.getStores(), table.getColumns(), container.size());
@@ -298,14 +314,12 @@ public class ImportJob extends Job {
 
 		workerAssignments.forEach(namespace::addBucketsToWorker);
 
-		getProgressReporter().done();
 	}
 
 	/**
 	 * select, then send buckets.
 	 */
-	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore[] storesSorted)
-			throws JsonProcessingException {
+	private Map<WorkerId, Set<BucketId>> sendBuckets(Map<Integer, Integer> starts, Map<Integer, Integer> lengths, DictionaryMapping primaryMapping, Import imp, Map<Integer, List<Integer>> buckets2LocalEntities, ColumnStore[] storesSorted) {
 
 		Map<WorkerId, Set<BucketId>> newWorkerAssignments = new HashMap<>();
 
@@ -330,8 +344,6 @@ public class ImportJob extends Job {
 
 			subJob.report(1);
 		}
-
-		subJob.done();
 
 		return newWorkerAssignments;
 	}
@@ -457,7 +469,13 @@ public class ImportJob extends Job {
 	/**
 	 * Apply new positions into incoming shared dictionaries.
 	 */
-	private void applyDictionaryMappings(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values) {
+	private void remapToSharedDictionary(Map<String, DictionaryMapping> mappings, Map<String, ColumnStore> values) {
+
+		if (mappings.isEmpty()) {
+			log.trace("No columns with shared dictionary appear to be in the import.");
+			return;
+		}
+
 		final ProgressReporter subJob = getProgressReporter().subJob(mappings.size());
 
 		for (Map.Entry<String, DictionaryMapping> entry : mappings.entrySet()) {

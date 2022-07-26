@@ -7,10 +7,11 @@ import java.util.Objects;
 
 import javax.validation.constraints.NotEmpty;
 
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Strings;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
@@ -99,15 +100,15 @@ public class ColumnConfig {
 	/**
 	 * Set to true, if the Column should be printed to output. This can be used to have resolvable but not printable fields in mapping.
 	 */
-	@InternalOnly
 	@Builder.Default
+	@JsonView(View.Persistence.class)
 	private boolean print = true;
 
 	/**
 	 * Used in conjunction with {@link com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer}: One column is required to have fillAnon true, which will be filled with pseudomized data.
 	 */
-	@InternalOnly
 	@Builder.Default
+	@JsonView(View.Persistence.class)
 	private boolean fillAnon = false;
 
 	@JsonIgnore

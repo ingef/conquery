@@ -16,30 +16,29 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 
-@Getter @Setter
+@Getter
+@Setter
 @Path("datasets/{" + DATASET + "}/concepts/{" + CONCEPT + "}")
-public class AdminConceptsResource extends HAdmin {
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
+public class AdminConceptsResource {
 
-	@Inject
-	protected AdminDatasetProcessor processor;
-	
+	private final AdminDatasetProcessor processor;
+
 	@PathParam(DATASET)
-	protected Dataset dataset;
-	protected Namespace namespace;
+	private Dataset dataset;
+	private Namespace namespace;
 	@PathParam(CONCEPT)
-	protected Concept concept;
+	private Concept concept;
 
 	@PostConstruct
-	@Override
 	public void init() {
-		super.init();
 		namespace = processor.getDatasetRegistry().get(dataset.getId());
 	}
 

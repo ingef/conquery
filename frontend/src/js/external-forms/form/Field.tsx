@@ -307,20 +307,25 @@ const Field = ({ field, ...commonProps }: PropsT) => {
         availableDatasets.length > 0 ? availableDatasets[0] : null;
 
       return (
-        <ConnectedField formField={field} control={control}>
-          {({ ref, ...fieldProps }) => (
-            <InputSelect
-              label={field.label[locale]}
-              options={availableDatasets}
-              tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
-              value={
-                (fieldProps.value as SelectOptionT | null) ||
-                datasetDefaultValue
-              }
-              onChange={(value) => setValue(field.name, value, setValueConfig)}
-            />
-          )}
+        <ConnectedField
+          formField={field}
+          control={control}
+          defaultValue={datasetDefaultValue}
+        >
+          {({ ref, ...fieldProps }) => {
+            return (
+              <InputSelect
+                label={field.label[locale]}
+                options={availableDatasets}
+                tooltip={field.tooltip ? field.tooltip[locale] : undefined}
+                optional={optional}
+                value={fieldProps.value as SelectOptionT | null}
+                onChange={(value) =>
+                  setValue(field.name, value, setValueConfig)
+                }
+              />
+            );
+          }}
         </ConnectedField>
       );
     case "GROUP":

@@ -58,7 +58,7 @@ import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.primitive.IntegerDateStore;
 import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
+import com.bakdata.conquery.models.events.stores.specific.CompoundDateRangeStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
@@ -205,9 +205,9 @@ public class SerializationTests extends AbstractSerializationTest {
 		imp.setName("importTest");
 
 
-		DateRangeTypeCompound
+		CompoundDateRangeStore
 				compoundStore =
-				new DateRangeTypeCompound(startCol.getName(), endCol.getName(), new BitSetStore(BitSet.valueOf(new byte[]{0b1000}), new BitSet(), 4));
+				new CompoundDateRangeStore(startCol.getName(), endCol.getName(), new BitSetStore(BitSet.valueOf(new byte[]{0b1000}), new BitSet(), 4));
 		//0b1000 is a binary representation of 8 so that the 4th is set to make sure that BitSet length is 4.
 
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
@@ -663,9 +663,9 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil.forType(Double.class)
 							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.POSITIVE_INFINITY, null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MAX_VALUE);
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(new Double(Double.MAX_VALUE));
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MIN_VALUE);
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(new Double(Double.MIN_VALUE));
 		SerializationTestUtil
 				.forType(EntityResult.class)
 				.objectMappers(getApiMapper(), getManagerInternalMapper())

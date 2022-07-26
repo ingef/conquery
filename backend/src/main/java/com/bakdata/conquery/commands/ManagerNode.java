@@ -16,11 +16,10 @@ import javax.validation.Validator;
 import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.PathParamInjector;
-import com.bakdata.conquery.io.jackson.serializer.SerdesTarget;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
@@ -50,7 +49,9 @@ import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
 import com.google.common.base.Throwables;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -64,7 +65,7 @@ import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 /**
  * Central node of Conquery. Hosts the frontend, api, meta data and takes care of query distribution to
@@ -114,9 +115,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
 													 .build(getName());
 
-		// Instantiate DatasetRegistry and MetaStorage so they are ready for injection into the object mapper (API + Storage)
+		// Instantiate DatasetRegistry and MetaStorage, so they are ready for injection into the object mapper (API + Storage)
 		// The validator is already injected at this point see Conquery.java
-		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize());
+		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize(), config, this::createInternalObjectMapper);
 		storage = new MetaStorage(config.getStorage(), datasetRegistry);
 
 
@@ -159,7 +160,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 
 		// Register default components for the admin interface
-		admin.register(this);
+		admin.register();
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
@@ -195,16 +196,17 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
-
-	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig resourceConfig) {
-		RESTServer.configure(config, resourceConfig);
-		resourceConfig.register(PathParamInjector.class);
-		resourceConfig.register(new AbstractBinder() {
+	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig jerseyConfig) {
+		RESTServer.configure(config, jerseyConfig);
+		jerseyConfig.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
+				bind(storage).to(MetaStorage.class);
 				bind(datasetRegistry).to(DatasetRegistry.class);
 			}
 		});
+
+		jerseyConfig.register(PathParamInjector.class);
 	}
 
 	/**
@@ -218,7 +220,20 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	 * @param objectMapper to be configured (should be a JSON mapper)
 	 */
 	public void customizeApiObjectMapper(ObjectMapper objectMapper) {
-		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
+
+		// Set serialization config
+		SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
+
+		serializationConfig = serializationConfig.withView(View.Api.class);
+
+		objectMapper.setConfig(serializationConfig);
+
+		// Set deserialization config
+		DeserializationConfig deserializationConfig = objectMapper.getDeserializationConfig();
+
+		deserializationConfig = deserializationConfig.withView(View.Api.class);
+
+		objectMapper.setConfig(deserializationConfig);
 
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
@@ -229,15 +244,12 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	/**
-	 * Create a new internal object mapper for binary (de-)serialization that is equipped with {@link ManagerNode} related injectables
-	 * and configured to use the {@link InternalOnly} view.
-	 * <p>
-	 * TODO we need to distinguish between internal persistence and internal communication (manager<->shard). ATM we persist unnecessary fields.
+	 * Create a new internal object mapper for binary (de-)serialization that is equipped with {@link ManagerNode} related injectables.
 	 *
 	 * @return a preconfigured binary object mapper
 	 * @see ManagerNode#customizeApiObjectMapper(ObjectMapper)
 	 */
-	public ObjectMapper createInternalObjectMapper() {
+	public ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
 		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.BINARY_MAPPER.copy());
 
 
@@ -247,15 +259,29 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		getDatasetRegistry().injectInto(objectMapper);
 		getStorage().injectInto(objectMapper);
 
-		objectMapper.setConfig(objectMapper.getDeserializationConfig().withAttribute(SerdesTarget.class, SerdesTarget.MANAGER));
-		objectMapper.setConfig(objectMapper.getDeserializationConfig().withView(InternalOnly.class));
-		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(InternalOnly.class));
+
+		if(viewClass != null) {
+			// Set serialization config
+			SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
+
+			serializationConfig = serializationConfig.withView(viewClass);
+
+			objectMapper.setConfig(serializationConfig);
+
+			// Set deserialization config
+			DeserializationConfig deserializationConfig = objectMapper.getDeserializationConfig();
+
+			deserializationConfig = deserializationConfig.withView(viewClass);
+
+			objectMapper.setConfig(deserializationConfig);
+		}
+
 		return objectMapper;
 	}
 
 	private void loadMetaStorage() {
 		log.info("Opening MetaStorage");
-		storage.openStores(createInternalObjectMapper());
+		storage.openStores(createInternalObjectMapper(View.Persistence.Manager.class));
 		log.info("Loading MetaStorage");
 		storage.loadData();
 		log.info("MetaStorage loaded {}", storage);
@@ -274,7 +300,12 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		final Collection<NamespaceStorage> namespaceStorages = config.getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				namespacesDone.add(Namespace.createAndRegister(getDatasetRegistry(), namespaceStorage, getConfig(), createInternalObjectMapper()));
+				namespacesDone.add(Namespace.createAndRegister(
+						getDatasetRegistry(),
+						namespaceStorage,
+						getConfig(),
+						this::createInternalObjectMapper
+				));
 			});
 		}
 
@@ -335,7 +366,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
 
-		ObjectMapper om = createInternalObjectMapper();
+		ObjectMapper om = createInternalObjectMapper(View.InternalCommunication.class);
 		config.configureObjectMapper(om);
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));

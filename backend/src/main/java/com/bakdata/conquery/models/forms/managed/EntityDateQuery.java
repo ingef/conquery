@@ -19,6 +19,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -72,11 +73,11 @@ public class EntityDateQuery extends Query {
         );
     }
 
-    @Override
-    public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
-        query.collectRequiredQueries(requiredQueries);
-        features.collectRequiredQueries(requiredQueries);
-    }
+	@Override
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
+		query.collectRequiredQueries(requiredQueries);
+		features.collectRequiredQueries(requiredQueries);
+	}
 
     @Override
     public void resolve(QueryResolveContext context) {

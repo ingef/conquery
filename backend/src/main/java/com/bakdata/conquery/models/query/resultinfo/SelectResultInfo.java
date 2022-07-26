@@ -52,7 +52,8 @@ public class SelectResultInfo extends ResultInfo {
 							   .defaultLabel(defaultColumnName(settings))
 							   .userConceptLabel(userColumnName(settings))
 							   .type(getType().typeInfo())
-							   .selectId(select.getId())
+							   .semantics(getSemantics())
+							   .selectId(select.getId()) // TODO delete this?
 							   .build();
 	}
 
