@@ -20,6 +20,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Setter
 @Getter
+//TODO delete searchable from here
 public class SecondaryIdDescription extends Labeled<SecondaryIdDescriptionId> implements NamespacedIdentifiable<SecondaryIdDescriptionId>, Searchable {
 
 	@NsIdRef
