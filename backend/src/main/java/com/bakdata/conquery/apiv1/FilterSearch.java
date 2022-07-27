@@ -168,6 +168,9 @@ public class FilterSearch {
 						log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables, synchronizedResult.keySet()));
 					}
 
+					log.debug("BEGIN counting Search totals.");
+
+
 					// Precompute totals as that can be extremly slow.
 					totals = new Object2LongAVLTreeMap<>(
 							allSelectFilters.parallelStream()
