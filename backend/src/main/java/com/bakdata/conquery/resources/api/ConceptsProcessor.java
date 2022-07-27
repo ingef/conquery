@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
@@ -270,10 +271,7 @@ public class ConceptsProcessor {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
 
-		return namespace.getFilterSearch()
-						.getSearchesFor(filter).stream()
-						.mapToLong(TrieSearch::calculateSize)
-						.sum();
+		return namespace.getFilterSearch().getTotal(filter);
 	}
 
 	/**
