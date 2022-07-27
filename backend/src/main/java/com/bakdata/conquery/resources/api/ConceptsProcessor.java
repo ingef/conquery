@@ -15,9 +15,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.validation.Validator;
-
 import javax.inject.Inject;
+import javax.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FEList;
@@ -54,7 +53,6 @@ import com.google.common.collect.Iterators;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
@@ -273,10 +271,7 @@ public class ConceptsProcessor {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
 
-		return namespace.getFilterSearch()
-						.getSearchesFor(filter).stream()
-						.mapToLong(TrieSearch::calculateSize)
-						.sum();
+		return namespace.getFilterSearch().getTotal(filter);
 	}
 
 	/**
