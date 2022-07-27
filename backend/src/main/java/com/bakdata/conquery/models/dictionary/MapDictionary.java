@@ -97,7 +97,6 @@ public class MapDictionary extends Dictionary {
 	}
 
 	@Override
-	@ToString.Include
 	public int size() {
 		return id2Value.size();
 	}
