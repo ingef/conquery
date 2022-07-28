@@ -28,9 +28,9 @@ import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Functions;
 import com.google.common.collect.Sets;
-import it.unimi.dsi.fastutil.objects.Object2LongAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMaps;
+import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
@@ -171,13 +171,14 @@ public class FilterSearch {
 					log.debug("BEGIN counting Search totals.");
 
 
-					// Precompute totals as that can be extremly slow.
-					totals = new Object2LongAVLTreeMap<>(
+					// Precompute totals as that can be slow when doing it on-demand.
+					totals = new Object2LongOpenHashMap<>(
 							allSelectFilters.parallelStream()
 											.collect(Collectors.toMap(
 													Functions.identity(),
 													filter -> filter.getSearchReferences().stream()
-																	.map(synchronizedResult::get)
+																	.map(searchCache::get)
+																	.filter(Objects::nonNull) // Failed or disabled searches are null
 																	.flatMap(TrieSearch::stream)
 																	.mapToInt(FEValue::hashCode)
 																	.distinct()
