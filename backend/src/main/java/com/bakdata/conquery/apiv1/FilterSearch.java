@@ -177,7 +177,16 @@ public class FilterSearch {
 											.collect(Collectors.toMap(
 													Functions.identity(),
 													filter -> filter.getSearchReferences().stream()
-																	.map(synchronizedResult::get)
+																	.map(searchable -> {
+																		TrieSearch<FEValue> out = searchCache.get(searchable);
+
+																		if (out == null) {
+																			log.warn("No Search for `{}`", searchable);
+																		}
+
+																		return out;
+																	})
+																	.filter(Objects::nonNull) // Failed searches are null
 																	.flatMap(TrieSearch::stream)
 																	.mapToInt(FEValue::hashCode)
 																	.distinct()
