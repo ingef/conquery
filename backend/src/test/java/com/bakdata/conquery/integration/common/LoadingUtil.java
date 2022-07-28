@@ -203,8 +203,12 @@ public class LoadingUtil {
 		try (final Response response = request
 				.put(Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE))) {
 
-			assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
-			assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
+			assertThat(response.getStatusInfo().getFamily())
+								.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+								.isEqualTo(expectedResponseFamily);
+			assertThat(response.getStatusInfo().getReasonPhrase())
+								.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+								.isEqualTo(expectedReason);
 		}
 	}
 
