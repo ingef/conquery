@@ -160,11 +160,6 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 	@Override
 	public List<Searchable> getSearchReferences() {
-
-		if (getSecondaryId() != null) {
-			return getSecondaryId().getSearchReferences();
-		}
-
 		return List.of(this);
 	}
 
