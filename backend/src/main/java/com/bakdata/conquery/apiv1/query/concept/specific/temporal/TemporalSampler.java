@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.OptionalInt;
 import java.util.Random;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -63,7 +64,7 @@ public enum TemporalSampler {
 		/**
 		 * A source for random values.
 		 */
-		private Random random = new Random();
+		private final Random random = new Random(ConqueryConstants.RANDOM_SEED);
 
 		/**
 		 *
