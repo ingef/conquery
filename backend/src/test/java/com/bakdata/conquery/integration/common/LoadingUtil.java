@@ -334,7 +334,9 @@ public class LoadingUtil {
 				.post(Entity.entity(mapping, MediaType.APPLICATION_JSON_TYPE))) {
 
 
-			assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(response.getStatusInfo().getFamily())
+						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+						.isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
 	}
 
