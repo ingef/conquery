@@ -8,7 +8,7 @@ import java.util.Collections;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
+import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -55,7 +55,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@JsonProperty("content")
 	private ObjectNode rawContent;
 
-	private FEFilter expectedFrontendConfig;
+	private FEFilterConfiguration.Top expectedFrontendConfig;
 
 	@JsonIgnore
 	private RequiredData content;
@@ -156,9 +156,10 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		try {
-			final FEFilter actual = connector.getFilters().iterator().next().createFrontendConfig();
+			final FEFilterConfiguration.Top actual = connector.getFilters().iterator().next().createFrontendConfig();
 
 			if (expectedFrontendConfig != null) {
+				log.info("Checking actual FrontendConfig: {}", actual);
 				assertThat(actual).usingRecursiveComparison().isEqualTo(expectedFrontendConfig);
 			}
 		}

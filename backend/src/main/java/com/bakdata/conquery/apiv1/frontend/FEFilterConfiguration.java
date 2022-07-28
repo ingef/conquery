@@ -12,17 +12,22 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 
 /**
  * This class represents a concept filter as it is presented to the front end.
  */
-@Data
-@Builder
-public class FEFilter {
+@SuperBuilder
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+public abstract class FEFilterConfiguration {
 
-	@NotNull
-	private FilterId id;
 	/**
 	 * User readable name of the Filter.
 	 */
@@ -42,6 +47,7 @@ public class FEFilter {
 	 * Displayed on hover for filters.
 	 */
 	private String tooltip;
+
 	@Builder.Default
 	private List<FEValue> options = Collections.emptyList();
 
@@ -74,7 +80,42 @@ public class FEFilter {
 	private Object defaultValue;
 
 	/**
-	 * When {@link com.bakdata.conquery.models.datasets.concepts.filters.GroupFilter} is used, the sub-fields of this filter.
+	 * Special class for the fields of the frontend representation of a {@link com.bakdata.conquery.models.datasets.concepts.filters.GroupFilter}. These
+	 * fields don't have an id compared to {@link Top}.
+	 * <p>
+	 * The reason to have this class are:
+	 * <ul>
+	 *     <li>No validation error for group fields</li>
+	 *     <li>A clearer separation between the serialized top-level object {@link Top} and possible nested {@link Nested}s. This way, an {@link Top} can not be nested (which is not supported by the frontend)</li>
+	 * </ul>
 	 */
-	private Map<String, @Valid FEFilter> filters;
+	@SuperBuilder
+	@Getter
+	@Setter
+	@ToString(callSuper = true)
+	@NoArgsConstructor
+	public static class Nested extends FEFilterConfiguration {
+
+	}
+
+	/**
+	 * The top-level object for filter configurations that are processed by the frontend.
+	 * <p>
+	 * It allows to have nested {@link Nested}s for complex {@link com.bakdata.conquery.models.datasets.concepts.filters.GroupFilter}.
+	 */
+	@SuperBuilder
+	@Getter
+	@Setter
+	@ToString(callSuper = true)
+	@NoArgsConstructor
+	public static class Top extends FEFilterConfiguration {
+
+		@NotNull
+		private FilterId id;
+
+		/**
+		 * When {@link com.bakdata.conquery.models.datasets.concepts.filters.GroupFilter} is used, the sub-fields of this filter.
+		 */
+		private Map<String, @Valid Nested> filters;
+	}
 }
