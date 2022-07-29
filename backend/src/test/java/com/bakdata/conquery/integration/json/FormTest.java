@@ -43,6 +43,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvWriter;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -68,23 +69,28 @@ public class FormTest extends ConqueryTestSpec {
 	@Valid
 	@NotNull
 	private RequiredData content;
-	@NotNull
+
 	@JsonProperty("concepts")
 	private ArrayNode rawConcepts;
 
 	@JsonIgnore
 	private Form form;
 
+	@ValidationMethod(message = "Form test defines no concepts. Neither explicit nor automatic concepts")
+	public boolean isWithConcepts() {
+		return rawConcepts != null || content.isAutoConcept();
+	}
+
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
 		importSecondaryIds(support, content.getSecondaryIds());
 		support.waitUntilWorkDone();
 
-		LoadingUtil.importTables(support, content.getTables());
+		LoadingUtil.importTables(support, content.getTables(), content.isAutoConcept());
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT TABLES", getLabel());
 
-		importConcepts(support);
+		importConcepts(support, rawConcepts);
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT CONCEPTS", getLabel());
 
@@ -230,7 +236,11 @@ public class FormTest extends ConqueryTestSpec {
 				);
 	}
 
-	private void importConcepts(StandaloneSupport support) throws JSONException, IOException {
+	private static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
+		if (rawConcepts == null) {
+			return;
+		}
+
 		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = parseSubTreeList(

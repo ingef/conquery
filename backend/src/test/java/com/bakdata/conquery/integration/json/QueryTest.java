@@ -60,7 +60,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		importInternToExternMappers(support, internToExternMappings);
 		support.waitUntilWorkDone();
 
-		importTables(support, content.getTables());
+		importTables(support, content.getTables(), content.isAutoConcept());
 		support.waitUntilWorkDone();
 
 		importConcepts(support, rawConcepts);

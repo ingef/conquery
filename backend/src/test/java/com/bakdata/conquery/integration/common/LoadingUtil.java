@@ -25,32 +25,36 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.LastValueSelect;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.index.InternToExternMapper;
-import com.bakdata.conquery.models.index.MapInternToExternMapper;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.NonNull;
@@ -58,6 +62,7 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.description.LazyTextDescription;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 @UtilityClass
@@ -107,11 +112,17 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importTables(StandaloneSupport support, List<RequiredTable> tables) throws JSONException {
+	public static void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 
 		for (RequiredTable rTable : tables) {
 			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry());
 			uploadTable(support, table);
+
+			if (autoConcept) {
+				final TreeConcept concept = AutoConceptUtil.createConcept(table);
+
+				uploadConcept(support, table.getDataset(), concept);
+			}
 		}
 	}
 
