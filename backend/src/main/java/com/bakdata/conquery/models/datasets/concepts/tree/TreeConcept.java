@@ -181,10 +181,22 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 	@JsonIgnore
-	public Stream<ConceptTreeChild> getAllChildren(){
+	public Stream<ConceptTreeChild> getAllChildren() {
 		return localIdMap.stream().filter(ConceptTreeChild.class::isInstance).map(ConceptTreeChild.class::cast);
 	}
 
+	@JsonIgnore
+	private int nChildren = -1;
+
+	@Override
+	@JsonIgnore
+	public int countElements() {
+		if (nChildren > 0) {
+			return nChildren;
+		}
+
+		return nChildren = 1 + (int) getAllChildren().count();
+	}
 
 	public void initializeIdCache(StringStore type, Import importId) {
 		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type.size()));
@@ -201,8 +213,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	 * @param ids the local id array to look for
 	 * @return the element matching the most specific local id in the array
 	 */
-	public ConceptTreeNode<?> getElementByLocalId(@NonNull int[] ids) {
+	public ConceptTreeNode<?> getElementByLocalIdPath(@NonNull int[] ids) {
 		int mostSpecific = ids[ids.length - 1];
-		return localIdMap.get(mostSpecific);
+		return getElementByLocalId(mostSpecific);
+	}
+
+	public ConceptTreeNode<?> getElementByLocalId(int localId) {
+		return localIdMap.get(localId);
 	}
 }

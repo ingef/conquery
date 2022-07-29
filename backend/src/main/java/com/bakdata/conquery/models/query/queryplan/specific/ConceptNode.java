@@ -108,7 +108,7 @@ public class ConceptNode extends QPChainNode {
 		}
 
 		//check concepts
-		int[] mostSpecificChildren = currentRow.getEventMostSpecificChild(event);
+		int[] mostSpecificChildren = currentRow.getPathToMostSpecificChild(event);
 		if (mostSpecificChildren == null) {
 			for (ConceptElement<?> ce : concepts) {
 				// having no specific child set maps directly to root.

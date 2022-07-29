@@ -7,6 +7,7 @@ import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import io.dropwizard.views.View;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import javax.inject.Inject;
@@ -22,10 +23,10 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 @Getter
 @Setter
 @Path("datasets/{" + DATASET + "}/concepts/{" + CONCEPT + "}")
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class ConceptsUIResource {
 
-	@Inject
-	protected UIProcessor uiProcessor;
+	protected final UIProcessor uiProcessor;
 
 	@PathParam(CONCEPT)
 	protected Concept<?> concept;

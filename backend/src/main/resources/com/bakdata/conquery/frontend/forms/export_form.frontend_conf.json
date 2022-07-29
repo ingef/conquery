@@ -132,13 +132,13 @@
                         {
                             "name": "timeCountBefore",
                             "type": "NUMBER",
-                            "defaultValue": 1,
+                            "defaultValue": 4,
                             "min": 1,
                             "label": {
                                 "de": "Zeit davor"
                             },
                             "placeholder": {
-                                "de": "1"
+                                "de": "4"
                             },
                             "pattern": "^(?!-)\\d*$",
                             "validations": [
@@ -153,12 +153,12 @@
                             "name": "timeCountAfter",
                             "type": "NUMBER",
                             "min": 1,
-                            "defaultValue": 1,
+                            "defaultValue": 4,
                             "label": {
                                 "de": "Zeit danach"
                             },
                             "placeholder": {
-                                "de": "1"
+                                "de": "4"
                             },
                             "pattern": "^(?!-)\\d*$",
                             "validations": [

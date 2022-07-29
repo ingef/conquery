@@ -1,8 +1,7 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -14,7 +13,6 @@ import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.MoneyStore;
 import com.bakdata.conquery.models.events.stores.root.RealStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * An empty generic store to avoid any allocations.
@@ -59,6 +57,11 @@ public enum EmptyStore implements
 
 	@Override
 	public EmptyStore select(int[] starts, int[] length) {
+		return this;
+	}
+
+	@Override
+	public EmptyStore createDescription() {
 		return this;
 	}
 
@@ -148,6 +151,11 @@ public enum EmptyStore implements
 	}
 
 	@Override
+	public Stream<String> iterateValues() {
+		return Stream.empty();
+	}
+
+	@Override
 	public int getId(String value) {
 		return 0;
 	}
@@ -172,9 +180,4 @@ public enum EmptyStore implements
 
 	}
 
-	@NotNull
-	@Override
-	public Iterator<String> iterator() {
-		return Collections.emptyIterator();
-	}
 }

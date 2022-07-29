@@ -6,7 +6,9 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Priority;
+import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
@@ -15,6 +17,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
@@ -23,18 +26,30 @@ import com.google.common.collect.Table;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * According to https://download.oracle.com/javaee-archive/jersey.java.net/users/2009/08/7146.html and other sources
+ * filters are singletons.
+ */
 @Slf4j
 @PreMatching
 // Chain this filter after the Authentication filter
 @Priority(2000)
-@RequiredArgsConstructor
 public class ActiveUsersFilter implements ContainerRequestFilter {
 
 	private static final String USERS = "users";
 	private static final String ACTIVE = "active";
 
-	private final MetaStorage storage;
-	private final Duration activeUserDuration;
+	@Inject
+	private MetaStorage storage;
+	@Inject
+	private ConqueryConfig config;
+
+	private Duration activeUserDuration = Duration.ofMinutes(30);
+
+	@PostConstruct
+	void init() {
+		activeUserDuration = Duration.ofMinutes(config.getMetricsConfig().getUserActiveDuration().toMinutes());
+	}
 
 	private final Table<Group, User, LocalDateTime> activeUsers = HashBasedTable.create();
 
@@ -42,7 +57,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 	public void filter(ContainerRequestContext requestContext) {
 		final Principal userPrincipal = requestContext.getSecurityContext().getUserPrincipal();
 
-		if(!(userPrincipal instanceof User)){
+		if (!(userPrincipal instanceof User)) {
 			return;
 		}
 

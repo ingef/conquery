@@ -9,7 +9,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
@@ -59,9 +58,8 @@ public class ConqueryConfig extends Configuration {
 	@NotNull
 	private List<ResultRendererProvider> resultProviders = List.of(
 			new ExcelResultProvider(),
-			new CsvResultRenderer(),
-			new ArrowFileResultProvider(),
-			new ArrowStreamResultProvider()
+			new CsvResultProvider(),
+			new ArrowResultProvider()
 	);
 	@Valid
 	@NotNull

@@ -6,14 +6,13 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.IntArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
-import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
+import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.InstanceOfAssertFactory;
 import org.assertj.core.api.ObjectAssertFactory;
@@ -52,8 +51,8 @@ class IntegerParserTest {
 	public static Consumer<ColumnStore> rebased(Class<?> clazz) {
 		return store -> {
 			assertThat(store)
-					.asInstanceOf(new InstanceOfAssertFactory<>(RebasingStore.class, new ObjectAssertFactory<>()))
-					.extracting(RebasingStore::getStore)
+					.asInstanceOf(new InstanceOfAssertFactory<>(RebasingIntegerStore.class, new ObjectAssertFactory<>()))
+					.extracting(RebasingIntegerStore::getStore)
 					.isInstanceOf(clazz);
 		};
 	}

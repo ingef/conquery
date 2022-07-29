@@ -15,6 +15,7 @@ import io.dropwizard.views.View;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -37,14 +38,13 @@ import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBl
 @Setter
 @Path("datasets")
 @Slf4j
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DatasetsUIResource {
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
 	private static final String ABBREVIATION_MARKER = "\u2026";
 
-
-	@Inject
-	private UIProcessor uiProcessor;
+	private final UIProcessor uiProcessor;
 
 
 	@GET

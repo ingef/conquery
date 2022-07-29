@@ -30,10 +30,14 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -83,6 +87,11 @@ public class TableExportQuery extends Query {
 	private List<CQConcept> tables;
 
 	/**
+	 * @see TableExportQueryPlan#rawConceptValues
+	 */
+	private boolean rawConceptValues = true;
+
+	/**
 	 * We collect the positions for each Column of the output in here.
 	 * Multiple columns can map to the same output position:
 	 * - ValidityDate-Columns are merged into a single Date-Column
@@ -113,7 +122,8 @@ public class TableExportQuery extends Query {
 				query.createQueryPlan(context),
 				CDateSet.create(CDateRange.of(dateRange)),
 				filterQueryNodes,
-				positions
+				positions,
+				rawConceptValues
 		);
 	}
 
@@ -129,21 +139,15 @@ public class TableExportQuery extends Query {
 		// First is dates, second is source id
 		AtomicInteger currentPosition = new AtomicInteger(2);
 
-		positions = new HashMap<>();
+		final Map<SecondaryIdDescription, Integer> secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
 
-		Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
+		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions);
 
-		// SecondaryIds are pulled to the front and grouped over all tables
-		tables.stream()
-			  .flatMap(con -> con.getTables().stream())
-			  .map(cqUnfilteredTable -> cqUnfilteredTable.getConnector().getTable().getColumns())
-			  .flatMap(Arrays::stream)
-			  .map(Column::getSecondaryId)
-			  .filter(Objects::nonNull)
-			  .distinct()
-			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
-			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
+		resultInfos = createResultInfos(secondaryIdPositions, positions, getTables(), rawConceptValues);
+	}
 
+	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
+		final Map<Column, Integer> positions = new HashMap<>();
 
 		for (CQConcept concept : tables) {
 			for (CQTable table : concept.getTables()) {
@@ -156,6 +160,7 @@ public class TableExportQuery extends Query {
 
 				// Set column positions, set SecondaryId positions to precomputed ones.
 				for (Column column : table.getConnector().getTable().getColumns()) {
+
 					if (positions.containsKey(column)) {
 						continue;
 					}
@@ -168,17 +173,33 @@ public class TableExportQuery extends Query {
 					positions.put(column, currentPosition.getAndIncrement());
 				}
 			}
-
 		}
 
-		resultInfos = createResultInfos(secondaryIdPositions, positions, getTables());
+		return positions;
 	}
 
-	private static List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions, @NotEmpty @Valid List<CQConcept> tables) {
+	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
+		Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
+
+		// SecondaryIds are pulled to the front and grouped over all tables
+		tables.stream()
+			  .flatMap(con -> con.getTables().stream())
+			  .flatMap(table -> Arrays.stream(table.getConnector().getTable().getColumns()))
+			  .map(Column::getSecondaryId)
+			  .filter(Objects::nonNull)
+			  .distinct()
+			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
+			  // Using for each and not a collector allows us to guarantee sorted insertion.
+			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
+
+		return secondaryIdPositions;
+	}
+
+	private static List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions, @NotEmpty @Valid List<CQConcept> tables, boolean rawConceptColumns) {
 
 		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
-		ResultInfo[] infos = new ResultInfo[size];
+		final ResultInfo[] infos = new ResultInfo[size];
 
 		infos[0] = ConqueryConstants.DATES_INFO;
 		infos[1] = ConqueryConstants.SOURCE_INFO;
@@ -189,7 +210,8 @@ public class TableExportQuery extends Query {
 			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.StringT.INSTANCE, Set.of(new SemanticType.SecondaryIdT(desc)));
 		}
 
-		final Map<Column, Concept<?>> conceptColumns =
+
+		final Map<Column, Concept<?>> connectorColumns =
 				tables.stream()
 					  .flatMap(con -> con.getTables().stream())
 					  .filter(tbl -> tbl.getConnector().getColumn() != null)
@@ -201,26 +223,71 @@ public class TableExportQuery extends Query {
 			// 0 Position is date, already covered
 			final int position = entry.getValue();
 
-			// SecondaryIds are pulled to the front, already covered.
 			final Column column = entry.getKey();
-
+			// SecondaryIds and date columns are pulled to the front, thus already covered.
 			if (position == 0 || column.getSecondaryId() != null) {
 				continue;
 			}
 
-			// Columns that are used to build concepts are marked as PrimaryColumn.
-			final ResultType resultType = ResultType.resolveResultType(column.getType());
+			// Columns that are used to build concepts are marked as ConceptColumn.
+			if (connectorColumns.containsKey(column)) {
+				final Concept<?> concept =  connectorColumns.get(column).getConcept();
 
-			infos[position] = new SimpleResultInfo(
-					column.getTable().getLabel() + " " + column.getLabel(),
-					resultType,
-					conceptColumns.containsKey(column)
-					? Set.of(new SemanticType.ConceptColumnT(conceptColumns.get(column)))
-					: Collections.emptySet()
-			);
+				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
+				final ResultType resultType =
+						rawConceptColumns
+						? ResultType.resolveResultType(column.getType())
+						: new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
+
+				infos[position] = new SimpleResultInfo(
+						column.getTable().getLabel() + " " + column.getLabel(),
+						resultType,
+						Set.of(new SemanticType.ConceptColumnT(concept))
+				);
+			}
+			else {
+				final ResultType resultType = ResultType.resolveResultType(column.getType());
+
+
+				infos[position] = new SimpleResultInfo(
+						column.getTable().getLabel() + " " + column.getLabel(),
+						resultType,
+						Collections.emptySet()
+				);
+
+			}
 		}
 
 		return List.of(infos);
+	}
+
+	/**
+	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
+	 *
+	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
+	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
+	 */
+	public static String printValue(Concept concept, Object rawValue, PrintSettings printSettings) {
+
+		if (rawValue == null) {
+			return null;
+		}
+
+		if (!(concept instanceof TreeConcept)) {
+			return Objects.toString(rawValue);
+		}
+
+		final TreeConcept tree = (TreeConcept) concept;
+
+		int localId = (int) rawValue;
+
+		final ConceptTreeNode<?> node = tree.getElementByLocalId(localId);
+
+		if (!printSettings.isPrettyPrint()) {
+			return node.getId().toStringWithoutDataset();
+		}
+
+		return node.getName();
 	}
 
 	@Override

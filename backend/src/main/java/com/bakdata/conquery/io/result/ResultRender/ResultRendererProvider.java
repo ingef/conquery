@@ -9,7 +9,7 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import io.dropwizard.jersey.setup.JerseyEnvironment;
+import io.dropwizard.jersey.DropwizardResourceConfig;
 
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
@@ -26,5 +26,5 @@ public interface ResultRendererProvider {
 	 */
 	Collection<URL> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders);
 
-	void registerResultResource(JerseyEnvironment environment, ManagerNode manager);
+	void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager);
 }

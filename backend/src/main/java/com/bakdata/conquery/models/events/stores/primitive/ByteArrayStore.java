@@ -32,6 +32,7 @@ public class ByteArrayStore implements IntegerStore {
 	}
 
 	@Override
+	@ToString.Include
 	public int getLines() {
 		return values.length;
 	}
@@ -39,6 +40,11 @@ public class ByteArrayStore implements IntegerStore {
 	@Override
 	public long estimateEventBits() {
 		return Byte.SIZE;
+	}
+
+	@Override
+	public ByteArrayStore createDescription() {
+		return ColumnStore.emptyCopy(this);
 	}
 
 	public ByteArrayStore select(int[] starts, int[] ends) {

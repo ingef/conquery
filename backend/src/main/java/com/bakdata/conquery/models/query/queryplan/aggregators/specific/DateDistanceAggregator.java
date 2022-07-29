@@ -39,7 +39,7 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
-			reference = null;
+			reference = LocalDate.now();
 		}
 		else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
@@ -53,10 +53,6 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if(reference == null) {
-			return;
-		}
-
 		if(!bucket.has(event, getColumn())) {
 			return;
 		}

@@ -28,6 +28,11 @@ public class DoubleArrayStore implements RealStore {
 	}
 
 	@Override
+	public DoubleArrayStore createDescription() {
+		return ColumnStore.emptyCopy(this);
+	}
+
+	@Override
 	public int getLines() {
 		return values.length;
 	}

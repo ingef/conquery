@@ -80,8 +80,6 @@ const SUPPORTED_COLUMN_DESCRIPTION_KINDS = new Set<ColumnDescriptionKind>([
   "DATE_RANGE",
   "LIST[DATE_RANGE]",
   "STRING",
-  "CATEGORICAL",
-  "RESOLUTION",
 ]);
 
 function detectColumnType(

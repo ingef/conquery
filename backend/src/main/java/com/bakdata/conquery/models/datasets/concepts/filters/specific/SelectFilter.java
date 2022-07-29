@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
+import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
@@ -50,7 +50,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@Override
-	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
 		f.setTemplate(getTemplate());
 		f.setType(getFilterType());
 

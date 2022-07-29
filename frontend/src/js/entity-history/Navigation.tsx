@@ -70,7 +70,7 @@ interface Props {
   currentEntityIndex: number;
   entityStatusOptions: SelectOptionT[];
   setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
-  onLoad: (payload: LoadingPayload) => void;
+  onLoadFromFile: (payload: LoadingPayload) => void;
 }
 
 export const Navigation = memo(
@@ -82,7 +82,7 @@ export const Navigation = memo(
     currentEntityIndex,
     entityStatusOptions,
     setEntityStatusOptions,
-    onLoad,
+    onLoadFromFile,
   }: Props) => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
@@ -130,7 +130,7 @@ export const Navigation = memo(
               <SxIconButton icon="arrow-up" onClick={goToPrev} />
             </SxWithTooltip>
           </TopActions>
-          <SxLoadHistoryDropzone onLoad={onLoad}>
+          <SxLoadHistoryDropzone onLoadFromFile={onLoadFromFile}>
             <EntityIdsList
               currentEntityId={currentEntityId}
               entityIds={entityIds}

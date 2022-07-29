@@ -57,12 +57,12 @@
   {
     "method": "GET",
     "path": "/datasets/{dataset}/result/{query}.arrs",
-    "clazz": "ResultArrowStreamResource"
+    "clazz": "ResultArrowResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}/result/{query}.arrf",
-    "clazz": "ResultArrowFileResource"
+      "clazz": "ResultArrowResource"
   },
   {
     "method": "GET",

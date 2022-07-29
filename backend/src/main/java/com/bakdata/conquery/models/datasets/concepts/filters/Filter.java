@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.filters;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
+import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -47,21 +47,21 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 		return getConnector().getDataset();
 	}
 
-	public FEFilter createFrontendConfig() throws ConceptConfigurationException {
-		FEFilter f = FEFilter.builder()
-							 .id(getId())
-							 .label(getLabel())
-							 .tooltip(getTooltip())
-							 .unit(getUnit())
-							 .allowDropFile(getAllowDropFile())
-							 .pattern(getPattern())
-							 .defaultValue(getDefaultValue())
-							 .build();
+	public FEFilterConfiguration.Top createFrontendConfig() throws ConceptConfigurationException {
+		FEFilterConfiguration.Top f = FEFilterConfiguration.Top.builder()
+															   .id(getId())
+															   .label(getLabel())
+															   .tooltip(getTooltip())
+															   .unit(getUnit())
+															   .allowDropFile(getAllowDropFile())
+															   .pattern(getPattern())
+															   .defaultValue(getDefaultValue())
+															   .build();
 		configureFrontend(f);
 		return f;
 	}
 
-	protected abstract void configureFrontend(FEFilter f) throws ConceptConfigurationException;
+	protected abstract void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException;
 
 	@JsonIgnore
 	public abstract Column[] getRequiredColumns();

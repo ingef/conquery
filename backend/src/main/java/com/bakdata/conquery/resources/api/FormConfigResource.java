@@ -31,22 +31,24 @@ import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcess
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor.PostResponse;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
+import lombok.RequiredArgsConstructor;
 
 @Consumes(ExtraMimeTypes.JSON_STRING)
 @Produces(ExtraMimeTypes.JSON_STRING)
 @Path("datasets/{" + DATASET + "}/form-configs")
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class FormConfigResource {
-	
+
 	@PathParam(DATASET)
 	private Dataset dataset;
-	@Inject
-	private FormConfigProcessor processor;
+
+	private final FormConfigProcessor processor;
 
 	@POST
 	public Response postConfig(@Auth Subject subject, @Valid FormConfigAPI config) {
 		return Response.ok(new PostResponse(processor.addConfig(subject, dataset, config).getId())).status(Status.CREATED).build();
 	}
-	
+
 	@GET
 	public Stream<FormConfigOverviewRepresentation> getConfigByUserAndType(@Auth Subject subject, @QueryParam("formType") Set<String> formType) {
 		return processor.getConfigsByFormType(subject, dataset, formType);

@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
+import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FEList;
 import com.bakdata.conquery.apiv1.frontend.FENode;
 import com.bakdata.conquery.apiv1.frontend.FERoot;
@@ -245,7 +245,7 @@ public class FrontEndConceptBuilder {
 		return result;
 	}
 
-	public static FEFilter createFilter(Filter<?> filter) {
+	public static FEFilterConfiguration.Top createFilter(Filter<?> filter) {
 		try {
 			return filter.createFrontendConfig();
 		}
