@@ -21,9 +21,9 @@ import org.junit.jupiter.api.TestMethodOrder;
 
 @TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
 @Slf4j
-public class MapIndexServiceTest {
+public class IndexServiceTest {
 
-	private final MapIndexService indexService = new MapIndexService(new CsvParserSettings());
+	private final IndexService indexService = new IndexService(new CsvParserSettings());
 
 	@Test
 	@Order(0)
@@ -51,10 +51,12 @@ public class MapIndexServiceTest {
 	@Order(1)
 	void testEvictOnService() throws MalformedURLException, ExecutionException, InterruptedException, TimeoutException {
 		log.info("Test evicting of mapping on service");
-		final CompletableFuture<Map<String, String>> mappingFuture1 = indexService.getMapping(
-				new URL("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
-				"internal",
-				"{{external}}"
+		final CompletableFuture<MapIndex> mappingFuture1 = indexService.getMapping(
+				new MapIndexKey(
+						new URL("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
+						"internal",
+						"{{external}}"
+				)
 		);
 
 		assertThat(mappingFuture1.get(1, TimeUnit.MINUTES)).isNotNull();
@@ -64,10 +66,12 @@ public class MapIndexServiceTest {
 		assertThatThrownBy(() -> mappingFuture1.get(1, TimeUnit.MINUTES)).isInstanceOf(CancellationException.class);
 		assertThat(mappingFuture1.isCompletedExceptionally()).isTrue();
 
-		final CompletableFuture<Map<String, String>> mappingFuture2 = indexService.getMapping(
-				new URL("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
-				"internal",
-				"{{external}}"
+		final CompletableFuture<MapIndex> mappingFuture2 = indexService.getMapping(
+				new MapIndexKey(
+						new URL("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
+						"internal",
+						"{{external}}"
+				)
 		);
 
 		assertThat(mappingFuture2.get(1, TimeUnit.MINUTES)).isNotNull();
@@ -92,20 +96,20 @@ public class MapIndexServiceTest {
 		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("hello");
 
 
-		final CompletableFuture<Map<String, String>> mappingBeforeEvict = mapInternToExternMapper.getInt2ext();
+		final CompletableFuture<MapIndex> mappingBeforeEvict = mapInternToExternMapper.getInt2ext();
 
 		indexService.evictCache();
 
 		// Request mapping and trigger reinitialization
 		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("hello");
 
-		final CompletableFuture<Map<String, String>> mappingAfterEvict = mapInternToExternMapper.getInt2ext();
+		final CompletableFuture<MapIndex> mappingAfterEvict = mapInternToExternMapper.getInt2ext();
 
 		// Check that the mapping reinitialized
 		assertThat(mappingBeforeEvict).isNotSameAs(mappingAfterEvict);
 	}
 
-	private static void injectService(MapInternToExternMapper mapInternToExternMapper, MapIndexService indexService)
+	private static void injectService(MapInternToExternMapper mapInternToExternMapper, IndexService indexService)
 			throws NoSuchFieldException, IllegalAccessException {
 		final Field indexServiceField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.mapIndex);
 		indexServiceField.setAccessible(true);
