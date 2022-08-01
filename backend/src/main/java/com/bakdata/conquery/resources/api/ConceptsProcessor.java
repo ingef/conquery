@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.inject.Inject;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
@@ -68,36 +67,31 @@ public class ConceptsProcessor {
 	private final DatasetRegistry namespaces;
 	private final Validator validator;
 
-	private final LoadingCache<Concept<?>, FEList> nodeCache =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.expireAfterWrite(10, TimeUnit.MINUTES)
-						.build(new CacheLoader<>() {
-							@Override
-							public FEList load(Concept<?> concept) {
-								return FrontEndConceptBuilder.createTreeMap(concept);
-							}
-						});
+	private final LoadingCache<Concept<?>, FEList>
+			nodeCache =
+			CacheBuilder.newBuilder().softValues().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
+				@Override
+				public FEList load(Concept<?> concept) {
+					return FrontEndConceptBuilder.createTreeMap(concept);
+				}
+			});
 
 	/**
 	 * Cache of all search results on SelectFilters.
 	 */
-	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchResults =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.build(new CacheLoader<>() {
+	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
 
-							@Override
-							public List<FEValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
-								String searchTerm = filterAndSearch.getValue();
-								SelectFilter<?> filter = filterAndSearch.getKey();
+		@Override
+		public List<FEValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
+			String searchTerm = filterAndSearch.getValue();
+			SelectFilter<?> filter = filterAndSearch.getKey();
 
-								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
+			log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
 
-								return autocompleteTextFilter(filter, searchTerm);
-							}
+			return autocompleteTextFilter(filter, searchTerm);
+		}
 
-						});
+	});
 
 	/**
 	 * Container class to pair number of available values and Cursor for those values.
@@ -112,17 +106,14 @@ public class ConceptsProcessor {
 	 * Cache of raw listing of values on a filter.
 	 * We use Cursor here to reduce strain on memory and increase response time.
 	 */
-	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.build(new CacheLoader<>() {
-							@Override
-							public CursorAndLength load(SelectFilter<?> filter) {
-								log.debug("Creating cursor for `{}`", filter.getId());
-								return new CursorAndLength(listAllValues(filter), countAllValues(filter));
-							}
+	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
+		@Override
+		public CursorAndLength load(SelectFilter<?> filter) {
+			log.debug("Creating cursor for `{}`", filter.getId());
+			return new CursorAndLength(listAllValues(filter), countAllValues(filter));
+		}
 
-						});
+	});
 
 
 	public FERoot getRoot(NamespaceStorage storage, Subject subject) {
@@ -148,14 +139,16 @@ public class ConceptsProcessor {
 		return namespaces.getAllDatasets()
 						 .stream()
 						 .filter(d -> subject.isPermitted(d, Ability.READ))
-						 .sorted(Comparator.comparing(Dataset::getWeight)
-										   .thenComparing(Dataset::getLabel))
+						 .sorted(Comparator.comparing(Dataset::getWeight).thenComparing(Dataset::getLabel))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
 						 .collect(Collectors.toList());
 	}
 
 	public Stream<ConnectorId> getEntityPreviewDefaultConnectors(Dataset dataset) {
-		return namespaces.get(dataset.getId()).getStorage().getAllConcepts().stream()
+		return namespaces.get(dataset.getId())
+						 .getStorage()
+						 .getAllConcepts()
+						 .stream()
 						 .map(Concept::getConnectors)
 						 .flatMap(Collection::stream)
 						 .filter(Connector::isDefaultForEntityPreview)
@@ -190,15 +183,7 @@ public class ConceptsProcessor {
 			}
 		}
 
-		return new ResolvedConceptsResult(
-				null,
-				new ResolvedFilterResult(
-						filter.getConnector().getId(),
-						filter.getId(),
-						out
-				),
-				openSearchTerms
-		);
+		return new ResolvedConceptsResult(null, new ResolvedFilterResult(filter.getConnector().getId(), filter.getId(), out), openSearchTerms);
 	}
 
 	@Data
@@ -255,11 +240,9 @@ public class ConceptsProcessor {
 		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
 		 */
 
-		final Iterator<FEValue> iterators =
-				Iterators.concat(Iterators.transform(
-						namespace.getFilterSearch().getSearchesFor(filter).iterator(),
-						TrieSearch::iterator
-				));
+		final Iterator<FEValue>
+				iterators =
+				Iterators.concat(Iterators.transform(namespace.getFilterSearch().getSearchesFor(filter).iterator(), TrieSearch::iterator));
 
 		// Use Set to accomplish distinct values
 		final Set<FEValue> seen = new HashSet<>();
@@ -286,12 +269,10 @@ public class ConceptsProcessor {
 		// they are already sorted in terms of information weight by getSearchesFor
 
 		// Also note: currently we are still issuing large search requests, but much smaller allocations at once, and querying only when the past is not sufficient
-		return namespace.getFilterSearch().getSearchesFor(filter).stream()
-						.map(search -> createSourceSearchResult(
-								search,
-								Collections.singletonList(text),
-								OptionalInt.empty()
-						))
+		return namespace.getFilterSearch()
+						.getSearchesFor(filter)
+						.stream()
+						.map(search -> createSourceSearchResult(search, Collections.singletonList(text), OptionalInt.empty()))
 						.flatMap(Collection::stream)
 						.distinct()
 						.collect(Collectors.toList());
