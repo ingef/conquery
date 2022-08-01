@@ -41,14 +41,14 @@ public class TemporalQueryNode extends QPParentNode {
 	 */
 	private final QPNode reference;
 
-	private final TemporalSampler referenceSampler;
+	private final TemporalSampler.Sampler referenceSampler;
 
 	/**
 	 * QueryPlan for the events being compared.
 	 */
 	private final QPNode preceding;
 
-	private final TemporalSampler precedingSampler;
+	private final TemporalSampler.Sampler precedingSampler;
 
 
 	/**
@@ -61,7 +61,7 @@ public class TemporalQueryNode extends QPParentNode {
 	 */
 	private final DateAggregationAction dateAggregationAction = DateAggregationAction.MERGE;
 
-	public TemporalQueryNode(QPNode reference, TemporalSampler referenceSampler, QPNode preceding, TemporalSampler precedingSampler, PrecedenceMatcher matcher, SpecialDateUnion dateUnion) {
+	public TemporalQueryNode(QPNode reference, TemporalSampler.Sampler referenceSampler, QPNode preceding, TemporalSampler.Sampler precedingSampler, PrecedenceMatcher matcher, SpecialDateUnion dateUnion) {
 		// We BLOCK because we are overriding the logic down below.
 		super(List.of(reference, preceding), DateAggregationAction.BLOCK);
 

@@ -21,7 +21,6 @@ public class RelExportGenerator {
 	
 	public static RelativeFormQuery generate(RelativeMode mode) {
 
-
 		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(mode.getForm().getResolvedResolutions(), mode.getTimeUnit().getAlignment());
 
 		return generate(mode.getForm().getPrerequisite(), mode.getResolvedFeatures(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), resolutionsAndAlignments);

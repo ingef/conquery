@@ -25,14 +25,14 @@ import lombok.ToString;
 @ToString(of = {"sampler", "column"})
 public class QuarterAggregator extends Aggregator<String> {
 
-	private final TemporalSampler sampler;
+	private final TemporalSampler.Sampler sampler;
 
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
 
 	private Column column;
 
-	public QuarterAggregator(TemporalSampler sampler) {
+	public QuarterAggregator(TemporalSampler.Sampler sampler) {
 		this.sampler = sampler;
 	}
 

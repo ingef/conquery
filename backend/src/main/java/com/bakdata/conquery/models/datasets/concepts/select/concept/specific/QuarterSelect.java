@@ -25,6 +25,6 @@ public class QuarterSelect extends UniversalSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new QuarterAggregator(sample);
+		return new QuarterAggregator(sample.sampler());
 	}
 }

@@ -43,7 +43,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final QueryPlan<?> query;
 	private final ArrayConceptQueryPlan featurePlan;
 
-	private final TemporalSampler indexSelector;
+	private final TemporalSampler.Sampler indexSelector;
 	private final IndexPlacement indexPlacement;
 
 	private final int timeCountBefore;
