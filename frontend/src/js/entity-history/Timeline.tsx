@@ -4,13 +4,19 @@ import { useTranslation } from "react-i18next";
 import NumberFormat from "react-number-format";
 import { useSelector } from "react-redux";
 
-import { ColumnDescription, CurrencyConfigT } from "../api/types";
+import {
+  ColumnDescription,
+  ColumnDescriptionSemanticConceptColumn,
+  CurrencyConfigT,
+} from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
+import { useDatasetId } from "../dataset/selectors";
 import { Heading4 } from "../headings/Headings";
 import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
 
+import ConceptName from "./ConceptName";
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import { RowDates } from "./RowDates";
@@ -57,9 +63,9 @@ const EventItemContent = styled("div")`
 `;
 
 const Bullet = styled("div")`
-  width: 8px;
-  height: 8px;
-  margin: 4px 0;
+  width: 10px;
+  height: 10px;
+  margin: 2px 0;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   border-radius: 50%;
   flex-shrink: 0;
@@ -68,8 +74,8 @@ const Bullet = styled("div")`
 const VerticalLine = styled("div")`
   height: calc(100% - 20px);
   width: 2px;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  margin: 10px 5px;
+  background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
+  margin: 10px 4px;
 `;
 
 const YearHead = styled("div")`
@@ -158,6 +164,7 @@ interface Props {
 export const Timeline = memo(
   ({ className, detailLevel, sources, contentFilter }: Props) => {
     const { t } = useTranslation();
+    const datasetId = useDatasetId();
     const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
       (state) => state.entityHistory.currentEntityData,
     );
@@ -185,6 +192,24 @@ export const Timeline = memo(
         ),
       };
     }, [columns]);
+
+    const rootConceptIdsByColumn = useMemo(() => {
+      const entries = [];
+
+      for (const columnDescription of columnBuckets.concepts) {
+        const { label, semantics } = columnDescription;
+        const conceptSemantic = semantics.find(
+          (sem): sem is ColumnDescriptionSemanticConceptColumn =>
+            sem.type === "CONCEPT_COLUMN",
+        );
+
+        if (conceptSemantic) {
+          entries.push([label, conceptSemantic.concept]);
+        }
+      }
+
+      return Object.fromEntries(entries);
+    }, [columnBuckets]);
 
     const bucketedEntityDataByYearAndQuarter = useTimeBucketedDataDesc(data);
 
@@ -343,9 +368,16 @@ export const Timeline = memo(
                                             <ColBucket>
                                               {applicableConcepts.map(
                                                 (column) => (
-                                                  <span>
-                                                    {row[column.label]}
-                                                  </span>
+                                                  <ConceptName
+                                                    rootConceptId={
+                                                      rootConceptIdsByColumn[
+                                                        column.label
+                                                      ]
+                                                    }
+                                                    column={column}
+                                                    row={row}
+                                                    datasetId={datasetId}
+                                                  />
                                                 ),
                                               )}
                                             </ColBucket>

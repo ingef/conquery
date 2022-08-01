@@ -119,7 +119,7 @@ export const History = () => {
       setEntityIdsStatus(loadedEntityStatus);
       setEntityStatusOptions(loadedEntityStatusOptions);
     },
-    [],
+    [setEntityIdsStatus, setEntityStatusOptions, updateHistorySession],
   );
 
   return (
