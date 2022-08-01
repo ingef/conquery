@@ -26,14 +26,18 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Functions;
 import com.google.common.collect.Sets;
-import lombok.Value;
+import it.unimi.dsi.fastutil.objects.Object2LongAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMap;
+import it.unimi.dsi.fastutil.objects.Object2LongMaps;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 
 
 @Slf4j
-@Value
+@Data
 public class FilterSearch {
 
 	private final NamespaceStorage storage;
@@ -48,6 +52,7 @@ public class FilterSearch {
 	 */
 	@JsonIgnore
 	private final Map<Searchable, TrieSearch<FEValue>> searchCache = new HashMap<>();
+	private Object2LongMap<SelectFilter<?>> totals = Object2LongMaps.emptyMap();
 
 	/**
 	 * From a given {@link FEValue} extract all relevant keywords.
@@ -73,6 +78,10 @@ public class FilterSearch {
 					 .map(searchCache::get)
 					 .filter(Objects::nonNull)
 					 .collect(Collectors.toList());
+	}
+
+	public long getTotal(SelectFilter<?> filter) {
+		return totals.getOrDefault(filter, 0);
 	}
 
 
@@ -158,6 +167,23 @@ public class FilterSearch {
 					while (!service.awaitTermination(1, TimeUnit.MINUTES)) {
 						log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables, synchronizedResult.keySet()));
 					}
+
+					log.debug("BEGIN counting Search totals.");
+
+
+					// Precompute totals as that can be extremly slow.
+					totals = new Object2LongAVLTreeMap<>(
+							allSelectFilters.parallelStream()
+											.collect(Collectors.toMap(
+													Functions.identity(),
+													filter -> filter.getSearchReferences().stream()
+																	.map(synchronizedResult::get)
+																	.flatMap(TrieSearch::stream)
+																	.mapToInt(FEValue::hashCode)
+																	.distinct()
+																	.count()
+											)));
+
 
 					log.debug("DONE loading SourceSearch");
 				}
