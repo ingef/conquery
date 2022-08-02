@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useCallback, useContext } from "react";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
 
@@ -7,6 +7,9 @@ export const useGetAuthorizedUrl = () => {
 
   const encodedAuthToken = encodeURIComponent(authToken);
 
-  return (url: string) =>
-    `${url}?access_token=${encodedAuthToken}&charset=utf-8&pretty=false`;
+  return useCallback(
+    (url: string) =>
+      `${url}?access_token=${encodedAuthToken}&charset=utf-8&pretty=false`,
+    [encodedAuthToken],
+  );
 };
