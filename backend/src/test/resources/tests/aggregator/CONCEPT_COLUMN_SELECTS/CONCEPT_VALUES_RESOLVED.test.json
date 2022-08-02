@@ -30,7 +30,7 @@
         {
           "type" : "CONCEPT_VALUES",
           "name" : "select",
-          "resolved" : true
+          "asIds" : true
         }
       ],
       "connectors": [
