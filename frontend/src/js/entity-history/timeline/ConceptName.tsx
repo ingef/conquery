@@ -1,17 +1,16 @@
 import styled from "@emotion/styled";
 import { memo } from "react";
 
-import { ColumnDescription, ConceptIdT, DatasetT } from "../api/types";
-import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-
-import { EntityEvent } from "./reducer";
+import { ColumnDescription, ConceptIdT, DatasetT } from "../../api/types";
+import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
+import { EntityEvent } from "../reducer";
 
 const Named = styled("span")`
   font-weight: bold;
 `;
 
 interface Props {
-  datasetId: DatasetT["id"];
+  datasetId: DatasetT["id"] | null;
   row: EntityEvent;
   column: ColumnDescription;
   rootConceptId: ConceptIdT;
@@ -20,6 +19,8 @@ interface Props {
 const ConceptName = ({ datasetId, row, column, rootConceptId }: Props) => {
   // TODO: refactor. It's very implicit that the id is
   // somehow containing the datasetId.
+  if (!datasetId) return null;
+
   const fullConceptId = `${datasetId}.${row[column.label]}`;
   const concept = getConceptById(fullConceptId, rootConceptId);
 

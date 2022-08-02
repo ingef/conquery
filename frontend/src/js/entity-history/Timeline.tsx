@@ -16,11 +16,11 @@ import { Heading4 } from "../headings/Headings";
 import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
 
-import ConceptName from "./ConceptName";
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import { RowDates } from "./RowDates";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
+import ConceptName from "./timeline/ConceptName";
 import { RawDataBadge } from "./timeline/RawDataBadge";
 
 const Root = styled("div")`
