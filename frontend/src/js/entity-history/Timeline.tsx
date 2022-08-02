@@ -211,7 +211,7 @@ export const Timeline = memo(
       return Object.fromEntries(entries);
     }, [columnBuckets]);
 
-    const bucketedEntityDataByYearAndQuarter = useTimeBucketedDataDesc(data);
+    const bucketedEntityDataByYearAndQuarter = useTimeBucketedSortedData(data);
 
     return (
       <Root className={className}>
@@ -419,7 +419,7 @@ export const Timeline = memo(
   },
 );
 
-const useTimeBucketedDataDesc = (
+const useTimeBucketedSortedData = (
   data: EntityHistoryStateT["currentEntityData"],
 ): {
   year: number;
