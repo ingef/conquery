@@ -52,10 +52,10 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 		return new TemporalQueryNode(
 
 				index.getChild().createQueryPlan(context, plan),
-				index.getSampler().sampler(),
+				index.getSampler(),
 
 				preceding.getChild().createQueryPlan(context, plan),
-				preceding.getSampler().sampler(),
+				preceding.getSampler(),
 
 				matcher,
 				dateAggregator

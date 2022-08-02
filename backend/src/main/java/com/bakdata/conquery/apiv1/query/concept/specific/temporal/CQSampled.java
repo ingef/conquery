@@ -24,6 +24,6 @@ public class CQSampled {
 	 * The sampler to be used.
 	 */
 	@NotNull @Valid
-	private TemporalSampler sampler;
+	private TemporalSamplerFactory sampler;
 
 }

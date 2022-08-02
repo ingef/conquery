@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts.select.concept.specific;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
+import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
@@ -21,10 +21,10 @@ import lombok.RequiredArgsConstructor;
 public class QuarterSelect extends UniversalSelect {
 
 	@NotNull
-	private final TemporalSampler sample;
+	private final TemporalSamplerFactory sample;
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new QuarterAggregator(sample.sampler());
+		return new QuarterAggregator(sample);
 	}
 }

@@ -6,7 +6,7 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
+import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -29,6 +29,9 @@ public class TemporalQueryNode extends QPParentNode {
 	public void init(Entity entity, QueryExecutionContext ctx) {
 		super.init(entity, ctx);
 		dateUnion.init(entity, ctx);
+
+		referenceSampler = referenceSamplerFactory.sampler();
+		precedingSampler = precedingSamplerFactory.sampler();
 	}
 
 	/**
@@ -41,14 +44,16 @@ public class TemporalQueryNode extends QPParentNode {
 	 */
 	private final QPNode reference;
 
-	private final TemporalSampler.Sampler referenceSampler;
+	private TemporalSamplerFactory.Sampler referenceSampler;
+	private final TemporalSamplerFactory referenceSamplerFactory;
 
 	/**
 	 * QueryPlan for the events being compared.
 	 */
 	private final QPNode preceding;
 
-	private final TemporalSampler.Sampler precedingSampler;
+	private TemporalSamplerFactory.Sampler precedingSampler;
+	private final TemporalSamplerFactory precedingSamplerFactory;
 
 
 	/**
@@ -61,15 +66,16 @@ public class TemporalQueryNode extends QPParentNode {
 	 */
 	private final DateAggregationAction dateAggregationAction = DateAggregationAction.MERGE;
 
-	public TemporalQueryNode(QPNode reference, TemporalSampler.Sampler referenceSampler, QPNode preceding, TemporalSampler.Sampler precedingSampler, PrecedenceMatcher matcher, SpecialDateUnion dateUnion) {
+
+	public TemporalQueryNode(QPNode reference, TemporalSamplerFactory referenceSampler, QPNode preceding, TemporalSamplerFactory precedingSampler, PrecedenceMatcher matcher, SpecialDateUnion dateUnion) {
 		// We BLOCK because we are overriding the logic down below.
 		super(List.of(reference, preceding), DateAggregationAction.BLOCK);
 
 		this.reference = reference;
-		this.referenceSampler = referenceSampler;
+		this.referenceSamplerFactory = referenceSampler;
 
 		this.preceding = preceding;
-		this.precedingSampler = precedingSampler;
+		this.precedingSamplerFactory = precedingSampler;
 
 		this.matcher = matcher;
 		this.dateUnion = dateUnion;

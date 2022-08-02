@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 /**
  * A class implementing several sampling schemes for {@link CDateSet}.
  */
-public enum TemporalSampler {
+public enum TemporalSamplerFactory {
 	/**
 	 * Sampler that returns the earliest date of the {@link CDateSet}, if present, or empty if the Set has no lowerbound.
 	 */

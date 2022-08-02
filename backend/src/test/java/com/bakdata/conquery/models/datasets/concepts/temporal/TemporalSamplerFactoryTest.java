@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.temporal;
 
-import static com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler.*;
+import static com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory.*;
 import static com.bakdata.conquery.models.common.CDate.ofLocalDate;
 import static com.bakdata.conquery.models.common.daterange.CDateRange.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import org.junit.jupiter.api.Test;
 
-class TemporalSamplerTest {
+class TemporalSamplerFactoryTest {
 
 	private static CDateSet generateSet(CDateRange... ranges) {
 		return CDateSet.create(Arrays.asList(ranges));
