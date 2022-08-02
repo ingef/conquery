@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -61,13 +62,17 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ClassToInstanceMap;
+import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -85,7 +90,8 @@ public class QueryProcessor {
 	public static List<Select> getInfoCardSelects(PreviewConfig config, Dataset dataset, DatasetRegistry registry) {
 		final List<Select> infoCardSelects = new ArrayList<>();
 
-		for (SelectId selectId : config.getInfoCardSelects()) {
+		for (String name : config.getInfoCardSelects()) {
+			SelectId selectId = SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), name);
 			Select resolved = registry.resolve(selectId);
 
 			if (resolved == null) {
@@ -480,11 +486,27 @@ public class QueryProcessor {
 
 
 		PreviewFullExecutionStatus executionStatus = new PreviewFullExecutionStatus();
-		execution.setStatusFull(executionStatus, storage, subject, datasetRegistry );
+		execution.setStatusFull(executionStatus, storage, subject, datasetRegistry);
 
 		executionStatus.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, true));
 
-		executionStatus.setInfocard(infoCardExecution.getId()); // TODO: Url to status info
+		final SinglelineEntityResult result = (SinglelineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
+		final Object[] values = result.getValues();
+
+		List<PreviewFullExecutionStatus.Info> extraInfos = new ArrayList<>(values.length);
+		PrintSettings printSettings = new PrintSettings(true, Locale.getDefault(), datasetRegistry, config, null);
+
+		//TODO Index is probably not aligned, Settings are not right either I'd guess. How do i create an appropriate IdMapper
+
+		for (int index = 0; index < infoCardExecution.getResultInfos().size(); index++) {
+			ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
+			String printed = resultInfo.getType().printNullable(printSettings, values[index]);
+
+			extraInfos.add(new PreviewFullExecutionStatus.Info(resultInfo.defaultColumnName(printSettings), printed));
+		}
+
+		executionStatus.setInfos(extraInfos);
+
 		return executionStatus;
 	}
 
