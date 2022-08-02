@@ -80,7 +80,6 @@ public class Namespace implements Closeable {
 		List<Injectable> injectables = new ArrayList<>();
 		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
 		injectables.add(indexService);
-
 		ObjectMapper persistenceMapper = mapperCreator.apply(View.Persistence.Manager.class);
 		ObjectMapper communicationMapper = mapperCreator.apply(View.InternalCommunication.class);
 		ObjectMapper preprocessMapper = mapperCreator.apply(null);

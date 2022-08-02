@@ -1,17 +1,27 @@
 package com.bakdata.conquery.models.index;
 
 import java.util.HashMap;
+import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MapIndex extends HashMap<String, String> implements Index<MapIndexKey,String>{
+@RequiredArgsConstructor
+public class MapIndex extends HashMap<String, String> implements Index<MapIndexKey, String> {
+
+	private final String externalTemplate;
 
 	@Override
-	public String put(String key, String value) {
+	public String put(String key, Map<String, String> templateToConcrete) {
 		if (containsKey(key)) {
-			throw new IllegalArgumentException("The key '" + key + "' already exists in the index. Cannot map '" + key + "' -> '" + value + "'.");
+			throw new IllegalArgumentException("The key '" + key + "' already exists in the index. Cannot map '" + key + "' -> '" + templateToConcrete + "'.");
 		}
-		return super.put(key, value);
+		return super.put(key, templateToConcrete.get(externalTemplate));
+	}
+
+	@Override
+	public void finalizer() {
+		// Nothing to finalize
 	}
 }

@@ -12,5 +12,4 @@ import lombok.RequiredArgsConstructor;
 public abstract class AbstractIndexKey<I extends Index<? extends IndexKey<I,V>,V>,V> implements IndexKey<I,V> {
 	private final URL csv;
 	private final String internalColumn;
-	private final String externalTemplate;
 }

@@ -1,9 +1,13 @@
 package com.bakdata.conquery.models.index;
 
-public interface Index<T extends IndexKey<? extends Index<T, V>,V>, V> {
+import java.util.Map;
 
-	V put(String key, Object value);
+public interface Index<T extends IndexKey<? extends Index<T, V>, V>, V> {
+
+	V put(String key, Map<String, String> templateToConcrete);
 
 	int size();
+
+	void finalizer();
 
 }

@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.FilterResource;
@@ -37,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FilterAutocompleteTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
-	private static String[] RAW_LINES = {
+	private static final String[] RAW_LINES = {
 			"id,label,option",
 			"a,lbl-1,ov-1",
 			"aab,lbl-2,ov-2",
@@ -79,7 +80,9 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 				StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE
 		);
 
-		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), "id", "{{label}}", "Hello this is {{option}}", 2, true));
+		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings());
+
+		filter.setTemplate(new FilterTemplate(tmpCSv.toUri().toURL(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "updateMatchingStats")
@@ -87,7 +90,8 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		conquery.getClient().target(matchingStatsUri)
 				.request(MediaType.APPLICATION_JSON_TYPE)
-				.post(null);
+				.post(null)
+				.close();
 
 		conquery.waitUntilWorkDone();
 

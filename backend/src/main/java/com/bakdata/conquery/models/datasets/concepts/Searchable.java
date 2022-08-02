@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import javax.validation.constraints.Min;
 
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
@@ -18,9 +18,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public interface Searchable {
 	/**
-	 * All available {@link FEValue}s for searching.
+	 * All available {@link FEValue}s for searching in a {@link TrieSearch}.
 	 */
-	Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage);
+	List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage);
 
 	/**
 	 * The actual Searchables to use, if there is potential for deduplication/pooling.

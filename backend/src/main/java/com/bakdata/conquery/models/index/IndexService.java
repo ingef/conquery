@@ -60,16 +60,16 @@ public class IndexService implements Injectable {
 
 				// Iterate records
 				for (Record row : records) {
-					final Pair<String, String> pair = computeInternalExternal(key, csvParser, row);
+					final Pair<String, Map<String, String>> pair = computeInternalExternal(key, csvParser, row);
 					if (pair == null) {
 						continue;
 					}
 
 					final String internalValue = pair.getLeft();
-					final Object externalValue = pair.getRight();
+					final Map<String, String> externalValue = pair.getRight();
 
 					try {
-						int2ext.put(internalValue, pair.getRight());
+						int2ext.put(internalValue, externalValue);
 					} catch (IllegalArgumentException e) {
 						log.warn(
 								"Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
@@ -87,17 +87,22 @@ public class IndexService implements Injectable {
 			}
 
 			log.info("Finished parsing mapping {} with {} entries", key, int2ext.size());
+
+			// Run finalizing operations on the index
+			int2ext.finalizer();
+
 			return int2ext;
 		}
 
 		@Nullable
-		private Pair<String, String> computeInternalExternal(@NotNull IndexKey<?,?> key, CsvParser csvParser, Record row) {
+		private Pair<String, Map<String, String>> computeInternalExternal(@NotNull IndexKey<?, ?> key, CsvParser csvParser, Record row) {
 			final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
 			final String internalValue = row.getString(key.getInternalColumn());
 
 			if (internalValue == null) {
-				log.trace("Could not create a mapping for row {} because the cell for the internal value was empty. Row: {}", csvParser.getContext().currentLine(),
+				log.trace("Could not create a mapping for row {} because the cell for the internal value was empty. Row: {}", csvParser.getContext()
+																																	   .currentLine(),
 						  log.isTraceEnabled()
 						  ? StringUtils.join(row.toFieldMap())
 						  : null
@@ -106,9 +111,16 @@ public class IndexService implements Injectable {
 			}
 
 			final List<String> externalTemplates = key.getExternalTemplates();
-			final Map<String, String> templateToConcrete =  new HashMap<>(externalTemplates.size(), 0);
 
-			for(String externalTemplate : externalTemplates) {
+			/*
+			 Actually the size of the map is fixed.
+			 We allocate a bit more and set the
+			 load factor to avoid reallocation
+			 and rehashing
+			 */
+			final Map<String, String> templateToConcrete = new HashMap<>(externalTemplates.size() + 1, 1);
+
+			for (String externalTemplate : externalTemplates) {
 
 				// We allow template values to be missing
 				final String externalValue = substitutor.replace(externalTemplate);
@@ -118,15 +130,7 @@ public class IndexService implements Injectable {
 				templateToConcrete.put(externalTemplate, externalValueCleaned);
 			}
 
-			key.
-
-			// We allow template values to be missing
-			final String externalValue = substitutor.replace(key.getExternalTemplate());
-
-			// Clean up the substitution by removing repeated white spaces
-			String externalValueCleaned = externalValue.replaceAll("\\s+", " ");
-
-			return Pair.of(internalValue, externalValueCleaned);
+			return Pair.of(internalValue, templateToConcrete);
 		}
 	});
 
@@ -158,7 +162,7 @@ public class IndexService implements Injectable {
 					return (I) mappings.get(key);
 				}
 				catch (ExecutionException e) {
-					throw new IllegalStateException(String.format("Unable to get mapping from %s (internal column = %s, external column = %s)", key.getCsv(), key.getInternalColumn(), key.getExternalTemplate()), e);
+					throw new IllegalStateException(String.format("Unable to build index from index configuration: %s)", key), e);
 				}
 			});
 

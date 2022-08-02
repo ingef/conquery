@@ -14,7 +14,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -57,7 +56,7 @@ public class FilterSearch {
 	/**
 	 * From a given {@link FEValue} extract all relevant keywords.
 	 */
-	private static List<String> extractKeywords(FEValue value) {
+	public static List<String> extractKeywords(FEValue value) {
 		List<String> keywords = new ArrayList<>(3);
 
 		keywords.add(value.getLabel());
@@ -126,38 +125,28 @@ public class FilterSearch {
 					for (Searchable searchable : collectedSearchables) {
 
 						service.submit(() -> {
-							final Stream<FEValue> values = searchable.getSearchValues(getParserConfig(), storage);
 
 							final StopWatch watch = StopWatch.createStarted();
 
 							log.info("BEGIN collecting entries for `{}`", searchable);
 
 							try {
-								final TrieSearch<FEValue> search = new TrieSearch<>(
-										searchable.isGenerateSuffixes() ? searchable.getMinSuffixLength() : Integer.MAX_VALUE,
-										searchConfig.getSplit()
-								);
+								final List<TrieSearch<FEValue>> values = searchable.getSearches(searchConfig, storage);
 
-								values.distinct()
-									  .forEach(item -> search.addItem(item, extractKeywords(item)));
-
-								search.shrinkToFit();
-
-								if (log.isDebugEnabled()) {
-									log.debug(
-											"DONE collecting entries for `{}`, within {} ({} Items)",
-											searchable,
-											Duration.ofMillis(watch.getTime()),
-											search.calculateSize()
-									);
+								for (TrieSearch<FEValue> search : values) {
+									synchronizedResult.put(searchable, search);
 								}
 
-								synchronizedResult.put(searchable, search);
-
+								log.debug(
+										"DONE collecting entries for `{}`, within {}",
+										searchable,
+										Duration.ofMillis(watch.getTime())
+								);
 							}
 							catch (Exception e) {
 								log.error("Failed to create search for {}", searchable, e);
 							}
+
 						});
 					}
 
