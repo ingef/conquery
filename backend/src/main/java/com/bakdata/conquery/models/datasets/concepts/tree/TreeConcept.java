@@ -42,24 +42,30 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@JsonIgnore
 	@Getter
 	private final int depth = 0;
+
 	@Getter
 	private final int[] prefix = new int[]{0};
+
 	@JsonIgnore
 	private final List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
+
 	@Getter
 	@Setter
 	@Valid
 	private List<ConceptTreeChild> children = Collections.emptyList();
+
 	@JsonIgnore
 	@Getter
 	@Setter
 	private int localId;
+
 	@NotNull
 	@Getter
 	@Setter
-	@JsonManagedReference
 	@Valid
+	@JsonManagedReference
 	private List<UniversalSelect> selects = new ArrayList<>();
+
 	@JsonIgnore
 	@Getter
 	@Setter

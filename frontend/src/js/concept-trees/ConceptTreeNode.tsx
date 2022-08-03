@@ -97,6 +97,7 @@ const ConceptTreeNode: FC<PropsT> = ({
         createQueryElement={(): ConceptQueryNodeType => {
           const concept = getConceptById(
             rootConceptId,
+            rootConceptId, // To optimize lookup
           ) as ConceptElementT | null;
 
           const description = data.description

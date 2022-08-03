@@ -37,6 +37,9 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	@Setter @Getter
 	private String description;
 
+	/**
+	 * When set, the Frontend will preselect the Select for the User.
+	 */
 	@Setter @Getter @JsonProperty("default")
 	private boolean isDefault = false;
 	

@@ -6,7 +6,7 @@ public interface Index<T extends IndexKey<? extends Index<T>>> {
 
 	void put(String key, Map<String, String> templateToConcrete);
 
-	long size();
+	int size();
 
 	void finalizer();
 

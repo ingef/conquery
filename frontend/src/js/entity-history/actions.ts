@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
@@ -122,59 +123,71 @@ export function useUpdateHistorySession() {
     (state) => state.entityHistory.defaultParams,
   );
 
-  return async ({
-    entityId,
-    entityIds,
-    label,
-  }: {
-    entityId: string;
-    entityIds?: string[];
-    years?: number[];
-    label?: string;
-  }) => {
-    if (!datasetId) return;
+  return useCallback(
+    async ({
+      entityId,
+      entityIds,
+      label,
+    }: {
+      entityId: string;
+      entityIds?: string[];
+      years?: number[];
+      label?: string;
+    }) => {
+      if (!datasetId) return;
 
-    try {
-      dispatch(loadHistoryData.request());
+      try {
+        dispatch(loadHistoryData.request());
 
-      const entityResult = await getEntityHistory(
-        datasetId,
-        entityId,
-        defaultEntityHistoryParams.sources,
-      );
+        const entityResult = await getEntityHistory(
+          datasetId,
+          entityId,
+          defaultEntityHistoryParams.sources,
+        );
 
-      const csvUrl = entityResult.resultUrls.find((url) => url.endsWith("csv"));
+        const csvUrl = entityResult.resultUrls.find((url) =>
+          url.endsWith("csv"),
+        );
 
-      if (!csvUrl) {
-        throw new Error("No CSV URL found");
+        if (!csvUrl) {
+          throw new Error("No CSV URL found");
+        }
+
+        const authorizedCSVUrl = getAuthorizedUrl(csvUrl);
+        const csv = await loadCSV(authorizedCSVUrl, { english: true });
+        const currentEntityData = await parseCSVWithHeaderToObj(
+          csv.data.map((r) => r.join(";")).join("\n"),
+        );
+
+        const currentEntityDataProcessed =
+          transformEntityData(currentEntityData);
+        const uniqueSources = [
+          ...new Set(currentEntityDataProcessed.map((row) => row.source)),
+        ];
+
+        dispatch(
+          loadHistoryData.success({
+            currentEntityCsvUrl: csvUrl,
+            currentEntityData: currentEntityDataProcessed,
+            currentEntityId: entityId,
+            columns: entityResult.columnDescriptions,
+            uniqueSources,
+            ...(entityIds ? { entityIds } : {}),
+            ...(label ? { label } : {}),
+          }),
+        );
+      } catch (e) {
+        dispatch(loadHistoryData.failure(errorPayload(e as Error, {})));
       }
-
-      const authorizedCSVUrl = getAuthorizedUrl(csvUrl);
-      const csv = await loadCSV(authorizedCSVUrl, { english: true });
-      const currentEntityData = await parseCSVWithHeaderToObj(
-        csv.data.map((r) => r.join(";")).join("\n"),
-      );
-
-      const currentEntityDataProcessed = transformEntityData(currentEntityData);
-      const uniqueSources = [
-        ...new Set(currentEntityDataProcessed.map((row) => row.source)),
-      ];
-
-      dispatch(
-        loadHistoryData.success({
-          currentEntityCsvUrl: csvUrl,
-          currentEntityData: currentEntityDataProcessed,
-          currentEntityId: entityId,
-          columns: entityResult.columnDescriptions,
-          uniqueSources,
-          ...(entityIds ? { entityIds } : {}),
-          ...(label ? { label } : {}),
-        }),
-      );
-    } catch (e) {
-      dispatch(loadHistoryData.failure(errorPayload(e as Error, {})));
-    }
-  };
+    },
+    [
+      datasetId,
+      defaultEntityHistoryParams.sources,
+      dispatch,
+      getAuthorizedUrl,
+      getEntityHistory,
+    ],
+  );
 }
 
 const transformEntityData = (data: { [key: string]: any }[]): EntityEvent[] => {

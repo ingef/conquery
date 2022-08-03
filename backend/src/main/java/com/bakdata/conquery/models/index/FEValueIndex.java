@@ -6,7 +6,9 @@ import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.util.search.TrieSearch;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class FEValueIndex extends TrieSearch<FEValue> implements Index<FEValueIndexKey> {
 
 
@@ -38,8 +40,13 @@ public class FEValueIndex extends TrieSearch<FEValue> implements Index<FEValueIn
 	}
 
 	@Override
-	public long size() {
-		return calculateSize();
+	public int size() {
+		final long longSize = calculateSize();
+		if (longSize > Integer.MAX_VALUE) {
+			log.trace("Trie size was larger than an int. Reporting Integer.MAX_VALUE. Was actually: {}", longSize);
+			return Integer.MAX_VALUE;
+		}
+		return (int) longSize;
 	}
 
 
