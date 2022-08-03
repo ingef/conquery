@@ -211,11 +211,14 @@ export const Timeline = memo(
       return Object.fromEntries(entries);
     }, [columnBuckets]);
 
-    const bucketedEntityDataByYearAndQuarter = useTimeBucketedSortedData(data);
+    const { bucketedEvents, bucketedEventsByDayAndSource } =
+      useTimeBucketedSortedData(data);
+
+    console.log(bucketedEventsByDayAndSource);
 
     return (
       <Root className={className}>
-        {bucketedEntityDataByYearAndQuarter.map(({ year, quarterwiseData }) => {
+        {bucketedEvents.map(({ year, quarterwiseData }) => {
           const totalEvents = quarterwiseData.reduce(
             (all, data) => all + data.events.length,
             0,
@@ -419,12 +422,54 @@ export const Timeline = memo(
   },
 );
 
+const diff = (o1: Object, o2: Object) => {};
+
+const findGroups = (eventsPerYears: EventsPerYear[]) => {
+  return eventsPerYears.map(({ year, quarterwiseData }) => {
+    return {
+      year,
+      quarterwiseData: quarterwiseData.map(({ quarter, events }) => {
+        if (events.length < 2) return { quarter, groupedEvents: [events] };
+
+        const eventsByDayAndSource = [[events[0]]];
+
+        for (let i = 1; i < events.length - 1; i++) {
+          const evt = events[i];
+          const lastEvt =
+            eventsByDayAndSource[eventsByDayAndSource.length - 1][0];
+
+          if (JSON.stringify(evt) === JSON.stringify(lastEvt)) {
+            console.log(`DUPLICATE ${evt}`);
+            continue;
+          }
+
+          if (
+            JSON.stringify(evt.dates) === JSON.stringify(lastEvt.dates) &&
+            evt.source === lastEvt.source
+          ) {
+            console.log("GROUP HIT");
+            eventsByDayAndSource[eventsByDayAndSource.length - 1].push(evt);
+          } else {
+            eventsByDayAndSource.push([evt]);
+          }
+        }
+        return { quarter, groupedEvents: eventsByDayAndSource };
+      }),
+    };
+  });
+};
+
+interface EventsPerYear {
+  year: number;
+  quarterwiseData: {
+    quarter: string;
+    events: EntityEvent[];
+  }[];
+}
+
 const useTimeBucketedSortedData = (
   data: EntityHistoryStateT["currentEntityData"],
-): {
-  year: number;
-  quarterwiseData: { quarter: string; events: EntityEvent[] }[];
-}[] => {
+) => {
   const bucketEntityEvents = (
     entityData: EntityHistoryStateT["currentEntityData"],
   ) => {
@@ -458,6 +503,12 @@ const useTimeBucketedSortedData = (
   };
 
   return useMemo(() => {
-    return bucketEntityEvents(data);
+    const bucketedEvents = bucketEntityEvents(data);
+    const bucketedEventsByDayAndSource = findGroups(bucketedEvents);
+
+    return {
+      bucketedEvents,
+      bucketedEventsByDayAndSource,
+    };
   }, [data]);
 };
