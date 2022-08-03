@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.config.SearchConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.index.FEValueIndex;
 import com.bakdata.conquery.models.index.FEValueIndexKey;
@@ -94,7 +93,7 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 
 	public List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
 
-		final CompletableFuture<FEValueIndex> futureSearch = indexService.getMapping(new FEValueIndexKey(
+		FEValueIndex search = indexService.getIndex(new FEValueIndexKey(
 				filePath,
 				columnValue,
 				value,
@@ -103,7 +102,7 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 				config.getSplit()
 		));
 
-		return List.of(futureSearch.join());
+		return List.of(search);
 	}
 
 	@Override

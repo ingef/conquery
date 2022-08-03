@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.*;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -46,37 +45,6 @@ public class IndexServiceTest {
 		assertThat(mapInternToExternMapper.external("int2")).as("Internal Value").isEqualTo("");
 	}
 
-
-	@Test
-	@Order(1)
-	void testEvictOnService() throws MalformedURLException, ExecutionException, InterruptedException, TimeoutException {
-		log.info("Test evicting of mapping on service");
-		final CompletableFuture<MapIndex> mappingFuture1 = indexService.getMapping(
-				new MapIndexKey(
-						new URL("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
-						"internal",
-						"{{external}}"
-				)
-		);
-
-		assertThat(mappingFuture1.get(1, TimeUnit.MINUTES)).isNotNull();
-
-		indexService.evictCache();
-
-		assertThatThrownBy(() -> mappingFuture1.get(1, TimeUnit.MINUTES)).isInstanceOf(CancellationException.class);
-		assertThat(mappingFuture1.isCompletedExceptionally()).isTrue();
-
-		final CompletableFuture<MapIndex> mappingFuture2 = indexService.getMapping(
-				new MapIndexKey(
-						new URL("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
-						"internal",
-						"{{external}}"
-				)
-		);
-
-		assertThat(mappingFuture2.get(1, TimeUnit.MINUTES)).isNotNull();
-	}
-
 	@Test
 	@Order(2)
 	void testEvictOnMapper()
@@ -96,17 +64,20 @@ public class IndexServiceTest {
 		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("hello");
 
 
-		final CompletableFuture<MapIndex> mappingBeforeEvict = mapInternToExternMapper.getInt2ext();
+		MapIndex mappingBeforeEvict = mapInternToExternMapper.getInt2ext();
 
 		indexService.evictCache();
 
 		// Request mapping and trigger reinitialization
 		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("hello");
 
-		final CompletableFuture<MapIndex> mappingAfterEvict = mapInternToExternMapper.getInt2ext();
+		mapInternToExternMapper.init();
+
+		MapIndex mappingAfterEvict = mapInternToExternMapper.getInt2ext();
 
 		// Check that the mapping reinitialized
-		assertThat(mappingBeforeEvict).isNotSameAs(mappingAfterEvict);
+		assertThat(mappingBeforeEvict).as("Mapping before and after eviction")
+									  .isNotSameAs(mappingAfterEvict);
 	}
 
 	private static void injectService(MapInternToExternMapper mapInternToExternMapper, IndexService indexService)

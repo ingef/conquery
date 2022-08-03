@@ -154,21 +154,12 @@ public class IndexService implements Injectable {
 
 
 	@SuppressWarnings("unchecked")
-	public <K extends IndexKey<I,V>, I extends Index<K,V>, V> CompletableFuture<I> getMapping(K key) {
-		// TODO may use a specific executor service here
-		synchronized (requestedMappings) {
-			final CompletableFuture<I> mapCompletableFuture = CompletableFuture.supplyAsync(() -> {
-				try {
-					return (I) mappings.get(key);
-				}
-				catch (ExecutionException e) {
-					throw new IllegalStateException(String.format("Unable to build index from index configuration: %s)", key), e);
-				}
-			});
-
-			requestedMappings.add(mapCompletableFuture);
-
-			return mapCompletableFuture;
+	public <K extends IndexKey<I, V>, I extends Index<K, V>, V> I getIndex(K key) {
+		try {
+			return (I) mappings.get(key);
+		}
+		catch (ExecutionException e) {
+			throw new IllegalStateException(String.format("Unable to build index from index configuration: %s)", key), e);
 		}
 	}
 
