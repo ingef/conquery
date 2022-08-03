@@ -4,7 +4,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-public class MapIndexKey extends AbstractIndexKey<MapIndex, String> {
+public class MapIndexKey extends AbstractIndexKey<MapIndex> {
 
 	private final String externalTemplate;
 

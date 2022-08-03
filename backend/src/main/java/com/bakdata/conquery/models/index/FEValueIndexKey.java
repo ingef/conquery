@@ -6,7 +6,7 @@ import java.util.List;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 
-public class FEValueIndexKey extends AbstractIndexKey<FEValueIndex, FEValue> {
+public class FEValueIndexKey extends AbstractIndexKey<FEValueIndex> {
 
 
 	private final int suffixCutoff;

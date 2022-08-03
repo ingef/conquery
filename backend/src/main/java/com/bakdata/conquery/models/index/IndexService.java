@@ -22,6 +22,7 @@ import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -29,6 +30,10 @@ import org.apache.commons.text.StringSubstitutor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * A service that provides indexes for given {@link IndexKey}s.
+ * An index is created upon first request and cached.
+ */
 @Slf4j
 public class IndexService implements Injectable {
 
@@ -39,14 +44,12 @@ public class IndexService implements Injectable {
 		this.csvParserSettings.setHeaderExtractionEnabled(true);
 	}
 
-	private final Queue<CompletableFuture<? extends Index<?,?>>> requestedMappings = new LinkedList<>();
-
-	private final LoadingCache<IndexKey<?,?>, Index<?,?>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<IndexKey<?,?>, Index<?,?>>() {
+	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<IndexKey<?>, Index<?>>() {
 		@Override
-		public Index<?,?> load(@NotNull IndexKey key) throws Exception {
+		public Index<?> load(@NotNull IndexKey key) throws Exception {
 			log.info("Started to parse mapping {}", key);
 
-			final Index<?,?> int2ext = key.createIndex();
+			final Index<?> int2ext = key.createIndex();
 
 			final CsvParser csvParser = new CsvParser(csvParserSettings);
 
@@ -95,7 +98,7 @@ public class IndexService implements Injectable {
 		}
 
 		@Nullable
-		private Pair<String, Map<String, String>> computeInternalExternal(@NotNull IndexKey<?, ?> key, CsvParser csvParser, Record row) {
+		private Pair<String, Map<String, String>> computeInternalExternal(@NotNull IndexKey<?> key, CsvParser csvParser, Record row) {
 			final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
 
 			final String internalValue = row.getString(key.getInternalColumn());
@@ -112,13 +115,7 @@ public class IndexService implements Injectable {
 
 			final List<String> externalTemplates = key.getExternalTemplates();
 
-			/*
-			 Actually the size of the map is fixed.
-			 We allocate a bit more and set the
-			 load factor to avoid reallocation
-			 and rehashing
-			 */
-			final Map<String, String> templateToConcrete = new HashMap<>(externalTemplates.size() + 1, 1);
+			final Map<String, String> templateToConcrete = new Object2ObjectArrayMap<>(externalTemplates.size());
 
 			for (String externalTemplate : externalTemplates) {
 
@@ -135,26 +132,12 @@ public class IndexService implements Injectable {
 	});
 
 	public void evictCache() {
-		synchronized (requestedMappings) {
-			// Invalidate all mapping requests by cancelling them
-			final Iterator<CompletableFuture<? extends Index<?,?>>> iterator = requestedMappings.iterator();
-
-			while (iterator.hasNext()) {
-				final CompletableFuture<? extends Index<?,?>> next = iterator.next();
-
-				next.obtrudeException(new CancellationException("The mapping for this future was evicted"));
-				iterator.remove();
-
-			}
-
-			// Clear actual cache
-			mappings.invalidateAll();
-		}
+		mappings.invalidateAll();
 	}
 
 
 	@SuppressWarnings("unchecked")
-	public <K extends IndexKey<I, V>, I extends Index<K, V>, V> I getIndex(K key) {
+	public <K extends IndexKey<I>, I extends Index<K>, V> I getIndex(K key) {
 		try {
 			return (I) mappings.get(key);
 		}

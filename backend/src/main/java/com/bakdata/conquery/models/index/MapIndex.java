@@ -8,16 +8,16 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class MapIndex extends HashMap<String, String> implements Index<MapIndexKey, String> {
+public class MapIndex extends HashMap<String, String> implements Index<MapIndexKey> {
 
 	private final String externalTemplate;
 
 	@Override
-	public String put(String key, Map<String, String> templateToConcrete) {
+	public void put(String key, Map<String, String> templateToConcrete) {
 		if (containsKey(key)) {
 			throw new IllegalArgumentException("The key '" + key + "' already exists in the index. Cannot map '" + key + "' -> '" + templateToConcrete + "'.");
 		}
-		return super.put(key, templateToConcrete.get(externalTemplate));
+		super.put(key, templateToConcrete.get(externalTemplate));
 	}
 
 	@Override

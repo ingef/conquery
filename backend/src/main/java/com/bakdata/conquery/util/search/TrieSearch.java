@@ -206,15 +206,6 @@ public class TrieSearch<T extends Comparable<T>> {
 				.forEach(kw -> doPut(kw, item));
 	}
 
-	public void addItem(T item, String keyword) {
-		Preconditions.checkArgument(Strings.isNullOrEmpty(keyword));
-		split(keyword)
-				.flatMap(this::suffixes)
-				.distinct()
-				.forEach(kw -> doPut(kw, item));
-	}
-
-
 	public Collection<T> listItems() {
 		//TODO this a pretty dangerous operation, I'd rather see a session based iterator instead
 		return trie.values().stream()

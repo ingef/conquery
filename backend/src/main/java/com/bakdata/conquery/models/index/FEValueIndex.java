@@ -7,7 +7,7 @@ import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.util.search.TrieSearch;
 
-public class FEValueIndex extends TrieSearch<FEValue> implements Index<FEValueIndexKey, FEValue> {
+public class FEValueIndex extends TrieSearch<FEValue> implements Index<FEValueIndexKey> {
 
 
 	/**
@@ -28,20 +28,20 @@ public class FEValueIndex extends TrieSearch<FEValue> implements Index<FEValueIn
 	}
 
 	@Override
-	public FEValue put(String internalValue, Map<String, String> templateToConcrete) {
+	public void put(String internalValue, Map<String, String> templateToConcrete) {
 		FEValue feValue = new FEValue(
 				internalValue,
 				templateToConcrete.get(valueTemplate),
 				templateToConcrete.get(optionValueTemplate)
 		);
-		super.addItem(feValue, FilterSearch.extractKeywords(feValue));
-		return feValue;
+		addItem(feValue, FilterSearch.extractKeywords(feValue));
 	}
 
 	@Override
-	public int size() {
-		return 0;
+	public long size() {
+		return calculateSize();
 	}
+
 
 	@Override
 	public void finalizer() {
