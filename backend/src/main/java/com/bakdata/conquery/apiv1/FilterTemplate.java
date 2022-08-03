@@ -4,13 +4,22 @@ import java.net.URL;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
+import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.index.FEValueIndex;
 import com.bakdata.conquery.models.index.FEValueIndexKey;
 import com.bakdata.conquery.models.index.IndexService;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -32,26 +41,37 @@ import lombok.extern.slf4j.Slf4j;
 @JsonIgnoreProperties({"columns"})
 @ToString
 @Slf4j
-public class FilterTemplate implements Searchable {
+public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable, SearchIndex {
 
 	private static final long serialVersionUID = 1L;
+
+	@NotNull
+	@NsIdRef
+	private Dataset dataset;
+
+	@NotEmpty
+	private String name;
 
 	/**
 	 * Path to CSV File.
 	 */
+	@NotNull
 	private URL filePath;
 
 	/**
 	 * Value to be sent for filtering.
 	 */
+	@NotEmpty
 	private String columnValue;
 	/**
 	 * Value displayed in Select list. Usually concise display.
 	 */
+	@NotEmpty
 	private String value;
 	/**
 	 * More detailed value. Displayed when value is selected.
 	 */
+	@NotEmpty
 	private String optionValue;
 
 	private int minSuffixLength = 3;
@@ -86,4 +106,8 @@ public class FilterTemplate implements Searchable {
 		return List.of(futureSearch.join());
 	}
 
+	@Override
+	public SearchIndexId createId() {
+		return new SearchIndexId(dataset.getId(), name);
+	}
 }

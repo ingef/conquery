@@ -33,24 +33,20 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.index.InternToExternMapper;
-import com.bakdata.conquery.models.index.MapInternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
-import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.NonNull;
@@ -349,6 +345,29 @@ public class LoadingUtil {
 
 
 		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
+	}
+
+	public static void importSearchIndexes(StandaloneSupport support, List<SearchIndex> searchIndexes) {
+		for (SearchIndex internToExternMapper : searchIndexes) {
+			uploadSearchIndex(support, internToExternMapper);
+		}
+	}
+
+	private static void uploadSearchIndex(@NonNull StandaloneSupport support, @NonNull SearchIndex searchIndex) {
+		final URI
+				conceptURI =
+				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSearchIndex")
+							   .buildFromMap(Map.of(
+									   ResourceConstants.DATASET, support.getDataset().getId()
+							   ));
+
+		final Response response = support.getClient()
+										 .target(conceptURI)
+										 .request(MediaType.APPLICATION_JSON)
+										 .post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE));
+
+
+		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
 	}
 
 }

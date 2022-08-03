@@ -10,6 +10,7 @@ import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.SearchConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
@@ -40,6 +41,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 
 
+	@NsIdRef
 	private FilterTemplate template;
 
 	@JsonIgnore

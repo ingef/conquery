@@ -254,7 +254,7 @@ public class Namespace implements Closeable {
 		return getStorage().getPrimaryDictionary().getSize();
 	}
 
-	public void clearInternToExternCache() {
+	public void clearIndexCache() {
 		indexService.evictCache();
 	}
 }

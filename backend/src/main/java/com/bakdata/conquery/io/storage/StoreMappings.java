@@ -30,11 +30,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
@@ -70,7 +72,8 @@ public enum StoreMappings {
 	FORM_CONFIG(FormConfig.class, FormConfigId.class),
 	WORKER_TO_BUCKETS(WorkerToBucketsMap.class, Boolean.class),
 	PRIMARY_DICTIONARY(Dictionary.class, Boolean.class),
-	INTERN_TO_EXTERN(InternToExternMapper.class, InternToExternMapperId.class);
+	INTERN_TO_EXTERN(InternToExternMapper.class, InternToExternMapperId.class),
+	SEARCH_INDEX(SearchIndex.class, SearchIndexId.class);
 
 	private final Class<?> valueType;
 	private final Class<?> keyType;

@@ -79,7 +79,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings());
 
-		filter.setTemplate(new FilterTemplate(tmpCSv.toUri().toURL(), "HEADER", "", "", 2, true, indexService));
+		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri().toURL(), "HEADER", "", "", 2, true, indexService));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "updateMatchingStats")

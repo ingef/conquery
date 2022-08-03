@@ -39,6 +39,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.FileUtil;
 import lombok.Getter;
@@ -110,6 +111,13 @@ public class AdminDatasetResource {
 		processor.addInternToExternMapping(namespace, internToExternMapper);
 	}
 
+
+	@POST
+	@Path("searchIndex")
+	public void addSearchIndex(SearchIndex searchIndex) {
+		processor.addSearchIndex(namespace, searchIndex);
+	}
+
 	@POST
 	@Path("tables")
 	public void addTable(Table table) {
@@ -174,6 +182,12 @@ public class AdminDatasetResource {
 	}
 
 	@DELETE
+	@Path("searchIndex/{" + SEARCH_INDEX_ID + "}")
+	public void deleteSearchIndex(@PathParam(SEARCH_INDEX_ID) SearchIndex searchIndex, @QueryParam("force") @DefaultValue("false") boolean force) {
+		processor.deleteSearchIndex(searchIndex, force);
+	}
+
+	@DELETE
 	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
 	public void deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper, @QueryParam("force") @DefaultValue("false") boolean force) {
 		processor.deleteInternToExternMapping(internToExternMapper, force);
@@ -216,9 +230,9 @@ public class AdminDatasetResource {
 	}
 
 	@POST
-	@Path("clear-internToExtern-cache")
-	public void clearInternToExternCache() {
-		processor.clearInternToExternCache(namespace);
+	@Path("clear-index-cache")
+	public void clearIndexCache() {
+		processor.clearIndexCache(namespace);
 	}
 
 }

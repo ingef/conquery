@@ -81,7 +81,12 @@
     },
     {
         "method": "POST",
-        "path": "/datasets/{dataset}/clear-internToExtern-cache",
+        "path": "/datasets/{dataset}/searchIndex",
+        "clazz": "AdminDatasetResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{dataset}/clear-index-cache",
         "clazz": "AdminDatasetResource"
     },
     {
@@ -94,16 +99,21 @@
         "path": "/datasets/{dataset}/internToExtern/{internToExternId}",
         "clazz": "AdminDatasetResource"
     },
-	{
-		"method": "POST",
-		"path": "/datasets/{dataset}/structure",
-		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "GET",
-		"path": "/datasets/{dataset}/tables",
-		"clazz": "AdminDatasetResource"
-	},
+    {
+        "method": "DELETE",
+        "path": "/datasets/{dataset}/searchIndex/{searchIndexId}",
+        "clazz": "AdminDatasetResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{dataset}/structure",
+        "clazz": "AdminDatasetResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/tables",
+        "clazz": "AdminDatasetResource"
+    },
 	{
 		"method": "POST",
 		"path": "/datasets/{dataset}/tables",
