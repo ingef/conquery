@@ -31,8 +31,8 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/Concept.java#L45-L47) | hidden | `boolean` | `false` |  | Display Concept for users. | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/ConceptElement.java#L25) | additionalInfos | list of [KeyValue](#Type-KeyValue) | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/ConceptElement.java#L22) | description | `String` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/tree/TreeConcept.java#L49) | children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | `[]` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/tree/TreeConcept.java#L57) | selects | list of [UniversalSelect](#Marker-UniversalSelect) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/tree/TreeConcept.java#L52) | children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/tree/TreeConcept.java#L62) | selects | list of [UniversalSelect](#Marker-UniversalSelect) | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L26-L30) | label | `String` | `null` | "someLabel" | shown in the frontend | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
@@ -202,10 +202,10 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | tooltip | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/SingleColumnFilter.java#L20) | column | ID of `@Valid @NotNull @NsIdRef Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L78) | generateSearchSuffixes | `boolean` | `true` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L37-L39) | labels | bijective map from `String` to `String` |  |  | user given mapping from the values in the CSVs to shown labels | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L77) | searchMinSuffixLength | `int` | `3` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L43) | template | [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L80) | generateSearchSuffixes | `boolean` | `true` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L38-L40) | labels | bijective map from `String` to `String` |  |  | user given mapping from the values in the CSVs to shown labels | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L79) | searchMinSuffixLength | `int` | `3` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L44) | template | ID of [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L26-L30) | label | `String` | `null` | "someLabel" | shown in the frontend | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
@@ -377,10 +377,10 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | tooltip | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/SingleColumnFilter.java#L20) | column | ID of `@Valid @NotNull @NsIdRef Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L78) | generateSearchSuffixes | `boolean` | `true` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L37-L39) | labels | bijective map from `String` to `String` |  |  | user given mapping from the values in the CSVs to shown labels | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L77) | searchMinSuffixLength | `int` | `3` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L43) | template | [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L80) | generateSearchSuffixes | `boolean` | `true` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L38-L40) | labels | bijective map from `String` to `String` |  |  | user given mapping from the values in the CSVs to shown labels | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L79) | searchMinSuffixLength | `int` | `3` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L44) | template | ID of [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L26-L30) | label | `String` | `null` | "someLabel" | shown in the frontend | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
@@ -412,10 +412,10 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L35) | tooltip | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/Filter.java#L34) | unit | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/SingleColumnFilter.java#L20) | column | ID of `@Valid @NotNull @NsIdRef Column` | `null` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L78) | generateSearchSuffixes | `boolean` | `true` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L37-L39) | labels | bijective map from `String` to `String` |  |  | user given mapping from the values in the CSVs to shown labels | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L77) | searchMinSuffixLength | `int` | `3` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L43) | template | [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L80) | generateSearchSuffixes | `boolean` | `true` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L38-L40) | labels | bijective map from `String` to `String` |  |  | user given mapping from the values in the CSVs to shown labels | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L79) | searchMinSuffixLength | `int` | `3` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/filters/specific/SelectFilter.java#L44) | template | ID of [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L26-L30) | label | `String` | `null` | "someLabel" | shown in the frontend | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
 </p></details>
@@ -452,6 +452,23 @@ These are used to define selects, that can be used to create additional CSV colu
 
 Different types of Select can be used by setting `type` to one of the following values:
 
+
+### CONCEPT_VALUES<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/concept/ConceptColumnSelect.java#L14-L16)</sup></sub></sup>
+Select to extract the values used to build a {@link TreeConcept}.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/Select.java#L37) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/concept/ConceptColumnSelect.java#L21-L23) | asIds | `boolean` | `false` |  | If true, values are returned as resolved {@link ConceptElement#getLabel()} instead of the actual values. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java#L26-L30) | label | `String` | `null` | "someLabel" | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | `null` |  |  | 
+</p></details>
 
 ### COUNT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/datasets/concepts/select/connector/specific/CountSelect.java#L16)</sup></sub></sup>
 
@@ -800,7 +817,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java#L17) | name | `String` | ? |  |  | 
 </p></details>
 
-### Type FilterTemplate<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L28)</sup></sub></sup>
+### Type FilterTemplate<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L36)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -811,12 +828,14 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L44-L46) | columnValue | `String` | `null` |  | Value to be sent for filtering. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L39-L41) | filePath | `URL` | `null` |  | Path to CSV File. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L58) | generateSuffixes | `boolean` | `true` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L57) | minSuffixLength | `int` | `3` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L52-L54) | optionValue | `String` | `null` |  | More detailed value. Displayed when value is selected. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L48-L50) | value | `String` | `null` |  | Value displayed in Select list. Usually concise display. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L60-L62) | columnValue | `String` | ? |  | Value to be sent for filtering. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L47) | dataset | ID of `@NotNull @NsIdRef Dataset` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L54-L56) | filePath | `@NotNull URL` | ? |  | Path to CSV File. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L77) | generateSuffixes | `boolean` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L76) | minSuffixLength | `int` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L51) | name | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L70-L72) | optionValue | `String` | ? |  | More detailed value. Displayed when value is selected. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java#L65-L67) | value | `String` | ? |  | Value displayed in Select list. Usually concise display. | 
 </p></details>
 
 ### Type KeyValue<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/KeyValue.java#L7-L9)</sup></sub></sup>
@@ -862,6 +881,7 @@ Supported Fields:
 Java Type: `com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect`
 
 A Marker UniversalSelect is any of:
+* [CONCEPT_VALUES](#CONCEPT_VALUES)
 * [EVENT_DATE_UNION](#EVENT_DATE_UNION)
 * [EVENT_DURATION_SUM](#EVENT_DURATION_SUM)
 * [EXISTS](#EXISTS)
