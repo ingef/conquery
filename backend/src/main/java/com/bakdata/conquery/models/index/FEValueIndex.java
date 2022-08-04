@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.index;
 
 import java.util.Map;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
+import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.util.search.TrieSearch;

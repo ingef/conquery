@@ -7,14 +7,14 @@ import javax.validation.constraints.Min;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * @implNote This class is tightly coupled with {@link com.bakdata.conquery.apiv1.FilterSearch} and {@link com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter}.
- *
+ * @implNote This class is tightly coupled with {@link FilterSearch} and {@link com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter}.
+ * <p>
  * Searchable classes describe how a search should be constructed, and provide the values with getSearchValues.
- *
  */
 public interface Searchable {
 	/**

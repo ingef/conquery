@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.google.common.base.CharMatcher;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -85,7 +86,7 @@ public class IndexService implements Injectable {
 				}
 			}
 			catch (IOException ioException) {
-				log.warn("Failed to open {}", key.getCsv(), ioException);
+				log.warn("Failed to open `{}`", key.getCsv(), ioException);
 				throw ioException;
 			}
 
@@ -115,7 +116,7 @@ public class IndexService implements Injectable {
 
 			final List<String> externalTemplates = key.getExternalTemplates();
 
-			final Map<String, String> templateToConcrete = new Object2ObjectArrayMap<>(externalTemplates.size());
+			final Map<String, String> templateToConcrete = new HashMap<>();
 
 			for (String externalTemplate : externalTemplates) {
 
@@ -123,7 +124,7 @@ public class IndexService implements Injectable {
 				final String externalValue = substitutor.replace(externalTemplate);
 
 				// Clean up the substitution by removing repeated white spaces
-				String externalValueCleaned = externalValue.replaceAll("\\s+", " ");
+				String externalValueCleaned = CharMatcher.whitespace().trimAndCollapseFrom(externalValue, ' ');
 				templateToConcrete.put(externalTemplate, externalValueCleaned);
 			}
 
