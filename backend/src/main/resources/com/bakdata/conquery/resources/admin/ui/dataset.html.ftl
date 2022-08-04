@@ -45,7 +45,7 @@
 
     <@layout.kc k="SecondaryIds">
 	    <ul>
-        <#list c.secondaryIds?sort_by("name") as secondaryId")>
+        <#list c.secondaryIds?sort_by("name") as secondaryId>
             <li>${secondaryId}</li>
         </#list>
 	    </ul>
