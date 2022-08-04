@@ -24,7 +24,7 @@
     </@layout.kc>
 	<@layout.kc k="Tables">
 		<ul>
-			<#list c.tables?sort_by("label") as table>
+			<#list c.tables?sort_by("name") as table>
 				<li>
 					<a href="./${c.ds.id}/tables/${table.id}">${table.name} <span>[${table.imports}] (${table.entries})</span></a>
 					<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/tables/${table.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
@@ -34,7 +34,7 @@
 	</@layout.kc>
 	<@layout.kc k="Concepts">
 		<ul>
-		<#list c.concepts?sort_by("label") as concept>
+		<#list c.concepts?sort_by("name") as concept>
 			<li>
 				<a href="./${c.ds.id}/concepts/${concept.id}">${concept.name}</a>
 				<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/concepts/${concept.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
@@ -45,7 +45,7 @@
 
     <@layout.kc k="SecondaryIds">
 	    <ul>
-        <#list c.secondaryIds as secondaryId>
+        <#list c.secondaryIds?sort_by("name") as secondaryId")>
             <li>${secondaryId}</li>
         </#list>
 	    </ul>

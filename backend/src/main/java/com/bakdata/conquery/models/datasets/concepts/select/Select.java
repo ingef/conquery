@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select;
 
-import javax.annotation.Nullable;
-
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.Column;
@@ -47,7 +45,6 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	private boolean isDefault = false;
 
 	@JsonIgnore
-	@Nullable
 	public abstract Column[] getRequiredColumns();
 
 	@JsonIgnore @Getter(lazy=true)

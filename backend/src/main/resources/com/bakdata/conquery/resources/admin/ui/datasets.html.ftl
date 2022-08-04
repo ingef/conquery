@@ -3,7 +3,7 @@
 	<div class="row">
 		<div class="col">
 			<ul>
-			<#list c as dataset>
+			<#list c?sort_by("name") as dataset>
 				<li>
 					<a href="/admin-ui/datasets/${dataset.id}">${dataset.label}</a>
 					<a href="" onclick="deleteDataset('${dataset.id}')"><i class="fas fa-trash-alt text-danger"></i></a>

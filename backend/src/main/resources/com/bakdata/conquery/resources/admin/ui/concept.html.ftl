@@ -7,7 +7,7 @@
 	<@layout.kv k="Elements" v=c.countElements()?string.number/>
 	<@layout.kc k="Selects">
 			<ul>
-			<#list c.selects as select>
+			<#list c.selects?sort_by("name") as select>
 				<li>
 					<@layout.kid k="ID" v=select.id/>
 					<@layout.kv k="Label" v=select.label/>
@@ -27,24 +27,24 @@
         </@layout.kc>
 		<@layout.kc k="Filters">
 			<ul>
-			<#list connector.collectAllFilters() as filter>
+			<#list connector.collectAllFilters()?sort_by("name") as filter>
 				<li>
 					<@layout.kid k="ID" v=filter.id/>
 					<@layout.kv k="Label" v=filter.label/>
 					<@layout.kv k="Type" v=filter.class.simpleName/>
-					<@layout.kv k="Columns" v=filter.requiredColumns?join(', ')/>
+					<@layout.kv k="Columns" v=filter.requiredColumns?sort_by("name")?join(', ')/>
 				</li>
 			</#list>
 			</ul>
 		</@layout.kc>
 		<@layout.kc k="Selects">
 			<ul>
-			<#list connector.selects as select>
+			<#list connector.selects?sort_by("name") as select>
 				<li>
 					<@layout.kid k="ID" v=select.id/>
 					<@layout.kv k="Label" v=select.label/>
 					<@layout.kv k="Type" v=select.class.simpleName/>
-					<@layout.kv k="Columns" v=select.requiredColumns?join(', ')/>
+					<@layout.kv k="Columns" v=select.requiredColumns?sort_by("name")?join(', ')/>
 				</li>
 			</#list>
 			</ul>
