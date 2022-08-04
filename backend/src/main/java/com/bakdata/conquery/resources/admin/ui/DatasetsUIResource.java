@@ -1,5 +1,19 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBlocksSizeBytes;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -19,19 +33,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-
-import javax.inject.Inject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBlocksSizeBytes;
 
 @Produces(MediaType.TEXT_HTML)
 @Getter
@@ -53,7 +54,8 @@ public class DatasetsUIResource {
 		return new UIView<>(
 				"datasets.html.ftl",
 				uiProcessor.getUIContext(),
-				uiProcessor.getDatasetRegistry().getAllDatasets());
+				uiProcessor.getDatasetRegistry().getAllDatasets()
+		);
 	}
 
 
@@ -75,10 +77,11 @@ public class DatasetsUIResource {
 										 table.getLabel(),
 										 StringUtils.abbreviate(table.findImports(namespace.getStorage())
 																	 .map(Import::getName)
+																	 .sorted()
 																	 .collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
 										 table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
 								 ))
-								.collect(Collectors.toList()),
+								 .collect(Collectors.toList()),
 						namespace.getStorage().getAllConcepts(),
 						// total size of dictionaries
 						namespace
@@ -105,7 +108,6 @@ public class DatasetsUIResource {
 				)
 		);
 	}
-
 
 
 	@GET

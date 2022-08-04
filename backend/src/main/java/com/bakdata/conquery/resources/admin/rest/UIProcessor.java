@@ -1,5 +1,18 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -13,24 +26,25 @@ import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.resources.admin.ui.model.*;
-import lombok.AllArgsConstructor;
+import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
+import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
+import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
+import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
+import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
+import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
+import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
+import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.inject.Inject;
 
 /**
  * Wrapper processor that transforms internal representations of the {@link AdminProcessor} into
@@ -70,12 +84,12 @@ public class UIProcessor {
 
 	public FERoleContent getRoleContent(Role role) {
 		return FERoleContent.builder()
-				.permissions(wrapInFEPermission(role.getPermissions()))
-				.permissionTemplateMap(preparePermissionTemplate())
-				.users(getUsers(role))
-				.groups(getGroups(role))
-				.owner(role)
-				.build();
+							.permissions(wrapInFEPermission(role.getPermissions()))
+							.permissionTemplateMap(preparePermissionTemplate())
+							.users(getUsers(role))
+							.groups(getGroups(role))
+							.owner(role)
+							.build();
 	}
 
 	private Map<String, Pair<Set<Ability>, List<Object>>> preparePermissionTemplate() {
@@ -90,7 +104,8 @@ public class UIProcessor {
 				// Right argument is for possible targets of a specific permission type, but it
 				// is left empty for now.
 				permissionTemplateMap.put(instance.getDomain(), Pair.of(instance.getAllowedAbilities(), List.of()));
-			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			}
+			catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
 				log.error("Could not access allowed abilities for permission type: {}", permissionType, e);
 			}
 
@@ -165,20 +180,25 @@ public class UIProcessor {
 				entries,
 				//total size of dictionaries
 				imports.stream()
-						.flatMap(imp -> imp.getDictionaries().stream())
-						.filter(Objects::nonNull)
-						.map(storage::getDictionary)
-						.mapToLong(Dictionary::estimateMemoryConsumption)
-						.sum(),
+					   .flatMap(imp -> imp.getDictionaries().stream())
+					   .filter(Objects::nonNull)
+					   .map(storage::getDictionary)
+					   .mapToLong(Dictionary::estimateMemoryConsumption)
+					   .sum(),
 				//total size of entries
 				imports.stream()
-						.mapToLong(Import::estimateMemoryConsumption)
-						.sum(),
+					   .mapToLong(Import::estimateMemoryConsumption)
+					   .sum(),
 				// Total size of CBlocks
 				imports.stream()
-						.mapToLong(imp -> calculateCBlocksSizeBytes(imp, storage.getAllConcepts()))
-						.sum(),
-				imports
+					   .mapToLong(imp -> calculateCBlocksSizeBytes(imp, storage.getAllConcepts()))
+					   .sum(),
+				imports,
+				storage.getAllConcepts().stream()
+					   .map(Concept::getConnectors)
+					   .flatMap(Collection::stream)
+					   .filter(conn -> conn.getTable().equals(table))
+					   .map(Connector::getConcept).collect(Collectors.toSet())
 
 		);
 	}
@@ -196,19 +216,19 @@ public class UIProcessor {
 		// CBlocks are created per (per Bucket) Import per Connector targeting this table
 		// Since the overhead of a single CBlock is minor, we gloss over the fact, that there are multiple and assume it is only a single very large one.
 		return concepts.stream()
-				.filter(TreeConcept.class::isInstance)
-				.flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
-				.filter(con -> con.getTable().equals(imp.getTable()))
-				.mapToLong(con -> {
-					// Per event an int array is stored marking the path to the concept child.
-					final double avgDepth = con.getConcept()
-							.getAllChildren()
-							.mapToInt(ConceptTreeNode::getDepth)
-							.average()
-							.orElse(1d);
+					   .filter(TreeConcept.class::isInstance)
+					   .flatMap(concept -> ((TreeConcept) concept).getConnectors().stream())
+					   .filter(con -> con.getTable().equals(imp.getTable()))
+					   .mapToLong(con -> {
+						   // Per event an int array is stored marking the path to the concept child.
+						   final double avgDepth = con.getConcept()
+													  .getAllChildren()
+													  .mapToInt(ConceptTreeNode::getDepth)
+													  .average()
+													  .orElse(1d);
 
-					return CBlock.estimateMemoryBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), avgDepth);
-				})
-				.sum();
+						   return CBlock.estimateMemoryBytes(imp.getNumberOfEntities(), imp.getNumberOfEntries(), avgDepth);
+					   })
+					   .sum();
 	}
 }
