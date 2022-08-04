@@ -65,7 +65,7 @@ public enum TemporalSamplerFactory {
 				}
 
 				CDateRange span = data.span();
-
+				// It would not produce sensible to just return random data.
 				if (span.isAll()) {
 					return OptionalInt.empty();
 				}
