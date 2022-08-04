@@ -15,7 +15,7 @@
 	<@layout.kc k="SecondaryIds">
 	    <ul>
         <#list c.secondaryIds as secondaryId>
-            <li>${secondaryId}</li>
+            <li>${secondaryId.name}</li>
         </#list>
 	    </ul>
 	</@layout.kc>
