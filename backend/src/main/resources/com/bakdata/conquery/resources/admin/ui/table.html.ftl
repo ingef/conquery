@@ -16,6 +16,15 @@
 		</#list>
 		</ul>
 	</@layout.kc>
+	<@layout.kc k="Concepts">
+    		<ul>
+    		<#list c.concepts as concept>
+    			<li>
+    				<a href="/admin-ui/datasets/${c.table.dataset.id}/concepts/${concept.id}">${concept.name}</a>
+    			</li>
+    		</#list>
+    		</ul>
+    </@layout.kc>
 	<@layout.kc k="Columns">
 		<table class="headed-table">
 			<tr>
