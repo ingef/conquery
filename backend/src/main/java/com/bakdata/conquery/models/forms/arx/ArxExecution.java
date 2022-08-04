@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.forms.arx;
 import static com.bakdata.conquery.models.types.SemanticType.IdentificationT;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -13,7 +12,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.forms.ArxForm;
-import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -33,16 +31,15 @@ import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.MoreCollectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.deidentifier.arx.ARXAnonymizer;
 import org.deidentifier.arx.ARXConfiguration;
 import org.deidentifier.arx.ARXResult;
-import org.deidentifier.arx.AttributeType;
 import org.deidentifier.arx.Data;
 import org.deidentifier.arx.DataHandle;
-import org.deidentifier.arx.DataType;
 import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
 import org.deidentifier.arx.criteria.KAnonymity;
 
@@ -83,6 +80,23 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 			return;
 		}
 
+		try {
+			super.finish(storage, anonymizeResult());
+		}
+		catch (ConqueryError e) {
+			log.error("Unable to anonymize {}", getId(), e);
+			setError(e);
+			super.finish(storage, ExecutionState.FAILED);
+		}
+		catch (IOException | IllegalArgumentException e) {
+			log.error("Unable to anonymize {}", getId(), e);
+			setError(new ConqueryError.ExecutionProcessingError());
+			super.finish(storage, ExecutionState.FAILED);
+		}
+	}
+
+	private ExecutionState anonymizeResult() throws IOException {
+		final Stopwatch stopwatch = Stopwatch.createStarted();
 		Shareable.log.trace("Query finished. Starting anonymization");
 
 		// Convert to ARX data format
@@ -107,7 +121,8 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 				 String[] stringData = new String[resultInfos.size()];
 				 for (int cellIdx = 0; cellIdx < resultInfos.size(); cellIdx++) {
 					 final ResultInfo resultInfo = resultInfos.get(cellIdx);
-					 stringData[cellIdx] = resultInfo.getType().printNullable(printSettings, line[cellIdx]);
+					 final Object cell = line[cellIdx];
+					 stringData[cellIdx] = resultInfo.getType().printNullable(printSettings, cell);
 				 }
 				 return stringData;
 			 })
@@ -140,23 +155,16 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 		anonymizer.setMaximumSnapshotSizeSnapshot(form.getMaximumSnapshotSizeSnapshot());
 		anonymizer.setHistorySize(form.getHistorySize());
 
-		try {
-			result = anonymizer.anonymize(data, config);
+		result = anonymizer.anonymize(data, config);
 
-			if (!result.isResultAvailable()) {
-				setError(new ConqueryError.ExecutionProcessingContextError("Unable to create anonymized result", Map.of(), null));
-				super.finish(storage, ExecutionState.FAILED);
-				return;
-			}
-		}
-		catch (IOException | IllegalArgumentException e) {
-			log.error("Unable to anonymize", e);
-			setError(new ConqueryError.ExecutionProcessingError());
-			super.finish(storage, ExecutionState.FAILED);
-			return;
+		if (!result.isResultAvailable()) {
+
+			log.info("Failed anonymization after {}", stopwatch.elapsed());
+			throw new ConqueryError.ExecutionProcessingContextError("Unable to create anonymized result", Map.of(), null);
 		}
 
-		super.finish(storage, executionState);
+		log.info("Finished anonymization after {}", stopwatch.elapsed());
+		return ExecutionState.DONE;
 	}
 
 	private static AttributeTypeBuilder createAttributeTypeBuilder(ResultInfo info) {
