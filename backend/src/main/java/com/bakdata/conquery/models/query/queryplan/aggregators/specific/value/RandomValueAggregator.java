@@ -19,7 +19,7 @@ import lombok.ToString;
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
-	private final Random random = new Random(ConqueryConstants.RANDOM_SEED);
+	private Random random;
 	private int event;
 	private int nValues = 0;
 	private Bucket bucket;
@@ -33,6 +33,7 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 		event = -1;
 		nValues = 0;
 		bucket = null;
+		random = new Random(ConqueryConstants.RANDOM_SEED);
 	}
 
 	/**
