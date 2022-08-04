@@ -1,7 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.select;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
@@ -42,7 +45,11 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	 */
 	@Setter @Getter @JsonProperty("default")
 	private boolean isDefault = false;
-	
+
+	@JsonIgnore
+	@Nullable
+	public abstract Column[] getRequiredColumns();
+
 	@JsonIgnore @Getter(lazy=true)
 	private final ResultType resultType = createAggregator().getResultType();
 

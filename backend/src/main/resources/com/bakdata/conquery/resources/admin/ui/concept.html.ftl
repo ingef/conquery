@@ -22,7 +22,9 @@
 		<@layout.kid k="ID" v=connector.id/>
 		<@layout.kv k="Label" v=connector.label/>
 		<@layout.kv k="Validity Dates" v=connector.validityDates?join(', ')/>
-		<@layout.kv k="Table" v=connector.table/>
+		<@layout.kc k="Table">
+		<a href="./${c.dataset.id}/tables/${connector.table.id}">${connector.table.name}</a>
+        </@layout.kc>
 		<@layout.kc k="Filters">
 			<ul>
 			<#list connector.collectAllFilters() as filter>
@@ -30,8 +32,7 @@
 					<@layout.kid k="ID" v=filter.id/>
 					<@layout.kv k="Label" v=filter.label/>
 					<@layout.kv k="Type" v=filter.class.simpleName/>
-					<@layout.kv k="Unit" v=filter.unit/>
-					<@layout.kv k="Description" v=filter.description/>
+					<@layout.kv k="Columns" v=filter.requiredColumns?join(', ')/>
 				</li>
 			</#list>
 			</ul>
@@ -43,7 +44,7 @@
 					<@layout.kid k="ID" v=select.id/>
 					<@layout.kv k="Label" v=select.label/>
 					<@layout.kv k="Type" v=select.class.simpleName/>
-					<@layout.kv k="Description" v=select.description/>
+					<@layout.kv k="Columns" v=select.requiredColumns?join(', ')/>
 				</li>
 			</#list>
 			</ul>
