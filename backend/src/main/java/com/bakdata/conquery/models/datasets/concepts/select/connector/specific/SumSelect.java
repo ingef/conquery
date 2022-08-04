@@ -1,13 +1,15 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
@@ -26,6 +28,7 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 @Setter
@@ -97,6 +100,23 @@ public class SumSelect extends Select {
 
 
 	private static final EnumSet<MajorTypeId> NUMBER_COMPATIBLE = EnumSet.of(MajorTypeId.INTEGER, MajorTypeId.MONEY, MajorTypeId.DECIMAL, MajorTypeId.REAL);
+
+	@Nullable
+	@Override
+	public Column[] getRequiredColumns() {
+		List<Column> out = new ArrayList<>();
+
+		out.add(column);
+		if(distinctByColumn != null){
+			out.add(distinctByColumn);
+		}
+
+		if(subtractColumn != null){
+			out.add(subtractColumn);
+		}
+
+		return out.toArray(Column[]::new);
+	}
 
 
 	@ValidationMethod(message = "Column is not of Summable Type.")
