@@ -12,13 +12,6 @@
 	<@layout.kv k="Dictionaries" v=layout.si(c.dictionariesSize)+"B"/>
 	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
 	<@layout.kc k="IdMapping"><a href="./${c.ds.id}/mapping">Here</a></@layout.kc>
-	<@layout.kc k="SecondaryIds">
-	    <ul>
-        <#list c.secondaryIds as secondaryId>
-            <li>${secondaryId.name}</li>
-        </#list>
-	    </ul>
-	</@layout.kc>
     <@layout.kc k="Mappings">
         <ul>
         <#list c.internToExternMappers as mapper>
@@ -48,6 +41,14 @@
 			</li>
 		</#list>
 		</ul>
+	</@layout.kc>
+
+    <@layout.kc k="SecondaryIds">
+	    <ul>
+        <#list c.secondaryIds as secondaryId>
+            <li>${secondaryId}</li>
+        </#list>
+	    </ul>
 	</@layout.kc>
 
     <div class="container">

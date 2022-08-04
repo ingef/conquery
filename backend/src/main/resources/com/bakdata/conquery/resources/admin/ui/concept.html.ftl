@@ -23,7 +23,7 @@
 		<@layout.kv k="Label" v=connector.label/>
 		<@layout.kv k="Validity Dates" v=connector.validityDates?join(', ')/>
 		<@layout.kc k="Table">
-		<a href="./${c.dataset.id}/tables/${connector.table.id}">${connector.table.name}</a>
+		<a href="/admin-ui/datasets/${c.dataset.id}/tables/${connector.table.id}">${connector.table.name}</a>
         </@layout.kc>
 		<@layout.kc k="Filters">
 			<ul>
