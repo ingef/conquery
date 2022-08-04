@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.validation.Validator;
@@ -284,6 +285,14 @@ public class AdminProcessor {
 				)
 				.build();
 	}
+
+	public boolean isBusy() {
+		//Note that this does not and cannot check for fast jobs!
+		return getJobs().values().stream()
+						.map(JobManagerStatus::getJobs)
+						.anyMatch(Predicate.not(Collection::isEmpty));
+	}
+
 
 	public Object executeScript(String script) {
 		CompilerConfiguration config = new CompilerConfiguration();
