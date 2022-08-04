@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.util.Objects;
+import java.util.stream.Stream;
+
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -44,9 +47,8 @@ public class CountSelect extends Select {
 	@Nullable
 	@Override
 	public Column[] getRequiredColumns() {
-		if (distinctByColumn != null) {
-			return new Column[]{column, distinctByColumn};
-		}
-		return new Column[]{column};
+		return Stream.of(getColumn(), getDistinctByColumn())
+					 .filter(Objects::nonNull)
+					 .toArray(Column[]::new);
 	}
 }

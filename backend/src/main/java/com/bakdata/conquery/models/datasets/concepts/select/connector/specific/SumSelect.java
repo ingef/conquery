@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
@@ -104,18 +104,9 @@ public class SumSelect extends Select {
 	@Nullable
 	@Override
 	public Column[] getRequiredColumns() {
-		List<Column> out = new ArrayList<>();
-
-		out.add(column);
-		if(distinctByColumn != null){
-			out.add(distinctByColumn);
-		}
-
-		if(subtractColumn != null){
-			out.add(subtractColumn);
-		}
-
-		return out.toArray(Column[]::new);
+		return Stream.of(getColumn(), getSubtractColumn(), getDistinctByColumn())
+					 .filter(Objects::nonNull)
+					 .toArray(Column[]::new);
 	}
 
 
