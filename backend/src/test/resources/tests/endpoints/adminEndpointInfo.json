@@ -272,7 +272,7 @@
   {
     "method": "GET",
     "path": "/busy",
-    "clazz": "AdminUIResource"
+    "clazz": "AdminResource"
   },
   {
     "method": "GET",
