@@ -28,7 +28,6 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -42,12 +41,12 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 	@JsonBackReference
 	@NotNull
-	@ToString.Exclude
 	private Table table;
 	@NotNull
 	private MajorTypeId type;
 
 	private int minSuffixLength = 3;
+
 	private boolean generateSuffixes;
 	private boolean searchDisabled = false;
 

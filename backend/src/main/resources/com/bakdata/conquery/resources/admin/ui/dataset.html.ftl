@@ -12,13 +12,6 @@
 	<@layout.kv k="Dictionaries" v=layout.si(c.dictionariesSize)+"B"/>
 	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
 	<@layout.kc k="IdMapping"><a href="./${c.ds.id}/mapping">Here</a></@layout.kc>
-	<@layout.kc k="SecondaryIds">
-	    <ul>
-        <#list c.secondaryIds as secondaryId>
-            <li>${secondaryId}</li>
-        </#list>
-	    </ul>
-	</@layout.kc>
     <@layout.kc k="Mappings">
         <ul>
         <#list c.internToExternMappers as mapper>
@@ -31,9 +24,9 @@
     </@layout.kc>
 	<@layout.kc k="Tables">
 		<ul>
-			<#list c.tables?sort_by("label") as table>
+			<#list c.tables?sort_by("name") as table>
 				<li>
-					<a href="./${c.ds.id}/tables/${table.id}">${table.label} <span>[${table.imports}] (${table.entries})</span></a>
+					<a href="./${c.ds.id}/tables/${table.id}">${table.name} <span>[${table.imports}] (${table.entries})</span></a>
 					<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/tables/${table.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 				</li>
 			</#list>
@@ -41,13 +34,21 @@
 	</@layout.kc>
 	<@layout.kc k="Concepts">
 		<ul>
-		<#list c.concepts?sort_by("label") as concept>
+		<#list c.concepts?sort_by("name") as concept>
 			<li>
-				<a href="./${c.ds.id}/concepts/${concept.id}">${concept.label}</a>
+				<a href="./${c.ds.id}/concepts/${concept.id}">${concept.name}</a>
 				<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/concepts/${concept.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 			</li>
 		</#list>
 		</ul>
+	</@layout.kc>
+
+    <@layout.kc k="SecondaryIds">
+	    <ul>
+        <#list c.secondaryIds?sort_by("name") as secondaryId>
+            <li>${secondaryId}</li>
+        </#list>
+	    </ul>
 	</@layout.kc>
 
     <div class="container">
