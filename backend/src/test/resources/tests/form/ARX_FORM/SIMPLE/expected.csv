@@ -12,4 +12,5 @@ result,anon_AUTO date_FIRST,anon_AUTO age_FIRST,anon_AUTO sex_FIRST
 1,"[2010, 2020[",6,f
 1,"[2010, 2020[",6,m
 1,"[2010, 2020[",7,m
-1,"[2010, 2020[",6,m
+1,,6,m
+1,,6,m

@@ -1,8 +1,11 @@
 package com.bakdata.conquery.models.forms.arx;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
+import com.google.common.base.Strings;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.deidentifier.arx.AttributeType;
@@ -39,6 +42,7 @@ public interface AttributeTypeBuilder {
 
 	class Date implements AttributeTypeBuilder {
 
+		public static final String SUPPRESSING_GRANULARITY = "*";
 		private final Set<String> values = new HashSet<>();
 
 		@Override
@@ -48,13 +52,29 @@ public interface AttributeTypeBuilder {
 
 		@Override
 		public AttributeType build() {
-			return HierarchyBuilderDate.create(
+			final AttributeType.Hierarchy build = HierarchyBuilderDate.create(
 					DataType.DATE,
 					HierarchyBuilderDate.Granularity.DAY_MONTH_YEAR,
 					HierarchyBuilderDate.Granularity.MONTH_YEAR,
 					HierarchyBuilderDate.Granularity.YEAR,
 					HierarchyBuilderDate.Granularity.DECADE
-			).build(values.toArray(String[]::new));
+			).build(values.stream().filter(Predicate.not(Strings::isNullOrEmpty)).toArray(String[]::new));
+
+			// WORKAROUND: Add empty string handling to the date hierarchy
+			final String[][] hierarchy = build.getHierarchy();
+			for (int i = 0; i < hierarchy.length; i++) {
+				// Extend the hierarchy by a suppressing granularity (*)
+				String[] extended = Arrays.copyOf(hierarchy[i], hierarchy[i].length + 1);
+				extended[extended.length - 1] = SUPPRESSING_GRANULARITY;
+				hierarchy[i] = extended;
+			}
+			String[][] newhierarchy = Arrays.copyOf(hierarchy, hierarchy.length + 1);
+			String[] emptyValueHierarchy = new String[hierarchy.length > 0 ? hierarchy[0].length : 0];
+			Arrays.fill(emptyValueHierarchy, "");
+			emptyValueHierarchy[emptyValueHierarchy.length - 1] = "*";
+			newhierarchy[newhierarchy.length - 1] = emptyValueHierarchy;
+
+			return AttributeType.Hierarchy.create(newhierarchy);
 		}
 	}
 
