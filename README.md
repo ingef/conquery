@@ -73,7 +73,7 @@ To make you own data (in form of CSVs) availiable to conquery some steps are nec
 3. Preprocess your data from CSV to CQPP.
 4. Upload everything.
 
-To get a better impression of the single steps, take a look at the [Tutorial](https://github.com/bakdata/conquery/tree/tutorial/mimic_iii_demo/mimic_iii.ipynb)
+To get a better impression of the single steps, take a look at the [Tutorials](./tutorial/mimic_iii_demo/README.md)
 
 
 ## Acknowledgements

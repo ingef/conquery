@@ -1,0 +1,29 @@
+{
+    "title": "Compund Date Range Import Column",
+    "description": "The import column format for virtual date ranges based on two actual date columns",
+    "type": "object",
+    "properties": {
+        "name": {
+            "$ref": "cqIdPart.json#"
+        },
+        "startColumn": {
+            "type": "string"
+        },
+        "endColumn": {
+            "type": "string"
+        },
+        "operation": {
+            "type": "string",
+            "pattern": "^COMPOUND_DATE_RANGE$"
+        },
+        "required": {
+            "type": "boolean"
+        }
+    },
+    "required": [
+        "name",
+        "startColumn",
+        "endColumn",
+        "operation"
+    ]
+}
