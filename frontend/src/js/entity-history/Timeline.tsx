@@ -422,7 +422,34 @@ export const Timeline = memo(
   },
 );
 
-const diff = (o1: Object, o2: Object) => {};
+const diff = (objects: Object[]) => {
+  if (objects.length < 2) return {};
+
+  const differences: Record<string, Set<any>> = {};
+
+  for (let i = 0; i < objects.length - 1; i++) {
+    const o1 = objects[i] as any;
+    const o2 = objects[i + 1] as any;
+    const keys = Object.keys(o1);
+
+    for (const key of keys) {
+      if (
+        o1.hasOwnProperty(key) &&
+        o2.hasOwnProperty(key) &&
+        o1[key] !== o2[key]
+      ) {
+        if (differences[key]) {
+          differences[key].add(o1[key]);
+          differences[key].add(o2[key]);
+        } else {
+          differences[key] = new Set([o1[key], o2[key]]);
+        }
+      }
+    }
+  }
+
+  return differences;
+};
 
 const findGroups = (eventsPerYears: EventsPerYear[]) => {
   return eventsPerYears.map(({ year, quarterwiseData }) => {
@@ -431,7 +458,7 @@ const findGroups = (eventsPerYears: EventsPerYear[]) => {
       quarterwiseData: quarterwiseData.map(({ quarter, events }) => {
         if (events.length < 2) return { quarter, groupedEvents: [events] };
 
-        const eventsByDayAndSource = [[events[0]]];
+        const eventsByDayAndSource: EntityEvent[][] = [[events[0]]];
 
         for (let i = 1; i < events.length - 1; i++) {
           const evt = events[i];
@@ -453,7 +480,11 @@ const findGroups = (eventsPerYears: EventsPerYear[]) => {
             eventsByDayAndSource.push([evt]);
           }
         }
-        return { quarter, groupedEvents: eventsByDayAndSource };
+        return {
+          quarter,
+          groupedEvents: eventsByDayAndSource,
+          differences: eventsByDayAndSource.map((events) => diff(events)),
+        };
       }),
     };
   });
