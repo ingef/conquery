@@ -201,4 +201,8 @@ public class NamespaceStorage extends NamespacedStorage {
 	public void addSearchIndex(SearchIndex searchIndex) {
 		searchIndexes.add(searchIndex);
 	}
+
+	public Collection<SearchIndex> getSearchIndices() {
+		return searchIndexes.getAll();
+	}
 }

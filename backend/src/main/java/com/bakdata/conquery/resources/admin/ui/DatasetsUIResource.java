@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -70,6 +71,7 @@ public class DatasetsUIResource {
 						namespace.getDataset(),
 						namespace.getStorage().getSecondaryIds(),
 						namespace.getStorage().getInternToExternMappers(),
+						namespace.getStorage().getSearchIndices(),
 						namespace.getStorage().getTables().stream()
 								 .map(table -> new TableInfos(
 										 table.getId(),
@@ -137,6 +139,7 @@ public class DatasetsUIResource {
 		private Dataset ds;
 		private Collection<SecondaryIdDescription> secondaryIds;
 		private Collection<InternToExternMapper> internToExternMappers;
+		private Collection<SearchIndex> searchIndices;
 		private Collection<TableInfos> tables;
 		private Collection<? extends Concept<?>> concepts;
 		private long dictionariesSize;
