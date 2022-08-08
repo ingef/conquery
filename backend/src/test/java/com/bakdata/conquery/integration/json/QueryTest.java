@@ -73,13 +73,16 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 		importTableContents(support, content.getTables());
 		support.waitUntilWorkDone();
-		
+
 		importIdMapping(support, content);
 		support.waitUntilWorkDone();
-		
+
 		importPreviousQueries(support, content, support.getTestUser());
 		support.waitUntilWorkDone();
-		
+
+		updateMatchingStats(support);
+		support.waitUntilWorkDone();
+
 		query = IntegrationUtils.parseQuery(support, rawQuery);
 	}
 

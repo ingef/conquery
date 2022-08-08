@@ -28,15 +28,14 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Data
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @AllArgsConstructor
-@NoArgsConstructor(onConstructor_ = {@JsonCreator})
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties({"columns"})
 @ToString
 @Slf4j
@@ -50,29 +49,29 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	private Dataset dataset;
 
 	@NotEmpty
-	private String name;
+	private final String name;
 
 	/**
 	 * Path to CSV File.
 	 */
 	@NotNull
-	private URL filePath;
+	private final URL filePath;
 
 	/**
 	 * Value to be sent for filtering.
 	 */
 	@NotEmpty
-	private String columnValue;
+	private final String columnValue;
 	/**
 	 * Value displayed in Select list. Usually concise display.
 	 */
 	@NotEmpty
-	private String value;
+	private final String value;
 	/**
 	 * More detailed value. Displayed when value is selected.
 	 */
 	@NotEmpty
-	private String optionValue;
+	private final String optionValue;
 
 	private int minSuffixLength = 3;
 	private boolean generateSuffixes = true;
@@ -80,7 +79,6 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NonNull
 	private IndexService indexService;
 
 	/**
