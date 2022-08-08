@@ -38,7 +38,7 @@ const useLoadForms = ({ datasetId }: { datasetId: DatasetT["id"] | null }) => {
     }
 
     loadForms();
-  }, [store, datasetId]);
+  }, [store, datasetId, getForms, dispatch]);
 };
 
 export const useDatasetOptions = () => {
