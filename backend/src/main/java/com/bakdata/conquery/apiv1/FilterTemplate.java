@@ -2,12 +2,12 @@ package com.bakdata.conquery.apiv1;
 
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.SearchConfig;
@@ -40,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonIgnoreProperties({"columns"})
 @ToString
 @Slf4j
+@CPSType(id = "CSV_TEMPLATE", base = SearchIndex.class)
 public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable, SearchIndex {
 
 	private static final long serialVersionUID = 1L;

@@ -26,7 +26,6 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMutex;
@@ -339,6 +338,7 @@ public class AdminDatasetProcessor {
 
 					ns.sendToAll(new UpdateMatchingStatsMessage());
 					ns.getFilterSearch().updateSearch();
+					ns.updateInternToExternMappings();
 				}
 		));
 	}
