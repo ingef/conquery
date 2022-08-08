@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { FC, memo, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -33,19 +33,23 @@ interface PropsT {
 
 const ConceptTreesOpenButtons: FC<PropsT> = ({ className }) => {
   const dispatch = useDispatch();
-  const { t } = useTranslation();
 
   const conceptTreesOpen = useSelector<StateT, ConceptTreesOpenStateT>(
     (state) => state.conceptTreesOpen,
   );
   const rootConceptIds = useRootConceptIds();
+  const rootConceptIdsRef = useRef(rootConceptIds);
+  rootConceptIdsRef.current = rootConceptIds;
 
-  const onCloseAllConceptOpen = () =>
-    dispatch(closeAllConceptOpen({ rootConceptIds }));
-  const onResetAllConceptOpen = () => {
+  const onCloseAllConceptOpen = useCallback(() => {
+    dispatch(
+      closeAllConceptOpen({ rootConceptIds: rootConceptIdsRef.current }),
+    );
+  }, [dispatch]);
+  const onResetAllConceptOpen = useCallback(() => {
     dispatch(resetAllConceptOpen());
     dispatch(clearSearchQuery());
-  };
+  }, [dispatch]);
 
   const areAllClosed = rootConceptIds.every(
     (id) => conceptTreesOpen[id] === false,
@@ -58,20 +62,45 @@ const ConceptTreesOpenButtons: FC<PropsT> = ({ className }) => {
   const isCloseAllDisabled = areAllClosed || hasSearch;
 
   return (
-    <Row className={className}>
-      <SxWithTooltip text={t("conceptTreesOpen.resetAll")}>
-        <SxIconButton frame icon="home" onClick={onResetAllConceptOpen} />
-      </SxWithTooltip>
-      <SxWithTooltip text={t("conceptTreesOpen.closeAll")}>
-        <SxIconButton
-          disabled={isCloseAllDisabled}
-          frame
-          icon="folder-minus"
-          onClick={onCloseAllConceptOpen}
-        />
-      </SxWithTooltip>
-    </Row>
+    <ConceptTreesOpenButtonsView
+      className={className}
+      isCloseAllDisabled={isCloseAllDisabled}
+      onCloseAllConceptOpen={onCloseAllConceptOpen}
+      onResetAllConceptOpen={onResetAllConceptOpen}
+    />
   );
 };
+
+const ConceptTreesOpenButtonsView = memo(
+  ({
+    className,
+    isCloseAllDisabled,
+    onResetAllConceptOpen,
+    onCloseAllConceptOpen,
+  }: {
+    className?: string;
+    isCloseAllDisabled: boolean;
+    onResetAllConceptOpen: () => void;
+    onCloseAllConceptOpen: () => void;
+  }) => {
+    const { t } = useTranslation();
+
+    return (
+      <Row className={className}>
+        <SxWithTooltip text={t("conceptTreesOpen.resetAll")}>
+          <SxIconButton frame icon="home" onClick={onResetAllConceptOpen} />
+        </SxWithTooltip>
+        <SxWithTooltip text={t("conceptTreesOpen.closeAll")}>
+          <SxIconButton
+            disabled={isCloseAllDisabled}
+            frame
+            icon="folder-minus"
+            onClick={onCloseAllConceptOpen}
+          />
+        </SxWithTooltip>
+      </Row>
+    );
+  },
+);
 
 export default ConceptTreesOpenButtons;

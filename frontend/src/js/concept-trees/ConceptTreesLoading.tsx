@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import FaIcon from "../icon/FaIcon";
@@ -25,4 +26,4 @@ const ConceptTreesLoading = () => {
   );
 };
 
-export default ConceptTreesLoading;
+export default memo(ConceptTreesLoading);
