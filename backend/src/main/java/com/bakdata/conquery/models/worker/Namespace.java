@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
+import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.index.MapIndexService;
+import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
@@ -69,7 +69,7 @@ public class Namespace implements Closeable {
 
 	private final FilterSearch filterSearch;
 
-	private final MapIndexService indexService;
+	private final IndexService indexService;
 
 	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
 	private final List<Injectable> injectables;
@@ -78,9 +78,8 @@ public class Namespace implements Closeable {
 
 		// Prepare namespace dependent Jackson injectables
 		List<Injectable> injectables = new ArrayList<>();
-		final MapIndexService indexService = new MapIndexService(config.getCsv().createCsvParserSettings());
+		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
 		injectables.add(indexService);
-
 		ObjectMapper persistenceMapper = mapperCreator.apply(View.Persistence.Manager.class);
 		ObjectMapper communicationMapper = mapperCreator.apply(View.InternalCommunication.class);
 		ObjectMapper preprocessMapper = mapperCreator.apply(null);
@@ -255,7 +254,7 @@ public class Namespace implements Closeable {
 		return getStorage().getPrimaryDictionary().getSize();
 	}
 
-	public void clearInternToExternCache() {
+	public void clearIndexCache() {
 		indexService.evictCache();
 	}
 }

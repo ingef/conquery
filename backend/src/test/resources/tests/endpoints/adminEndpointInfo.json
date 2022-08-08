@@ -1,109 +1,119 @@
 [
-	{
-		"method": "GET",
-		"path": "/datasets",
-		"clazz": "AdminDatasetsResource"
-	},
-	{
-		"method": "POST",
-		"path": "/datasets",
-		"clazz": "AdminDatasetsResource"
-	},
-	{
-		"method": "DELETE",
-		"path": "/datasets/{dataset}",
-		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "GET",
-		"path": "/datasets/{dataset}",
-		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "GET",
-		"path": "/datasets/{dataset}/concepts",
-		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "POST",
-		"path": "/datasets/{dataset}/concepts",
-		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "PUT",
-		"path": "/datasets/{dataset}/concepts",
-		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "DELETE",
-		"path": "/datasets/{dataset}/concepts/{concept}",
-		"clazz": "AdminConceptsResource"
-	},
-	{
-		"method": "GET",
-		"path": "/datasets/{dataset}/concepts/{concept}",
-		"clazz": "AdminConceptsResource"
-	},
-	{
-		"method": "POST",
-		"path": "/datasets/{dataset}/cqpp",
-		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "POST",
-		"path": "/datasets/{dataset}/imports",
-		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "POST",
-		"path": "/datasets/{dataset}/label",
-		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "GET",
-		"path": "/datasets/{dataset}/mapping",
-		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "POST",
-		"path": "/datasets/{dataset}/mapping",
-		"clazz": "AdminDatasetResource"
-	},
-    {
-        "method": "POST",
-        "path": "/datasets/{dataset}/secondaryId",
+  {
+    "method": "GET",
+    "path": "/datasets",
+    "clazz": "AdminDatasetsResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets",
+    "clazz": "AdminDatasetsResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/datasets/{dataset}",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/concepts",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/concepts",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "PUT",
+    "path": "/datasets/{dataset}/concepts",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/datasets/{dataset}/concepts/{concept}",
+    "clazz": "AdminConceptsResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/concepts/{concept}",
+    "clazz": "AdminConceptsResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/cqpp",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/imports",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/label",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/mapping",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/mapping",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/secondaryId",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/internToExtern",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "POST",
+        "path": "/datasets/{dataset}/searchIndex",
         "clazz": "AdminDatasetResource"
     },
     {
         "method": "POST",
-        "path": "/datasets/{dataset}/internToExtern",
-        "clazz": "AdminDatasetResource"
-    },
-    {
-        "method": "POST",
-        "path": "/datasets/{dataset}/clear-internToExtern-cache",
-        "clazz": "AdminDatasetResource"
+        "path": "/datasets/{dataset}/clear-index-cache",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/datasets/{dataset}/secondaryId/{secondaryId}",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/datasets/{dataset}/internToExtern/{internToExternId}",
+    "clazz": "AdminDatasetResource"
     },
     {
         "method": "DELETE",
-        "path": "/datasets/{dataset}/secondaryId/{secondaryId}",
+        "path": "/datasets/{dataset}/searchIndex/{searchIndexId}",
         "clazz": "AdminDatasetResource"
     },
     {
-        "method": "DELETE",
-        "path": "/datasets/{dataset}/internToExtern/{internToExternId}",
+        "method": "POST",
+        "path": "/datasets/{dataset}/structure",
         "clazz": "AdminDatasetResource"
     },
-	{
-		"method": "POST",
-		"path": "/datasets/{dataset}/structure",
-		"clazz": "AdminDatasetResource"
-	},
-	{
-		"method": "GET",
-		"path": "/datasets/{dataset}/tables",
-		"clazz": "AdminDatasetResource"
-	},
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/tables",
+        "clazz": "AdminDatasetResource"
+    },
 	{
 		"method": "POST",
 		"path": "/datasets/{dataset}/tables",
@@ -270,33 +280,38 @@
 		"clazz": "AdminResource"
 	},
 	{
-		"method": "GET",
-		"path": "/queries",
-		"clazz": "AdminResource"
-	},
-	{
-		"method": "POST",
-		"path": "/jobs/{jobId}/cancel",
-		"clazz": "AdminResource"
-	},
-	{
-		"method": "POST",
-		"path": "/script",
-		"clazz": "AdminResource"
-	},
-	{
-		"method": "POST",
-		"path": "/script",
-		"clazz": "AdminResource"
-	},
-	{
-		"method": "GET",
-		"path": "/auth-overview/csv",
-		"clazz": "AuthOverviewResource"
-	},
-	{
-		"method": "GET",
-		"path": "/auth-overview/csv/group/{groupId}",
-		"clazz": "AuthOverviewResource"
-	}
+    "method": "GET",
+    "path": "/busy",
+    "clazz": "AdminResource"
+  },
+  {
+    "method": "GET",
+    "path": "/queries",
+    "clazz": "AdminResource"
+  },
+  {
+    "method": "POST",
+    "path": "/jobs/{jobId}/cancel",
+    "clazz": "AdminResource"
+  },
+  {
+    "method": "POST",
+    "path": "/script",
+    "clazz": "AdminResource"
+  },
+  {
+    "method": "POST",
+    "path": "/script",
+    "clazz": "AdminResource"
+  },
+  {
+    "method": "GET",
+    "path": "/auth-overview/csv",
+    "clazz": "AuthOverviewResource"
+  },
+  {
+    "method": "GET",
+    "path": "/auth-overview/csv/group/{groupId}",
+    "clazz": "AuthOverviewResource"
+  }
 ]

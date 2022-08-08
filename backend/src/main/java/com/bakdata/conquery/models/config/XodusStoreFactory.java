@@ -51,6 +51,7 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
@@ -196,7 +197,7 @@ public class XodusStoreFactory implements StoreFactory {
 		Environment env = findEnvironment(pathName);
 		boolean exists = env.computeInTransaction(t -> {
 			final List<String> allStoreNames = env.getAllStoreNames(t);
-			final boolean complete = allStoreNames.containsAll(storesToTest);
+			final boolean complete = new HashSet<>(allStoreNames).containsAll(storesToTest);
 			if (complete) {
 				log.trace("Storage contained all stores: {}", storesToTest);
 				return true;
@@ -227,6 +228,11 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, INTERN_TO_EXTERN, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+	}
+
+	@Override
+	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SEARCH_INDEX, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
 	}
 
 	@Override
@@ -362,15 +368,18 @@ public class XodusStoreFactory implements StoreFactory {
 
 	private Environment findEnvironment(@NonNull File path) {
 		synchronized (activeEnvironments) {
-			return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(path, getXodus().createConfig()));
+			try {
+				return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(path, getXodus().createConfig()));
+			}
+			catch (Exception e) {
+				throw new IllegalStateException("Unable to open environment: " + path, e);
+			}
 		}
 	}
 
 	private Environment findEnvironment(String pathName) {
-		synchronized (activeEnvironments) {
-			File path = getStorageDir(pathName);
-			return activeEnvironments.computeIfAbsent(path, (p) -> Environments.newInstance(p, getXodus().createConfig()));
-		}
+		File path = getStorageDir(pathName);
+		return findEnvironment(path);
 	}
 
 	private void closeStore(XodusStore store) {

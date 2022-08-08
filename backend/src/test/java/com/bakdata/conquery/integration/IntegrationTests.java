@@ -30,6 +30,7 @@ import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Strings;
 import io.github.classgraph.Resource;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -101,6 +102,15 @@ public class IntegrationTests {
 		List<Class<?>> programmatic =
 				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 											 .filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
+											 .filter(classInfo -> {
+												 String regexFilter = System.getenv(TestTags.TEST_PROGRAMMATIC_REGEX_FILTER);
+												 if (Strings.isNullOrEmpty(regexFilter)) {
+													 // No filter set: allow all tests
+													 return true;
+												 }
+												 return classInfo.getSimpleName().matches(regexFilter);
+
+											 })
 											 .loadClasses();
 
 		return programmatic

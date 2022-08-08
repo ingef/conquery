@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterators;
 import it.unimi.dsi.fastutil.objects.Object2DoubleAVLTreeMap;
@@ -204,7 +205,6 @@ public class TrieSearch<T extends Comparable<T>> {
 				.distinct()
 				.forEach(kw -> doPut(kw, item));
 	}
-
 
 	public Collection<T> listItems() {
 		//TODO this a pretty dangerous operation, I'd rather see a session based iterator instead

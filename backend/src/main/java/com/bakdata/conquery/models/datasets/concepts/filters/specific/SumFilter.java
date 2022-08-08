@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.util.Objects;
+import java.util.stream.Stream;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -80,7 +83,9 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[]{getColumn(), getSubtractColumn(), getDistinctByColumn()};
+		return Stream.of(getColumn(), getSubtractColumn(), getDistinctByColumn())
+					 .filter(Objects::nonNull)
+					 .toArray(Column[]::new);
 	}
 
 	@Override

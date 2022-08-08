@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.api.FilterResource;
@@ -75,7 +76,10 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 		Files.write(tmpCSv, String.join(csvConf.getLineSeparator(), lines)
 								  .getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), "HEADER", "", "", 2, true));
+
+		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings());
+
+		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri().toURL(), "HEADER", "", "", 2, true, indexService));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "updateMatchingStats")
