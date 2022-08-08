@@ -61,7 +61,7 @@ public final class IdUtil {
 		try {
 			Class<?> returnType = MethodUtils.getAccessibleMethod(cl, methodName).getReturnType();
 			if (!Id.class.isAssignableFrom(returnType) || Id.class.equals(returnType)) {
-				throw new IllegalStateException("The type `" + returnType + "` of `" + cl + "#" + methodName + "` is not a specific subtype of IId");
+				throw new IllegalStateException("The type `" + returnType + "` of `" + cl + "#" + methodName + "` is not a specific subtype of Id");
 			}
 
 			if (NamespacedIdentifiable.class.isAssignableFrom(cl) != NamespacedId.class.isAssignableFrom(returnType)) {

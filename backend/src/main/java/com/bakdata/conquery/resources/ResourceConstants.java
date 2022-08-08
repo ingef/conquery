@@ -28,6 +28,7 @@ public class ResourceConstants {
 	public static final String GROUP_ID = "groupId";
 	public static final String SECONDARY_ID = "secondaryId";
 	public static final String INTERN_TO_EXTERN_ID = "internToExternId";
+	public static final String SEARCH_INDEX_ID = "searchIndexId";
 	public static final String ADMIN_SERVLET_PATH = "admin";
 	public static final String ADMIN_UI_SERVLET_PATH = "admin-ui";
 

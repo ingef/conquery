@@ -38,6 +38,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -338,6 +339,29 @@ public class LoadingUtil {
 						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
 						.isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
+	}
+
+	public static void importSearchIndexes(StandaloneSupport support, List<SearchIndex> searchIndexes) {
+		for (SearchIndex internToExternMapper : searchIndexes) {
+			uploadSearchIndex(support, internToExternMapper);
+		}
+	}
+
+	private static void uploadSearchIndex(@NonNull StandaloneSupport support, @NonNull SearchIndex searchIndex) {
+		final URI
+				conceptURI =
+				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSearchIndex")
+							   .buildFromMap(Map.of(
+									   ResourceConstants.DATASET, support.getDataset().getId()
+							   ));
+
+		final Response response = support.getClient()
+										 .target(conceptURI)
+										 .request(MediaType.APPLICATION_JSON)
+										 .post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE));
+
+
+		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
 	}
 
 }

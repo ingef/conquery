@@ -2,14 +2,14 @@ package com.bakdata.conquery.models.datasets;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.config.SearchConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
@@ -63,7 +64,6 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	 */
 	@NsIdRef
 	private SecondaryIdDescription secondaryId;
-
 
 	@Override
 	public ColumnId createId() {
@@ -144,17 +144,24 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 		return String.format("%s#%s", importName, getId().toString());
 	}
 
-	@Override
-	public Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage) {
-		return storage.getAllImports().stream()
-					  .filter(imp -> imp.getTable().equals(getTable()))
-					  .flatMap(imp -> {
-						  final ImportColumn importColumn = imp.getColumns()[getPosition()];
 
-						  return  ((StringStore) importColumn.getTypeDescription()).iterateValues();
-					  })
-					  .map(value -> new FEValue(value, value))
-					  .onClose(() -> log.debug("DONE processing values for {}", getId()));
+	@Override
+	public List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
+
+		TrieSearch<FEValue> search = new TrieSearch<>(config.getSuffixLength(), config.getSplit());
+
+		storage.getAllImports().stream()
+			   .filter(imp -> imp.getTable().equals(getTable()))
+			   .flatMap(imp -> {
+				   final ImportColumn importColumn = imp.getColumns()[getPosition()];
+
+				   return ((StringStore) importColumn.getTypeDescription()).iterateValues();
+			   })
+			   .map(value -> new FEValue(value, value))
+			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
+
+			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
+		return List.of(search);
 	}
 
 	@Override

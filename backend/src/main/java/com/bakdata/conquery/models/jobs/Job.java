@@ -9,7 +9,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@RequiredArgsConstructor @Getter
+@RequiredArgsConstructor
+@Getter
 public abstract class Job {
 
 	protected final UUID jobId = UUID.randomUUID();
@@ -17,8 +18,8 @@ public abstract class Job {
 	@Setter
 	private ProgressReporter progressReporter = ProgressReporter.createWaiting();
 
-	@Getter(AccessLevel.NONE)
-	private AtomicBoolean cancelledState = new AtomicBoolean(false);
+	@Getter(AccessLevel.PROTECTED)
+	private final AtomicBoolean cancelledState = new AtomicBoolean(false);
 
 	public void cancel() {
 		cancelledState.set(true);
