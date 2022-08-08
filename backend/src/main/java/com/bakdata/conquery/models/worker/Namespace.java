@@ -11,20 +11,22 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
-import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
 import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
@@ -252,6 +254,19 @@ public class Namespace implements Closeable {
 
 	public int getNumberOfEntities() {
 		return getStorage().getPrimaryDictionary().getSize();
+	}
+
+
+	public void updateInternToExternMappings() {
+		storage.getAllConcepts().stream()
+			   .flatMap(c -> c.getConnectors().stream())
+			   .flatMap(con -> con.getSelects().stream())
+			   .filter(MappableSingleColumnSelect.class::isInstance)
+			   .map(MappableSingleColumnSelect.class::cast)
+			   .forEach((s) ->
+								jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping))
+			   );
+
 	}
 
 	public void clearIndexCache() {

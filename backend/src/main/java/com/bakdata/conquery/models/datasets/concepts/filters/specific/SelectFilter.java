@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.SearchConfig;
@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -42,6 +43,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 
 
 	@NsIdRef
+	@View.ApiManagerPersistence
 	private FilterTemplate template;
 
 	@JsonIgnore
