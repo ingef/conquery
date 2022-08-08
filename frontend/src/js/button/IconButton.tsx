@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
-import { forwardRef } from "react";
+import { forwardRef, memo } from "react";
 
 import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
 
@@ -117,4 +117,4 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
   ),
 );
 
-export default IconButton;
+export default memo(IconButton);

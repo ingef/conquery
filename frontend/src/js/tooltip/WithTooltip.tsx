@@ -1,6 +1,6 @@
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FC, ReactElement } from "react";
+import { FC, memo, ReactElement } from "react";
 import { Tooltip } from "react-tippy";
 import "react-tippy/dist/tippy.css";
 
@@ -89,4 +89,4 @@ const WithTooltip: FC<PropsT> = ({
   );
 };
 
-export default WithTooltip;
+export default memo(WithTooltip);
