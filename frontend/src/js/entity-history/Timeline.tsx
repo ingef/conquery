@@ -304,62 +304,57 @@ const diffObjects = (objects: Object[]) => {
   return differences;
 };
 
+const findGroupsWithinQuarter =
+  (secondaryIds: ColumnDescription[]) =>
+  ({ quarter, events }: { quarter: string; events: EntityEvent[] }) => {
+    if (events.length < 2) {
+      return { quarter, groupedEvents: [events], differences: [{}] };
+    }
+
+    const groupedEvents: EntityEvent[][] = [[events[0]]];
+
+    for (let i = 1; i < events.length - 1; i++) {
+      const evt = events[i];
+      const lastEvt = groupedEvents[groupedEvents.length - 1][0];
+
+      const isDuplicateEvent = JSON.stringify(evt) === JSON.stringify(lastEvt);
+
+      if (isDuplicateEvent) {
+        continue;
+      }
+
+      const datesMatch =
+        JSON.stringify(evt.dates) === JSON.stringify(lastEvt.dates);
+      const sourcesMatch = evt.source === lastEvt.source;
+      const allSecondaryIdsMatch = secondaryIds.every(
+        ({ label }) => evt[label] === lastEvt[label],
+      );
+
+      const similarEvents = datesMatch && sourcesMatch && allSecondaryIdsMatch;
+
+      if (similarEvents) {
+        groupedEvents[groupedEvents.length - 1].push(evt);
+      } else {
+        groupedEvents.push([evt]);
+      }
+    }
+    return {
+      quarter,
+      groupedEvents,
+      differences: groupedEvents.map(diffObjects),
+    };
+  };
+
 const findGroups = (
   eventsPerYears: EventsPerYear[],
   secondaryIds: ColumnDescription[],
 ) => {
   const findGroupsWithinYear = ({ year, quarterwiseData }: EventsPerYear) => {
-    const findGroupsWithinQuarter = ({
-      quarter,
-      events,
-    }: {
-      quarter: string;
-      events: EntityEvent[];
-    }) => {
-      if (events.length < 2) {
-        return { quarter, groupedEvents: [events], differences: [{}] };
-      }
-
-      const groupedEvents: EntityEvent[][] = [[events[0]]];
-
-      for (let i = 1; i < events.length - 1; i++) {
-        const evt = events[i];
-        const lastEvt = groupedEvents[groupedEvents.length - 1][0];
-
-        const isDuplicateEvent =
-          JSON.stringify(evt) === JSON.stringify(lastEvt);
-
-        if (isDuplicateEvent) {
-          continue;
-        }
-
-        const datesMatch =
-          JSON.stringify(evt.dates) === JSON.stringify(lastEvt.dates);
-        const sourcesMatch = evt.source === lastEvt.source;
-        const allSecondaryIdsMatch = secondaryIds.every(
-          ({ label }) => evt[label] === lastEvt[label],
-        );
-
-        const similarEvents =
-          datesMatch && sourcesMatch && allSecondaryIdsMatch;
-
-        if (similarEvents) {
-          groupedEvents[groupedEvents.length - 1].push(evt);
-        } else {
-          groupedEvents.push([evt]);
-        }
-      }
-
-      return {
-        quarter,
-        groupedEvents,
-        differences: groupedEvents.map(diffObjects),
-      };
-    };
-
     return {
       year,
-      quarterwiseData: quarterwiseData.map(findGroupsWithinQuarter),
+      quarterwiseData: quarterwiseData.map(
+        findGroupsWithinQuarter(secondaryIds),
+      ),
     };
   };
 
