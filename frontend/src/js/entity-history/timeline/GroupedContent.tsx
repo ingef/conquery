@@ -8,20 +8,14 @@ import {
   CurrencyConfigT,
   DatasetT,
 } from "../../api/types";
-import FaIcon from "../../icon/FaIcon";
-import WithTooltip from "../../tooltip/WithTooltip";
 import { EntityEvent } from "../reducer";
 
 import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";
 
 const Grid = styled("div")`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 2px;
-`;
-const SxConceptName = styled(ConceptName)`
-  grid-column: span 2;
+  display: inline-grid;
+  gap: 5px 10px;
 `;
 
 const ExtraArea = styled("div")`
@@ -34,11 +28,6 @@ const ExtraAreaHeading = styled("h5")`
   font-size: ${({ theme }) => theme.font.xs};
   font-weight: 700;
   margin: 0 0 8px;
-`;
-
-const SxFaIcon = styled(FaIcon)`
-  width: 20px !important;
-  text-align: center;
 `;
 
 const isConceptColumn = (columnDescription: ColumnDescription) =>
@@ -76,7 +65,6 @@ const GroupedContent = ({
       <Grid
         style={{
           gridTemplateColumns: `repeat(${differencesKeys.length}, auto)`,
-          gap: "5px 2px",
         }}
       >
         {differencesKeys.map((key) => (
@@ -113,51 +101,6 @@ const GroupedContent = ({
           }),
         )}
       </Grid>
-      {/* <Grid>
-          {Object.entries(groupedRowsDifferences).map(([key, values]) => {
-            const columnDescription = columns[key];
-
-            if (isConceptColumn(columnDescription)) {
-              return (
-                <>
-                  {[...values].map((v) => (
-                    <SxConceptName
-                      rootConceptId={
-                        rootConceptIdsByColumn[columnDescription.label]
-                      }
-                      conceptId={v}
-                      datasetId={datasetId}
-                      title={columnDescription.label}
-                    />
-                  ))}
-                </>
-              );
-            } else {
-              return (
-                <>
-                  <div title={key}>{key}:</div>
-                  <div
-                    style={{
-                      fontWeight: "400",
-                      display: "flex",
-                      gap: "10px",
-                    }}
-                  >
-                    {isMoneyColumn(columnDescription)
-                      ? [...values].map((v) => (
-                          <NumberFormat
-                            {...currencyConfig}
-                            displayType="text"
-                            value={parseInt(v) / 100}
-                          />
-                        ))
-                      : [...values].map((v) => <span>{v}</span>)}
-                  </div>
-                </>
-              );
-            }
-          })}
-        </Grid> */}
     </ExtraArea>
   );
 };
