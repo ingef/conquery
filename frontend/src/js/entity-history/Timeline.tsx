@@ -33,7 +33,7 @@ const EventTimeline = styled("div")`
   grid-template-columns: auto 1fr;
 `;
 const EventItemList = styled("div")`
-  width: 100%;
+  width: calc(100% + 10px);
   margin-left: -10px;
 `;
 
@@ -58,7 +58,7 @@ const YearGroup = styled("div")`
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 12px;
+  padding: 12px 0;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 const QuarterGroup = styled("div")``;
