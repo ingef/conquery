@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useKeycloak } from "@react-keycloak/web";
+import { useKeycloak } from "@react-keycloak-fork/web";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
