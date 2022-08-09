@@ -2,12 +2,12 @@ package com.bakdata.conquery.apiv1;
 
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.SearchConfig;
@@ -28,18 +28,18 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Data
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @AllArgsConstructor
-@NoArgsConstructor(onConstructor_ = {@JsonCreator})
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @JsonIgnoreProperties({"columns"})
 @ToString
 @Slf4j
+@CPSType(id = "CSV_TEMPLATE", base = SearchIndex.class)
 public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable, SearchIndex {
 
 	private static final long serialVersionUID = 1L;
@@ -49,29 +49,29 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	private Dataset dataset;
 
 	@NotEmpty
-	private String name;
+	private final String name;
 
 	/**
 	 * Path to CSV File.
 	 */
 	@NotNull
-	private URL filePath;
+	private final URL filePath;
 
 	/**
 	 * Value to be sent for filtering.
 	 */
 	@NotEmpty
-	private String columnValue;
+	private final String columnValue;
 	/**
 	 * Value displayed in Select list. Usually concise display.
 	 */
 	@NotEmpty
-	private String value;
+	private final String value;
 	/**
 	 * More detailed value. Displayed when value is selected.
 	 */
 	@NotEmpty
-	private String optionValue;
+	private final String optionValue;
 
 	private int minSuffixLength = 3;
 	private boolean generateSuffixes = true;
@@ -79,7 +79,6 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NonNull
 	private IndexService indexService;
 
 	/**

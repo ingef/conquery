@@ -22,6 +22,15 @@
         </#list>
         </ul>
     </@layout.kc>
+    <@layout.kc k="SearchIndices">
+        <ul>
+        <#list c.searchIndices as searchIndex>
+            <li>
+                ${searchIndex.name} <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/searchIndex/${searchIndex.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+            </li>
+        </#list>
+        </ul>
+    </@layout.kc>
 	<@layout.kc k="Tables">
 		<ul>
 			<#list c.tables?sort_by("name") as table>

@@ -85,9 +85,10 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 															, AdminDatasetResource.class, "updateMatchingStats")
 													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
 
-		conquery.getClient().target(matchingStatsUri)
-				.request(MediaType.APPLICATION_JSON_TYPE)
-				.post(null);
+		final Response post = conquery.getClient().target(matchingStatsUri)
+									  .request(MediaType.APPLICATION_JSON_TYPE)
+									  .post(null);
+		post.close();
 
 		conquery.waitUntilWorkDone();
 

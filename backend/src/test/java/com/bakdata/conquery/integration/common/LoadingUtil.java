@@ -1,6 +1,7 @@
 package com.bakdata.conquery.integration.common;
 
 import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -362,6 +363,17 @@ public class LoadingUtil {
 
 
 		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+	}
+
+	public static void updateMatchingStats(@NonNull StandaloneSupport support) {
+		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
+															, AdminDatasetResource.class, "updateMatchingStats")
+													.buildFromMap(Map.of(DATASET, support.getDataset().getId()));
+
+		final Response post = support.getClient().target(matchingStatsUri)
+									 .request(MediaType.APPLICATION_JSON_TYPE)
+									 .post(null);
+		post.close();
 	}
 
 }
