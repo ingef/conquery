@@ -150,6 +150,7 @@ export const Timeline = memo(
 
     const { bucketedEventsByDayAndSource } = useTimeBucketedSortedData(data, {
       sources,
+      secondaryIds: columnBuckets.secondaryIds,
     });
 
     if (!datasetId) return null;
@@ -247,8 +248,8 @@ export const Timeline = memo(
                                         }
                                         row={firstRowWithoutDifferences}
                                         currencyConfig={currencyConfig}
-                                        eventGroupCount={group.length}
-                                        differences={
+                                        groupedRows={group}
+                                        groupedRowsDifferences={
                                           Object.keys(groupDifferences).length >
                                           0
                                             ? groupDifferences
@@ -303,7 +304,10 @@ const diffObjects = (objects: Object[]) => {
   return differences;
 };
 
-const findGroups = (eventsPerYears: EventsPerYear[]) => {
+const findGroups = (
+  eventsPerYears: EventsPerYear[],
+  secondaryIds: ColumnDescription[],
+) => {
   const findGroupsWithinYear = ({ year, quarterwiseData }: EventsPerYear) => {
     const findGroupsWithinQuarter = ({
       quarter,
@@ -316,12 +320,11 @@ const findGroups = (eventsPerYears: EventsPerYear[]) => {
         return { quarter, groupedEvents: [events], differences: [{}] };
       }
 
-      const eventsByDayAndSource: EntityEvent[][] = [[events[0]]];
+      const groupedEvents: EntityEvent[][] = [[events[0]]];
 
       for (let i = 1; i < events.length - 1; i++) {
         const evt = events[i];
-        const lastEvt =
-          eventsByDayAndSource[eventsByDayAndSource.length - 1][0];
+        const lastEvt = groupedEvents[groupedEvents.length - 1][0];
 
         const isDuplicateEvent =
           JSON.stringify(evt) === JSON.stringify(lastEvt);
@@ -330,21 +333,27 @@ const findGroups = (eventsPerYears: EventsPerYear[]) => {
           continue;
         }
 
-        const sameDayAndSource =
-          JSON.stringify(evt.dates) === JSON.stringify(lastEvt.dates) &&
-          evt.source === lastEvt.source;
+        const datesMatch =
+          JSON.stringify(evt.dates) === JSON.stringify(lastEvt.dates);
+        const sourcesMatch = evt.source === lastEvt.source;
+        const allSecondaryIdsMatch = secondaryIds.every(
+          ({ label }) => evt[label] === lastEvt[label],
+        );
 
-        if (sameDayAndSource) {
-          eventsByDayAndSource[eventsByDayAndSource.length - 1].push(evt);
+        const similarEvents =
+          datesMatch && sourcesMatch && allSecondaryIdsMatch;
+
+        if (similarEvents) {
+          groupedEvents[groupedEvents.length - 1].push(evt);
         } else {
-          eventsByDayAndSource.push([evt]);
+          groupedEvents.push([evt]);
         }
       }
 
       return {
         quarter,
-        groupedEvents: eventsByDayAndSource,
-        differences: eventsByDayAndSource.map(diffObjects),
+        groupedEvents,
+        differences: groupedEvents.map(diffObjects),
       };
     };
 
@@ -369,8 +378,10 @@ const useTimeBucketedSortedData = (
   data: EntityHistoryStateT["currentEntityData"],
   {
     sources,
+    secondaryIds,
   }: {
     sources: Set<string>;
+    secondaryIds: ColumnDescription[];
   },
 ) => {
   const bucketEntityEvents = (
@@ -410,10 +421,13 @@ const useTimeBucketedSortedData = (
 
   return useMemo(() => {
     const bucketedEvents = bucketEntityEvents(data, sources);
-    const bucketedEventsByDayAndSource = findGroups(bucketedEvents);
+    const bucketedEventsByDayAndSource = findGroups(
+      bucketedEvents,
+      secondaryIds,
+    );
 
     return {
       bucketedEventsByDayAndSource,
     };
-  }, [data, sources]);
+  }, [data, sources, secondaryIds]);
 };

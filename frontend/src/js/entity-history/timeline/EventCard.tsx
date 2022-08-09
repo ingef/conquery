@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { useTranslation } from "react-i18next";
 import NumberFormat from "react-number-format";
 
 import type {
@@ -16,7 +15,9 @@ import { RowDates } from "../RowDates";
 import type { EntityEvent } from "../reducer";
 
 import ConceptName from "./ConceptName";
+import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
+import { TinyLabel } from "./TinyLabel";
 
 const Card = styled("div")`
   display: grid;
@@ -65,15 +66,6 @@ const ColBucketCode = styled((props: any) => (
   <ColBucket as="code" {...props} />
 ))``;
 
-const TinyText = styled("p")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.tiny};
-  font-weight: 700;
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.col.gray};
-  line-height: 0.9;
-`;
-
 const Bullet = styled("div")`
   width: 10px;
   height: 10px;
@@ -81,29 +73,6 @@ const Bullet = styled("div")`
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   border-radius: 50%;
   flex-shrink: 0;
-`;
-
-const Grid = styled("div")`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 2px;
-`;
-const SxConceptName = styled(ConceptName)`
-  grid-column: span 2;
-`;
-
-const ExtraArea = styled("div")`
-  padding: 12px 34px;
-  background-color: ${({ theme }) => theme.col.bg};
-  display: flex;
-  gap: 10px;
-  border-top: 1px solid ${({ theme }) => theme.col.grayVeryLight};
-`;
-
-const ExtraAreaHeading = styled("h5")`
-  font-size: ${({ theme }) => theme.font.xs};
-  font-weight: 700;
-  margin: 0 0 5px;
 `;
 
 interface ColumnBuckets {
@@ -118,11 +87,11 @@ interface Props {
   columns: Record<string, ColumnDescription>;
   columnBuckets: ColumnBuckets;
   datasetId: DatasetT["id"];
-  currencyConfig: CurrencyConfigT;
   contentFilter: ContentFilterValue;
+  currencyConfig: CurrencyConfigT;
   rootConceptIdsByColumn: Record<string, ConceptIdT>;
-  differences?: Record<string, Set<any>>;
-  eventGroupCount?: number;
+  groupedRows?: EntityEvent[];
+  groupedRowsDifferences?: Record<string, Set<any>>;
 }
 
 const EventCard = ({
@@ -133,10 +102,9 @@ const EventCard = ({
   currencyConfig,
   contentFilter,
   rootConceptIdsByColumn,
-  differences,
-  eventGroupCount,
+  groupedRows,
+  groupedRowsDifferences,
 }: Props) => {
-  const { t } = useTranslation();
   const applicableSecondaryIds = columnBuckets.secondaryIds.filter((column) =>
     exists(row[column.label]),
   );
@@ -174,7 +142,7 @@ const EventCard = ({
               <ColBucket>
                 {applicableSecondaryIds.map((column) => (
                   <div>
-                    <TinyText>{column.label}</TinyText>
+                    <TinyLabel>{column.label}</TinyLabel>
                     {row[column.label]}
                   </div>
                 ))}
@@ -226,67 +194,15 @@ const EventCard = ({
             </>
           )}
         </MainContent>
-        {differences && eventGroupCount && (
-          <ExtraArea>
-            <WithTooltip text={t("history.differencesTooltip")}>
-              <SxFaIcon icon="layer-group" active tiny />
-            </WithTooltip>
-            <div>
-              <ExtraAreaHeading>
-                {eventGroupCount}{" "}
-                {t("history.events", { count: eventGroupCount })}
-              </ExtraAreaHeading>
-              <Grid>
-                {Object.entries(differences).map(([key, values]) => {
-                  const columnsDescription = columns[key];
-                  const isConceptColumn =
-                    columnsDescription?.semantics.length > 0 &&
-                    columnsDescription?.semantics[0].type === "CONCEPT_COLUMN";
-                  const isMoneyColumn = columnsDescription.type === "MONEY";
-
-                  if (isConceptColumn) {
-                    return (
-                      <>
-                        {[...values].map((v) => (
-                          <SxConceptName
-                            rootConceptId={
-                              rootConceptIdsByColumn[columnsDescription.label]
-                            }
-                            conceptId={v}
-                            datasetId={datasetId}
-                            title={columnsDescription.label}
-                          />
-                        ))}
-                      </>
-                    );
-                  } else {
-                    return (
-                      <>
-                        <div title={key}>{key}:</div>
-                        <div
-                          style={{
-                            fontWeight: "400",
-                            display: "flex",
-                            gap: "10px",
-                          }}
-                        >
-                          {isMoneyColumn
-                            ? [...values].map((v) => (
-                                <NumberFormat
-                                  {...currencyConfig}
-                                  displayType="text"
-                                  value={parseInt(v) / 100}
-                                />
-                              ))
-                            : [...values].map((v) => <span>{v}</span>)}
-                        </div>
-                      </>
-                    );
-                  }
-                })}
-              </Grid>
-            </div>
-          </ExtraArea>
+        {groupedRowsDifferences && groupedRows && (
+          <GroupedContent
+            datasetId={datasetId}
+            columns={columns}
+            groupedRows={groupedRows}
+            groupedRowsDifferences={groupedRowsDifferences}
+            currencyConfig={currencyConfig}
+            rootConceptIdsByColumn={rootConceptIdsByColumn}
+          />
         )}
       </EventItemContent>
     </Card>

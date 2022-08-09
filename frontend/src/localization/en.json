@@ -1,6 +1,11 @@
 {
   "locale": "en",
   "headline": "Queries and Analyses",
+  "error": {
+    "sorry": "Sorry, something went wrong here",
+    "description": "Please try again. If this happens again, please leave us a message. That way, we can fix this issue.",
+    "reload": "Refresh page"
+  },
   "errorCodes": {
     "EXAMPLE_ERROR": "This is an example error",
     "EXAMPLE_ERROR_INTERPOLATED": "This is a {{adjective}} example error"

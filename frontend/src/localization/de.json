@@ -1,6 +1,11 @@
 {
   "locale": "de",
   "headline": "Anfragen und Analyse",
+  "error": {
+    "sorry": "Das hat leider nicht geklappt",
+    "description": "Versuche es noch einmal. Falls es erneut nicht klappt, bitte hinterlasse uns eine Nachricht, damit wir dieses Problem beheben können.",
+    "reload": "Seite vollständig neu laden"
+  },
   "errorCodes": {
     "EXAMPLE_ERROR": "Dies ist eine Beispiel-Fehlermeldung",
     "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {{adjective}} Beispiel-Fehlermeldung"
@@ -63,7 +68,7 @@
   },
   "expandPreviousQueryModal": {
     "headline": "Anfrage wirklich expandieren?",
-    "description": "Beim Klick auf Expandieren werden alle Konzepte innerhalb des Editors durch die Inhalte der expandierten Anfrage ersetzt. Bist du dir sicher?",
+    "description": "Beim Klick auf Expandieren werden alle Konzepte innerhalb des Editors durch die Inhalte der expandierten Anfrage ersetzt. Bist Du dir sicher?",
     "submit": "Expandieren"
   },
   "dropzone": {
