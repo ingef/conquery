@@ -12,6 +12,7 @@ import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { ErrorObject, errorPayload } from "../common/actions";
 import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
 import { formatStdDate, getFirstAndLastDateOfRange } from "../common/helpers";
+import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { useLoadPreviewData } from "../preview/actions";
@@ -69,7 +70,8 @@ export const loadHistoryData = createAsyncAction(
     uniqueSources: string[];
     entityIds?: string[];
     label?: string;
-    columns?: ColumnDescription[];
+    columns?: Record<string, ColumnDescription>;
+    columnDescriptions?: ColumnDescription[];
   },
   ErrorObject
 >();
@@ -139,15 +141,13 @@ export function useUpdateHistorySession() {
       try {
         dispatch(loadHistoryData.request());
 
-        const entityResult = await getEntityHistory(
+        const { resultUrls, columnDescriptions } = await getEntityHistory(
           datasetId,
           entityId,
           defaultEntityHistoryParams.sources,
         );
 
-        const csvUrl = entityResult.resultUrls.find((url) =>
-          url.endsWith("csv"),
-        );
+        const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
 
         if (!csvUrl) {
           throw new Error("No CSV URL found");
@@ -165,12 +165,23 @@ export function useUpdateHistorySession() {
           ...new Set(currentEntityDataProcessed.map((row) => row.source)),
         ];
 
+        const csvHeader = csv.data[0];
+        const columns: Record<string, ColumnDescription> = Object.fromEntries(
+          csvHeader
+            .map((key) => [
+              key,
+              columnDescriptions.find(({ label }) => label === key),
+            ])
+            .filter(([, columnDescription]) => exists(columnDescription)),
+        );
+
         dispatch(
           loadHistoryData.success({
             currentEntityCsvUrl: csvUrl,
             currentEntityData: currentEntityDataProcessed,
             currentEntityId: entityId,
-            columns: entityResult.columnDescriptions,
+            columnDescriptions,
+            columns,
             uniqueSources,
             ...(entityIds ? { entityIds } : {}),
             ...(label ? { label } : {}),

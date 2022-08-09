@@ -444,16 +444,17 @@
   "history": {
     "history": "Historie",
     "marked": "mit Status",
-    "events_one": "Ereignis",
-    "events_other": "Ereignisse",
+    "events_one": "Eintrag",
+    "events_other": "Einträge",
     "downloadButtonLabel": "Liste herunterladen",
     "nextButtonLabel": "Weiterblättern",
     "prevButtonLabel": "Zurückblättern",
     "downloadEntityData": "CSV",
+    "differencesTooltip": "Unterschiede aus den Einzeleinträgen",
     "detail": {
       "summary": "Zusammenfassung",
-      "detail": "Details",
-      "full": "Alle Ereignisse"
+      "detail": "Gruppiert",
+      "full": "Alle Einzeleinträge"
     },
     "content": {
       "money": "Geldbeträge",

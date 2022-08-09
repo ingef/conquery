@@ -1,5 +1,5 @@
-import { css } from "@emotion/react";
 import styled from "@emotion/styled";
+import { useTranslation } from "react-i18next";
 import NumberFormat from "react-number-format";
 
 import type {
@@ -27,21 +27,18 @@ const Card = styled("div")`
   position: relative;
 `;
 
-const EventItemContent = styled("div")<{ isGroup?: boolean }>`
+const EventItemContent = styled("div")`
+  border-radius: ${({ theme }) => theme.borderRadius};
+  box-shadow: 0 0 1px 1px ${({ theme }) => theme.col.grayLight};
+  margin-top: 5px;
+  background-color: white;
+  overflow: hidden;
+`;
+const MainContent = styled("div")`
   display: grid;
   grid-template-columns: auto 1fr;
-  position: relative;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  box-shadow: 0 0 0 1px ${({ theme }) => theme.col.grayLight};
-  padding: 15px 10px 5px;
-  margin-top: 5px;
   gap: 5px;
-  background-color: white;
-  ${({ isGroup, theme }) =>
-    isGroup &&
-    css`
-      border: 1px solid ${theme.col.blueGrayDark};
-    `};
+  padding: 15px 8px 8px;
 `;
 
 const ColBucket = styled("div")`
@@ -54,8 +51,9 @@ const ColBucket = styled("div")`
 
 const SxRawDataBadge = styled(RawDataBadge)`
   position: absolute;
-  top: -5px;
-  left: -5px;
+  z-index: 10;
+  top: 4px;
+  left: 55px;
 `;
 
 const SxFaIcon = styled(FaIcon)`
@@ -85,6 +83,29 @@ const Bullet = styled("div")`
   flex-shrink: 0;
 `;
 
+const Grid = styled("div")`
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px;
+`;
+const SxConceptName = styled(ConceptName)`
+  grid-column: span 2;
+`;
+
+const ExtraArea = styled("div")`
+  padding: 12px 34px;
+  background-color: ${({ theme }) => theme.col.bg};
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid ${({ theme }) => theme.col.grayVeryLight};
+`;
+
+const ExtraAreaHeading = styled("h5")`
+  font-size: ${({ theme }) => theme.font.xs};
+  font-weight: 700;
+  margin: 0 0 5px;
+`;
+
 interface ColumnBuckets {
   money: ColumnDescription[];
   concepts: ColumnDescription[];
@@ -94,6 +115,7 @@ interface ColumnBuckets {
 
 interface Props {
   row: EntityEvent;
+  columns: Record<string, ColumnDescription>;
   columnBuckets: ColumnBuckets;
   datasetId: DatasetT["id"];
   currencyConfig: CurrencyConfigT;
@@ -105,6 +127,7 @@ interface Props {
 
 const EventCard = ({
   row,
+  columns,
   columnBuckets,
   datasetId,
   currencyConfig,
@@ -113,6 +136,7 @@ const EventCard = ({
   differences,
   eventGroupCount,
 }: Props) => {
+  const { t } = useTranslation();
   const applicableSecondaryIds = columnBuckets.secondaryIds.filter((column) =>
     exists(row[column.label]),
   );
@@ -135,95 +159,134 @@ const EventCard = ({
   );
   const restTooltip = applicableRest.map((c) => c.label).join(", ");
 
-  console.log(
-    applicableConcepts,
-    applicableMoney,
-    applicableSecondaryIds,
-    applicableRest,
-  );
-
   return (
     <Card>
       <Bullet />
       <RowDates dates={row.dates} />
-      <EventItemContent isGroup={!!differences}>
-        <SxRawDataBadge event={row} />
+      <SxRawDataBadge event={row} />
+      <EventItemContent>
+        <MainContent>
+          {contentFilter.secondaryId && applicableSecondaryIds.length > 0 && (
+            <>
+              <WithTooltip text={secondaryIdsTooltip}>
+                <SxFaIcon icon="microscope" active tiny />
+              </WithTooltip>
+              <ColBucket>
+                {applicableSecondaryIds.map((column) => (
+                  <div>
+                    <TinyText>{column.label}</TinyText>
+                    {row[column.label]}
+                  </div>
+                ))}
+              </ColBucket>
+            </>
+          )}
+          {contentFilter.money && applicableMoney.length > 0 && (
+            <>
+              <WithTooltip text={moneyTooltip}>
+                <SxFaIcon icon="money-bill-alt" active tiny />
+              </WithTooltip>
+              <ColBucketCode>
+                {applicableMoney.map((column) => (
+                  <NumberFormat
+                    {...currencyConfig}
+                    displayType="text"
+                    value={parseInt(row[column.label]) / 100}
+                  />
+                ))}
+              </ColBucketCode>
+            </>
+          )}
+          {contentFilter.concept && applicableConcepts.length > 0 && (
+            <>
+              <WithTooltip text={conceptsTooltip}>
+                <SxFaIcon icon="folder" active tiny />
+              </WithTooltip>
+              <ColBucket>
+                {applicableConcepts.map((column) => (
+                  <ConceptName
+                    rootConceptId={rootConceptIdsByColumn[column.label]}
+                    conceptId={row[column.label]}
+                    datasetId={datasetId}
+                  />
+                ))}
+              </ColBucket>
+            </>
+          )}
+          {contentFilter.rest && applicableRest.length > 0 && (
+            <>
+              <WithTooltip text={restTooltip}>
+                <SxFaIcon icon="info" active tiny />
+              </WithTooltip>
+              <ColBucket>
+                {applicableRest.map((column) => (
+                  <span>{row[column.label]}</span>
+                ))}
+              </ColBucket>
+            </>
+          )}
+        </MainContent>
         {differences && eventGroupCount && (
-          <>
-            <WithTooltip text="differences">
+          <ExtraArea>
+            <WithTooltip text={t("history.differencesTooltip")}>
               <SxFaIcon icon="layer-group" active tiny />
             </WithTooltip>
             <div>
-              <div>{eventGroupCount} events</div>
-              {Object.entries(differences).map(([key, value]) => (
-                <div>
-                  <span>
-                    {key}: {JSON.stringify([...value])}
-                  </span>
-                </div>
-              ))}
+              <ExtraAreaHeading>
+                {eventGroupCount}{" "}
+                {t("history.events", { count: eventGroupCount })}
+              </ExtraAreaHeading>
+              <Grid>
+                {Object.entries(differences).map(([key, values]) => {
+                  const columnsDescription = columns[key];
+                  const isConceptColumn =
+                    columnsDescription?.semantics.length > 0 &&
+                    columnsDescription?.semantics[0].type === "CONCEPT_COLUMN";
+                  const isMoneyColumn = columnsDescription.type === "MONEY";
+
+                  if (isConceptColumn) {
+                    return (
+                      <>
+                        {[...values].map((v) => (
+                          <SxConceptName
+                            rootConceptId={
+                              rootConceptIdsByColumn[columnsDescription.label]
+                            }
+                            conceptId={v}
+                            datasetId={datasetId}
+                            title={columnsDescription.label}
+                          />
+                        ))}
+                      </>
+                    );
+                  } else {
+                    return (
+                      <>
+                        <div title={key}>{key}:</div>
+                        <div
+                          style={{
+                            fontWeight: "400",
+                            display: "flex",
+                            gap: "10px",
+                          }}
+                        >
+                          {isMoneyColumn
+                            ? [...values].map((v) => (
+                                <NumberFormat
+                                  {...currencyConfig}
+                                  displayType="text"
+                                  value={parseInt(v) / 100}
+                                />
+                              ))
+                            : [...values].map((v) => <span>{v}</span>)}
+                        </div>
+                      </>
+                    );
+                  }
+                })}
+              </Grid>
             </div>
-          </>
-        )}
-        {contentFilter.secondaryId && applicableSecondaryIds.length > 0 && (
-          <>
-            <WithTooltip text={secondaryIdsTooltip}>
-              <SxFaIcon icon="microscope" active tiny />
-            </WithTooltip>
-            <ColBucket>
-              {applicableSecondaryIds.map((column) => (
-                <div>
-                  <TinyText>{column.label}</TinyText>
-                  {row[column.label]}
-                </div>
-              ))}
-            </ColBucket>
-          </>
-        )}
-        {contentFilter.money && applicableMoney.length > 0 && (
-          <>
-            <WithTooltip text={moneyTooltip}>
-              <SxFaIcon icon="money-bill-alt" active tiny />
-            </WithTooltip>
-            <ColBucketCode>
-              {applicableMoney.map((column) => (
-                <NumberFormat
-                  {...currencyConfig}
-                  displayType="text"
-                  value={parseInt(row[column.label]) / 100}
-                />
-              ))}
-            </ColBucketCode>
-          </>
-        )}
-        {contentFilter.concept && applicableConcepts.length > 0 && (
-          <>
-            <WithTooltip text={conceptsTooltip}>
-              <SxFaIcon icon="folder" active tiny />
-            </WithTooltip>
-            <ColBucket>
-              {applicableConcepts.map((column) => (
-                <ConceptName
-                  rootConceptId={rootConceptIdsByColumn[column.label]}
-                  column={column}
-                  row={row}
-                  datasetId={datasetId}
-                />
-              ))}
-            </ColBucket>
-          </>
-        )}
-        {contentFilter.rest && applicableRest.length > 0 && (
-          <>
-            <WithTooltip text={restTooltip}>
-              <SxFaIcon icon="info" active tiny />
-            </WithTooltip>
-            <ColBucket>
-              {applicableRest.map((column) => (
-                <span>{row[column.label]}</span>
-              ))}
-            </ColBucket>
-          </>
+          </ExtraArea>
         )}
       </EventItemContent>
     </Card>

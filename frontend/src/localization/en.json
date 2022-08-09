@@ -451,9 +451,10 @@
     "nextButtonLabel": "Next entity",
     "prevButtonLabel": "Previous entity",
     "downloadEntityData": "CSV",
+    "differencesTooltip": "Differences from the individual events",
     "detail": {
       "summary": "Summary",
-      "detail": "Details",
+      "detail": "Grouped",
       "full": "Full"
     },
     "content": {

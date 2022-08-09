@@ -58,17 +58,17 @@ const YearGroup = styled("div")`
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 7px;
+  padding: 12px;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 const QuarterGroup = styled("div")``;
 const QuarterHead = styled("div")<{ empty?: boolean }>`
-  font-weight: ${({ empty }) => (empty ? "normal" : "bold")};
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme, empty }) =>
     empty ? theme.col.grayLight : theme.col.gray};
   display: grid;
-  grid-template-columns: 150px 1fr;
+  grid-template-columns: 20px 100px 1fr;
+  align-items: center;
 `;
 
 const SxHeading4 = styled(Heading4)`
@@ -102,8 +102,11 @@ export const Timeline = memo(
     const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
       (state) => state.entityHistory.currentEntityData,
     );
-    const columns = useSelector<StateT, ColumnDescription[]>(
+    const columns = useSelector<StateT, EntityHistoryStateT["columns"]>(
       (state) => state.entityHistory.columns,
+    );
+    const columnDescriptions = useSelector<StateT, ColumnDescription[]>(
+      (state) => state.entityHistory.columnDescriptions,
     );
 
     const currencyConfig = useSelector<StateT, CurrencyConfigT>(
@@ -112,20 +115,20 @@ export const Timeline = memo(
 
     const columnBuckets = useMemo(() => {
       return {
-        money: columns.filter((c) => c.type === "MONEY"),
-        concepts: columns.filter(
+        money: columnDescriptions.filter((c) => c.type === "MONEY"),
+        concepts: columnDescriptions.filter(
           (c) =>
             c.semantics.length > 0 && c.semantics[0].type === "CONCEPT_COLUMN",
         ),
-        secondaryIds: columns.filter(
+        secondaryIds: columnDescriptions.filter(
           (c) =>
             c.semantics.length > 0 && c.semantics[0].type === "SECONDARY_ID",
         ),
-        rest: columns.filter(
+        rest: columnDescriptions.filter(
           (c) => c.type !== "MONEY" && c.semantics.length === 0,
         ),
       };
-    }, [columns]);
+    }, [columnDescriptions]);
 
     const rootConceptIdsByColumn: Record<string, ConceptIdT> = useMemo(() => {
       const entries: [string, ConceptIdT][] = [];
@@ -148,8 +151,6 @@ export const Timeline = memo(
     const { bucketedEventsByDayAndSource } = useTimeBucketedSortedData(data, {
       sources,
     });
-
-    console.log(bucketedEventsByDayAndSource);
 
     if (!datasetId) return null;
 
@@ -182,12 +183,13 @@ export const Timeline = memo(
                     return (
                       <QuarterGroup key={quarter}>
                         <QuarterHead empty={totalEventsPerQuarter === 0}>
-                          <SxHeading4>
-                            Q{quarter} – {totalEventsPerQuarter}{" "}
+                          <SxHeading4>Q{quarter} </SxHeading4>
+                          <span>
+                            – {totalEventsPerQuarter}{" "}
                             {t("history.events", {
                               count: totalEventsPerQuarter,
                             })}
-                          </SxHeading4>
+                          </span>
                           {detailLevel === "summary" && (
                             <Boxes>
                               {new Array(totalEventsPerQuarter)
@@ -208,13 +210,11 @@ export const Timeline = memo(
 
                                   if (group.length === 0) return null;
 
-                                  if (
-                                    detailLevel === "full" ||
-                                    Object.keys(groupDifferences).length > 10
-                                  ) {
+                                  if (detailLevel === "full") {
                                     return group.map((evt, evtIdx) => (
                                       <EventCard
                                         key={`${index}-${evtIdx}`}
+                                        columns={columns}
                                         columnBuckets={columnBuckets}
                                         datasetId={datasetId}
                                         contentFilter={contentFilter}
@@ -238,6 +238,7 @@ export const Timeline = memo(
                                     return (
                                       <EventCard
                                         key={index}
+                                        columns={columns}
                                         columnBuckets={columnBuckets}
                                         datasetId={datasetId}
                                         contentFilter={contentFilter}
@@ -273,7 +274,7 @@ export const Timeline = memo(
   },
 );
 
-const diff = (objects: Object[]) => {
+const diffObjects = (objects: Object[]) => {
   if (objects.length < 2) return {};
 
   const differences: Record<string, Set<any>> = {};
@@ -303,43 +304,57 @@ const diff = (objects: Object[]) => {
 };
 
 const findGroups = (eventsPerYears: EventsPerYear[]) => {
-  return eventsPerYears.map(({ year, quarterwiseData }) => {
+  const findGroupsWithinYear = ({ year, quarterwiseData }: EventsPerYear) => {
+    const findGroupsWithinQuarter = ({
+      quarter,
+      events,
+    }: {
+      quarter: string;
+      events: EntityEvent[];
+    }) => {
+      if (events.length < 2) {
+        return { quarter, groupedEvents: [events], differences: [{}] };
+      }
+
+      const eventsByDayAndSource: EntityEvent[][] = [[events[0]]];
+
+      for (let i = 1; i < events.length - 1; i++) {
+        const evt = events[i];
+        const lastEvt =
+          eventsByDayAndSource[eventsByDayAndSource.length - 1][0];
+
+        const isDuplicateEvent =
+          JSON.stringify(evt) === JSON.stringify(lastEvt);
+
+        if (isDuplicateEvent) {
+          continue;
+        }
+
+        const sameDayAndSource =
+          JSON.stringify(evt.dates) === JSON.stringify(lastEvt.dates) &&
+          evt.source === lastEvt.source;
+
+        if (sameDayAndSource) {
+          eventsByDayAndSource[eventsByDayAndSource.length - 1].push(evt);
+        } else {
+          eventsByDayAndSource.push([evt]);
+        }
+      }
+
+      return {
+        quarter,
+        groupedEvents: eventsByDayAndSource,
+        differences: eventsByDayAndSource.map(diffObjects),
+      };
+    };
+
     return {
       year,
-      quarterwiseData: quarterwiseData.map(({ quarter, events }) => {
-        if (events.length < 2)
-          return { quarter, groupedEvents: [events], differences: [{}] };
-
-        const eventsByDayAndSource: EntityEvent[][] = [[events[0]]];
-
-        for (let i = 1; i < events.length - 1; i++) {
-          const evt = events[i];
-          const lastEvt =
-            eventsByDayAndSource[eventsByDayAndSource.length - 1][0];
-
-          if (JSON.stringify(evt) === JSON.stringify(lastEvt)) {
-            console.log(`DUPLICATE ${evt}`);
-            continue;
-          }
-
-          if (
-            JSON.stringify(evt.dates) === JSON.stringify(lastEvt.dates) &&
-            evt.source === lastEvt.source
-          ) {
-            console.log("GROUP HIT");
-            eventsByDayAndSource[eventsByDayAndSource.length - 1].push(evt);
-          } else {
-            eventsByDayAndSource.push([evt]);
-          }
-        }
-        return {
-          quarter,
-          groupedEvents: eventsByDayAndSource,
-          differences: eventsByDayAndSource.map((events) => diff(events)),
-        };
-      }),
+      quarterwiseData: quarterwiseData.map(findGroupsWithinQuarter),
     };
-  });
+  };
+
+  return eventsPerYears.map(findGroupsWithinYear);
 };
 
 interface EventsPerYear {
@@ -398,7 +413,6 @@ const useTimeBucketedSortedData = (
     const bucketedEventsByDayAndSource = findGroups(bucketedEvents);
 
     return {
-      bucketedEvents,
       bucketedEventsByDayAndSource,
     };
   }, [data, sources]);
