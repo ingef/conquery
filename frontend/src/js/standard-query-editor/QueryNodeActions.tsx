@@ -1,24 +1,10 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { FC, memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";
-
-interface PropsT {
-  excludeTimestamps?: boolean;
-  excludeFromSecondaryId?: boolean;
-  isExpandable?: boolean;
-  hasDetails?: boolean;
-  previousQueryLoading?: boolean;
-  error?: string;
-  hasActiveSecondaryId?: boolean;
-  onDeleteNode: () => void;
-  onExpandClick: () => void;
-  onToggleTimestamps: () => void;
-  onToggleSecondaryIdExclude: () => void;
-}
 
 const Actions = styled("div")`
   display: flex;
@@ -50,7 +36,23 @@ const CrossedOut = styled.div`
   pointer-events: none;
 `;
 
-const QueryNodeActions: FC<PropsT> = (props) => {
+interface Props {
+  andIdx: number;
+  orIdx: number;
+  excludeTimestamps?: boolean;
+  excludeFromSecondaryId?: boolean;
+  isExpandable?: boolean;
+  hasDetails?: boolean;
+  previousQueryLoading?: boolean;
+  error?: string;
+  hasActiveSecondaryId?: boolean;
+  onDeleteNode: (andIdx: number, orIdx: number) => void;
+  onExpandClick: () => void;
+  onToggleTimestamps: (andIdx: number, orIdx: number) => void;
+  onToggleSecondaryIdExclude: (andIdx: number, orIdx: number) => void;
+}
+
+const QueryNodeActions = (props: Props) => {
   const { t } = useTranslation();
 
   return (
@@ -60,7 +62,7 @@ const QueryNodeActions: FC<PropsT> = (props) => {
           icon="times"
           onClick={(e) => {
             e.stopPropagation();
-            props.onDeleteNode();
+            props.onDeleteNode(props.andIdx, props.orIdx);
           }}
         />
       </WithTooltip>
@@ -72,7 +74,7 @@ const QueryNodeActions: FC<PropsT> = (props) => {
             icon="calendar"
             onClick={(e) => {
               e.stopPropagation();
-              props.onToggleTimestamps();
+              props.onToggleTimestamps(props.andIdx, props.orIdx);
             }}
           />
         </WithTooltip>
@@ -106,7 +108,7 @@ const QueryNodeActions: FC<PropsT> = (props) => {
               icon="microscope"
               onClick={(e) => {
                 e.stopPropagation();
-                props.onToggleSecondaryIdExclude();
+                props.onToggleSecondaryIdExclude(props.andIdx, props.orIdx);
               }}
             />
             {props.excludeFromSecondaryId && <CrossedOut />}
@@ -117,4 +119,4 @@ const QueryNodeActions: FC<PropsT> = (props) => {
   );
 };
 
-export default QueryNodeActions;
+export default memo(QueryNodeActions);
