@@ -1,6 +1,7 @@
 package com.bakdata.conquery.integration.common;
 
 import static com.bakdata.conquery.ConqueryConstants.EXTENSION_PREPROCESSED;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -25,27 +27,20 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.datasets.concepts.select.connector.DistinctSelect;
-import com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect;
-import com.bakdata.conquery.models.datasets.concepts.select.connector.LastValueSelect;
-import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
@@ -62,7 +57,6 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.description.LazyTextDescription;
-import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 @UtilityClass
@@ -130,11 +124,13 @@ public class LoadingUtil {
 		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addTable")
 									   .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId()));
 
-		final Response response = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(table));
+		final Invocation.Builder request = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE);
+		try (final Response response = request.post(Entity.json(table))) {
 
-		assertThat(response.getStatusInfo().getFamily())
-				.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-				.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(response.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
 	}
 
 	public static void importTableContents(StandaloneSupport support, RequiredTable[] tables) throws Exception {
@@ -189,14 +185,16 @@ public class LoadingUtil {
 											 .queryParam("file", cqpp)
 											 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
 
-		final Response response = support.getClient()
-										 .target(addImport)
-										 .request(MediaType.APPLICATION_JSON)
-										 .post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE));
+		final Invocation.Builder request = support.getClient()
+												  .target(addImport)
+												  .request(MediaType.APPLICATION_JSON);
+		try (final Response response = request
+				.post(Entity.entity(null, MediaType.APPLICATION_JSON_TYPE))) {
 
-		assertThat(response.getStatusInfo().getFamily())
-				.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-				.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(response.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
 	}
 
 	public static void updateCqppFile(StandaloneSupport support, File cqpp, Response.Status.Family expectedResponseFamily, String expectedReason) {
@@ -208,13 +206,19 @@ public class LoadingUtil {
 													 ResourceConstants.DATASET, support.getDataset().getId()
 											 ));
 
-		final Response response = support.getClient()
-										 .target(addImport)
-										 .request(MediaType.APPLICATION_JSON)
-										 .put(Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE));
+		final Invocation.Builder request = support.getClient()
+												  .target(addImport)
+												  .request(MediaType.APPLICATION_JSON);
+		try (final Response response = request
+				.put(Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE))) {
 
-		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
-		assertThat(response.getStatusInfo().getReasonPhrase()).isEqualTo(expectedReason);
+			assertThat(response.getStatusInfo().getFamily())
+								.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+								.isEqualTo(expectedResponseFamily);
+			assertThat(response.getStatusInfo().getReasonPhrase())
+								.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+								.isEqualTo(expectedReason);
+		}
 	}
 
 	public static void importCqppFiles(StandaloneSupport support, List<File> cqppFiles) {
@@ -247,11 +251,13 @@ public class LoadingUtil {
 		final URI uri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addConcept")
 									   .buildFromMap(Map.of(ResourceConstants.DATASET, dataset.getId().toString()));
 
-		final Response response = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE).post(Entity.json(concept));
+		final Invocation.Builder request = support.getClient().target(uri).request(MediaType.APPLICATION_JSON_TYPE);
+		try (final Response response = request.post(Entity.json(concept))) {
 
-		assertThat(response.getStatusInfo().getFamily())
-				.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-				.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(response.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
 	}
 
 
@@ -262,14 +268,6 @@ public class LoadingUtil {
 				Concept.class,
 				c -> c.setDataset(support.getDataset())
 		);
-	}
-
-	public static void addConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily)
-			throws JSONException, IOException {
-		List<Concept<?>> concepts = getConcepts(support, rawConcepts);
-		for (Concept<?> concept : concepts) {
-			addConcept(support, concept, expectedResponseFamily);
-		}
 	}
 
 	public static void updateConcepts(StandaloneSupport support, ArrayNode rawConcepts, @NonNull Response.Status.Family expectedResponseFamily)
@@ -288,34 +286,19 @@ public class LoadingUtil {
 									   ResourceConstants.DATASET, support.getDataset().getId()
 							   ));
 
-		final Response response = support.getClient()
-										 .target(conceptURI)
-										 .request(MediaType.APPLICATION_JSON)
-										 .put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
+		final Invocation.Builder request = support.getClient()
+												  .target(conceptURI)
+												  .request(MediaType.APPLICATION_JSON);
+		try (final Response response = request
+				.put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE))) {
 
-
-		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
+			assertThat(response.getStatusInfo().getFamily())
+						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+						.isEqualTo(expectedResponseFamily);
+		}
 	}
 
-	private static void addConcept(@NonNull StandaloneSupport support, @NonNull Concept<?> concept, @NonNull Response.Status.Family expectedResponseFamily) {
-		final URI
-				conceptURI =
-				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addConcept")
-							   .buildFromMap(Map.of(
-									   ResourceConstants.DATASET, support.getDataset().getId()
-							   ));
-
-		final Response response = support.getClient()
-										 .target(conceptURI)
-										 .request(MediaType.APPLICATION_JSON)
-										 .post(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE));
-
-
-		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
-	}
-
-
-	public static void importIdMapping(StandaloneSupport support, RequiredData content) throws JSONException, IOException {
+	public static void importIdMapping(StandaloneSupport support, RequiredData content) throws IOException {
 		if (content.getIdMapping() == null) {
 			return;
 		}
@@ -341,11 +324,11 @@ public class LoadingUtil {
 
 	public static void importInternToExternMappers(StandaloneSupport support, List<InternToExternMapper> internToExternMappers) {
 		for (InternToExternMapper internToExternMapper : internToExternMappers) {
-			uploadInternalToExternalMappings(support, internToExternMapper, Response.Status.Family.SUCCESSFUL);
+			uploadInternalToExternalMappings(support, internToExternMapper);
 		}
 	}
 
-	private static void uploadInternalToExternalMappings(@NonNull StandaloneSupport support, @NonNull InternToExternMapper mapping, @NonNull Response.Status.Family expectedResponseFamily) {
+	private static void uploadInternalToExternalMappings(@NonNull StandaloneSupport support, @NonNull InternToExternMapper mapping) {
 		final URI
 				conceptURI =
 				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addInternToExternMapping")
@@ -353,13 +336,51 @@ public class LoadingUtil {
 									   ResourceConstants.DATASET, support.getDataset().getId()
 							   ));
 
+		final Invocation.Builder request = support.getClient()
+												  .target(conceptURI)
+												  .request(MediaType.APPLICATION_JSON);
+		try (final Response response = request
+				.post(Entity.entity(mapping, MediaType.APPLICATION_JSON_TYPE))) {
+
+
+			assertThat(response.getStatusInfo().getFamily())
+						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+						.isEqualTo(Response.Status.Family.SUCCESSFUL);
+		}
+	}
+
+	public static void importSearchIndexes(StandaloneSupport support, List<SearchIndex> searchIndexes) {
+		for (SearchIndex internToExternMapper : searchIndexes) {
+			uploadSearchIndex(support, internToExternMapper);
+		}
+	}
+
+	private static void uploadSearchIndex(@NonNull StandaloneSupport support, @NonNull SearchIndex searchIndex) {
+		final URI
+				conceptURI =
+				HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addSearchIndex")
+							   .buildFromMap(Map.of(
+									   ResourceConstants.DATASET, support.getDataset().getId()
+							   ));
+
 		final Response response = support.getClient()
 										 .target(conceptURI)
 										 .request(MediaType.APPLICATION_JSON)
-										 .post(Entity.entity(mapping, MediaType.APPLICATION_JSON_TYPE));
+										 .post(Entity.entity(searchIndex, MediaType.APPLICATION_JSON_TYPE));
 
 
-		assertThat(response.getStatusInfo().getFamily()).isEqualTo(expectedResponseFamily);
+		assertThat(response.getStatusInfo().getFamily()).isEqualTo(Response.Status.Family.SUCCESSFUL);
+	}
+
+	public static void updateMatchingStats(@NonNull StandaloneSupport support) {
+		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder()
+															, AdminDatasetResource.class, "updateMatchingStats")
+													.buildFromMap(Map.of(DATASET, support.getDataset().getId()));
+
+		final Response post = support.getClient().target(matchingStatsUri)
+									 .request(MediaType.APPLICATION_JSON_TYPE)
+									 .post(null);
+		post.close();
 	}
 
 }

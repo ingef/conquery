@@ -21,6 +21,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -60,6 +61,12 @@ public abstract class SingleColumnSelect extends Select {
 	@Override
 	public ResultType getResultType() {
 		return super.getResultType();
+	}
+
+	@Nullable
+	@Override
+	public Column[] getRequiredColumns() {
+		return new Column[]{getColumn()};
 	}
 
 	@JsonIgnore

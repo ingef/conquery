@@ -62,7 +62,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * Deserializer for values
 	 */
-	private ObjectReader valueReader;
+	private final ObjectReader valueReader;
 
 	/**
 	 * Optional validator used for serialization.
@@ -94,7 +94,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private final ObjectMapper objectMapper;
 
-	@SuppressWarnings("unchecked")
 	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStore store,
 																					   Validator validator,
 																					   ObjectMapper objectMapper,

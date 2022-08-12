@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Objects;
 
-import javax.validation.Validator;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
@@ -15,8 +13,10 @@ import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class NamespaceStorage extends NamespacedStorage {
 
 	protected IdentifiableStore<InternToExternMapper> internToExternMappers;
+	protected IdentifiableStore<SearchIndex> searchIndexes;
 	protected SingletonStore<EntityIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
@@ -71,6 +72,8 @@ public class NamespaceStorage extends NamespacedStorage {
 		super.openStores(objectMapper);
 
 		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), getCentralRegistry(), objectMapper
+		);
 		idMapping = getStorageFactory().createIdMappingStore(super.getPathName(), objectMapper);
 		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
@@ -89,6 +92,7 @@ public class NamespaceStorage extends NamespacedStorage {
 		imports.loadData();
 
 		internToExternMappers.loadData();
+		searchIndexes.loadData();
 		// Concepts depend on internToExternMappers
 		concepts.loadData();
 
@@ -104,6 +108,8 @@ public class NamespaceStorage extends NamespacedStorage {
 	@Override
 	public void clear() {
 		super.clear();
+
+		searchIndexes.clear();
 		internToExternMappers.clear();
 		idMapping.clear();
 		structure.clear();
@@ -116,6 +122,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	public void removeStorage() {
 		super.removeStorage();
 
+		searchIndexes.removeStore();
 		internToExternMappers.removeStore();
 		idMapping.removeStore();
 		structure.removeStore();
@@ -128,6 +135,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	public void close() throws IOException {
 		super.close();
 
+		searchIndexes.close();
 		internToExternMappers.close();
 		idMapping.close();
 		structure.close();
@@ -180,5 +188,21 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	public Collection<InternToExternMapper> getInternToExternMappers() {
 		return internToExternMappers.getAll();
+	}
+
+	public void removeSearchIndex(SearchIndexId id) {
+		searchIndexes.remove(id);
+	}
+
+	public SearchIndex getSearchIndex(SearchIndexId id) {
+		return searchIndexes.get(id);
+	}
+
+	public void addSearchIndex(SearchIndex searchIndex) {
+		searchIndexes.add(searchIndex);
+	}
+
+	public Collection<SearchIndex> getSearchIndices() {
+		return searchIndexes.getAll();
 	}
 }

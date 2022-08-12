@@ -95,12 +95,12 @@ export const Navigation = memo(
       const prevIdx = Math.max(0, currentEntityIndex - 1);
 
       updateHistorySession({ entityId: entityIds[prevIdx] });
-    }, [entityIds, currentEntityIndex]);
+    }, [entityIds, currentEntityIndex, updateHistorySession]);
     const goToNext = useCallback(() => {
       const nextIdx = Math.min(entityIds.length - 1, currentEntityIndex + 1);
 
       updateHistorySession({ entityId: entityIds[nextIdx] });
-    }, [entityIds, currentEntityIndex]);
+    }, [entityIds, currentEntityIndex, updateHistorySession]);
 
     useHotkeys("shift+up", goToPrev, [goToPrev]);
     useHotkeys("shift+down", goToNext, [goToNext]);
