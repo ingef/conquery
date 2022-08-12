@@ -17,6 +17,8 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -25,6 +27,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
@@ -187,6 +190,21 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 							 return Optional.of(new AttributeTypeBuilder.Date());
 						 }
 						 return Optional.empty();
+					 })
+				.or( // Handle Selects that output hierarchical node labels or ids
+					 () -> {
+						 if (!(info instanceof SelectResultInfo)) {
+							 return Optional.empty();
+						 }
+						 SelectResultInfo selectResultInfo = (SelectResultInfo) info;
+
+						 final Select select = selectResultInfo.getSelect();
+						 if (!(select instanceof ConceptColumnSelect)) {
+							 return Optional.empty();
+						 }
+
+
+						 return null;
 					 })
 				// Default case: use a flat "hierarchy" for every other attribute
 				.orElse(new AttributeTypeBuilder.Flat());

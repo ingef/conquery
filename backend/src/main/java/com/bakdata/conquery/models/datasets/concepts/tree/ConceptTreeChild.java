@@ -3,6 +3,10 @@ package com.bakdata.conquery.models.datasets.concepts.tree;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -10,6 +14,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -91,5 +96,40 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@Override
 	public Dataset getDataset() {
 		return getConcept().getDataset();
+	}
+
+	public Optional<ConceptElement<?>> findChildById(ConceptElementId<?> id) {
+		if (!(id instanceof ConceptTreeChildId)) {
+			return Optional.empty();
+		}
+
+		if (getId().equals(id)) {
+			return Optional.of(this);
+		}
+
+		// try to find the own id in the id chain
+		ConceptElementId<?> prevIdWalk = null;
+		ConceptElementId<?> idWalk = id;
+		while (idWalk instanceof ConceptTreeChildId && !getId().equals(idWalk)) {
+			prevIdWalk = idWalk;
+			idWalk = ((ConceptTreeChildId) idWalk).getParent();
+		}
+
+		// Null-Check just for caution, prevIdWalk should never be null at this point
+		if (getId().equals(idWalk) && prevIdWalk != null) {
+			// find matching child
+			final Map<ConceptTreeChildId, ConceptTreeChild>
+					idMap =
+					children.stream().collect(Collectors.toMap(ConceptTreeChild::getId, Function.identity()));
+			final ConceptTreeChild child = idMap.get(prevIdWalk);
+
+			if (child != null) {
+				return child.findChildById(id);
+			}
+
+			// No matching child was found
+		}
+
+		return Optional.empty();
 	}
 }

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.google.common.base.Strings;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -75,6 +76,24 @@ public interface AttributeTypeBuilder {
 			newhierarchy[newhierarchy.length - 1] = emptyValueHierarchy;
 
 			return AttributeType.Hierarchy.create(newhierarchy);
+		}
+	}
+
+	@RequiredArgsConstructor
+	class ConeceptHierarchyNodeId implements AttributeTypeBuilder {
+
+		private final TreeConcept concept;
+
+		private final Set<String> collectedIds = new HashSet<>();
+
+		@Override
+		public void register(String value) {
+			collectedIds.add(value);
+		}
+
+		@Override
+		public AttributeType build() {
+			return null;
 		}
 	}
 
