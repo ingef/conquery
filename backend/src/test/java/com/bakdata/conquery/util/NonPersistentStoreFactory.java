@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
@@ -48,6 +49,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	private final Map<String, NonPersistentStore<Id<CBlock>, CBlock>> cBlockStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Bucket>, Bucket>> bucketStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<InternToExternMapper>, InternToExternMapper>> internToExternStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<Id<SearchIndex>, SearchIndex>> searchIndexStore = new ConcurrentHashMap<>();
 
 	private final Map<String, NonPersistentStore<Boolean, WorkerInformation>> workerStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Boolean, EntityIdMap>> idMappingStore = new ConcurrentHashMap<>();
@@ -84,6 +86,11 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	@Override
 	public IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(internToExternStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	}
+
+	@Override
+	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
+		return StoreMappings.identifiable(searchIndexStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
 	}
 
 	@Override

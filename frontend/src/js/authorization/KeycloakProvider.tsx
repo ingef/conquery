@@ -1,4 +1,4 @@
-import { ReactKeycloakProvider } from "@react-keycloak/web";
+import { ReactKeycloakProvider } from "@react-keycloak-fork/web";
 import { FC, useContext } from "react";
 
 import keycloak from "../../keycloak";

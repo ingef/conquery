@@ -1,0 +1,115 @@
+{
+  "type": "QUERY_TEST",
+  "label": "CONCEPT_VALUES (Resolved) Test",
+  "expectedCsv": "tests/aggregator/CONCEPT_COLUMN_SELECTS/expected_resolved.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "selects" : [
+        "tree.select"
+      ],
+      "ids": [
+        "tree"
+      ],
+      "tables": [
+        {
+          "id": "tree.test_column"
+        },
+        {
+          "id": "tree.test_column2"
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "tree",
+      "type": "TREE",
+      "selects": [
+        {
+          "type" : "CONCEPT_VALUES",
+          "name" : "select",
+          "asIds" : true
+        }
+      ],
+      "connectors": [
+        {
+          "name": "test_column",
+          "column": "table.test_column",
+          "validityDates": {
+            "label": "datum",
+            "column": "table.datum"
+          }
+        },
+        {
+          "label": "tree_label2",
+          "name": "test_column2",
+          "column": "table2.test_column",
+          "validityDates": {
+            "label": "datum",
+            "column": "table2.datum"
+          }
+        }
+      ],
+      "children": [
+        {
+          "label": "test_child1",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "A"
+          },
+          "children": []
+        },
+        {
+          "label": "test_child2",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "B"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/CONCEPT_COLUMN_SELECTS/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          }
+        ]
+      },
+      {
+        "csv": "tests/aggregator/CONCEPT_COLUMN_SELECTS/content2.csv",
+        "name": "table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

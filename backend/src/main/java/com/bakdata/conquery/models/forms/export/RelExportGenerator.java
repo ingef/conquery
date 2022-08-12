@@ -10,7 +10,7 @@ import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.ResultInfoDecorator;
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
+import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.google.common.collect.ImmutableClassToInstanceMap;
@@ -21,13 +21,12 @@ public class RelExportGenerator {
 	
 	public static RelativeFormQuery generate(RelativeMode mode) {
 
-
 		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments = ExportForm.getResolutionAlignmentMap(mode.getForm().getResolvedResolutions(), mode.getTimeUnit().getAlignment());
 
 		return generate(mode.getForm().getPrerequisite(), mode.getResolvedFeatures(), mode.getIndexSelector(), mode.getIndexPlacement(), mode.getTimeCountBefore(), mode.getTimeCountAfter(), mode.getTimeUnit(), resolutionsAndAlignments);
 	}
 	
-	public static RelativeFormQuery generate(Query query, ArrayConceptQuery features, TemporalSampler indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
+	public static RelativeFormQuery generate(Query query, ArrayConceptQuery features, TemporalSamplerFactory indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments) {
 
 		return new RelativeFormQuery(
 			query,

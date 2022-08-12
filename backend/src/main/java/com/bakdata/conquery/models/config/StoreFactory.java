@@ -23,8 +23,10 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
@@ -80,4 +82,6 @@ public interface StoreFactory {
 	SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, CentralRegistry namespaceCollection, ObjectMapper objectMapper);
 
 	IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
+
+	IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
 }

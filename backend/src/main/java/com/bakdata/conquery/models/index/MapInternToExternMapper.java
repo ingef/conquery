@@ -2,13 +2,11 @@ package com.bakdata.conquery.models.index;
 
 
 import java.net.URL;
-import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Stream;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -16,8 +14,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
@@ -44,7 +40,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	// We inject the service as a non-final property so, jackson will never try to create a serializer for it (in contrast to constructor injection)
 	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
-	private MapIndexService mapIndex;
+	private IndexService mapIndex;
 
 	@NsIdRef
 	@Setter
@@ -68,16 +64,12 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	//Manager only
 	@JsonIgnore
 	@Getter(onMethod_ = {@TestOnly})
-	private CompletableFuture<Map<String, String>> int2ext = null;
+	private MapIndex int2ext = null;
 
 
 	@Override
 	public synchronized void init() {
-		// This class gets resolved only on the ManagerNode
-		if (int2ext == null || int2ext.isCompletedExceptionally()) {
-			// Either the mapping has not been initialized or it has been evicted
-			int2ext = mapIndex.getMapping(csv, internalColumn, externalTemplate);
-		}
+		int2ext = mapIndex.getIndex(new MapIndexKey(csv, internalColumn, externalTemplate));
 	}
 
 	@Override
@@ -87,25 +79,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@Override
 	public String external(String internalValue) {
-		try {
-			return int2ext.get(1, TimeUnit.MINUTES).getOrDefault(internalValue, "");
-		}
-		catch (ExecutionException | InterruptedException | TimeoutException e) {
-			log.warn("Unable to get mapping for {} from {}. Returning nothing.", internalValue, this, e);
-			return "";
-		}
-		catch (CancellationException e) {
-			log.trace("Reinitializing mapper because previous mapping was cancelled/evicted", e);
-			init();
-			try {
-				// Retry again
-				return int2ext.get(1, TimeUnit.MINUTES).getOrDefault(internalValue, "");
-			}
-			catch (Exception ex) {
-				log.warn("Reinitializing mapper did not work. Returning empty mapping", e);
-				return "";
-			}
-		}
+		return int2ext.getOrDefault(internalValue, "");
 	}
 
 	@Override

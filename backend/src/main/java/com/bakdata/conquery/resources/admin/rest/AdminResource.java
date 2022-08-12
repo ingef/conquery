@@ -94,6 +94,12 @@ public class AdminResource {
 	}
 
 	@GET
+	@Path("/busy")
+	public boolean isBusy() {
+		return processor.isBusy();
+	}
+
+	@GET
 	@Path("logout")
 	public Response logout(@Context ContainerRequestContext requestContext) {
 		// Invalidate all cookies. At the moment the adminEnd uses cookies only for authentication, so this does not interfere with other things

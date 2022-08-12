@@ -47,11 +47,18 @@ export function setTree(
 //
 // GETTER
 //
-export function getConceptById(conceptId: ConceptIdT): ConceptT | null {
-  const keys: ConceptIdT[] = Object.keys(window.conceptTrees);
+export function getConceptById(
+  conceptId: ConceptIdT,
+  rootId?: ConceptIdT,
+): ConceptT | null {
+  if (rootId) {
+    return window.conceptTrees[rootId][conceptId] || null;
+  }
 
-  for (let i = 0; i < keys.length; i++) {
-    const concept = window.conceptTrees[keys[i]][conceptId];
+  const conceptTreeRootIds: ConceptIdT[] = Object.keys(window.conceptTrees);
+
+  for (const rootId of conceptTreeRootIds) {
+    const concept = window.conceptTrees[rootId][conceptId];
 
     if (concept) return concept;
   }
