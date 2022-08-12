@@ -96,7 +96,7 @@ public interface AttributeTypeBuilder {
 			return null;
 		}
 	}
-
+  
 	/**
 	 * Can be used in conjunction with {@link com.bakdata.conquery.models.types.SemanticType.IdentificationT}
 	 *
