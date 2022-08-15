@@ -78,15 +78,15 @@ const QueryResults: FC<PropsT> = ({
             : t("queryRunner.resultCount")}
         </LgText>
       )}
+      {!!csvUrl && exists(resultColumns) && (
+        <SxPreviewButton columns={resultColumns} url={csvUrl} />
+      )}
       {isHistoryEnabled && !!csvUrl && exists(resultColumns) && (
         <SxHistoryButton
           columns={resultColumns}
           url={csvUrl}
           label={resultLabel}
         />
-      )}
-      {!!csvUrl && exists(resultColumns) && (
-        <SxPreviewButton columns={resultColumns} url={csvUrl} />
       )}
       {resultUrls.map((url) => {
         const ending = url.split(".").reverse()[0];

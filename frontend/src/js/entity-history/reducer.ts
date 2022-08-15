@@ -20,7 +20,8 @@ export type EntityHistoryStateT = {
   };
   isLoading: boolean;
   isOpen: boolean;
-  columns: ColumnDescription[];
+  columns: Record<string, ColumnDescription>;
+  columnDescriptions: ColumnDescription[];
   label: string;
   entityIds: string[];
   uniqueSources: string[];
@@ -34,7 +35,8 @@ const initialState: EntityHistoryStateT = {
     sources: [],
   },
   label: "",
-  columns: [], // TODO: Make them currentEntityColumns and do something useful with them
+  columns: {},
+  columnDescriptions: [],
   isLoading: false,
   isOpen: false,
   uniqueSources: [],
