@@ -234,7 +234,7 @@ export const Timeline = memo(
                                             return !groupDifferences[k];
                                           },
                                         ),
-                                      );
+                                      ) as EntityEvent;
 
                                     return (
                                       <EventCard
@@ -324,7 +324,8 @@ const findGroupsWithinQuarter =
       }
 
       const datesMatch =
-        JSON.stringify(evt.dates) === JSON.stringify(lastEvt.dates);
+        evt.dates.from === lastEvt.dates.from &&
+        evt.dates.to === lastEvt.dates.to;
       const sourcesMatch = evt.source === lastEvt.source;
       const allSecondaryIdsMatch = secondaryIds.every(
         ({ label }) => evt[label] === lastEvt[label],
