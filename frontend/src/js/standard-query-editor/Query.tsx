@@ -114,10 +114,16 @@ const Query = ({
     (andIdx: number) => dispatch(toggleExcludeGroup({ andIdx })),
     [dispatch],
   );
-  const onToggleTimestamps = (andIdx: number, orIdx: number) =>
-    dispatch(toggleTimestamps({ andIdx, orIdx }));
-  const onToggleSecondaryIdExclude = (andIdx: number, orIdx: number) =>
-    dispatch(toggleSecondaryIdExclude({ andIdx, orIdx }));
+  const onToggleTimestamps = useCallback(
+    (andIdx: number, orIdx: number) =>
+      dispatch(toggleTimestamps({ andIdx, orIdx })),
+    [dispatch],
+  );
+  const onToggleSecondaryIdExclude = useCallback(
+    (andIdx: number, orIdx: number) =>
+      dispatch(toggleSecondaryIdExclude({ andIdx, orIdx })),
+    [dispatch],
+  );
   const onLoadQuery = useCallback(
     (queryId: PreviousQueryT["id"]) => {
       loadQuery(queryId);
@@ -130,6 +136,13 @@ const Query = ({
   const [queryGroupModalAndIx, setQueryGroupModalAndIdx] = useState<
     number | null
   >(null);
+
+  const onEditClick = useCallback(
+    (andIdx: number, orIdx: number) => {
+      setEditedNode({ andIdx, orIdx });
+    },
+    [setEditedNode],
+  );
 
   const onExpandPreviousQuery = useCallback(
     (q: QueryT) => {
@@ -187,16 +200,10 @@ const Query = ({
                   onDateClick={setQueryGroupModalAndIdx}
                   onExpandClick={onExpandPreviousQuery}
                   onLoadPreviousQuery={onLoadQuery}
-                  onDeleteNode={(orIdx: number) => onDeleteNode(andIdx, orIdx)}
-                  onEditClick={(orIdx: number) =>
-                    setEditedNode({ andIdx, orIdx })
-                  }
-                  onToggleTimestamps={(orIdx: number) =>
-                    onToggleTimestamps(andIdx, orIdx)
-                  }
-                  onToggleSecondaryIdExclude={(orIdx: number) =>
-                    onToggleSecondaryIdExclude(andIdx, orIdx)
-                  }
+                  onDeleteNode={onDeleteNode}
+                  onEditClick={onEditClick}
+                  onToggleTimestamps={onToggleTimestamps}
+                  onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
                 />
                 <QueryGroupConnector key={`${andIdx}.and`}>
                   {t("common.and")}
