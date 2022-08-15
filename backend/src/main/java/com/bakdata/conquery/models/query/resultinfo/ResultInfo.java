@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.query.resultinfo;
 
-import java.util.Optional;
-import java.util.function.Function;
-
 import java.util.Set;
+
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
@@ -48,7 +46,6 @@ public abstract class ResultInfo {
 		return ColumnDescriptor.builder()
 							   .label(collector.getUniqueName(this))
 							   .defaultLabel(defaultColumnName(settings))
-							   .userConceptLabel(userColumnName(settings))
 							   .type(getType().typeInfo())
 							   .semantics(getSemantics())
 							   .build();
