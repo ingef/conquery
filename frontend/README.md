@@ -117,7 +117,7 @@ Depending on the use-case, we're still calling the same concepts differently som
 
 ### Types
 
-- Before migrating to TypeScript, the code used a few Flow types here and there and relied relied on object mutation and other patterns that feel a little like quirky today / would be written differently with TypeScript. Some remainders of that time might still be present in the code.
+- Before migrating to TypeScript, the code used a few Flow types here and there and relied on object mutation and other patterns that feel a little like quirky today / would be written differently with TypeScript. Some remainders of that time might still be present in the code.
 
 ### Hooks
 - We're using react hooks extensively, but we're **not** using useCallback in a lot of places yet. So in general, we've been avoiding passing callbacks into the dependency arrays of useEffect / useMemo / etc. Probably, we should introduce more useCallback gradually, while making sure we don't introduce infinite loops.

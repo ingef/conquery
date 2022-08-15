@@ -5,17 +5,20 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
+import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.config.SearchConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.query.FilterSearch;
+import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.BiMap;
@@ -39,6 +42,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 
 
+	@NsIdRef
+	@View.ApiManagerPersistence
 	private FilterTemplate template;
 
 	@JsonIgnore
@@ -50,7 +55,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@Override
-	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
 		f.setTemplate(getTemplate());
 		f.setType(getFilterType());
 
@@ -106,7 +111,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	/**
-	 * Does not make sense to distinguish at Filter level since it's only referenced when labels is set.
+	 * Does not make sense to distinguish at Filter level since it's only referenced when labels are set.
 	 */
 	@Override
 	@JsonIgnore
@@ -115,8 +120,13 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@Override
-	public Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage) {
-		return labels.entrySet().stream()
-					 .map(entry -> new FEValue(entry.getKey(), entry.getValue()));
+	public List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
+
+		TrieSearch<FEValue> search = new TrieSearch<>(config.getSuffixLength(), config.getSplit());
+		labels.entrySet().stream()
+			  .map(entry -> new FEValue(entry.getKey(), entry.getValue())).forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
+		search.shrinkToFit();
+
+		return List.of(search);
 	}
 }

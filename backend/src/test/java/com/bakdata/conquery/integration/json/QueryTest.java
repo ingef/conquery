@@ -14,6 +14,7 @@ import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.MapInternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -43,6 +44,8 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 	@NotNull
 	private List<InternToExternMapper> internToExternMappings = List.of();
+	@NotNull
+	private List<SearchIndex> searchIndexes = List.of();
 
 	@JsonIgnore
 	private Query query;
@@ -54,10 +57,12 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
+
 		importSecondaryIds(support, content.getSecondaryIds());
-		support.waitUntilWorkDone();
 
 		importInternToExternMappers(support, internToExternMappings);
+
+		importSearchIndexes(support, searchIndexes);
 		support.waitUntilWorkDone();
 
 		importTables(support, content.getTables());
@@ -68,13 +73,16 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 		importTableContents(support, content.getTables());
 		support.waitUntilWorkDone();
-		
+
 		importIdMapping(support, content);
 		support.waitUntilWorkDone();
-		
+
 		importPreviousQueries(support, content, support.getTestUser());
 		support.waitUntilWorkDone();
-		
+
+		updateMatchingStats(support);
+		support.waitUntilWorkDone();
+
 		query = IntegrationUtils.parseQuery(support, rawQuery);
 	}
 

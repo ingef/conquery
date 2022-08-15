@@ -1,3 +1,4 @@
+# Builder
 FROM maven:3.8-openjdk-11-slim AS builder
 
 COPY . /app
@@ -7,7 +8,15 @@ WORKDIR /app
 RUN ./scripts/build_backend_version.sh
 
 
-FROM openjdk:11.0.12-buster AS runner
+# Runner
+FROM eclipse-temurin:11.0.15_10-jre-alpine AS runner
+
+## Apache POI needs some extra libs to auto-size columns
+RUN apk add --no-cache fontconfig ttf-dejavu
+RUN ln -s /usr/lib/libfontconfig.so.1 /usr/lib/libfontconfig.so && \
+    ln -s /lib/libuuid.so.1 /usr/lib/libuuid.so.1 && \
+    ln -s /lib/libc.musl-x86_64.so.1 /usr/lib/libc.musl-x86_64.so.1
+ENV LD_LIBRARY_PATH /usr/lib
 
 WORKDIR /app
 COPY --from=builder /app/executable/target/executable*jar ./conquery.jar

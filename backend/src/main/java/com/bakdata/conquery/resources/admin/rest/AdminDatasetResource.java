@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -34,15 +35,15 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.bakdata.conquery.util.io.FileUtil;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,21 +53,18 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @Path("datasets/{" + DATASET + "}")
-public class AdminDatasetResource extends HAdmin {
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
+public class AdminDatasetResource {
 
-
-	@Inject
-	protected AdminDatasetProcessor processor;
-
+	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
-	protected Dataset dataset;
-	protected Namespace namespace;
+	private Dataset dataset;
+
+	private Namespace namespace;
 
 	@PostConstruct
-	@Override
 	public void init() {
-		super.init();
 		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
 	}
 
@@ -113,6 +111,13 @@ public class AdminDatasetResource extends HAdmin {
 		processor.addInternToExternMapping(namespace, internToExternMapper);
 	}
 
+
+	@POST
+	@Path("searchIndex")
+	public void addSearchIndex(SearchIndex searchIndex) {
+		processor.addSearchIndex(namespace, searchIndex);
+	}
+
 	@POST
 	@Path("tables")
 	public void addTable(Table table) {
@@ -147,7 +152,7 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("imports")
-	public void addImport(@QueryParam("file") File importFile) throws WebApplicationException, JSONException {
+	public void addImport(@QueryParam("file") File importFile) throws WebApplicationException {
 		try {
 			processor.addImport(namespace, new GZIPInputStream(FileUtil.cqppFileToInputstream(importFile)));
 		}
@@ -177,9 +182,20 @@ public class AdminDatasetResource extends HAdmin {
 	}
 
 	@DELETE
+	@Path("searchIndex/{" + SEARCH_INDEX_ID + "}")
+	public List<ConceptId> deleteSearchIndex(@PathParam(SEARCH_INDEX_ID) SearchIndex searchIndex, @QueryParam("force") @DefaultValue("false") boolean force) {
+
+		final List<ConceptId> conceptIds = processor.deleteSearchIndex(searchIndex, force);
+		if (!conceptIds.isEmpty() && !force) {
+			throw new BadRequestException(String.format("Cannot delete search index because it is used by these concepts: %s", conceptIds));
+		}
+		return conceptIds;
+	}
+
+	@DELETE
 	@Path("internToExtern/{" + INTERN_TO_EXTERN_ID + "}")
-	public void deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper, @QueryParam("force") @DefaultValue("false") boolean force) {
-		processor.deleteInternToExternMapping(internToExternMapper, force);
+	public List<ConceptId> deleteInternToExternMapping(@PathParam(INTERN_TO_EXTERN_ID) InternToExternMapper internToExternMapper, @QueryParam("force") @DefaultValue("false") boolean force) {
+		return processor.deleteInternToExternMapping(internToExternMapper, force);
 	}
 
 	@GET
@@ -219,9 +235,9 @@ public class AdminDatasetResource extends HAdmin {
 	}
 
 	@POST
-	@Path("clear-internToExtern-cache")
-	public void clearInternToExternCache() {
-		processor.clearInternToExternCache(namespace);
+	@Path("clear-index-cache")
+	public void clearIndexCache() {
+		processor.clearIndexCache(namespace);
 	}
 
 }

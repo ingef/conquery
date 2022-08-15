@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -22,6 +23,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 @UtilityClass
 public class ResultTestUtil {
@@ -86,6 +88,12 @@ public class ResultTestUtil {
 		public TypedSelectDummy(ResultType resultType) {
 			this.setLabel(resultType.toString());
 			this.resultType = resultType;
+		}
+
+		@Nullable
+		@Override
+		public Column[] getRequiredColumns() {
+			return new Column[0];
 		}
 
 		@Override

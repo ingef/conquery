@@ -2,27 +2,25 @@ package com.bakdata.conquery.models.datasets;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.config.SearchConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
@@ -30,7 +28,6 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -44,12 +41,12 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 	@JsonBackReference
 	@NotNull
-	@ToString.Exclude
 	private Table table;
 	@NotNull
 	private MajorTypeId type;
 
 	private int minSuffixLength = 3;
+
 	private boolean generateSuffixes;
 	private boolean searchDisabled = false;
 
@@ -68,22 +65,9 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@NsIdRef
 	private SecondaryIdDescription secondaryId;
 
-
 	@Override
 	public ColumnId createId() {
 		return new ColumnId(table.getId(), getName());
-	}
-
-	//TODO try to remove this method methods, they are quite leaky
-	public ColumnStore getTypeFor(Import imp) {
-		if (!imp.getTable().equals(getTable())) {
-			throw new IllegalArgumentException(String.format("Import %s is not for same table as %s", imp.getTable().getId(), getTable().getId()));
-		}
-
-		return Objects.requireNonNull(
-				imp.getColumns()[getPosition()].getTypeDescription(),
-				() -> String.format("No description for Column/Import %s/%s", getId(), imp.getId())
-		);
 	}
 
 	@Override
@@ -160,22 +144,28 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 		return String.format("%s#%s", importName, getId().toString());
 	}
 
+
 	@Override
-	public Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage) {
-		return storage.getAllImports().stream()
-					  .filter(imp -> imp.getTable().equals(getTable()))
-					  .flatMap(imp -> StreamSupport.stream(((StringStore) getTypeFor(imp)).spliterator(), false))
-					  .map(value -> new FEValue(value, value))
-					  .onClose(() -> log.debug("DONE processing values for {}", getId()));
+	public List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
+
+		TrieSearch<FEValue> search = new TrieSearch<>(config.getSuffixLength(), config.getSplit());
+
+		storage.getAllImports().stream()
+			   .filter(imp -> imp.getTable().equals(getTable()))
+			   .flatMap(imp -> {
+				   final ImportColumn importColumn = imp.getColumns()[getPosition()];
+
+				   return ((StringStore) importColumn.getTypeDescription()).iterateValues();
+			   })
+			   .map(value -> new FEValue(value, value))
+			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
+
+			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
+		return List.of(search);
 	}
 
 	@Override
 	public List<Searchable> getSearchReferences() {
-
-		if (getSecondaryId() != null) {
-			return getSecondaryId().getSearchReferences();
-		}
-
 		return List.of(this);
 	}
 

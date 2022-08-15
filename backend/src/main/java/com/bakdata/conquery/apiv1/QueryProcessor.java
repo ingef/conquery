@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
@@ -63,18 +64,23 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class QueryProcessor {
 
-	@Getter
-	private final DatasetRegistry datasetRegistry;
-	private final MetaStorage storage;
-	private final ConqueryConfig config;
+	@Inject
+	private DatasetRegistry datasetRegistry;
+	@Inject
+	private MetaStorage storage;
+	@Inject
+	private ConqueryConfig config;
 
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
@@ -283,7 +289,7 @@ public class QueryProcessor {
 
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
-		final Namespace namespace = getDatasetRegistry().get(dataset.getId());
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
 		query.reset();
 
@@ -320,7 +326,7 @@ public class QueryProcessor {
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
 			datasetRegistry.get(query.getDataset().getId())
 						   .getExecutionManager()
-						   .execute(getDatasetRegistry(), query, config);
+						   .execute(datasetRegistry, query, config);
 		}
 	}
 
@@ -404,6 +410,8 @@ public class QueryProcessor {
 				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, false)));
 
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
+		exportQuery.setRawConceptValues(false);
+
 		exportQuery.setTables(
 				sources.stream()
 					   .map(source -> {

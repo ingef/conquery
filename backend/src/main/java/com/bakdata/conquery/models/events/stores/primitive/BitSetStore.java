@@ -50,6 +50,11 @@ public class BitSetStore implements BooleanStore {
 	}
 
 	@Override
+	public BitSetStore createDescription() {
+		return ColumnStore.emptyCopy(this);
+	}
+
+	@Override
 	public void setBoolean(int event, boolean value) {
 		nullBits.set(event, true);
 		values.set(event, value);

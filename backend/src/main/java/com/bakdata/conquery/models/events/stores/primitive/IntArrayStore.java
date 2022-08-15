@@ -32,8 +32,14 @@ public class IntArrayStore implements IntegerStore {
 	}
 
 	@Override
+	@ToString.Include
 	public int getLines() {
 		return values.length;
+	}
+
+	@Override
+	public IntArrayStore createDescription() {
+		return ColumnStore.emptyCopy(this);
 	}
 
 	@Override

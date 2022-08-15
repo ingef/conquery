@@ -44,6 +44,11 @@ public class IntegerDateStore implements DateStore {
 	}
 
 	@Override
+	public IntegerDateStore createDescription() {
+		return new IntegerDateStore(store.createDescription());
+	}
+
+	@Override
 	public void setDate(int event, int value) {
 		store.setInteger(event, value);
 	}

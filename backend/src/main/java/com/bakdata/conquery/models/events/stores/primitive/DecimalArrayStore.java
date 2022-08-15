@@ -34,6 +34,11 @@ public class DecimalArrayStore implements DecimalStore {
 	}
 
 	@Override
+	public DecimalArrayStore createDescription() {
+		return ColumnStore.emptyCopy(this);
+	}
+
+	@Override
 	public long estimateEventBits() {
 		return 256; // Source: http://javamoods.blogspot.com/2009/03/how-big-is-bigdecimal.html
 	}

@@ -266,7 +266,7 @@ const useQueries = ({
     if (datasetId) {
       loadQueries(datasetId);
     }
-  }, [datasetId]);
+  }, [datasetId, loadQueries]);
 
   return {
     queries,
@@ -299,7 +299,7 @@ const useFormConfigs = ({
     if (datasetId) {
       loadFormConfigs(datasetId);
     }
-  }, [datasetId]);
+  }, [datasetId, loadFormConfigs]);
 
   return {
     formConfigs,

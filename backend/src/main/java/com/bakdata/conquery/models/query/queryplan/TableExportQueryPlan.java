@@ -9,6 +9,7 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -25,12 +26,24 @@ import lombok.ToString;
 @ToString
 public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
+	/**
+	 * Query used to export tables filtered by entity. If the subPlan evaluates as contained for an entity, the corresponding table contents will be exported.
+	 */
 	private final QueryPlan<? extends EntityResult> subPlan;
+
+	//TODO FK: Implement this as ValidityDateNode in QPNode instead.
 	private final CDateSet dateRange;
 	private final Map<CQTable, QPNode> tables;
 
 	@ToString.Exclude
 	private final Map<Column, Integer> positions;
+
+	/**
+	 * If true, Connector {@link Column}s will be output raw.
+	 * If false, the {@link com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId} will be output.
+	 */
+	private final boolean rawConceptValues;
+
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
@@ -67,6 +80,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 			final CQTable cqTable = entry.getKey();
 			final Column validityDateColumn = cqTable.findValidityDateColumn();
 			final QPNode query = entry.getValue();
+			final Map<Bucket, CBlock> cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, cqTable.getConnector());
 
 			for (Bucket bucket : ctx.getEntityBucketsForTable(entity, cqTable.getConnector().getTable())) {
 
@@ -88,7 +102,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 						continue;
 					}
 
-					final Object[] resultRow = collectRow(totalColumns, cqTable, bucket, event, validityDateColumn);
+					final Object[] resultRow = collectRow(totalColumns, cqTable, bucket, event, validityDateColumn, cblocks.get(bucket));
 
 					results.add(resultRow);
 				}
@@ -100,7 +114,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	/**
 	 * Test if the Bucket should even be evaluated for the {@link QPNode}.
-	 *
+	 * <p>
 	 * Note that we are cramming a few things together at once, but it's probably not such a huge waste of compute time since there are only a few Buckets per Entity.
 	 */
 	private boolean shouldEvaluateBucket(QPNode query, Bucket bucket, Entity entity, QueryExecutionContext ctx) {
@@ -134,7 +148,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return query.isContained();
 	}
 
-	private Object[] collectRow(int totalColumns, CQTable exportDescription, Bucket bucket, int event, Column validityDateColumn) {
+	private Object[] collectRow(int totalColumns, CQTable exportDescription, Bucket bucket, int event, Column validityDateColumn, CBlock cblock) {
 
 		final Object[] entry = new Object[totalColumns];
 		entry[1] = exportDescription.getConnector().getTable().getLabel();
@@ -145,12 +159,19 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 				continue;
 			}
 
+			final int position = positions.get(column);
+
 			if (column.equals(validityDateColumn)) {
-				entry[0] = List.of(bucket.getAsDateRange(event, column));
+				entry[position] = List.of(bucket.getAsDateRange(event, column));
+				continue;
 			}
-			else {
-				entry[positions.get(column)] = bucket.createScriptValue(event, column);
+
+			if (!rawConceptValues && column.equals(exportDescription.getConnector().getColumn())) {
+				entry[position] = cblock.getMostSpecificChildLocalId(event);
+				continue;
 			}
+			
+			entry[position] = bucket.createScriptValue(event, column);
 		}
 		return entry;
 	}

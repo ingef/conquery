@@ -2,23 +2,16 @@ package com.bakdata.conquery.util.dict;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.github.powerlibraries.io.In;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import lombok.extern.slf4j.Slf4j;
@@ -73,7 +66,7 @@ public class SuccinctTrieTest {
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
 		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "name");
-		EncodedDictionary direct = new EncodedDictionary(dict, StringTypeEncoded.Encoding.UTF8);
+		EncodedDictionary direct = new EncodedDictionary(dict, EncodedStringStore.Encoding.UTF8);
 		final BiMap<String, Integer> reference = HashBiMap.create();
 
 		AtomicInteger count = new AtomicInteger(0);

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -24,22 +26,26 @@ import lombok.ToString;
 /**
  * This class holds the logic to back the endpoints provided by {@link MeResource}.
  */
-@AllArgsConstructor
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class MeProcessor {
 
-	private final MetaStorage storage;
-	private final DatasetRegistry datasetRegistry;
+	@Inject
+	private MetaStorage storage;
+	@Inject
+	private DatasetRegistry datasetRegistry;
 
 	/**
 	 * Generates a summary of a user. It contains its name, the groups it belongs to and its permissions on a dataset.
+	 *
 	 * @param user The user object to gather informations about
 	 * @return The information about the user
 	 */
-	public FEMeInformation getUserInformation(@NonNull User user){
+	public FEMeInformation getUserInformation(@NonNull User user) {
 		// Compute dataset ablilities
-		Map<DatasetId, FEDatasetAbility> datasetAblilites= new HashMap<>();
-		for(Dataset dataset : datasetRegistry.getAllDatasets()){
+		Map<DatasetId, FEDatasetAbility> datasetAblilites = new HashMap<>();
+		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
 			if(!user.isPermitted(dataset,Ability.READ)) {
 				// User is not allowed to use dataset
 				continue;

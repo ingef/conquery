@@ -1,6 +1,6 @@
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FC, ReactElement } from "react";
+import { memo, ReactElement, ReactNode } from "react";
 import { Tooltip } from "react-tippy";
 import "react-tippy/dist/tippy.css";
 
@@ -31,16 +31,17 @@ const Text = styled("div")<{ wide?: boolean }>`
   }
 `;
 
-interface PropsT {
+interface Props {
   className?: string;
   place?: "bottom" | "left" | "right" | "top";
   text?: string;
   html?: ReactElement;
   lazy?: boolean;
   wide?: boolean;
+  children?: ReactNode;
 }
 
-const WithTooltip: FC<PropsT> = ({
+const WithTooltip = ({
   className,
   children,
   place,
@@ -48,7 +49,7 @@ const WithTooltip: FC<PropsT> = ({
   html,
   lazy,
   wide,
-}) => {
+}: Props) => {
   const theme = useTheme();
 
   if (!text && !html) return <>{children}</>;
@@ -89,4 +90,4 @@ const WithTooltip: FC<PropsT> = ({
   );
 };
 
-export default WithTooltip;
+export default memo(WithTooltip);

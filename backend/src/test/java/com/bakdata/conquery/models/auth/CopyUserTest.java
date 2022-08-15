@@ -17,12 +17,7 @@ public class CopyUserTest {
 
 	@Test
 	void testUserCopy(){
-		final DatasetRegistry registry = new DatasetRegistry(0);
-
-
 		MetaStorage storage = new NonPersistentStoreFactory().createMetaStorage();
-
-		registry.setMetaStorage(storage);
 
 		// Create test role
 		Role role = new Role("role", "role", storage);

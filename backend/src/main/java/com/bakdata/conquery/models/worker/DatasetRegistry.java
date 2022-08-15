@@ -1,27 +1,35 @@
 package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -34,6 +42,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
+@JsonIgnoreType
 public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 	private final ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
@@ -46,11 +55,43 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	private final int entityBucketSize;
 
 	@Getter
-	@JsonIgnore
-	private final transient ConcurrentMap<SocketAddress, ShardNodeInformation> shardNodes = new ConcurrentHashMap<>();
+	private final ConcurrentMap<SocketAddress, ShardNodeInformation> shardNodes = new ConcurrentHashMap<>();
 
-	@Getter @Setter @JsonIgnore
-	private transient MetaStorage metaStorage;
+	@Getter
+	private final ConqueryConfig config;
+
+	private final Function<Class<? extends View>, ObjectMapper> internalObjectMapperCreator;
+
+	@Getter
+	@Setter
+	private MetaStorage metaStorage;
+
+
+	public Namespace createNamespace(Dataset dataset) throws IOException {
+		// Prepare empty storage
+		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
+		final ObjectMapper persistenceMapper = internalObjectMapperCreator.apply(View.Persistence.Manager.class);
+		datasetStorage.openStores(persistenceMapper);
+		datasetStorage.loadData();
+		datasetStorage.updateDataset(dataset);
+		datasetStorage.updateIdMapping(new EntityIdMap());
+		datasetStorage.close();
+
+
+		final Namespace namespace = Namespace.createAndRegister(
+				this,
+				datasetStorage,
+				config,
+				internalObjectMapperCreator
+		);
+
+		// for now we just add one worker to every ShardNode
+		for (ShardNodeInformation node : getShardNodes().values()) {
+			node.send(new AddWorker(dataset));
+		}
+
+		return namespace;
+	}
 
 	public void add(Namespace ns) {
 		datasets.put(ns.getStorage().getDataset().getId(), ns);

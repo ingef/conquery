@@ -125,19 +125,22 @@ export const searchTrees = createAsyncAction(
 export const useSearchTrees = () => {
   const dispatch = useDispatch();
 
-  return async (trees: TreesT, query: string) => {
-    dispatch(searchTrees.request({ query }));
+  return useCallback(
+    async (trees: TreesT, query: string) => {
+      dispatch(searchTrees.request({ query }));
 
-    if (isEmpty(query)) return;
+      if (isEmpty(query)) return;
 
-    try {
-      const result = await globalSearch(trees, query);
+      try {
+        const result = await globalSearch(trees, query);
 
-      dispatch(searchTrees.success({ query, result }));
-    } catch (e) {
-      dispatch(searchTrees.failure(errorPayload(e as Error, { query })));
-    }
-  };
+        dispatch(searchTrees.success({ query, result }));
+      } catch (e) {
+        dispatch(searchTrees.failure(errorPayload(e as Error, { query })));
+      }
+    },
+    [dispatch],
+  );
 };
 
 export const clearSearchQuery = createAction(
