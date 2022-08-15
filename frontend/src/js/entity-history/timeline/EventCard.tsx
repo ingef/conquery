@@ -165,6 +165,18 @@ const EventCard = ({
               </ColBucketCode>
             </>
           )}
+          {contentFilter.rest && applicableRest.length > 0 && (
+            <>
+              <WithTooltip text={restTooltip}>
+                <SxFaIcon icon="info" active tiny />
+              </WithTooltip>
+              <ColBucket>
+                {applicableRest.map((column) => (
+                  <span>{row[column.label]}</span>
+                ))}
+              </ColBucket>
+            </>
+          )}
           {contentFilter.concept && applicableConcepts.length > 0 && (
             <>
               <WithTooltip text={conceptsTooltip}>
@@ -177,18 +189,6 @@ const EventCard = ({
                     conceptId={row[column.label]}
                     datasetId={datasetId}
                   />
-                ))}
-              </ColBucket>
-            </>
-          )}
-          {contentFilter.rest && applicableRest.length > 0 && (
-            <>
-              <WithTooltip text={restTooltip}>
-                <SxFaIcon icon="info" active tiny />
-              </WithTooltip>
-              <ColBucket>
-                {applicableRest.map((column) => (
-                  <span>{row[column.label]}</span>
                 ))}
               </ColBucket>
             </>
