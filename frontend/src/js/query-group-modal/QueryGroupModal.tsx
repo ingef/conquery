@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC, Fragment, useCallback, useMemo } from "react";
+import { Fragment, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
