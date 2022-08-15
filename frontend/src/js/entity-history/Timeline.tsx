@@ -11,12 +11,13 @@ import {
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useDatasetId } from "../dataset/selectors";
-import { Heading4 } from "../headings/Headings";
 
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
 import EventCard from "./timeline/EventCard";
+import { SmallHeading } from "./timeline/SmallHeading";
+import { YearHead } from "./timeline/YearHead";
 
 const Root = styled("div")`
   overflow-y: auto;
@@ -44,16 +45,6 @@ const VerticalLine = styled("div")`
   margin: 10px 4px;
 `;
 
-const YearHead = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.gray};
-  padding: 10px;
-`;
-const StickyWrap = styled("div")`
-  position: sticky;
-  top: 0;
-  left: 0;
-`;
 const YearGroup = styled("div")`
   display: flex;
   flex-direction: column;
@@ -69,12 +60,6 @@ const QuarterHead = styled("div")<{ empty?: boolean }>`
   display: grid;
   grid-template-columns: 20px 100px 1fr;
   align-items: center;
-`;
-
-const SxHeading4 = styled(Heading4)`
-  flex-shrink: 0;
-  margin: 0;
-  color: ${({ theme }) => theme.col.black};
 `;
 
 const Boxes = styled("div")`
@@ -165,14 +150,7 @@ export const Timeline = memo(
           );
           return (
             <>
-              <YearHead>
-                <StickyWrap>
-                  <SxHeading4>{year}</SxHeading4>
-                  <div>
-                    {totalEvents} {t("history.events", { count: totalEvents })}
-                  </div>
-                </StickyWrap>
-              </YearHead>
+              <YearHead year={year} totalEvents={totalEvents} />
               <YearGroup key={year}>
                 {quarterwiseData.map(
                   ({ quarter, groupedEvents, differences }) => {
@@ -184,7 +162,7 @@ export const Timeline = memo(
                     return (
                       <QuarterGroup key={quarter}>
                         <QuarterHead empty={totalEventsPerQuarter === 0}>
-                          <SxHeading4>Q{quarter} </SxHeading4>
+                          <SmallHeading>Q{quarter} </SmallHeading>
                           <span>
                             – {totalEventsPerQuarter}{" "}
                             {t("history.events", {
