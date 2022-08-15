@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { useTranslation } from "react-i18next";
 import NumberFormat from "react-number-format";
 
 import {
@@ -22,12 +21,6 @@ const ExtraArea = styled("div")`
   padding: 12px 12px 12px 40px;
   background-color: ${({ theme }) => theme.col.bg};
   border-top: 1px solid ${({ theme }) => theme.col.grayVeryLight};
-`;
-
-const ExtraAreaHeading = styled("h5")`
-  font-size: ${({ theme }) => theme.font.xs};
-  font-weight: 700;
-  margin: 0 0 8px;
 `;
 
 const isConceptColumn = (columnDescription: ColumnDescription) =>
@@ -53,15 +46,10 @@ const GroupedContent = ({
   currencyConfig,
   rootConceptIdsByColumn,
 }: Props) => {
-  const { t } = useTranslation();
   const differencesKeys = Object.keys(groupedRowsDifferences);
 
   return (
     <ExtraArea>
-      <ExtraAreaHeading>
-        {groupedRows.length}{" "}
-        {t("history.events", { count: groupedRows.length })}
-      </ExtraAreaHeading>
       <Grid
         style={{
           gridTemplateColumns: `repeat(${differencesKeys.length}, auto)`,
