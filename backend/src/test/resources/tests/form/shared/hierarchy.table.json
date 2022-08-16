@@ -1,0 +1,14 @@
+{
+    "csv": "tests/form/shared/hierarchy.csv",
+    "name": "hierarchy",
+    "primaryColumn": {
+        "name": "id",
+        "type": "STRING"
+    },
+    "columns": [
+        {
+            "name": "code",
+            "type": "STRING"
+        }
+    ]
+}

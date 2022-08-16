@@ -98,7 +98,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 		return getConcept().getDataset();
 	}
 
-	public Optional<ConceptElement<?>> findChildById(ConceptElementId<?> id) {
+	public Optional<ConceptTreeNode<?>> findChildById(ConceptElementId<?> id) {
 		if (!(id instanceof ConceptTreeChildId)) {
 			return Optional.empty();
 		}

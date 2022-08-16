@@ -106,7 +106,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		this.setLocalId(0);
 		localIdMap.add(this);
 
-		Set<ConstraintViolation<ConceptTreeNode>> errors = new HashSet<>();
 		List<ConceptTreeChild> openList = new ArrayList<>();
 		openList.addAll(this.getChildren());
 
@@ -135,10 +134,9 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 			openList.addAll((openList.get(i)).getChildren());
 		}
-		ValidatorHelper.failOnError(log, errors);
 	}
 
-	public Optional<ConceptElement<?>> findChildById(@NonNull ConceptElementId<?> id) {
+	public Optional<ConceptTreeNode<?>> findChildById(@NonNull ConceptElementId<?> id) {
 
 		if (id instanceof ConceptTreeChildId) {
 			ConceptElementId<?> prevIdWalk = null;

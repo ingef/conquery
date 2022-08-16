@@ -16,7 +16,7 @@ public class CalculatedValue<T> {
 	private T value;
 
 	public T getValue() {
-		if(!isCalculated()) {
+		if (!isCalculated()) {
 			value = calculation.get();
 		}
 
@@ -25,5 +25,9 @@ public class CalculatedValue<T> {
 
 	public boolean isCalculated() {
 		return value != null;
+	}
+
+	public static <T> CalculatedValue<T> from(Supplier<T> supplier) {
+		return new CalculatedValue<>(supplier);
 	}
 }
