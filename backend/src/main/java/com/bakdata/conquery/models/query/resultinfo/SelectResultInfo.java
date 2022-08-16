@@ -50,10 +50,8 @@ public class SelectResultInfo extends ResultInfo {
 		return ColumnDescriptor.builder()
 							   .label(uniqueNamer.getUniqueName(this))
 							   .defaultLabel(defaultColumnName(settings))
-							   .userConceptLabel(userColumnName(settings))
 							   .type(getType().typeInfo())
 							   .semantics(getSemantics())
-							   .selectId(select.getId()) // TODO delete this?
 							   .build();
 	}
 

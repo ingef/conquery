@@ -4,10 +4,8 @@ import static com.bakdata.conquery.resources.ResourceConstants.ROLES_PATH_ELEMEN
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 
 import java.util.Collection;
-import java.util.List;
 
 import javax.inject.Inject;
-import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -20,16 +18,15 @@ import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import lombok.RequiredArgsConstructor;
 
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Path(ROLES_PATH_ELEMENT)
-public class RoleResource extends HAdmin {
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
+public class RoleResource {
 
-
-	@Inject
-	protected AdminProcessor processor;
+	private final AdminProcessor processor;
 
 	@POST
 	public Response postRole(Role role) throws JSONException {

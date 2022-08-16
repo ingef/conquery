@@ -3,21 +3,19 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -27,6 +25,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMutex;
@@ -37,6 +36,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -48,11 +48,8 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
-import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.ShardNodeInformation;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.NonNull;
@@ -62,20 +59,19 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-@RequiredArgsConstructor
 @Getter
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AdminDatasetProcessor {
 
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
 	private static final String ABBREVIATION_MARKER = "\u2026";
 
-	private final MetaStorage storage; // TODO Remove
 	private final ConqueryConfig config;
 	private final Validator validator;
 	private final DatasetRegistry datasetRegistry;
 	private final JobManager jobManager;
-	private final Function<Class<? extends View>,ObjectMapper> internalObjectMapperCreator;
+
 	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
 
 	/**
@@ -89,29 +85,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		// Prepare empty storage
-		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), validator, "dataset_" + name);
-		final ObjectMapper persistenceMapper = internalObjectMapperCreator.apply(View.Persistence.Manager.class);
-		datasetStorage.openStores(persistenceMapper);
-		datasetStorage.loadData();
-		datasetStorage.updateDataset(dataset);
-		datasetStorage.updateIdMapping(new EntityIdMap());
-		datasetStorage.close();
-
-
-		Namespace.createAndRegister(
-				getDatasetRegistry(),
-				datasetStorage,
-				config,
-				internalObjectMapperCreator
-		);
-
-		// for now we just add one worker to every ShardNode
-		for (ShardNodeInformation node : datasetRegistry.getShardNodes().values()) {
-			node.send(new AddWorker(dataset));
-		}
-
-		return dataset;
+		return datasetRegistry.createNamespace(dataset).getDataset();
 	}
 
 	/**
@@ -364,6 +338,7 @@ public class AdminDatasetProcessor {
 
 					ns.sendToAll(new UpdateMatchingStatsMessage());
 					ns.getFilterSearch().updateSearch();
+					ns.updateInternToExternMappings();
 				}
 		));
 	}
@@ -412,7 +387,47 @@ public class AdminDatasetProcessor {
 		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
 	}
 
-	public void clearInternToExternCache(Namespace namespace) {
-		namespace.clearInternToExternCache();
+	public void clearIndexCache(Namespace namespace) {
+		namespace.clearIndexCache();
+	}
+
+	public void addSearchIndex(Namespace namespace, SearchIndex searchIndex) {
+		searchIndex.setDataset(namespace.getDataset());
+
+		ValidatorHelper.failOnError(log, validator.validate(searchIndex));
+
+		if (namespace.getStorage().getSearchIndex(searchIndex.getId()) != null) {
+			throw new WebApplicationException("InternToExternMapping already exists", Response.Status.CONFLICT);
+		}
+
+		log.info("Received new SearchIndex[{}]", searchIndex.getId());
+		namespace.getStorage().addSearchIndex(searchIndex);
+	}
+
+	public List<ConceptId> deleteSearchIndex(SearchIndex searchIndex, boolean force) {
+		final Namespace namespace = datasetRegistry.get(searchIndex.getDataset().getId());
+
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
+															.filter(
+																	c -> c.getConnectors().stream()
+																		  .map(Connector::getFilters)
+																		  .flatMap(Collection::stream)
+																		  .filter(SelectFilter.class::isInstance)
+																		  .map(SelectFilter.class::cast)
+																		  .map(SelectFilter::getTemplate)
+																		  .filter(Objects::nonNull)
+																		  .anyMatch(searchIndex::equals)
+															)
+															.collect(Collectors.toList());
+
+		if (force || dependentConcepts.isEmpty()) {
+			for (Concept<?> concept : dependentConcepts) {
+				deleteConcept(concept);
+			}
+
+			namespace.getStorage().removeSearchIndex(searchIndex.getId());
+		}
+
+		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
 	}
 }

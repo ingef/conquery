@@ -33,7 +33,7 @@ public abstract class AbstractSerializationTest {
 
 	@BeforeEach
 	public void before() {
-		datasetRegistry = new DatasetRegistry(0);
+		datasetRegistry = new DatasetRegistry(0, config, null);
 		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
 
 		// Prepare manager node internal mapper

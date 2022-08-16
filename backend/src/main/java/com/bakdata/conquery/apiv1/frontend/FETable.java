@@ -22,13 +22,21 @@ import lombok.Data;
 public class FETable {
 	@NotNull
 	private TableId id;
+
 	private ConnectorId connectorId;
+
 	@NotEmpty
 	private String label;
+
 	private FEValidityDate dateColumn;
-	private List<@Valid FEFilter> filters;
+
+	//TODO MT: This is a weird syntax but hey: https://youtrack.jetbrains.com/issue/IDEA-241656/Provide-a-fix-for-static-member-qualifying-type-may-not-be-annotated#focus=Comments-27-4158847.0-0
+	private List<FEFilterConfiguration.@Valid Top> filters;
+
 	private List<@Valid FESelect> selects;
+
 	@JsonProperty("default")
 	private Boolean isDefault;
+
 	private Set<SecondaryIdDescriptionId> supportedSecondaryIds;
 }

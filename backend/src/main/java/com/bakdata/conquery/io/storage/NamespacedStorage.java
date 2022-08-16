@@ -43,8 +43,6 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	@Getter
-	private final Validator validator;
-	@Getter
 	@ToString.Include
 	private final String pathName;
 	@Getter
@@ -57,8 +55,7 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
-	public NamespacedStorage(StoreFactory storageFactory, Validator validator, String pathName) {
-		this.validator = validator;
+	public NamespacedStorage(StoreFactory storageFactory, String pathName) {
 		this.pathName = pathName;
 		this.storageFactory = storageFactory;
 	}

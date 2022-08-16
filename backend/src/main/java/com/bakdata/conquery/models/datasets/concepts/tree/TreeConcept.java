@@ -42,24 +42,30 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@JsonIgnore
 	@Getter
 	private final int depth = 0;
+
 	@Getter
 	private final int[] prefix = new int[]{0};
+
 	@JsonIgnore
 	private final List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
+
 	@Getter
 	@Setter
 	@Valid
 	private List<ConceptTreeChild> children = Collections.emptyList();
+
 	@JsonIgnore
 	@Getter
 	@Setter
 	private int localId;
+
 	@NotNull
 	@Getter
 	@Setter
-	@JsonManagedReference
 	@Valid
+	@JsonManagedReference
 	private List<UniversalSelect> selects = new ArrayList<>();
+
 	@JsonIgnore
 	@Getter
 	@Setter
@@ -213,8 +219,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	 * @param ids the local id array to look for
 	 * @return the element matching the most specific local id in the array
 	 */
-	public ConceptTreeNode<?> getElementByLocalId(@NonNull int[] ids) {
+	public ConceptTreeNode<?> getElementByLocalIdPath(@NonNull int[] ids) {
 		int mostSpecific = ids[ids.length - 1];
-		return localIdMap.get(mostSpecific);
+		return getElementByLocalId(mostSpecific);
+	}
+
+	public ConceptTreeNode<?> getElementByLocalId(int localId) {
+		return localIdMap.get(localId);
 	}
 }

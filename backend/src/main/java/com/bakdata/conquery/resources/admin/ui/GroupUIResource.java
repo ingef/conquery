@@ -4,6 +4,7 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import io.dropwizard.views.View;
+import lombok.RequiredArgsConstructor;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -17,10 +18,10 @@ import static com.bakdata.conquery.resources.ResourceConstants.GROUP_ID;
 
 @Produces(MediaType.TEXT_HTML)
 @Path(GROUPS_PATH_ELEMENT)
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class GroupUIResource {
 
-	@Inject
-	protected UIProcessor uiProcessor;
+	protected final UIProcessor uiProcessor;
 
 	@GET
 	public View getGroups() {

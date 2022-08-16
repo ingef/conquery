@@ -42,4 +42,8 @@ public class ConqueryConstants {
 			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).observationScope(), new ResultType.StringT(FeatureGroup::localizeValue), Set.of());
 
 	public static final String PRIMARY_DICTIONARY = "PRIMARY_DICTIONARY";
+	/**
+	 * Drawn from random.org
+	 */
+	public static final long RANDOM_SEED = 694011229L;
 }

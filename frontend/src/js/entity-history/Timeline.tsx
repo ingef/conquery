@@ -1,21 +1,22 @@
 import styled from "@emotion/styled";
 import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import NumberFormat from "react-number-format";
 import { useSelector } from "react-redux";
 
-import { ColumnDescription, CurrencyConfigT } from "../api/types";
+import {
+  ColumnDescription,
+  ColumnDescriptionSemanticConceptColumn,
+  ConceptIdT,
+  CurrencyConfigT,
+} from "../api/types";
 import type { StateT } from "../app/reducers";
-import { exists } from "../common/helpers/exists";
+import { useDatasetId } from "../dataset/selectors";
 import { Heading4 } from "../headings/Headings";
-import FaIcon from "../icon/FaIcon";
-import WithTooltip from "../tooltip/WithTooltip";
 
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
-import { RowDates } from "./RowDates";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
-import { RawDataBadge } from "./timeline/RawDataBadge";
+import EventCard from "./timeline/EventCard";
 
 const Root = styled("div")`
   overflow-y: auto;
@@ -32,44 +33,15 @@ const EventTimeline = styled("div")`
   grid-template-columns: auto 1fr;
 `;
 const EventItemList = styled("div")`
-  width: 100%;
+  width: calc(100% + 10px);
   margin-left: -10px;
-`;
-
-const EventItem = styled("div")`
-  display: grid;
-  grid-template-columns: auto 45px 1fr;
-  gap: 3px;
-  font-size: ${({ theme }) => theme.font.xs};
-  padding: 5px 0;
-  position: relative;
-`;
-const EventItemContent = styled("div")`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  position: relative;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  box-shadow: 0 0 0 1px ${({ theme }) => theme.col.grayLight};
-  padding: 15px 10px 5px;
-  margin-top: 5px;
-  gap: 5px;
-  background-color: white;
-`;
-
-const Bullet = styled("div")`
-  width: 8px;
-  height: 8px;
-  margin: 4px 0;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  border-radius: 50%;
-  flex-shrink: 0;
 `;
 
 const VerticalLine = styled("div")`
   height: calc(100% - 20px);
   width: 2px;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  margin: 10px 5px;
+  background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
+  margin: 10px 4px;
 `;
 
 const YearHead = styled("div")`
@@ -86,17 +58,17 @@ const YearGroup = styled("div")`
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 7px;
+  padding: 12px 0;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 const QuarterGroup = styled("div")``;
 const QuarterHead = styled("div")<{ empty?: boolean }>`
-  font-weight: ${({ empty }) => (empty ? "normal" : "bold")};
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme, empty }) =>
     empty ? theme.col.grayLight : theme.col.gray};
   display: grid;
-  grid-template-columns: 150px 1fr;
+  grid-template-columns: 20px 100px 1fr;
+  align-items: center;
 `;
 
 const SxHeading4 = styled(Heading4)`
@@ -104,27 +76,6 @@ const SxHeading4 = styled(Heading4)`
   margin: 0;
   color: ${({ theme }) => theme.col.black};
 `;
-
-const TinyText = styled("p")`
-  margin: 0;
-  font-size: ${({ theme }) => theme.font.tiny};
-  font-weight: 700;
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.col.gray};
-  line-height: 0.9;
-`;
-
-const ColBucket = styled("div")`
-  color: black;
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0 10px;
-  padding: 1px 4px;
-`;
-
-const ColBucketCode = styled((props: any) => (
-  <ColBucket as="code" {...props} />
-))``;
 
 const Boxes = styled("div")`
   display: flex;
@@ -137,17 +88,6 @@ const Box = styled("div")`
   background-color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-const SxRawDataBadge = styled(RawDataBadge)`
-  position: absolute;
-  top: -5px;
-  left: -5px;
-`;
-
-const SxFaIcon = styled(FaIcon)`
-  width: 20px !important;
-  text-align: center;
-`;
-
 interface Props {
   className?: string;
   detailLevel: DetailLevel;
@@ -158,11 +98,15 @@ interface Props {
 export const Timeline = memo(
   ({ className, detailLevel, sources, contentFilter }: Props) => {
     const { t } = useTranslation();
+    const datasetId = useDatasetId();
     const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
       (state) => state.entityHistory.currentEntityData,
     );
-    const columns = useSelector<StateT, ColumnDescription[]>(
+    const columns = useSelector<StateT, EntityHistoryStateT["columns"]>(
       (state) => state.entityHistory.columns,
+    );
+    const columnDescriptions = useSelector<StateT, ColumnDescription[]>(
+      (state) => state.entityHistory.columnDescriptions,
     );
 
     const currencyConfig = useSelector<StateT, CurrencyConfigT>(
@@ -171,28 +115,52 @@ export const Timeline = memo(
 
     const columnBuckets = useMemo(() => {
       return {
-        money: columns.filter((c) => c.type === "MONEY"),
-        concepts: columns.filter(
+        money: columnDescriptions.filter((c) => c.type === "MONEY"),
+        concepts: columnDescriptions.filter(
           (c) =>
             c.semantics.length > 0 && c.semantics[0].type === "CONCEPT_COLUMN",
         ),
-        secondaryIds: columns.filter(
+        secondaryIds: columnDescriptions.filter(
           (c) =>
             c.semantics.length > 0 && c.semantics[0].type === "SECONDARY_ID",
         ),
-        rest: columns.filter(
+        rest: columnDescriptions.filter(
           (c) => c.type !== "MONEY" && c.semantics.length === 0,
         ),
       };
-    }, [columns]);
+    }, [columnDescriptions]);
 
-    const bucketedEntityDataByYearAndQuarter = useTimeBucketedDataDesc(data);
+    const rootConceptIdsByColumn: Record<string, ConceptIdT> = useMemo(() => {
+      const entries: [string, ConceptIdT][] = [];
+
+      for (const columnDescription of columnBuckets.concepts) {
+        const { label, semantics } = columnDescription;
+        const conceptSemantic = semantics.find(
+          (sem): sem is ColumnDescriptionSemanticConceptColumn =>
+            sem.type === "CONCEPT_COLUMN",
+        );
+
+        if (conceptSemantic) {
+          entries.push([label, conceptSemantic.concept]);
+        }
+      }
+
+      return Object.fromEntries(entries);
+    }, [columnBuckets]);
+
+    const { bucketedEventsByDayAndSource } = useTimeBucketedSortedData(data, {
+      sources,
+      secondaryIds: columnBuckets.secondaryIds,
+    });
+
+    if (!datasetId) return null;
 
     return (
       <Root className={className}>
-        {bucketedEntityDataByYearAndQuarter.map(({ year, quarterwiseData }) => {
+        {bucketedEventsByDayAndSource.map(({ year, quarterwiseData }) => {
           const totalEvents = quarterwiseData.reduce(
-            (all, data) => all + data.events.length,
+            (all, data) =>
+              all + data.groupedEvents.reduce((s, evts) => s + evts.length, 0),
             0,
           );
           return (
@@ -206,178 +174,98 @@ export const Timeline = memo(
                 </StickyWrap>
               </YearHead>
               <YearGroup key={year}>
-                {quarterwiseData.map(({ quarter, events }) => {
-                  const filteredEvents = events.filter((e) =>
-                    sources.has(e.source),
-                  );
+                {quarterwiseData.map(
+                  ({ quarter, groupedEvents, differences }) => {
+                    const totalEventsPerQuarter = groupedEvents.reduce(
+                      (s, evts) => s + evts.length,
+                      0,
+                    );
 
-                  return (
-                    <QuarterGroup key={quarter}>
-                      <QuarterHead empty={filteredEvents.length === 0}>
-                        <SxHeading4>
-                          Q{quarter} – {filteredEvents.length}{" "}
-                          {t("history.events", {
-                            count: filteredEvents.length,
-                          })}
-                        </SxHeading4>
-                        {detailLevel === "summary" && (
-                          <Boxes>
-                            {new Array(filteredEvents.length)
-                              .fill(0)
-                              .map((_, i) => (
-                                <Box key={i} />
-                              ))}
-                          </Boxes>
-                        )}
-                      </QuarterHead>
-                      {detailLevel !== "summary" && filteredEvents.length > 0 && (
-                        <EventTimeline>
-                          <VerticalLine />
-                          <EventItemList>
-                            {filteredEvents
-                              .slice(
-                                0,
-                                detailLevel === "detail" ? 3 : events.length,
-                              )
-                              .map((row, index) => {
-                                const applicableSecondaryIds =
-                                  columnBuckets.secondaryIds.filter((column) =>
-                                    exists(row[column.label]),
-                                  );
-                                const secondaryIdsTooltip =
-                                  applicableSecondaryIds
-                                    .map((c) => c.label)
-                                    .join(", ");
+                    return (
+                      <QuarterGroup key={quarter}>
+                        <QuarterHead empty={totalEventsPerQuarter === 0}>
+                          <SxHeading4>Q{quarter} </SxHeading4>
+                          <span>
+                            – {totalEventsPerQuarter}{" "}
+                            {t("history.events", {
+                              count: totalEventsPerQuarter,
+                            })}
+                          </span>
+                          {detailLevel === "summary" && (
+                            <Boxes>
+                              {new Array(totalEventsPerQuarter)
+                                .fill(0)
+                                .map((_, i) => (
+                                  <Box key={i} />
+                                ))}
+                            </Boxes>
+                          )}
+                        </QuarterHead>
+                        {detailLevel !== "summary" &&
+                          totalEventsPerQuarter > 0 && (
+                            <EventTimeline>
+                              <VerticalLine />
+                              <EventItemList>
+                                {groupedEvents.map((group, index) => {
+                                  const groupDifferences = differences[index];
 
-                                const applicableConcepts =
-                                  columnBuckets.concepts.filter((column) =>
-                                    exists(row[column.label]),
-                                  );
-                                const conceptsTooltip = applicableConcepts
-                                  .map((c) => c.label)
-                                  .join(", ");
+                                  if (group.length === 0) return null;
 
-                                const applicableMoney =
-                                  columnBuckets.money.filter((column) =>
-                                    exists(row[column.label]),
-                                  );
-                                const moneyTooltip = applicableMoney
-                                  .map((c) => c.label)
-                                  .join(", ");
+                                  if (detailLevel === "full") {
+                                    return group.map((evt, evtIdx) => (
+                                      <EventCard
+                                        key={`${index}-${evtIdx}`}
+                                        columns={columns}
+                                        columnBuckets={columnBuckets}
+                                        datasetId={datasetId}
+                                        contentFilter={contentFilter}
+                                        rootConceptIdsByColumn={
+                                          rootConceptIdsByColumn
+                                        }
+                                        row={evt}
+                                        currencyConfig={currencyConfig}
+                                      />
+                                    ));
+                                  } else {
+                                    const firstRowWithoutDifferences =
+                                      Object.fromEntries(
+                                        Object.entries(group[0]).filter(
+                                          ([k]) => {
+                                            return !groupDifferences[k];
+                                          },
+                                        ),
+                                      ) as EntityEvent;
 
-                                const applicableRest =
-                                  columnBuckets.rest.filter((column) =>
-                                    exists(row[column.label]),
-                                  );
-                                const restTooltip = applicableRest
-                                  .map((c) => c.label)
-                                  .join(", ");
-
-                                return (
-                                  <EventItem key={index}>
-                                    <Bullet />
-                                    <RowDates dates={row.dates} />
-                                    <EventItemContent>
-                                      <SxRawDataBadge event={row} />
-                                      {contentFilter.secondaryId &&
-                                        applicableSecondaryIds.length > 0 && (
-                                          <>
-                                            <WithTooltip
-                                              text={secondaryIdsTooltip}
-                                            >
-                                              <SxFaIcon
-                                                icon="microscope"
-                                                active
-                                                tiny
-                                              />
-                                            </WithTooltip>
-                                            <ColBucket>
-                                              {applicableSecondaryIds.map(
-                                                (column) => (
-                                                  <div>
-                                                    <TinyText>
-                                                      {column.label}
-                                                    </TinyText>
-                                                    {row[column.label]}
-                                                  </div>
-                                                ),
-                                              )}
-                                            </ColBucket>
-                                          </>
-                                        )}
-                                      {contentFilter.money &&
-                                        applicableMoney.length > 0 && (
-                                          <>
-                                            <WithTooltip text={moneyTooltip}>
-                                              <SxFaIcon
-                                                icon="money-bill-alt"
-                                                active
-                                                tiny
-                                              />
-                                            </WithTooltip>
-                                            <ColBucketCode>
-                                              {applicableMoney.map((column) => (
-                                                <NumberFormat
-                                                  {...currencyConfig}
-                                                  displayType="text"
-                                                  value={
-                                                    parseInt(
-                                                      row[column.label],
-                                                    ) / 100
-                                                  }
-                                                />
-                                              ))}
-                                            </ColBucketCode>
-                                          </>
-                                        )}
-                                      {contentFilter.concept &&
-                                        applicableConcepts.length > 0 && (
-                                          <>
-                                            <WithTooltip text={conceptsTooltip}>
-                                              <SxFaIcon
-                                                icon="folder"
-                                                active
-                                                tiny
-                                              />
-                                            </WithTooltip>
-                                            <ColBucket>
-                                              {applicableConcepts.map(
-                                                (column) => (
-                                                  <span>
-                                                    {row[column.label]}
-                                                  </span>
-                                                ),
-                                              )}
-                                            </ColBucket>
-                                          </>
-                                        )}
-                                      {contentFilter.rest &&
-                                        applicableRest.length > 0 && (
-                                          <>
-                                            <WithTooltip text={restTooltip}>
-                                              <SxFaIcon
-                                                icon="info"
-                                                active
-                                                tiny
-                                              />
-                                            </WithTooltip>
-                                            <ColBucket>
-                                              {applicableRest.map((column) => (
-                                                <span>{row[column.label]}</span>
-                                              ))}
-                                            </ColBucket>
-                                          </>
-                                        )}
-                                    </EventItemContent>
-                                  </EventItem>
-                                );
-                              })}
-                          </EventItemList>
-                        </EventTimeline>
-                      )}
-                    </QuarterGroup>
-                  );
-                })}
+                                    return (
+                                      <EventCard
+                                        key={index}
+                                        columns={columns}
+                                        columnBuckets={columnBuckets}
+                                        datasetId={datasetId}
+                                        contentFilter={contentFilter}
+                                        rootConceptIdsByColumn={
+                                          rootConceptIdsByColumn
+                                        }
+                                        row={firstRowWithoutDifferences}
+                                        currencyConfig={currencyConfig}
+                                        groupedRows={group}
+                                        groupedRowsDifferences={
+                                          Object.keys(groupDifferences).length >
+                                          0
+                                            ? groupDifferences
+                                            : undefined
+                                        }
+                                      />
+                                    );
+                                  }
+                                })}
+                              </EventItemList>
+                            </EventTimeline>
+                          )}
+                      </QuarterGroup>
+                    );
+                  },
+                )}
               </YearGroup>
             </>
           );
@@ -387,14 +275,114 @@ export const Timeline = memo(
   },
 );
 
-const useTimeBucketedDataDesc = (
-  data: EntityHistoryStateT["currentEntityData"],
-): {
+const diffObjects = (objects: Object[]) => {
+  if (objects.length < 2) return {};
+
+  const differences: Record<string, Set<any>> = {};
+
+  for (let i = 0; i < objects.length - 1; i++) {
+    const o1 = objects[i] as any;
+    const o2 = objects[i + 1] as any;
+    const keys = Object.keys(o1);
+
+    for (const key of keys) {
+      if (
+        o1.hasOwnProperty(key) &&
+        o2.hasOwnProperty(key) &&
+        JSON.stringify(o1[key]) !== JSON.stringify(o2[key])
+      ) {
+        if (differences[key]) {
+          differences[key].add(o1[key]);
+          differences[key].add(o2[key]);
+        } else {
+          differences[key] = new Set([o1[key], o2[key]]);
+        }
+      }
+    }
+  }
+
+  return differences;
+};
+
+const findGroupsWithinQuarter =
+  (secondaryIds: ColumnDescription[]) =>
+  ({ quarter, events }: { quarter: string; events: EntityEvent[] }) => {
+    if (events.length < 2) {
+      return { quarter, groupedEvents: [events], differences: [{}] };
+    }
+
+    const groupedEvents: EntityEvent[][] = [[events[0]]];
+
+    for (let i = 1; i < events.length - 1; i++) {
+      const evt = events[i];
+      const lastEvt = groupedEvents[groupedEvents.length - 1][0];
+
+      const isDuplicateEvent = JSON.stringify(evt) === JSON.stringify(lastEvt);
+
+      if (isDuplicateEvent) {
+        continue;
+      }
+
+      const datesMatch =
+        evt.dates.from === lastEvt.dates.from &&
+        evt.dates.to === lastEvt.dates.to;
+      const sourcesMatch = evt.source === lastEvt.source;
+      const allSecondaryIdsMatch = secondaryIds.every(
+        ({ label }) => evt[label] === lastEvt[label],
+      );
+
+      const similarEvents = datesMatch && sourcesMatch && allSecondaryIdsMatch;
+
+      if (similarEvents) {
+        groupedEvents[groupedEvents.length - 1].push(evt);
+      } else {
+        groupedEvents.push([evt]);
+      }
+    }
+    return {
+      quarter,
+      groupedEvents,
+      differences: groupedEvents.map(diffObjects),
+    };
+  };
+
+const findGroups = (
+  eventsPerYears: EventsPerYear[],
+  secondaryIds: ColumnDescription[],
+) => {
+  const findGroupsWithinYear = ({ year, quarterwiseData }: EventsPerYear) => {
+    return {
+      year,
+      quarterwiseData: quarterwiseData.map(
+        findGroupsWithinQuarter(secondaryIds),
+      ),
+    };
+  };
+
+  return eventsPerYears.map(findGroupsWithinYear);
+};
+
+interface EventsPerYear {
   year: number;
-  quarterwiseData: { quarter: string; events: EntityEvent[] }[];
-}[] => {
+  quarterwiseData: {
+    quarter: string;
+    events: EntityEvent[];
+  }[];
+}
+
+const useTimeBucketedSortedData = (
+  data: EntityHistoryStateT["currentEntityData"],
+  {
+    sources,
+    secondaryIds,
+  }: {
+    sources: Set<string>;
+    secondaryIds: ColumnDescription[];
+  },
+) => {
   const bucketEntityEvents = (
     entityData: EntityHistoryStateT["currentEntityData"],
+    sources: Set<string>,
   ) => {
     const result: { [year: string]: { [quarter: number]: EntityEvent[] } } = {};
 
@@ -408,7 +396,9 @@ const useTimeBucketedDataDesc = (
         result[year][quarter] = [];
       }
 
-      result[year][quarter].push(row);
+      if (sources.has(row.source)) {
+        result[year][quarter].push(row);
+      }
     }
 
     return Object.entries(result)
@@ -426,6 +416,14 @@ const useTimeBucketedDataDesc = (
   };
 
   return useMemo(() => {
-    return bucketEntityEvents(data);
-  }, [data]);
+    const bucketedEvents = bucketEntityEvents(data, sources);
+    const bucketedEventsByDayAndSource = findGroups(
+      bucketedEvents,
+      secondaryIds,
+    );
+
+    return {
+      bucketedEventsByDayAndSource,
+    };
+  }, [data, sources, secondaryIds]);
 };

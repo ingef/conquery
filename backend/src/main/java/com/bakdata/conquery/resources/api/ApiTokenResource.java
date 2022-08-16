@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.auth.apitoken.ApiTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import io.dropwizard.auth.Auth;
+import lombok.RequiredArgsConstructor;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -22,11 +23,11 @@ import java.util.UUID;
 @Path("token")
 @Consumes(ExtraMimeTypes.JSON_STRING)
 @Produces(ExtraMimeTypes.JSON_STRING)
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ApiTokenResource {
 
 	public static final String TOKEN = "token";
-	@Inject
-	private ApiTokenRealm realm;
+	private final ApiTokenRealm realm;
 
 
 	@POST

@@ -43,14 +43,6 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		}
 	}
 
-
-	@Override
-	public void init() {
-		if (mapping != null) {
-			mapping.init();
-		}
-	}
-
 	@Override
 	public ResultType getResultType() {
 		if (mapping == null) {
@@ -60,7 +52,13 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 
 	}
 
+	public void loadMapping() {
+		if (mapping != null) {
+			mapping.init();
+		}
+	}
+
 	private String applyMapping(Object intern) {
-		return intern == null ? "" : getMapping().external(intern.toString());
+		return intern == null || getMapping() == null ? "" : getMapping().external(intern.toString());
 	}
 }

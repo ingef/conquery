@@ -7,7 +7,7 @@ Instead of a list ConQuery also always accepts a single element.
 
 # REST endpoints
 
-### GET /datasets<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/DatasetsResource.java#L26)</sup></sub></sup>
+### GET /datasets<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/DatasetsResource.java#L27)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -33,7 +33,7 @@ Returns: [FrontendConfig](#Type-FrontendConfig)
 
 </p></details>
 
-### GET datasets/{dataset}/concepts<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/DatasetResource.java#L28)</sup></sub></sup>
+### GET datasets/{dataset}/concepts<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/DatasetResource.java#L29)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -46,7 +46,7 @@ Returns: [FERoot](#Type-FERoot)
 
 </p></details>
 
-### GET datasets/{dataset}/concepts/{concept}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L42)</sup></sub></sup>
+### GET datasets/{dataset}/concepts/{concept}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L41)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -59,7 +59,7 @@ Returns: `Response`
 
 </p></details>
 
-### POST datasets/{dataset}/concepts/{concept}/resolve<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L55)</sup></sub></sup>
+### POST datasets/{dataset}/concepts/{concept}/resolve<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L54)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -73,7 +73,7 @@ Returns: [ResolvedConceptsResult](#Type-ResolvedConceptsResult)
 
 </p></details>
 
-### POST datasets/{dataset}/concepts/{concept}/tables/{table}/filters/{filter}/autocomplete<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L44)</sup></sub></sup>
+### POST datasets/{dataset}/concepts/{concept}/tables/{table}/filters/{filter}/autocomplete<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L45)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -87,7 +87,7 @@ Returns: `AutoCompleteResult`
 
 </p></details>
 
-### POST datasets/{dataset}/concepts/{concept}/tables/{table}/filters/{filter}/resolve<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L38)</sup></sub></sup>
+### POST datasets/{dataset}/concepts/{concept}/tables/{table}/filters/{filter}/resolve<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L39)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -101,7 +101,7 @@ Returns: [ResolvedConceptsResult](#Type-ResolvedConceptsResult)
 
 </p></details>
 
-### GET datasets/{dataset}/entity-preview<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/DatasetResource.java#L34-L36)</sup></sub></sup>
+### GET datasets/{dataset}/entity-preview<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/DatasetResource.java#L35-L37)</sup></sub></sup>
 Provides list of default {@link ConnectorId}s to use for {@link QueryResource.EntityPreview#getSources()}.
 
 <details><summary>Details</summary><p>
@@ -114,7 +114,7 @@ Returns: `Stream<ConnectorId>`
 
 </p></details>
 
-### GET datasets/{dataset}/queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L69)</sup></sub></sup>
+### GET datasets/{dataset}/queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L70)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -128,7 +128,7 @@ Returns: list of [ExecutionStatus](#Type-ExecutionStatus)
 
 </p></details>
 
-### POST datasets/{dataset}/queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L78)</sup></sub></sup>
+### POST datasets/{dataset}/queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L79)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -143,7 +143,7 @@ Returns: `Response`
 
 </p></details>
 
-### POST datasets/{dataset}/queries/entity<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L160)</sup></sub></sup>
+### POST datasets/{dataset}/queries/entity<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L161)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -157,7 +157,7 @@ Returns: [FullExecutionStatus](#Type-FullExecutionStatus)
 
 </p></details>
 
-### POST datasets/{dataset}/queries/upload<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L144)</sup></sub></sup>
+### POST datasets/{dataset}/queries/upload<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L145)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -171,7 +171,7 @@ Returns: `ExternalUploadResult`
 
 </p></details>
 
-### GET datasets/{dataset}/queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L90)</sup></sub></sup>
+### GET datasets/{dataset}/queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L91)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -185,7 +185,7 @@ Returns: [FullExecutionStatus](#Type-FullExecutionStatus)
 
 </p></details>
 
-### PATCH datasets/{dataset}/queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L103)</sup></sub></sup>
+### PATCH datasets/{dataset}/queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L104)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -200,7 +200,7 @@ Returns: [FullExecutionStatus](#Type-FullExecutionStatus)
 
 </p></details>
 
-### DELETE datasets/{dataset}/queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L115)</sup></sub></sup>
+### DELETE datasets/{dataset}/queries/{query}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L116)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -213,7 +213,7 @@ Returns: `void`
 
 </p></details>
 
-### POST datasets/{dataset}/queries/{query}/cancel<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L134)</sup></sub></sup>
+### POST datasets/{dataset}/queries/{query}/cancel<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L135)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -226,7 +226,7 @@ Returns: `void`
 
 </p></details>
 
-### POST datasets/{dataset}/queries/{query}/reexecute<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L124)</sup></sub></sup>
+### POST datasets/{dataset}/queries/{query}/reexecute<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/QueryResource.java#L125)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -240,7 +240,7 @@ Returns: [FullExecutionStatus](#Type-FullExecutionStatus)
 
 </p></details>
 
-### GET datasets/{dataset}/result/{query}.csv<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ResultCsvResource.java#L53)</sup></sub></sup>
+### GET datasets/{dataset}/result/{query}.csv<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ResultCsvResource.java#L52)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -359,7 +359,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/export_form/FullExportForm.java#L57) | tables | list of [CONCEPT](#CONCEPT) | `[]` |  |  | 
 </p></details>
 
-### RELATIVE_FORM_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L33)</sup></sub></sup>
+### RELATIVE_FORM_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L31)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -370,14 +370,14 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L39) | features | [ARRAY_CONCEPT_QUERY](#ARRAY_CONCEPT_QUERY) | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L43) | indexPlacement | one of BEFORE, NEUTRAL, AFTER | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L41) | indexSelector | one of EARLIEST, LATEST, RANDOM | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L37) | query | `@NotNull @Valid Query` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L51) | resolutionsAndAlignmentMap | list of `ResolutionAndAlignment` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L47) | timeCountAfter | `@javax.validation.constraints.Min(0) int` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L45) | timeCountBefore | `@javax.validation.constraints.Min(0) int` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L49) | timeUnit | one of DAYS, QUARTERS, YEARS | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L37) | features | [ARRAY_CONCEPT_QUERY](#ARRAY_CONCEPT_QUERY) | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L41) | indexPlacement | one of BEFORE, NEUTRAL, AFTER | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L39) | indexSelector | one of EARLIEST, LATEST, RANDOM | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L35) | query | `@NotNull @Valid Query` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L49) | resolutionsAndAlignmentMap | list of `ResolutionAndAlignment` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L45) | timeCountAfter | `@javax.validation.constraints.Min(0) int` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L43) | timeCountBefore | `@javax.validation.constraints.Min(0) int` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/managed/RelativeFormQuery.java#L47) | timeUnit | one of DAYS, QUARTERS, YEARS | ? |  |  | 
 </p></details>
 
 ### SECONDARY_ID_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L40)</sup></sub></sup>
@@ -399,7 +399,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/SecondaryIdQuery.java#L67) | withoutSecondaryId | list of ID of `@NsIdRefCollection Set<Table>` | ␀ |  |  | 
 </p></details>
 
-### TABLE_EXPORT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L56-L66)</sup></sub></sup>
+### TABLE_EXPORT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L60-L70)</sup></sub></sup>
 TableExportQuery can be used to export raw data from selected {@link Connector}s, for selected {@link com.bakdata.conquery.models.query.entity.Entity}s. <p> Output format is lightly structured: 1: Contains the {@link com.bakdata.conquery.models.datasets.concepts.ValidityDate} if one is available for the event. 2: Contains the source {@link com.bakdata.conquery.models.datasets.Table}s label. 3 - X: Contain the SecondaryId columns de-duplicated. Following: Columns of all tables, (except for SecondaryId Columns), grouped by tables. The order is not guaranteed. <p> Columns used in Connectors to build Concepts, are marked with {@link SemanticType.ConceptColumnT} in {@link FullExecutionStatus#getColumnDescriptions()}.
 
 <details><summary>Details</summary><p>
@@ -410,10 +410,11 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L78) | dateRange | `@NotNull Range<LocalDate>` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L85-L91) | positions | map from `Column` to `int` or `null` | ? |  | We collect the positions for each Column of the output in here. Multiple columns can map to the same output position: - ValidityDate-Columns are merged into a single Date-Column - SecondaryIds are collected into a Column per SecondaryId - The remaining columns are arbitrarily ordered, but usually grouped by their source table. | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L74) | query | `@NonNull Query` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L81) | tables | list of [CONCEPT](#CONCEPT) | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L82) | dateRange | `@NotNull Range<LocalDate>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L94-L100) | positions | map from `Column` to `int` or `null` | ? |  | We collect the positions for each Column of the output in here. Multiple columns can map to the same output position: - ValidityDate-Columns are merged into a single Date-Column - SecondaryIds are collected into a Column per SecondaryId - The remaining columns are arbitrarily ordered, but usually grouped by their source table. | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L78) | query | `@NonNull Query` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L89-L91) | rawConceptValues | `boolean` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/TableExportQuery.java#L85) | tables | list of [CONCEPT](#CONCEPT) | ? |  |  | 
 </p></details>
 
 
@@ -1004,7 +1005,7 @@ No fields can be set for this type.
 
 ## Other Types
 
-### Type AutocompleteRequest<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L66)</sup></sub></sup>
+### Type AutocompleteRequest<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L67)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -1015,9 +1016,9 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L71) | page | `@NonNull OptionalInt` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L73) | pageSize | `@NonNull OptionalInt` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L69) | text | `@NonNull Optional<String>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L72) | page | `@NonNull OptionalInt` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L74) | pageSize | `@NonNull OptionalInt` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L70) | text | `@NonNull Optional<String>` | ? |  |  | 
 </p></details>
 
 ### Type CQTable<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L25)</sup></sub></sup>
@@ -1037,7 +1038,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/CQTable.java#L33) | selects | list of ID of `Select` | `[]` |  |  | 
 </p></details>
 
-### Type ConceptCodeList<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L67)</sup></sub></sup>
+### Type ConceptCodeList<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L66)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -1048,7 +1049,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L71) | concepts | list of `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java#L70) | concepts | list of `String` | ? |  |  | 
 </p></details>
 
 ### Type CurrencyConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java#L206)</sup></sub></sup>
@@ -1126,7 +1127,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/frontend/FEValue.java#L21-L23) | value | `String` | ? |  | Value is the only relevant data-point for hashing/equality and searching from the service perspective. | 
 </p></details>
 
-### Type FilterValues<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L60)</sup></sub></sup>
+### Type FilterValues<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L61)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -1137,7 +1138,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L63) | values | list of `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java#L64) | values | list of `String` | ? |  |  | 
 </p></details>
 
 ### Type FormConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/configs/FormConfig.java#L50)</sup></sub></sup>
@@ -1296,7 +1297,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/ExecutionStatus.java#L25) | tags | list of `String` | `null` |  |  | 
 </p></details>
 
-### Type ResolvedConceptsResult<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L356)</sup></sub></sup>
+### Type ResolvedConceptsResult<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L336)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -1307,12 +1308,12 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L361) | resolvedConcepts | `Set<ConceptElementId<?>>` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L362) | resolvedFilter | [ResolvedFilterResult](#Type-ResolvedFilterResult) | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L363) | unknownCodes | `Collection<String>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L341) | resolvedConcepts | `Set<ConceptElementId<?>>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L342) | resolvedFilter | [ResolvedFilterResult](#Type-ResolvedFilterResult) | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L343) | unknownCodes | `Collection<String>` | ? |  |  | 
 </p></details>
 
-### Type ResolvedFilterResult<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L346)</sup></sub></sup>
+### Type ResolvedFilterResult<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L326)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
@@ -1323,9 +1324,9 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L352) | filterId | ID of `Filter` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L351) | tableId | ID of `Connector` | ? |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L353) | value | `Collection<FEValue>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L332) | filterId | ID of `Filter` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L331) | tableId | ID of `Connector` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptsProcessor.java#L333) | value | `Collection<FEValue>` | ? |  |  | 
 </p></details>
 
 ### Type ValidityDateContainer<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/concept/filter/ValidityDateContainer.java#L9)</sup></sub></sup>

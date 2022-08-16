@@ -6,6 +6,7 @@ import SplitPane from "react-split-pane";
 
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
+import ErrorFallback from "../error-fallback/ErrorFallback";
 
 import ContentControl, { useContentControl } from "./ContentControl";
 import { DetailControl, DetailLevel } from "./DetailControl";
@@ -119,7 +120,7 @@ export const History = () => {
       setEntityIdsStatus(loadedEntityStatus);
       setEntityStatusOptions(loadedEntityStatusOptions);
     },
-    [],
+    [setEntityIdsStatus, setEntityStatusOptions, updateHistorySession],
   );
 
   return (
@@ -139,42 +140,41 @@ export const History = () => {
           setEntityStatusOptions={setEntityStatusOptions}
           onLoadFromFile={onLoadFromFile}
         />
-        <Main>
-          {currentEntityId && (
-            <SxEntityHeader
-              currentEntityIndex={currentEntityIndex}
-              currentEntityId={currentEntityId}
-              status={currentEntityStatus}
-              setStatus={setCurrentEntityStatus}
-              entityStatusOptions={entityStatusOptions}
-            />
-          )}
-          <Controls>
-            <DetailControl
-              detailLevel={detailLevel}
-              setDetailLevel={setDetailLevel}
-            />
-            <SxSourcesControl
-              options={options}
-              sourcesFilter={sourcesFilter}
-              setSourcesFilter={setSourcesFilter}
-            />
-            <ContentControl value={contentFilter} onChange={setContentFilter} />
-            <DownloadEntityDataButton />
-          </Controls>
-          <HorizontalLine />
-          <ErrorBoundary
-            fallbackRender={() => {
-              return <div>Something went wrong here.</div>;
-            }}
-          >
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Main key={currentEntityId}>
+            {currentEntityId && (
+              <SxEntityHeader
+                currentEntityIndex={currentEntityIndex}
+                currentEntityId={currentEntityId}
+                status={currentEntityStatus}
+                setStatus={setCurrentEntityStatus}
+                entityStatusOptions={entityStatusOptions}
+              />
+            )}
+            <Controls>
+              <DetailControl
+                detailLevel={detailLevel}
+                setDetailLevel={setDetailLevel}
+              />
+              <SxSourcesControl
+                options={options}
+                sourcesFilter={sourcesFilter}
+                setSourcesFilter={setSourcesFilter}
+              />
+              <ContentControl
+                value={contentFilter}
+                onChange={setContentFilter}
+              />
+              <DownloadEntityDataButton />
+            </Controls>
+            <HorizontalLine />
             <SxTimeline
               detailLevel={detailLevel}
               sources={sourcesSet}
               contentFilter={contentFilter}
             />
-          </ErrorBoundary>
-        </Main>
+          </Main>
+        </ErrorBoundary>
       </SplitPane>
     </FullScreen>
   );

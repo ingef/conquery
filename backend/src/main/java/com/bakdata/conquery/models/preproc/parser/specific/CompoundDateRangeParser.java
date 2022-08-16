@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
-import com.bakdata.conquery.models.events.stores.specific.DateRangeTypeCompound;
+import com.bakdata.conquery.models.events.stores.specific.CompoundDateRangeStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
@@ -53,13 +53,13 @@ public class CompoundDateRangeParser extends Parser<Boolean, DateRangeStore> {
 
 	@Override
 	protected DateRangeStore decideType() {
-		return new DateRangeTypeCompound(this.startColumn, this.endColumn, BitSetStore.create(getLines()));
+		return new CompoundDateRangeStore(this.startColumn, this.endColumn, BitSetStore.create(getLines()));
 	}
 
 
 	@Override
 	public void setValue(DateRangeStore store, int event, Boolean value) {
-		final DateRangeTypeCompound compoundStore = (DateRangeTypeCompound) store;
+		final CompoundDateRangeStore compoundStore = (CompoundDateRangeStore) store;
 
 		compoundStore.setHas(event, value);
 	}

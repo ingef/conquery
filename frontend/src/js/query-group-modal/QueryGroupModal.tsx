@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC, Fragment } from "react";
+import { Fragment, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -39,17 +39,32 @@ function findGroup(query: StandardQueryStateT, andIdx: number) {
   return query[andIdx];
 }
 
-interface PropsT {
+const QueryGroupModalWrap = ({
+  andIdx,
+  onClose,
+}: {
   andIdx: number;
   onClose: () => void;
-}
-
-const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
-  const { t } = useTranslation();
-
+}) => {
   const group = useSelector<StateT, QueryGroupType | null>((state) =>
     findGroup(state.queryEditor.query, andIdx),
   );
+
+  if (!group) return null;
+
+  return <QueryGroupModal andIdx={andIdx} group={group} onClose={onClose} />;
+};
+
+const QueryGroupModal = ({
+  andIdx,
+  onClose,
+  group,
+}: {
+  andIdx: number;
+  onClose: () => void;
+  group: QueryGroupType;
+}) => {
+  const { t } = useTranslation();
 
   const dispatch = useDispatch();
 
@@ -64,16 +79,25 @@ const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
       }),
     );
   };
-  const onResetAllDates = () =>
-    dispatch(queryGroupModalResetAllDates({ andIdx }));
 
-  if (!group) return null;
+  const onResetAllDates = useCallback(
+    () => dispatch(queryGroupModalResetAllDates({ andIdx })),
+    [dispatch, andIdx],
+  );
 
   const { dateRange } = group;
 
   const minDate = dateRange ? dateRange.min || null : null;
   const maxDate = dateRange ? dateRange.max || null : null;
   const hasActiveDate = !!(minDate || maxDate);
+
+  const labelSuffix = useMemo(() => {
+    return hasActiveDate ? (
+      <ResetAll bare onClick={onResetAllDates} icon="undo">
+        {t("queryNodeEditor.reset")}
+      </ResetAll>
+    ) : null;
+  }, [t, hasActiveDate, onResetAllDates]);
 
   return (
     <Modal
@@ -102,15 +126,7 @@ const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
         inline
         autoFocus
         label={t("queryGroupModal.dateRange")}
-        labelSuffix={
-          <>
-            {hasActiveDate && (
-              <ResetAll bare onClick={onResetAllDates} icon="undo">
-                {t("queryNodeEditor.reset")}
-              </ResetAll>
-            )}
-          </>
-        }
+        labelSuffix={labelSuffix}
         onChange={onSetDate}
         value={{
           min: minDate,
@@ -121,4 +137,4 @@ const QueryGroupModal: FC<PropsT> = ({ andIdx, onClose }) => {
   );
 };
 
-export default QueryGroupModal;
+export default QueryGroupModalWrap;

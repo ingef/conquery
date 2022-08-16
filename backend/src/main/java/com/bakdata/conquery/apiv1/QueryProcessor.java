@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
@@ -74,18 +75,23 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.MutableClassToInstanceMap;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class QueryProcessor {
 
-	@Getter
-	private final DatasetRegistry datasetRegistry;
-	private final MetaStorage storage;
-	private final ConqueryConfig config;
+	@Inject
+	private DatasetRegistry datasetRegistry;
+	@Inject
+	private MetaStorage storage;
+	@Inject
+	private ConqueryConfig config;
 
 	public static List<Select> getInfoCardSelects(PreviewConfig config, Dataset dataset, DatasetRegistry registry) {
 		final List<Select> infoCardSelects = new ArrayList<>();
@@ -329,7 +335,7 @@ public class QueryProcessor {
 
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
-		final Namespace namespace = getDatasetRegistry().get(dataset.getId());
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
 		query.reset();
 
@@ -364,7 +370,7 @@ public class QueryProcessor {
 		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
-			datasetRegistry.get(query.getDataset().getId()).getExecutionManager().execute(getDatasetRegistry(), query, config);
+			datasetRegistry.get(query.getDataset().getId()).getExecutionManager().execute(datasetRegistry, query, config);
 		}
 	}
 

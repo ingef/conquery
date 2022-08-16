@@ -1,14 +1,16 @@
 package com.bakdata.conquery.integration.json.filter;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
+import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -30,6 +32,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
+import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,6 +40,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.w3c.dom.stylesheets.LinkStyle;
 
 
 @Slf4j
@@ -47,6 +51,8 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 	private ResourceFile expectedCsv;
 
+	private List<SearchIndex> searchIndices = Collections.emptyList();
+
 	@NotNull
 	@JsonProperty("filterValue")
 	private ObjectNode rawFilterValue;
@@ -55,7 +61,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@JsonProperty("content")
 	private ObjectNode rawContent;
 
-	private FEFilter expectedFrontendConfig;
+	private FEFilterConfiguration.Top expectedFrontendConfig;
 
 	@JsonIgnore
 	private RequiredData content;
@@ -81,16 +87,20 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		content = parseSubTree(support, rawContent, RequiredData.class);
 
-		LoadingUtil.importTables(support, content.getTables());
+		importSearchIndexes(support, searchIndices);
+		importTables(support, content.getTables());
 		support.waitUntilWorkDone();
-
 
 		importConcepts(support);
 		support.waitUntilWorkDone();
 
 		query = parseQuery(support);
 
-		LoadingUtil.importTableContents(support, content.getTables());
+		importTableContents(support, content.getTables());
+		support.waitUntilWorkDone();
+
+		updateMatchingStats(support);
+		support.waitUntilWorkDone();
 	}
 
 
@@ -156,9 +166,10 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		try {
-			final FEFilter actual = connector.getFilters().iterator().next().createFrontendConfig();
+			final FEFilterConfiguration.Top actual = connector.getFilters().iterator().next().createFrontendConfig();
 
 			if (expectedFrontendConfig != null) {
+				log.info("Checking actual FrontendConfig: {}", actual);
 				assertThat(actual).usingRecursiveComparison().isEqualTo(expectedFrontendConfig);
 			}
 		}

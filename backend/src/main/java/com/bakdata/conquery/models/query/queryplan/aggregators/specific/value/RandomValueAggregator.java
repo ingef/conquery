@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
 import java.util.Random;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -18,7 +19,7 @@ import lombok.ToString;
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
-	private final Random random = new Random();
+	private Random random;
 	private int event;
 	private int nValues = 0;
 	private Bucket bucket;
@@ -32,6 +33,7 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 		event = -1;
 		nValues = 0;
 		bucket = null;
+		random = new Random(ConqueryConstants.RANDOM_SEED);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 import IconButton from "../button/IconButton";
 import { exists } from "../common/helpers/exists";
@@ -91,4 +91,4 @@ const SearchBar = ({
   );
 };
 
-export default SearchBar;
+export default memo(SearchBar);
