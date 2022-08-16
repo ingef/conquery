@@ -18,8 +18,7 @@ const StickyWrap = styled("div")`
   padding: 5px 0;
   cursor: pointer;
   display: grid;
-  gap: 8px;
-  grid-template-columns: 12px 1fr;
+  grid-template-columns: 20px 1fr;
 `;
 
 const YearHead = ({
