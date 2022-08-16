@@ -225,6 +225,14 @@ const useTimeBucketedSortedData = (
       }
     }
 
+    for (const [, quarters] of Object.entries(result)) {
+      for (const q of [1, 2, 3, 4]) {
+        if (!quarters[q]) {
+          quarters[q] = [];
+        }
+      }
+    }
+
     return Object.entries(result)
       .sort(([yearA], [yearB]) => {
         return parseInt(yearB) - parseInt(yearA);
