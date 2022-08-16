@@ -23,7 +23,7 @@ const Root = styled("div")`
   display: inline-grid;
   grid-template-columns: 100px auto;
   grid-auto-rows: minmax(min-content, max-content);
-  gap: 10px;
+  gap: 20px 4px;
   width: 100%;
 `;
 
