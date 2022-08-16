@@ -108,6 +108,9 @@ const Quarter = ({
 }) => {
   const { t } = useTranslation();
 
+  const areEventsShown =
+    (isOpen || detailLevel !== "summary") && totalEventsPerQuarter > 0;
+
   return (
     <QuarterGroup key={quarter}>
       <QuarterHead empty={totalEventsPerQuarter === 0}>
@@ -129,7 +132,7 @@ const Quarter = ({
           )}
         </InlineGrid>
       </QuarterHead>
-      {(isOpen || detailLevel !== "summary") && totalEventsPerQuarter > 0 && (
+      {areEventsShown && (
         <EventTimeline>
           <VerticalLine />
           <EventItemList>
