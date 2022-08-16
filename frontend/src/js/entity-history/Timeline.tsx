@@ -24,6 +24,8 @@ const Root = styled("div")`
   grid-template-columns: 100px auto;
   grid-auto-rows: minmax(min-content, max-content);
   gap: 10px;
+  width: 100%;
+  margin: 10px 0;
 `;
 
 interface Props {

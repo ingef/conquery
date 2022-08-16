@@ -1,12 +1,14 @@
 import styled from "@emotion/styled";
-import { Dispatch, memo, ReactNode, SetStateAction, useMemo } from "react";
+import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { Dispatch, memo, SetStateAction, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
-import FaIcon from "../icon/FaIcon";
-import SmallTabNavigation from "../small-tab-navigation/SmallTabNavigation";
+import IconButton from "../button/IconButton";
+import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
   display: flex;
+  flex-direction: column;
   align-items: center;
   flex-shrink: 0;
 `;
@@ -23,28 +25,22 @@ const useButtonConfig = () => {
   const { t } = useTranslation();
   return useMemo(
     (): {
-      label: ({ selected }: { selected?: boolean }) => ReactNode;
+      icon: IconName;
       value: string;
       tooltip: string;
     }[] => [
       {
-        label: ({ selected }) => (
-          <FaIcon active={selected} gray={!selected} regular icon="circle" />
-        ),
+        icon: "circle",
         value: "summary",
         tooltip: t("history.detail.summary"),
       },
       {
-        label: ({ selected }) => (
-          <FaIcon active={selected} gray={!selected} icon="circle-dot" />
-        ),
+        icon: "circle-dot",
         value: "detail",
         tooltip: t("history.detail.detail"),
       },
       {
-        label: ({ selected }) => (
-          <FaIcon active={selected} gray={!selected} icon="bullseye" />
-        ),
+        icon: "bullseye",
         value: "full",
         tooltip: t("history.detail.full"),
       },
@@ -58,12 +54,20 @@ export const DetailControl = memo(
     const navOptions = useButtonConfig();
     return (
       <Root className={className}>
-        <SmallTabNavigation
-          size="L"
-          options={navOptions}
-          selectedTab={detailLevel}
-          onSelectTab={(tab) => setDetailLevel(tab as DetailLevel)}
-        />
+        {navOptions.map(({ value, icon, tooltip }) => {
+          const selected = value === detailLevel;
+
+          return (
+            <WithTooltip key={value} text={tooltip}>
+              <IconButton
+                key={value}
+                onClick={() => setDetailLevel(value as DetailLevel)}
+                icon={icon}
+                active={selected}
+              />
+            </WithTooltip>
+          );
+        })}
       </Root>
     );
   },

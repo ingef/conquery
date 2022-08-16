@@ -8,6 +8,7 @@ import {
   CurrencyConfigT,
   DatasetT,
 } from "../../api/types";
+import FaIcon from "../../icon/FaIcon";
 import { ContentFilterValue } from "../ContentControl";
 import { DetailLevel } from "../DetailControl";
 import { ColumnBuckets } from "../Timeline";
@@ -38,7 +39,7 @@ const QuarterHead = styled("div")<{ empty?: boolean }>`
   color: ${({ theme, empty }) =>
     empty ? theme.col.grayLight : theme.col.gray};
   display: grid;
-  grid-template-columns: 20px 100px 1fr;
+  grid-template-columns: 20px 20px 100px 1fr;
   align-items: center;
   position: sticky;
   top: 0;
@@ -98,6 +99,7 @@ const Quarter = ({
         empty={totalEventsPerQuarter === 0}
         onClick={() => toggleOpenQuarter(year, quarter)}
       >
+        <FaIcon gray icon={isOpen ? "caret-down" : "caret-right"} />
         <SmallHeading>Q{quarter} </SmallHeading>
         <span>
           – {totalEventsPerQuarter}{" "}

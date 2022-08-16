@@ -33,38 +33,31 @@ const SxNavigation = styled(Navigation)`
   padding: 55px 0 10px;
 `;
 
-const SxEntityHeader = styled(EntityHeader)`
-  grid-area: header;
-`;
-const SxTimeline = styled(Timeline)`
-  grid-area: timeline;
-`;
-
 const Controls = styled("div")`
-  grid-area: control;
-  justify-self: end;
-
   display: flex;
   align-items: center;
   gap: 18px;
-  margin: 0 20px;
+  margin-right: 20px;
+`;
+
+const Flex = styled("div")`
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+`;
+const Sidebar = styled("div")``;
+
+const Header = styled("div")`
+  display: flex;
+  justify-content: space-between;
 `;
 
 const Main = styled("div")`
   overflow: hidden;
   height: 100%;
   display: grid;
-  gap: 10px 0;
-  grid-template-areas: "header control" "line line" "timeline timeline";
   grid-template-rows: auto auto 1fr;
   padding: 55px 0 10px;
-`;
-
-const HorizontalLine = styled("div")`
-  grid-area: line;
-  height: 1px;
-  background-color: ${({ theme }) => theme.col.grayLight};
-  width: 100%;
 `;
 
 const SxSourcesControl = styled(SourcesControl)`
@@ -142,37 +135,42 @@ export const History = () => {
         />
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Main>
-            {currentEntityId && (
-              <SxEntityHeader
-                currentEntityIndex={currentEntityIndex}
-                currentEntityId={currentEntityId}
-                status={currentEntityStatus}
-                setStatus={setCurrentEntityStatus}
-                entityStatusOptions={entityStatusOptions}
-              />
-            )}
-            <Controls>
-              <DetailControl
+            <Header>
+              {currentEntityId && (
+                <EntityHeader
+                  currentEntityIndex={currentEntityIndex}
+                  currentEntityId={currentEntityId}
+                  status={currentEntityStatus}
+                  setStatus={setCurrentEntityStatus}
+                  entityStatusOptions={entityStatusOptions}
+                />
+              )}
+              <Controls>
+                <SxSourcesControl
+                  options={options}
+                  sourcesFilter={sourcesFilter}
+                  setSourcesFilter={setSourcesFilter}
+                />
+                <DownloadEntityDataButton />
+              </Controls>
+            </Header>
+            <Flex>
+              <Sidebar>
+                <DetailControl
+                  detailLevel={detailLevel}
+                  setDetailLevel={setDetailLevel}
+                />
+                <ContentControl
+                  value={contentFilter}
+                  onChange={setContentFilter}
+                />
+              </Sidebar>
+              <Timeline
                 detailLevel={detailLevel}
-                setDetailLevel={setDetailLevel}
+                sources={sourcesSet}
+                contentFilter={contentFilter}
               />
-              <SxSourcesControl
-                options={options}
-                sourcesFilter={sourcesFilter}
-                setSourcesFilter={setSourcesFilter}
-              />
-              <ContentControl
-                value={contentFilter}
-                onChange={setContentFilter}
-              />
-              <DownloadEntityDataButton />
-            </Controls>
-            <HorizontalLine />
-            <SxTimeline
-              detailLevel={detailLevel}
-              sources={sourcesSet}
-              contentFilter={contentFilter}
-            />
+            </Flex>
           </Main>
         </ErrorBoundary>
       </SplitPane>

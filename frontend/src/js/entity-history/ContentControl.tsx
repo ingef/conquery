@@ -7,18 +7,7 @@ import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
   display: flex;
-  gap: 3px;
-`;
-
-const SxIconButton = styled(IconButton)`
-  width: 24px;
-`;
-
-const BottomBorder = styled("div")<{ active?: boolean }>`
-  width: 100%;
-  height: 3px;
-  background-color: ${({ theme, active }) =>
-    active ? theme.col.black : theme.col.grayLight};
+  flex-direction: column;
 `;
 
 export type ContentFilterValue = Record<
@@ -66,8 +55,7 @@ const ContentControl = ({ value, onChange }: Props) => {
         const active = value[option.key];
         return (
           <WithTooltip text={option.tooltip}>
-            <SxIconButton
-              tiny
+            <IconButton
               icon={option.icon}
               key={option.key}
               active={active}
@@ -75,7 +63,6 @@ const ContentControl = ({ value, onChange }: Props) => {
                 onChange({ ...value, [option.key]: !value[option.key] });
               }}
             />
-            <BottomBorder active={active} />
           </WithTooltip>
         );
       })}
