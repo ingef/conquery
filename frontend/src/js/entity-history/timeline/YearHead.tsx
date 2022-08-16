@@ -19,6 +19,11 @@ const StickyWrap = styled("div")`
   cursor: pointer;
   display: grid;
   grid-template-columns: 20px 1fr;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  border: 1px solid transparent;
+  &:hover {
+    border: 1px solid ${({ theme }) => theme.col.blueGray};
+  }
 `;
 
 const YearHead = ({
@@ -37,7 +42,7 @@ const YearHead = ({
   return (
     <Root>
       <StickyWrap onClick={onClick}>
-        <FaIcon gray icon={isOpen ? "caret-down" : "caret-right"} />
+        <FaIcon large gray icon={isOpen ? "caret-down" : "caret-right"} />
         <div>
           <SmallHeading>{year}</SmallHeading>
           <div>

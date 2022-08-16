@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
@@ -133,6 +133,9 @@ export const History = () => {
     [setEntityIdsStatus, setEntityStatusOptions, updateHistorySession],
   );
 
+  const { getIsOpen, toggleOpenYear, toggleOpenQuarter } =
+    useOpenCloseInteraction();
+
   return (
     <FullScreen>
       <SplitPane
@@ -179,6 +182,7 @@ export const History = () => {
                     setDetailLevel={setDetailLevel}
                   />
                 )}
+
                 <ContentControl
                   value={contentFilter}
                   onChange={setContentFilter}
@@ -188,6 +192,9 @@ export const History = () => {
                 detailLevel={detailLevel}
                 sources={sourcesSet}
                 contentFilter={contentFilter}
+                getIsOpen={getIsOpen}
+                toggleOpenYear={toggleOpenYear}
+                toggleOpenQuarter={toggleOpenQuarter}
               />
             </Flex>
           </Main>
@@ -265,5 +272,55 @@ const useSourcesControl = () => {
     sourcesSet,
     sourcesFilter,
     setSourcesFilter,
+  };
+};
+
+const useOpenCloseInteraction = () => {
+  const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
+  const isOpenRef = useRef(isOpen);
+  isOpenRef.current = isOpen;
+
+  const toId = useCallback(
+    (year: number, quarter?: number) => `${year}-${quarter}`,
+    [],
+  );
+
+  const getIsOpen = useCallback(
+    (year: number, quarter?: number) => {
+      if (quarter) {
+        return isOpen[toId(year, quarter)];
+      } else {
+        return [1, 2, 3, 4].every((q) => isOpen[toId(year, q)]);
+      }
+    },
+    [isOpen, toId],
+  );
+
+  const toggleOpenYear = useCallback(
+    (year: number) => {
+      const quarters = [1, 2, 3, 4].map((quarter) => toId(year, quarter));
+      const wasOpen = quarters.some((quarter) => isOpenRef.current[quarter]);
+
+      setIsOpen((prev) => ({
+        ...prev,
+        ...Object.fromEntries(quarters.map((quarter) => [quarter, !wasOpen])),
+      }));
+    },
+    [toId],
+  );
+
+  const toggleOpenQuarter = useCallback(
+    (year: number, quarter: number) => {
+      const id = toId(year, quarter);
+
+      setIsOpen((prev) => ({ ...prev, [id]: !prev[id] }));
+    },
+    [toId],
+  );
+
+  return {
+    getIsOpen,
+    toggleOpenYear,
+    toggleOpenQuarter,
   };
 };

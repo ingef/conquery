@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import {
@@ -32,6 +32,9 @@ interface Props {
   detailLevel: DetailLevel;
   sources: Set<string>;
   contentFilter: ContentFilterValue;
+  getIsOpen: (year: number, quarter?: number) => boolean;
+  toggleOpenYear: (year: number) => void;
+  toggleOpenQuarter: (year: number, quarter: number) => void;
 }
 
 export const Timeline = ({
@@ -39,6 +42,9 @@ export const Timeline = ({
   detailLevel,
   sources,
   contentFilter,
+  getIsOpen,
+  toggleOpenYear,
+  toggleOpenQuarter,
 }: Props) => {
   const datasetId = useDatasetId();
   const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
@@ -47,9 +53,6 @@ export const Timeline = ({
   const currencyConfig = useSelector<StateT, CurrencyConfigT>(
     (state) => state.startup.config.currency,
   );
-
-  const { getIsOpen, toggleOpenYear, toggleOpenQuarter } =
-    useOpenCloseInteraction();
 
   const { columns, columnBuckets, rootConceptIdsByColumn } =
     useColumnInformation();
@@ -255,56 +258,6 @@ const useTimeBucketedSortedData = (
       eventsByQuarterWithGroups,
     };
   }, [data, sources, secondaryIds]);
-};
-
-const useOpenCloseInteraction = () => {
-  const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
-  const isOpenRef = useRef(isOpen);
-  isOpenRef.current = isOpen;
-
-  const toId = useCallback(
-    (year: number, quarter?: number) => `${year}-${quarter}`,
-    [],
-  );
-
-  const getIsOpen = useCallback(
-    (year: number, quarter?: number) => {
-      if (quarter) {
-        return isOpen[toId(year, quarter)];
-      } else {
-        return [1, 2, 3, 4].every((q) => isOpen[toId(year, q)]);
-      }
-    },
-    [isOpen, toId],
-  );
-
-  const toggleOpenYear = useCallback(
-    (year: number) => {
-      const quarters = [1, 2, 3, 4].map((quarter) => toId(year, quarter));
-      const wasOpen = quarters.some((quarter) => isOpenRef.current[quarter]);
-
-      setIsOpen((prev) => ({
-        ...prev,
-        ...Object.fromEntries(quarters.map((quarter) => [quarter, !wasOpen])),
-      }));
-    },
-    [toId],
-  );
-
-  const toggleOpenQuarter = useCallback(
-    (year: number, quarter: number) => {
-      const id = toId(year, quarter);
-
-      setIsOpen((prev) => ({ ...prev, [id]: !prev[id] }));
-    },
-    [toId],
-  );
-
-  return {
-    getIsOpen,
-    toggleOpenYear,
-    toggleOpenQuarter,
-  };
 };
 
 export interface ColumnBuckets {

@@ -38,15 +38,26 @@ const QuarterHead = styled("div")<{ empty?: boolean }>`
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme, empty }) =>
     empty ? theme.col.grayLight : theme.col.gray};
-  display: grid;
-  grid-template-columns: 20px 20px 100px 1fr;
-  align-items: center;
   position: sticky;
   top: 0;
   z-index: 2;
   background-color: ${({ theme }) => theme.col.bgAlt};
-  padding: 5px 0;
+  margin-left: -5px;
+  line-height: 1;
+  width: 100%;
+`;
+
+const InlineGrid = styled("div")`
+  display: inline-grid;
+  grid-template-columns: 20px 20px 100px 1fr;
+  align-items: center;
   cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  padding: 5px;
+  &:hover {
+    border: 1px solid ${({ theme }) => theme.col.blueGray};
+  }
 `;
 
 const Boxes = styled("div")`
@@ -55,9 +66,13 @@ const Boxes = styled("div")`
 `;
 const Box = styled("div")`
   width: 2px;
-  height: 14px;
+  height: 16px;
   margin-left: 1px;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
+`;
+
+const SxSmallHeading = styled(SmallHeading)`
+  line-height: 1;
 `;
 
 const Quarter = ({
@@ -95,25 +110,24 @@ const Quarter = ({
 
   return (
     <QuarterGroup key={quarter}>
-      <QuarterHead
-        empty={totalEventsPerQuarter === 0}
-        onClick={() => toggleOpenQuarter(year, quarter)}
-      >
-        <FaIcon gray icon={isOpen ? "caret-down" : "caret-right"} />
-        <SmallHeading>Q{quarter} </SmallHeading>
-        <span>
-          – {totalEventsPerQuarter}{" "}
-          {t("history.events", {
-            count: totalEventsPerQuarter,
-          })}
-        </span>
-        {detailLevel === "summary" && (
-          <Boxes>
-            {new Array(totalEventsPerQuarter).fill(0).map((_, i) => (
-              <Box key={i} />
-            ))}
-          </Boxes>
-        )}
+      <QuarterHead empty={totalEventsPerQuarter === 0}>
+        <InlineGrid onClick={() => toggleOpenQuarter(year, quarter)}>
+          <FaIcon large gray icon={isOpen ? "caret-down" : "caret-right"} />
+          <SxSmallHeading>Q{quarter} </SxSmallHeading>
+          <span>
+            – {totalEventsPerQuarter}{" "}
+            {t("history.events", {
+              count: totalEventsPerQuarter,
+            })}
+          </span>
+          {detailLevel === "summary" && (
+            <Boxes>
+              {new Array(totalEventsPerQuarter).fill(0).map((_, i) => (
+                <Box key={i} />
+              ))}
+            </Boxes>
+          )}
+        </InlineGrid>
       </QuarterHead>
       {(isOpen || detailLevel !== "summary") && totalEventsPerQuarter > 0 && (
         <EventTimeline>
