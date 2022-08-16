@@ -8,6 +8,7 @@ import WithTooltip from "../tooltip/WithTooltip";
 const Root = styled("div")`
   display: flex;
   flex-direction: column;
+  align-items: center;
 `;
 
 export type ContentFilterValue = Record<

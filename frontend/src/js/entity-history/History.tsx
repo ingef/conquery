@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
@@ -40,12 +41,10 @@ const Controls = styled("div")`
   margin-right: 20px;
 `;
 
-const Flex = styled("div")`
-  display: flex;
-  height: 100%;
-  overflow: hidden;
+const Sidebar = styled("div")`
+  padding: 10px 0;
+  border-right: 1px solid ${({ theme }) => theme.col.grayLight};
 `;
-const Sidebar = styled("div")``;
 
 const Header = styled("div")`
   display: flex;
@@ -56,13 +55,25 @@ const Main = styled("div")`
   overflow: hidden;
   height: 100%;
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto 1fr;
   padding: 55px 0 10px;
+  gap: 10px;
+`;
+
+const Flex = styled("div")`
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+  border-top: 1px solid ${({ theme }) => theme.col.grayLight};
 `;
 
 const SxSourcesControl = styled(SourcesControl)`
   flex-shrink: 0;
   width: 450px;
+`;
+
+const SxTimeline = styled(Timeline)`
+  margin: 10px 0 0;
 `;
 
 export interface EntityIdsStatus {
@@ -76,6 +87,12 @@ export const History = () => {
   const currentEntityId = useSelector<StateT, string | null>(
     (state) => state.entityHistory.currentEntityId,
   );
+
+  const [showAdvancedControls, setShowAdvancedControls] = useState(false);
+
+  useHotkeys("shift+option+h", () => {
+    setShowAdvancedControls((v) => !v);
+  });
 
   const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
   const updateHistorySession = useUpdateHistorySession();
@@ -156,16 +173,18 @@ export const History = () => {
             </Header>
             <Flex>
               <Sidebar>
-                <DetailControl
-                  detailLevel={detailLevel}
-                  setDetailLevel={setDetailLevel}
-                />
+                {showAdvancedControls && (
+                  <DetailControl
+                    detailLevel={detailLevel}
+                    setDetailLevel={setDetailLevel}
+                  />
+                )}
                 <ContentControl
                   value={contentFilter}
                   onChange={setContentFilter}
                 />
               </Sidebar>
-              <Timeline
+              <SxTimeline
                 detailLevel={detailLevel}
                 sources={sourcesSet}
                 contentFilter={contentFilter}

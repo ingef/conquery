@@ -10,7 +10,6 @@ const Root = styled("div")`
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-shrink: 0;
 `;
 
 export type DetailLevel = "summary" | "detail" | "full";

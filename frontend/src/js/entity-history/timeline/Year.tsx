@@ -57,6 +57,7 @@ const Year = ({
   return (
     <>
       <YearHead
+        isOpen={isYearOpen}
         year={year}
         totalEvents={totalEvents}
         onClick={() => toggleOpenYear(year)}
