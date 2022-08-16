@@ -65,7 +65,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -490,8 +490,8 @@ public class QueryProcessor {
 
 		executionStatus.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, true));
 
-		final SinglelineEntityResult result = (SinglelineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
-		final Object[] values = result.getValues();
+		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
+		final Object[] values = result.getValues().get(0);
 
 		List<PreviewFullExecutionStatus.Info> extraInfos = new ArrayList<>(values.length);
 		PrintSettings printSettings = new PrintSettings(true, Locale.getDefault(), datasetRegistry, config, null);
