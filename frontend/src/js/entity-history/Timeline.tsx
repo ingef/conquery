@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
-import { memo, useMemo } from "react";
-import { useTranslation } from "react-i18next";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 
 import {
@@ -15,62 +14,16 @@ import { useDatasetId } from "../dataset/selectors";
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
-import EventCard from "./timeline/EventCard";
-import { SmallHeading } from "./timeline/SmallHeading";
-import { YearHead } from "./timeline/YearHead";
+import Year from "./timeline/Year";
 
 const Root = styled("div")`
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 5px 20px 5px 10px;
+  padding: 0 20px 0 10px;
   display: inline-grid;
   grid-template-columns: 100px auto;
   grid-auto-rows: minmax(min-content, max-content);
   gap: 10px;
-`;
-
-const EventTimeline = styled("div")`
-  display: grid;
-  grid-template-columns: auto 1fr;
-`;
-const EventItemList = styled("div")`
-  width: calc(100% + 10px);
-  margin-left: -10px;
-`;
-
-const VerticalLine = styled("div")`
-  height: calc(100% - 20px);
-  width: 2px;
-  background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
-  margin: 10px 4px;
-`;
-
-const YearGroup = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 12px 0;
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
-const QuarterGroup = styled("div")``;
-const QuarterHead = styled("div")<{ empty?: boolean }>`
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme, empty }) =>
-    empty ? theme.col.grayLight : theme.col.gray};
-  display: grid;
-  grid-template-columns: 20px 100px 1fr;
-  align-items: center;
-`;
-
-const Boxes = styled("div")`
-  display: flex;
-  align-items: center;
-`;
-const Box = styled("div")`
-  width: 3px;
-  height: 8px;
-  margin-left: 1px;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
 interface Props {
@@ -80,178 +33,57 @@ interface Props {
   contentFilter: ContentFilterValue;
 }
 
-export const Timeline = memo(
-  ({ className, detailLevel, sources, contentFilter }: Props) => {
-    const { t } = useTranslation();
-    const datasetId = useDatasetId();
-    const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
-      (state) => state.entityHistory.currentEntityData,
-    );
-    const columns = useSelector<StateT, EntityHistoryStateT["columns"]>(
-      (state) => state.entityHistory.columns,
-    );
-    const columnDescriptions = useSelector<StateT, ColumnDescription[]>(
-      (state) => state.entityHistory.columnDescriptions,
-    );
+export const Timeline = ({
+  className,
+  detailLevel,
+  sources,
+  contentFilter,
+}: Props) => {
+  const datasetId = useDatasetId();
+  const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
+    (state) => state.entityHistory.currentEntityData,
+  );
+  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
+    (state) => state.startup.config.currency,
+  );
 
-    const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-      (state) => state.startup.config.currency,
-    );
+  const { getIsOpen, toggleOpenYear, toggleOpenQuarter } =
+    useOpenCloseInteraction();
 
-    const columnBuckets = useMemo(() => {
-      return {
-        money: columnDescriptions.filter((c) => c.type === "MONEY"),
-        concepts: columnDescriptions.filter(
-          (c) =>
-            c.semantics.length > 0 && c.semantics[0].type === "CONCEPT_COLUMN",
-        ),
-        secondaryIds: columnDescriptions.filter(
-          (c) =>
-            c.semantics.length > 0 && c.semantics[0].type === "SECONDARY_ID",
-        ),
-        rest: columnDescriptions.filter(
-          (c) => c.type !== "MONEY" && c.semantics.length === 0,
-        ),
-      };
-    }, [columnDescriptions]);
+  const { columns, columnBuckets, rootConceptIdsByColumn } =
+    useColumnInformation();
 
-    const rootConceptIdsByColumn: Record<string, ConceptIdT> = useMemo(() => {
-      const entries: [string, ConceptIdT][] = [];
+  const { eventsByQuarterWithGroups } = useTimeBucketedSortedData(data, {
+    sources,
+    secondaryIds: columnBuckets.secondaryIds,
+  });
 
-      for (const columnDescription of columnBuckets.concepts) {
-        const { label, semantics } = columnDescription;
-        const conceptSemantic = semantics.find(
-          (sem): sem is ColumnDescriptionSemanticConceptColumn =>
-            sem.type === "CONCEPT_COLUMN",
-        );
+  if (!datasetId) return null;
 
-        if (conceptSemantic) {
-          entries.push([label, conceptSemantic.concept]);
-        }
-      }
+  return (
+    <Root className={className}>
+      {eventsByQuarterWithGroups.map(({ year, quarterwiseData }) => (
+        <Year
+          key={year}
+          year={year}
+          datasetId={datasetId}
+          quarterwiseData={quarterwiseData}
+          getIsOpen={getIsOpen}
+          toggleOpenYear={toggleOpenYear}
+          toggleOpenQuarter={toggleOpenQuarter}
+          detailLevel={detailLevel}
+          currencyConfig={currencyConfig}
+          rootConceptIdsByColumn={rootConceptIdsByColumn}
+          columnBuckets={columnBuckets}
+          contentFilter={contentFilter}
+          columns={columns}
+        />
+      ))}
+    </Root>
+  );
+};
 
-      return Object.fromEntries(entries);
-    }, [columnBuckets]);
-
-    const { bucketedEventsByDayAndSource } = useTimeBucketedSortedData(data, {
-      sources,
-      secondaryIds: columnBuckets.secondaryIds,
-    });
-
-    if (!datasetId) return null;
-
-    return (
-      <Root className={className}>
-        {bucketedEventsByDayAndSource.map(({ year, quarterwiseData }) => {
-          const totalEvents = quarterwiseData.reduce(
-            (all, data) =>
-              all + data.groupedEvents.reduce((s, evts) => s + evts.length, 0),
-            0,
-          );
-          return (
-            <>
-              <YearHead year={year} totalEvents={totalEvents} />
-              <YearGroup key={year}>
-                {quarterwiseData.map(
-                  ({ quarter, groupedEvents, differences }) => {
-                    const totalEventsPerQuarter = groupedEvents.reduce(
-                      (s, evts) => s + evts.length,
-                      0,
-                    );
-
-                    return (
-                      <QuarterGroup key={quarter}>
-                        <QuarterHead empty={totalEventsPerQuarter === 0}>
-                          <SmallHeading>Q{quarter} </SmallHeading>
-                          <span>
-                            – {totalEventsPerQuarter}{" "}
-                            {t("history.events", {
-                              count: totalEventsPerQuarter,
-                            })}
-                          </span>
-                          {detailLevel === "summary" && (
-                            <Boxes>
-                              {new Array(totalEventsPerQuarter)
-                                .fill(0)
-                                .map((_, i) => (
-                                  <Box key={i} />
-                                ))}
-                            </Boxes>
-                          )}
-                        </QuarterHead>
-                        {detailLevel !== "summary" &&
-                          totalEventsPerQuarter > 0 && (
-                            <EventTimeline>
-                              <VerticalLine />
-                              <EventItemList>
-                                {groupedEvents.map((group, index) => {
-                                  const groupDifferences = differences[index];
-
-                                  if (group.length === 0) return null;
-
-                                  if (detailLevel === "full") {
-                                    return group.map((evt, evtIdx) => (
-                                      <EventCard
-                                        key={`${index}-${evtIdx}`}
-                                        columns={columns}
-                                        columnBuckets={columnBuckets}
-                                        datasetId={datasetId}
-                                        contentFilter={contentFilter}
-                                        rootConceptIdsByColumn={
-                                          rootConceptIdsByColumn
-                                        }
-                                        row={evt}
-                                        currencyConfig={currencyConfig}
-                                      />
-                                    ));
-                                  } else {
-                                    const firstRowWithoutDifferences =
-                                      Object.fromEntries(
-                                        Object.entries(group[0]).filter(
-                                          ([k]) => {
-                                            return !groupDifferences[k];
-                                          },
-                                        ),
-                                      ) as EntityEvent;
-
-                                    return (
-                                      <EventCard
-                                        key={index}
-                                        columns={columns}
-                                        columnBuckets={columnBuckets}
-                                        datasetId={datasetId}
-                                        contentFilter={contentFilter}
-                                        rootConceptIdsByColumn={
-                                          rootConceptIdsByColumn
-                                        }
-                                        row={firstRowWithoutDifferences}
-                                        currencyConfig={currencyConfig}
-                                        groupedRows={group}
-                                        groupedRowsDifferences={
-                                          Object.keys(groupDifferences).length >
-                                          0
-                                            ? groupDifferences
-                                            : undefined
-                                        }
-                                      />
-                                    );
-                                  }
-                                })}
-                              </EventItemList>
-                            </EventTimeline>
-                          )}
-                      </QuarterGroup>
-                    );
-                  },
-                )}
-              </YearGroup>
-            </>
-          );
-        })}
-      </Root>
-    );
-  },
-);
+export default memo(Timeline);
 
 const diffObjects = (objects: Object[]) => {
   if (objects.length < 2) return {};
@@ -284,7 +116,7 @@ const diffObjects = (objects: Object[]) => {
 
 const findGroupsWithinQuarter =
   (secondaryIds: ColumnDescription[]) =>
-  ({ quarter, events }: { quarter: string; events: EntityEvent[] }) => {
+  ({ quarter, events }: { quarter: number; events: EntityEvent[] }) => {
     if (events.length < 2) {
       return { quarter, groupedEvents: [events], differences: [{}] };
     }
@@ -328,7 +160,10 @@ const findGroups = (
   eventsPerYears: EventsPerYear[],
   secondaryIds: ColumnDescription[],
 ) => {
-  const findGroupsWithinYear = ({ year, quarterwiseData }: EventsPerYear) => {
+  const findGroupsWithinYear = ({
+    year,
+    quarterwiseData,
+  }: EventsPerYear): EventsByYearWithGroups => {
     return {
       year,
       quarterwiseData: quarterwiseData.map(
@@ -343,9 +178,19 @@ const findGroups = (
 interface EventsPerYear {
   year: number;
   quarterwiseData: {
-    quarter: string;
+    quarter: number;
     events: EntityEvent[];
   }[];
+}
+
+interface EventsByYearWithGroups {
+  year: number;
+  quarterwiseData: EventsByQuarterWithGroups[];
+}
+export interface EventsByQuarterWithGroups {
+  quarter: number;
+  groupedEvents: EntityEvent[][];
+  differences: Record<string, Set<any>>[];
 }
 
 const useTimeBucketedSortedData = (
@@ -358,7 +203,7 @@ const useTimeBucketedSortedData = (
     secondaryIds: ColumnDescription[];
   },
 ) => {
-  const bucketEntityEvents = (
+  const groupByQuarter = (
     entityData: EntityHistoryStateT["currentEntityData"],
     sources: Set<string>,
   ) => {
@@ -389,19 +234,123 @@ const useTimeBucketedSortedData = (
           .sort(([quarterA], [quarterB]) => {
             return parseInt(quarterB) - parseInt(quarterA);
           })
-          .map(([quarter, events]) => ({ quarter, events })),
+          .map(([quarter, events]) => ({ quarter: parseInt(quarter), events })),
       }));
   };
 
   return useMemo(() => {
-    const bucketedEvents = bucketEntityEvents(data, sources);
-    const bucketedEventsByDayAndSource = findGroups(
-      bucketedEvents,
-      secondaryIds,
-    );
+    const eventsByQuarter = groupByQuarter(data, sources);
+    const eventsByQuarterWithGroups = findGroups(eventsByQuarter, secondaryIds);
 
     return {
-      bucketedEventsByDayAndSource,
+      eventsByQuarterWithGroups,
     };
   }, [data, sources, secondaryIds]);
+};
+
+const useOpenCloseInteraction = () => {
+  const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
+  const isOpenRef = useRef(isOpen);
+  isOpenRef.current = isOpen;
+
+  const toId = useCallback(
+    (year: number, quarter?: number) => `${year}-${quarter}`,
+    [],
+  );
+
+  const getIsOpen = useCallback(
+    (year: number, quarter?: number) => {
+      if (quarter) {
+        return isOpen[toId(year, quarter)];
+      } else {
+        return [1, 2, 3, 4].every((q) => isOpen[toId(year, q)]);
+      }
+    },
+    [isOpen, toId],
+  );
+
+  const toggleOpenYear = useCallback(
+    (year: number) => {
+      const quarters = [1, 2, 3, 4].map((quarter) => toId(year, quarter));
+      const wasOpen = quarters.some((quarter) => isOpenRef.current[quarter]);
+
+      setIsOpen((prev) => ({
+        ...prev,
+        ...Object.fromEntries(quarters.map((quarter) => [quarter, !wasOpen])),
+      }));
+    },
+    [toId],
+  );
+
+  const toggleOpenQuarter = useCallback(
+    (year: number, quarter: number) => {
+      const id = toId(year, quarter);
+
+      setIsOpen((prev) => ({ ...prev, [id]: !prev[id] }));
+    },
+    [toId],
+  );
+
+  return {
+    getIsOpen,
+    toggleOpenYear,
+    toggleOpenQuarter,
+  };
+};
+
+export interface ColumnBuckets {
+  money: ColumnDescription[];
+  concepts: ColumnDescription[];
+  secondaryIds: ColumnDescription[];
+  rest: ColumnDescription[];
+}
+
+const useColumnInformation = () => {
+  const columnDescriptions = useSelector<StateT, ColumnDescription[]>(
+    (state) => state.entityHistory.columnDescriptions,
+  );
+
+  const columns = useSelector<StateT, EntityHistoryStateT["columns"]>(
+    (state) => state.entityHistory.columns,
+  );
+
+  const columnBuckets: ColumnBuckets = useMemo(() => {
+    return {
+      money: columnDescriptions.filter((c) => c.type === "MONEY"),
+      concepts: columnDescriptions.filter(
+        (c) =>
+          c.semantics.length > 0 && c.semantics[0].type === "CONCEPT_COLUMN",
+      ),
+      secondaryIds: columnDescriptions.filter(
+        (c) => c.semantics.length > 0 && c.semantics[0].type === "SECONDARY_ID",
+      ),
+      rest: columnDescriptions.filter(
+        (c) => c.type !== "MONEY" && c.semantics.length === 0,
+      ),
+    };
+  }, [columnDescriptions]);
+
+  const rootConceptIdsByColumn: Record<string, ConceptIdT> = useMemo(() => {
+    const entries: [string, ConceptIdT][] = [];
+
+    for (const columnDescription of columnBuckets.concepts) {
+      const { label, semantics } = columnDescription;
+      const conceptSemantic = semantics.find(
+        (sem): sem is ColumnDescriptionSemanticConceptColumn =>
+          sem.type === "CONCEPT_COLUMN",
+      );
+
+      if (conceptSemantic) {
+        entries.push([label, conceptSemantic.concept]);
+      }
+    }
+
+    return Object.fromEntries(entries);
+  }, [columnBuckets]);
+
+  return {
+    columns,
+    columnBuckets,
+    rootConceptIdsByColumn,
+  };
 };

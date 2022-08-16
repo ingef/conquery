@@ -141,7 +141,7 @@ export const History = () => {
           onLoadFromFile={onLoadFromFile}
         />
         <ErrorBoundary FallbackComponent={ErrorFallback}>
-          <Main key={currentEntityId}>
+          <Main>
             {currentEntityId && (
               <SxEntityHeader
                 currentEntityIndex={currentEntityIndex}
