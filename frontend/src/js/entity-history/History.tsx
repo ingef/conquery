@@ -13,6 +13,7 @@ import ContentControl, { useContentControl } from "./ContentControl";
 import { DetailControl, DetailLevel } from "./DetailControl";
 import { DownloadEntityDataButton } from "./DownloadEntityDataButton";
 import { EntityHeader } from "./EntityHeader";
+import InteractionControl from "./InteractionControl";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import SourcesControl from "./SourcesControl";
@@ -44,6 +45,9 @@ const Controls = styled("div")`
 const Sidebar = styled("div")`
   padding: 10px 0;
   border-right: 1px solid ${({ theme }) => theme.col.grayLight};
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 `;
 
 const Header = styled("div")`
@@ -133,7 +137,7 @@ export const History = () => {
     [setEntityIdsStatus, setEntityStatusOptions, updateHistorySession],
   );
 
-  const { getIsOpen, toggleOpenYear, toggleOpenQuarter } =
+  const { getIsOpen, toggleOpenYear, toggleOpenQuarter, closeAll } =
     useOpenCloseInteraction();
 
   return (
@@ -182,7 +186,7 @@ export const History = () => {
                     setDetailLevel={setDetailLevel}
                   />
                 )}
-
+                <InteractionControl onCloseAll={closeAll} />
                 <ContentControl
                   value={contentFilter}
                   onChange={setContentFilter}
@@ -318,9 +322,14 @@ const useOpenCloseInteraction = () => {
     [toId],
   );
 
+  const closeAll = useCallback(() => {
+    setIsOpen({});
+  }, []);
+
   return {
     getIsOpen,
     toggleOpenYear,
     toggleOpenQuarter,
+    closeAll,
   };
 };
