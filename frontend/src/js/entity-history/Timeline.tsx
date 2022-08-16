@@ -228,6 +228,7 @@ const useTimeBucketedSortedData = (
       }
     }
 
+    // Fill empty quarters
     for (const [, quarters] of Object.entries(result)) {
       for (const q of [1, 2, 3, 4]) {
         if (!quarters[q]) {
@@ -236,7 +237,7 @@ const useTimeBucketedSortedData = (
       }
     }
 
-    return Object.entries(result)
+    const sortedEvents = Object.entries(result)
       .sort(([yearA], [yearB]) => {
         return parseInt(yearB) - parseInt(yearA);
       })
@@ -248,6 +249,22 @@ const useTimeBucketedSortedData = (
           })
           .map(([quarter, events]) => ({ quarter: parseInt(quarter), events })),
       }));
+
+    // Fill empty years
+    const currentYear = new Date().getFullYear();
+    if (sortedEvents.length > 0 && sortedEvents[0].year < currentYear) {
+      while (sortedEvents[0].year < currentYear) {
+        sortedEvents.unshift({
+          year: sortedEvents[0].year + 1,
+          quarterwiseData: [1, 2, 3, 4].map((q) => ({
+            quarter: q,
+            events: [],
+          })),
+        });
+      }
+    }
+
+    return sortedEvents;
   };
 
   return useMemo(() => {

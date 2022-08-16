@@ -55,10 +55,9 @@ const ContentControl = ({ value, onChange }: Props) => {
       {options.map((option) => {
         const active = value[option.key];
         return (
-          <WithTooltip text={option.tooltip}>
+          <WithTooltip key={option.key} text={option.tooltip}>
             <IconButton
               icon={option.icon}
-              key={option.key}
               active={active}
               onClick={() => {
                 onChange({ ...value, [option.key]: !value[option.key] });
