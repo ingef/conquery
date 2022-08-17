@@ -39,8 +39,6 @@ import org.jetbrains.annotations.Nullable;
 @NoArgsConstructor(onConstructor_ = @JsonCreator)
 public class SumSelect extends Select {
 
-	@Getter
-	@Setter
 	@NsIdRefCollection
 	private List<Column> distinctByColumn = Collections.emptyList();
 

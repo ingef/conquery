@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -30,19 +29,21 @@ public class CountSelect extends Select {
 
 	@Getter
 	@Setter
-	@NsIdRefCollection
-	private List<Column> distinctByColumn = Collections.emptyList();
-
-	@Getter
-	@Setter
 	@NsIdRef
 	@NotNull
 	private Column column;
 
+
+	@Getter
+	@Setter
+	@NsIdRefCollection
+	private List<Column> distinctByColumn;
+
+
 	@Override
 	public Aggregator<?> createAggregator() {
-		if (distinct || !distinctByColumn.isEmpty()) {
-			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), getDistinctByColumn());
+		if (distinct) {
+			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), DistinctValuesWrapperAggregator.fallback(getDistinctByColumn(), getColumn()));
 		}
 		return new CountAggregator(getColumn());
 	}

@@ -1,11 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
@@ -31,6 +29,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -44,30 +43,19 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "SUM", base = Filter.class)
 public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter<RANGE> {
 
-
-	@Valid
 	@NotNull
-	@Getter
-	@Setter
 	@NsIdRef
 	private Column column;
 
-	@Valid
-	@Getter
-	@Setter
 	@NsIdRef
 	private Column subtractColumn;
 
-	@Valid
-	@Getter
-	@Setter
 	@NsIdRefCollection
-	private List<Column> distinctByColumn = Collections.emptyList();
+	private List<Column> distinctByColumn = List.of(getColumn());
 
 	@Override
 	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
-		Column column = getColumn();
-		switch (column.getType()) {
+		switch (getColumn().getType()) {
 			case MONEY:
 				f.setType(FEFilterType.Fields.MONEY_RANGE);
 				return;
@@ -80,7 +68,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 				return;
 			}
 			default:
-				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + column.getType());
+				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + getColumn().getType());
 		}
 	}
 
@@ -93,19 +81,19 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	@Override
 	public FilterNode createFilterNode(RANGE value) {
-		ColumnAggregator<?> aggregator = getAggregator();
 
 		if (!distinctByColumn.isEmpty()) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(getAggregator(), getDistinctByColumn()));
 		}
 
 		if (getColumn().getType() == MajorTypeId.REAL) {
-			return new RangeFilterNode(Range.DoubleRange.fromNumberRange(value), aggregator);
+			return new RangeFilterNode(Range.DoubleRange.fromNumberRange(value), getAggregator());
 		}
 
-		return new RangeFilterNode(value, aggregator);
+		return new RangeFilterNode(value, getAggregator());
 	}
 
+	@JsonIgnore
 	private ColumnAggregator<?> getAggregator() {
 		if (getSubtractColumn() == null) {
 			switch (getColumn().getType()) {

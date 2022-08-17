@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -45,7 +44,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@Getter
 	@Setter
 	@NsIdRefCollection
-	private List<Column> distinctByColumn = Collections.emptyList();
+	private List<Column> distinctByColumn;
 
 
 	@Override
@@ -58,8 +57,8 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
-		if (distinct || !distinctByColumn.isEmpty()) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getDistinctByColumn()));
+		if (distinct) {
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), DistinctValuesWrapperAggregator.fallback(getDistinctByColumn(), getColumn())));
 		}
 		return new RangeFilterNode(value, new CountAggregator(getColumn()));
 	}
