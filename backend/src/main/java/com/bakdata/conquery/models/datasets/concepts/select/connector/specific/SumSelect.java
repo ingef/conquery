@@ -1,10 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
@@ -31,7 +30,6 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.jetbrains.annotations.Nullable;
 
 @Getter
 @Setter
@@ -102,12 +100,21 @@ public class SumSelect extends Select {
 
 	private static final EnumSet<MajorTypeId> NUMBER_COMPATIBLE = EnumSet.of(MajorTypeId.INTEGER, MajorTypeId.MONEY, MajorTypeId.DECIMAL, MajorTypeId.REAL);
 
-	@Nullable
 	@Override
 	public Column[] getRequiredColumns() {
-		return Stream.concat(getDistinctByColumn().stream(), Stream.of(getColumn(), getSubtractColumn()))
-					 .filter(Objects::nonNull)
-					 .toArray(Column[]::new);
+		List<Column> out = new ArrayList<>();
+
+		out.add(getColumn());
+
+		if(getSubtractColumn() != null){
+			out.add(getSubtractColumn());
+		}
+
+		if (distinctByColumn != null){
+			out.addAll(getDistinctByColumn());
+		}
+
+		return out.toArray(Column[]::new);
 	}
 
 

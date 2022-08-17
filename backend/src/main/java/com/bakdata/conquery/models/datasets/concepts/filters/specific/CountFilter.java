@@ -1,8 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -65,8 +64,14 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return Stream.concat(distinctByColumn.stream(), Stream.of(getColumn()))
-					 .filter(Objects::nonNull)
-					 .toArray(Column[]::new);
+		List<Column> out = new ArrayList<>();
+
+		out.add(getColumn());
+
+		if (distinctByColumn != null){
+			out.addAll(getDistinctByColumn());
+		}
+
+		return out.toArray(Column[]::new);
 	}
 }
