@@ -2,8 +2,12 @@ package com.bakdata.conquery.models.index;
 
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+@EqualsAndHashCode(callSuper = true)
+@ToString
 public class MapIndexKey extends AbstractIndexKey<MapIndex> {
 
 	private final String externalTemplate;
