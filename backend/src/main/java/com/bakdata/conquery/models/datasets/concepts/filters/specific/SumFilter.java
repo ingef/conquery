@@ -51,7 +51,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	private Column subtractColumn;
 
 	@NsIdRefCollection
-	private List<Column> distinctByColumn = List.of(getColumn());
+	private List<Column> distinctByColumn;
 
 	@Override
 	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
