@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
@@ -14,19 +16,22 @@ import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Helper Aggregator, forwarding only events with distinct values to {@code aggregator}.
+ *
  * @param <VALUE>
  */
-@ToString(callSuper = true, of = {"aggregator"})
+@ToString(callSuper = true, of = {"columns", "aggregator"})
 public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VALUE> {
 
 	private final ColumnAggregator<VALUE> aggregator;
-	private final Set<Object> observed = new HashSet<>();
+
+	//TODO @ThoniTUB this can be gigantic, can I loosen this a bit and only scan for hashcodes?
+	private final Set<List<Object>> observed = new HashSet<>();
 
 	@Getter
-	private final Column column;
+	private final List<Column> columns;
 
-	public DistinctValuesWrapperAggregator(ColumnAggregator<VALUE> aggregator, Column column) {
-		this.column = column;
+	public DistinctValuesWrapperAggregator(ColumnAggregator<VALUE> aggregator, List<Column> columns) {
+		this.columns = columns;
 		this.aggregator = aggregator;
 	}
 
@@ -37,22 +42,30 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return ArrayUtils.add(aggregator.getRequiredColumns(), getColumn());
+		return ArrayUtils.addAll(aggregator.getRequiredColumns(), getColumns().toArray(Column[]::new));
 	}
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
-		aggregator.init(entity,context);
+		aggregator.init(entity, context);
 		observed.clear();
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if(!bucket.has(event,getColumn())){
-			return;
+		for (Column column : getColumns()) {
+			if (!bucket.has(event, column)) {
+				return;
+			}
 		}
 
-		if (observed.add(bucket.createScriptValue(event, getColumn()))) {
+		List<Object> incoming = new ArrayList<>(getColumns().size());
+
+		for (Column column : getColumns()) {
+			incoming.add(bucket.createScriptValue(event, column));
+		}
+
+		if (observed.add(incoming)) {
 			aggregator.acceptEvent(bucket, event);
 		}
 	}

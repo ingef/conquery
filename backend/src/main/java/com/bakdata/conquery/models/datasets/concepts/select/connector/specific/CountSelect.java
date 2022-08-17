@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -7,6 +9,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -27,8 +30,8 @@ public class CountSelect extends Select {
 
 	@Getter
 	@Setter
-	@NsIdRef
-	private Column distinctByColumn;
+	@NsIdRefCollection
+	private List<Column> distinctByColumn = Collections.emptyList();
 
 	@Getter
 	@Setter
@@ -38,8 +41,8 @@ public class CountSelect extends Select {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		if (distinct || distinctByColumn != null) {
-			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), getDistinctByColumn() == null ? getColumn() : getDistinctByColumn());
+		if (distinct || !distinctByColumn.isEmpty()) {
+			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), getDistinctByColumn());
 		}
 		return new CountAggregator(getColumn());
 	}
@@ -47,7 +50,7 @@ public class CountSelect extends Select {
 	@Nullable
 	@Override
 	public Column[] getRequiredColumns() {
-		return Stream.of(getColumn(), getDistinctByColumn())
+		return Stream.concat(getDistinctByColumn().stream(), Stream.of(getColumn()))
 					 .filter(Objects::nonNull)
 					 .toArray(Column[]::new);
 	}

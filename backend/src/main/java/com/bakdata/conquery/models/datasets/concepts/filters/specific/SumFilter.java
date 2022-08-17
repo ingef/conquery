@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -10,6 +12,7 @@ import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
@@ -58,8 +61,8 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	@Valid
 	@Getter
 	@Setter
-	@NsIdRef
-	private Column distinctByColumn;
+	@NsIdRefCollection
+	private List<Column> distinctByColumn = Collections.emptyList();
 
 	@Override
 	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
@@ -83,7 +86,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return Stream.of(getColumn(), getSubtractColumn(), getDistinctByColumn())
+		return Stream.concat(getDistinctByColumn().stream(), Stream.of(getColumn(), getSubtractColumn()))
 					 .filter(Objects::nonNull)
 					 .toArray(Column[]::new);
 	}
@@ -92,7 +95,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	public FilterNode createFilterNode(RANGE value) {
 		ColumnAggregator<?> aggregator = getAggregator();
 
-		if (distinctByColumn != null) {
+		if (!distinctByColumn.isEmpty()) {
 			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn()));
 		}
 
