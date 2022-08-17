@@ -398,6 +398,8 @@ public class QueryProcessor {
 		EntityPreviewForm form =
 				new EntityPreviewForm(entity, idKind, dateRange, sources, config.getPreview().resolveInfoCardSelects(dataset, datasetRegistry));
 
+		// TODO make sure that subqueries are also system
+		// TODO do not persist system queries
 		final EntityPreviewExecution execution = (EntityPreviewExecution) postQuery(dataset, form, subject, true);
 
 

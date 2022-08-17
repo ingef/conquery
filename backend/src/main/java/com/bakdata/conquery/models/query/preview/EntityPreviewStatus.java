@@ -11,7 +11,7 @@ public class EntityPreviewStatus extends FullExecutionStatus {
 	@Value
 	public static class Info {
 		private final String label;
-		private final String value;
+		private final Object value;
 		//TODO Semantics?
 	}
 

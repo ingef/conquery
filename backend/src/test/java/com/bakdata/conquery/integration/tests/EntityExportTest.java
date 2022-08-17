@@ -101,12 +101,17 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
 				.isEqualTo(Response.Status.Family.SUCCESSFUL);
 
-		final EntityPreviewStatus resultUrls = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
+		final EntityPreviewStatus result = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
 
 
-		final Optional<URL> csvUrl = resultUrls.getResultUrls().stream()
+		final Optional<URL> csvUrl = result.getResultUrls().stream()
 											   .filter(url -> url.getFile().endsWith(".csv"))
 											   .findFirst();
+
+		assertThat(result.getInfos()).isEqualTo(List.of(new EntityPreviewStatus.Info("tree1 age", "8"),
+														new EntityPreviewStatus.Info("tree2 age", "10"),
+														new EntityPreviewStatus.Info("tree1 values", "A1"),
+														new EntityPreviewStatus.Info("tree2 values", "A1 ; B2")));
 
 		assertThat(csvUrl).isPresent();
 
@@ -121,7 +126,10 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 
 		assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
-				.isEqualTo(List.of("result,dates,source,test_table test_column,test_table2 test_column", "3,2013-11-10,test_table,test_child1,"));
+				.isEqualTo(List.of("result,dates,source,table1 column,table2 column",
+								   "1,2013-11-10,table1,A1,",
+								   "1,2012-01-01,table2,,A1",
+								   "1,2010-07-15,table2,,B2"));
 
 
 	}
