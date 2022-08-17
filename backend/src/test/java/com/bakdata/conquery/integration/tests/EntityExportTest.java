@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,10 +29,14 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.preview.EntityPreviewStatus;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
@@ -47,11 +52,10 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 	@Override
 	public ConqueryConfig overrideConfig(ConqueryConfig conf, File workdir) {
 		return conf.withPreview(new PreviewConfig(List.of(
-				"tree1.connector.age",
-				"tree2.connector.age",
-				"tree1.connector.values",
-				"tree2.connector.values"
-		)));
+						   "tree1.connector.age",
+						   "tree2.connector.values"
+				   )))
+				   .withStorage(new NonPersistentStoreFactory());
 	}
 
 	@Override
@@ -105,13 +109,24 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 
 		final Optional<URL> csvUrl = result.getResultUrls().stream()
-											   .filter(url -> url.getFile().endsWith(".csv"))
-											   .findFirst();
+										   .filter(url -> url.getFile().endsWith(".csv"))
+										   .findFirst();
 
-		assertThat(result.getInfos()).isEqualTo(List.of(new EntityPreviewStatus.Info("tree1 age", "8"),
-														new EntityPreviewStatus.Info("tree2 age", "10"),
-														new EntityPreviewStatus.Info("tree1 values", "A1"),
-														new EntityPreviewStatus.Info("tree2 values", "A1 ; B2")));
+
+		assertThat(result.getInfos()).isEqualTo(List.of(
+				new EntityPreviewStatus.Info(
+						"tree1 age",
+						"8",
+						ResultType.IntegerT.INSTANCE,
+						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
+				),
+				new EntityPreviewStatus.Info(
+						"tree2 values",
+						"A1 ; B2",
+						new ResultType.ListT(ResultType.StringT.INSTANCE),
+						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))))
+				)
+		));
 
 		assertThat(csvUrl).isPresent();
 
@@ -126,10 +141,12 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 
 		assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
-				.isEqualTo(List.of("result,dates,source,table1 column,table2 column",
-								   "1,2013-11-10,table1,A1,",
-								   "1,2012-01-01,table2,,A1",
-								   "1,2010-07-15,table2,,B2"));
+				.containsExactlyInAnyOrder(
+						"result,dates,source,table1 column,table2 column",
+						"1,2013-11-10,table1,A1,",
+						"1,2012-01-01,table2,,A1",
+						"1,2010-07-15,table2,,B2"
+				);
 
 
 	}

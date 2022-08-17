@@ -50,7 +50,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 			ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
 			String printed = resultInfo.getType().printNullable(printSettings, values[index]);
 
-			extraInfos.add(new EntityPreviewStatus.Info(resultInfo.defaultColumnName(printSettings), printed));
+			extraInfos.add(new EntityPreviewStatus.Info(resultInfo.defaultColumnName(printSettings), printed, resultInfo.getType(), resultInfo.getSemantics()));
 		}
 		return extraInfos;
 	}

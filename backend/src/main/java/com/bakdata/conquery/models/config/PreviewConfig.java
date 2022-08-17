@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PreviewConfig {
+	//TODO allow labelling of select?
 	private List<String> infoCardSelects = List.of();
 
 	public List<Select> resolveInfoCardSelects(Dataset dataset, DatasetRegistry registry) {
