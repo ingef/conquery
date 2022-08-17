@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration.tests;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -16,16 +17,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.PreviewConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.query.preview.EntityPreviewStatus;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
@@ -41,13 +44,22 @@ import org.assertj.core.description.LazyTextDescription;
 @Slf4j
 public class EntityExportTest implements ProgrammaticIntegrationTest {
 
+	@Override
+	public ConqueryConfig overrideConfig(ConqueryConfig conf, File workdir) {
+		return conf.withPreview(new PreviewConfig(List.of(
+				"tree1.connector.age",
+				"tree2.connector.age",
+				"tree1.connector.values",
+				"tree2.connector.values"
+		)));
+	}
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
 
 		final StandaloneSupport conquery = testConquery.getSupport(name);
 
-		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+		final String testJson = In.resource("/tests/query/ENTITY_EXPORT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 
 		final Dataset dataset = conquery.getDataset();
 
@@ -83,13 +95,13 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				conquery.getClient().target(entityExport)
 						.request(MediaType.APPLICATION_JSON_TYPE)
 						.header("Accept-Language", "en-Us")
-						.post(Entity.json(new QueryResource.EntityPreview("ID", "3", Range.all(), allConnectors)));
+						.post(Entity.json(new QueryResource.EntityPreview("ID", "1", Range.all(), allConnectors)));
 
 		assertThat(allEntityDataResponse.getStatusInfo().getFamily())
 				.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
 				.isEqualTo(Response.Status.Family.SUCCESSFUL);
 
-		final FullExecutionStatus resultUrls = allEntityDataResponse.readEntity(FullExecutionStatus.class);
+		final EntityPreviewStatus resultUrls = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
 
 
 		final Optional<URL> csvUrl = resultUrls.getResultUrls().stream()

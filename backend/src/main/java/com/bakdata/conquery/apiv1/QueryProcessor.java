@@ -4,10 +4,8 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetA
 
 import java.net.URL;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -23,8 +21,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
@@ -34,7 +30,6 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -46,39 +41,29 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.PreviewConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
-import com.bakdata.conquery.models.forms.util.Alignment;
-import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
+import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -92,43 +77,6 @@ public class QueryProcessor {
 	private MetaStorage storage;
 	@Inject
 	private ConqueryConfig config;
-
-	public static List<Select> getInfoCardSelects(PreviewConfig config, Dataset dataset, DatasetRegistry registry) {
-		final List<Select> infoCardSelects = new ArrayList<>();
-
-		for (String name : config.getInfoCardSelects()) {
-			SelectId selectId = SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), name);
-			Select resolved = registry.resolve(selectId);
-
-			if (resolved == null) {
-				throw new ConqueryError.ExecutionCreationResolveError(selectId);
-			}
-
-			infoCardSelects.add(resolved);
-		}
-
-		final Set<Select> wrongDatasetSelects = infoCardSelects.stream()
-															   .filter(select -> !select.getDataset().equals(dataset))
-															   .collect(Collectors.toSet());
-
-		if (!wrongDatasetSelects.isEmpty()) {
-			log.error("The selects {} are not for dataset {}", wrongDatasetSelects, dataset.getId());
-			throw new ConqueryError.ExecutionCreationErrorUnspecified();
-		}
-
-
-		final Set<Select> nonConnectorSelects = infoCardSelects.stream()
-															   .filter(select -> !(select.getHolder() instanceof Connector))
-															   .collect(Collectors.toSet());
-
-		if (!nonConnectorSelects.isEmpty()) {
-			log.error("The selects {} are not connector-Selects", nonConnectorSelects);
-			throw new ConqueryError.ExecutionCreationErrorUnspecified();
-		}
-
-		return infoCardSelects;
-
-	}
 
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
@@ -447,29 +395,10 @@ public class QueryProcessor {
 	 * @implNote we don't do anything special here, this request could also be made manually. We however want to encapsulate this behaviour to shield the frontend from knowing too much about the query engine.
 	 */
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
+		EntityPreviewForm form =
+				new EntityPreviewForm(entity, idKind, dateRange, sources, config.getPreview().resolveInfoCardSelects(dataset, datasetRegistry));
 
-		final ConceptQuery entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
-
-		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
-		exportQuery.setDateRange(dateRange);
-
-		exportQuery.setTables(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
-
-		final ManagedQuery execution = (ManagedQuery) postQuery(dataset, exportQuery, subject, true);
-
-		final List<Select> infoCardSelects = getInfoCardSelects(config.getPreview(), dataset, datasetRegistry);
-
-
-		final AbsoluteFormQuery infoCardQuery =
-				new AbsoluteFormQuery(entitySelectQuery, dateRange,
-									  ArrayConceptQuery.createFromFeatures(
-											  infoCardSelects.stream()
-															 .map(CQConcept::forSelect)
-															 .collect(Collectors.toList())),
-									  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
-				);
-
-		final ManagedQuery infoCardExecution = (ManagedQuery) postQuery(dataset, infoCardQuery, subject, true);
+		final EntityPreviewExecution execution = (EntityPreviewExecution) postQuery(dataset, form, subject, true);
 
 
 		if (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
@@ -477,43 +406,16 @@ public class QueryProcessor {
 			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
 
-		if (infoCardExecution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
-			log.warn("Still waiting for {} after 10Seconds aborting", infoCardExecution.getId());
-			throw new ConqueryError.ExecutionProcessingTimeoutError();
-		}
 
 		if (execution.getState() == ExecutionState.FAILED) {
 			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
 		}
 
-		if (infoCardExecution.getState() == ExecutionState.FAILED) {
-			throw ConqueryError.ContextError.fromErrorInfo(infoCardExecution.getError());
-		}
 
-
-		PreviewFullExecutionStatus executionStatus = new PreviewFullExecutionStatus();
-		execution.setStatusFull(executionStatus, storage, subject, datasetRegistry);
-
-		executionStatus.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, true));
-
-		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
-		final Object[] values = result.getValues().get(0);
-
-		List<PreviewFullExecutionStatus.Info> extraInfos = new ArrayList<>(values.length);
-		PrintSettings printSettings = new PrintSettings(true, Locale.getDefault(), datasetRegistry, config, null);
-
-		//TODO Index is probably not aligned, Settings are not right either I'd guess. How do i create an appropriate IdMapper
-
-		for (int index = 0; index < infoCardExecution.getResultInfos().size(); index++) {
-			ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
-			String printed = resultInfo.getType().printNullable(printSettings, values[index]);
-
-			extraInfos.add(new PreviewFullExecutionStatus.Info(resultInfo.defaultColumnName(printSettings), printed));
-		}
-
-		executionStatus.setInfos(extraInfos);
-
-		return executionStatus;
+		FullExecutionStatus status = execution.buildStatusFull(storage, subject, datasetRegistry, config);
+		status.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, true));
+		return status;
 	}
+
 
 }
