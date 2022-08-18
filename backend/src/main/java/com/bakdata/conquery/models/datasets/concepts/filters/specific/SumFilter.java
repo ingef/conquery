@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
@@ -29,16 +31,16 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Mone
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * This filter represents a filter on the sum of one integer column.
  */
-@Getter
-@Setter
 @Slf4j
+@NoArgsConstructor
+@Data
 @CPSType(id = "SUM", base = Filter.class)
 public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter<RANGE> {
 
@@ -47,10 +49,12 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	private Column column;
 
 	@NsIdRef
+	@Nullable
 	private Column subtractColumn;
 
 	@NsIdRefCollection
-	private List<Column> distinctByColumn;
+	@NotNull
+	private List<Column> distinctByColumn = Collections.emptyList();
 
 	@Override
 	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
@@ -76,13 +80,10 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 		List<Column> out = new ArrayList<>();
 
 		out.add(getColumn());
+		out.addAll(getDistinctByColumn());
 
 		if(getSubtractColumn() != null){
 			out.add(getSubtractColumn());
-		}
-
-		if (distinctByColumn != null){
-			out.addAll(getDistinctByColumn());
 		}
 
 		return out.toArray(Column[]::new);

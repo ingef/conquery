@@ -38,6 +38,7 @@ import lombok.Setter;
 public class SumSelect extends Select {
 
 	@NsIdRefCollection
+	@NotNull
 	private List<Column> distinctByColumn = Collections.emptyList();
 
 	@NsIdRef
@@ -110,9 +111,7 @@ public class SumSelect extends Select {
 			out.add(getSubtractColumn());
 		}
 
-		if (distinctByColumn != null){
-			out.addAll(getDistinctByColumn());
-		}
+		out.addAll(getDistinctByColumn());
 
 		return out.toArray(Column[]::new);
 	}
