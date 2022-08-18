@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.forms.arx;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -104,7 +105,10 @@ public interface AttributeTypeBuilder {
 
 		public ConceptHierarchyNodeId(TreeConcept concept) {
 			this.concept = concept;
-			this.collectedIds = new HashMap<>((int) concept.getAllChildren().count());
+
+			// This allocation might be in most cases too much, optimize if necessary
+			final long childCount = concept.getAllChildren().count();
+			this.collectedIds = new HashMap<>(childCount > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) childCount);
 		}
 
 		/**
@@ -135,6 +139,10 @@ public interface AttributeTypeBuilder {
 		public String register(String value) {
 			final int localId = Integer.parseInt(value);
 			final ConceptTreeNode<?> node = concept.getElementByLocalId(localId);
+			if (node == null) {
+				// This should never be the case, as the local ids are our own stuff
+				throw new NoSuchElementException();
+			}
 			final String id = extractGeneralizationLabel(node);
 			collectedIds.put(id, node);
 			return id;
