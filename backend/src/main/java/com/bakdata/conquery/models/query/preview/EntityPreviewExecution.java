@@ -31,15 +31,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
 import lombok.NonNull;
 
+/**
+ * Dedicated {@link ManagedExecution} to properly display/combine the two Queries submitted by {@link EntityPreviewForm}.
+ * This mostly delegates to {@link EntityPreviewForm#VALUES_QUERY_NAME}, but embeds the result of {@link EntityPreviewForm#INFOS_QUERY_NAME} into {@link EntityPreviewStatus#getInfos()}.
+ */
 @CPSType(id = "ENTITY_PREVIEW_EXECUTION", base = ManagedExecution.class)
 public class EntityPreviewExecution extends ManagedForm implements SingleTableResult {
 
 	@Override
 	public boolean isSystem() {
+		// This Form should NEVER be started manually. Nor persisted
 		return true;
 	}
 
-	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset) {
+	EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset) {
 		super(entityPreviewQuery, user, submittedDataset);
 	}
 
@@ -76,9 +81,9 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 		EntityPreviewStatus status = new EntityPreviewStatus();
 		setStatusFull(status, storage, subject, datasetRegistry);
+		status.setQuery(getValuesQuery().getQuery());
 
 		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), datasetRegistry, config));
-		status.setQuery(getValuesQuery().getQuery());
 
 		return status;
 	}

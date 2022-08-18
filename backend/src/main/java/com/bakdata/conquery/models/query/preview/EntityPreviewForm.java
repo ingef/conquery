@@ -41,6 +41,18 @@ import lombok.Data;
 import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * @implNote This Form should only be used by invocations of {@link com.bakdata.conquery.apiv1.QueryProcessor#getSingleEntityExport}.
+ *
+ * It is used to create an overview of data for a specific entity. This is done using {@link TableExportQuery} which is quite tightly coupled to this form, BUT may be used for other use-cases.
+ *
+ * It will also submit a query collecting identifying information of the entity to be displayed separately (e.g.: name, age, costs-sum)
+ *
+ * The results of both valuesQuery and infoCardQuery are crammed into a single {@link EntityPreviewStatus} via a dedicated {@link EntityPreviewExecution}:
+ * 1) The result of valuesQuery will act as the normal {@link com.bakdata.conquery.models.query.SingleTableResult}
+ * 2) While infoCardQuery will be transformed and stored in {@link EntityPreviewStatus#getInfos()}.
+ *
+ */
 @CPSType(id = "ENTITY_PREVIEW", base = QueryDescription.class)
 @Data
 public class EntityPreviewForm extends Form {
