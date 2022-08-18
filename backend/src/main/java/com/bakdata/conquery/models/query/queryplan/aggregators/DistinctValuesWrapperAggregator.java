@@ -75,12 +75,4 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 		return aggregator.getResultType();
 	}
 
-	public static List<Column> fallback(List<Column> by, Column alternative) {
-		if (by == null || by.isEmpty()) {
-			return List.of(alternative);
-		}
-
-		return by;
-	}
-
 }
