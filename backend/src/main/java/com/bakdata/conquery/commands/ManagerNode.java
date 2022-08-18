@@ -126,10 +126,14 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 
 		jobManager = new JobManager("ManagerNode", config.isFailOnError());
-		formScanner = new FormScanner();
-		this.config = config;
 
+		// FormScanner needs to be instantiated before plugins are initialized
+		formScanner = new FormScanner(config);
+
+
+		this.config = config;
 		config.initialize(this);
+
 
 		// Initialization of internationalization
 		I18n.init();
