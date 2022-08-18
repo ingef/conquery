@@ -324,7 +324,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### ENTITY_PREVIEW<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/preview/EntityPreviewForm.java#L45)</sup></sub></sup>
+### ENTITY_PREVIEW<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/query/preview/EntityPreviewForm.java#L44)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
