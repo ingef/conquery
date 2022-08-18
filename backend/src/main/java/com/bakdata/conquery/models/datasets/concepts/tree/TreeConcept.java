@@ -2,36 +2,24 @@ package com.bakdata.conquery.models.datasets.concepts.tree;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.IdMap;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -135,35 +123,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 			openList.addAll((openList.get(i)).getChildren());
 		}
 	}
-
-	public Optional<ConceptTreeNode<?>> findChildById(@NonNull ConceptElementId<?> id) {
-
-		if (id instanceof ConceptTreeChildId) {
-			ConceptElementId<?> prevIdWalk = null;
-			ConceptElementId<?> idWalk = id;
-			while (idWalk instanceof ConceptTreeChildId) {
-				prevIdWalk = idWalk;
-				idWalk = ((ConceptTreeChildId) idWalk).getParent();
-			}
-			if (getId().equals(idWalk)) {
-				final Map<ConceptTreeChildId, ConceptTreeChild>
-						idMap =
-						children.stream().collect(Collectors.toMap(ConceptTreeChild::getId, Function.identity()));
-				final ConceptTreeChild child = idMap.get(prevIdWalk);
-				if (child != null) {
-					return child.findChildById(id);
-				}
-			}
-			return Optional.empty();
-		}
-
-		if (getId().equals(id)) {
-			return Optional.of(this);
-		}
-
-		return Optional.empty();
-	}
-
 
 	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 		if (this.getChildIndex() != null) {
