@@ -34,10 +34,19 @@ import lombok.NonNull;
 @CPSType(id = "ENTITY_PREVIEW_EXECUTION", base = ManagedExecution.class)
 public class EntityPreviewExecution extends ManagedForm implements SingleTableResult {
 
+	@Override
+	public boolean isSystem() {
+		return true;
+	}
+
 	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset) {
 		super(entityPreviewQuery, user, submittedDataset);
 	}
 
+	/**
+	 * Takes a ManagedQuery, and transforms its result into a List of {@link EntityPreviewStatus.Info}.
+	 * The format of the query is an {@link AbsoluteFormQuery} containing a single line for one person. This should correspond to {@link EntityPreviewForm#VALUES_QUERY_NAME}.
+	 */
 	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
 		final Object[] values = result.getValues().get(0);
@@ -55,6 +64,11 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		return extraInfos;
 	}
 
+	/**
+	 * Collect status of both queries conjoined.
+	 *
+	 * most importantly setInfos to infocard infos of entity.
+	 */
 	@Override
 	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Subject subject, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 
@@ -64,7 +78,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		setStatusFull(status, storage, subject, datasetRegistry);
 
 		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), datasetRegistry, config));
-		status.setQuery(null);
+		status.setQuery(getValuesQuery().getQuery());
 
 		return status;
 	}

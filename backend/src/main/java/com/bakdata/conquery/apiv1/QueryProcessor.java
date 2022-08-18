@@ -28,7 +28,6 @@ import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
-import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
@@ -389,14 +388,11 @@ public class QueryProcessor {
 	}
 
 	/**
-	 * Execute a {@link TableExportQuery} for a single Entity on some Connectors.
-	 *
-	 * @return
-	 * @implNote we don't do anything special here, this request could also be made manually. We however want to encapsulate this behaviour to shield the frontend from knowing too much about the query engine.
+	 * Create and submit {@link EntityPreviewForm} for subject on to extract sources for entity, and extract some additional infos to be used as infocard.
 	 */
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 		EntityPreviewForm form =
-				new EntityPreviewForm(entity, idKind, dateRange, sources, config.getPreview().resolveInfoCardSelects(dataset, datasetRegistry));
+				EntityPreviewForm.create(entity, idKind, dateRange, sources, config.getPreview().resolveInfoCardSelects(dataset, datasetRegistry));
 
 		// TODO make sure that subqueries are also system
 		// TODO do not persist system queries
@@ -404,7 +400,7 @@ public class QueryProcessor {
 
 
 		if (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
-			log.warn("Still waiting for {} after 10Seconds.", execution.getId());
+			log.warn("Still waiting for {} after 10 Seconds.", execution.getId());
 			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
 

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.preview;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +17,6 @@ import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -38,6 +36,7 @@ import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
+import com.google.common.collect.Sets;
 import lombok.Data;
 import lombok.NonNull;
 import org.jetbrains.annotations.Nullable;
@@ -49,34 +48,28 @@ public class EntityPreviewForm extends Form {
 	public static final String INFOS_QUERY_NAME = "INFOS";
 	public static final String VALUES_QUERY_NAME = "VALUES";
 
-	private final String entity;
-	private final String idKind;
-	private final Range<LocalDate> dateRange;
-	@NsIdRefCollection
-	private final List<Connector> sources;
-	@NsIdRefCollection
-	private final List<Select> infos;
+	private final AbsoluteFormQuery infoCardQuery;
+	private final TableExportQuery valuesQuery;
 
 	@Nullable
 	@Override
 	public JsonNode getValues() {
-		return null; //TODO will not be implemented.
+		return null; // will not be implemented.
 	}
 
 	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos) {
-		return new EntityPreviewForm(entity, idKind, dateRange, sources, infos);
-	}
 
-	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+		// We use this query to filter for the single selected query.
 		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
 
+		// Query exporting selected Sources of the Entity.
 		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
-		exportQuery.setDateRange(dateRange);
 
+		exportQuery.setDateRange(dateRange);
 		exportQuery.setTables(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
 
-		final Query infoCardQuery =
+		// Query exporting a few additional infos on the entity.
+		final AbsoluteFormQuery infoCardQuery =
 				new AbsoluteFormQuery(entitySelectQuery, dateRange,
 									  ArrayConceptQuery.createFromFeatures(
 											  infos.stream()
@@ -85,21 +78,27 @@ public class EntityPreviewForm extends Form {
 									  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
 				);
 
+		return new EntityPreviewForm(infoCardQuery, exportQuery);
+	}
+
+
+	@Override
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
 		return Map.of(
-				VALUES_QUERY_NAME, List.of(exportQuery.toManagedExecution(user, submittedDataset)),
-				INFOS_QUERY_NAME, List.of(infoCardQuery.toManagedExecution(user, submittedDataset))
+				VALUES_QUERY_NAME, List.of(getValuesQuery().toManagedExecution(user, submittedDataset)),
+				INFOS_QUERY_NAME, List.of(getInfoCardQuery().toManagedExecution(user, submittedDataset))
 		);
 	}
 
 	@Override
 	public void authorize(Subject subject, Dataset submittedDataset, @NonNull ClassToInstanceMap<QueryVisitor> visitors, MetaStorage storage) {
 		QueryDescription.authorizeQuery(this, subject, submittedDataset, visitors, storage);
-
 	}
 
 	@Override
 	public String getLocalizedTypeLabel() {
-		return "null"; //TODO what do?
+		// If we successfully keep away system queries from the users, this should not be called except for buildStatusFull, where it is ignored.
+		return getClass().getAnnotation(CPSType.class).id();
 	}
 
 	@Override
@@ -109,7 +108,7 @@ public class EntityPreviewForm extends Form {
 
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
-		return Collections.emptySet();
+		return Sets.union(getValuesQuery().collectRequiredQueries(),getInfoCardQuery().collectRequiredQueries());
 	}
 
 	@Override
@@ -119,6 +118,9 @@ public class EntityPreviewForm extends Form {
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
+		getInfoCardQuery().visit(visitor);
+		getValuesQuery().visit(visitor);
+
 		visitor.accept(this);
 	}
 }
