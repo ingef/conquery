@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.forms.arx;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -16,8 +16,6 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.google.common.base.Strings;
-import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -102,11 +100,11 @@ public interface AttributeTypeBuilder {
 		private final TreeConcept concept;
 
 
-		private final Object2IntMap<String> collectedIds;
+		private final HashMap<String, ConceptTreeNode<?>> collectedIds;
 
 		public ConceptHierarchyNodeId(TreeConcept concept) {
 			this.concept = concept;
-			this.collectedIds = new Object2IntArrayMap<>((int) concept.getAllChildren().count());
+			this.collectedIds = new HashMap<>((int) concept.getAllChildren().count());
 		}
 
 		/**
@@ -136,9 +134,9 @@ public interface AttributeTypeBuilder {
 		@Override
 		public String register(String value) {
 			final int localId = Integer.parseInt(value);
-			final ConceptTreeNode<?> elementByLocalId = concept.getElementByLocalId(localId);
-			final String id = extractGeneralizationLabel(elementByLocalId);
-			collectedIds.put(id, localId);
+			final ConceptTreeNode<?> node = concept.getElementByLocalId(localId);
+			final String id = extractGeneralizationLabel(node);
+			collectedIds.put(id, node);
 			return id;
 		}
 
@@ -149,26 +147,20 @@ public interface AttributeTypeBuilder {
 		@Override
 		public AttributeType build() {
 
-			int maxDepth = 0;
-			ArrayList<ConceptTreeNode<?>> collectedElements = new ArrayList<>(collectedIds.size());
-
 			// Resolve ids and keep track of the maximum Depth
-			for (Object2IntMap.Entry<String> collectedId : collectedIds.object2IntEntrySet()) {
+			final Optional<Integer> maxDepthOpt = collectedIds.values().stream().map(ConceptTreeNode::getDepth).max(Integer::compareTo);
 
-				final ConceptTreeNode<?> childById = concept.getElementByLocalId(collectedId.getIntValue());
-				if (childById == null) {
-					throw new NoSuchElementException(String.format("Cannot find a node %s in concept %s", collectedId, concept));
-				}
-
-				collectedElements.add(childById);
-
-				maxDepth = Math.max(maxDepth, childById.getDepth());
+			if (maxDepthOpt.isEmpty()) {
+				// There are no values to process: blank hierarchy
+				return AttributeType.Hierarchy.create(new String[][]{{""}});
 			}
 
+			final int maxDepth = maxDepthOpt.get();
+
 			// Build the hierarchy array (+2 because maxDepth starts at 0 and we need an extra level for "*")
-			String[][] hierarchy = new String[collectedElements.size() + 1][maxDepth + 2];
+			String[][] hierarchy = new String[collectedIds.size() + 1][maxDepth + 2];
 			int insertElementWalk = 0;
-			for (ConceptTreeNode<?> collectedElement : collectedElements) {
+			for (ConceptTreeNode<?> collectedElement : collectedIds.values()) {
 				final int depth = collectedElement.getDepth();
 
 				int insertDepthWalk = 0;
