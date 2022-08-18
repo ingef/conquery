@@ -59,7 +59,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
 		PrintSettings printSettings = new PrintSettings(true, Locale.getDefault(), datasetRegistry, config, null);
 
-
+		// We are only interested in the Select results.
 		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
 			ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
 			String printed = resultInfo.getType().printNullable(printSettings, values[index]);
@@ -70,9 +70,9 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	}
 
 	/**
-	 * Collect status of both queries conjoined.
+	 * Collects status of {@link EntityPreviewForm#getValuesQuery()} and {@link EntityPreviewForm#getInfoCardQuery()}.
 	 *
-	 * most importantly setInfos to infocard infos of entity.
+	 * Most importantly to {@link EntityPreviewStatus#setInfos(List)} to for infos of entity.
 	 */
 	@Override
 	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Subject subject, DatasetRegistry datasetRegistry, ConqueryConfig config) {
