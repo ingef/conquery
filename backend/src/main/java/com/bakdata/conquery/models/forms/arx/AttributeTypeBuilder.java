@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -156,14 +157,14 @@ public interface AttributeTypeBuilder {
 		public AttributeType build() {
 
 			// Resolve ids and keep track of the maximum Depth
-			final Optional<Integer> maxDepthOpt = collectedIds.values().stream().map(ConceptTreeNode::getDepth).max(Integer::compareTo);
+			final OptionalInt maxDepthOpt = collectedIds.values().stream().mapToInt(ConceptTreeNode::getDepth).max();
 
 			if (maxDepthOpt.isEmpty()) {
 				// There are no values to process: blank hierarchy
 				return AttributeType.Hierarchy.create(new String[][]{{""}});
 			}
 
-			final int maxDepth = maxDepthOpt.get();
+			final int maxDepth = maxDepthOpt.getAsInt();
 
 			// Build the hierarchy array (+2 because maxDepth starts at 0 and we need an extra level for "*")
 			String[][] hierarchy = new String[collectedIds.size() + 1][maxDepth + 2];

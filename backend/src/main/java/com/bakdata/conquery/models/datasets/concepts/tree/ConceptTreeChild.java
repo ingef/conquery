@@ -115,13 +115,13 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 
 		// Check the children
 		final Optional<ConceptTreeChild>
-				collect =
+				optionalConceptTreeChild =
 				children.stream().filter(child -> child.getId().getName().equals(components.get(1))).collect(MoreCollectors.toOptional());
-		if (collect.isEmpty()) {
+		if (optionalConceptTreeChild.isEmpty()) {
 			return Optional.empty();
 		}
 
 		// Components size is at least 2 here
-		return collect.get().findChildByDanglingIdComponents(components.subList(1, components.size()));
+		return optionalConceptTreeChild.flatMap(elem -> elem.findChildByDanglingIdComponents(components.subList(1, components.size())));
 	}
 }
