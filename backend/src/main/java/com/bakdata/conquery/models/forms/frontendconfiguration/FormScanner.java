@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.forms.frontendconfiguration;
 
 import java.io.PrintWriter;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -15,6 +16,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FrontendConfig;
+import com.bakdata.conquery.models.config.ManualConfig;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -118,12 +120,27 @@ public class FormScanner extends Task {
 			}
 
 			// Make relative handbook URLs relative to configured handbook base
-			final JsonNode manualUrl = configTree.get(MANUAL_URL_KEY);
+			// Config url mappings override urls from frontend config jsons
+			final URI manualURL = config.getPluginConfig(ManualConfig.class)
+										// first check override
+										.map(ManualConfig::getForms)
+										.map(m -> m.get(fullTypeIdentifier))
+										// then query the frontend config json
+										.orElseGet(() -> {
+											final JsonNode manualUrl = configTree.get(MANUAL_URL_KEY);
+											if (!manualUrl.isTextual()) {
+												log.warn("FrontendFormConfig {} contained field 'manualUrl' but it was not a text. Was: '{}'.", fullTypeIdentifier, manualUrl.getNodeType());
+												return null;
+											}
+
+											return URI.create(manualUrl.textValue());
+										});
 			final URL manualBaseUrl = config.getFrontend().getManualUrl();
-			if (manualBaseUrl != null && manualUrl != null) {
-				final TextNode manualNode = relativizeManualUrl(fullTypeIdentifier, manualUrl, manualBaseUrl);
+			if (manualBaseUrl != null && manualURL != null) {
+
+				final TextNode manualNode = relativizeManualUrl(fullTypeIdentifier, manualURL, manualBaseUrl);
 				if (manualNode == null) {
-					log.warn("Manual url relativiation did not succeed for {}. Skipping registration.", fullTypeIdentifier);
+					log.warn("Manual url relativization did not succeed for {}. Skipping registration.", fullTypeIdentifier);
 					continue;
 				}
 				configTree.set(MANUAL_URL_KEY, manualNode);
@@ -137,26 +154,26 @@ public class FormScanner extends Task {
 		return result.build();
 	}
 
-	private TextNode relativizeManualUrl(@NonNull String formTypeIdentifier, @NonNull JsonNode manualUrl, @NonNull URL manualBaseUrl) {
-		if (!manualUrl.isTextual()) {
-			log.warn("FrontendFormConfig {} contained field 'manualUrl' but it was not a text. Was: '{}'.", formTypeIdentifier, manualUrl.getNodeType());
-			return null;
-		}
-
-		final String urlString = manualUrl.textValue();
-		final URI manualUri = URI.create(urlString);
-		if (manualUri.isAbsolute()) {
-			log.trace("Manual url for {} was already absolute: {}. Skipping relativization.", formTypeIdentifier, manualUri);
-			return new TextNode(urlString);
-		}
+	private TextNode relativizeManualUrl(@NonNull String formTypeIdentifier, @NonNull URI manualUri, @NonNull URL manualBaseUrl) {
 
 		try {
-			final String absoluteUrl = manualBaseUrl.toURI().resolve(manualUri).toString();
-			log.trace("Computed manual url for {}: {}", formTypeIdentifier, absoluteUrl);
-			return new TextNode(absoluteUrl);
+			if (manualUri.isAbsolute()) {
+				log.trace("Manual url for {} was already absolute: {}. Skipping relativization.", formTypeIdentifier, manualUri);
+				return new TextNode(manualUri.toURL().toString());
+			}
+
+			try {
+				final String absoluteUrl = manualBaseUrl.toURI().resolve(manualUri).toURL().toString();
+				log.trace("Computed manual url for {}: {}", formTypeIdentifier, absoluteUrl);
+				return new TextNode(absoluteUrl);
+			}
+			catch (URISyntaxException e) {
+				log.warn("Unable to resolve manual base url ('{}') and relative manual url ('{}')", manualBaseUrl, manualUri, e);
+				return null;
+			}
 		}
-		catch (URISyntaxException e) {
-			log.warn("Unable to resolve manual base url ('{}') and relative manual url ('{}')", manualBaseUrl, manualUri, e);
+		catch (MalformedURLException e) {
+			log.error("Unable to build url", e);
 			return null;
 		}
 	}
