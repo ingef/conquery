@@ -52,8 +52,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 	@Override
 	public ConqueryConfig overrideConfig(ConqueryConfig conf, File workdir) {
 		return conf.withPreview(new PreviewConfig(List.of(
-						   "tree1.connector.age",
-						   "tree2.connector.values"
+						   new PreviewConfig.InfoCardSelect("Age", "tree1.connector.age"),
+						   new PreviewConfig.InfoCardSelect("Values", "tree2.connector.values")
 				   )))
 				   .withStorage(new NonPersistentStoreFactory());
 	}
@@ -115,16 +115,18 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		assertThat(result.getInfos()).isEqualTo(List.of(
 				new EntityPreviewStatus.Info(
-						"tree1 age",
+						"Age",
 						"8",
 						ResultType.IntegerT.INSTANCE,
-						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
+						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
+																	  .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
 				),
 				new EntityPreviewStatus.Info(
-						"tree2 values",
+						"Values",
 						"A1 ; B2",
 						new ResultType.ListT(ResultType.StringT.INSTANCE),
-						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))))
+						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
+																	  .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))))
 				)
 		));
 

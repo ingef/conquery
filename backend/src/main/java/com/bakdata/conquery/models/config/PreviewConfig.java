@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,14 +22,31 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PreviewConfig {
-	//TODO allow labelling of select?
-	private List<String> infoCardSelects = List.of();
+	private List<InfoCardSelect> infoCardSelects = List.of();
+
+	@Data
+	public static class InfoCardSelect {
+		private final String label;
+		private final String id;
+	}
+
+	public String resolveSelectLabel(SelectResultInfo info) {
+		String id = info.getSelect().getId().toStringWithoutDataset();
+
+		for (InfoCardSelect infoCardSelect : getInfoCardSelects()) {
+			if (infoCardSelect.getId().equals(id)) {
+				return infoCardSelect.getLabel();
+			}
+		}
+
+		throw new IllegalArgumentException(String.format("%s is not an InfoCard Select", info));
+	}
 
 	public List<Select> resolveInfoCardSelects(Dataset dataset, DatasetRegistry registry) {
 		final List<Select> infoCardSelects = new ArrayList<>();
 
-		for (String name : getInfoCardSelects()) {
-			SelectId selectId = SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), name);
+		for (InfoCardSelect select : getInfoCardSelects()) {
+			SelectId selectId = SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), select.getId());
 			Select resolved = registry.resolve(selectId);
 
 			infoCardSelects.add(resolved);

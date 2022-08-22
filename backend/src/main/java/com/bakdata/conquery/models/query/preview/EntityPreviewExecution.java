@@ -53,25 +53,27 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	 * The format of the query is an {@link AbsoluteFormQuery} containing a single line for one person. This should correspond to {@link EntityPreviewForm#VALUES_QUERY_NAME}.
 	 */
 	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
 		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
 		final Object[] values = result.getValues().get(0);
 
 		List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
-		PrintSettings printSettings = new PrintSettings(true, Locale.getDefault(), datasetRegistry, config, null);
+		PrintSettings printSettings = new PrintSettings(true, Locale.getDefault(), datasetRegistry, config, null, config.getPreview()::resolveSelectLabel);
 
 		// We are only interested in the Select results.
 		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
-			ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
-			String printed = resultInfo.getType().printNullable(printSettings, values[index]);
+			final ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
 
-			extraInfos.add(new EntityPreviewStatus.Info(resultInfo.defaultColumnName(printSettings), printed, resultInfo.getType(), resultInfo.getSemantics()));
+			final String printed = resultInfo.getType().printNullable(printSettings, values[index]);
+
+			extraInfos.add(new EntityPreviewStatus.Info(resultInfo.userColumnName(printSettings), printed, resultInfo.getType(), resultInfo.getSemantics()));
 		}
 		return extraInfos;
 	}
 
 	/**
 	 * Collects status of {@link EntityPreviewForm#getValuesQuery()} and {@link EntityPreviewForm#getInfoCardQuery()}.
-	 *
+	 * <p>
 	 * Most importantly to {@link EntityPreviewStatus#setInfos(List)} to for infos of entity.
 	 */
 	@Override
