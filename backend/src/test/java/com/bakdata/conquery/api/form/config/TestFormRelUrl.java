@@ -22,10 +22,11 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 /**
  * Two {@link CPSType} are used here to reference two different
  * frontend form configs (see com/bakdata/conquery/frontend/forms/test_form_*_url.frontend_conf.json).
+ *
+ * @implNote This is just a copy pasted version of {@link TestFormAbsUrl} for test purposes
  */
 @CPSType(id = "TEST_FORM_REL_URL", base = QueryDescription.class)
-@CPSType(id = "TEST_FORM_ABS_URL", base = QueryDescription.class)
-public class TestForm extends Form {
+public class TestFormRelUrl extends Form {
 
 	@Override
 	public ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset) {

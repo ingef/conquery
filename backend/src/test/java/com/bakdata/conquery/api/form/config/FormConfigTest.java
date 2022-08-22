@@ -247,7 +247,7 @@ public class FormConfigTest {
 		mode3.setForm(form);
 		mode3.setFeatures(List.of(new CQConcept()));
 
-		TestForm form3 = new TestForm();
+		TestFormRelUrl form3 = new TestFormRelUrl();
 		
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 
