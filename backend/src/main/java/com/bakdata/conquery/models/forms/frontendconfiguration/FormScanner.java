@@ -128,6 +128,10 @@ public class FormScanner extends Task {
 										// then query the frontend config json
 										.orElseGet(() -> {
 											final JsonNode manualUrl = configTree.get(MANUAL_URL_KEY);
+											if (manualUrl == null) {
+												// Nothing specified, skip
+												return null;
+											}
 											if (!manualUrl.isTextual()) {
 												log.warn("FrontendFormConfig {} contained field 'manualUrl' but it was not a text. Was: '{}'.", fullTypeIdentifier, manualUrl.getNodeType());
 												return null;

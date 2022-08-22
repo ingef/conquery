@@ -19,13 +19,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 
-/**
- * Two {@link CPSType} are used here to reference two different
- * frontend form configs (see com/bakdata/conquery/frontend/forms/test_form_*_url.frontend_conf.json).
- */
-@CPSType(id = "TEST_FORM_REL_URL", base = QueryDescription.class)
-@CPSType(id = "TEST_FORM_ABS_URL", base = QueryDescription.class)
-public class TestForm extends Form {
+public abstract class TestForm extends Form {
 
 	@Override
 	public ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset) {
@@ -55,5 +49,13 @@ public class TestForm extends Form {
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
+	}
+
+	@CPSType(id = "TEST_FORM_ABS_URL", base = QueryDescription.class)
+	public static class Abs extends TestForm {
+	}
+
+	@CPSType(id = "TEST_FORM_REL_URL", base = QueryDescription.class)
+	public static class Rel extends TestForm {
 	}
 }
