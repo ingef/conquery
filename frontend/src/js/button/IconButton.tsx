@@ -100,7 +100,6 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       <SxBasicButton
         active={active}
         secondary={secondary}
-        light={light}
         {...restProps}
         ref={ref}
       >
