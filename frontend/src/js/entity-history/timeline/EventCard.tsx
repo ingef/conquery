@@ -52,7 +52,7 @@ const ColBucket = styled("div")`
 
 const SxRawDataBadge = styled(RawDataBadge)`
   position: absolute;
-  z-index: 10;
+  z-index: 1;
   top: 4px;
   left: 55px;
 `;
