@@ -28,7 +28,7 @@ const SxWithTooltip = styled(WithTooltip)`
 const InfoTooltip: FC<PropsT> = ({ className, text, html, noIcon, wide }) => {
   return (
     <SxWithTooltip className={className} text={text} html={html} wide={wide}>
-      {!noIcon && <SxFaIcon gray regular icon="question-circle" />}
+      {!noIcon ? <SxFaIcon gray regular icon="question-circle" /> : undefined}
     </SxWithTooltip>
   );
 };

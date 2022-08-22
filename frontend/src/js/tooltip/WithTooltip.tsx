@@ -1,8 +1,8 @@
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { memo, ReactElement, ReactNode } from "react";
-import { Tooltip } from "react-tippy";
-import "react-tippy/dist/tippy.css";
+import Tippy from "@tippyjs/react";
+import { memo, ReactElement, useMemo } from "react";
+import "tippy.js/dist/tippy.css";
 
 const Text = styled("div")<{ wide?: boolean }>`
   max-width: ${({ wide }) => (wide ? "700px" : "400px")};
@@ -33,18 +33,19 @@ const Text = styled("div")<{ wide?: boolean }>`
 
 interface Props {
   className?: string;
-  place?: "bottom" | "left" | "right" | "top";
   text?: string;
   html?: ReactElement;
   lazy?: boolean;
   wide?: boolean;
-  children?: ReactNode;
+  children?: ReactElement;
 }
+
+// Show and hide duration
+const zeroDuration = [0, 0] as [number, number];
 
 const WithTooltip = ({
   className,
   children,
-  place,
   text,
   html,
   lazy,
@@ -52,41 +53,35 @@ const WithTooltip = ({
 }: Props) => {
   const theme = useTheme();
 
-  if (!text && !html) return <>{children}</>;
 
   const delayProps = {
-    // For some reason, supplying delay as an array is the only way
-    // to get the hide delay to work. The types seem to be outdated.
-    // Check this for further info:
-    // https://github.com/tvkhoa/react-tippy/issues/52#issuecomment-406419701
-    delay: lazy ? ([1000, 0] as unknown as number) : 0,
-    // So this doesn't work, but let's supply it anyways:
-    hideDelay: 0,
+    delay: lazy ? ([1000, 0] as [number, number]) : 0,
   };
 
+  const content = useMemo(() => {
+    return text ? (
+      <Text
+        theme={theme}
+        wide={wide}
+        dangerouslySetInnerHTML={{ __html: text }}
+      />
+    ) : (
+      html
+    );
+  }, [theme, wide, text, html]);
+
+  if (!text && !html) return <>{children}</>;
+
   return (
-    <Tooltip
+    <Tippy
       className={className}
-      position={place || "top"}
-      arrow={true}
-      duration={0}
-      hideDuration={0}
-      html={
-        text ? (
-          <Text
-            theme={theme}
-            wide={wide}
-            dangerouslySetInnerHTML={{ __html: text }}
-          />
-        ) : (
-          html
-        )
-      }
+      duration={zeroDuration}
+      content={content}
       theme="light"
       {...delayProps}
     >
       {children}
-    </Tooltip>
+    </Tippy>
   );
 };
 

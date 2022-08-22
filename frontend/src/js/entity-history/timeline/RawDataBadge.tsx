@@ -26,7 +26,6 @@ export const RawDataBadge = ({ className, event }: Props) => {
   return (
     <SxWithTooltip
       className={className}
-      place="right"
       html={
         <pre
           style={{
