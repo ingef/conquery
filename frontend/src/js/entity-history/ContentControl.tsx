@@ -59,6 +59,7 @@ const ContentControl = ({ value, onChange }: Props) => {
             <IconButton
               icon={option.icon}
               active={active}
+              light={!active}
               onClick={() => {
                 onChange({ ...value, [option.key]: !value[option.key] });
               }}

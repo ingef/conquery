@@ -59,10 +59,10 @@ export const Icon = styled(FontAwesomeIcon, {
       ? theme.col.blueGrayDark
       : white
       ? "#fff"
-      : main
-      ? theme.col.blueGray
       : light
       ? theme.col.blueGrayLight
+      : main
+      ? theme.col.blueGray
       : theme.col.black};
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "inherit")};
   width: initial !important;
