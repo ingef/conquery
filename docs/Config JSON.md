@@ -143,8 +143,8 @@ A `PluginConfig` is used to define settings for Conquery plugins.
 Different types of PluginConfig can be used by setting `type` to one of the following values:
 
 
-### MANUAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ManualConfig.java#L25)</sup></sub></sup>
-
+### MANUAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ManualConfig.java#L17-L20)</sup></sub></sup>
+Configuration of manual links for {@link org.checkerframework.checker.signature.qual.InternalForm} and overriding of other {@link com.bakdata.conquery.apiv1.forms.Form}s.
 
 <details><summary>Details</summary><p>
 
@@ -154,7 +154,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ManualConfig.java#L31) | forms | map from `String` to `@ManualURI URI` |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ManualConfig.java#L27-L34) | forms | map from `String` to `@ManualURI URI` |  |  | Maps a {@link CPSType} of a {@link com.bakdata.conquery.apiv1.forms.Form} to a manual URL. E.g.: <ul> <li>EXPORT_FORM -> https://example.org/export-form</li> <li>FULL_EXPORT_FORM -> ./full-export-form</li> </ul> | 
 </p></details>
 
 
