@@ -35,6 +35,15 @@ public abstract class SemanticType {
 	}
 
 	/**
+	 * When added as semantic, the column should be used to merge events in {@link com.bakdata.conquery.resources.api.QueryResource.EntityPreview} by the frontend.
+	 */
+	@CPSType(id = "GROUPED", base = SemanticType.class)
+	@Data
+	public static class GroupedT extends SemanticType {
+
+	}
+
+	/**
 	 * Column contains a fixed set of String values.
 	 */
 	@CPSType(id = "CATEGORICAL", base = SemanticType.class)
