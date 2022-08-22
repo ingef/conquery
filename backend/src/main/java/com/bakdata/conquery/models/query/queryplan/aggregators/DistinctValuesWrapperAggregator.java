@@ -24,7 +24,6 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 
 	private final ColumnAggregator<VALUE> aggregator;
 
-	//TODO @ThoniTUB this can be gigantic, can I loosen this a bit and only scan for hashcodes?
 	private final Set<List<Object>> observed = new HashSet<>();
 
 	@Getter
