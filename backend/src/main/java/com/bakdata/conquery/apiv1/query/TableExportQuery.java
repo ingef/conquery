@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,7 +35,6 @@ import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -229,33 +229,28 @@ public class TableExportQuery extends Query {
 				continue;
 			}
 
-			// Columns that are used to build concepts are marked as ConceptColumn.
-			if (connectorColumns.containsKey(column)) {
-				final Concept<?> concept =  connectorColumns.get(column).getConcept();
+			final Set<SemanticType> semantics = new HashSet<>();
 
+			if (column.isHidden()) {
+				semantics.add(new SemanticType.HiddenT());
+			}
+
+			ResultType resultType = ResultType.resolveResultType(column.getType());
+
+			if (!rawConceptColumns && connectorColumns.containsKey(column)) {
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
-				final ResultType resultType =
-						rawConceptColumns
-						? ResultType.resolveResultType(column.getType())
-						: new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
 
-				infos[position] = new SimpleResultInfo(
-						column.getTable().getLabel() + " " + column.getLabel(),
-						resultType,
-						Set.of(new SemanticType.ConceptColumnT(concept))
-				);
+				final Concept<?> concept = connectorColumns.get(column).getConcept();
+
+				// Columns that are used to build concepts are marked as ConceptColumn.
+				semantics.add(new SemanticType.ConceptColumnT(concept));
+
+				resultType = new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
 			}
-			else {
-				final ResultType resultType = ResultType.resolveResultType(column.getType());
 
 
-				infos[position] = new SimpleResultInfo(
-						column.getTable().getLabel() + " " + column.getLabel(),
-						resultType,
-						Collections.emptySet()
-				);
+			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType, semantics);
 
-			}
 		}
 
 		return List.of(infos);
@@ -263,7 +258,7 @@ public class TableExportQuery extends Query {
 
 	/**
 	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
-	 *
+	 * <p>
 	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
 	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
 	 */

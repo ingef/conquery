@@ -5,7 +5,6 @@ import java.util.Map;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -20,6 +19,7 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -49,6 +49,11 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 	private boolean generateSuffixes;
 	private boolean searchDisabled = false;
+
+	/**
+	 * Used to add {@link com.bakdata.conquery.models.types.SemanticType.HiddenT} in semantics for {@link com.bakdata.conquery.resources.api.QueryResource.EntityPreview}.
+	 */
+	private boolean hidden = false;
 
 	@JsonIgnore
 	@Getter(lazy = true)

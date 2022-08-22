@@ -53,6 +53,15 @@ public abstract class SemanticType {
 	}
 
 	/**
+	 * Column should not be displayed by default in {@link com.bakdata.conquery.resources.api.QueryResource.EntityPreview}.
+	 */
+	@CPSType(id = "HIDDEN", base = SemanticType.class)
+	@Data
+	public static class HiddenT extends SemanticType {
+
+	}
+
+	/**
 	 * Column contains an Entity's Id of a kind.
 	 * <p>
 	 * See {@link com.bakdata.conquery.models.config.ColumnConfig} / {@link com.bakdata.conquery.models.config.FrontendConfig.UploadConfig}for the source of this.
