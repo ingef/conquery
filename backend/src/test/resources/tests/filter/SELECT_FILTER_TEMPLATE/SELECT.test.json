@@ -21,6 +21,13 @@
             ]
         }
     },
+    "internToExternMappings": {
+        "name": "test_map",
+        "type": "CSV_MAP",
+        "internalColumn": "internal",
+        "externalTemplate": "External: {{external}} {{external_option}}",
+        "csv": "classpath:/tests/filter/SELECT_FILTER_TEMPLATE/search_index.csv"
+    },
     "searchIndices": {
         "type": "CSV_TEMPLATE",
         "name": "search_index",
@@ -39,6 +46,12 @@
             "column": "table.value",
             "type": "SINGLE_SELECT",
             "template": "search_index"
+        },
+        "selects": {
+            "name": "select",
+            "type": "FIRST",
+            "column": "table.value",
+            "mapping": "test_map"
         }
     },
     "filterValue": {

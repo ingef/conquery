@@ -5,19 +5,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
+import java.net.URL;
 import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
-import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
@@ -34,22 +32,18 @@ import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
-import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -74,14 +68,16 @@ import org.mockito.Mockito;
  */
 @TestInstance(Lifecycle.PER_CLASS)
 public class FormConfigTest {
-	
+
+	private ConqueryConfig config = new ConqueryConfig();
+
 	private MetaStorage storage;
 	private DatasetRegistry namespacesMock;
 
 	private FormConfigProcessor processor;
 	private AuthorizationController controller;
 	private Validator validator = Validators.newValidatorFactory().getValidator();
-	
+
 	private Dataset dataset = new Dataset("test");
 	private Dataset dataset1 = new Dataset("test1");
 	private DatasetId datasetId;
@@ -91,6 +87,7 @@ public class FormConfigTest {
 
 	@BeforeAll
 	public void setupTestClass() throws Exception{
+		config.getFrontend().setManualUrl(new URL("http://example.org/manual/welcome"));
 
 		datasetId = dataset.getId();
 		datasetId1 = dataset1.getId();
@@ -206,56 +203,36 @@ public class FormConfigTest {
 		assertThat(response).usingRecursiveComparison()
 				.ignoringFields(FormConfigOverviewRepresentation.Fields.createdAt)
 				.isEqualTo(FormConfigFullRepresentation.builder()
-						.formType(form.getClass().getAnnotation(CPSType.class).id())
-						.id(formConfig.getId())
-						.label(formConfig.getLabel())
-						.own(true)
-						.ownerName(user.getLabel())
-						.shared(false)
-						.groups(Collections.emptySet())
-						.system(false)
-						.tags(formConfig.getTags())
-						.values(values)
-						.build());
+													   .formType(form.getClass().getAnnotation(CPSType.class).id())
+													   .id(formConfig.getId())
+													   .label(formConfig.getLabel())
+													   .own(true)
+													   .ownerName(user.getLabel())
+													   .shared(false)
+													   .groups(Collections.emptySet())
+													   .system(false)
+													   .tags(formConfig.getTags())
+													   .values(values)
+													   .build());
 
 	}
 
-	private static class TestForm extends Form {
+	@Test
+	public void formScannerTest() throws Exception {
+		final FormScanner formScanner = new FormScanner(config);
 
-		@Override
-		public String getFormType() {
-			return "test-form";
-		}
+		formScanner.execute(Collections.emptyMap(), null);
 
-		@Override
-		public ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset) {
-			return new ManagedInternalForm(this, user, submittedDataset);
-		}
+		assertThat(FormScanner.FRONTEND_FORM_CONFIGS).containsKeys("TEST_FORM_REL_URL", "TEST_FORM_ABS_URL", "EXPORT_FORM", "FULL_EXPORT_FORM");
 
-		@Override
-		public Set<ManagedExecutionId> collectRequiredQueries() {
-			return Collections.emptySet();
-		}
+		assertThat(FormScanner.FRONTEND_FORM_CONFIGS.get("TEST_FORM_REL_URL").getRawConfig().get("manualUrl").asText())
+				.as("relative to base url resolved url")
+				.isEqualTo("http://example.org/manual/test-form");
 
-		@Override
-		public void resolve(QueryResolveContext context) {
+		assertThat(FormScanner.FRONTEND_FORM_CONFIGS.get("TEST_FORM_ABS_URL").getRawConfig().get("manualUrl").asText())
+				.as("given absolute url")
+				.isEqualTo("http://example.org/absolute-url/test-form");
 
-		}
-
-		@Override
-		public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
-			return Collections.emptyMap();
-		}
-
-		@Override
-		public String getLocalizedTypeLabel() {
-			return null;
-		}
-
-		@Override
-		public void visit(Consumer<Visitable> visitor) {
-			visitor.accept(this);
-		}
 	}
 	
 	@Test
@@ -290,6 +267,7 @@ public class FormConfigTest {
 		FormConfigId formId = processor.addConfig(user, dataset, formConfig).getId();
 		FormConfigId formId2 = processor.addConfig(user, dataset, formConfig2).getId();
 		FormConfigId _formId3 = processor.addConfig(user, dataset, formConfig3).getId();
+
 
 		FormScanner.FRONTEND_FORM_CONFIGS = Map.of(form.getFormType(), new FormType(form.getFormType(), new TextNode("dummy")));
 
