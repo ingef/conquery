@@ -106,10 +106,7 @@ public interface AttributeTypeBuilder {
 
 		public ConceptHierarchyNodeId(TreeConcept concept) {
 			this.concept = concept;
-
-			// This allocation might be in most cases too much, optimize if necessary
-			final long childCount = concept.getAllChildren().count();
-			this.collectedIds = new HashMap<>(childCount > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) childCount);
+			this.collectedIds = new HashMap<>();
 		}
 
 		/**

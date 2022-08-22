@@ -94,34 +94,4 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	public Dataset getDataset() {
 		return getConcept().getDataset();
 	}
-
-
-	public Optional<ConceptTreeNode<?>> findChildByDanglingIdComponents(List<Object> components) {
-
-		if (components.isEmpty()) {
-			return Optional.empty();
-		}
-
-		if (components.size() == 1) {
-			// Check trivial case: one element
-			if (components.get(0).equals(this.getId().getName())) {
-				// "this" is the actual node
-				return Optional.of(this);
-			}
-			else {
-				return Optional.empty();
-			}
-		}
-
-		// Check the children
-		final Optional<ConceptTreeChild>
-				optionalConceptTreeChild =
-				children.stream().filter(child -> child.getId().getName().equals(components.get(1))).collect(MoreCollectors.toOptional());
-		if (optionalConceptTreeChild.isEmpty()) {
-			return Optional.empty();
-		}
-
-		// Components size is at least 2 here
-		return optionalConceptTreeChild.flatMap(elem -> elem.findChildByDanglingIdComponents(components.subList(1, components.size())));
-	}
 }
