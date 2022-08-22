@@ -80,6 +80,9 @@ export const useSelectDataset = () => {
     StateT,
     DatasetStateT["locallySavedQueries"]
   >((state) => state.datasets.locallySavedQueries);
+
+  const loadDefaultHistoryParams = useLoadDefaultHistoryParams();
+
   const query = useSelector<StateT, StandardQueryStateT>(
     (state) => state.queryEditor.query,
   );
@@ -115,6 +118,7 @@ export const useSelectDataset = () => {
         }
 
         loadTrees(datasetId);
+        loadDefaultHistoryParams(datasetId);
 
         return loadQueries(datasetId);
       }
