@@ -119,7 +119,7 @@ public class FormScanner extends Task {
 				continue;
 			}
 
-			// Make relative handbook URLs relative to configured handbook base
+			// Make relative manual URLs relative to configured handbook base
 			// Config url mappings override urls from frontend config jsons
 			final URI manualURL = config.getPluginConfig(ManualConfig.class)
 										// first check override
