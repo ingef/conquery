@@ -7,7 +7,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -29,11 +28,7 @@ import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
-import com.bakdata.conquery.apiv1.query.TableExportQuery;
-import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -57,6 +52,8 @@ import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
+import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -65,9 +62,7 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -215,10 +210,7 @@ public class QueryProcessor {
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
-							 OverviewExecutionStatus status = mq.buildStatusOverview(
-									 uriBuilder.clone(),
-									 subject
-							 );
+							 OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
 							 if (mq.isReadyToDownload(datasetAbilities)) {
 								 status.setResultUrls(getDownloadUrls(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
@@ -241,7 +233,8 @@ public class QueryProcessor {
 
 		return renderer.stream()
 					   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
-					   .flatMap(Collection::stream).collect(Collectors.toList());
+					   .flatMap(Collection::stream)
+					   .collect(Collectors.toList());
 
 	}
 
@@ -324,9 +317,7 @@ public class QueryProcessor {
 		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
-			datasetRegistry.get(query.getDataset().getId())
-						   .getExecutionManager()
-						   .execute(datasetRegistry, query, config);
+			datasetRegistry.get(query.getDataset().getId()).getExecutionManager().execute(datasetRegistry, query, config);
 		}
 	}
 
@@ -359,12 +350,13 @@ public class QueryProcessor {
 	 */
 	public ExternalUploadResult uploadEntities(Subject subject, Dataset dataset, ExternalUpload upload) {
 
-		final CQExternal.ResolveStatistic statistic =
-				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(),
-										   datasetRegistry.get(dataset.getId()).getStorage().getIdMapping(),
-										   config.getFrontend().getQueryUpload(),
-										   config.getLocale().getDateReader(),
-										   upload.isOneRowPerEntity()
+		final CQExternal.ResolveStatistic
+				statistic =
+				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(), datasetRegistry.get(dataset.getId())
+																								  .getStorage()
+																								  .getIdMapping(), config.getFrontend()
+																														 .getQueryUpload(), config.getLocale()
+																																				  .getDateReader(), upload.isOneRowPerEntity()
 
 				);
 
@@ -378,8 +370,10 @@ public class QueryProcessor {
 		final ConceptQuery query = new ConceptQuery(new CQExternal(upload.getFormat(), upload.getValues(), upload.isOneRowPerEntity()));
 
 		// We only create the Query, really no need to execute it as it's only useful for composition.
-		final ManagedQuery execution =
-				((ManagedQuery) datasetRegistry.get(dataset.getId()).getExecutionManager()
+		final ManagedQuery
+				execution =
+				((ManagedQuery) datasetRegistry.get(dataset.getId())
+											   .getExecutionManager()
 											   .createExecution(datasetRegistry, query, subject.getUser(), dataset, false));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
@@ -390,60 +384,36 @@ public class QueryProcessor {
 
 		execution.initExecutable(datasetRegistry, config);
 
-		return new ExternalUploadResult(
-				execution.getId(),
-				statistic.getResolved().size(),
-				statistic.getUnresolvedId(),
-				statistic.getUnreadableDate()
-		);
+		return new ExternalUploadResult(execution.getId(), statistic.getResolved().size(), statistic.getUnresolvedId(), statistic.getUnreadableDate());
 	}
 
 	/**
-	 * Execute a {@link TableExportQuery} for a single Entity on some Connectors.
-	 *
-	 * @return
-	 * @implNote we don't do anything special here, this request could also be made manually. We however want to encapsulate this behaviour to shield the frontend from knowing too much about the query engine.
+	 * Create and submit {@link EntityPreviewForm} for subject on to extract sources for entity, and extract some additional infos to be used as infocard.
 	 */
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
+		EntityPreviewForm form =
+				EntityPreviewForm.create(entity, idKind, dateRange, sources, config.getPreview().resolveInfoCardSelects(dataset, datasetRegistry));
 
-		final ConceptQuery entitySelectQuery =
-				new ConceptQuery(new CQDateRestriction(Objects.requireNonNullElse(dateRange, Range.all()), new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, false)));
-
-		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
-		exportQuery.setRawConceptValues(false);
-
-		exportQuery.setTables(
-				sources.stream()
-					   .map(source -> {
-						   final CQConcept cqConcept = new CQConcept();
-						   cqConcept.setElements(List.of(source.getConcept()));
-						   final CQTable cqTable = new CQTable();
-						   cqTable.setConcept(cqConcept);
-						   cqTable.setConnector(source);
-						   cqConcept.setTables(List.of(cqTable));
-
-						   return cqConcept;
-					   })
-					   .collect(Collectors.toList())
-		);
-
-		final ManagedExecution<?> execution = postQuery(dataset, exportQuery, subject, true);
+		// TODO make sure that subqueries are also system
+		// TODO do not persist system queries
+		final EntityPreviewExecution execution = (EntityPreviewExecution) postQuery(dataset, form, subject, true);
 
 
-		// collect id immediately so it does not get sucked into closure
-		final ManagedExecutionId id = execution.getId();
-
-		while (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
-			log.trace("Still waiting for {}", id);
+		if (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+			log.warn("Still waiting for {} after 10 Seconds.", execution.getId());
+			throw new ConqueryError.ExecutionProcessingTimeoutError();
 		}
+
 
 		if (execution.getState() == ExecutionState.FAILED) {
 			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
 		}
 
 
-		// Use the provided format name to find the respective provider.
-		return getQueryFullStatus(execution, subject, uriBuilder, true);
-
+		FullExecutionStatus status = execution.buildStatusFull(storage, subject, datasetRegistry, config);
+		status.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, true));
+		return status;
 	}
+
+
 }

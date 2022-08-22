@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -233,6 +234,7 @@ public abstract class ResultType {
 
 	@CPSType(id = "LIST", base = ResultType.class)
 	@Getter
+	@EqualsAndHashCode(callSuper = false)
 	public static class ListT extends ResultType {
 		@NonNull
 		private final ResultType elementType;

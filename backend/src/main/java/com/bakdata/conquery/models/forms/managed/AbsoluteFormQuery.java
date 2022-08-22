@@ -17,7 +17,6 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -33,6 +32,11 @@ import lombok.RequiredArgsConstructor;
 @CPSType(id="ABSOLUTE_FORM_QUERY", base=QueryDescription.class)
 @RequiredArgsConstructor(onConstructor_=@JsonCreator)
 public class AbsoluteFormQuery extends Query {
+
+	/**
+	 * see {@linkplain this#getResultInfos()}.
+	 */
+	public static final int FEATURES_OFFSET = 3;
 
 	@NotNull @Valid
 	private final Query query;
