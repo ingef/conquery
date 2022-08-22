@@ -456,6 +456,7 @@
     "prevButtonLabel": "Zurückblättern",
     "downloadEntityData": "CSV",
     "differencesTooltip": "Unterschiede aus den Einzeleinträgen",
+    "closeAll": "Alle schließen",
     "detail": {
       "summary": "Zusammenfassung",
       "detail": "Gruppiert",
