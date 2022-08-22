@@ -34,10 +34,9 @@ const SxBasicButton = styled(BasicButton)<{
   frame?: boolean;
   active?: boolean;
   secondary?: boolean;
-  light?: boolean;
 }>`
   background-color: transparent;
-  color: ${({ theme, active, secondary, light }) =>
+  color: ${({ theme, active, secondary }) =>
     active
       ? theme.col.blueGrayDark
       : secondary
