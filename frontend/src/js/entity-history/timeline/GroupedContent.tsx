@@ -38,6 +38,7 @@ interface Props {
   currencyConfig: CurrencyConfigT;
   rootConceptIdsByColumn: Record<string, ConceptIdT>;
 }
+
 const GroupedContent = ({
   datasetId,
   columns,

@@ -457,6 +457,7 @@
     "prevButtonLabel": "Previous entity",
     "downloadEntityData": "CSV",
     "differencesTooltip": "Differences from the individual events",
+    "closeAll": "Close all",
     "detail": {
       "summary": "Summary",
       "detail": "Grouped",
