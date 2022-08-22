@@ -133,8 +133,8 @@ public class FormScanner extends Task {
 												return null;
 											}
 											if (!manualUrl.isTextual()) {
-												log.warn("FrontendFormConfig {} contained field 'manualUrl' but it was not a text. Was: '{}'.", fullTypeIdentifier, manualUrl.getNodeType());
-												return null;
+												throw new IllegalArgumentException(
+														String.format("FrontendFormConfig %s contained field 'manualUrl' but it was not a text. Was: '%s'.", fullTypeIdentifier, manualUrl.getNodeType()));
 											}
 
 											return URI.create(manualUrl.textValue());
