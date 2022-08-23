@@ -66,7 +66,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 			final String printed = resultInfo.getType().printNullable(printSettings, values[index]);
 
-			extraInfos.add(new EntityPreviewStatus.Info(resultInfo.userColumnName(printSettings), printed, resultInfo.getType(), resultInfo.getSemantics()));
+			extraInfos.add(new EntityPreviewStatus.Info(resultInfo.userColumnName(printSettings), printed, resultInfo.getType().typeInfo(), resultInfo.getSemantics()));
 		}
 		return extraInfos;
 	}
