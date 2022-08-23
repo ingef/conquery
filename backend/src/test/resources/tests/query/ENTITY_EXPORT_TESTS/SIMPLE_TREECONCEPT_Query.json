@@ -105,7 +105,8 @@
           },
           {
             "name": "column",
-            "type": "STRING"
+            "type": "STRING",
+            "description" : "This is a column"
           }
         ]
       }
