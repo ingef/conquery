@@ -5,12 +5,14 @@ import { memo, ReactElement, useMemo } from "react";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
 
+/* !important: to override inline styles by tippyjs/react */
 export const tippyjsReactOverrides = css`
   div[data-tippy-root] {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
     max-width: 700px;
 
     > div {
+      max-width: inherit !important;
       width: 100%;
       padding: 4px 10px;
     }
