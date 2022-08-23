@@ -9,7 +9,6 @@ interface PropsT {
   text?: string;
   html?: ReactElement;
   className?: string;
-  noIcon?: boolean;
   wide?: boolean;
 }
 
@@ -20,16 +19,18 @@ const SxFaIcon = styled(FaIcon)`
   }
 `;
 
-const SxWithTooltip = styled(WithTooltip)`
+const SpanContainer = styled("span")`
   display: inline-block;
   padding: 0 7px;
 `;
 
-const InfoTooltip: FC<PropsT> = ({ className, text, html, noIcon, wide }) => {
+const InfoTooltip: FC<PropsT> = ({ className, text, html, wide }) => {
   return (
-    <SxWithTooltip className={className} text={text} html={html} wide={wide}>
-      {!noIcon ? <SxFaIcon gray regular icon="question-circle" /> : undefined}
-    </SxWithTooltip>
+    <WithTooltip text={text} html={html} wide={wide}>
+      <SpanContainer className={className}>
+        <SxFaIcon gray regular icon="question-circle" />
+      </SpanContainer>
+    </WithTooltip>
   );
 };
 

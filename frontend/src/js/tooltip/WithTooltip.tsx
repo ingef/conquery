@@ -1,8 +1,21 @@
-import { useTheme } from "@emotion/react";
+import { css, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import Tippy from "@tippyjs/react";
 import { memo, ReactElement, useMemo } from "react";
 import "tippy.js/dist/tippy.css";
+import "tippy.js/themes/light.css";
+
+export const tippyjsReactOverrides = css`
+  div[data-tippy-root] {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+
+    > div {
+      width: 100%;
+      padding: 4px 10px;
+    }
+  }
+`;
 
 const Text = styled("div")<{ wide?: boolean }>`
   max-width: ${({ wide }) => (wide ? "700px" : "400px")};
@@ -53,11 +66,6 @@ const WithTooltip = ({
 }: Props) => {
   const theme = useTheme();
 
-
-  const delayProps = {
-    delay: lazy ? ([1000, 0] as [number, number]) : 0,
-  };
-
   const content = useMemo(() => {
     return text ? (
       <Text
@@ -78,7 +86,7 @@ const WithTooltip = ({
       duration={zeroDuration}
       content={content}
       theme="light"
-      {...delayProps}
+      delay={lazy ? ([1000, 0] as [number, number]) : 0}
     >
       {children}
     </Tippy>
