@@ -85,6 +85,11 @@ const WithTooltip = ({
     );
   }, [theme, wide, text, html]);
 
+  const delay = useMemo(
+    () => (lazy ? ([1000, 0] as [number, number]) : 0),
+    [lazy],
+  );
+
   if (!text && !html) return <>{children}</>;
 
   return (
@@ -94,7 +99,7 @@ const WithTooltip = ({
       content={content}
       placement={placement}
       theme="light"
-      delay={lazy ? ([1000, 0] as [number, number]) : 0}
+      delay={delay}
     >
       {children}
     </Tippy>
