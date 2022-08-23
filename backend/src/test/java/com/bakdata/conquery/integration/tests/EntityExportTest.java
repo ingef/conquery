@@ -120,8 +120,11 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						"Values",
 						"A1 ; B2",
 						new ResultType.ListT(ResultType.StringT.INSTANCE),
-						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
-																	  .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))))
+						Set.of(
+								new SemanticType.DescriptionT("This is a column"),
+								new SemanticType.SelectResultT(conquery.getDatasetRegistry()
+																	   .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values")))
+						)
 				)
 		));
 
@@ -130,8 +133,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				.isNotEmpty();
 
 		final Optional<ColumnDescriptor> t2values = result.getColumnDescriptions().stream()
-													.filter(desc -> "table2 column".equals(desc.getLabel()))
-													.findFirst();
+														  .filter(desc -> "table2 column".equals(desc.getLabel()))
+														  .findFirst();
 
 		assertThat(t2values).isPresent();
 		assertThat(t2values.get().getSemantics()).contains(new SemanticType.DescriptionT("This is a column"));
