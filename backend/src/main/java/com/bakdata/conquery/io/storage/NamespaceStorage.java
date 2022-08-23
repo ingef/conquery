@@ -175,6 +175,10 @@ public class NamespaceStorage extends NamespacedStorage {
 		return searchIndexes.getAll();
 	}
 
+	public void setPreviewConfig(PreviewConfig previewConfig){
+		preview.update(previewConfig);
+	}
+
 	public PreviewConfig getPreviewConfig() {
 		return preview.get();
 	}

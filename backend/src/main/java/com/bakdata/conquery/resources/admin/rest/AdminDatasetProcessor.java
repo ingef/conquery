@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -217,6 +218,13 @@ public class AdminDatasetProcessor {
 		// Register the Concept in the ManagerNode and Workers
 		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
 		getJobManager().addSlowJob(new SimpleJob(String.format("sendToAll : Add %s ", concept.getId()), () -> namespace.sendToAll(new UpdateConcept(concept))));
+	}
+
+
+	public void setPreviewConfig(PreviewConfig previewConfig, Namespace namespace){
+		log.info("Received new {}", previewConfig);
+
+		namespace.getStorage().setPreviewConfig(previewConfig);
 	}
 
 	/**
