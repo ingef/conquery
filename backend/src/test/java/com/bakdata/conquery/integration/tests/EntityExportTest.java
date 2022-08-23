@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.preview.EntityPreviewStatus;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
@@ -124,12 +125,6 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		final EntityPreviewStatus result = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
 
-
-		final Optional<URL> csvUrl = result.getResultUrls().stream()
-										   .filter(url -> url.getFile().endsWith(".csv"))
-										   .findFirst();
-
-
 		assertThat(result.getInfos()).isEqualTo(List.of(
 				new EntityPreviewStatus.Info(
 						"Age",
@@ -142,10 +137,29 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						"Values",
 						"A1 ; B2",
 						new ResultType.ListT(ResultType.StringT.INSTANCE),
-						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
-																	  .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))))
+						Set.of(
+								new SemanticType.DescriptionT("This is a column"),
+								new SemanticType.SelectResultT(conquery.getDatasetRegistry()
+																	   .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values")))
+						)
 				)
 		));
+
+		assertThat(result.getColumnDescriptions())
+				.isNotNull()
+				.isNotEmpty();
+
+		final Optional<ColumnDescriptor> t2values = result.getColumnDescriptions().stream()
+														  .filter(desc -> "table2 column".equals(desc.getLabel()))
+														  .findFirst();
+
+		assertThat(t2values).isPresent();
+		assertThat(t2values.get().getSemantics()).contains(new SemanticType.DescriptionT("This is a column"));
+
+
+		final Optional<URL> csvUrl = result.getResultUrls().stream()
+										   .filter(url -> url.getFile().endsWith(".csv"))
+										   .findFirst();
 
 		assertThat(csvUrl).isPresent();
 

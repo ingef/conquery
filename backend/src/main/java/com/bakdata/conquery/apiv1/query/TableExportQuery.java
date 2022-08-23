@@ -221,9 +221,10 @@ public class TableExportQuery extends Query {
 			final Set<SemanticType> semantics = new HashSet<>();
 
 			semantics.add(new SemanticType.SecondaryIdT(desc));
+			semantics.add(new SemanticType.DescriptionT(desc.getDescription()));
 
 			if (grouping.contains(desc)){
-				semantics.add(null);
+				semantics.add(new SemanticType.HiddenT());
 			}
 
 			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.StringT.INSTANCE, semantics);
@@ -248,33 +249,30 @@ public class TableExportQuery extends Query {
 				continue;
 			}
 
-			// Columns that are used to build concepts are marked as ConceptColumn.
-			if (connectorColumns.containsKey(column)) {
-				final Concept<?> concept =  connectorColumns.get(column).getConcept();
+			final Set<SemanticType> semantics = new HashSet<>();
 
+			if (column.getDescription() != null) {
+				semantics.add(new SemanticType.DescriptionT(column.getDescription()));
+			}
+
+			if(previewConfig.getHidden().contains(column)){
+				semantics.add(new SemanticType.HiddenT());
+			}
+
+			ResultType resultType = ResultType.resolveResultType(column.getType());
+
+			if (!isRawConceptValues() && connectorColumns.containsKey(column)) {
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
-				final ResultType resultType =
-						isRawConceptValues()
-						? ResultType.resolveResultType(column.getType())
-						: new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
 
-				infos[position] = new SimpleResultInfo(
-						column.getTable().getLabel() + " " + column.getLabel(),
-						resultType,
-						Set.of(new SemanticType.ConceptColumnT(concept))
-				);
+				final Concept<?> concept = connectorColumns.get(column).getConcept();
+
+				// Columns that are used to build concepts are marked as ConceptColumn.
+				semantics.add(new SemanticType.ConceptColumnT(concept));
+
+				resultType = new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
 			}
-			else {
-				final ResultType resultType = ResultType.resolveResultType(column.getType());
-				final Set<SemanticType> semantics = new HashSet<>();
 
-				if(previewConfig.getHidden().contains(column)){
-					semantics.add(new SemanticType.HiddenT());
-				}
-
-				infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType, semantics);
-
-			}
+			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType, semantics);
 		}
 
 		return List.of(infos);
@@ -282,7 +280,7 @@ public class TableExportQuery extends Query {
 
 	/**
 	 * rawValue is expected to be an Integer, expressing a localId for {@link TreeConcept#getElementByLocalId(int)}.
-	 *
+	 * <p>
 	 * If {@link PrintSettings#isPrettyPrint()} is true, {@link ConceptElement#getLabel()} is used to print.
 	 * If {@link PrintSettings#isPrettyPrint()} is false, {@link ConceptElement#getId()} is used to print.
 	 */
