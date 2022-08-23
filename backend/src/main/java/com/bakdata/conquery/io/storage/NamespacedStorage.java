@@ -1,12 +1,10 @@
 package com.bakdata.conquery.io.storage;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.validation.Validator;
-
+import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
@@ -25,6 +23,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.ToString;
@@ -38,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
-public abstract class NamespacedStorage implements ConqueryStorage {
+public abstract class NamespacedStorage extends ConqueryStorage {
 
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
@@ -77,37 +76,15 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 	}
 
 	@Override
-	public void loadData() {
-		dataset.loadData();
-		secondaryIds.loadData();
-		tables.loadData();
-		dictionaries.loadData();
-		imports.loadData();
-		concepts.loadData();
-		log.info("Done reading {} / {}", dataset.get(), getClass().getName());
-	}
-
-	@Override
-	public void clear() {
-		centralRegistry.clear();
-
-		dataset.clear();
-		secondaryIds.clear();
-		tables.clear();
-		dictionaries.clear();
-		imports.clear();
-		concepts.clear();
-	}
-
-	@Override
-	public void removeStorage() {
-		dataset.removeStore();
-		secondaryIds.removeStore();
-		tables.removeStore();
-		dictionaries.removeStore();
-		imports.removeStore();
-		concepts.removeStore();
-
+	public ImmutableList<KeyIncludingStore<?, ?>> getStores() {
+		return ImmutableList.of(
+				dataset,
+				secondaryIds,
+				tables,
+				dictionaries,
+				imports,
+				concepts
+		);
 	}
 
 	private void decorateDatasetStore(SingletonStore<Dataset> store) {
@@ -275,12 +252,4 @@ public abstract class NamespacedStorage implements ConqueryStorage {
 		return concepts.getAll();
 	}
 
-	public void close() throws IOException {
-		dataset.close();
-		secondaryIds.close();
-		tables.close();
-		dictionaries.close();
-		imports.close();
-		concepts.close();
-	}
 }
