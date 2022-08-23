@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMultiset;
@@ -39,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Valid
 @Slf4j
+@JsonIgnoreProperties({"defaultForEntityPreview"})
 public abstract class Connector extends Labeled<ConnectorId> implements SelectHolder<Select>, NamespacedIdentifiable<ConnectorId> {
 
 	public static final int[] NOT_CONTAINED = new int[]{-1};
@@ -77,11 +79,6 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 
 	@CheckForNull
 	public abstract Column getColumn();
-
-	/**
-	 * If true, Frontend should use Connector as default when using {@link com.bakdata.conquery.resources.api.QueryResource.EntityPreview}.
-	 */
-	private boolean defaultForEntityPreview = false;
 
 	@JsonIgnore
 	public List<Select> getDefaultSelects() {

@@ -3,7 +3,6 @@ package com.bakdata.conquery.integration.tests;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -23,8 +22,6 @@ import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.PreviewConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -36,7 +33,6 @@ import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
-import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
@@ -49,14 +45,6 @@ import org.assertj.core.description.LazyTextDescription;
 @Slf4j
 public class EntityExportTest implements ProgrammaticIntegrationTest {
 
-	@Override
-	public ConqueryConfig overrideConfig(ConqueryConfig conf, File workdir) {
-		return conf.withPreview(new PreviewConfig(List.of(
-						   new PreviewConfig.InfoCardSelect("Age", "tree1.connector.age"),
-						   new PreviewConfig.InfoCardSelect("Values", "tree2.connector.values")
-				   )))
-				   .withStorage(new NonPersistentStoreFactory());
-	}
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
@@ -84,6 +72,13 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
+
+			/**
+			 * new PreviewConfig(List.of(
+			 * 						   new PreviewConfig.InfoCardSelect("Age", "tree1.connector.age"),
+			 * 						   new PreviewConfig.InfoCardSelect("Values", "tree2.connector.values")
+			 * 				   )
+			 */
 		}
 
 		final URI entityExport = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getEntityData")

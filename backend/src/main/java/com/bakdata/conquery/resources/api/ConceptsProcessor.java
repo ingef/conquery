@@ -34,7 +34,6 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -148,12 +147,9 @@ public class ConceptsProcessor {
 	public Stream<ConnectorId> getEntityPreviewDefaultConnectors(Dataset dataset) {
 		return namespaces.get(dataset.getId())
 						 .getStorage()
-						 .getAllConcepts()
-						 .stream()
-						 .map(Concept::getConnectors)
-						 .flatMap(Collection::stream)
-						 .filter(Connector::isDefaultForEntityPreview)
-						 .map(Identifiable::getId);
+						 .getPreviewConfig()
+						 .getDefaultConnectors().stream()
+						 .map(Connector::getId);
 	}
 
 	/**

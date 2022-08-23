@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -72,6 +73,8 @@ public enum StoreMappings {
 	FORM_CONFIG(FormConfig.class, FormConfigId.class),
 	WORKER_TO_BUCKETS(WorkerToBucketsMap.class, Boolean.class),
 	PRIMARY_DICTIONARY(Dictionary.class, Boolean.class),
+
+	ENTITY_PREVIEW(PreviewConfig.class, Boolean.class),
 	INTERN_TO_EXTERN(InternToExternMapper.class, InternToExternMapperId.class),
 	SEARCH_INDEX(SearchIndex.class, SearchIndexId.class);
 

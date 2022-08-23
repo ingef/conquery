@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -52,6 +53,9 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	private final Map<String, NonPersistentStore<Id<SearchIndex>, SearchIndex>> searchIndexStore = new ConcurrentHashMap<>();
 
 	private final Map<String, NonPersistentStore<Boolean, WorkerInformation>> workerStore = new ConcurrentHashMap<>();
+
+	private final Map<String, NonPersistentStore<Boolean, PreviewConfig>> previewStore = new ConcurrentHashMap<>();
+
 	private final Map<String, NonPersistentStore<Boolean, EntityIdMap>> idMappingStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Boolean, WorkerToBucketsMap>> workerToBucketStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Boolean, StructureNode[]>> structureStore = new ConcurrentHashMap<>();
@@ -91,6 +95,12 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	@Override
 	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(searchIndexStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
+	}
+
+	@Override
+	public SingletonStore<PreviewConfig> createPreviewStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
+		return StoreMappings.singleton(previewStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()));
+
 	}
 
 	@Override

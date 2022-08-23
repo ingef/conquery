@@ -7,6 +7,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
@@ -30,6 +31,9 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected IdentifiableStore<SearchIndex> searchIndexes;
 	protected SingletonStore<EntityIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
+
+	protected SingletonStore<PreviewConfig> preview;
+
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
 	protected SingletonStore<Dictionary> primaryDictionary;
@@ -74,12 +78,12 @@ public class NamespaceStorage extends NamespacedStorage {
 		super.openStores(objectMapper);
 
 		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), getCentralRegistry(), objectMapper);
-		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), getCentralRegistry(), objectMapper
-		);
+		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		idMapping = getStorageFactory().createIdMappingStore(super.getPathName(), objectMapper);
 		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
 		primaryDictionary = getStorageFactory().createPrimaryDictionaryStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		preview = getStorageFactory().createPreviewStore(super.getPathName(), getCentralRegistry(), objectMapper);
 
 		decorateInternToExternMappingStore(internToExternMappers);
 		decorateIdMapping(idMapping);
@@ -99,6 +103,7 @@ public class NamespaceStorage extends NamespacedStorage {
 				// Concepts depend on internToExternMappers
 				concepts,
 
+				preview,
 				idMapping,
 				structure,
 				workerToBuckets,
@@ -168,5 +173,9 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	public Collection<SearchIndex> getSearchIndices() {
 		return searchIndexes.getAll();
+	}
+
+	public PreviewConfig getPreviewConfig() {
+		return preview.get();
 	}
 }

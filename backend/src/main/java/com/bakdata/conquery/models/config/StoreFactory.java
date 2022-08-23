@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -23,7 +24,6 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -84,4 +84,6 @@ public interface StoreFactory {
 	IdentifiableStore<InternToExternMapper> createInternToExternMappingStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
 
 	IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
+
+	SingletonStore<PreviewConfig> createPreviewStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper);
 }

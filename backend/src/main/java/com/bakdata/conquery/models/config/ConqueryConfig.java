@@ -80,8 +80,6 @@ public class ConqueryConfig extends Configuration {
 	@NotNull
 	private FrontendConfig frontend = new FrontendConfig();
 
-	private PreviewConfig preview = new PreviewConfig();
-
 	@NotNull
 	@Valid
 	private SearchConfig search = new SearchConfig();

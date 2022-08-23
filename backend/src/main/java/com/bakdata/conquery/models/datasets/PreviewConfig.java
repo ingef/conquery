@@ -1,22 +1,23 @@
-package com.bakdata.conquery.models.config;
+package com.bakdata.conquery.models.datasets;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.error.ConqueryError;
-import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,7 +34,18 @@ public class PreviewConfig {
 	 *
 	 * @implSpec the order of selects is the order of the output fields.
 	 */
+	@Valid
 	private List<InfoCardSelect> infoCardSelects = List.of();
+
+	@NsIdRefCollection
+	private Set<Column> hidden = Collections.emptySet();
+
+	@NsIdRefCollection
+	private Set<SecondaryIdDescription> grouping = Collections.emptySet();
+
+	@NsIdRefCollection
+	private Set<Connector> defaultConnectors = Collections.emptySet();
+
 
 	@Data
 	public static class InfoCardSelect {
@@ -43,20 +55,23 @@ public class PreviewConfig {
 		private final String label;
 		/**
 		 * Id (without dataset) of the select.
-		 *
-		 * @implNote this id will be resolved at runtime and cannot be validated at startup.
 		 */
-		private final String id;
+		@NsIdRef
+		private final Select select;
+
+		@ValidationMethod(message = "Select must be for connector.")
+		@JsonIgnore
+		public boolean isConnectorSelect() {
+			return select.getHolder() instanceof Connector;
+		}
 	}
 
 	/**
 	 * Used to map {@link SelectResultInfo} to {@link InfoCardSelect#getLabel()} via {@link PrintSettings#getColumnNamer()}.
 	 */
 	public String resolveSelectLabel(SelectResultInfo info) {
-		final String id = info.getSelect().getId().toStringWithoutDataset();
-
 		for (InfoCardSelect infoCardSelect : getInfoCardSelects()) {
-			if (infoCardSelect.getId().equals(id)) {
+			if (infoCardSelect.getSelect().equals(info.getSelect())) {
 				return infoCardSelect.getLabel();
 			}
 		}
@@ -67,26 +82,10 @@ public class PreviewConfig {
 	/**
 	 * Find infoCard-selects by id within Dataset.
 	 */
-	public List<Select> resolveInfoCardSelects(Dataset dataset, DatasetRegistry registry) {
-		final List<Select> infoCardSelects = new ArrayList<>();
-
-		for (InfoCardSelect select : getInfoCardSelects()) {
-			final SelectId selectId = SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), select.getId());
-			final Select resolved = registry.resolve(selectId);
-
-			infoCardSelects.add(resolved);
-		}
-
-		final Set<Select> nonConnectorSelects = infoCardSelects.stream()
-															   .filter(select -> !(select.getHolder() instanceof Connector))
-															   .collect(Collectors.toSet());
-
-		if (!nonConnectorSelects.isEmpty()) {
-			log.error("The selects {} are not connector-Selects", nonConnectorSelects);
-			throw new ConqueryError.ExecutionCreationErrorUnspecified();
-		}
-
-		return infoCardSelects;
+	public List<Select> getSelects() {
+		return getInfoCardSelects().stream()
+								   .map(InfoCardSelect::getSelect)
+								   .collect(Collectors.toList());
 
 	}
 }
