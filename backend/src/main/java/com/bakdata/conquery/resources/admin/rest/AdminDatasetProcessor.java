@@ -221,8 +221,10 @@ public class AdminDatasetProcessor {
 	}
 
 
-	public void setPreviewConfig(PreviewConfig previewConfig, Namespace namespace){
+	public void setPreviewConfig(PreviewConfig previewConfig, Namespace namespace) {
 		log.info("Received new {}", previewConfig);
+
+		ValidatorHelper.failOnError(log, getValidator().validate(previewConfig));
 
 		namespace.getStorage().setPreviewConfig(previewConfig);
 	}

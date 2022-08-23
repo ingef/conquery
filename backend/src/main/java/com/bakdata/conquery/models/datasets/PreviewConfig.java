@@ -59,11 +59,23 @@ public class PreviewConfig {
 		@NsIdRef
 		private final Select select;
 
-		@ValidationMethod(message = "Select must be for connector.")
+		@ValidationMethod(message = "Select must be for connectors.")
 		@JsonIgnore
 		public boolean isConnectorSelect() {
 			return select.getHolder() instanceof Connector;
 		}
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Selects may be used only once.")
+	public boolean isSelectsDistinct() {
+		return infoCardSelects.stream().map(InfoCardSelect::getSelect).distinct().count() == getInfoCardSelects().size();
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Select Labels must be unique.")
+	public boolean isSelectsLabelsDistinct() {
+		return infoCardSelects.stream().map(InfoCardSelect::getLabel).distinct().count() == getInfoCardSelects().size();
 	}
 
 	/**

@@ -31,6 +31,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -102,6 +103,12 @@ public class AdminDatasetResource {
 	@Path("secondaryId")
 	public void addSecondaryId(SecondaryIdDescription secondaryId) {
 		processor.addSecondaryId(namespace, secondaryId);
+	}
+
+	@POST
+	@Path("preview")
+	public void setPreviewConfig(PreviewConfig previewConfig) {
+		processor.setPreviewConfig(previewConfig, namespace);
 	}
 
 
