@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
+import com.bakdata.conquery.io.result.external.ExternalResultProvider;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
@@ -60,7 +61,8 @@ public class ConqueryConfig extends Configuration {
 			new ExcelResultProvider(),
 			new CsvResultProvider(),
 			new ArrowResultProvider(),
-			new ParquetResultProvider()
+			new ParquetResultProvider(),
+			new ExternalResultProvider()
 	);
 	@Valid
 	@NotNull

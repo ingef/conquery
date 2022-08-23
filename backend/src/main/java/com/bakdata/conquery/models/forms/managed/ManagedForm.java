@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
@@ -45,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 @Slf4j
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 
 	/**
@@ -66,6 +68,7 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 	 * Subqueries that are send to the workers.
 	 */
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 
 

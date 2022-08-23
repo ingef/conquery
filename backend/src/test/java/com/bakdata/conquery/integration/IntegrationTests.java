@@ -202,6 +202,7 @@ public class IntegrationTests {
 			TestConquery.configureRandomPorts(conf);
 			log.trace("Creating a new test conquery instance for test {}", conf);
 			TestConquery conquery = new TestConquery(workDir, conf);
+
 			reusedInstances.put(confString, conquery);
 			conquery.beforeAll();
 		}

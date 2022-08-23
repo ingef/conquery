@@ -1,0 +1,48 @@
+{
+    "type": "FORM_TEST",
+    "label": "MOSTLY_AI_FORM SIMPLE",
+    "config": {
+        "plugins": [
+            {
+                "type": "MOSTLY_AI",
+                "baseUri": "http://localhost:5000",
+                "apiKey": "test"
+            }
+        ]
+    },
+    "expectedCsv": {
+        "results": "tests/form/ARX_FORM/SIMPLE/expected.csv"
+    },
+    "form": {
+        "type": "MOSTLY_AI_FORM",
+        "queryGroup": "00000000-0000-0000-0000-000000000001"
+    },
+    "content": {
+        "autoConcept": true,
+        "tables": [
+            "/tests/form/shared/anon.table.json"
+        ],
+        "previousQueries": [
+            {
+                "type": "CONCEPT_QUERY",
+                "dateAggregationMode": "NONE",
+                "root": {
+                    "ids": [
+                        "anon_AUTO"
+                    ],
+                    "type": "CONCEPT",
+                    "tables": [
+                        {
+                            "id": "anon_AUTO.connector",
+                            "selects": [
+                                "anon_AUTO.connector.date_FIRST",
+                                "anon_AUTO.connector.age_FIRST",
+                                "anon_AUTO.connector.sex_FIRST"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

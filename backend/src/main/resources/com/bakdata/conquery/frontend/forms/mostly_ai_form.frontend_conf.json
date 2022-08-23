@@ -1,0 +1,28 @@
+{
+    "title": {
+        "en": "Mostly AI Synthetization",
+        "de": "Mostly AI Synthetisierung"
+    },
+    "description": {
+        "de": "Dieses Formular startet eine Ad-Hoc Synthetisierung auf der Mostly AI Plattform."
+    },
+    "type": "MOSTLY_AI_FORM",
+    "fields": [
+        {
+            "name": "queryGroup",
+            "type": "RESULT_GROUP",
+            "label": {
+                "de": "Versichertengruppe"
+            },
+            "dropzoneLabel": {
+                "de": "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu"
+            },
+            "validations": [
+                "NOT_EMPTY"
+            ],
+            "tooltip": {
+                "de": "Versichertengruppe (Anfrage) für die Daten ausgegeben werden soll."
+            }
+        }
+    ]
+}
