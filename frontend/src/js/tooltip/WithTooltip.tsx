@@ -53,6 +53,10 @@ interface Props {
   lazy?: boolean;
   wide?: boolean;
   children?: ReactElement;
+
+  // Some others are possible in @tippyjs/react, but those should be enough
+  // default: "auto"
+  placement?: "auto" | "top" | "bottom" | "left" | "right";
 }
 
 // Show and hide duration
@@ -65,6 +69,7 @@ const WithTooltip = ({
   html,
   lazy,
   wide,
+  placement,
 }: Props) => {
   const theme = useTheme();
 
@@ -87,6 +92,7 @@ const WithTooltip = ({
       className={className}
       duration={zeroDuration}
       content={content}
+      placement={placement}
       theme="light"
       delay={lazy ? ([1000, 0] as [number, number]) : 0}
     >

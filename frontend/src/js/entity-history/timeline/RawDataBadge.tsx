@@ -12,11 +12,6 @@ const Badge = styled("div")`
   font-weight: 700;
 `;
 
-const SxWithTooltip = styled(WithTooltip)`
-  color: black;
-  flex-shrink: 0;
-`;
-
 interface Props {
   event: EntityEvent;
   className?: string;
@@ -24,13 +19,14 @@ interface Props {
 
 export const RawDataBadge = ({ className, event }: Props) => {
   return (
-    <SxWithTooltip
-      className={className}
+    <WithTooltip
+      placement="right"
       html={
         <pre
           style={{
             textAlign: "left",
             fontSize: "12px",
+            lineHeight: "1.1",
           }}
         >
           {JSON.stringify(event, null, 2)}
@@ -38,6 +34,7 @@ export const RawDataBadge = ({ className, event }: Props) => {
       }
     >
       <Badge
+        className={className}
         style={{ cursor: "pointer" }}
         onClick={() => {
           if (navigator.clipboard) {
@@ -47,6 +44,6 @@ export const RawDataBadge = ({ className, event }: Props) => {
       >
         {event.source}
       </Badge>
-    </SxWithTooltip>
+    </WithTooltip>
   );
 };
