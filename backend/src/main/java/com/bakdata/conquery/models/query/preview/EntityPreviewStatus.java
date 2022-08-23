@@ -13,7 +13,6 @@ public class EntityPreviewStatus extends FullExecutionStatus {
 	@Data
 	public static class Info extends ColumnDescriptor {
 
-		// (resultInfo.userColumnName(printSettings), printed, resultInfo.getType(), resultInfo.getSemantics()));
 		public Info(String label, Object value, String typeInfo, String description, Set<SemanticType> semantics) {
 			super(label, description, label, typeInfo, semantics);
 			this.value = value;
