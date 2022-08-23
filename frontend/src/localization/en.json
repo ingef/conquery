@@ -448,6 +448,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "backButtonWarning": "Note: changes will be discarded. Please download the list before going back.",
     "history": "History",
     "marked": "with status",
     "events_one": "Event",
