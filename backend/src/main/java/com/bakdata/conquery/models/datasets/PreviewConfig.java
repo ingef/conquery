@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
@@ -49,6 +50,12 @@ public class PreviewConfig {
 
 	@Data
 	public static class InfoCardSelect {
+		@JsonCreator
+		public InfoCardSelect(String label, @NsIdRef Select select) {
+			this.label = label;
+			this.select = select;
+		}
+
 		/**
 		 * User facing label of the select.
 		 */

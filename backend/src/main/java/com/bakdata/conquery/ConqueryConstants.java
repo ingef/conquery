@@ -23,7 +23,7 @@ public class ConqueryConstants {
 			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).dates(), new ResultType.ListT(ResultType.DateRangeT.INSTANCE), Set.of(new SemanticType.EventDateT()));
 
 	public static final ResultInfo DATES_INFO_HISTORY =
-			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).dates(), ResultType.DateRangeT.INSTANCE, Set.of(new SemanticType.EventDateT(), new SemanticType.GroupT()));
+			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).dates(), new ResultType.ListT(ResultType.DateRangeT.INSTANCE), Set.of(new SemanticType.EventDateT(), new SemanticType.GroupT()));
 
 
 	public static final ResultInfo

@@ -23,14 +23,17 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.preview.EntityPreviewStatus;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -73,12 +76,31 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 
-			/**
-			 * new PreviewConfig(List.of(
-			 * 						   new PreviewConfig.InfoCardSelect("Age", "tree1.connector.age"),
-			 * 						   new PreviewConfig.InfoCardSelect("Values", "tree2.connector.values")
-			 * 				   )
-			 */
+			{
+				final URI setPreviewConfig = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "setPreviewConfig")
+															.buildFromMap(Map.of(ResourceConstants.DATASET, dataset.getId()));
+
+				final PreviewConfig previewConfig = new PreviewConfig();
+
+				previewConfig.setInfoCardSelects(List.of(
+						new PreviewConfig.InfoCardSelect("Age", conquery.resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))),
+						new PreviewConfig.InfoCardSelect("Values", conquery.resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values")))
+				));
+
+				previewConfig.setHidden(Set.of(conquery.resolve(ColumnId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "table1.column"))));
+
+				Response response =
+						conquery.getClient().target(setPreviewConfig)
+								.request(MediaType.APPLICATION_JSON_TYPE)
+								.header("Accept-Language", "en-Us")
+								.post(Entity.json(previewConfig));
+
+				assertThat(response.getStatusInfo().getFamily())
+						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+						.isEqualTo(Response.Status.Family.SUCCESSFUL);
+
+			}
+
 		}
 
 		final URI entityExport = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getEntityData")
