@@ -459,6 +459,10 @@
     "downloadEntityData": "CSV",
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
+    "options": {
+      "check": "interesting",
+      "noCheck": "not interesting"
+    },
     "detail": {
       "summary": "Summary",
       "detail": "Grouped",

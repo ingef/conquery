@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
@@ -213,9 +214,19 @@ const useEntityStatus = ({
 }: {
   currentEntityId: string | null;
 }) => {
+  const { t } = useTranslation();
   const [entityStatusOptions, setEntityStatusOptions] = useState<
     SelectOptionT[]
-  >([]);
+  >([
+    {
+      label: t("history.options.check"),
+      value: t("history.options.check") as string,
+    },
+    {
+      label: t("history.options.noCheck"),
+      value: t("history.options.noCheck") as string,
+    },
+  ]);
 
   const [entityIdsStatus, setEntityIdsStatus] = useState<EntityIdsStatus>({});
   const setCurrentEntityStatus = useCallback(
