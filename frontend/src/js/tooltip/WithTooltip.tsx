@@ -8,7 +8,7 @@ import "tippy.js/themes/light.css";
 export const tippyjsReactOverrides = css`
   div[data-tippy-root] {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    max-width: 500px;
+    max-width: 700px;
 
     > div {
       width: 100%;
