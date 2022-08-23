@@ -46,11 +46,8 @@ const StyledButton = styled(TransparentButton)`
 const TopRow = styled("div")`
   display: flex;
   align-items: center;
+  gap: 5px;
 `;
-const SxConceptTreeOpenButtons = styled(ConceptTreesOpenButtons)`
-  margin-right: 5px;
-`;
-
 interface PropsT {
   className?: string;
 }
@@ -89,7 +86,7 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className }) => {
   return (
     <Root className={className}>
       <TopRow>
-        <SxConceptTreeOpenButtons />
+        <ConceptTreesOpenButtons />
         <SearchBar
           searchTerm={search.query}
           placeholder={t("conceptTreeList.searchPlaceholder")}
