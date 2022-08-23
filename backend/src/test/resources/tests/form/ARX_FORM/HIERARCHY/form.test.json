@@ -1,0 +1,39 @@
+{
+    "type": "FORM_TEST",
+    "label": "ARX-FORM-HIERARCHY",
+    "expectedCsv": {
+        "results": "tests/form/ARX_FORM/HIERARCHY/expected.csv"
+    },
+    "form": {
+        "type": "ARX_FORM",
+        "queryGroup": "00000000-0000-0000-0000-000000000001"
+    },
+    "concepts": [
+        "/tests/form/shared/hierarchy.concept.json"
+    ],
+    "content": {
+        "tables": [
+            "/tests/form/shared/hierarchy.table.json"
+        ],
+        "previousQueries": [
+            {
+                "type": "CONCEPT_QUERY",
+                "dateAggregationMode": "NONE",
+                "root": {
+                    "ids": [
+                        "hierarchy"
+                    ],
+                    "type": "CONCEPT",
+                    "tables": [
+                        {
+                            "id": "hierarchy.connector",
+                            "selects": [
+                                "hierarchy.connector.values"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

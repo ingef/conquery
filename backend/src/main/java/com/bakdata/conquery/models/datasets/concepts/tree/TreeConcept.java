@@ -2,14 +2,11 @@ package com.bakdata.conquery.models.datasets.concepts.tree;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -22,7 +19,6 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -98,7 +94,6 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		this.setLocalId(0);
 		localIdMap.add(this);
 
-		Set<ConstraintViolation<ConceptTreeNode>> errors = new HashSet<>();
 		List<ConceptTreeChild> openList = new ArrayList<>();
 		openList.addAll(this.getChildren());
 
@@ -127,9 +122,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 
 			openList.addAll((openList.get(i)).getChildren());
 		}
-		ValidatorHelper.failOnError(log, errors);
 	}
-
 
 	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 		if (this.getChildIndex() != null) {

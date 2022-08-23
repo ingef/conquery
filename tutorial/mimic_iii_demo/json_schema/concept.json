@@ -10,9 +10,50 @@
 			"items": {
 				"type": "object",
 				"properties": {
-					"column": { "type": "string" },
-					"label": { "type": "string" }
-				}
+                    "column": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "selects": {
+                        "oneOf": [
+                            {
+                                "type": "array",
+                                "items": {
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "name": {
+                                            "type": "string"
+                                        },
+                                        "label": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "type",
+                                        "name"
+                                    ],
+                                    "oneOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "type": {
+                                                    "pattern": "^CONCEPT_VALUES$"
+                                                },
+                                                "asIds": {
+                                                    "type": "boolean"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                }
 			}
 		},
 		"children": { "$ref": "concept.json#/$defs/treeChildren" }
@@ -54,9 +95,18 @@
 							"enum": ["PREFIX_LIST"]
 						},
 						"prefixes": {
-							"type": "array",
-							"items": { "type": "string" }
-						},
+                            "oneOf": [
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        },
 						"required": ["type", "items"]
 					}
 				}

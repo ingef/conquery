@@ -1,0 +1,137 @@
+{
+    "name": "hierarchy",
+    "type": "TREE",
+    "connectors": [
+        {
+            "name": "connector",
+            "column": "hierarchy.code",
+            "selects": [
+                {
+                    "type": "CONCEPT_VALUES",
+                    "asIds": true,
+                    "name": "values"
+                }
+            ]
+        }
+    ],
+    "children": [
+        {
+            "name": "a",
+            "condition": {
+                "type": "PREFIX_LIST",
+                "prefixes": "a"
+            },
+            "children": [
+                {
+                    "name": "aa",
+                    "condition": {
+                        "type": "PREFIX_LIST",
+                        "prefixes": "aa"
+                    },
+                    "children": [
+                        {
+                            "name": "aaa",
+                            "condition": {
+                                "type": "PREFIX_LIST",
+                                "prefixes": "aaa"
+                            },
+                            "children": []
+                        },
+                        {
+                            "name": "aab",
+                            "condition": {
+                                "type": "PREFIX_LIST",
+                                "prefixes": "aab"
+                            },
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "ab",
+                    "condition": {
+                        "type": "PREFIX_LIST",
+                        "prefixes": "ab"
+                    },
+                    "children": [
+                        {
+                            "name": "aba",
+                            "condition": {
+                                "type": "PREFIX_LIST",
+                                "prefixes": "aba"
+                            },
+                            "children": []
+                        },
+                        {
+                            "name": "abb",
+                            "condition": {
+                                "type": "PREFIX_LIST",
+                                "prefixes": "abb"
+                            },
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "b",
+            "condition": {
+                "type": "PREFIX_LIST",
+                "prefixes": "b"
+            },
+            "children": [
+                {
+                    "name": "ba",
+                    "condition": {
+                        "type": "PREFIX_LIST",
+                        "prefixes": "ba"
+                    },
+                    "children": [
+                        {
+                            "name": "baa",
+                            "condition": {
+                                "type": "PREFIX_LIST",
+                                "prefixes": "baa"
+                            },
+                            "children": []
+                        },
+                        {
+                            "name": "bab",
+                            "condition": {
+                                "type": "PREFIX_LIST",
+                                "prefixes": "bab"
+                            },
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "bb",
+                    "condition": {
+                        "type": "PREFIX_LIST",
+                        "prefixes": "bb"
+                    },
+                    "children": [
+                        {
+                            "name": "bba",
+                            "condition": {
+                                "type": "PREFIX_LIST",
+                                "prefixes": "bba"
+                            },
+                            "children": []
+                        },
+                        {
+                            "name": "bbb",
+                            "condition": {
+                                "type": "PREFIX_LIST",
+                                "prefixes": "bbb"
+                            },
+                            "children": []
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

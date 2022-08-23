@@ -17,6 +17,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -88,7 +89,7 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 			setError(e);
 			super.finish(storage, ExecutionState.FAILED);
 		}
-		catch (IOException | IllegalArgumentException e) {
+		catch (Exception e) {
 			log.error("Unable to anonymize {}", getId(), e);
 			setError(new ConqueryError.ExecutionProcessingError());
 			super.finish(storage, ExecutionState.FAILED);
@@ -114,26 +115,48 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 																				ArxExecution::createAttributeTypeBuilder
 																		));
 
-		// Add data. Convert everything into a string
+		// Add data
 		super.streamResults()
 			 .flatMap(row -> row.listResultLines().stream())
 			 .map(line -> {
 				 String[] stringData = new String[resultInfos.size()];
 				 for (int cellIdx = 0; cellIdx < resultInfos.size(); cellIdx++) {
 					 final ResultInfo resultInfo = resultInfos.get(cellIdx);
+
 					 final Object cell = line[cellIdx];
+
+					 /*
+					  * Workaround for the concept hierarchy generalization:
+					  * Since Lists cannot be generalized at the moment,
+					  * we take the first element into consideration if present.
+					  */
+					 if (AttributeTypeBuilder.ConceptHierarchyNodeId.isCompatible(resultInfo) != null) {
+						 if (!(cell instanceof List)) {
+							 throw new IllegalStateException("Expected a list to be returned from ConceptElementsAggregator, got " + cell.getClass());
+						 }
+						 List<?> list = (List<?>) cell;
+						 if (list.size() > 0) {
+							 // Take the first element as the local id
+							 stringData[cellIdx] = ResultType.IntegerT.INSTANCE.print(printSettings, list.get(0));
+						 }
+						 continue;
+					 }
+
+					 // Default: print actual string value
 					 stringData[cellIdx] = resultInfo.getType().printNullable(printSettings, cell);
 				 }
 				 return stringData;
 			 })
 			 .forEach(row -> {
+				 // Register and transform each value to corresponding attribute type
+				 for (int i = 0; i < headers.length; i++) {
+					 row[i] = attrToType.get(headers[i]).register(row[i]);
+				 }
+
 				 // Add row to ARX data container
 				 data.add(row);
 
-				 // Register each value to corresponding attribute type
-				 for (int i = 0; i < headers.length; i++) {
-					 attrToType.get(headers[i]).register(row[i]);
-				 }
+
 			 });
 
 
@@ -187,6 +210,16 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 							 return Optional.of(new AttributeTypeBuilder.Date());
 						 }
 						 return Optional.empty();
+					 })
+				.or( // Handle Selects that output hierarchical node ids
+					 () -> {
+						 final TreeConcept concept = AttributeTypeBuilder.ConceptHierarchyNodeId.isCompatible(info);
+						 if (concept == null) {
+							 return Optional.empty();
+						 }
+
+						 return Optional.of(new AttributeTypeBuilder.ConceptHierarchyNodeId(concept));
+
 					 })
 				// Default case: use a flat "hierarchy" for every other attribute
 				.orElse(new AttributeTypeBuilder.Flat());
