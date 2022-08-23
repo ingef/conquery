@@ -137,7 +137,9 @@ const EventCard = ({
           {contentFilter.secondaryId && applicableSecondaryIds.length > 0 && (
             <>
               <WithTooltip text={secondaryIdsTooltip}>
-                <SxFaIcon icon="microscope" active tiny />
+                <span>
+                  <SxFaIcon icon="microscope" active tiny />
+                </span>
               </WithTooltip>
               <ColBucket>
                 {applicableSecondaryIds.map((column) => (
@@ -152,7 +154,9 @@ const EventCard = ({
           {contentFilter.money && applicableMoney.length > 0 && (
             <>
               <WithTooltip text={moneyTooltip}>
-                <SxFaIcon icon="money-bill-alt" active tiny />
+                <span>
+                  <SxFaIcon icon="money-bill-alt" active tiny />
+                </span>
               </WithTooltip>
               <ColBucketCode>
                 {applicableMoney.map((column) => (
@@ -168,7 +172,9 @@ const EventCard = ({
           {contentFilter.rest && applicableRest.length > 0 && (
             <>
               <WithTooltip text={restTooltip}>
-                <SxFaIcon icon="info" active tiny />
+                <span>
+                  <SxFaIcon icon="info" active tiny />
+                </span>
               </WithTooltip>
               <ColBucket>
                 {applicableRest.map((column) => (
@@ -180,7 +186,9 @@ const EventCard = ({
           {contentFilter.concept && applicableConcepts.length > 0 && (
             <>
               <WithTooltip text={conceptsTooltip}>
-                <SxFaIcon icon="folder" active tiny />
+                <span>
+                  <SxFaIcon icon="folder" active tiny />
+                </span>
               </WithTooltip>
               <ColBucket>
                 {applicableConcepts.map((column) => (
