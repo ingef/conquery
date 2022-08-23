@@ -112,16 +112,17 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				new EntityPreviewStatus.Info(
 						"Age",
 						"8",
-						ResultType.IntegerT.INSTANCE,
+						ResultType.IntegerT.INSTANCE.typeInfo(),
+						"",
 						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
 																	  .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
 				),
 				new EntityPreviewStatus.Info(
 						"Values",
 						"A1 ; B2",
-						new ResultType.ListT(ResultType.StringT.INSTANCE),
+						new ResultType.ListT(ResultType.StringT.INSTANCE).typeInfo(),
+						"",
 						Set.of(
-								new SemanticType.DescriptionT("This is a column"),
 								new SemanticType.SelectResultT(conquery.getDatasetRegistry()
 																	   .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values")))
 						)
@@ -137,7 +138,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 														  .findFirst();
 
 		assertThat(t2values).isPresent();
-		assertThat(t2values.get().getSemantics()).contains(new SemanticType.DescriptionT("This is a column"));
+		assertThat(t2values.get().getDescription()).isEqualTo("This is a column");
 
 
 		final Optional<URL> csvUrl = result.getResultUrls().stream()

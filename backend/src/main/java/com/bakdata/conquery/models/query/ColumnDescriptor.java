@@ -5,8 +5,10 @@ import java.util.Set;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.types.SemanticType;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -16,12 +18,16 @@ import lombok.ToString;
 @Getter
 @Builder
 @ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class ColumnDescriptor {
 
 	/**
 	 * The name of the column. This label should be generated as a unique label among the columns.
 	 */
 	private String label;
+
+	private String description;
 
 	/**
 	 * If this descriptor originates from a {@link Select} which is a child of {@link CQConcept},

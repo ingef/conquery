@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.resultinfo;
 
 import java.util.Locale;
 import java.util.Set;
-import java.util.Optional;
 import java.util.function.Function;
 
 import c10n.C10N;
@@ -60,6 +59,11 @@ public class LocalizedDefaultResultInfo extends ResultInfo {
 	@Override
 	public String defaultColumnName(PrintSettings printSettings) {
 		return localizedDefaultLabelProvider.apply(printSettings.getLocale());
+	}
+
+	@Override
+	public String getDescription() {
+		return ""; // TODO what do? Localize description as well?
 	}
 
 	@Override
