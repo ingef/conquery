@@ -90,6 +90,11 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		return status;
 	}
 
+	@Override
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+		status.setColumnDescriptions(getValuesQuery().generateColumnDescriptions(datasetRegistry));
+	}
+
 	@JsonIgnore
 	private ManagedQuery getInfoCardExecution() {
 		return getSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME).get(0);
