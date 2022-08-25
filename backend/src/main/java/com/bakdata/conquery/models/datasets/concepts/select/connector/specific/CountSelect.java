@@ -32,7 +32,7 @@ public class CountSelect extends Select {
 	@Override
 	public Aggregator<?> createAggregator() {
 		if (distinct) {
-			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn().get(0)), getColumn());
+			return new DistinctValuesWrapperAggregator<>(new CountAggregator(), getColumn());
 		}
 		return new CountAggregator(getColumn().get(0));
 	}

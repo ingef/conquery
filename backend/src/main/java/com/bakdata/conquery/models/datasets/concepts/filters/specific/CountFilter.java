@@ -44,7 +44,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
 		if (distinct) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn().get(0)), getColumn()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(), getColumn()));
 		}
 		return new RangeFilterNode(value, new CountAggregator(getColumn().get(0)));
 	}

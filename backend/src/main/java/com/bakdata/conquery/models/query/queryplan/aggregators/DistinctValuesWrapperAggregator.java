@@ -52,16 +52,15 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
+		final List<Object> incoming = new ArrayList<>(getColumns().size());
+
 		for (Column column : getColumns()) {
-			if (!bucket.has(event, column)) {
-				return;
+			if (bucket.has(event, column)) {
+				incoming.add(bucket.createScriptValue(event, column));
 			}
-		}
-
-		List<Object> incoming = new ArrayList<>(getColumns().size());
-
-		for (Column column : getColumns()) {
-			incoming.add(bucket.createScriptValue(event, column));
+			else {
+				incoming.add(null);
+			}
 		}
 
 		if (observed.add(incoming)) {
