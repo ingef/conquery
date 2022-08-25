@@ -91,16 +91,17 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	@Override
 	public FilterNode createFilterNode(RANGE value) {
-
-		if (!distinctByColumn.isEmpty()) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(getAggregator(), getDistinctByColumn()));
-		}
+		IRange<? extends Number, ?> range = value;
 
 		if (getColumn().getType() == MajorTypeId.REAL) {
-			return new RangeFilterNode(Range.DoubleRange.fromNumberRange(value), getAggregator());
+			range = Range.DoubleRange.fromNumberRange(value);
 		}
 
-		return new RangeFilterNode(value, getAggregator());
+		if (!distinctByColumn.isEmpty()) {
+			return new RangeFilterNode(range, new DistinctValuesWrapperAggregator(getAggregator(), getDistinctByColumn()));
+		}
+
+		return new RangeFilterNode(range, getAggregator());
 	}
 
 	@JsonIgnore
