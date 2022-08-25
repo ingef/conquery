@@ -182,4 +182,8 @@ public class NamespaceStorage extends NamespacedStorage {
 	public PreviewConfig getPreviewConfig() {
 		return preview.get();
 	}
+
+	public void removePreviewConfig() {
+		preview.remove();
+	}
 }

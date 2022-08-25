@@ -111,6 +111,12 @@ public class AdminDatasetResource {
 		processor.setPreviewConfig(previewConfig, namespace);
 	}
 
+	@DELETE
+	@Path("preview")
+	public void deletePreviewConfig() {
+		processor.deletePreviewConfig(namespace);
+	}
+
 
 	@POST
 	@Path("internToExtern")

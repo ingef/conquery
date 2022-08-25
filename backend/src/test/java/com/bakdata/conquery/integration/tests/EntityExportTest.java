@@ -84,11 +84,11 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				final PreviewConfig previewConfig = new PreviewConfig();
 
 				previewConfig.setInfoCardSelects(List.of(
-						new PreviewConfig.InfoCardSelect("Age", conquery.resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))),
-						new PreviewConfig.InfoCardSelect("Values", conquery.resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values")))
+						new PreviewConfig.InfoCardSelect("Age", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age")),
+						new PreviewConfig.InfoCardSelect("Values", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))
 				));
 
-				previewConfig.setHidden(Set.of(conquery.resolve(ColumnId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "table1.column"))));
+				previewConfig.setHidden(Set.of(ColumnId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "table1.column")));
 
 				Response response =
 						conquery.getClient().target(setPreviewConfig)

@@ -209,8 +209,6 @@ public class TableExportQuery extends Query {
 
 		final ResultInfo[] infos = new ResultInfo[size];
 
-		final Set<SecondaryIdDescription> grouping = previewConfig.getGrouping();
-
 		infos[0] = ConqueryConstants.DATES_INFO_HISTORY;
 		infos[1] = ConqueryConstants.SOURCE_INFO;
 
@@ -223,8 +221,8 @@ public class TableExportQuery extends Query {
 			semantics.add(new SemanticType.SecondaryIdT(desc));
 			semantics.add(new SemanticType.DescriptionT(desc.getDescription()));
 
-			if (grouping.contains(desc)){
-				semantics.add(new SemanticType.HiddenT());
+			if (previewConfig.isGroupingColumn(desc)){
+				semantics.add(new SemanticType.GroupT());
 			}
 
 			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.StringT.INSTANCE, semantics);
@@ -255,7 +253,7 @@ public class TableExportQuery extends Query {
 				semantics.add(new SemanticType.DescriptionT(column.getDescription()));
 			}
 
-			if(previewConfig.getHidden().contains(column)){
+			if(previewConfig.isHidden(column)){
 				semantics.add(new SemanticType.HiddenT());
 			}
 

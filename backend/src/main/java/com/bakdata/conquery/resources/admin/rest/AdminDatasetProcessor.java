@@ -440,4 +440,8 @@ public class AdminDatasetProcessor {
 
 		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
 	}
+
+	public void deletePreviewConfig(Namespace namespace) {
+		namespace.getStorage().removePreviewConfig();
+	}
 }
