@@ -35,7 +35,10 @@
             "name": "select",
             "type": "SUM",
             "column": "table.value",
-            "distinctByColumn" : ["table.k1","table.k2"]
+            "distinctByColumn": [
+              "table.k1",
+              "table.k2"
+            ]
           }
         }
       ]

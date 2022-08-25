@@ -64,8 +64,12 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	public void acceptEvent(Bucket bucket, int event) {
 		final List<Object> incoming = new ArrayList<>(getColumns().size());
 
+		// Do not accept completely empty lines
+		boolean anyPresent = false;
+
 		for (Column column : getColumns()) {
 			if (bucket.has(event, column)) {
+				anyPresent = true;
 				incoming.add(bucket.createScriptValue(event, column));
 			}
 			else {
@@ -73,7 +77,7 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 			}
 		}
 
-		if (observed.add(incoming)) {
+		if (anyPresent && observed.add(incoming)) {
 			aggregator.acceptEvent(bucket, event);
 		}
 	}
