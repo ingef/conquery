@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -45,6 +46,15 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	}
 
 	@Override
+	public void collectRequiredTables(Set<Table> out) {
+		for (Column column : columns) {
+			out.add(column.getTable());
+		}
+
+		aggregator.collectRequiredTables(out);
+	}
+
+	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		aggregator.init(entity, context);
 		observed.clear();
@@ -72,5 +82,4 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	public ResultType getResultType() {
 		return aggregator.getResultType();
 	}
-
 }
