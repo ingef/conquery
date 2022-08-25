@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 /**
@@ -16,6 +17,7 @@ public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 
 	@Getter
 	@Setter
+	@NonNull
 	protected Column column;
 
 	@Override

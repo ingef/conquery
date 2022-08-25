@@ -39,6 +39,8 @@ public class CountAggregator extends ColumnAggregator<Long> {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
+		// When no column is set, count all events (supposedly someone else is filtering for us)
+		// When column is set, count only the events where column has entries
 		if (column == null || bucket.has(event, column)) {
 			count++;
 		}

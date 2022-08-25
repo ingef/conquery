@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -21,6 +22,7 @@ import org.apache.commons.lang3.ArrayUtils;
  * @param <VALUE>
  */
 @ToString(callSuper = true, of = {"columns", "aggregator"})
+@RequiredArgsConstructor
 public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VALUE> {
 
 	private final ColumnAggregator<VALUE> aggregator;
@@ -30,10 +32,6 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	@Getter
 	private final List<Column> columns;
 
-	public DistinctValuesWrapperAggregator(ColumnAggregator<VALUE> aggregator, List<Column> columns) {
-		this.columns = columns;
-		this.aggregator = aggregator;
-	}
 
 	@Override
 	public VALUE createAggregationResult() {
