@@ -297,6 +297,26 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/ArrayConceptQuery.java#L52) | resolvedDateAggregationMode | one of NONE, MERGE, INTERSECT, LOGICAL | ? |  |  | 
 </p></details>
 
+### ARX_FORM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L33-L37)</sup></sub></sup>
+Form that performs an anonymization using the ARX library on the result of the given execution.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.apiv1.forms.ArxForm`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L80-L82) | historySize | `@javax.validation.constraints.Min(1) int` | `200` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L47-L49) | kAnonymityParam | `@javax.validation.constraints.Min(2) int` | `2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L64-L66) | maximumSnapshotSizeDataset | `@javax.validation.constraints.DecimalMax("1") @javax.validation.constraints.DecimalMin(value="0", inclusive=false) double` | `0.2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L72-L74) | maximumSnapshotSizeSnapshot | `@javax.validation.constraints.DecimalMax("1") @javax.validation.constraints.DecimalMin(value="0", inclusive=false) double` | `0.2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L43) | queryGroupId | ID of `ManagedExecution` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/ArxForm.java#L55-L57) | suppressionLimit | `@javax.validation.constraints.DecimalMax("1") @javax.validation.constraints.DecimalMin("0") double` | `0.02` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/forms/Form.java#L32-L35) | values | `JsonNode` | `null` |  | Raw form config (basically the raw format of this form), that is used by the backend at the moment to create a {@link com.bakdata.conquery.models.forms.configs.FormConfig} upon start of this form (see {@link ManagedForm#start()}). | 
+</p></details>
+
 ### CONCEPT_QUERY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/query/ConceptQuery.java#L31)</sup></sub></sup>
 
 
@@ -913,7 +933,21 @@ No fields can be set for this type.
 Different types of SemanticType can be used by setting `type` to one of the following values:
 
 
-### CATEGORICAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L37-L39)</sup></sub></sup>
+### ARX_ATTR<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L116-L118)</sup></sub></sup>
+Column is annotated with a specific identification type.
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.types.SemanticType$IdentificationT`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L123) | attributeType | `AttributeType` | ? |  |  | 
+</p></details>
+
+### CATEGORICAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L38-L40)</sup></sub></sup>
 Column contains a fixed set of String values.
 
 <details><summary>Details</summary><p>
@@ -924,7 +958,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### CONCEPT_COLUMN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L101-L105)</sup></sub></sup>
+### CONCEPT_COLUMN<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L102-L106)</sup></sub></sup>
 Column contains values used by a Connector of a Concept. Only used for {@link com.bakdata.conquery.apiv1.query.TableExportQuery}.
 
 <details><summary>Details</summary><p>
@@ -935,10 +969,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L110) | concept | ID of `@NsIdRef Concept<?>` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L111) | concept | ID of `@NsIdRef Concept<?>` | ? |  |  | 
 </p></details>
 
-### DESCRIPTION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L67-L71)</sup></sub></sup>
+### DESCRIPTION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L68-L72)</sup></sub></sup>
 Column contains an Entity's Id of a kind. <p> See {@link com.bakdata.conquery.models.config.ColumnConfig} / {@link com.bakdata.conquery.models.config.FrontendConfig.UploadConfig}for the source of this.
 
 <details><summary>Details</summary><p>
@@ -949,10 +983,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L76) | description | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L77) | description | `String` | ? |  |  | 
 </p></details>
 
-### EVENT_DATE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L17-L19)</sup></sub></sup>
+### EVENT_DATE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L18-L20)</sup></sub></sup>
 Column containing primary Event dates. There should only ever be one EVENT_DATE per Query.
 
 <details><summary>Details</summary><p>
@@ -963,7 +997,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L55-L59)</sup></sub></sup>
+### ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L56-L60)</sup></sub></sup>
 Column contains an Entity's Id of a kind. <p> See {@link com.bakdata.conquery.models.config.ColumnConfig} / {@link com.bakdata.conquery.models.config.FrontendConfig.UploadConfig}for the source of this.
 
 <details><summary>Details</summary><p>
@@ -974,10 +1008,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L64) | kind | `String` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L65) | kind | `String` | ? |  |  | 
 </p></details>
 
-### RESOLUTION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L46-L48)</sup></sub></sup>
+### RESOLUTION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L47-L49)</sup></sub></sup>
 Column contains {@link com.bakdata.conquery.models.forms.util.Resolution} from an {@link com.bakdata.conquery.apiv1.forms.export_form.ExportForm}.
 
 <details><summary>Details</summary><p>
@@ -988,7 +1022,7 @@ No fields can be set for this type.
 
 </p></details>
 
-### SECONDARY_ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L79-L81)</sup></sub></sup>
+### SECONDARY_ID<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L80-L82)</sup></sub></sup>
 Column contains values of a {@link SecondaryIdDescription}.
 
 <details><summary>Details</summary><p>
@@ -999,10 +1033,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L86) | secondaryId | ID of `@NsIdRef SecondaryIdDescription` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L87) | secondaryId | ID of `@NsIdRef SecondaryIdDescription` | ? |  |  | 
 </p></details>
 
-### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L90-L92)</sup></sub></sup>
+### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L91-L93)</sup></sub></sup>
 Column contains the results of a {@link Select}.
 
 <details><summary>Details</summary><p>
@@ -1013,10 +1047,10 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L97) | select | ID of `@NsIdRef Select` | ? |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L98) | select | ID of `@NsIdRef Select` | ? |  |  | 
 </p></details>
 
-### SOURCES<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L26-L30)</sup></sub></sup>
+### SOURCES<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/types/SemanticType.java#L27-L31)</sup></sub></sup>
 Column contains the source of the result line. <p> At the moment, only used in {@link com.bakdata.conquery.apiv1.query.TableExportQuery}.
 
 <details><summary>Details</summary><p>
