@@ -3,10 +3,11 @@ package com.bakdata.conquery.models.forms.arx;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
@@ -15,8 +16,10 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.concepts.select.concept.ConceptColumnSelect;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.NonNull;
@@ -31,24 +34,28 @@ import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
  */
 public interface AttributeTypeBuilder {
 
-	public static final String SUPPRESSING_GRANULARITY = "*";
+	String SUPPRESSING_GRANULARITY = "*";
 
 
-	String register(String value);
+	String register(Object value);
 
 	AttributeType build();
 
 	/**
 	 * Builds a two level hierarchy. Bottom level are the actual values. Top level is "*".
 	 */
+	@RequiredArgsConstructor
 	class Flat implements AttributeTypeBuilder {
+
+		private final Function<Object, String> printer;
 
 		private final Set<String> values = new HashSet<>();
 
 		@Override
-		public String register(String value) {
-			values.add(value);
-			return value;
+		public String register(Object value) {
+			String printValue = printer.apply(value);
+			values.add(printValue);
+			return printValue;
 		}
 
 		@Override
@@ -57,13 +64,17 @@ public interface AttributeTypeBuilder {
 		}
 	}
 
+	@RequiredArgsConstructor
 	class Date implements AttributeTypeBuilder {
+
+		private final PrintSettings printSettings;
 		private final Set<String> values = new HashSet<>();
 
 		@Override
-		public String register(String value) {
-			values.add(value);
-			return value;
+		public String register(Object value) {
+			final String printValue = ResultType.DateT.INSTANCE.printNullable(printSettings, value);
+			values.add(printValue);
+			return printValue;
 		}
 
 		@Override
@@ -101,7 +112,6 @@ public interface AttributeTypeBuilder {
 		@Getter
 		private final TreeConcept concept;
 
-
 		private final HashMap<String, ConceptTreeNode<?>> collectedIds;
 
 		public ConceptHierarchyNodeId(TreeConcept concept) {
@@ -134,8 +144,22 @@ public interface AttributeTypeBuilder {
 		}
 
 		@Override
-		public String register(String value) {
-			final int localId = Integer.parseInt(value);
+		public String register(Object value) {
+			/*
+			 * Workaround for the concept hierarchy generalization:
+			 * Since Lists cannot be generalized at the moment,
+			 * we take the first element into consideration if present.
+			 */
+			if (!(value instanceof List)) {
+				throw new IllegalStateException("Expected a list to be returned from ConceptElementsAggregator, got " + value.getClass());
+			}
+			List<?> list = (List<?>) value;
+			if (list.isEmpty()) {
+				return "";
+			}
+			// Take the first element as the local id
+			final int localId = (int) list.get(0);
+
 			final ConceptTreeNode<?> node = concept.getElementByLocalId(localId);
 			if (node == null) {
 				// This should never be the case, as the local ids are our own stuff
@@ -219,9 +243,12 @@ public interface AttributeTypeBuilder {
 		@NonNull
 		private final AttributeType attributeType;
 
+		@NonNull
+		private final Function<Object, String> printer;
+
 		@Override
-		public String register(String value) {
-			return value;
+		public String register(Object value) {
+			return printer.apply(value);
 		}
 
 		@Override

@@ -112,10 +112,11 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 		final Map<String, AttributeTypeBuilder> attrToType = resultInfos.stream()
 																		.collect(Collectors.toMap(
 																				i -> i.defaultColumnName(printSettings),
-																				ArxExecution::createAttributeTypeBuilder
+																				this::createAttributeTypeBuilder
 																		));
 
 		// Add data
+		// Add row to ARX data container
 		super.streamResults()
 			 .flatMap(row -> row.listResultLines().stream())
 			 .map(line -> {
@@ -125,39 +126,12 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 
 					 final Object cell = line[cellIdx];
 
-					 /*
-					  * Workaround for the concept hierarchy generalization:
-					  * Since Lists cannot be generalized at the moment,
-					  * we take the first element into consideration if present.
-					  */
-					 if (AttributeTypeBuilder.ConceptHierarchyNodeId.isCompatible(resultInfo) != null) {
-						 if (!(cell instanceof List)) {
-							 throw new IllegalStateException("Expected a list to be returned from ConceptElementsAggregator, got " + cell.getClass());
-						 }
-						 List<?> list = (List<?>) cell;
-						 if (list.size() > 0) {
-							 // Take the first element as the local id
-							 stringData[cellIdx] = ResultType.IntegerT.INSTANCE.print(printSettings, list.get(0));
-						 }
-						 continue;
-					 }
-
-					 // Default: print actual string value
-					 stringData[cellIdx] = resultInfo.getType().printNullable(printSettings, cell);
+					 // Register and transform each value to corresponding attribute type
+					 stringData[cellIdx] = attrToType.get(headers[cellIdx]).register(cell);
 				 }
 				 return stringData;
 			 })
-			 .forEach(row -> {
-				 // Register and transform each value to corresponding attribute type
-				 for (int i = 0; i < headers.length; i++) {
-					 row[i] = attrToType.get(headers[i]).register(row[i]);
-				 }
-
-				 // Add row to ARX data container
-				 data.add(row);
-
-
-			 });
+			 .forEach(data::add);
 
 
 		// Define attributes for the column
@@ -190,30 +164,30 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 		return ExecutionState.DONE;
 	}
 
-	private static AttributeTypeBuilder createAttributeTypeBuilder(ResultInfo info) {
+	private AttributeTypeBuilder createAttributeTypeBuilder(ResultInfo resultInfo) {
 
 		// Check semantics for identification attributes
 		final Optional<IdentificationT>
-				identType = info.getSemantics().stream()
-								.filter(IdentificationT.class::isInstance)
-								.map(IdentificationT.class::cast)
-								.collect(MoreCollectors.toOptional());
+				identType = resultInfo.getSemantics().stream()
+									  .filter(IdentificationT.class::isInstance)
+									  .map(IdentificationT.class::cast)
+									  .collect(MoreCollectors.toOptional());
 
 		return identType
 				.map(IdentificationT::getAttributeType)
-				.map(AttributeTypeBuilder.Fixed::new)
+				.map((type) -> new AttributeTypeBuilder.Fixed(type, (cell) -> resultInfo.getType().printNullable(printSettings, cell)))
 				.map(AttributeTypeBuilder.class::cast)
 				// Special cases
 				.or( // Handle ResultType.DateT: Provide date hierarchy
 					 () -> {
-						 if (info.getType().equals(ResultType.DateT.INSTANCE)) {
-							 return Optional.of(new AttributeTypeBuilder.Date());
+						 if (resultInfo.getType().equals(ResultType.DateT.INSTANCE)) {
+							 return Optional.of(new AttributeTypeBuilder.Date(printSettings));
 						 }
 						 return Optional.empty();
 					 })
 				.or( // Handle Selects that output hierarchical node ids
 					 () -> {
-						 final TreeConcept concept = AttributeTypeBuilder.ConceptHierarchyNodeId.isCompatible(info);
+						 final TreeConcept concept = AttributeTypeBuilder.ConceptHierarchyNodeId.isCompatible(resultInfo);
 						 if (concept == null) {
 							 return Optional.empty();
 						 }
@@ -222,7 +196,7 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 
 					 })
 				// Default case: use a flat "hierarchy" for every other attribute
-				.orElse(new AttributeTypeBuilder.Flat());
+				.orElse(new AttributeTypeBuilder.Flat((cell) -> resultInfo.getType().printNullable(printSettings, cell)));
 	}
 
 	@Override
