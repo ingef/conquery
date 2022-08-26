@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
@@ -36,6 +37,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.MoreCollectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.bouncycastle.asn1.tsp.TSTInfo;
 import org.deidentifier.arx.ARXAnonymizer;
 import org.deidentifier.arx.ARXConfiguration;
 import org.deidentifier.arx.ARXResult;
@@ -195,6 +197,21 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 						 return Optional.of(new AttributeTypeBuilder.ConceptHierarchyNodeId(concept));
 
 					 })
+				.or(// Handle Selects that output numbers
+					() -> {
+						if (!(info instanceof SelectResultInfo)) {
+							return Optional.empty();
+						}
+						final ResultType resultType = ((SelectResultInfo) info).getSelect().getResultType();
+
+						if (resultType instanceof ResultType.IntegerT) {
+							return Optional.of(new AttributeTypeBuilder.Integer());
+						}
+						else if (resultType instanceof ResultType.NumericT) {
+						}
+						return Optional.empty();
+					}
+				)
 				// Default case: use a flat "hierarchy" for every other attribute
 				.orElse(new AttributeTypeBuilder.Flat((cell) -> resultInfo.getType().printNullable(printSettings, cell)));
 	}

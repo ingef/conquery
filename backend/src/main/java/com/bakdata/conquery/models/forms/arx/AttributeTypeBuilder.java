@@ -27,6 +27,8 @@ import lombok.RequiredArgsConstructor;
 import org.deidentifier.arx.AttributeType;
 import org.deidentifier.arx.DataType;
 import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
+import org.deidentifier.arx.aggregates.HierarchyBuilderIntervalBased;
+import org.deidentifier.arx.aggregates.HierarchyBuilderIntervalBased.Range;
 
 /**
  * Helper classes that allow us to gather values for possible attribute hierarchies, while
@@ -97,13 +99,54 @@ public interface AttributeTypeBuilder {
 			}
 
 			// Add hierarchy handling for empty values
-			String[][] newhierarchy = Arrays.copyOf(hierarchy, hierarchy.length + 1);
+			String[][] newHierarchy = Arrays.copyOf(hierarchy, hierarchy.length + 1);
 			String[] emptyValueHierarchy = new String[hierarchy.length > 0 ? hierarchy[0].length : 0];
 			Arrays.fill(emptyValueHierarchy, "");
 			emptyValueHierarchy[emptyValueHierarchy.length - 1] = SUPPRESSING_GRANULARITY;
-			newhierarchy[newhierarchy.length - 1] = emptyValueHierarchy;
+			newHierarchy[newHierarchy.length - 1] = emptyValueHierarchy;
 
-			return AttributeType.Hierarchy.create(newhierarchy);
+			return AttributeType.Hierarchy.create(newHierarchy);
+		}
+	}
+
+	class IntegerInterval implements AttributeTypeBuilder {
+
+		private static final long BUCKET_SIZE = 5;
+		private static final int GROUPS_PER_LEVEL = 2;
+
+		private long min = Long.MAX_VALUE;
+		private long max = Long.MIN_VALUE;
+
+		@Override
+		public String register(String value) {
+			if (Strings.isNullOrEmpty(value)) {
+				return value;
+			}
+			final long l = Long.parseLong(value);
+			min = Math.min(min, l);
+			max = Math.max(max, l);
+
+			return value;
+		}
+
+		@Override
+		public AttributeType build() {
+			final HierarchyBuilderIntervalBased<Long> builder = HierarchyBuilderIntervalBased.create(
+					DataType.INTEGER,
+					new Range<Long>(min, min, min),
+					new Range<Long>(max, max, max)
+			);
+
+			final long difference = max - min;
+			if (difference < 5) {
+				return builder.build();
+			}
+
+			// TODO figure out how to use this thingy
+
+			builder.addInterval(min, min + BUCKET_SIZE);
+
+			return null;
 		}
 	}
 
