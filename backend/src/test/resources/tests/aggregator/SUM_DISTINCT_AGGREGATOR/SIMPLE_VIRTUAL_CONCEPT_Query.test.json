@@ -1,0 +1,77 @@
+{
+  "type": "QUERY_TEST",
+  "label": "SUM_DISTINCT_AGGREGATOR Test",
+  "expectedCsv": "tests/aggregator/SUM_DISTINCT_AGGREGATOR/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.select"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "validityDates": {
+            "label": "datum",
+            "column": "table.datum"
+          },
+          "selects": {
+            "name": "select",
+            "type": "SUM",
+            "column": "table.value",
+            "distinctByColumn": [
+              "table.k1",
+              "table.k2"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/SUM_DISTINCT_AGGREGATOR/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "k1",
+            "type": "STRING"
+          },
+          {
+            "name": "k2",
+            "type": "STRING"
+          },
+          {
+            "name": "value",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    ]
+  }
+}

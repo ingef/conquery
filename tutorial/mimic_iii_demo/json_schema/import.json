@@ -10,10 +10,16 @@
 			"items": {
 				"type": "object",
 				"properties" : {
-					"primary" : { "$ref":"import_column.json#"},
+					"primary" : { "$ref":"import_column_copy.json#"},
 					"output": {
 						"type": "array",
-						"items": { "$ref":"import_column.json#"},
+						"items": {
+							"type": "object",
+							"oneOf": [
+								{"$ref":"import_column_copy.json#"},
+								{"$ref":"import_column_compound_dr.json#"}
+							]
+						},
 						"minItems": 1,
 						"uniqueItems": true
 					},

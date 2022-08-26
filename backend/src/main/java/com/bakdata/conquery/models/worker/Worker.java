@@ -169,7 +169,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public boolean isBusy() {
-		return queryExecutor.isBusy();
+		return queryExecutor.isBusy() || jobManager.isSlowWorkerBusy();
 	}
 
 	public void addImport(Import imp) {

@@ -3,9 +3,9 @@ package com.bakdata.conquery.models.datasets;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -45,8 +46,10 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@NotNull
 	private MajorTypeId type;
 
-	private int minSuffixLength = 3;
+	@Nullable
+	private String description;
 
+	private int minSuffixLength = 3;
 	private boolean generateSuffixes;
 	private boolean searchDisabled = false;
 

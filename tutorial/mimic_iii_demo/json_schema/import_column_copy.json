@@ -1,6 +1,6 @@
 {
-	"title": "Import Column",
-	"description": "The import column format of conquery",
+	"title": "Copy Import Column",
+	"description": "The import column format for columns those data is simply copies and then parsed with the specified inputType",
 	"type": "object",
 	"properties": {
 		"inputColumn": { "type": "string" },
@@ -8,7 +8,7 @@
 		"inputType": {"$ref": "cqType.json#"},
         "operation": {
             "type": "string",
-            "pattern": "^(COMPOUND_DATE_RANGE|LINE|EPOCH|NULL|COPY|EPOCH_DATE_RANGE|DATE_RANGE)$"
+            "pattern": "^COPY$"
         },
         "required": {"type": "boolean"}
 	},

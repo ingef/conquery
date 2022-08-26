@@ -45,7 +45,7 @@ public class IndexService implements Injectable {
 		this.csvParserSettings.setHeaderExtractionEnabled(true);
 	}
 
-	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<IndexKey<?>, Index<?>>() {
+	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<>() {
 		@Override
 		public Index<?> load(@NotNull IndexKey key) throws Exception {
 			log.info("Started to parse mapping {}", key);
@@ -138,7 +138,7 @@ public class IndexService implements Injectable {
 
 
 	@SuppressWarnings("unchecked")
-	public <K extends IndexKey<I>, I extends Index<K>, V> I getIndex(K key) {
+	public <K extends IndexKey<I>, I extends Index<K>> I getIndex(K key) {
 		try {
 			return (I) mappings.get(key);
 		}

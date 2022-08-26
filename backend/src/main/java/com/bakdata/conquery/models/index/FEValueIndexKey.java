@@ -4,8 +4,11 @@ import java.net.URL;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
+@EqualsAndHashCode(callSuper = true)
+@ToString
 public class FEValueIndexKey extends AbstractIndexKey<FEValueIndex> {
 
 

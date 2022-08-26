@@ -1,16 +1,19 @@
 import styled from "@emotion/styled";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useHotkeys } from "react-hotkeys-hook";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
+import ErrorFallback from "../error-fallback/ErrorFallback";
 
 import ContentControl, { useContentControl } from "./ContentControl";
 import { DetailControl, DetailLevel } from "./DetailControl";
 import { DownloadEntityDataButton } from "./DownloadEntityDataButton";
 import { EntityHeader } from "./EntityHeader";
+import InteractionControl from "./InteractionControl";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import SourcesControl from "./SourcesControl";
@@ -32,43 +35,49 @@ const SxNavigation = styled(Navigation)`
   padding: 55px 0 10px;
 `;
 
-const SxEntityHeader = styled(EntityHeader)`
-  grid-area: header;
-`;
-const SxTimeline = styled(Timeline)`
-  grid-area: timeline;
-`;
-
 const Controls = styled("div")`
-  grid-area: control;
-  justify-self: end;
-
   display: flex;
   align-items: center;
   gap: 18px;
-  margin: 0 20px;
+  margin-right: 20px;
+`;
+
+const Sidebar = styled("div")`
+  padding: 10px 0;
+  border-right: 1px solid ${({ theme }) => theme.col.grayLight};
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const Header = styled("div")`
+  display: flex;
+  justify-content: space-between;
 `;
 
 const Main = styled("div")`
   overflow: hidden;
   height: 100%;
   display: grid;
-  gap: 10px 0;
-  grid-template-areas: "header control" "line line" "timeline timeline";
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto 1fr;
   padding: 55px 0 10px;
+  gap: 10px;
 `;
 
-const HorizontalLine = styled("div")`
-  grid-area: line;
-  height: 1px;
-  background-color: ${({ theme }) => theme.col.grayLight};
-  width: 100%;
+const Flex = styled("div")`
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+  border-top: 1px solid ${({ theme }) => theme.col.grayLight};
 `;
 
 const SxSourcesControl = styled(SourcesControl)`
   flex-shrink: 0;
   width: 450px;
+`;
+
+const SxTimeline = styled(Timeline)`
+  margin: 10px 0 0;
 `;
 
 export interface EntityIdsStatus {
@@ -82,6 +91,12 @@ export const History = () => {
   const currentEntityId = useSelector<StateT, string | null>(
     (state) => state.entityHistory.currentEntityId,
   );
+
+  const [showAdvancedControls, setShowAdvancedControls] = useState(false);
+
+  useHotkeys("shift+option+h", () => {
+    setShowAdvancedControls((v) => !v);
+  });
 
   const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
   const updateHistorySession = useUpdateHistorySession();
@@ -122,6 +137,9 @@ export const History = () => {
     [setEntityIdsStatus, setEntityStatusOptions, updateHistorySession],
   );
 
+  const { getIsOpen, toggleOpenYear, toggleOpenQuarter, closeAll } =
+    useOpenCloseInteraction();
+
   return (
     <FullScreen>
       <SplitPane
@@ -139,42 +157,52 @@ export const History = () => {
           setEntityStatusOptions={setEntityStatusOptions}
           onLoadFromFile={onLoadFromFile}
         />
-        <Main>
-          {currentEntityId && (
-            <SxEntityHeader
-              currentEntityIndex={currentEntityIndex}
-              currentEntityId={currentEntityId}
-              status={currentEntityStatus}
-              setStatus={setCurrentEntityStatus}
-              entityStatusOptions={entityStatusOptions}
-            />
-          )}
-          <Controls>
-            <DetailControl
-              detailLevel={detailLevel}
-              setDetailLevel={setDetailLevel}
-            />
-            <SxSourcesControl
-              options={options}
-              sourcesFilter={sourcesFilter}
-              setSourcesFilter={setSourcesFilter}
-            />
-            <ContentControl value={contentFilter} onChange={setContentFilter} />
-            <DownloadEntityDataButton />
-          </Controls>
-          <HorizontalLine />
-          <ErrorBoundary
-            fallbackRender={() => {
-              return <div>Something went wrong here.</div>;
-            }}
-          >
-            <SxTimeline
-              detailLevel={detailLevel}
-              sources={sourcesSet}
-              contentFilter={contentFilter}
-            />
-          </ErrorBoundary>
-        </Main>
+        <ErrorBoundary FallbackComponent={ErrorFallback}>
+          <Main>
+            <Header>
+              {currentEntityId && (
+                <EntityHeader
+                  currentEntityIndex={currentEntityIndex}
+                  currentEntityId={currentEntityId}
+                  status={currentEntityStatus}
+                  setStatus={setCurrentEntityStatus}
+                  entityStatusOptions={entityStatusOptions}
+                />
+              )}
+              <Controls>
+                <SxSourcesControl
+                  options={options}
+                  sourcesFilter={sourcesFilter}
+                  setSourcesFilter={setSourcesFilter}
+                />
+                <DownloadEntityDataButton />
+              </Controls>
+            </Header>
+            <Flex>
+              <Sidebar>
+                {showAdvancedControls && (
+                  <DetailControl
+                    detailLevel={detailLevel}
+                    setDetailLevel={setDetailLevel}
+                  />
+                )}
+                <InteractionControl onCloseAll={closeAll} />
+                <ContentControl
+                  value={contentFilter}
+                  onChange={setContentFilter}
+                />
+              </Sidebar>
+              <SxTimeline
+                detailLevel={detailLevel}
+                sources={sourcesSet}
+                contentFilter={contentFilter}
+                getIsOpen={getIsOpen}
+                toggleOpenYear={toggleOpenYear}
+                toggleOpenQuarter={toggleOpenQuarter}
+              />
+            </Flex>
+          </Main>
+        </ErrorBoundary>
       </SplitPane>
     </FullScreen>
   );
@@ -248,5 +276,60 @@ const useSourcesControl = () => {
     sourcesSet,
     sourcesFilter,
     setSourcesFilter,
+  };
+};
+
+const useOpenCloseInteraction = () => {
+  const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
+  const isOpenRef = useRef(isOpen);
+  isOpenRef.current = isOpen;
+
+  const toId = useCallback(
+    (year: number, quarter?: number) => `${year}-${quarter}`,
+    [],
+  );
+
+  const getIsOpen = useCallback(
+    (year: number, quarter?: number) => {
+      if (quarter) {
+        return isOpen[toId(year, quarter)];
+      } else {
+        return [1, 2, 3, 4].every((q) => isOpen[toId(year, q)]);
+      }
+    },
+    [isOpen, toId],
+  );
+
+  const toggleOpenYear = useCallback(
+    (year: number) => {
+      const quarters = [1, 2, 3, 4].map((quarter) => toId(year, quarter));
+      const wasOpen = quarters.some((quarter) => isOpenRef.current[quarter]);
+
+      setIsOpen((prev) => ({
+        ...prev,
+        ...Object.fromEntries(quarters.map((quarter) => [quarter, !wasOpen])),
+      }));
+    },
+    [toId],
+  );
+
+  const toggleOpenQuarter = useCallback(
+    (year: number, quarter: number) => {
+      const id = toId(year, quarter);
+
+      setIsOpen((prev) => ({ ...prev, [id]: !prev[id] }));
+    },
+    [toId],
+  );
+
+  const closeAll = useCallback(() => {
+    setIsOpen({});
+  }, []);
+
+  return {
+    getIsOpen,
+    toggleOpenYear,
+    toggleOpenQuarter,
+    closeAll,
   };
 };

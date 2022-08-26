@@ -20,7 +20,9 @@ public class RemoveWorker extends MessageToShardNode.Slow {
 	
 	@Override
 	public void react(ShardNodeNetworkContext context) throws Exception {
-		log.info("removing worker for {}", dataset);
-		context.getWorkers().removeWorkersFor(dataset.getId());
+		log.info("Removing worker {}", dataset);
+
+		context.getWorkers().removeWorkerFor(dataset.getId());
+
 	}
 }

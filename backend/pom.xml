@@ -257,7 +257,7 @@
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-authz-client</artifactId>
-            <version>15.0.1</version>
+            <version>19.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.arrow</groupId>

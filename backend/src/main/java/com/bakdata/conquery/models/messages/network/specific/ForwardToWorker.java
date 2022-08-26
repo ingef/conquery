@@ -27,7 +27,7 @@ import lombok.ToString;
 /**
  * Messages are sent serialized and only deserialized when they are being processed. This ensures that messages that were sent just shortly before to setup state later messages depend upon is correct.
  */
-@CPSType(id="FORWARD_TO_WORKER", base=NetworkMessage.class)
+@CPSType(id = "FORWARD_TO_WORKER", base = NetworkMessage.class)
 @RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @ToString(of = {"workerId", "text"})
@@ -66,9 +66,8 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 
 			WorkerMessage message = deserializeMessage(messageRaw, worker.getCommunicationMapper());
 
-
-				message.setProgressReporter(progressReporter);
-				message.react(worker);
+			message.setProgressReporter(progressReporter);
+			message.react(worker);
 		}));
 	}
 

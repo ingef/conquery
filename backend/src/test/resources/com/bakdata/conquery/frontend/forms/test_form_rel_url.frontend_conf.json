@@ -1,0 +1,12 @@
+{
+    "title": {
+        "en": "Test Form",
+        "de": "Testformular"
+    },
+    "description": {
+        "de": "Testformular"
+    },
+    "type": "TEST_FORM_REL_URL",
+    "fields": [],
+    "manualUrl": "./test-form"
+}

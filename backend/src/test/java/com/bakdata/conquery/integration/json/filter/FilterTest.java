@@ -32,6 +32,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
+import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -50,6 +51,10 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 	private ResourceFile expectedCsv;
 
+	@NotNull
+	private List<InternToExternMapper> internToExternMappings = List.of();
+
+	@NotNull
 	private List<SearchIndex> searchIndices = Collections.emptyList();
 
 	@NotNull
@@ -86,6 +91,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		content = parseSubTree(support, rawContent, RequiredData.class);
 
+		importInternToExternMappers(support, internToExternMappings);
 		importSearchIndexes(support, searchIndices);
 		importTables(support, content.getTables(), content.isAutoConcept());
 		support.waitUntilWorkDone();

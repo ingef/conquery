@@ -279,6 +279,12 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 		initExecutable(datasetRegistry, config);
 		FullExecutionStatus status = new FullExecutionStatus();
+		setStatusFull(status, storage, subject, datasetRegistry);
+
+		return status;
+	}
+
+	public void setStatusFull(FullExecutionStatus status, MetaStorage storage, Subject subject, DatasetRegistry datasetRegistry) {
 		setStatusBase(subject, status);
 
 		setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, datasetRegistry);
@@ -292,8 +298,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			// Use plain format here to have a uniform serialization.
 			status.setError(error.asPlain());
 		}
-
-		return status;
 	}
 
 	private void setAvailableSecondaryIds(FullExecutionStatus status) {
