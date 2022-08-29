@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -85,6 +86,8 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@JsonView(View.InternalCommunication.class)
 	private boolean aggregateEventDates;
+
+
 
 	@Override
 	public String defaultLabel(Locale locale) {
@@ -295,4 +298,30 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			t.setSelects(conSelects);
 		}
 	}
+
+	public static CQConcept forSelect(Select select) {
+		CQConcept cqConcept = new CQConcept();
+		cqConcept.setElements(List.of(select.getHolder().findConcept()));
+		CQTable table = new CQTable();
+		cqConcept.setTables(List.of(table));
+
+		table.setConnector(((Connector) select.getHolder()));
+
+		table.setSelects(List.of(select));
+
+		return cqConcept;
+	}
+
+	public static CQConcept forConnector(Connector source) {
+		final CQConcept cqConcept = new CQConcept();
+		cqConcept.setElements(List.of(source.getConcept()));
+		final CQTable cqTable = new CQTable();
+		cqTable.setConcept(cqConcept);
+		cqTable.setConnector(source);
+		cqConcept.setTables(List.of(cqTable));
+
+		return cqConcept;
+	}
+
+
 }

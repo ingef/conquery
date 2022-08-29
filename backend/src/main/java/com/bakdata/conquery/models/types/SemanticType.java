@@ -66,6 +66,18 @@ public abstract class SemanticType {
 	}
 
 	/**
+	 * Column contains an Entity's Id of a kind.
+	 * <p>
+	 * See {@link com.bakdata.conquery.models.config.ColumnConfig} / {@link com.bakdata.conquery.models.config.FrontendConfig.UploadConfig}for the source of this.
+	 */
+	@CPSType(id = "DESCRIPTION", base = SemanticType.class)
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	public static class DescriptionT extends SemanticType {
+		private final String description;
+	}
+
+	/**
 	 * Column contains values of a {@link SecondaryIdDescription}.
 	 */
 	@CPSType(id = "SECONDARY_ID", base = SemanticType.class)

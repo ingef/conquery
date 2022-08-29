@@ -25,6 +25,9 @@ public class RequiredColumn {
 	private MajorTypeId type;
 	private String sharedDictionary;
 
+	@Nullable
+	private String description;
+
 	private String secondaryId;
 
 	@Nullable
@@ -47,6 +50,7 @@ public class RequiredColumn {
 		col.setType(type);
 		col.setSharedDictionary(sharedDictionary);
 		col.setTable(table);
+		col.setDescription(description);
 
 		if (!Strings.isNullOrEmpty(secondaryId)) {
 			final SecondaryIdDescription description = storage.resolve(new SecondaryIdDescriptionId(table.getDataset().getId(), secondaryId));

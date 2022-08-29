@@ -1,0 +1,115 @@
+{
+  "type": "QUERY_TEST",
+  "label": "ENTITY_EXPORT_TESTS Test",
+  "expectedCsv": "tests/query/ENTITY_EXPORT_TESTS/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "tree1.child1"
+      ],
+      "tables": [
+        {
+          "id": "tree1.connectors",
+          "filters": []
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "tree1",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "column": "table1.column",
+          "selects": [
+            {
+              "name": "values",
+              "type": "DISTINCT",
+              "column": "table1.column"
+            },
+            {
+              "name": "age",
+              "type": "DATE_DISTANCE",
+              "column": "table1.datum"
+            }
+          ],
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          }
+        }
+      ]
+    },
+    {
+      "label": "tree2",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "column": "table2.column",
+          "selects": [
+            {
+              "name": "values",
+              "type": "DISTINCT",
+              "column": "table2.column"
+            },
+            {
+              "name": "age",
+              "type": "DATE_DISTANCE",
+              "column": "table2.datum"
+            }
+          ],
+          "validityDates": {
+            "label": "datum",
+            "column": "table2.datum"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/ENTITY_EXPORT_TESTS/content1.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          }
+        ]
+      },
+      {
+        "csv": "tests/query/ENTITY_EXPORT_TESTS/content2.csv",
+        "name": "table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING",
+            "description" : "This is a column"
+          }
+        ]
+      }
+    ]
+  }
+}

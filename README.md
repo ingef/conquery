@@ -46,9 +46,9 @@ yarn
 yarn build
 ```
 
-You can then run `conquery/scripts/run_conquery_cypress.sh` to start frontend and backend, and also load the test data
-required by cypress end-to-end test or you can run `conquery/scripts/run_backend_cypress.sh`
-and `conquery/scripts/run_frontend_cypress.sh` separately without loading any data.
+You can then run `conquery/scripts/run_e2e_all.sh` to start frontend and backend, and also load the test data
+required by cypress end-to-end test or you can run `conquery/scripts/run_e2e_backend.sh`
+and `conquery/scripts/run_e2e_frontend.sh` separately without loading any data.
 
 After that, you can visit http://localhost:8081/admin-ui and explore the Admin Panel.
 
@@ -81,10 +81,11 @@ Apart from separate frontend and backend tests, the project also contains end-to
 To run the end-to-end test locally:
 
 1. Make sure you installed all [requirements](#requirements)
-2. From the repo root folder run  `conquery/scripts/run_conquery_cypress.sh`
+2. From the repo root folder run  `conquery/scripts/run_e2e_all.sh`
 3. Wait until the output: `Node server listening on port: 8000` appears
-4. Start cypress from the `conquery/frontend` folder in another terminal: `yarn cypress open`
-5. Then chose a test suite and start it.
+4. To install cypress and it's dependencies, run `yarn` from an other terminal in the `conquery/` folder
+5. Then run `yarn cypress open` to start cypress
+6. Then chose a test suite and start it.
 
 For further informations on this and other tests, please refer to the corresponding [CI configuration](https://github.com/bakdata/conquery/tree/develop/.github/workflows).
 
@@ -96,7 +97,7 @@ To make you own data (in form of CSVs) availiable to conquery some steps are nec
 3. Preprocess your data from CSV to CQPP.
 4. Upload everything.
 
-To get a better impression of the single steps, take a look at the [Tutorial](https://github.com/bakdata/conquery/tree/tutorial/mimic_iii_demo/mimic_iii.ipynb)
+To get a better impression of the single steps, take a look at the [Tutorials](./tutorial/mimic_iii_demo/README.md)
 
 
 ## Acknowledgements

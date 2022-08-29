@@ -14,11 +14,13 @@ interface StyledFaIconProps extends FaIconPropsT {
 }
 
 const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
-  color: ${({ theme, active, red, secondary }) =>
+  color: ${({ theme, active, red, secondary, light }) =>
     red
       ? theme.col.red
       : active
       ? theme.col.blueGrayDark
+      : light
+      ? theme.col.gray
       : secondary
       ? theme.col.orange
       : theme.col.black};
@@ -40,7 +42,7 @@ const SxBasicButton = styled(BasicButton)<{
       : secondary
       ? theme.col.orange
       : theme.col.black};
-  opacity: 0.7;
+  opacity: 0.75;
   transition: opacity ${({ theme }) => theme.transitionTime};
 
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -71,6 +73,7 @@ export interface IconButtonPropsT extends BasicButtonProps {
   left?: boolean;
   frame?: boolean;
   bare?: boolean;
+  light?: boolean;
 }
 
 // A button that is prefixed by an icon
@@ -88,33 +91,37 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       iconProps,
       small,
       secondary,
+      light,
       ...restProps
     },
     ref,
-  ) => (
-    <SxBasicButton
-      active={active}
-      secondary={secondary}
-      {...restProps}
-      ref={ref}
-    >
-      <SxFaIcon
-        main
-        left={left}
-        regular={regular}
-        large={large}
+  ) => {
+    return (
+      <SxBasicButton
         active={active}
-        red={red}
         secondary={secondary}
-        icon={icon}
-        hasChildren={!!children}
-        tight={tight}
-        small={small}
-        {...iconProps}
-      />
-      {children}
-    </SxBasicButton>
-  ),
+        {...restProps}
+        ref={ref}
+      >
+        <SxFaIcon
+          main
+          left={left}
+          regular={regular}
+          large={large}
+          active={active}
+          red={red}
+          secondary={secondary}
+          icon={icon}
+          hasChildren={!!children}
+          tight={tight}
+          small={small}
+          light={light}
+          {...iconProps}
+        />
+        {children}
+      </SxBasicButton>
+    );
+  },
 );
 
 export default memo(IconButton);

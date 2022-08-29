@@ -1,17 +1,22 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
@@ -31,7 +36,7 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 	protected final BiFunction<Object, PrintSettings, String> mapper;
 
 	public MappableSingleColumnSelect(Column column,
-									  @Nullable InternToExternMapper mapping){
+									  @Nullable InternToExternMapper mapping) {
 		super(column);
 		this.mapping = mapping;
 
@@ -41,6 +46,23 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 		else {
 			mapper = null;
 		}
+	}
+
+	@Override
+	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
+
+		final Set<SemanticType> semantics = new HashSet<>();
+
+		// Since these kind of selects work on raw-columns, we embed the columns description.
+		if (getColumn().getDescription() != null) {
+			semantics.add(new SemanticType.DescriptionT(getColumn().getDescription()));
+		}
+
+		if (isCategorical()) {
+			semantics.add(new SemanticType.CategoricalT());
+		}
+
+		return new SelectResultInfo(this, cqConcept, semantics);
 	}
 
 	@Override

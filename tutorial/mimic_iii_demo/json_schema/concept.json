@@ -58,7 +58,7 @@
 		},
 		"children": { "$ref": "concept.json#/$defs/treeChildren" }
 	},
-	"required": ["name", "children", "connectors"],
+	"required": ["name", "connectors"],
 	"$defs": {
 		"treeChildren": {
 			"type": "array",

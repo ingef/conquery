@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { DateRangeT, QueryT } from "../api/types";
@@ -53,25 +53,31 @@ interface PropsT {
   andIdx: number;
   onDropOrNode: (node: StandardQueryNodeT, andIdx: number) => void;
   onDropConceptListFile: (file: File, andIdx: number) => void;
-  onDeleteNode: (idx: number) => void;
-  onEditClick: (orIdx: number) => void;
+  onDeleteNode: (andIdx: number, orIdx: number) => void;
+  onEditClick: (andIdx: number, orIdx: number) => void;
   onExpandClick: (q: QueryT) => void;
   onExcludeClick: (andIdx: number) => void;
   onDateClick: (andIdx: number) => void;
   onDeleteGroup: (andIdx: number) => void;
   onLoadPreviousQuery: (id: PreviousQueryT["id"]) => void;
-  onToggleTimestamps: (orIdx: number) => void;
-  onToggleSecondaryIdExclude: (orIdx: number) => void;
+  onToggleTimestamps: (andIdx: number, orIdx: number) => void;
+  onToggleSecondaryIdExclude: (andIdx: number, orIdx: number) => void;
 }
 
 const QueryGroup = ({
+  group,
   andIdx,
   onExcludeClick,
   onDateClick,
   onDeleteGroup,
   onDropOrNode,
   onDropConceptListFile,
-  ...props
+  onDeleteNode,
+  onEditClick,
+  onExpandClick,
+  onToggleTimestamps,
+  onToggleSecondaryIdExclude,
+  onLoadPreviousQuery,
 }: PropsT) => {
   const { t } = useTranslation();
 
@@ -102,42 +108,53 @@ const QueryGroup = ({
     <Root>
       <SxWithTooltip text={t("help.editorDropzoneOr")} lazy>
         <QueryEditorDropzone
-          key={props.group.elements.length + 1}
+          key={group.elements.length + 1}
           onDropNode={onDropNode}
           onDropFile={onDropFile}
-          onLoadPreviousQuery={props.onLoadPreviousQuery}
+          onLoadPreviousQuery={onLoadPreviousQuery}
         />
       </SxWithTooltip>
       <QueryOrConnector>{t("common.or")}</QueryOrConnector>
-      <Group excluded={props.group.exclude}>
+      <Group excluded={group.exclude}>
         <QueryGroupActions
-          excludeActive={!!props.group.exclude}
-          dateActive={isDateActive(props.group.dateRange)}
+          excludeActive={!!group.exclude}
+          dateActive={isDateActive(group.dateRange)}
           onExcludeClick={excludeClick}
           onDeleteGroup={deleteGroup}
           onDateClick={dateClick}
         />
-        {props.group.elements.map((node, orIdx) => (
-          <div key={`or-${orIdx}`}>
-            <QueryNode
-              node={node}
-              andIdx={andIdx}
-              orIdx={orIdx}
-              onDeleteNode={() => props.onDeleteNode(orIdx)}
-              onEditClick={() => props.onEditClick(orIdx)}
-              onToggleTimestamps={() => props.onToggleTimestamps(orIdx)}
-              onToggleSecondaryIdExclude={() =>
-                props.onToggleSecondaryIdExclude(orIdx)
-              }
-              onExpandClick={props.onExpandClick}
-            />
-            {orIdx !== props.group.elements.length - 1 && (
-              <QueryOrConnector key={"last-or"}>
-                {t("common.or")}
-              </QueryOrConnector>
-            )}
-          </div>
-        ))}
+        {useMemo(
+          () =>
+            group.elements.map((node, orIdx) => (
+              <div key={`or-${orIdx}`}>
+                <QueryNode
+                  node={node}
+                  andIdx={andIdx}
+                  orIdx={orIdx}
+                  onDeleteNode={onDeleteNode}
+                  onEditClick={onEditClick}
+                  onToggleTimestamps={onToggleTimestamps}
+                  onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
+                  onExpandClick={onExpandClick}
+                />
+                {orIdx !== group.elements.length - 1 && (
+                  <QueryOrConnector key={"last-or"}>
+                    {t("common.or")}
+                  </QueryOrConnector>
+                )}
+              </div>
+            )),
+          [
+            t,
+            andIdx,
+            group.elements,
+            onDeleteNode,
+            onEditClick,
+            onToggleTimestamps,
+            onToggleSecondaryIdExclude,
+            onExpandClick,
+          ],
+        )}
       </Group>
     </Root>
   );
