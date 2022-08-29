@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import type { SelectOptionT } from "../api/types";
+import type { EntityInfo, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { BadgeToggleButton } from "../button/BadgeToggleButton";
 import { Heading3 } from "../headings/Headings";
@@ -12,16 +12,21 @@ import EntityInfos from "./EntityInfos";
 const Root = styled("div")`
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 30px;
   padding-left: 10px;
+  justify-content: space-between;
+  width: 100%;
 `;
 const Flex = styled("div")`
   display: flex;
-  align-items: flex-start;
-  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+`;
+const Buttons = styled("div")`
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-auto-flow: column;
   gap: 5px;
-  flex-wrap: wrap;
-  min-width: 180px;
 `;
 
 const SxHeading3 = styled(Heading3)`
@@ -46,6 +51,7 @@ interface Props {
   className?: string;
   currentEntityIndex: number;
   currentEntityId: string;
+  currentEntityInfos: EntityInfo[];
   status: SelectOptionT[];
   setStatus: (value: SelectOptionT[]) => void;
   entityStatusOptions: SelectOptionT[];
@@ -55,6 +61,7 @@ export const EntityHeader = ({
   className,
   currentEntityIndex,
   currentEntityId,
+  currentEntityInfos,
   status,
   setStatus,
   entityStatusOptions,
@@ -78,28 +85,32 @@ export const EntityHeader = ({
 
   return (
     <Root className={className}>
-      <div>
-        <EntityBadge>
-          <Avatar>#{currentEntityIndex + 1}</Avatar>
-          <SxHeading3>{currentEntityId}</SxHeading3>
-        </EntityBadge>
-        <Subtitle>
-          {totalEvents} {t("history.events", { count: totalEvents })}
-        </Subtitle>
-      </div>
-      <EntityInfos />
       <Flex>
-        {entityStatusOptions.map((option, i) => (
-          <BadgeToggleButton
-            key={option.label + i}
-            active={!!status.find((opt) => opt.value === option.value)}
-            onClick={toggleOption(option)}
-            hotkey={i < 9 ? String(i + 1) : undefined}
-          >
-            {option.label}
-          </BadgeToggleButton>
-        ))}
+        <div>
+          <EntityBadge>
+            <Avatar>#{currentEntityIndex + 1}</Avatar>
+            <SxHeading3>{currentEntityId}</SxHeading3>
+          </EntityBadge>
+          <Subtitle>
+            {totalEvents} {t("history.events", { count: totalEvents })}
+          </Subtitle>
+        </div>
+        <EntityInfos infos={currentEntityInfos} />
       </Flex>
+      <Buttons>
+        {entityStatusOptions.map((option, i) => (
+          <span>
+            <BadgeToggleButton
+              key={option.label + i}
+              active={!!status.find((opt) => opt.value === option.value)}
+              onClick={toggleOption(option)}
+              hotkey={i < 9 ? String(i + 1) : undefined}
+            >
+              {option.label}
+            </BadgeToggleButton>
+          </span>
+        ))}
+      </Buttons>
     </Root>
   );
 };

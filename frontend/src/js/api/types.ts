@@ -507,7 +507,15 @@ export type UploadQueryResponseT = {
 
 export type GetEntityHistoryDefaultParamsResponse = string[]; // connectors
 
+export interface EntityInfo {
+  label: string;
+  value: string;
+  type: ColumnDescriptionKind;
+  semantics: ColumnDescriptionSemantic[];
+}
+
 export type GetEntityHistoryResponse = {
   resultUrls: string[];
   columnDescriptions: ColumnDescription[];
+  infos: EntityInfo[];
 };

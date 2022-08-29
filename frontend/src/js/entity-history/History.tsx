@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
-import type { SelectOptionT } from "../api/types";
+import type { EntityInfo, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import ErrorFallback from "../error-fallback/ErrorFallback";
 
@@ -60,8 +60,8 @@ const SidebarBottom = styled("div")`
 
 const Header = styled("div")`
   display: flex;
-  justify-content: space-between;
   gap: 15px;
+  justify-content: space-between;
 `;
 
 const Main = styled("div")`
@@ -99,6 +99,9 @@ export const History = () => {
   );
   const currentEntityId = useSelector<StateT, string | null>(
     (state) => state.entityHistory.currentEntityId,
+  );
+  const currentEntityInfos = useSelector<StateT, EntityInfo[]>(
+    (state) => state.entityHistory.currentEntityInfos,
   );
 
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
@@ -173,6 +176,7 @@ export const History = () => {
                 <EntityHeader
                   currentEntityIndex={currentEntityIndex}
                   currentEntityId={currentEntityId}
+                  currentEntityInfos={currentEntityInfos}
                   status={currentEntityStatus}
                   setStatus={setCurrentEntityStatus}
                   entityStatusOptions={entityStatusOptions}

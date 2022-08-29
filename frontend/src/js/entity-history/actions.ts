@@ -6,7 +6,7 @@ import {
   useGetEntityHistory,
   useGetEntityHistoryDefaultParams,
 } from "../api/api";
-import type { ColumnDescription, DatasetT } from "../api/types";
+import type { ColumnDescription, DatasetT, EntityInfo } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { ErrorObject, errorPayload } from "../common/actions";
@@ -66,6 +66,7 @@ export const loadHistoryData = createAsyncAction(
   {
     currentEntityCsvUrl: string;
     currentEntityData: EntityEvent[];
+    currentEntityInfos: EntityInfo[];
     currentEntityId: string;
     uniqueSources: string[];
     entityIds?: string[];
@@ -141,11 +142,12 @@ export function useUpdateHistorySession() {
       try {
         dispatch(loadHistoryData.request());
 
-        const { resultUrls, columnDescriptions } = await getEntityHistory(
-          datasetId,
-          entityId,
-          defaultEntityHistoryParams.sources,
-        );
+        const { resultUrls, columnDescriptions, infos } =
+          await getEntityHistory(
+            datasetId,
+            entityId,
+            defaultEntityHistoryParams.sources,
+          );
 
         const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
 
@@ -180,6 +182,7 @@ export function useUpdateHistorySession() {
             currentEntityCsvUrl: csvUrl,
             currentEntityData: currentEntityDataProcessed,
             currentEntityId: entityId,
+            currentEntityInfos: infos,
             columnDescriptions,
             columns,
             uniqueSources,
