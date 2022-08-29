@@ -458,6 +458,10 @@
     "downloadEntityData": "CSV",
     "differencesTooltip": "Unterschiede aus den Einzeleinträgen",
     "closeAll": "Alle schließen",
+    "options": {
+      "check": "auffällig",
+      "noCheck": "unauffällig"
+    },
     "detail": {
       "summary": "Zusammenfassung",
       "detail": "Gruppiert",
