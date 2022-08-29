@@ -455,7 +455,7 @@
     "downloadButtonLabel": "Liste herunterladen",
     "nextButtonLabel": "Weiterblättern",
     "prevButtonLabel": "Zurückblättern",
-    "downloadEntityData": "CSV",
+    "downloadEntityData": "Einzelhistorie als CSV herunterladen",
     "differencesTooltip": "Unterschiede aus den Einzeleinträgen",
     "closeAll": "Alle schließen",
     "options": {

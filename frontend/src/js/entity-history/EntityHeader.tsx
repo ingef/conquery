@@ -7,6 +7,8 @@ import type { StateT } from "../app/reducers";
 import { BadgeToggleButton } from "../button/BadgeToggleButton";
 import { Heading3 } from "../headings/Headings";
 
+import EntityInfos from "./EntityInfos";
+
 const Root = styled("div")`
   display: flex;
   align-items: center;
@@ -15,7 +17,8 @@ const Root = styled("div")`
 `;
 const Flex = styled("div")`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  flex-direction: column;
   gap: 5px;
   flex-wrap: wrap;
   min-width: 180px;
@@ -84,6 +87,7 @@ export const EntityHeader = ({
           {totalEvents} {t("history.events", { count: totalEvents })}
         </Subtitle>
       </div>
+      <EntityInfos />
       <Flex>
         {entityStatusOptions.map((option, i) => (
           <BadgeToggleButton

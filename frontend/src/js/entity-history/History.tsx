@@ -44,11 +44,18 @@ const Controls = styled("div")`
 `;
 
 const Sidebar = styled("div")`
-  padding: 10px 0;
+  padding: 10px 0 0;
   border-right: 1px solid ${({ theme }) => theme.col.grayLight};
   display: flex;
   flex-direction: column;
   gap: 20px;
+`;
+const SidebarBottom = styled("div")`
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: flex-end;
 `;
 
 const Header = styled("div")`
@@ -177,7 +184,6 @@ export const History = () => {
                   sourcesFilter={sourcesFilter}
                   setSourcesFilter={setSourcesFilter}
                 />
-                <DownloadEntityDataButton />
               </Controls>
             </Header>
             <Flex>
@@ -193,6 +199,9 @@ export const History = () => {
                   value={contentFilter}
                   onChange={setContentFilter}
                 />
+                <SidebarBottom>
+                  <DownloadEntityDataButton />
+                </SidebarBottom>
               </Sidebar>
               <SxTimeline
                 detailLevel={detailLevel}
