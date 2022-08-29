@@ -16,15 +16,17 @@ export function loadCSV(
   { english }: { english?: boolean } = {},
 ): Promise<ParseResult<string[]>> {
   return new Promise((resolve) => {
+    const downloadRequestHeaders = english
+      ? {
+          downloadRequestHeaders: {
+            // Because we support different csv header versions depending on language
+            "Accept-Language": "en-US,en",
+          },
+        }
+      : {};
+
     Papa.parse<string[]>(url, {
-      ...(english
-        ? {
-            downloadRequestHeaders: {
-              // Because we support different csv header versions depending on language
-              "Accept-Language": "en-US,en",
-            },
-          }
-        : {}),
+      ...downloadRequestHeaders,
       download: true,
       delimiter: ";",
       skipEmptyLines: true,
