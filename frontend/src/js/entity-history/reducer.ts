@@ -1,6 +1,6 @@
 import { getType } from "typesafe-actions";
 
-import type { ColumnDescription, TableT } from "../api/types";
+import type { ColumnDescription, EntityInfo, TableT } from "../api/types";
 import type { Action } from "../app/actions";
 
 import {
@@ -12,8 +12,8 @@ import {
 } from "./actions";
 
 // TODO: This is quite inaccurate
-export type EntityEvent = { 
-  dates: { 
+export type EntityEvent = {
+  dates: {
     from: string; // e.g. 2022-01-31
     to: string; // e.g. 2022-01-31
   };
@@ -34,6 +34,7 @@ export type EntityHistoryStateT = {
   currentEntityId: string | null;
   currentEntityData: EntityEvent[];
   currentEntityCsvUrl: string;
+  currentEntityInfos: EntityInfo[];
 };
 
 const initialState: EntityHistoryStateT = {
@@ -50,6 +51,7 @@ const initialState: EntityHistoryStateT = {
   currentEntityId: null,
   currentEntityData: [],
   currentEntityCsvUrl: "",
+  currentEntityInfos: [],
 };
 
 export default function reducer(
@@ -80,6 +82,7 @@ export default function reducer(
         currentEntityId: null,
         currentEntityData: [],
         currentEntityCsvUrl: "",
+        currentEntityInfos: [],
       };
     case getType(openHistory):
       return { ...state, isOpen: true };
