@@ -362,12 +362,17 @@ export type ColumnDescriptionSemantic =
   | ColumnDescriptionSemanticResolution; // Probably won't be used by us
 
 export interface ColumnDescription {
-  label: string; // Matches column name in CSV
+  // `label` matches column name in CSV
+  // So it's more of an id, TODO: rename this to 'id',
+  label: string;
+
   type: ColumnDescriptionKind;
   semantics: ColumnDescriptionSemantic[];
 
-  // NOT USED BY US:
+  // More of a "real" label, TODO: rename this to "label"
   defaultLabel: string;
+
+  // NOT USED BY US:
   selectId: string | null;
   userConceptLabel: string | null;
 }
