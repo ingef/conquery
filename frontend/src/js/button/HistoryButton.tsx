@@ -6,7 +6,6 @@ import type { ColumnDescription } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { openHistory, useNewHistorySession } from "../entity-history/actions";
-import WithTooltip from "../tooltip/WithTooltip";
 
 import IconButton from "./IconButton";
 
@@ -31,19 +30,17 @@ const HistoryButton = ({ url, label, columns, ...restProps }: PropsT) => {
   const newHistorySession = useNewHistorySession();
 
   return (
-    <WithTooltip text={t("history.history")}>
-      <SxIconButton
-        icon={isLoading ? "spinner" : "id-badge"}
-        frame
-        onClick={async () => {
-          await newHistorySession(getAuthorizedUrl(url), columns, label);
-          dispatch(openHistory());
-        }}
-        {...restProps}
-      >
-        {t("history.history")}
-      </SxIconButton>
-    </WithTooltip>
+    <SxIconButton
+      icon={isLoading ? "spinner" : "id-badge"}
+      frame
+      onClick={async () => {
+        await newHistorySession(getAuthorizedUrl(url), columns, label);
+        dispatch(openHistory());
+      }}
+      {...restProps}
+    >
+      {t("history.history")}
+    </SxIconButton>
   );
 };
 
