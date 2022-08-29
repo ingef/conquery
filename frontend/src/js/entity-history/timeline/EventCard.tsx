@@ -155,13 +155,16 @@ const EventCard = ({
             <>
               <WithTooltip text={moneyTooltip}>
                 <span>
-                  <SxFaIcon icon="money-bill-alt" active tiny />
+                  <SxFaIcon icon="euro-sign" active tiny />
                 </span>
               </WithTooltip>
               <ColBucketCode>
                 {applicableMoney.map((column) => (
                   <NumberFormat
-                    {...currencyConfig}
+                    thousandSeparator={currencyConfig.thousandSeparator}
+                    decimalSeparator={currencyConfig.decimalSeparator}
+                    decimalScale={currencyConfig.decimalScale}
+                    suffix={currencyConfig.prefix}
                     displayType="text"
                     value={parseInt(row[column.label]) / 100}
                   />
