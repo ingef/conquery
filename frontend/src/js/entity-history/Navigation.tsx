@@ -50,6 +50,7 @@ const BottomActions = styled("div")`
 
 const BackButton = styled(IconButton)`
   margin: 0 10px 0 20px;
+  display: block;
 `;
 
 const SxIconButton = styled(IconButton)`
