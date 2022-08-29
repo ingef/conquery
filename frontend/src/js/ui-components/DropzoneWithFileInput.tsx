@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useRef, ReactNode } from "react";
+import { useRef, ReactNode, Ref, forwardRef, ReactElement } from "react";
 import { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
@@ -64,17 +64,20 @@ interface PropsT<DroppableObject> {
 */
 const DropzoneWithFileInput = <
   DroppableObject extends PossibleDroppableObject = DragItemFile,
->({
-  onSelectFile,
-  acceptedDropTypes,
-  disableClick,
-  showFileSelectButton,
-  children,
-  onDrop,
-  isInitial,
-  className,
-  accept,
-}: PropsT<DroppableObject>) => {
+>(
+  {
+    onSelectFile,
+    acceptedDropTypes,
+    disableClick,
+    showFileSelectButton,
+    children,
+    onDrop,
+    isInitial,
+    className,
+    accept,
+  }: PropsT<DroppableObject>,
+  ref: Ref<HTMLDivElement>,
+) => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -104,6 +107,7 @@ const DropzoneWithFileInput = <
       }}
       isInitial={isInitial}
       className={className}
+      ref={ref}
     >
       {(args) => (
         <>
@@ -134,4 +138,8 @@ const DropzoneWithFileInput = <
   );
 };
 
-export default DropzoneWithFileInput;
+export default forwardRef(DropzoneWithFileInput) as <
+  DroppableObject extends PossibleDroppableObject = DragItemFile,
+>(
+  p: PropsT<DroppableObject> & { ref?: Ref<HTMLDivElement> },
+) => ReactElement;

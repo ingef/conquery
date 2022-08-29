@@ -1,6 +1,6 @@
 import { useTheme, Theme, css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { forwardRef } from "react";
 
 const bottomBorderBase = css`
   content: "";
@@ -56,6 +56,7 @@ interface PropsT {
   size: "M" | "L";
   isSelected?: boolean;
   onClick: () => void;
+  children?: React.ReactNode;
 }
 
 const valueToColor = (theme: Theme, value: string) => {
@@ -69,27 +70,24 @@ const valueToColor = (theme: Theme, value: string) => {
   }
 };
 
-const SmallTabNavigationButton: FC<PropsT> = ({
-  value,
-  children,
-  size,
-  isSelected,
-  onClick,
-}) => {
-  const theme = useTheme();
-  const highlightColor = valueToColor(theme, value);
+const SmallTabNavigationButton = forwardRef<HTMLButtonElement, PropsT>(
+  ({ value, children, size, isSelected, onClick }, ref) => {
+    const theme = useTheme();
+    const highlightColor = valueToColor(theme, value);
 
-  return (
-    <Button
-      highlightColor={highlightColor}
-      type="button"
-      size={size}
-      selected={isSelected}
-      onClick={onClick}
-    >
-      {children}
-    </Button>
-  );
-};
+    return (
+      <Button
+        ref={ref}
+        highlightColor={highlightColor}
+        type="button"
+        size={size}
+        selected={isSelected}
+        onClick={onClick}
+      >
+        {children}
+      </Button>
+    );
+  },
+);
 
 export default SmallTabNavigationButton;
