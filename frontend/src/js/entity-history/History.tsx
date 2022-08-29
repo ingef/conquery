@@ -54,6 +54,7 @@ const Sidebar = styled("div")`
 const Header = styled("div")`
   display: flex;
   justify-content: space-between;
+  gap: 15px;
 `;
 
 const Main = styled("div")`

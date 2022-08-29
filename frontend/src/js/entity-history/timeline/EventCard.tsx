@@ -109,23 +109,25 @@ const EventCard = ({
     exists(row[column.label]),
   );
   const secondaryIdsTooltip = applicableSecondaryIds
-    .map((c) => c.label)
+    .map((c) => c.defaultLabel)
     .join(", ");
 
   const applicableConcepts = columnBuckets.concepts.filter((column) =>
     exists(row[column.label]),
   );
-  const conceptsTooltip = applicableConcepts.map((c) => c.label).join(", ");
+  const conceptsTooltip = applicableConcepts
+    .map((c) => c.defaultLabel)
+    .join(", ");
 
   const applicableMoney = columnBuckets.money.filter((column) =>
     exists(row[column.label]),
   );
-  const moneyTooltip = applicableMoney.map((c) => c.label).join(", ");
+  const moneyTooltip = applicableMoney.map((c) => c.defaultLabel).join(", ");
 
   const applicableRest = columnBuckets.rest.filter((column) =>
     exists(row[column.label]),
   );
-  const restTooltip = applicableRest.map((c) => c.label).join(", ");
+  const restTooltip = applicableRest.map((c) => c.defaultLabel).join(", ");
 
   return (
     <Card>
