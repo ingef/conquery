@@ -19,16 +19,9 @@ interface PropsT {
   columns: ColumnDescription[];
   label: string;
   url: string;
-  className?: string;
 }
 
-const HistoryButton = ({
-  url,
-  label,
-  columns,
-  className,
-  ...restProps
-}: PropsT) => {
+const HistoryButton = ({ url, label, columns, ...restProps }: PropsT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const isLoading = useSelector<StateT, boolean>(
@@ -39,7 +32,7 @@ const HistoryButton = ({
   const newHistorySession = useNewHistorySession();
 
   return (
-    <WithTooltip text={t("history.history")} className={className}>
+    <WithTooltip text={t("history.history")}>
       <SxIconButton
         icon={isLoading ? "spinner" : "id-badge"}
         onClick={async () => {

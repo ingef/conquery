@@ -73,11 +73,8 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
   };
 
   return (
-    <>
-      <WithTooltip
-        text={t("uploadQueryResults.uploadResults")}
-        className={className}
-      >
+    <div className={className}>
+      <WithTooltip text={t("uploadQueryResults.uploadResults")}>
         <SxIconButton
           frame
           icon="upload"
@@ -94,7 +91,7 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
           onUpload={onUpload}
         />
       )}
-    </>
+    </div>
   );
 };
 

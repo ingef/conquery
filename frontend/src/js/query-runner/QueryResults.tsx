@@ -15,6 +15,7 @@ const Root = styled("div")`
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 7px;
 `;
 
 const Text = styled("p")`
@@ -26,18 +27,6 @@ const Text = styled("p")`
 const LgText = styled(Text)`
   font-size: ${({ theme }) => theme.font.lg};
   white-space: nowrap;
-`;
-
-const SxDownloadButton = styled(DownloadButton)`
-  margin-left: 7px;
-`;
-
-const SxPreviewButton = styled(PreviewButton)`
-  margin-left: 7px;
-`;
-
-const SxHistoryButton = styled(HistoryButton)`
-  margin-left: 7px;
 `;
 
 const Bold = styled("span")`
@@ -79,10 +68,10 @@ const QueryResults: FC<PropsT> = ({
         </LgText>
       )}
       {!!csvUrl && exists(resultColumns) && (
-        <SxPreviewButton columns={resultColumns} url={csvUrl} />
+        <PreviewButton columns={resultColumns} url={csvUrl} />
       )}
       {isHistoryEnabled && !!csvUrl && exists(resultColumns) && (
-        <SxHistoryButton
+        <HistoryButton
           columns={resultColumns}
           url={csvUrl}
           label={resultLabel}
@@ -92,9 +81,9 @@ const QueryResults: FC<PropsT> = ({
         const ending = url.split(".").reverse()[0];
 
         return (
-          <SxDownloadButton key={url} frame url={url}>
+          <DownloadButton key={url} frame url={url}>
             {ending.toUpperCase()}
-          </SxDownloadButton>
+          </DownloadButton>
         );
       })}
     </Root>

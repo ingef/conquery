@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode } from "react";
+import { ForwardedRef, forwardRef, ReactNode } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 
 import { DNDType } from "../common/constants/dndTypes";
@@ -93,17 +93,20 @@ export const isMovedObject = (
   }
 };
 
-const Dropzone = <DroppableObject extends PossibleDroppableObject>({
-  className,
-  acceptedDropTypes,
-  naked,
-  transparent,
-  bare,
-  canDrop,
-  onDrop,
-  onClick,
-  children,
-}: DropzoneProps<DroppableObject>) => {
+const Dropzone = <DroppableObject extends PossibleDroppableObject>(
+  {
+    className,
+    acceptedDropTypes,
+    naked,
+    transparent,
+    bare,
+    canDrop,
+    onDrop,
+    onClick,
+    children,
+  }: DropzoneProps<DroppableObject>,
+  ref?: ForwardedRef<HTMLDivElement>,
+) => {
   /*  actually, not "any", but ChildArgs<DroppableObject>. But I can't get that to work in JSX */
   const [{ canDrop: canDropResult, isOver, item }, dropRef] = useDrop<
     DroppableObject,
@@ -122,7 +125,18 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>({
 
   return (
     <Root
-      ref={dropRef}
+      ref={(instance) => {
+        dropRef(instance);
+
+        // TODO: Probably a way to improve this, maybe find a good mergeRef helper
+        if (ref) {
+          if (typeof ref === "object") {
+            ref.current = instance;
+          } else {
+            ref(instance);
+          }
+        }
+      }}
       isOver={isOver}
       canDrop={canDropResult}
       className={className}
@@ -141,4 +155,10 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>({
   );
 };
 
-export default Dropzone;
+export default forwardRef(Dropzone) as <
+  DroppableObject extends PossibleDroppableObject,
+>(
+  props: DropzoneProps<DroppableObject> & {
+    ref?: ForwardedRef<HTMLDivElement>;
+  },
+) => JSX.Element;

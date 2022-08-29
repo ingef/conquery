@@ -133,11 +133,13 @@ const FormConceptNode: FC<PropsT> = ({
     >
       <div>
         <WithTooltip text={tooltipText}>
-          {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-          <Label>{conceptNode && conceptNode.label}</Label>
-          {conceptNode && !!conceptNode.description && (
-            <Description>{conceptNode.description}</Description>
-          )}
+          <>
+            {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
+            <Label>{conceptNode && conceptNode.label}</Label>
+            {conceptNode && !!conceptNode.description && (
+              <Description>{conceptNode.description}</Description>
+            )}
+          </>
         </WithTooltip>
       </div>
       <Right>

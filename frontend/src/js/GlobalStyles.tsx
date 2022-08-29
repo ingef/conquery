@@ -1,5 +1,6 @@
 import type { Theme } from "@emotion/react";
 import { css, Global, useTheme } from "@emotion/react";
+import { tippyjsReactOverrides } from "./tooltip/WithTooltip";
 
 const globalStyles = (theme: Theme) => css`
   * {
@@ -133,20 +134,14 @@ const splitPaneStyles = (theme: Theme) => css`
   }
 `;
 
-const tippyStyleOverrides = css`
-  .tippy-popper {
-    max-width: initial;
-  }
-`;
-
 const GlobalStyles = () => {
   const theme = useTheme();
 
   return (
     <>
-      <Global styles={tippyStyleOverrides} />
       <Global styles={globalStyles(theme)} />
       <Global styles={splitPaneStyles(theme)} />
+      <Global styles={tippyjsReactOverrides} />
     </>
   );
 };
