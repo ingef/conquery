@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.tests;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importInternToExternMappers;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -68,11 +69,14 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		final Dataset dataset = conquery.getDataset();
 
-		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
+
+			importInternToExternMappers(conquery, test.getInternToExternMappings());
+			conquery.waitUntilWorkDone();
 
 			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
 			conquery.waitUntilWorkDone();
@@ -84,6 +88,9 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
+			conquery.waitUntilWorkDone();
+
+			LoadingUtil.updateMatchingStats(conquery);
 			conquery.waitUntilWorkDone();
 		}
 
@@ -158,10 +165,10 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
 				.containsExactlyInAnyOrder(
-						"result,dates,source,table1 column,table2 column",
-						"1,2013-11-10,table1,A1,",
-						"1,2012-01-01,table2,,A1",
-						"1,2010-07-15,table2,,B2"
+						"result,dates,source,secondaryid,table1 column,table2 column",
+						"1,2012-01-01,table2,2222,,A1",
+						"1,2010-07-15,table2,External: threthree,,B2",
+						"1,2013-11-10,table1,External: oneone,A1,"
 				);
 
 

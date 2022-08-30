@@ -263,9 +263,11 @@ public class Namespace implements Closeable {
 			   .flatMap(con -> con.getSelects().stream())
 			   .filter(MappableSingleColumnSelect.class::isInstance)
 			   .map(MappableSingleColumnSelect.class::cast)
-			   .forEach((s) ->
-								jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping))
-			   );
+			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
+
+		storage.getSecondaryIds().stream()
+			   .filter(desc -> desc.getMapping() != null)
+			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping()::init)));
 
 	}
 

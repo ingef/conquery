@@ -2,11 +2,6 @@ package com.bakdata.conquery.models.index;
 
 
 import java.net.URL;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -79,7 +74,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@Override
 	public String external(String internalValue) {
-		return int2ext.getOrDefault(internalValue, "");
+		return int2ext.getOrDefault(internalValue, internalValue); //TODO @ToniTub this seems like the better option?
 	}
 
 	@Override
