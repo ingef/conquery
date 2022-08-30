@@ -46,7 +46,8 @@ public class ResultTestUtil {
 	}
 
 
-	public static List<ResultInfo> ID_FIELDS = List.of("id1", "id2").stream().map(n  -> new SimpleResultInfo(n, ResultType.StringT.getINSTANCE(), Set.of(new SemanticType.IdT("ID")))).collect(Collectors.toList());
+	public static List<ResultInfo> ID_FIELDS = Stream.of("id1", "id2")
+													 .map(n  -> new SimpleResultInfo(n, ResultType.StringT.getINSTANCE(), "", Set.of(new SemanticType.IdT("ID")))).collect(Collectors.toList());
 
 	@NotNull
 	public static List<EntityResult> getTestEntityResults() {
