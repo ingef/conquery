@@ -79,6 +79,7 @@ public class EntityPreviewForm extends Form {
 
 		exportQuery.setDateRange(dateRange);
 		exportQuery.setTables(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
+		exportQuery.setRawConceptValues(false);
 
 		// Query exporting a few additional infos on the entity.
 		final AbsoluteFormQuery infoCardQuery =
