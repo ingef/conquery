@@ -43,6 +43,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ColumnResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
@@ -211,10 +212,8 @@ public class TableExportQuery extends Query {
 			infos[pos] = new SimpleResultInfo(
 					desc.getLabel(),
 					ResultType.StringT.INSTANCE,
-					Set.of(
-							new SemanticType.SecondaryIdT(desc),
-							new SemanticType.DescriptionT(desc.getDescription())
-					)
+					desc.getDescription(),
+					Set.of(new SemanticType.SecondaryIdT(desc))
 			);
 		}
 
@@ -239,10 +238,6 @@ public class TableExportQuery extends Query {
 
 			final Set<SemanticType> semantics = new HashSet<>();
 
-			if (column.getDescription() != null) {
-				semantics.add(new SemanticType.DescriptionT(column.getDescription()));
-			}
-
 			ResultType resultType = ResultType.resolveResultType(column.getType());
 
 			if (connectorColumns.containsKey(column)) {
@@ -258,7 +253,9 @@ public class TableExportQuery extends Query {
 				}
 			}
 
-			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType, semantics);
+
+
+			infos[position] = new ColumnResultInfo(column, resultType, semantics);
 		}
 
 		return List.of(infos);
