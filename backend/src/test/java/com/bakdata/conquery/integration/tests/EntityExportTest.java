@@ -134,13 +134,17 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				.isNotNull()
 				.isNotEmpty();
 
-		final Optional<ColumnDescriptor> t2values = result.getColumnDescriptions().stream()
+		final Optional<ColumnDescriptor> maybeTable2Column = result.getColumnDescriptions().stream()
 														  .filter(desc -> "table2 column".equals(desc.getLabel()))
 														  .findFirst();
 
-		assertThat(t2values).isPresent();
-		assertThat(t2values.get().getDescription()).isEqualTo("This is a column");
-		assertThat(t2values.get().getSemantics())
+		assertThat(maybeTable2Column).isPresent();
+
+		final ColumnDescriptor table2Column = maybeTable2Column.get();
+
+		assertThat(table2Column.getDefaultLabel()).isEqualTo("column");
+		assertThat(table2Column.getDescription()).isEqualTo("This is a column");
+		assertThat(table2Column.getSemantics())
 				.contains(
 						new SemanticType.ConceptColumnT(conquery.getDatasetRegistry().resolve(ConceptId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2")))
 				);
