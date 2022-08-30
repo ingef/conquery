@@ -50,6 +50,7 @@ const BottomActions = styled("div")`
 
 const BackButton = styled(IconButton)`
   margin: 0 10px 0 20px;
+  display: block;
 `;
 
 const SxIconButton = styled(IconButton)`
@@ -110,11 +111,16 @@ export const Navigation = memo(
       [entityIdsStatus],
     );
 
+    const backButtonWarning =
+      markedCount > 0 ? t("history.backButtonWarning") : "";
+
     return (
       <Root className={className}>
-        <BackButton frame icon="chevron-left" onClick={onCloseHistory}>
-          {t("common.cancel")}
-        </BackButton>
+        <WithTooltip text={backButtonWarning}>
+          <BackButton frame icon="chevron-left" onClick={onCloseHistory}>
+            {t("common.back")}
+          </BackButton>
+        </WithTooltip>
         <SxNavigationHeader
           markedCount={markedCount}
           idsCount={entityIds.length}

@@ -33,7 +33,7 @@ const ContentControl = ({ value, onChange }: Props) => {
       },
       {
         key: "money" as const,
-        icon: "money-bill-alt" as const,
+        icon: "euro-sign" as const,
         tooltip: t("history.content.money"),
       },
       {

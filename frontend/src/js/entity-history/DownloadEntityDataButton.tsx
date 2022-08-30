@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
 import DownloadButton from "../button/DownloadButton";
+import WithTooltip from "../tooltip/WithTooltip";
 
 interface Props {
   className?: string;
@@ -15,8 +16,8 @@ export const DownloadEntityDataButton = ({ className }: Props) => {
   );
 
   return (
-    <DownloadButton className={className} url={csvUrl}>
-      {t("history.downloadEntityData")}
-    </DownloadButton>
+    <WithTooltip text={t("history.downloadEntityData")}>
+      <DownloadButton className={className} url={csvUrl}></DownloadButton>
+    </WithTooltip>
   );
 };

@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { memo, useCallback } from "react";
+import { forwardRef, memo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { QueryIdT } from "../api/types";
@@ -52,47 +52,53 @@ interface Props {
   onLoadPreviousQuery: (id: QueryIdT) => void;
 }
 
-const QueryEditorDropzone = ({
-  className,
-  isAnd,
-  isInitial,
-  onLoadPreviousQuery,
-  onDropFile,
-  onDropNode,
-}: Props) => {
-  const { t } = useTranslation();
-  const onDrop = useCallback(
-    (item: StandardQueryNodeT | DragItemFile) => {
-      if (item.type === "__NATIVE_FILE__") {
-        onDropFile(item.files[0]);
-      } else {
-        onDropNode(item);
-
-        if (!nodeIsConceptQueryNode(item)) onLoadPreviousQuery(item.id);
-      }
+const QueryEditorDropzone = forwardRef<HTMLDivElement, Props>(
+  (
+    {
+      className,
+      isAnd,
+      isInitial,
+      onLoadPreviousQuery,
+      onDropFile,
+      onDropNode,
     },
-    [onDropFile, onDropNode, onLoadPreviousQuery],
-  );
+    ref,
+  ) => {
+    const { t } = useTranslation();
+    const onDrop = useCallback(
+      (item: StandardQueryNodeT | DragItemFile) => {
+        if (item.type === "__NATIVE_FILE__") {
+          onDropFile(item.files[0]);
+        } else {
+          onDropNode(item);
 
-  return (
-    <SxDropzoneWithFileInput /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<StandardQueryNodeT>>> */
-      className={className}
-      isAnd={isAnd}
-      isInitial={isInitial}
-      acceptedDropTypes={DROP_TYPES}
-      onDrop={(item) => onDrop(item as StandardQueryNodeT | DragItemFile)}
-      onSelectFile={onDropFile}
-      disableClick={isInitial}
-      showFileSelectButton={isInitial}
-    >
-      {() => (
-        <>
-          {isInitial && <EmptyQueryEditorDropzone />}
-          {!isInitial && <Text>{t("dropzone.dragElementPlease")}</Text>}
-        </>
-      )}
-    </SxDropzoneWithFileInput>
-  );
-};
+          if (!nodeIsConceptQueryNode(item)) onLoadPreviousQuery(item.id);
+        }
+      },
+      [onDropFile, onDropNode, onLoadPreviousQuery],
+    );
+
+    return (
+      <SxDropzoneWithFileInput /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<StandardQueryNodeT>>> */
+        ref={ref}
+        className={className}
+        isAnd={isAnd}
+        isInitial={isInitial}
+        acceptedDropTypes={DROP_TYPES}
+        onDrop={(item) => onDrop(item as StandardQueryNodeT | DragItemFile)}
+        onSelectFile={onDropFile}
+        disableClick={isInitial}
+        showFileSelectButton={isInitial}
+      >
+        {() => (
+          <>
+            {isInitial && <EmptyQueryEditorDropzone />}
+            {!isInitial && <Text>{t("dropzone.dragElementPlease")}</Text>}
+          </>
+        )}
+      </SxDropzoneWithFileInput>
+    );
+  },
+);
 
 export default memo(QueryEditorDropzone);

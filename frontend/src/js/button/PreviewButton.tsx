@@ -19,15 +19,9 @@ const SxIconButton = styled(IconButton)`
 interface PropsT {
   columns: ColumnDescription[];
   url: string;
-  className?: string;
 }
 
-const PreviewButton: FC<PropsT> = ({
-  url,
-  columns,
-  className,
-  ...restProps
-}) => {
+const PreviewButton: FC<PropsT> = ({ url, columns, ...restProps }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const isLoading = useSelector<StateT, boolean>(
@@ -38,7 +32,7 @@ const PreviewButton: FC<PropsT> = ({
   const getAuthorizedUrl = useGetAuthorizedUrl();
 
   return (
-    <WithTooltip text={t("preview.preview")} className={className}>
+    <WithTooltip text={t("preview.preview")}>
       <SxIconButton
         icon={isLoading ? "spinner" : "search"}
         onClick={async () => {

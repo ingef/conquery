@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.preview.EntityPreviewStatus;
@@ -129,16 +130,17 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				new EntityPreviewStatus.Info(
 						"Age",
 						"8",
-						ResultType.IntegerT.INSTANCE,
+						ResultType.IntegerT.INSTANCE.typeInfo(),
+						"",
 						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
 																	  .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
 				),
 				new EntityPreviewStatus.Info(
 						"Values",
 						"A1 ; B2",
-						new ResultType.ListT(ResultType.StringT.INSTANCE),
+						new ResultType.ListT(ResultType.StringT.INSTANCE).typeInfo(),
+						"This is a column",
 						Set.of(
-								new SemanticType.DescriptionT("This is a column"),
 								new SemanticType.SelectResultT(conquery.getDatasetRegistry()
 																	   .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values")))
 						)
@@ -154,7 +156,11 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 														  .findFirst();
 
 		assertThat(t2values).isPresent();
-		assertThat(t2values.get().getSemantics()).contains(new SemanticType.DescriptionT("This is a column"));
+		assertThat(t2values.get().getDescription()).isEqualTo("This is a column");
+		assertThat(t2values.get().getSemantics())
+				.contains(
+						new SemanticType.ConceptColumnT(conquery.getDatasetRegistry().resolve(ConceptId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2")))
+				);
 
 
 		final Optional<URL> csvUrl = result.getResultUrls().stream()
@@ -164,6 +170,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		assertThat(csvUrl).isPresent();
 
 		final Response resultLines = conquery.getClient().target(csvUrl.get().toURI())
+											 .queryParam("pretty", false)
 											 .request(AdditionalMediaTypes.CSV)
 											 .header("Accept-Language", "en-Us")
 											 .get();
@@ -176,9 +183,9 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
 				.containsExactlyInAnyOrder(
 						"result,dates,source,table1 column,table2 column",
-						"1,2013-11-10,table1,A1,",
-						"1,2012-01-01,table2,,A1",
-						"1,2010-07-15,table2,,B2"
+						"1,{2012-01-01/2012-01-01},table2,,tree2",
+						"1,{2010-07-15/2010-07-15},table2,,tree2",
+						"1,{2013-11-10/2013-11-10},table1,tree1.child_a,"
 				);
 
 
