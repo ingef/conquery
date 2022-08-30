@@ -105,27 +105,27 @@ const EventCard = ({
   groupedRows,
   groupedRowsDifferences,
 }: Props) => {
+  const getTooltip = (cols: ColumnDescription[]) =>
+    cols.map((c) => c.defaultLabel).join(", ");
+
   const applicableSecondaryIds = columnBuckets.secondaryIds.filter((column) =>
     exists(row[column.label]),
   );
-  const secondaryIdsTooltip = applicableSecondaryIds
-    .map((c) => c.label)
-    .join(", ");
+  const secondaryIdsTooltip = getTooltip(applicableSecondaryIds);
 
   const applicableConcepts = columnBuckets.concepts.filter((column) =>
     exists(row[column.label]),
   );
-  const conceptsTooltip = applicableConcepts.map((c) => c.label).join(", ");
-
+  const conceptsTooltip = getTooltip(applicableConcepts);
   const applicableMoney = columnBuckets.money.filter((column) =>
     exists(row[column.label]),
   );
-  const moneyTooltip = applicableMoney.map((c) => c.label).join(", ");
+  const moneyTooltip = getTooltip(applicableMoney);
 
   const applicableRest = columnBuckets.rest.filter((column) =>
     exists(row[column.label]),
   );
-  const restTooltip = applicableRest.map((c) => c.label).join(", ");
+  const restTooltip = getTooltip(applicableRest);
 
   return (
     <Card>
@@ -137,7 +137,9 @@ const EventCard = ({
           {contentFilter.secondaryId && applicableSecondaryIds.length > 0 && (
             <>
               <WithTooltip text={secondaryIdsTooltip}>
-                <SxFaIcon icon="microscope" active tiny />
+                <span>
+                  <SxFaIcon icon="microscope" active tiny />
+                </span>
               </WithTooltip>
               <ColBucket>
                 {applicableSecondaryIds.map((column) => (
@@ -152,7 +154,9 @@ const EventCard = ({
           {contentFilter.money && applicableMoney.length > 0 && (
             <>
               <WithTooltip text={moneyTooltip}>
-                <SxFaIcon icon="money-bill-alt" active tiny />
+                <span>
+                  <SxFaIcon icon="money-bill-alt" active tiny />
+                </span>
               </WithTooltip>
               <ColBucketCode>
                 {applicableMoney.map((column) => (
@@ -168,7 +172,9 @@ const EventCard = ({
           {contentFilter.rest && applicableRest.length > 0 && (
             <>
               <WithTooltip text={restTooltip}>
-                <SxFaIcon icon="info" active tiny />
+                <span>
+                  <SxFaIcon icon="info" active tiny />
+                </span>
               </WithTooltip>
               <ColBucket>
                 {applicableRest.map((column) => (
@@ -180,7 +186,9 @@ const EventCard = ({
           {contentFilter.concept && applicableConcepts.length > 0 && (
             <>
               <WithTooltip text={conceptsTooltip}>
-                <SxFaIcon icon="folder" active tiny />
+                <span>
+                  <SxFaIcon icon="folder" active tiny />
+                </span>
               </WithTooltip>
               <ColBucket>
                 {applicableConcepts.map((column) => (

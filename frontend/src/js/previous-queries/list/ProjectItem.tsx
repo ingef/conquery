@@ -71,6 +71,7 @@ const SxFormSymbol = styled(FormSymbol)`
 const TopRight = styled("div")`
   display: flex;
   align-items: center;
+  gap: 10px;
   flex-shrink: 0;
   margin-left: 5px;
 `;
@@ -81,6 +82,7 @@ const TopLeft = styled("div")`
 
 const TooltipText = styled("div")`
   font-weight: 400;
+  font-size: ${({ theme }) => theme.font.md};
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -101,10 +103,6 @@ const LabelRow = styled("div")`
   justify-content: space-between;
   line-height: 24px;
   margin: 2px 0;
-`;
-
-const StyledWithTooltip = styled(WithTooltip)`
-  margin-left: 10px;
 `;
 
 const Content = styled("div")<{ own?: boolean; system?: boolean }>`
@@ -238,16 +236,16 @@ const ProjectItem = forwardRef<HTMLDivElement, PropsT>(
               {secondaryId &&
                 !isFormConfig(item) &&
                 item.queryType === "SECONDARY_ID_QUERY" && (
-                  <StyledWithTooltip
+                  <WithTooltip
                     text={`${t("queryEditor.secondaryId")}: ${
                       secondaryId.label
                     }`}
                   >
                     <IconButton icon="microscope" bare onClick={() => {}} />
-                  </StyledWithTooltip>
+                  </WithTooltip>
                 )}
               {item.own && (
-                <StyledWithTooltip
+                <WithTooltip
                   html={
                     <TooltipText>
                       {isShared ? t("common.shared") : t("common.share")}
@@ -260,10 +258,10 @@ const ProjectItem = forwardRef<HTMLDivElement, PropsT>(
                     bare
                     onClick={onIndicateShare}
                   />
-                </StyledWithTooltip>
+                </WithTooltip>
               )}
               {item.own && (
-                <StyledWithTooltip text={t("common.delete")}>
+                <WithTooltip text={t("common.delete")}>
                   <IconButton
                     icon="times"
                     bare
@@ -280,7 +278,7 @@ const ProjectItem = forwardRef<HTMLDivElement, PropsT>(
                       }
                     }}
                   />
-                </StyledWithTooltip>
+                </WithTooltip>
               )}
             </TopRight>
           </TopInfos>

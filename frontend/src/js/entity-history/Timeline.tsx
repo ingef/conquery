@@ -15,6 +15,11 @@ import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
 import Year from "./timeline/Year";
+import {
+  isConceptColumn,
+  isMoneyColumn,
+  isSecondaryIdColumn,
+} from "./timeline/util";
 
 const Root = styled("div")`
   overflow-y: auto;
@@ -295,14 +300,9 @@ const useColumnInformation = () => {
 
   const columnBuckets: ColumnBuckets = useMemo(() => {
     return {
-      money: columnDescriptions.filter((c) => c.type === "MONEY"),
-      concepts: columnDescriptions.filter(
-        (c) =>
-          c.semantics.length > 0 && c.semantics[0].type === "CONCEPT_COLUMN",
-      ),
-      secondaryIds: columnDescriptions.filter(
-        (c) => c.semantics.length > 0 && c.semantics[0].type === "SECONDARY_ID",
-      ),
+      money: columnDescriptions.filter(isMoneyColumn),
+      concepts: columnDescriptions.filter(isConceptColumn),
+      secondaryIds: columnDescriptions.filter(isSecondaryIdColumn),
       rest: columnDescriptions.filter(
         (c) => c.type !== "MONEY" && c.semantics.length === 0,
       ),

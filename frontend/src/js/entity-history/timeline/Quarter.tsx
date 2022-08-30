@@ -42,7 +42,7 @@ const QuarterHead = styled("div")<{ empty?: boolean }>`
   top: 0;
   z-index: 2;
   background-color: ${({ theme }) => theme.col.bgAlt};
-  margin-left: -5px;
+  margin-left: -6px;
   line-height: 1;
   width: 100%;
 `;
@@ -124,11 +124,7 @@ const Quarter = ({
             })}
           </span>
           {detailLevel === "summary" && (
-            <Boxes>
-              {new Array(totalEventsPerQuarter).fill(0).map((_, i) => (
-                <Box key={i} />
-              ))}
-            </Boxes>
+            <MemoizedBoxes totalEventsPerQuarter={totalEventsPerQuarter} />
           )}
         </InlineGrid>
       </QuarterHead>
@@ -187,5 +183,17 @@ const Quarter = ({
     </QuarterGroup>
   );
 };
+
+const MemoizedBoxes = memo(
+  ({ totalEventsPerQuarter }: { totalEventsPerQuarter: number }) => {
+    return (
+      <Boxes>
+        {new Array(totalEventsPerQuarter).fill(0).map((_, i) => (
+          <Box key={i} />
+        ))}
+      </Boxes>
+    );
+  },
+);
 
 export default memo(Quarter);

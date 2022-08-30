@@ -11,6 +11,7 @@ import { EntityEvent } from "../reducer";
 
 import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";
+import { isConceptColumn, isMoneyColumn } from "./util";
 
 const Grid = styled("div")`
   display: inline-grid;
@@ -22,13 +23,6 @@ const ExtraArea = styled("div")`
   background-color: ${({ theme }) => theme.col.bg};
   border-top: 1px solid ${({ theme }) => theme.col.grayVeryLight};
 `;
-
-const isConceptColumn = (columnDescription: ColumnDescription) =>
-  columnDescription.semantics.length > 0 &&
-  columnDescription.semantics[0].type === "CONCEPT_COLUMN";
-
-const isMoneyColumn = (columnDescription: ColumnDescription) =>
-  columnDescription.type === "MONEY";
 
 interface Props {
   datasetId: DatasetT["id"];

@@ -448,6 +448,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "backButtonWarning": "Note: changes will be discarded. Please download the list before going back.",
     "history": "History",
     "marked": "with status",
     "events_one": "Event",
@@ -455,9 +456,13 @@
     "downloadButtonLabel": "Download list",
     "nextButtonLabel": "Next entity",
     "prevButtonLabel": "Previous entity",
-    "downloadEntityData": "CSV",
+    "downloadEntityData": "Download entity history as CSV",
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
+    "options": {
+      "check": "interesting",
+      "noCheck": "not interesting"
+    },
     "detail": {
       "summary": "Summary",
       "detail": "Grouped",

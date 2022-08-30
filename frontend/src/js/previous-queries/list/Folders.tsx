@@ -44,18 +44,16 @@ const SxIconButton = styled(IconButton)`
   padding: 2px 8px;
   opacity: 1;
   border-radius: 0;
+
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  display: none;
 `;
 
 const AddFolderIconButton = styled(IconButton)`
   text-align: left;
   padding: 4px 6px;
-`;
-
-const SxWithTooltip = styled(WithTooltip)`
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  display: none !important; /* to override display: inline */
 `;
 
 const Row = styled("div")`
@@ -74,8 +72,8 @@ const SxDropzone = styled(Dropzone)`
 
   &:hover {
     background-color: ${({ theme }) => theme.col.grayVeryLight};
-    ${SxWithTooltip} {
-      display: inherit !important; /* to override display: inline */
+    ${SxIconButton} {
+      display: block;
     }
   }
 `;
@@ -277,7 +275,7 @@ const Folders: FC<Props> = ({ className }) => {
                     resultCount={searchResult ? searchResult[folder] : null}
                     resultWords={searchResultWords}
                   />
-                  <SxWithTooltip text={t("common.delete")}>
+                  <WithTooltip text={t("common.delete")}>
                     <SxIconButton
                       icon="times"
                       onClick={(e) => {
@@ -285,7 +283,7 @@ const Folders: FC<Props> = ({ className }) => {
                         e.stopPropagation();
                       }}
                     />
-                  </SxWithTooltip>
+                  </WithTooltip>
                 </>
               )}
             </SxDropzone>
