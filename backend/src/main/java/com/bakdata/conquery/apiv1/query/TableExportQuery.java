@@ -247,7 +247,7 @@ public class TableExportQuery extends Query {
 
 			ResultType resultType = ResultType.resolveResultType(column.getType());
 
-			if (!rawConceptColumns && connectorColumns.containsKey(column)) {
+			if (connectorColumns.containsKey(column)) {
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
 
 				final Concept<?> concept = connectorColumns.get(column).getConcept();
@@ -255,7 +255,9 @@ public class TableExportQuery extends Query {
 				// Columns that are used to build concepts are marked as ConceptColumn.
 				semantics.add(new SemanticType.ConceptColumnT(concept));
 
-				resultType = new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
+				if(!rawConceptColumns) {
+					resultType = new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
+				}
 			}
 
 			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType, semantics);
