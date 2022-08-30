@@ -31,7 +31,7 @@ public abstract class ConqueryStorage implements Closeable {
 	/**
 	 * Delete the storage's contents.
 	 */
-	public final void clear(){
+	public void clear(){
 		for (KeyIncludingStore<?, ?> store : getStores()) {
 			store.clear();
 		}

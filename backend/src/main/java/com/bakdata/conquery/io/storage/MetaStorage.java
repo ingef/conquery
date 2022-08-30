@@ -72,6 +72,11 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		);
 	}
 
+	@Override
+	public void clear() {
+		super.clear();
+		centralRegistry.clear();
+	}
 
 	public void addExecution(ManagedExecution<?> query) {
 		executions.add(query);

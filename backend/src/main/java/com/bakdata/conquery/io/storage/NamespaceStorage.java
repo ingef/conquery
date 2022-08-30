@@ -113,6 +113,7 @@ public class NamespaceStorage extends NamespacedStorage {
 
 
 
+
 	public EntityIdMap getIdMapping() {
 		return idMapping.get();
 	}

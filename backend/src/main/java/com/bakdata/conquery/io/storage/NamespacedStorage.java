@@ -87,6 +87,12 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 		);
 	}
 
+	@Override
+	public void clear() {
+		super.clear();
+		centralRegistry.clear();
+	}
+
 	private void decorateDatasetStore(SingletonStore<Dataset> store) {
 		store
 				.onAdd(centralRegistry::register)
