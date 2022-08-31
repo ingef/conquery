@@ -74,7 +74,7 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@Override
 	public String external(String internalValue) {
-		return int2ext.getOrDefault(internalValue, internalValue); //TODO @ToniTub this seems like the better option?
+		return int2ext.getOrDefault(internalValue, internalValue);
 	}
 
 	@Override
