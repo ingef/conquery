@@ -1,3 +1,4 @@
+[
 {
     "title": {
         "en": "ARX Anonymization",
@@ -29,85 +30,169 @@
             }
         },
         {
-            "name": "kAnonymityParam",
-            "type": "NUMBER",
-            "defaultValue": 2,
-            "min": 2,
+            "name": "audience",
+            "type": "SELECT",
             "label": {
-                "en": "k Parameter für k-Anonymität",
-                "de": "k Parameter für k-Anonymität"
+                "de": "Audienz",
+                "en": "Audience"
             },
-            "placeholder": {
-                "de": "k"
-            },
-            "pattern": "^\\d+$",
-            "validations": [
-                "NOT_EMPTY",
-                "GREATER_THAN_ZERO"
+            "defaultValue": "PUBLICATION",
+            "options": [
+                {
+                    "label": {
+                        "de": "Publikation",
+                        "en": "Publication"
+                    },
+                    "value": "PUBLICATION"
+                },
+                {
+                    "label": {
+                        "de": "Intern",
+                        "en": "Internal"
+                    },
+                    "value": "INTERNAL"
+                },
+                {
+                    "label": {
+                        "de": "Extern",
+                        "en": "External"
+                    },
+                    "value": "EXTERNAL"
+                }
             ]
         },
         {
-            "name": "suppressionLimit",
-            "type": "NUMBER",
-            "defaultValue": 0.02,
-            "min": 0,
-            "max": 1,
-            "label": {
-                "en": "Suppression Limit",
-                "de": "Unterdrückungslimit"
+            "blocklistedSelects": [
+                {
+                    "type": "DATE"
+                },
+                {
+                    "type": "DATE_RANGE"
+                }
+            ],
+            "conceptColumnDropzoneLabel": {
+                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
             },
-            "pattern": "^\\d+.?\\d*$",
+            "conceptDropzoneLabel": {
+                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
+            },
+            "isSingle": false,
+            "isTwoDimensional": true,
+            "label": {
+                "de": "Zusatzwerte",
+                "en": "Features"
+            },
+            "name": "features",
+            "rowPrefixField": {
+                "apiType": "ConceptInfo",
+                "defaultValue": "HIERARCHY",
+                "label": {
+                    "de": ""
+                },
+                "name": "row_prefix",
+                "options": [
+                    {
+                        "label": {
+                            "de": "Hierarchie nutzen",
+                            "en": "Use hierarchy"
+                        },
+                        "value": "HIERARCHY"
+                    },
+                    {
+                        "label": {
+                            "de": "Unterdrücken",
+                            "en": "Suppress"
+                        },
+                        "value": "SUPPRESS"
+                    }
+                ],
+                "tooltip": {
+                    "de": null
+                },
+                "type": "SELECT",
+                "validations": [
+                    "NOT_EMPTY"
+                ]
+            },
+            "tooltip": {
+                "de": ""
+            },
+            "type": "CONCEPT_LIST",
             "validations": [
-                "NOT_EMPTY",
-                "GREATER_THAN_ZERO"
+                "NOT_EMPTY"
             ]
         },
         {
-            "name": "maximumSnapshotSizeDataset",
-            "type": "NUMBER",
-            "defaultValue": 0.2,
-            "min": 0,
-            "max": 1,
-            "label": {
-                "en": "Maximum Snapshot Size Dataset",
-                "de": "Maximum Snapshot Size Dataset"
-            },
-            "pattern": "^\\d+.?\\d*$",
-            "validations": [
-                "NOT_EMPTY",
-                "GREATER_THAN_ZERO"
-            ]
-        },
-        {
-            "name": "maximumSnapshotSizeSnapshot",
-            "type": "NUMBER",
-            "defaultValue": 0.2,
-            "min": 0,
-            "max": 1,
-            "label": {
-                "en": "Maximum Snapshot Size Snapshot",
-                "de": "Maximum Snapshot Size Snapshot"
-            },
-            "pattern": "^\\d+.?\\d*$",
-            "validations": [
-                "NOT_EMPTY",
-                "GREATER_THAN_ZERO"
-            ]
-        },
-        {
-            "name": "historySize",
-            "type": "NUMBER",
-            "defaultValue": 200,
-            "min": 1,
-            "label": {
-                "en": "History Size",
-                "de": "History Size"
-            },
-            "pattern": "^\\d+$",
-            "validations": [
-                "NOT_EMPTY",
-                "GREATER_THAN_ZERO"
+            "name": "executionMode",
+            "type": "TABS",
+            "defaultValue": "STANDARD",
+            "tabs": [
+                {
+                    "name": "STANDARD",
+                    "title": {
+                        "de": "Standard",
+                        "en": "Standard"
+                    },
+                    "fields": [
+                    ]
+                },
+                {
+                    "name": "ADVANCED",
+                    "title": {
+                        "de": "Erweitert",
+                        "en": "Advanced"
+                    },
+                    "fields": [
+                        {
+                            "name": "kAnonymityParam",
+                            "type": "NUMBER",
+                            "defaultValue": 2,
+                            "min": 2,
+                            "label": {
+                                "en": "k Parameter für k-Anonymität",
+                                "de": "k Parameter für k-Anonymität"
+                            },
+                            "placeholder": {
+                                "de": "k"
+                            },
+                            "pattern": "^\\d+$",
+                            "validations": [
+                                "NOT_EMPTY",
+                                "GREATER_THAN_ZERO"
+                            ]
+                        },
+                        {
+                            "name": "suppressionLimit",
+                            "type": "NUMBER",
+                            "defaultValue": 0.02,
+                            "min": 0,
+                            "max": 1,
+                            "label": {
+                                "en": "Suppression Limit",
+                                "de": "Unterdrückungslimit"
+                            },
+                            "pattern": "^\\d+.?\\d*$",
+                            "validations": [
+                                "NOT_EMPTY",
+                                "GREATER_THAN_ZERO"
+                            ]
+                        },
+                        {
+                            "defaultValue": false,
+                            "label": {
+                                "de": "l-Diversity nutzen",
+                                "en": "Use l-Diversity"
+                            },
+                            "name": "useLDiversity",
+                            "type": "CHECKBOX",
+                            "validations": [
+                                "NOT_EMPTY"
+                            ]
+                        }
+                    ]
+                }
             ]
         }
     ]
 }
+]
