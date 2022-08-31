@@ -217,6 +217,17 @@ public class TableExportQuery extends Query {
 			final SecondaryIdDescription desc = e.getKey();
 			final Integer pos = e.getValue();
 
+			// If mapping is available, values are mapped
+			final ResultType.StringT resultType =
+					desc.getMapping() != null
+					? new ResultType.StringT((internal, printSettings) -> {
+						if (internal == null) {
+							return null;
+						}
+						return desc.getMapping().external((String) internal);
+					})
+					: ResultType.StringT.INSTANCE;
+
 			final Set<SemanticType> semantics = new HashSet<>();
 
 			semantics.add(new SemanticType.SecondaryIdT(desc));
@@ -225,7 +236,7 @@ public class TableExportQuery extends Query {
 				semantics.add(new SemanticType.GroupT());
 			}
 
-			infos[pos] = new SimpleResultInfo(desc.getLabel(), ResultType.StringT.INSTANCE, desc.getDescription(), semantics);
+			infos[pos] = new SimpleResultInfo(desc.getLabel(), resultType, desc.getDescription(), semantics);
 		}
 
 
@@ -263,7 +274,7 @@ public class TableExportQuery extends Query {
 				// Columns that are used to build concepts are marked as ConceptColumn.
 				semantics.add(new SemanticType.ConceptColumnT(concept));
 
-				if(!isRawConceptValues()) {
+				if (!isRawConceptValues()) {
 					resultType = new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
 				}
 			}

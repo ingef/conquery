@@ -93,13 +93,15 @@ public class NamespaceStorage extends NamespacedStorage {
 	public ImmutableList<KeyIncludingStore<?, ?>> getStores() {
 		return ImmutableList.of(
 				dataset,
+
+				internToExternMappers,
+				searchIndexes,
+
 				secondaryIds,
 				tables,
 				dictionaries,
 				imports,
 
-				internToExternMappers,
-				searchIndexes,
 				// Concepts depend on internToExternMappers
 				concepts,
 

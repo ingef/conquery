@@ -266,6 +266,10 @@ public class Namespace implements Closeable {
 			   .map(MappableSingleColumnSelect.class::cast)
 			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
 
+		storage.getSecondaryIds().stream()
+			   .filter(desc -> desc.getMapping() != null)
+			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping()::init)));
+
 	}
 
 	public void clearIndexCache() {
