@@ -55,7 +55,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	 */
 	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 
-		final PreviewConfig previewConfig = datasetRegistry.get(getDataset().getId()).getStorage().getPreviewConfig();
+		final PreviewConfig previewConfig = datasetRegistry.get(getDataset().getId()).getPreviewConfig();
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
 		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());

@@ -12,9 +12,9 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -51,7 +51,7 @@ public class PreviewConfig {
 
 	private Set<SecondaryIdDescriptionId> grouping = Collections.emptySet();
 
-	private Set<Connector> defaultConnectors = Collections.emptySet();
+	private Set<ConnectorId> defaultConnectors = Collections.emptySet();
 
 	public boolean isGroupingColumn(SecondaryIdDescription desc) {
 		return getGrouping().contains(desc.getId());

@@ -141,7 +141,7 @@ public class TableExportQuery extends Query {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		previewConfig = context.getNamespace().getStorage().getPreviewConfig();
+		previewConfig = context.getNamespace().getPreviewConfig();
 
 		query.resolve(context);
 

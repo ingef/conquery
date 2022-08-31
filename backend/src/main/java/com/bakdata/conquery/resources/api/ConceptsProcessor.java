@@ -27,7 +27,6 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
@@ -145,11 +144,8 @@ public class ConceptsProcessor {
 	}
 
 	public Stream<ConnectorId> getEntityPreviewDefaultConnectors(Dataset dataset) {
-		return namespaces.get(dataset.getId())
-						 .getStorage()
-						 .getPreviewConfig()
-						 .getDefaultConnectors().stream()
-						 .map(Connector::getId);
+		return namespaces.get(dataset.getId()).getPreviewConfig()
+						 .getDefaultConnectors().stream();
 	}
 
 	/**
