@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JobManager implements Closeable{
 
-
 	private final JobExecutor slowExecutor;
 	private final JobExecutor fastExecutor;
 

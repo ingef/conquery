@@ -1,31 +1,41 @@
 import styled from "@emotion/styled";
 import { memo } from "react";
 
-import { ColumnDescription, ConceptIdT, DatasetT } from "../../api/types";
+import { ConceptIdT, DatasetT } from "../../api/types";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
-import { EntityEvent } from "../reducer";
 
 const Named = styled("span")`
-  font-weight: bold;
+  font-weight: 400;
 `;
 
 interface Props {
+  className?: string;
+  title?: string;
   datasetId: DatasetT["id"] | null;
-  row: EntityEvent;
-  column: ColumnDescription;
+  conceptId: string; // Because it's just part of an actual ConceptT['id']
   rootConceptId: ConceptIdT;
 }
 
-const ConceptName = ({ datasetId, row, column, rootConceptId }: Props) => {
+const ConceptName = ({
+  className,
+  title,
+  datasetId,
+  rootConceptId,
+  conceptId,
+}: Props) => {
   // TODO: refactor. It's very implicit that the id is
   // somehow containing the datasetId.
   if (!datasetId) return null;
 
-  const fullConceptId = `${datasetId}.${row[column.label]}`;
+  const fullConceptId = `${datasetId}.${conceptId}`;
   const concept = getConceptById(fullConceptId, rootConceptId);
 
   if (!concept) {
-    return <span>{row[column.label]}</span>;
+    return (
+      <span className={className} title={title}>
+        {conceptId}
+      </span>
+    );
   }
 
   const conceptName = (
@@ -34,18 +44,22 @@ const ConceptName = ({ datasetId, row, column, rootConceptId }: Props) => {
         ? `${concept.label}${
             concept.description ? " – " + concept.description : ""
           }`
-        : row[column.label]}
+        : conceptId}
     </Named>
   );
 
   if (fullConceptId === rootConceptId) {
-    return conceptName;
+    return (
+      <div title={title} className={className}>
+        {conceptName}
+      </div>
+    );
   }
 
   const rootConcept = getConceptById(rootConceptId, rootConceptId);
 
   return (
-    <div>
+    <div title={title} className={className}>
       {rootConcept ? `${rootConcept.label} ` : null}
       {conceptName}
     </div>

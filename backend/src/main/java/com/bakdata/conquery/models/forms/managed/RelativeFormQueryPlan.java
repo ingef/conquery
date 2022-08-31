@@ -8,7 +8,7 @@ import java.util.OptionalInt;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSampler;
+import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
@@ -43,7 +43,8 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final QueryPlan<?> query;
 	private final ArrayConceptQueryPlan featurePlan;
 
-	private final TemporalSampler indexSelector;
+	private final TemporalSamplerFactory indexSelectorFactory;
+	private TemporalSamplerFactory.Sampler indexSelector;
 	private final IndexPlacement indexPlacement;
 
 	private final int timeCountBefore;
@@ -58,6 +59,8 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	public void init(QueryExecutionContext ctxt, Entity entity) {
 		query.init(ctxt, entity);
 		featurePlan.init(ctxt, entity);
+
+		indexSelector = indexSelectorFactory.sampler();
 
 		featureSubquery = null;
 		outcomeSubquery = null;

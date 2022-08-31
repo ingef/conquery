@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
@@ -107,6 +106,7 @@ public class Workers extends IdResolveContext {
 		return Objects.requireNonNull(workers.get(worker));
 	}
 
+
 	@Override
 	public CentralRegistry findRegistry(DatasetId dataset) {
 		if (!dataset2Worker.containsKey(dataset)) {
@@ -121,12 +121,20 @@ public class Workers extends IdResolveContext {
 		return null; // Workers simply have no MetaRegistry.
 	}
 
-	public void removeWorkersFor(DatasetId dataset) {
+	public void removeWorkerFor(DatasetId dataset) {
+		final Worker worker = dataset2Worker.get(dataset);
+
+		/*
+		 Close the job manager first, so all jobs are done and none can be added, when the worker is
+		 removed from dataset2Worker (which is used in deserialization of NamespacedIds, i.e. content of ForwardToWorkerMessages)
+		 */
+		worker.getJobManager().close();
+
 		Worker removed = dataset2Worker.remove(dataset);
-		if(removed == null) {
+		if (removed == null) {
 			return;
 		}
-		
+
 		workers.remove(removed.getInfo().getId());
 		try {
 			removed.remove();

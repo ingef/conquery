@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useRef } from "react";
+import { memo, useCallback, useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -50,11 +50,11 @@ interface PropsT {
   node: StandardQueryNodeT;
   andIdx: number;
   orIdx: number;
-  onDeleteNode: () => void;
-  onEditClick: () => void;
-  onToggleTimestamps: () => void;
-  onToggleSecondaryIdExclude: () => void;
+  onDeleteNode: (andIdx: number, orIdx: number) => void;
+  onEditClick: (andIdx: number, orIdx: number) => void;
   onExpandClick: (q: QueryT) => void;
+  onToggleTimestamps: (andIdx: number, orIdx: number) => void;
+  onToggleSecondaryIdExclude: (andIdx: number, orIdx: number) => void;
 }
 
 const nodeHasActiveSecondaryId = (
@@ -164,6 +164,12 @@ const QueryNode = ({
     ? t("queryEditor.hasDefaultSettings")
     : undefined;
 
+  const expandClick = useCallback(() => {
+    if (nodeIsConceptQueryNode(node) || !node.query) return;
+
+    onExpandClick(node.query);
+  }, [onExpandClick, node]);
+
   const QueryNodeRoot = (
     <Root
       ref={(instance) => {
@@ -171,7 +177,7 @@ const QueryNode = ({
         drag(instance);
       }}
       active={hasNonDefaultSettings || hasFilterValues}
-      onClick={!!node.error ? () => {} : onEditClick}
+      onClick={!!node.error ? () => {} : () => onEditClick(andIdx, orIdx)}
     >
       <QueryNodeContent
         error={node.error}
@@ -188,18 +194,16 @@ const QueryNode = ({
         rootNodeLabel={rootNodeLabel}
       />
       <QueryNodeActions
+        andIdx={andIdx}
+        orIdx={orIdx}
         excludeTimestamps={node.excludeTimestamps}
-        onDeleteNode={onDeleteNode}
-        onToggleTimestamps={onToggleTimestamps}
         isExpandable={isQueryExpandable(node)}
         hasActiveSecondaryId={hasActiveSecondaryId}
         excludeFromSecondaryId={node.excludeFromSecondaryId}
+        onDeleteNode={onDeleteNode}
+        onToggleTimestamps={onToggleTimestamps}
         onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
-        onExpandClick={() => {
-          if (nodeIsConceptQueryNode(node) || !node.query) return;
-
-          onExpandClick(node.query);
-        }}
+        onExpandClick={expandClick}
         previousQueryLoading={node.loading}
         error={node.error}
       />
@@ -221,4 +225,4 @@ const QueryNode = ({
   return QueryNodeRoot;
 };
 
-export default QueryNode;
+export default memo(QueryNode);
