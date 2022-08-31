@@ -76,6 +76,24 @@ public abstract class SemanticType {
 	}
 
 	/**
+	 * Columns marked with {@link GroupT} should be used to merge events in the preview.
+	 */
+	@CPSType(id = "GROUP", base = SemanticType.class)
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	public static class GroupT extends SemanticType {
+	}
+
+	/**
+	 * Columns marked with {@link GroupT} should not be displayed by default in the preview.
+	 */
+	@CPSType(id = "HIDDEN", base = SemanticType.class)
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	public static class HiddenT extends SemanticType {
+	}
+
+	/**
 	 * Column contains the results of a {@link Select}.
 	 */
 	@CPSType(id = "SELECT", base = SemanticType.class)

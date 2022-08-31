@@ -17,6 +17,7 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -273,5 +274,9 @@ public class Namespace implements Closeable {
 
 	public void clearIndexCache() {
 		indexService.evictCache();
+	}
+
+	public PreviewConfig getPreviewConfig() {
+		return getStorage().getPreviewConfig();
 	}
 }

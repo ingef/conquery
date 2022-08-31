@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
@@ -53,12 +54,15 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	 * The format of the query is an {@link AbsoluteFormQuery} containing a single line for one person. This should correspond to {@link EntityPreviewForm#VALUES_QUERY_NAME}.
 	 */
 	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+
+		final PreviewConfig previewConfig = datasetRegistry.get(getDataset().getId()).getPreviewConfig();
+
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
 		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
 		final Object[] values = result.getValues().get(0);
 
-		List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
-		PrintSettings printSettings = new PrintSettings(true, Locale.getDefault(), datasetRegistry, config, null, config.getPreview()::resolveSelectLabel);
+		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
+		final PrintSettings printSettings = new PrintSettings(true, Locale.getDefault(), datasetRegistry, config, null, previewConfig::resolveSelectLabel);
 
 		// We are only interested in the Select results.
 		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
@@ -74,6 +78,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 					resultInfo.getSemantics()
 			));
 		}
+
 		return extraInfos;
 	}
 
@@ -87,7 +92,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 		initExecutable(datasetRegistry, config);
 
-		EntityPreviewStatus status = new EntityPreviewStatus();
+		final EntityPreviewStatus status = new EntityPreviewStatus();
 		setStatusFull(status, storage, subject, datasetRegistry);
 		status.setQuery(getValuesQuery().getQuery());
 

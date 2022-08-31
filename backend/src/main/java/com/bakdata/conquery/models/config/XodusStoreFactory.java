@@ -38,6 +38,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -109,7 +110,8 @@ public class XodusStoreFactory implements StoreFactory {
 					ID_MAPPING.storeInfo().getName() + BigStore.DATA,
 					STRUCTURE.storeInfo().getName(),
 					WORKER_TO_BUCKETS.storeInfo().getName(),
-					PRIMARY_DICTIONARY.storeInfo().getName()
+					PRIMARY_DICTIONARY.storeInfo().getName(),
+					ENTITY_PREVIEW.storeInfo().getName()
 			)
 	);
 	public static final Set<String> WORKER_STORES = Sets.union(
@@ -233,6 +235,11 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SEARCH_INDEX, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+	}
+
+	@Override
+	public SingletonStore<PreviewConfig> createPreviewStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
+		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, ENTITY_PREVIEW, centralRegistry.injectIntoNew(objectMapper)));
 	}
 
 	@Override

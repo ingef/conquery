@@ -7,7 +7,9 @@ import java.util.function.BiConsumer;
 
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
+import lombok.ToString;
 
+@ToString
 public class NonPersistentStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
     private final HashMap<KEY,VALUE> map = new HashMap<>();
