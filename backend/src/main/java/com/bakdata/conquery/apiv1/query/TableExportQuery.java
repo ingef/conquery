@@ -206,14 +206,23 @@ public class TableExportQuery extends Query {
 		infos[1] = ConqueryConstants.SOURCE_INFO;
 
 		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
-			SecondaryIdDescription desc = e.getKey();
-			Integer pos = e.getValue();
+			final SecondaryIdDescription desc = e.getKey();
+			final Integer pos = e.getValue();
+
+			final ResultType.StringT resultType =
+					desc.getMapping() != null
+					? new ResultType.StringT((internal, printSettings) -> {
+						if (internal == null) {
+							return null;
+						}
+						return desc.getMapping().external((String) internal);
+					})
+					: ResultType.StringT.INSTANCE;
 
 			infos[pos] = new SimpleResultInfo(
 					desc.getLabel(),
-					ResultType.StringT.INSTANCE,
-					desc.getDescription(),
-					Set.of(new SemanticType.SecondaryIdT(desc))
+					resultType,
+					desc.getDescription(), Set.of(new SemanticType.SecondaryIdT(desc))
 			);
 		}
 
@@ -248,11 +257,10 @@ public class TableExportQuery extends Query {
 				// Columns that are used to build concepts are marked as ConceptColumn.
 				semantics.add(new SemanticType.ConceptColumnT(concept));
 
-				if(!rawConceptColumns) {
+				if (!rawConceptColumns) {
 					resultType = new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
 				}
 			}
-
 
 
 			infos[position] = new ColumnResultInfo(column, resultType, semantics);

@@ -86,13 +86,15 @@ public class NamespaceStorage extends NamespacedStorage {
 	@Override
 	public void loadData() {
 		dataset.loadData();
+
+		internToExternMappers.loadData();
+		searchIndexes.loadData();
+
 		secondaryIds.loadData();
 		tables.loadData();
 		dictionaries.loadData();
 		imports.loadData();
 
-		internToExternMappers.loadData();
-		searchIndexes.loadData();
 		// Concepts depend on internToExternMappers
 		concepts.loadData();
 
