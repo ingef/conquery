@@ -47,7 +47,7 @@ public abstract class ConqueryStorage implements Closeable {
 	}
 
 	/**
-	 * Remove the storage.
+	 * Close the storage.
 	 */
 	public final void close() throws IOException {
 		for (KeyIncludingStore<?, ?> store : getStores()) {

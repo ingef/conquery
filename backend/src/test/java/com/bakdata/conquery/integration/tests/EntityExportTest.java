@@ -60,7 +60,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		final Dataset dataset = conquery.getDataset();
 
-		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
 		{
@@ -78,31 +78,27 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
 
-			{
-				final URI setPreviewConfig = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "setPreviewConfig")
-															.buildFromMap(Map.of(ResourceConstants.DATASET, dataset.getId()));
+			final URI setPreviewConfig = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "setPreviewConfig")
+														.buildFromMap(Map.of(ResourceConstants.DATASET, dataset.getId()));
 
-				final PreviewConfig previewConfig = new PreviewConfig();
+			final PreviewConfig previewConfig = new PreviewConfig();
 
-				previewConfig.setInfoCardSelects(List.of(
-						new PreviewConfig.InfoCardSelect("Age", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age")),
-						new PreviewConfig.InfoCardSelect("Values", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))
-				));
+			previewConfig.setInfoCardSelects(List.of(
+					new PreviewConfig.InfoCardSelect("Age", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age")),
+					new PreviewConfig.InfoCardSelect("Values", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))
+			));
 
-				previewConfig.setHidden(Set.of(ColumnId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "table1.column")));
+			previewConfig.setHidden(Set.of(ColumnId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "table1.column")));
 
-				Response response =
-						conquery.getClient().target(setPreviewConfig)
-								.request(MediaType.APPLICATION_JSON_TYPE)
-								.header("Accept-Language", "en-Us")
-								.post(Entity.json(previewConfig));
+			try (Response response = conquery.getClient().target(setPreviewConfig)
+											 .request(MediaType.APPLICATION_JSON_TYPE)
+											 .header("Accept-Language", "en-Us")
+											 .post(Entity.json(previewConfig))) {
 
 				assertThat(response.getStatusInfo().getFamily())
 						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
 						.isEqualTo(Response.Status.Family.SUCCESSFUL);
-
 			}
-
 		}
 
 		final URI entityExport = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getEntityData")
@@ -114,17 +110,18 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 													  .flatMap(List::stream)
 													  .collect(Collectors.toList());
 
-		final Response allEntityDataResponse =
-				conquery.getClient().target(entityExport)
-						.request(MediaType.APPLICATION_JSON_TYPE)
-						.header("Accept-Language", "en-Us")
-						.post(Entity.json(new QueryResource.EntityPreview("ID", "1", Range.all(), allConnectors)));
+		final EntityPreviewStatus result;
+		try (Response allEntityDataResponse = conquery.getClient().target(entityExport)
+													  .request(MediaType.APPLICATION_JSON_TYPE)
+													  .header("Accept-Language", "en-Us")
+													  .post(Entity.json(new QueryResource.EntityPreview("ID", "1", Range.all(), allConnectors)))) {
 
-		assertThat(allEntityDataResponse.getStatusInfo().getFamily())
-				.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
-				.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(allEntityDataResponse.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
 
-		final EntityPreviewStatus result = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
+			result = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
+		}
 
 		assertThat(result.getInfos()).isEqualTo(List.of(
 				new EntityPreviewStatus.Info(
@@ -159,7 +156,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		assertThat(t2values.get().getDescription()).isEqualTo("This is a column");
 		assertThat(t2values.get().getSemantics())
 				.contains(
-						new SemanticType.ConceptColumnT(conquery.getDatasetRegistry().resolve(ConceptId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2")))
+						new SemanticType.ConceptColumnT(conquery.getDatasetRegistry()
+																.resolve(ConceptId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2")))
 				);
 
 
@@ -169,24 +167,25 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		assertThat(csvUrl).isPresent();
 
-		final Response resultLines = conquery.getClient().target(csvUrl.get().toURI())
-											 .queryParam("pretty", false)
-											 .request(AdditionalMediaTypes.CSV)
-											 .header("Accept-Language", "en-Us")
-											 .get();
+		try (Response resultLines = conquery.getClient().target(csvUrl.get().toURI())
+											.queryParam("pretty", false)
+											.request(AdditionalMediaTypes.CSV)
+											.header("Accept-Language", "en-Us")
+											.get()) {
 
-		assertThat(resultLines.getStatusInfo().getFamily())
-				.describedAs(new LazyTextDescription(() -> resultLines.readEntity(String.class)))
-				.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(resultLines.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> resultLines.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
 
 
-		assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
-				.containsExactlyInAnyOrder(
-						"result,dates,source,table1 column,table2 column",
-						"1,{2012-01-01/2012-01-01},table2,,tree2",
-						"1,{2010-07-15/2010-07-15},table2,,tree2",
-						"1,{2013-11-10/2013-11-10},table1,tree1.child_a,"
-				);
+			assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
+					.containsExactlyInAnyOrder(
+							"result,dates,source,table1 column,table2 column",
+							"1,{2012-01-01/2012-01-01},table2,,tree2",
+							"1,{2010-07-15/2010-07-15},table2,,tree2",
+							"1,{2013-11-10/2013-11-10},table1,tree1.child_a,"
+					);
+		}
 
 
 	}

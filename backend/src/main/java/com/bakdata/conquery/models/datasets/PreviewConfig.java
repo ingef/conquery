@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -62,6 +63,7 @@ public class PreviewConfig {
 	}
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NotNull
 	private DatasetRegistry datasetRegistry;
 
 	@Data

@@ -147,7 +147,6 @@ public class FormConfigTest {
 	@AfterEach
 	public void cleanupTest() {
 		storage.clear();
-		assertThat(storage.getAllUsers()).isEmpty();
 	}
 
 	@Test
