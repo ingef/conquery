@@ -352,6 +352,12 @@ interface ColumnDescriptionSemanticCategorical {
 interface ColumnDescriptionSemanticResolution {
   type: "RESOLUTION";
 }
+interface ColumnDescriptionSemanticGroup {
+  type: "GROUP";
+}
+interface ColumnDescriptionSemanticHidden {
+  type: "HIDDEN";
+}
 
 export type ColumnDescriptionSemantic =
   | ColumnDescriptionSemanticId
@@ -361,7 +367,9 @@ export type ColumnDescriptionSemantic =
   | ColumnDescriptionSemanticEventDate
   | ColumnDescriptionSemanticSources
   | ColumnDescriptionSemanticCategorical // Probably won't be used by us
-  | ColumnDescriptionSemanticResolution; // Probably won't be used by us
+  | ColumnDescriptionSemanticResolution // Probably won't be used by us
+  | ColumnDescriptionSemanticGroup
+  | ColumnDescriptionSemanticHidden;
 
 export interface ColumnDescription {
   // `label` matches column name in CSV

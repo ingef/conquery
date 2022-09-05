@@ -144,7 +144,7 @@ const EventCard = ({
               <ColBucket>
                 {applicableSecondaryIds.map((column) => (
                   <div>
-                    <TinyLabel>{column.label}</TinyLabel>
+                    <TinyLabel>{column.defaultLabel}</TinyLabel>
                     {row[column.label]}
                   </div>
                 ))}

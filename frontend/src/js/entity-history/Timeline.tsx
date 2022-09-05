@@ -146,11 +146,12 @@ const findGroupsWithinQuarter =
         evt.dates.from === lastEvt.dates.from &&
         evt.dates.to === lastEvt.dates.to;
       const sourcesMatch = evt.source === lastEvt.source;
-      const allSecondaryIdsMatch = secondaryIds.every(
-        ({ label }) => evt[label] === lastEvt[label],
-      );
+      const groupableSecondaryIdsMatch = secondaryIds
+        .filter(({ semantics }) => semantics.some((s) => s.type === "GROUP"))
+        .every(({ label }) => evt[label] === lastEvt[label]);
 
-      const similarEvents = datesMatch && sourcesMatch && allSecondaryIdsMatch;
+      const similarEvents =
+        datesMatch && sourcesMatch && groupableSecondaryIdsMatch;
 
       if (similarEvents) {
         groupedEvents[groupedEvents.length - 1].push(evt);

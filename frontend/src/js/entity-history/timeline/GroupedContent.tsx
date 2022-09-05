@@ -51,7 +51,7 @@ const GroupedContent = ({
         }}
       >
         {differencesKeys.map((key) => (
-          <TinyLabel>{key}</TinyLabel>
+          <TinyLabel>{columns[key].defaultLabel}</TinyLabel>
         ))}
         {groupedRows.map((groupedRow) =>
           differencesKeys.map((key) => {
@@ -65,7 +65,7 @@ const GroupedContent = ({
                   }
                   conceptId={groupedRow[key]}
                   datasetId={datasetId}
-                  title={columnDescription.label}
+                  title={columnDescription.defaultLabel}
                 />
               );
             }
