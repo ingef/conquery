@@ -3,7 +3,6 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ColumnDescription } from "../api/types";
-import DownloadButton from "../button/DownloadButton";
 import HistoryButton from "../button/HistoryButton";
 import PreviewButton from "../button/PreviewButton";
 import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
