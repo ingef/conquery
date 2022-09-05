@@ -6,7 +6,7 @@ import IconButton from "../../button/IconButton";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 const FoldersButton = styled(IconButton)`
-  padding: 8px 6px;
+  padding: 9px 6px;
   margin-right: 5px;
 `;
 

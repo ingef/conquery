@@ -19,7 +19,7 @@ import { QueryToUploadT } from "./CSVColumnPicker";
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
 
 const SxIconButton = styled(IconButton)`
-  padding: 8px 6px;
+  padding: 9px 6px;
 `;
 
 interface PropsT {

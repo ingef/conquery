@@ -18,6 +18,7 @@ const Root = styled("div")`
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
   background-color: ${({ theme }) => theme.col.bg};
+  z-index: 1;
 `;
 
 const Row = styled("div")`
@@ -33,7 +34,7 @@ const SxInputSelect = styled(InputSelect)`
 const SxIconButton = styled(IconButton)`
   flex-shrink: 0;
   margin-left: 10px;
-  padding: 6px 10px;
+  padding: 7px 10px;
 `;
 
 interface Props {

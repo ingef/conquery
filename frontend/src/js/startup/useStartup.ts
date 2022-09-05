@@ -22,5 +22,5 @@ export const useStartup = ({ ready }: { ready?: boolean }) => {
       loadDatasets();
       loadMe();
     }
-  }, [dispatch, ready]);
+  }, [dispatch, ready, loadConfig, loadDatasets, loadMe]);
 };

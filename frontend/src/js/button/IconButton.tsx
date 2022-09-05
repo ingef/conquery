@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
-import { forwardRef, memo } from "react";
+import { forwardRef, memo, useMemo } from "react";
 
 import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
 
@@ -26,14 +26,20 @@ const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
       : theme.col.black};
   font-size: ${({ theme, large, small }) =>
     large ? theme.font.md : small ? theme.font.xs : theme.font.sm};
-  margin-right: ${({ hasChildren, tight }) =>
-    hasChildren ? (tight ? "5px" : "10px") : "0"};
+`;
+
+const FixedIconContainer = styled("span")`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: inline-block;
 `;
 
 const SxBasicButton = styled(BasicButton)<{
   frame?: boolean;
   active?: boolean;
   secondary?: boolean;
+  tight?: boolean;
 }>`
   background-color: transparent;
   color: ${({ theme, active, secondary }) =>
@@ -48,6 +54,9 @@ const SxBasicButton = styled(BasicButton)<{
   border-radius: ${({ theme }) => theme.borderRadius};
   border: ${({ theme, frame }) =>
     frame ? "1px solid " + theme.col.gray : "none"};
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ tight }) => (tight ? "5px" : "10px")};
 
   &:hover {
     opacity: 1;
@@ -74,6 +83,7 @@ export interface IconButtonPropsT extends BasicButtonProps {
   frame?: boolean;
   bare?: boolean;
   light?: boolean;
+  fixedIconWidth?: number;
 }
 
 // A button that is prefixed by an icon
@@ -92,17 +102,13 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       small,
       secondary,
       light,
+      fixedIconWidth,
       ...restProps
     },
     ref,
   ) => {
-    return (
-      <SxBasicButton
-        active={active}
-        secondary={secondary}
-        {...restProps}
-        ref={ref}
-      >
+    const iconElement = useMemo(() => {
+      const iconEl = (
         <SxFaIcon
           main
           left={left}
@@ -118,7 +124,40 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
           light={light}
           {...iconProps}
         />
-        {children}
+      );
+
+      return fixedIconWidth ? (
+        <FixedIconContainer style={{ width: fixedIconWidth }}>
+          {iconEl}
+        </FixedIconContainer>
+      ) : (
+        iconEl
+      );
+    }, [
+      icon,
+      active,
+      red,
+      large,
+      regular,
+      left,
+      children,
+      tight,
+      iconProps,
+      small,
+      secondary,
+      light,
+      fixedIconWidth,
+    ]);
+    return (
+      <SxBasicButton
+        active={active}
+        secondary={secondary}
+        tight={tight}
+        {...restProps}
+        ref={ref}
+      >
+        {iconElement}
+        {children && <span>{children}</span>}
       </SxBasicButton>
     );
   },

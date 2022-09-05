@@ -1,6 +1,6 @@
 import { css, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import Tippy from "@tippyjs/react";
+import Tippy, { TippyProps } from "@tippyjs/react";
 import { memo, ReactElement, useMemo } from "react";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
@@ -8,13 +8,20 @@ import "tippy.js/themes/light.css";
 /* !important: to override inline styles by tippyjs/react */
 export const tippyjsReactOverrides = css`
   div[data-tippy-root] {
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.18);
     max-width: 700px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.18);
+    border-radius: 3px;
 
     > div {
+      box-shadow: none;
       max-width: inherit !important;
       width: 100%;
-      padding: 0px 8px;
+      padding: 0;
+    }
+
+    .tippy-content {
+      padding: 0px;
+      box-shadow: none;
     }
   }
 `;
@@ -24,6 +31,7 @@ const Text = styled("div")<{ wide?: boolean }>`
   text-align: left;
   font-size: 16px;
   font-weight: 400;
+  padding: 8px 14px;
   p,
   h3,
   h4 {
@@ -53,6 +61,10 @@ interface Props {
   lazy?: boolean;
   wide?: boolean;
   children?: ReactElement;
+  interactive?: boolean;
+  trigger?: string;
+  arrow?: TippyProps["arrow"];
+  offset?: TippyProps["offset"];
 
   // Some others are possible in @tippyjs/react, but those should be enough
   // default: "auto"
@@ -60,7 +72,7 @@ interface Props {
 }
 
 // Show and hide duration
-const zeroDuration = [0, 0] as [number, number];
+const shortDuration = [100, 100] as [number, number];
 
 const WithTooltip = ({
   className,
@@ -70,6 +82,10 @@ const WithTooltip = ({
   lazy,
   wide,
   placement,
+  interactive,
+  trigger,
+  arrow,
+  offset,
 }: Props) => {
   const theme = useTheme();
 
@@ -95,11 +111,15 @@ const WithTooltip = ({
   return (
     <Tippy
       className={className}
-      duration={zeroDuration}
+      duration={shortDuration}
       content={content}
       placement={placement}
       theme="light"
       delay={delay}
+      interactive={interactive}
+      trigger={trigger}
+      arrow={arrow}
+      offset={offset}
     >
       {children}
     </Tippy>

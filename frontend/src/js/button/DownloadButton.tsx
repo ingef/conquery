@@ -9,6 +9,10 @@ const SxIconButton = styled(IconButton)`
   white-space: nowrap;
 `;
 
+const Link = styled("a")`
+  line-height: 1;
+`;
+
 interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
   url: string;
   className?: string;
@@ -26,11 +30,11 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
     const icon = "download";
 
     return (
-      <a href={href} className={className} ref={ref}>
+      <Link href={href} className={className} ref={ref}>
         <SxIconButton {...restProps} icon={icon} onClick={() => {}}>
           {children}
         </SxIconButton>
-      </a>
+      </Link>
     );
   },
 );

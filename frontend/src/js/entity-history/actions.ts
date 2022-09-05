@@ -39,18 +39,21 @@ export const useLoadDefaultHistoryParams = () => {
   const getEntityHistoryDefaultParams = useGetEntityHistoryDefaultParams();
   const isHistoryEnabled = useIsHistoryEnabled();
 
-  return async (datasetId: DatasetT["id"]) => {
-    if (!isHistoryEnabled) return;
+  return useCallback(
+    async (datasetId: DatasetT["id"]) => {
+      if (!isHistoryEnabled) return;
 
-    try {
-      const result = await getEntityHistoryDefaultParams(datasetId);
+      try {
+        const result = await getEntityHistoryDefaultParams(datasetId);
 
-      dispatch(loadDefaultHistoryParamsSuccess({ sources: result }));
-    } catch (error) {
-      // TODO: Fail without noticing user, maybe change this later if required
-      console.error(error);
-    }
-  };
+        dispatch(loadDefaultHistoryParamsSuccess({ sources: result }));
+      } catch (error) {
+        // TODO: Fail without noticing user, maybe change this later if required
+        console.error(error);
+      }
+    },
+    [dispatch, getEntityHistoryDefaultParams, isHistoryEnabled],
+  );
 };
 
 export const resetCurrentEntity = createAction(

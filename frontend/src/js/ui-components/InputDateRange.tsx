@@ -47,7 +47,7 @@ const CustomTooltip = styled("div")`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 8px 4px;
+  padding: 8px 14px;
 
   font-size: ${({ theme }) => theme.font.md};
   font-weight: 400;

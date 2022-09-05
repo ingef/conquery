@@ -133,6 +133,8 @@
     "unshare": "Freigabe aufheben"
   },
   "common": {
+    "manual": "Handbuch",
+    "contact": "Kontakt",
     "optional": "Optional",
     "back": "Zurück",
     "any": "Beliebig",
