@@ -8,10 +8,12 @@ import "tippy.js/themes/light.css";
 /* !important: to override inline styles by tippyjs/react */
 export const tippyjsReactOverrides = css`
   div[data-tippy-root] {
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.18);
     max-width: 700px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.18);
+    border-radius: 3px;
 
     > div {
+      box-shadow: none;
       max-width: inherit !important;
       width: 100%;
       padding: 0;
@@ -19,6 +21,7 @@ export const tippyjsReactOverrides = css`
 
     .tippy-content {
       padding: 0px;
+      box-shadow: none;
     }
   }
 `;

@@ -54,7 +54,7 @@ const SxBasicButton = styled(BasicButton)<{
   border-radius: ${({ theme }) => theme.borderRadius};
   border: ${({ theme, frame }) =>
     frame ? "1px solid " + theme.col.gray : "none"};
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: ${({ tight }) => (tight ? "5px" : "10px")};
 
@@ -157,7 +157,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
         ref={ref}
       >
         {iconElement}
-        {children}
+        {children && <span>{children}</span>}
       </SxBasicButton>
     );
   },

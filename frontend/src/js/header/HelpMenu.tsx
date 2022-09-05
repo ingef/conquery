@@ -9,11 +9,11 @@ const List = styled("div")`
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 5px;
+  padding: 8px 5px;
 `;
 
 const SxIconButton = styled(IconButton)`
-  padding: 6px 12px;
+  padding: 7px 12px;
 `;
 
 interface Props {
@@ -21,7 +21,7 @@ interface Props {
   manualUrl?: string;
 }
 
-export const LinkToManual = ({ contactEmail, manualUrl }: Props) => {
+export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
   const { t } = useTranslation();
 
   const Dropdown = useMemo(

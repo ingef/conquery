@@ -8,7 +8,7 @@ import type { StateT } from "../app/reducers";
 import DatasetSelector from "../dataset/DatasetSelector";
 import { useHideLogoutButton } from "../user/selectors";
 
-import { LinkToManual } from "./LinkToManual";
+import { HelpMenu } from "./HelpMenu";
 import LogoutButton from "./LogoutButton";
 
 const Root = styled("header")`
@@ -118,7 +118,7 @@ const Header: FC = () => {
       <Right>
         <DatasetSelector />
         {(manualUrl || contactEmail) && (
-          <LinkToManual manualUrl={manualUrl} contactEmail={contactEmail} />
+          <HelpMenu manualUrl={manualUrl} contactEmail={contactEmail} />
         )}
         {!hideLogoutButton && <LogoutButton />}
       </Right>

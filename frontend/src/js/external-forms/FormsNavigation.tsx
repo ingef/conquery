@@ -34,7 +34,7 @@ const SxInputSelect = styled(InputSelect)`
 const SxIconButton = styled(IconButton)`
   flex-shrink: 0;
   margin-left: 10px;
-  padding: 6px 10px;
+  padding: 7px 10px;
 `;
 
 interface Props {
