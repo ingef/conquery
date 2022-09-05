@@ -11,6 +11,8 @@ import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 
+import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
+
 const Root = styled("div")`
   display: flex;
   align-items: center;
@@ -77,15 +79,9 @@ const QueryResults: FC<PropsT> = ({
           label={resultLabel}
         />
       )}
-      {resultUrls.map((url) => {
-        const ending = url.split(".").reverse()[0];
-
-        return (
-          <DownloadButton key={url} frame url={url}>
-            {ending.toUpperCase()}
-          </DownloadButton>
-        );
-      })}
+      {resultUrls.length > 0 && (
+        <DownloadResultsDropdownButton resultUrls={resultUrls} />
+      )}
     </Root>
   );
 };

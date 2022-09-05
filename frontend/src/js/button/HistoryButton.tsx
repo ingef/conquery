@@ -11,6 +11,7 @@ import IconButton from "./IconButton";
 
 const SxIconButton = styled(IconButton)`
   white-space: nowrap;
+  height: 35px;
 `;
 
 interface PropsT {
@@ -31,7 +32,7 @@ const HistoryButton = ({ url, label, columns, ...restProps }: PropsT) => {
 
   return (
     <SxIconButton
-      icon={isLoading ? "spinner" : "id-badge"}
+      icon={isLoading ? "spinner" : "list-ul"}
       frame
       onClick={async () => {
         await newHistorySession(getAuthorizedUrl(url), columns, label);
