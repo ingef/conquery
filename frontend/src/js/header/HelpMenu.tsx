@@ -36,12 +36,12 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
     () => (
       <List>
         <a href={`mailto:${contactEmail}`} rel="noopener noreferrer">
-          <DropdownItemButton fixedIconWidth={14} icon="paper-plane">
+          <DropdownItemButton bgHover fixedIconWidth={14} icon="paper-plane">
             {t("common.contact")}
           </DropdownItemButton>
         </a>
         <a href={manualUrl} target="_blank" rel="noopener noreferrer">
-          <DropdownItemButton fixedIconWidth={14} icon="book">
+          <DropdownItemButton bgHover fixedIconWidth={14} icon="book">
             {t("common.manual")}
           </DropdownItemButton>
         </a>

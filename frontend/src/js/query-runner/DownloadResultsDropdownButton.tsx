@@ -12,10 +12,6 @@ const Frame = styled("div")`
   border: 1px solid ${({ theme }) => theme.col.gray};
   border-radius: ${({ theme }) => theme.borderRadius};
   transition: opacity ${({ theme }) => theme.transitionTime};
-  opacity: 0.9;
-  &:hover {
-    opacity: 1;
-  }
 `;
 
 const List = styled("div")`
@@ -88,6 +84,7 @@ const DownloadResultsDropdownButton = ({ resultUrls }: Props) => {
               key={url}
               url={url}
               onClick={() => setEndingChoice(ending)}
+              bgHover
             >
               {ending}
             </SxDownloadButton>
@@ -99,7 +96,9 @@ const DownloadResultsDropdownButton = ({ resultUrls }: Props) => {
 
   return (
     <Frame>
-      <SxDownloadButton url={urlChoice}>{endingChoice}</SxDownloadButton>
+      <SxDownloadButton bgHover url={urlChoice}>
+        {endingChoice}
+      </SxDownloadButton>
       <Separator />
       <WithTooltip
         html={dropdown}
@@ -108,7 +107,7 @@ const DownloadResultsDropdownButton = ({ resultUrls }: Props) => {
         trigger="click"
         offset={dropdownOffset}
       >
-        <SxIconButton icon="caret-down" />
+        <SxIconButton bgHover icon="caret-down" />
       </WithTooltip>
     </Frame>
   );
