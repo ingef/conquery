@@ -21,6 +21,10 @@ interface Props {
   manualUrl?: string;
 }
 
+// Skidding makes Dropdown align the right edge with the button,
+// might need to adjust this when adding more content.
+const dropdownOffset: [number, number] = [-47, 5]; // [skidding, distance] / default [0, 10]
+
 export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
   const { t } = useTranslation();
 
@@ -47,7 +51,7 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
       trigger="click"
       arrow={false}
       html={Dropdown}
-      offset={[-45, 5]}
+      offset={dropdownOffset}
     >
       <SxIconButton icon="question" frame />
     </WithTooltip>
