@@ -290,6 +290,8 @@ export interface GetFrontendConfigResponseT {
   version: string;
   currency: CurrencyConfigT;
   queryUpload: QueryUploadConfigT;
+  manualUrl?: string;
+  contactEmail?: string;
 }
 
 export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;

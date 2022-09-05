@@ -86,6 +86,7 @@ const TooltipText = styled("div")`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  padding: 8px 14px;
 `;
 
 const ActiveFolders = styled("ul")`

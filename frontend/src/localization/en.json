@@ -134,6 +134,8 @@
     "unshare": "Revoke sharing"
   },
   "common": {
+    "manual": "Manual",
+    "contact": "Contact",
     "optional": "Optional",
     "back": "Back",
     "any": "Any",

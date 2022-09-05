@@ -37,7 +37,7 @@ export const useLoadDatasets = () => {
   const loadTrees = useLoadTrees();
   const loadDefaultHistoryParams = useLoadDefaultHistoryParams();
 
-  return async () => {
+  return useCallback(async () => {
     dispatch(loadDatasets.request());
 
     try {
@@ -60,7 +60,7 @@ export const useLoadDatasets = () => {
       dispatch(setMessage({ message: t("datasetSelector.error") }));
       dispatch(loadDatasets.failure(e as Error));
     }
-  };
+  }, [dispatch, getDatasets, loadDefaultHistoryParams, loadTrees, t]);
 };
 
 export const selectDatasetInput =

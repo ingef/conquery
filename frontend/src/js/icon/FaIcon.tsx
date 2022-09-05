@@ -22,6 +22,7 @@ export interface IconStyleProps {
   tiny?: boolean;
   large?: boolean;
   small?: boolean;
+  style?: React.CSSProperties;
 }
 
 export interface FaIconPropsT extends IconStyleProps {
