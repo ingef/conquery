@@ -60,6 +60,7 @@ const SxBasicButton = styled(BasicButton)<{
 
   &:hover {
     opacity: 1;
+    background-color: ${({ theme }) => theme.col.grayVeryLight};
   }
 
   &:disabled {

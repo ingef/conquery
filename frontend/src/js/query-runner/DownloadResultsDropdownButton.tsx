@@ -22,12 +22,13 @@ const List = styled("div")`
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 8px 5px;
+  padding: 8px;
 `;
 
 const SxDownloadButton = styled(DownloadButton)`
   button {
-    padding: 6px 14px;
+    width: 100%;
+    padding: 8px 14px;
   }
 `;
 const SxIconButton = styled(IconButton)`
@@ -46,7 +47,7 @@ interface Props {
 
 // Skidding makes Dropdown align the right edge with the button,
 // might need to adjust this when adding more content.
-const dropdownOffset: [number, number] = [-34, 8]; // [skidding, distance] / default [0, 10]
+const dropdownOffset: [number, number] = [-37, 8]; // [skidding, distance] / default [0, 10]
 
 const getEnding = (url: string) => url.split(".").reverse()[0].toUpperCase();
 
