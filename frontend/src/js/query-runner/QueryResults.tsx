@@ -3,13 +3,14 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ColumnDescription } from "../api/types";
-import DownloadButton from "../button/DownloadButton";
 import HistoryButton from "../button/HistoryButton";
 import PreviewButton from "../button/PreviewButton";
 import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
+
+import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
 
 const Root = styled("div")`
   display: flex;
@@ -77,15 +78,9 @@ const QueryResults: FC<PropsT> = ({
           label={resultLabel}
         />
       )}
-      {resultUrls.map((url) => {
-        const ending = url.split(".").reverse()[0];
-
-        return (
-          <DownloadButton key={url} frame url={url}>
-            {ending.toUpperCase()}
-          </DownloadButton>
-        );
-      })}
+      {resultUrls.length > 0 && (
+        <DownloadResultsDropdownButton resultUrls={resultUrls} />
+      )}
     </Root>
   );
 };

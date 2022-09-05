@@ -40,6 +40,7 @@ const SxBasicButton = styled(BasicButton)<{
   active?: boolean;
   secondary?: boolean;
   tight?: boolean;
+  bgHover?: boolean;
 }>`
   background-color: transparent;
   color: ${({ theme, active, secondary }) =>
@@ -48,8 +49,9 @@ const SxBasicButton = styled(BasicButton)<{
       : secondary
       ? theme.col.orange
       : theme.col.black};
-  opacity: 0.75;
-  transition: opacity ${({ theme }) => theme.transitionTime};
+  opacity: ${({ frame }) => (frame ? 1 : 0.75)};
+  transition: opacity ${({ theme }) => theme.transitionTime},
+    background-color ${({ theme }) => theme.transitionTime};
 
   border-radius: ${({ theme }) => theme.borderRadius};
   border: ${({ theme, frame }) =>
@@ -60,6 +62,9 @@ const SxBasicButton = styled(BasicButton)<{
 
   &:hover {
     opacity: 1;
+
+    background-color: ${({ frame, bgHover, theme }) =>
+      frame || bgHover ? theme.col.grayVeryLight : " inherit"};
   }
 
   &:disabled {
@@ -84,6 +89,7 @@ export interface IconButtonPropsT extends BasicButtonProps {
   bare?: boolean;
   light?: boolean;
   fixedIconWidth?: number;
+  bgHover?: boolean;
 }
 
 // A button that is prefixed by an icon
@@ -103,6 +109,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       secondary,
       light,
       fixedIconWidth,
+      bgHover,
       ...restProps
     },
     ref,
@@ -153,6 +160,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
         active={active}
         secondary={secondary}
         tight={tight}
+        bgHover={bgHover}
         {...restProps}
         ref={ref}
       >

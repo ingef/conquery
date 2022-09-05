@@ -17,10 +17,11 @@ interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
   url: string;
   className?: string;
   children?: ReactNode;
+  onClick?: () => void;
 }
 
 const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
-  ({ url, className, children, ...restProps }, ref) => {
+  ({ url, className, children, onClick, ...restProps }, ref) => {
     const { authToken } = useContext(AuthTokenContext);
 
     const href = `${url}?access_token=${encodeURIComponent(
@@ -31,7 +32,7 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
 
     return (
       <Link href={href} className={className} ref={ref}>
-        <SxIconButton {...restProps} icon={icon} onClick={() => {}}>
+        <SxIconButton {...restProps} icon={icon} onClick={onClick}>
           {children}
         </SxIconButton>
       </Link>

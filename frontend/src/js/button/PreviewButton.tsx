@@ -1,19 +1,17 @@
 import styled from "@emotion/styled";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import type { ColumnDescription } from "../api/types";
-import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { openPreview, useLoadPreviewData } from "../preview/actions";
-import WithTooltip from "../tooltip/WithTooltip";
 
-import IconButton from "./IconButton";
+import { TransparentButton } from "./TransparentButton";
 
-const SxIconButton = styled(IconButton)`
+const Button = styled(TransparentButton)`
   white-space: nowrap;
-  padding: 5px 6px;
+  height: 35px;
 `;
 
 interface PropsT {
@@ -24,24 +22,20 @@ interface PropsT {
 const PreviewButton: FC<PropsT> = ({ url, columns, ...restProps }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const isLoading = useSelector<StateT, boolean>(
-    (state) => state.preview.isLoading,
-  );
 
   const loadPreviewData = useLoadPreviewData();
   const getAuthorizedUrl = useGetAuthorizedUrl();
 
   return (
-    <WithTooltip text={t("preview.preview")}>
-      <SxIconButton
-        icon={isLoading ? "spinner" : "search"}
-        onClick={async () => {
-          await loadPreviewData(getAuthorizedUrl(url), columns);
-          dispatch(openPreview());
-        }}
-        {...restProps}
-      />
-    </WithTooltip>
+    <Button
+      onClick={async () => {
+        await loadPreviewData(getAuthorizedUrl(url), columns);
+        dispatch(openPreview());
+      }}
+      {...restProps}
+    >
+      {t("preview.preview")}
+    </Button>
   );
 };
 

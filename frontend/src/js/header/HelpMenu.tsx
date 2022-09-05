@@ -9,11 +9,15 @@ const List = styled("div")`
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 8px 5px;
+  padding: 8px;
 `;
 
 const SxIconButton = styled(IconButton)`
   padding: 7px 12px;
+`;
+
+const DropdownItemButton = styled(IconButton)`
+  width: 100%;
 `;
 
 interface Props {
@@ -32,14 +36,14 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
     () => (
       <List>
         <a href={`mailto:${contactEmail}`} rel="noopener noreferrer">
-          <IconButton fixedIconWidth={14} icon="paper-plane">
+          <DropdownItemButton bgHover fixedIconWidth={14} icon="paper-plane">
             {t("common.contact")}
-          </IconButton>
+          </DropdownItemButton>
         </a>
         <a href={manualUrl} target="_blank" rel="noopener noreferrer">
-          <IconButton fixedIconWidth={14} icon="book">
+          <DropdownItemButton bgHover fixedIconWidth={14} icon="book">
             {t("common.manual")}
-          </IconButton>
+          </DropdownItemButton>
         </a>
       </List>
     ),
