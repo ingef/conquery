@@ -26,7 +26,7 @@ const Header = styled("h2")`
 const StyledIconButton = styled(IconButton)`
   position: absolute;
   padding: 6px 15px;
-  top: 45px;
+  top: 46px;
   right: 0;
   border-right: 0;
   border-top-right-radius: 0;

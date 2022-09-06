@@ -44,7 +44,7 @@ const QuarterHead = styled("div")<{ empty?: boolean }>`
   background-color: ${({ theme }) => theme.col.bgAlt};
   margin-left: -6px;
   line-height: 1;
-  width: 100%;
+  width: calc(100% + 8px);
 `;
 
 const InlineGrid = styled("div")`
@@ -98,7 +98,7 @@ const Quarter = ({
   groupedEvents: EntityEvent[][];
   detailLevel: DetailLevel;
   toggleOpenQuarter: (year: number, quarter: number) => void;
-  differences: Record<string, Set<any>>[];
+  differences: string[][];
   datasetId: DatasetT["id"];
   columns: Record<string, ColumnDescription>;
   columnBuckets: ColumnBuckets;
@@ -133,9 +133,16 @@ const Quarter = ({
           <VerticalLine />
           <EventItemList>
             {groupedEvents.map((group, index) => {
-              const groupDifferences = differences[index];
-
               if (group.length === 0) return null;
+
+              const groupDifferences = [
+                ...new Set([
+                  ...differences[index],
+                  ...columnBuckets.concepts
+                    .filter((c) => !!group[0][c.label])
+                    .map((c) => c.label),
+                ]),
+              ];
 
               if (detailLevel === "full") {
                 return group.map((evt, evtIdx) => (
@@ -153,7 +160,7 @@ const Quarter = ({
               } else {
                 const firstRowWithoutDifferences = Object.fromEntries(
                   Object.entries(group[0]).filter(([k]) => {
-                    return !groupDifferences[k];
+                    return !groupDifferences.includes(k);
                   }),
                 ) as EntityEvent;
 
@@ -168,11 +175,7 @@ const Quarter = ({
                     row={firstRowWithoutDifferences}
                     currencyConfig={currencyConfig}
                     groupedRows={group}
-                    groupedRowsDifferences={
-                      Object.keys(groupDifferences).length > 0
-                        ? groupDifferences
-                        : undefined
-                    }
+                    groupedRowsKeysWithDifferentValues={groupDifferences}
                   />
                 );
               }
