@@ -1,5 +1,8 @@
 import { ColumnDescription } from "../../api/types";
 
+export const isIdColumn = (columnDescription: ColumnDescription) =>
+  columnDescription.semantics.some((s) => s.type === "ID");
+
 export const isGroupableColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "GROUP");
 

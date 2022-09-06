@@ -18,6 +18,7 @@ import Year from "./timeline/Year";
 import {
   isConceptColumn,
   isGroupableColumn,
+  isIdColumn,
   isMoneyColumn,
   isSecondaryIdColumn,
   isVisibleColumn,
@@ -127,35 +128,49 @@ const findGroupsWithinQuarter =
       return { quarter, groupedEvents: [events], differences: [[]] };
     }
 
-    const groupedEvents: EntityEvent[][] = [[events[0]]];
+    const eventGroupBuckets: Record<string, EntityEvent[]> = {};
 
-    for (let i = 1; i < events.length - 1; i++) {
+    for (let i = 0; i < events.length - 1; i++) {
       const evt = events[i];
-      const lastEvt = groupedEvents[groupedEvents.length - 1][0];
-
-      const isDuplicateEvent = JSON.stringify(evt) === JSON.stringify(lastEvt);
+      const prevEvt = events[i - 1];
+      const isDuplicateEvent =
+        !!evt && !!prevEvt && JSON.stringify(evt) === JSON.stringify(prevEvt);
 
       if (isDuplicateEvent) {
         continue;
       }
 
-      const datesMatch =
-        evt.dates.from === lastEvt.dates.from &&
-        evt.dates.to === lastEvt.dates.to;
-      const sourcesMatch = evt.source === lastEvt.source;
-      const groupableSecondaryIdsMatch = secondaryIds
-        .filter(isGroupableColumn)
-        .every(({ label }) => evt[label] === lastEvt[label]);
+      const groupKey =
+        evt.source +
+        secondaryIds
+          .filter(isGroupableColumn)
+          .map(({ label }) => evt[label])
+          .join(",");
 
-      const similarEvents =
-        datesMatch && sourcesMatch && groupableSecondaryIdsMatch;
-
-      if (similarEvents) {
-        groupedEvents[groupedEvents.length - 1].push(evt);
+      if (eventGroupBuckets[groupKey]) {
+        eventGroupBuckets[groupKey].push(evt);
       } else {
-        groupedEvents.push([evt]);
+        eventGroupBuckets[groupKey] = [evt];
       }
     }
+
+    const groupedEvents = Object.values(eventGroupBuckets).map((events) => {
+      if (events.length > 0) {
+        return [
+          {
+            ...events[0],
+            dates: {
+              from: events[0].dates.from,
+              to: events[events.length - 1].dates.to,
+            },
+          },
+          ...events.slice(1),
+        ];
+      }
+
+      return events;
+    });
+
     return {
       quarter,
       groupedEvents,
@@ -283,6 +298,7 @@ export interface ColumnBuckets {
   concepts: ColumnDescription[];
   secondaryIds: ColumnDescription[];
   rest: ColumnDescription[];
+  groupableIds: ColumnDescription[];
 }
 
 const useColumnInformation = () => {
@@ -302,8 +318,12 @@ const useColumnInformation = () => {
       money: visibleColumnDescriptions.filter(isMoneyColumn),
       concepts: visibleColumnDescriptions.filter(isConceptColumn),
       secondaryIds: visibleColumnDescriptions.filter(isSecondaryIdColumn),
+      groupableIds: visibleColumnDescriptions.filter(isGroupableColumn),
       rest: visibleColumnDescriptions.filter(
-        (c) => c.type !== "MONEY" && c.semantics.length === 0,
+        (c) =>
+          !isMoneyColumn(c) &&
+          (c.semantics.length === 0 ||
+            (!isGroupableColumn(c) && !isIdColumn(c))),
       ),
     };
   }, [columnDescriptions]);

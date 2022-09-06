@@ -159,8 +159,12 @@ const Quarter = ({
                 ));
               } else {
                 const firstRowWithoutDifferences = Object.fromEntries(
-                  Object.entries(group[0]).filter(([k]) => {
-                    return !groupDifferences.includes(k);
+                  Object.entries(group[0]).filter(([key]) => {
+                    if (key === "dates") {
+                      return true; // always show dates, despite it being part of groupDifferences
+                    }
+
+                    return !groupDifferences.includes(key);
                   }),
                 ) as EntityEvent;
 

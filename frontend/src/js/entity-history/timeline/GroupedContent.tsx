@@ -10,6 +10,7 @@ import {
   DatasetT,
 } from "../../api/types";
 import { ContentFilterValue, ContentType } from "../ContentControl";
+import { formatHistoryDayRange } from "../RowDates";
 import { EntityEvent } from "../reducer";
 
 import ConceptName from "./ConceptName";
@@ -27,7 +28,7 @@ const Grid = styled("div")`
 `;
 
 const ExtraArea = styled("div")`
-  padding: 12px 12px 12px 52px;
+  padding: 8px 15px 12px 49px;
   background-color: ${({ theme }) => theme.col.bg};
   border-top: 1px solid ${({ theme }) => theme.col.grayVeryLight};
   overflow-x: auto;
@@ -35,8 +36,12 @@ const ExtraArea = styled("div")`
 `;
 
 const getColumnDescriptionContentType = (
-  columnDescription: ColumnDescription,
+  columnDescription?: ColumnDescription,
 ): ContentType => {
+  if (!columnDescription) {
+    return "dates";
+  }
+
   if (isMoneyColumn(columnDescription)) {
     return "money";
   } else if (isConceptColumn(columnDescription)) {
@@ -72,6 +77,8 @@ const GroupedContent = ({
     () =>
       groupedRowsKeysWithDifferentValues
         .filter((key) => {
+          if (key === "dates") return true;
+
           if (!isVisibleColumn(columns[key])) {
             return false;
           }
@@ -99,7 +106,9 @@ const GroupedContent = ({
         }}
       >
         {differencesKeys.map((key) => (
-          <TinyLabel>{columns[key].defaultLabel}</TinyLabel>
+          <TinyLabel key={key}>
+            {key === "dates" ? "Datumswerte" : columns[key].defaultLabel}
+          </TinyLabel>
         ))}
         {groupedRows.map((groupedRow) =>
           differencesKeys.map((key) => (
@@ -145,6 +154,16 @@ const Cell = memo(
     datasetId: DatasetT["id"];
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
   }) => {
+    if (!columnDescription) {
+      return cell.from === cell.to ? (
+        <CellWrap>{formatHistoryDayRange(cell.from)}</CellWrap>
+      ) : (
+        <CellWrap>
+          {formatHistoryDayRange(cell.from)} - {formatHistoryDayRange(cell.to)}
+        </CellWrap>
+      );
+    }
+
     if (isConceptColumn(columnDescription)) {
       return (
         <SxConceptName
