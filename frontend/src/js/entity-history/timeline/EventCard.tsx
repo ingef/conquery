@@ -15,7 +15,6 @@ import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
 import type { EntityEvent } from "../reducer";
 
-import ConceptName from "./ConceptName";
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
 import { TinyLabel } from "./TinyLabel";
@@ -38,8 +37,8 @@ const EventItemContent = styled("div")`
 `;
 const MainContent = styled("div")`
   display: flex;
-  align-items: start;
-  gap: 20px;
+  flex-direction: column;
+  gap: 6px;
   padding: 15px 8px 8px;
   font-size: ${({ theme }) => theme.font.sm};
 `;
@@ -47,6 +46,9 @@ const MainContent = styled("div")`
 const ColBucket = styled("div")`
   color: black;
   padding: 1px 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
 `;
 
 const Flex = styled("div")`
@@ -141,7 +143,7 @@ const EventCard = ({
               </WithTooltip>
               <ColBucket>
                 {applicableMoney.map((column) => (
-                  <>
+                  <div>
                     <TinyLabel>{column.defaultLabel}</TinyLabel>
                     <code>
                       <NumberFormat
@@ -153,7 +155,7 @@ const EventCard = ({
                         value={parseInt(row[column.label]) / 100}
                       />
                     </code>
-                  </>
+                  </div>
                 ))}
               </ColBucket>
             </Flex>
@@ -167,10 +169,10 @@ const EventCard = ({
               </WithTooltip>
               <ColBucket>
                 {applicableRest.map((column) => (
-                  <>
+                  <div>
                     <TinyLabel>{column.defaultLabel}</TinyLabel>
                     <span>{row[column.label]}</span>
-                  </>
+                  </div>
                 ))}
               </ColBucket>
             </Flex>
@@ -184,10 +186,10 @@ const EventCard = ({
               </WithTooltip>
               <ColBucket>
                 {applicableSecondaryIds.map((column) => (
-                  <>
+                  <div>
                     <TinyLabel>{column.defaultLabel}</TinyLabel>
                     {row[column.label]}
-                  </>
+                  </div>
                 ))}
               </ColBucket>
             </Flex>
