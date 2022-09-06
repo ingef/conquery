@@ -9,7 +9,6 @@ import {
   CurrencyConfigT,
   DatasetT,
 } from "../../api/types";
-import { exists } from "../../common/helpers/exists";
 import { ContentFilterValue, ContentType } from "../ContentControl";
 import { EntityEvent } from "../reducer";
 
