@@ -9,6 +9,8 @@ import {
   CurrencyConfigT,
   DatasetT,
 } from "../../api/types";
+import { exists } from "../../common/helpers/exists";
+import { ContentFilterValue, ContentType } from "../ContentControl";
 import { EntityEvent } from "../reducer";
 
 import ConceptName from "./ConceptName";
@@ -33,7 +35,9 @@ const ExtraArea = styled("div")`
   -webkit-overflow-scrolling: touch;
 `;
 
-const getColumnDescriptionSortType = (columnDescription: ColumnDescription) => {
+const getColumnDescriptionContentType = (
+  columnDescription: ColumnDescription,
+): ContentType => {
   if (isMoneyColumn(columnDescription)) {
     return "money";
   } else if (isConceptColumn(columnDescription)) {
@@ -45,8 +49,7 @@ const getColumnDescriptionSortType = (columnDescription: ColumnDescription) => {
   }
 };
 
-const SORT_ORDER = ["concept", "secondaryId", "rest", "money"];
-
+const SORT_ORDER: ContentType[] = ["concept", "secondaryId", "rest", "money"];
 interface Props {
   datasetId: DatasetT["id"];
   columns: Record<string, ColumnDescription>;
@@ -54,6 +57,7 @@ interface Props {
   groupedRowsKeysWithDifferentValues: string[];
   currencyConfig: CurrencyConfigT;
   rootConceptIdsByColumn: Record<string, ConceptIdT>;
+  contentFilter: ContentFilterValue;
 }
 
 const GroupedContent = ({
@@ -63,17 +67,25 @@ const GroupedContent = ({
   groupedRowsKeysWithDifferentValues,
   currencyConfig,
   rootConceptIdsByColumn,
+  contentFilter,
 }: Props) => {
   const differencesKeys = useMemo(
     () =>
       groupedRowsKeysWithDifferentValues
-        .filter((key) => isVisibleColumn(columns[key]))
+        .filter((key) => {
+          if (!isVisibleColumn(columns[key])) {
+            return false;
+          }
+          const columnType = getColumnDescriptionContentType(columns[key]);
+
+          return contentFilter[columnType];
+        })
         .sort(
           (a, b) =>
-            SORT_ORDER.indexOf(getColumnDescriptionSortType(columns[a])) -
-            SORT_ORDER.indexOf(getColumnDescriptionSortType(columns[b])),
+            SORT_ORDER.indexOf(getColumnDescriptionContentType(columns[a])) -
+            SORT_ORDER.indexOf(getColumnDescriptionContentType(columns[b])),
         ),
-    [columns, groupedRowsKeysWithDifferentValues],
+    [columns, groupedRowsKeysWithDifferentValues, contentFilter],
   );
 
   if (differencesKeys.length === 0) {

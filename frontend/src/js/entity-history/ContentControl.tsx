@@ -11,10 +11,8 @@ const Root = styled("div")`
   align-items: center;
 `;
 
-export type ContentFilterValue = Record<
-  "secondaryId" | "concept" | "money" | "rest",
-  boolean
->;
+export type ContentType = "secondaryId" | "money" | "concept" | "rest";
+export type ContentFilterValue = Record<ContentType, boolean>;
 
 interface Props {
   value: ContentFilterValue;

@@ -199,6 +199,7 @@ const EventCard = ({
           <GroupedContent
             datasetId={datasetId}
             columns={columns}
+            contentFilter={contentFilter}
             groupedRows={groupedRows}
             groupedRowsKeysWithDifferentValues={
               groupedRowsKeysWithDifferentValues
