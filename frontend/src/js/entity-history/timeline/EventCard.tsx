@@ -40,7 +40,7 @@ const MainContent = styled("div")`
   display: grid;
   grid-template-columns: 1.618fr 1fr;
   gap: 6px;
-  padding: 15px 15px 8px 8px;
+  padding: 15px 15px 12px 6px;
   font-size: ${({ theme }) => theme.font.sm};
 `;
 const Col = styled("div")`
@@ -54,6 +54,12 @@ const ColBucket = styled("div")`
   padding: 1px 4px;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  @media (min-width: 1800px) {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  @media (min-width: 2500px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
   gap: 3px 10px;
 `;
 

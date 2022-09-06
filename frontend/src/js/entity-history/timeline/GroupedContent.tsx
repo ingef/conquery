@@ -28,7 +28,7 @@ const Grid = styled("div")`
 `;
 
 const ExtraArea = styled("div")`
-  padding: 12px 12px 12px 52px;
+  padding: 8px 15px 12px 49px;
   background-color: ${({ theme }) => theme.col.bg};
   border-top: 1px solid ${({ theme }) => theme.col.grayVeryLight};
   overflow-x: auto;
