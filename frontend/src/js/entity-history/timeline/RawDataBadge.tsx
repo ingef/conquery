@@ -28,6 +28,7 @@ export const RawDataBadge = ({ className, event }: Props) => {
             fontSize: "12px",
             lineHeight: "1.1",
             padding: "8px 14px",
+            margin: 0,
           }}
         >
           {JSON.stringify(event, null, 2)}
