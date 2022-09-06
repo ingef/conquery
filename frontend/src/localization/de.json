@@ -460,6 +460,7 @@
     "downloadEntityData": "Einzelhistorie als CSV herunterladen",
     "differencesTooltip": "Unterschiede aus den Einzeleinträgen",
     "closeAll": "Alle schließen",
+    "dates": "Datumswerte",
     "options": {
       "check": "auffällig",
       "noCheck": "unauffällig"
@@ -473,7 +474,8 @@
       "money": "Geldbeträge",
       "secondaryId": "IDs aus Analyse-Ebene",
       "concept": "Konzepte",
-      "rest": "Zusatzinfos"
+      "rest": "Zusatzinfos",
+      "fingerprint": "IDs"
     },
     "settings": {
       "headline": "Historie-Einstellungen",

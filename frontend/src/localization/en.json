@@ -461,6 +461,7 @@
     "downloadEntityData": "Download entity history as CSV",
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
+    "dates": "Dates",
     "options": {
       "check": "interesting",
       "noCheck": "not interesting"
@@ -474,7 +475,8 @@
       "money": "Money",
       "secondaryId": "IDs from analysis layer",
       "concept": "Concepts",
-      "rest": "Additional infos"
+      "rest": "Additional infos",
+      "fingerprint": "IDs"
     },
     "settings": {
       "headline": "History session settings",

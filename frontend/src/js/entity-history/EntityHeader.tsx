@@ -99,9 +99,8 @@ export const EntityHeader = ({
       </Flex>
       <Buttons>
         {entityStatusOptions.map((option, i) => (
-          <span>
+          <span key={option.label + i}>
             <BadgeToggleButton
-              key={option.label + i}
               active={!!status.find((opt) => opt.value === option.value)}
               onClick={toggleOption(option)}
               hotkey={i < 9 ? String(i + 1) : undefined}
