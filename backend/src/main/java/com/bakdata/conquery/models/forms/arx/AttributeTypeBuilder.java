@@ -24,6 +24,7 @@ import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.deidentifier.arx.AttributeType;
 import org.deidentifier.arx.DataType;
 import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
@@ -109,6 +110,7 @@ public interface AttributeTypeBuilder {
 		}
 	}
 
+	@Slf4j
 	class IntegerInterval implements AttributeTypeBuilder {
 
 		private static final long BUCKET_SIZE = 5;
@@ -117,10 +119,16 @@ public interface AttributeTypeBuilder {
 		private long min = Long.MAX_VALUE;
 		private long max = Long.MIN_VALUE;
 
-		private Set<String> values = new HashSet<>();
+		private final Set<String> values = new HashSet<>();
 
 		@Override
 		public String register(Object value) {
+
+			if (value == null) {
+				values.add(DataType.NULL_VALUE);
+				return DataType.NULL_VALUE;
+			}
+
 			if (!(value instanceof Number)) {
 				throw new IllegalArgumentException("Expected a " + Number.class + " type, but got " + value.getClass() + ".");
 			}
@@ -138,8 +146,8 @@ public interface AttributeTypeBuilder {
 		public AttributeType.Hierarchy build() {
 			final HierarchyBuilderIntervalBased<Long> builder = HierarchyBuilderIntervalBased.create(
 					DataType.INTEGER,
-					new Range<>(min, min, min),
-					new Range<>(max, max, max)
+					new Range<>(min - 1, min - 1, min - 1),
+					new Range<>(max + 1, max + 1, max + 1)
 			);
 
 			final long difference = max - min;
@@ -151,10 +159,12 @@ public interface AttributeTypeBuilder {
 			builder.setAggregateFunction(DataType.INTEGER.createAggregate().createIntervalFunction(true, false));
 			builder.addInterval(min, min + BUCKET_SIZE);
 
-			final int countLevels = (int) Math.floor(Math.sqrt((double) difference / BUCKET_SIZE));
+			final int countLevels = Math.toIntExact(difference / BUCKET_SIZE);
+			log.debug("Creating {} levels.", countLevels);
 			for (int i = 0; i < countLevels; i++) {
 				builder.getLevel(i).addGroup(GROUPS_PER_LEVEL);
 			}
+			builder.getLevel(countLevels - 1).addGroup(1);
 
 			builder.prepare(values.toArray(String[]::new));
 
