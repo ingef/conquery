@@ -133,20 +133,25 @@ public interface AttributeTypeBuilder {
 		public AttributeType build() {
 			final HierarchyBuilderIntervalBased<Long> builder = HierarchyBuilderIntervalBased.create(
 					DataType.INTEGER,
-					new Range<Long>(min, min, min),
-					new Range<Long>(max, max, max)
+					new Range<>(min, min, min),
+					new Range<>(max, max, max)
 			);
 
 			final long difference = max - min;
 			if (difference < 5) {
+				builder.addInterval(min, max);
 				return builder.build();
 			}
 
-			// TODO figure out how to use this thingy
-
+			builder.setAggregateFunction(DataType.INTEGER.createAggregate().createIntervalFunction(true, false));
 			builder.addInterval(min, min + BUCKET_SIZE);
 
-			return null;
+			final int countLevels = (int) Math.floor(Math.sqrt((double) difference / BUCKET_SIZE));
+			for (int i = 0; i < countLevels; i++) {
+				builder.getLevel(i).addGroup(2);
+			}
+
+			return builder.build();
 		}
 	}
 

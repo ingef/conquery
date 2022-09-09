@@ -205,7 +205,7 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 						final ResultType resultType = ((SelectResultInfo) info).getSelect().getResultType();
 
 						if (resultType instanceof ResultType.IntegerT) {
-							return Optional.of(new AttributeTypeBuilder.Integer());
+							return Optional.of(new AttributeTypeBuilder.IntegerInterval());
 						}
 						else if (resultType instanceof ResultType.NumericT) {
 						}
