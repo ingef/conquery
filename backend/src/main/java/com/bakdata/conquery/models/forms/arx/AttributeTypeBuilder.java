@@ -117,20 +117,25 @@ public interface AttributeTypeBuilder {
 		private long min = Long.MAX_VALUE;
 		private long max = Long.MIN_VALUE;
 
+		private Set<String> values = new HashSet<>();
+
 		@Override
-		public String register(String value) {
-			if (Strings.isNullOrEmpty(value)) {
-				return value;
+		public String register(Object value) {
+			if (!(value instanceof Number)) {
+				throw new IllegalArgumentException("Expected a " + Number.class + " type, but got " + value.getClass() + ".");
 			}
-			final long l = Long.parseLong(value);
+
+			final long l = ((Number) value).longValue();
 			min = Math.min(min, l);
 			max = Math.max(max, l);
 
-			return value;
+			final String returnVal = Long.toString(l);
+			values.add(returnVal);
+			return returnVal;
 		}
 
 		@Override
-		public AttributeType build() {
+		public AttributeType.Hierarchy build() {
 			final HierarchyBuilderIntervalBased<Long> builder = HierarchyBuilderIntervalBased.create(
 					DataType.INTEGER,
 					new Range<>(min, min, min),
@@ -148,8 +153,10 @@ public interface AttributeTypeBuilder {
 
 			final int countLevels = (int) Math.floor(Math.sqrt((double) difference / BUCKET_SIZE));
 			for (int i = 0; i < countLevels; i++) {
-				builder.getLevel(i).addGroup(2);
+				builder.getLevel(i).addGroup(GROUPS_PER_LEVEL);
 			}
+
+			builder.prepare(values.toArray(String[]::new));
 
 			return builder.build();
 		}

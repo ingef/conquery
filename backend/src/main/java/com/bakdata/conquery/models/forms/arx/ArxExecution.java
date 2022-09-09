@@ -199,10 +199,10 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 					 })
 				.or(// Handle Selects that output numbers
 					() -> {
-						if (!(info instanceof SelectResultInfo)) {
+						if (!(resultInfo instanceof SelectResultInfo)) {
 							return Optional.empty();
 						}
-						final ResultType resultType = ((SelectResultInfo) info).getSelect().getResultType();
+						final ResultType resultType = ((SelectResultInfo) resultInfo).getSelect().getResultType();
 
 						if (resultType instanceof ResultType.IntegerT) {
 							return Optional.of(new AttributeTypeBuilder.IntegerInterval());
