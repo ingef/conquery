@@ -260,6 +260,7 @@
     "maxDaysLabel": "Ende Tage"
   },
   "externalForms": {
+    "manualButton": "Hilfe zum Formular im Handbuch öffnen",
     "forms": "Formulare",
     "formValidation": {
       "mustBePositiveNumber": "Muss positive Zahl sein",
