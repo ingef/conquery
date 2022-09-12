@@ -1,0 +1,36 @@
+{
+    "type": "FORM_TEST",
+    "expectedCsv": {
+        "results": "tests/form/ARX_FORM/DECIMAL/expected.csv"
+    },
+    "form": {
+        "type": "ARX_FORM",
+        "queryGroup": "00000000-0000-0000-0000-000000000001"
+    },
+    "content": {
+        "autoConcept": true,
+        "tables": [
+            "/tests/form/shared/decimal.table.json"
+        ],
+        "previousQueries": [
+            {
+                "type": "CONCEPT_QUERY",
+                "dateAggregationMode": "NONE",
+                "root": {
+                    "ids": [
+                        "decimal_AUTO"
+                    ],
+                    "type": "CONCEPT",
+                    "tables": [
+                        {
+                            "id": "decimal_AUTO.connector",
+                            "selects": [
+                                "decimal_AUTO.connector.decimal_FIRST"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "csv": "tests/form/shared/decimal.csv",
+    "name": "decimal",
+    "primaryColumn": {
+        "name": "id",
+        "type": "STRING"
+    },
+    "columns": [
+        {
+            "name": "decimal",
+            "type": "DECIMAL"
+        }
+    ]
+}

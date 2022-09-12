@@ -39,6 +39,10 @@ public interface AttributeTypeBuilder {
 
 	String SUPPRESSING_GRANULARITY = "*";
 
+	long BUCKET_SIZE = 5;
+
+	int GROUPS_PER_LEVEL = 2;
+
 
 	String register(Object value);
 
@@ -113,9 +117,6 @@ public interface AttributeTypeBuilder {
 	@Slf4j
 	class IntegerInterval implements AttributeTypeBuilder {
 
-		private static final long BUCKET_SIZE = 5;
-		private static final int GROUPS_PER_LEVEL = 2;
-
 		private long min = Long.MAX_VALUE;
 		private long max = Long.MIN_VALUE;
 
@@ -146,13 +147,16 @@ public interface AttributeTypeBuilder {
 		public AttributeType.Hierarchy build() {
 			final HierarchyBuilderIntervalBased<Long> builder = HierarchyBuilderIntervalBased.create(
 					DataType.INTEGER,
-					new Range<>(min - 1, min - 1, min - 1),
+					new Range<>(min, min, min),
 					new Range<>(max + 1, max + 1, max + 1)
 			);
+
+			final String[] data = values.toArray(String[]::new);
 
 			final long difference = max - min;
 			if (difference < 5) {
 				builder.addInterval(min, max);
+				builder.prepare(data);
 				return builder.build();
 			}
 
@@ -166,7 +170,69 @@ public interface AttributeTypeBuilder {
 			}
 			builder.getLevel(countLevels - 1).addGroup(1);
 
-			builder.prepare(values.toArray(String[]::new));
+			builder.prepare(data);
+
+			return builder.build();
+		}
+	}
+
+
+	@Slf4j
+	class DecimalInterval implements AttributeTypeBuilder {
+		private double min = Double.MAX_VALUE;
+		private double max = Double.MIN_VALUE;
+
+		private final Set<String> values = new HashSet<>();
+
+		@Override
+		public String register(Object value) {
+
+			if (value == null) {
+				values.add(DataType.NULL_VALUE);
+				return DataType.NULL_VALUE;
+			}
+
+			if (!(value instanceof Number)) {
+				throw new IllegalArgumentException("Expected a " + Number.class + " type, but got " + value.getClass() + ".");
+			}
+
+			final double l = ((Number) value).doubleValue();
+			min = Math.min(min, l);
+			max = Math.max(max, l);
+
+			final String returnVal = Double.toString(l);
+			values.add(returnVal);
+			return returnVal;
+		}
+
+		@Override
+		public AttributeType.Hierarchy build() {
+			final HierarchyBuilderIntervalBased<Double> builder = HierarchyBuilderIntervalBased.create(
+					DataType.DECIMAL,
+					new Range<>(min, min, min),
+					new Range<>(max + 1, max + 1, max + 1)
+			);
+
+			final String[] data = values.toArray(String[]::new);
+
+			final double difference = max - min;
+			if (difference < 5) {
+				builder.addInterval(min, max);
+				builder.prepare(data);
+				return builder.build();
+			}
+
+			builder.setAggregateFunction(DataType.DECIMAL.createAggregate().createIntervalFunction(true, false));
+			builder.addInterval(min, min + BUCKET_SIZE);
+
+			final int countLevels = Math.toIntExact((long) (difference / BUCKET_SIZE));
+			log.debug("Creating {} levels.", countLevels);
+			for (int i = 0; i < countLevels; i++) {
+				builder.getLevel(i).addGroup(GROUPS_PER_LEVEL);
+			}
+			builder.getLevel(countLevels - 1).addGroup(1);
+
+			builder.prepare(data);
 
 			return builder.build();
 		}

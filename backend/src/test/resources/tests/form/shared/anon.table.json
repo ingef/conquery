@@ -12,7 +12,7 @@
         },
         {
             "name": "age",
-            "type": "STRING"
+            "type": "INTEGER"
         },
         {
             "name": "sex",

@@ -37,7 +37,6 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.MoreCollectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.bouncycastle.asn1.tsp.TSTInfo;
 import org.deidentifier.arx.ARXAnonymizer;
 import org.deidentifier.arx.ARXConfiguration;
 import org.deidentifier.arx.ARXResult;
@@ -208,6 +207,7 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 							return Optional.of(new AttributeTypeBuilder.IntegerInterval());
 						}
 						else if (resultType instanceof ResultType.NumericT) {
+							return Optional.of(new AttributeTypeBuilder.DecimalInterval());
 						}
 						return Optional.empty();
 					}
