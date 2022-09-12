@@ -22,6 +22,7 @@ export interface Form {
   title: TranslatableString; // Displayed
   fields: GeneralField[];
   description?: TranslatableString; // Displayed
+  manualUrl?: string;
 }
 
 export interface Group {

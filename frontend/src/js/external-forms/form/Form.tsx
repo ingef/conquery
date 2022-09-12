@@ -34,7 +34,10 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
   return (
     <FormContent>
       {config.description && config.description[activeLang] && (
-        <SxFormHeader description={config.description[activeLang]!} />
+        <SxFormHeader
+          description={config.description[activeLang]!}
+          manualUrl={config.manualUrl}
+        />
       )}
       {config.fields.map((field, i) => {
         const key = getFieldKey(config.type, field, i);

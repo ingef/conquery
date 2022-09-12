@@ -261,6 +261,7 @@
     "maxDaysLabel": "Max. days"
   },
   "externalForms": {
+    "manualButton": "Go to manual",
     "forms": "Forms",
     "formValidation": {
       "mustBePositiveNumber": "Must be a positive number",
