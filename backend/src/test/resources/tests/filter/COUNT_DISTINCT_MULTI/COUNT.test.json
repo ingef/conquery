@@ -35,12 +35,12 @@
       "column": "table.datum"
     },
     "filters": {
-      "column": [
-        "table.nr",
-        "table.a",
-        "table.b"
-      ],
+      "column": "table.nr",
       "distinct": "true",
+      "distinctByColumn": [
+      		"table.a",
+      		"table.b"
+      ],
       "type": "COUNT"
     }
   },
