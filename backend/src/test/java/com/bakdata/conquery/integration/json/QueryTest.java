@@ -65,7 +65,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		importSearchIndexes(support, searchIndexes);
 		support.waitUntilWorkDone();
 
-		importTables(support, content.getTables());
+		importTables(support, content.getTables(), content.isAutoConcept());
 		support.waitUntilWorkDone();
 
 		importConcepts(support, rawConcepts);

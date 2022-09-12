@@ -27,14 +27,17 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -56,6 +59,7 @@ import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.description.LazyTextDescription;
+import org.jetbrains.annotations.NotNull;
 
 @Slf4j
 @UtilityClass
@@ -105,11 +109,17 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importTables(StandaloneSupport support, List<RequiredTable> tables) throws JSONException {
+	public static void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 
 		for (RequiredTable rTable : tables) {
 			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry());
 			uploadTable(support, table);
+
+			if (autoConcept) {
+				final TreeConcept concept = AutoConceptUtil.createConcept(table);
+
+				uploadConcept(support, table.getDataset(), concept);
+			}
 		}
 	}
 
@@ -176,7 +186,7 @@ public class LoadingUtil {
 
 		final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
 											 .queryParam("file", cqpp)
-											 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
+											 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId().toString()));
 
 		final Invocation.Builder request = support.getClient()
 												  .target(addImport)

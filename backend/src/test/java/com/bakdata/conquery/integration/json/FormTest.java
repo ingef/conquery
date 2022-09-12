@@ -29,11 +29,11 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -43,6 +43,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvWriter;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -68,23 +69,28 @@ public class FormTest extends ConqueryTestSpec {
 	@Valid
 	@NotNull
 	private RequiredData content;
-	@NotNull
+
 	@JsonProperty("concepts")
 	private ArrayNode rawConcepts;
 
 	@JsonIgnore
 	private Form form;
 
+	@ValidationMethod(message = "Form test defines no concepts. Neither explicit nor automatic concepts")
+	public boolean isWithConcepts() {
+		return rawConcepts != null || content.isAutoConcept();
+	}
+
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
 		importSecondaryIds(support, content.getSecondaryIds());
 		support.waitUntilWorkDone();
 
-		LoadingUtil.importTables(support, content.getTables());
+		LoadingUtil.importTables(support, content.getTables(), content.isAutoConcept());
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT TABLES", getLabel());
 
-		importConcepts(support);
+		importConcepts(support, rawConcepts);
 		support.waitUntilWorkDone();
 		log.info("{} IMPORT CONCEPTS", getLabel());
 
@@ -113,11 +119,10 @@ public class FormTest extends ConqueryTestSpec {
 				.isEmpty();
 
 
-		ManagedExecution<?>
-				managedForm =
-				support.getNamespace()
-					   .getExecutionManager()
-					   .runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig(), false);
+		ManagedForm managedForm = (ManagedForm) support
+				.getNamespace()
+				.getExecutionManager()
+				.runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig(), false);
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {
@@ -131,7 +136,7 @@ public class FormTest extends ConqueryTestSpec {
 
 		log.info("{} QUERIES EXECUTED", getLabel());
 
-		checkResults(support, (ManagedForm) managedForm, support.getTestUser());
+		checkResults(support, managedForm, support.getTestUser());
 	}
 
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedForm managedForm, User user) throws IOException {
@@ -141,7 +146,7 @@ public class FormTest extends ConqueryTestSpec {
 
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		PrintSettings
-				PRINT_SETTINGS =
+				printSettings =
 				new PrintSettings(
 						false,
 						Locale.ENGLISH,
@@ -150,7 +155,21 @@ public class FormTest extends ConqueryTestSpec {
 						idPrinter::createId
 				);
 
+		if (managedForm instanceof SingleTableResult) {
+			checkSingleResult((ManagedForm & SingleTableResult) managedForm, config, printSettings);
+		}
+		else {
+			checkMultipleResult(managedMapping, config, printSettings);
+		}
 
+	}
+
+	/**
+	 * Checks result of subqueries instead of form result.
+	 *
+	 * @see FormTest#checkSingleResult(ManagedForm, ConqueryConfig, PrintSettings)
+	 */
+	private void checkMultipleResult(Map<String, List<ManagedQuery>> managedMapping, ConqueryConfig config, PrintSettings printSettings) throws IOException {
 		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
 			List<ResultInfo> resultInfos = managed.getValue().get(0).getResultInfos();
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
@@ -160,11 +179,15 @@ public class FormTest extends ConqueryTestSpec {
 			final CsvWriter writer = config.getCsv().createWriter(output);
 
 			CsvRenderer renderer =
-					new CsvRenderer(writer, PRINT_SETTINGS);
+					new CsvRenderer(writer, printSettings);
 
-			renderer.toCSV(config.getFrontend().getQueryUpload().getIdResultInfos(), resultInfos, managed.getValue()
-																										 .stream()
-																										 .flatMap(ManagedQuery::streamResults));
+			renderer.toCSV(
+					config.getFrontend().getQueryUpload().getIdResultInfos(),
+					resultInfos,
+					managed.getValue()
+						   .stream()
+						   .flatMap(ManagedQuery::streamResults)
+			);
 
 			writer.close();
 			output.close();
@@ -179,7 +202,45 @@ public class FormTest extends ConqueryTestSpec {
 		}
 	}
 
-	private void importConcepts(StandaloneSupport support) throws JSONException, IOException {
+	/**
+	 * The form produces only one result, so the result is directly requested.
+	 *
+	 * @see FormTest#checkMultipleResult(Map, ConqueryConfig, PrintSettings)
+	 */
+	private <F extends ManagedForm & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
+			throws IOException {
+
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+		final CsvWriter writer = config.getCsv().createWriter(output);
+
+
+		CsvRenderer renderer =
+				new CsvRenderer(writer, printSettings);
+
+		renderer.toCSV(
+				config.getFrontend().getQueryUpload().getIdResultInfos(),
+				managedForm.getResultInfos(),
+				managedForm.streamResults()
+		);
+
+		writer.close();
+		output.close();
+
+		assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
+				.as("Checking result " + managedForm.getLabelWithoutAutoLabelSuffix())
+				.containsExactlyInAnyOrderElementsOf(
+						In.stream(expectedCsv.values().iterator().next().stream())
+						  .withUTF8()
+						  .readLines()
+				);
+	}
+
+	private static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {
+		if (rawConcepts == null) {
+			return;
+		}
+
 		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = parseSubTreeList(

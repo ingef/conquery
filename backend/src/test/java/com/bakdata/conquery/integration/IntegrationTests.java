@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -160,13 +161,15 @@ public class IntegrationTests {
 		try (InputStream in = resource.open()) {
 			JsonIntegrationTest test = new JsonIntegrationTest(in);
 
-			name = test.getTestSpec().getLabel();
+			String testLabel = Optional.ofNullable(test.getTestSpec().getLabel())
+									   // If no label was defined use the filename part before the first dot
+									   .orElse(name.split("\\.", 1)[0]);
 
 			return DynamicTest.dynamicTest(
-					name,
-					URI.create("classpath:/" + resource.getPath()),
+					testLabel,
+					resource.getURI(),
 					new IntegrationTest.Wrapper(
-							name,
+							testLabel,
 							this,
 							test
 					)
