@@ -10,7 +10,6 @@ import type { ColumnDescription, DatasetT, EntityInfo } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { ErrorObject, errorPayload } from "../common/actions";
-import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
 import { formatStdDate, getFirstAndLastDateOfRange } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
@@ -37,12 +36,9 @@ export const loadDefaultHistoryParamsSuccess = createAction(
 export const useLoadDefaultHistoryParams = () => {
   const dispatch = useDispatch();
   const getEntityHistoryDefaultParams = useGetEntityHistoryDefaultParams();
-  const isHistoryEnabled = useIsHistoryEnabled();
 
   return useCallback(
     async (datasetId: DatasetT["id"]) => {
-      if (!isHistoryEnabled) return;
-
       try {
         const result = await getEntityHistoryDefaultParams(datasetId);
 
@@ -52,7 +48,7 @@ export const useLoadDefaultHistoryParams = () => {
         console.error(error);
       }
     },
-    [dispatch, getEntityHistoryDefaultParams, isHistoryEnabled],
+    [dispatch, getEntityHistoryDefaultParams],
   );
 };
 
