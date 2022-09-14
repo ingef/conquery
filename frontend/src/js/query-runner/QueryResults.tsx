@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import type { ColumnDescription } from "../api/types";
 import HistoryButton from "../button/HistoryButton";
 import PreviewButton from "../button/PreviewButton";
-import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
@@ -50,7 +49,6 @@ const QueryResults: FC<PropsT> = ({
   queryType,
 }) => {
   const { t } = useTranslation();
-  const isHistoryEnabled = useIsHistoryEnabled();
   const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
 
   return (
@@ -69,14 +67,14 @@ const QueryResults: FC<PropsT> = ({
         </LgText>
       )}
       {!!csvUrl && exists(resultColumns) && (
-        <PreviewButton columns={resultColumns} url={csvUrl} />
-      )}
-      {isHistoryEnabled && !!csvUrl && exists(resultColumns) && (
-        <HistoryButton
-          columns={resultColumns}
-          url={csvUrl}
-          label={resultLabel}
-        />
+        <>
+          <PreviewButton columns={resultColumns} url={csvUrl} />
+          <HistoryButton
+            columns={resultColumns}
+            url={csvUrl}
+            label={resultLabel}
+          />
+        </>
       )}
       {resultUrls.length > 0 && (
         <DownloadResultsDropdownButton resultUrls={resultUrls} />
