@@ -117,9 +117,19 @@ public interface AttributeTypeBuilder {
 	@Slf4j
 	class IntegerInterval implements AttributeTypeBuilder {
 
+		/**
+		 * Keeps track of the smallest value in the data
+		 */
 		private long min = Long.MAX_VALUE;
+
+		/**
+		 * Keeps track of the largest value in the data
+		 */
 		private long max = Long.MIN_VALUE;
 
+		/**
+		 * Tracks all data for hierarchy preparation step
+		 */
 		private final Set<String> values = new HashSet<>();
 
 		@Override
@@ -151,25 +161,33 @@ public interface AttributeTypeBuilder {
 					new Range<>(max + 1, max + 1, max + 1)
 			);
 
+			// Convert data for builder#prepare
 			final String[] data = values.toArray(String[]::new);
 
+			// Test if BUCKET_SIZE is suitable for data
 			final long difference = max - min;
-			if (difference < 5) {
+			if (difference < BUCKET_SIZE) {
+				// If the difference is smaller than BUCKET_SIZE, we fall back to a flat hierarchy
 				builder.addInterval(min, max);
 				builder.prepare(data);
 				return builder.build();
 			}
 
 			builder.setAggregateFunction(DataType.INTEGER.createAggregate().createIntervalFunction(true, false));
+
+			// Define the interval for the first bucket on the lowest level
 			builder.addInterval(min, min + BUCKET_SIZE);
 
+			// Intervals of all other buckets are derived through the number of levels and groups in a level
 			final int countLevels = Math.toIntExact(difference / BUCKET_SIZE);
 			log.debug("Creating {} levels.", countLevels);
 			for (int i = 0; i < countLevels; i++) {
 				builder.getLevel(i).addGroup(GROUPS_PER_LEVEL);
 			}
+			// Add a final group that allows to differentiate between a present value ([min; max[) and NULL
 			builder.getLevel(countLevels - 1).addGroup(1);
 
+			// Preparation, so only hierarchy paths are created that are actually needed
 			builder.prepare(data);
 
 			return builder.build();
@@ -215,8 +233,9 @@ public interface AttributeTypeBuilder {
 
 			final String[] data = values.toArray(String[]::new);
 
+			// Test if BUCKET_SIZE is suitable for data
 			final double difference = max - min;
-			if (difference < 5) {
+			if (difference < BUCKET_SIZE) {
 				builder.addInterval(min, max);
 				builder.prepare(data);
 				return builder.build();
