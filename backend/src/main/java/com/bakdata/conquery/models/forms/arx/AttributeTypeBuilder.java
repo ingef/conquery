@@ -37,19 +37,37 @@ import org.deidentifier.arx.aggregates.HierarchyBuilderIntervalBased.Range;
  */
 public interface AttributeTypeBuilder {
 
-	String SUPPRESSING_GRANULARITY = "*";
-
+	/**
+	 * Fixed bucket sized for interval based hierarchies
+	 */
 	long BUCKET_SIZE = 5;
 
+	/**
+	 * Number of groups within a bucket for interval based hierarchies
+	 */
 	int GROUPS_PER_LEVEL = 2;
 
 
+	/**
+	 * Register and transform a value that should be covered by the AttributeType (i.e. a {@link org.deidentifier.arx.AttributeType.Hierarchy}).
+	 * <p>
+	 * The return value is the string representation that was registered needs to be put into the {@link org.deidentifier.arx.Data}
+	 * structure that is anonymized.
+	 *
+	 * @param value cell of the column that corresponds to this {@link AttributeTypeBuilder} of the result provided by conquery
+	 * @return the registered value
+	 */
 	String register(Object value);
 
+	/**
+	 * Method to produce the AttributeType ({@link org.deidentifier.arx.AttributeType.Hierarchy}) after all data of a column was registered.
+	 *
+	 * @return the AttributeType for the corresponding column
+	 */
 	AttributeType build();
 
 	/**
-	 * Builds a two level hierarchy. Bottom level are the actual values. Top level is "*".
+	 * Builds a two level {@link org.deidentifier.arx.AttributeType.Hierarchy}. Bottom level are the actual values. Top level is "*".
 	 */
 	@RequiredArgsConstructor
 	class Flat implements AttributeTypeBuilder {
@@ -99,7 +117,7 @@ public interface AttributeTypeBuilder {
 			for (int i = 0; i < hierarchy.length; i++) {
 				// Extend the hierarchy by a suppressing granularity (*)
 				String[] extended = Arrays.copyOf(hierarchy[i], hierarchy[i].length + 1);
-				extended[extended.length - 1] = SUPPRESSING_GRANULARITY;
+				extended[extended.length - 1] = DataType.ANY_VALUE;
 				hierarchy[i] = extended;
 			}
 
@@ -107,7 +125,7 @@ public interface AttributeTypeBuilder {
 			String[][] newHierarchy = Arrays.copyOf(hierarchy, hierarchy.length + 1);
 			String[] emptyValueHierarchy = new String[hierarchy.length > 0 ? hierarchy[0].length : 0];
 			Arrays.fill(emptyValueHierarchy, "");
-			emptyValueHierarchy[emptyValueHierarchy.length - 1] = SUPPRESSING_GRANULARITY;
+			emptyValueHierarchy[emptyValueHierarchy.length - 1] = DataType.ANY_VALUE;
 			newHierarchy[newHierarchy.length - 1] = emptyValueHierarchy;
 
 			return AttributeType.Hierarchy.create(newHierarchy);
@@ -153,6 +171,13 @@ public interface AttributeTypeBuilder {
 			return returnVal;
 		}
 
+		/**
+		 * Builds an interval based {@link org.deidentifier.arx.AttributeType.Hierarchy} for integer values.
+		 * If the differnce between min and max of the registered data is larger than BUCKET_SIZE,
+		 * the hierarchy will form a binary tree were the leaf nodes span over an interval of BUCKET_SIZE.
+		 *
+		 * @return the hierarchy
+		 */
 		@Override
 		public AttributeType.Hierarchy build() {
 			final HierarchyBuilderIntervalBased<Long> builder = HierarchyBuilderIntervalBased.create(
@@ -225,6 +250,7 @@ public interface AttributeTypeBuilder {
 
 		@Override
 		public AttributeType.Hierarchy build() {
+
 			final HierarchyBuilderIntervalBased<Double> builder = HierarchyBuilderIntervalBased.create(
 					DataType.DECIMAL,
 					new Range<>(min, min, min),
@@ -233,7 +259,6 @@ public interface AttributeTypeBuilder {
 
 			final String[] data = values.toArray(String[]::new);
 
-			// Test if BUCKET_SIZE is suitable for data
 			final double difference = max - min;
 			if (difference < BUCKET_SIZE) {
 				builder.addInterval(min, max);
@@ -364,7 +389,7 @@ public interface AttributeTypeBuilder {
 					parent = parent.getParent();
 					insertDepthWalk++;
 				}
-				hierarchy[insertElementWalk][maxDepth + 1] = SUPPRESSING_GRANULARITY;
+				hierarchy[insertElementWalk][maxDepth + 1] = DataType.ANY_VALUE;
 
 				insertElementWalk++;
 			}
@@ -372,7 +397,7 @@ public interface AttributeTypeBuilder {
 			// Add hierarchy handling for empty values
 			String[] emptyValueHierarchy = new String[maxDepth + 2];
 			Arrays.fill(emptyValueHierarchy, "");
-			emptyValueHierarchy[emptyValueHierarchy.length - 1] = SUPPRESSING_GRANULARITY;
+			emptyValueHierarchy[emptyValueHierarchy.length - 1] = DataType.ANY_VALUE;
 			hierarchy[hierarchy.length - 1] = emptyValueHierarchy;
 
 			return AttributeType.Hierarchy.create(hierarchy);
