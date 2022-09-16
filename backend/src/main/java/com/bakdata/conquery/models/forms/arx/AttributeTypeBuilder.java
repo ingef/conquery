@@ -34,9 +34,6 @@ import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
  */
 public interface AttributeTypeBuilder {
 
-	String SUPPRESSING_GRANULARITY = "*";
-
-
 	String register(Object value);
 
 	AttributeType build();
@@ -72,6 +69,11 @@ public interface AttributeTypeBuilder {
 
 		@Override
 		public String register(Object value) {
+			if (value == null || Strings.isNullOrEmpty(value.toString())) {
+				values.add(DataType.NULL_VALUE);
+				return DataType.NULL_VALUE;
+			}
+
 			final String printValue = ResultType.DateT.INSTANCE.printNullable(printSettings, value);
 			values.add(printValue);
 			return printValue;
@@ -87,23 +89,7 @@ public interface AttributeTypeBuilder {
 					HierarchyBuilderDate.Granularity.DECADE
 			).build(values.stream().filter(Predicate.not(Strings::isNullOrEmpty)).toArray(String[]::new));
 
-			// WORKAROUND: Add empty string handling to the date hierarchy
-			final String[][] hierarchy = build.getHierarchy();
-			for (int i = 0; i < hierarchy.length; i++) {
-				// Extend the hierarchy by a suppressing granularity (*)
-				String[] extended = Arrays.copyOf(hierarchy[i], hierarchy[i].length + 1);
-				extended[extended.length - 1] = SUPPRESSING_GRANULARITY;
-				hierarchy[i] = extended;
-			}
-
-			// Add hierarchy handling for empty values
-			String[][] newhierarchy = Arrays.copyOf(hierarchy, hierarchy.length + 1);
-			String[] emptyValueHierarchy = new String[hierarchy.length > 0 ? hierarchy[0].length : 0];
-			Arrays.fill(emptyValueHierarchy, "");
-			emptyValueHierarchy[emptyValueHierarchy.length - 1] = SUPPRESSING_GRANULARITY;
-			newhierarchy[newhierarchy.length - 1] = emptyValueHierarchy;
-
-			return AttributeType.Hierarchy.create(newhierarchy);
+			return AttributeType.Hierarchy.create(build.getHierarchy());
 		}
 	}
 
@@ -214,15 +200,15 @@ public interface AttributeTypeBuilder {
 					parent = parent.getParent();
 					insertDepthWalk++;
 				}
-				hierarchy[insertElementWalk][maxDepth + 1] = SUPPRESSING_GRANULARITY;
+				hierarchy[insertElementWalk][maxDepth + 1] = DataType.ANY_VALUE;
 
 				insertElementWalk++;
 			}
 
 			// Add hierarchy handling for empty values
 			String[] emptyValueHierarchy = new String[maxDepth + 2];
-			Arrays.fill(emptyValueHierarchy, "");
-			emptyValueHierarchy[emptyValueHierarchy.length - 1] = SUPPRESSING_GRANULARITY;
+			Arrays.fill(emptyValueHierarchy, DataType.NULL_VALUE);
+			emptyValueHierarchy[emptyValueHierarchy.length - 1] = DataType.ANY_VALUE;
 			hierarchy[hierarchy.length - 1] = emptyValueHierarchy;
 
 			return AttributeType.Hierarchy.create(hierarchy);
