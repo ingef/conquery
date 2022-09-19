@@ -150,7 +150,7 @@ public class XodusStoreFactory implements StoreFactory {
 	 * If not set, the environment is loaded and the application needs to create the store.
 	 * This is useful if a new version introduces a new store, but will also alter the environment upon reading.
 	 */
-	private boolean loadEnvironmentWithMissingStores = true;
+	private boolean loadEnvironmentWithMissingStores = false;
 
 	@JsonIgnore
 	private transient Validator validator;
