@@ -5,7 +5,6 @@ import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
 
 const SxWithTooltip = styled(WithTooltip)`
-  text-transform: uppercase;
   white-space: nowrap;
 `;
 

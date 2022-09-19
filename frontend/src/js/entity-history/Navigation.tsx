@@ -50,10 +50,12 @@ const BottomActions = styled("div")`
 
 const BackButton = styled(IconButton)`
   margin: 0 10px 0 20px;
+  justify-content: center;
 `;
 
 const SxIconButton = styled(IconButton)`
   width: 100%;
+  justify-content: center;
 `;
 
 const SxWithTooltip = styled(WithTooltip)`

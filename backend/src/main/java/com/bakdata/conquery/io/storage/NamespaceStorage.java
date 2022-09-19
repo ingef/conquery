@@ -1,12 +1,13 @@
 package com.bakdata.conquery.io.storage;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Objects;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
@@ -19,6 +20,7 @@ import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,6 +31,9 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected IdentifiableStore<SearchIndex> searchIndexes;
 	protected SingletonStore<EntityIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
+
+	protected SingletonStore<PreviewConfig> preview;
+
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
 
 	protected SingletonStore<Dictionary> primaryDictionary;
@@ -45,7 +50,7 @@ public class NamespaceStorage extends NamespacedStorage {
 	public Dictionary getPrimaryDictionaryRaw() {
 		final Dictionary dictionary = primaryDictionary.get();
 
-		if(dictionary == null){
+		if (dictionary == null) {
 			log.trace("No prior PrimaryDictionary, creating one");
 			final MapDictionary newPrimary = new MapDictionary(getDataset(), ConqueryConstants.PRIMARY_DICTIONARY);
 
@@ -67,89 +72,56 @@ public class NamespaceStorage extends NamespacedStorage {
 		// We don't call internToExternMapper::init this is done by the first select that needs the mapping
 	}
 
+
 	@Override
 	public void openStores(ObjectMapper objectMapper) {
 		super.openStores(objectMapper);
 
 		internToExternMappers = getStorageFactory().createInternToExternMappingStore(super.getPathName(), getCentralRegistry(), objectMapper);
-		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), getCentralRegistry(), objectMapper
-		);
+		searchIndexes = getStorageFactory().createSearchIndexStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		idMapping = getStorageFactory().createIdMappingStore(super.getPathName(), objectMapper);
 		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
 		primaryDictionary = getStorageFactory().createPrimaryDictionaryStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		preview = getStorageFactory().createPreviewStore(super.getPathName(), getCentralRegistry(), objectMapper);
 
 		decorateInternToExternMappingStore(internToExternMappers);
 		decorateIdMapping(idMapping);
 	}
 
 	@Override
-	public void loadData() {
-		dataset.loadData();
-		secondaryIds.loadData();
-		tables.loadData();
-		dictionaries.loadData();
-		imports.loadData();
+	public ImmutableList<KeyIncludingStore<?, ?>> getStores() {
+		return ImmutableList.of(
+				dataset,
 
-		internToExternMappers.loadData();
-		searchIndexes.loadData();
-		// Concepts depend on internToExternMappers
-		concepts.loadData();
+				internToExternMappers,
+				searchIndexes,
 
-		idMapping.loadData();
-		structure.loadData();
-		workerToBuckets.loadData();
-		primaryDictionary.loadData();
+				secondaryIds,
+				tables,
+				dictionaries,
+				imports,
 
-		log.info("Done reading {} / {}", dataset.get(), getClass().getName());
+				// Concepts depend on internToExternMappers
+				concepts,
 
+				preview,
+				idMapping,
+				structure,
+				workerToBuckets,
+				primaryDictionary
+		);
 	}
 
-	@Override
-	public void clear() {
-		super.clear();
 
-		searchIndexes.clear();
-		internToExternMappers.clear();
-		idMapping.clear();
-		structure.clear();
-		workerToBuckets.clear();
-		primaryDictionary.clear();
 
-	}
-
-	@Override
-	public void removeStorage() {
-		super.removeStorage();
-
-		searchIndexes.removeStore();
-		internToExternMappers.removeStore();
-		idMapping.removeStore();
-		structure.removeStore();
-		workerToBuckets.removeStore();
-		primaryDictionary.removeStore();
-
-	}
-
-	@Override
-	public void close() throws IOException {
-		super.close();
-
-		searchIndexes.close();
-		internToExternMappers.close();
-		idMapping.close();
-		structure.close();
-		workerToBuckets.close();
-		primaryDictionary.close();
-
-	}
 
 	public EntityIdMap getIdMapping() {
 		return idMapping.get();
 	}
 
 
-	public void updatePrimaryDictionary(Dictionary dictionary){
+	public void updatePrimaryDictionary(Dictionary dictionary) {
 		primaryDictionary.update(dictionary);
 	}
 
@@ -204,5 +176,17 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	public Collection<SearchIndex> getSearchIndices() {
 		return searchIndexes.getAll();
+	}
+
+	public void setPreviewConfig(PreviewConfig previewConfig){
+		preview.update(previewConfig);
+	}
+
+	public PreviewConfig getPreviewConfig() {
+		return preview.get();
+	}
+
+	public void removePreviewConfig() {
+		preview.remove();
 	}
 }

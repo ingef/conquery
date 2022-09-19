@@ -12,19 +12,14 @@ import WithTooltip from "../tooltip/WithTooltip";
 import { closeAllConceptOpen, resetAllConceptOpen } from "./actions";
 import { ConceptTreesOpenStateT } from "./reducer";
 
-const SxWithTooltip = styled(WithTooltip)`
-  margin-right: 5px;
-  &:last-of-type {
-    margin-right: 0;
-  }
-`;
 const Row = styled("div")`
   display: flex;
   align-items: center;
+  gap: 5px;
 `;
 
 const SxIconButton = styled(IconButton)`
-  padding: 8px 6px;
+  padding: 9px 6px;
 `;
 
 interface PropsT {
@@ -87,17 +82,17 @@ const ConceptTreesOpenButtonsView = memo(
 
     return (
       <Row className={className}>
-        <SxWithTooltip text={t("conceptTreesOpen.resetAll")}>
+        <WithTooltip text={t("conceptTreesOpen.resetAll")}>
           <SxIconButton frame icon="home" onClick={onResetAllConceptOpen} />
-        </SxWithTooltip>
-        <SxWithTooltip text={t("conceptTreesOpen.closeAll")}>
+        </WithTooltip>
+        <WithTooltip text={t("conceptTreesOpen.closeAll")}>
           <SxIconButton
             disabled={isCloseAllDisabled}
             frame
             icon="folder-minus"
             onClick={onCloseAllConceptOpen}
           />
-        </SxWithTooltip>
+        </WithTooltip>
       </Row>
     );
   },

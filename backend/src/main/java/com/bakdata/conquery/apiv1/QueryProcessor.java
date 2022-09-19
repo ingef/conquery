@@ -391,8 +391,9 @@ public class QueryProcessor {
 	 * Create and submit {@link EntityPreviewForm} for subject on to extract sources for entity, and extract some additional infos to be used as infocard.
 	 */
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
+
 		EntityPreviewForm form =
-				EntityPreviewForm.create(entity, idKind, dateRange, sources, config.getPreview().resolveInfoCardSelects(dataset, datasetRegistry));
+				EntityPreviewForm.create(entity, idKind, dateRange, sources, datasetRegistry.get(dataset.getId()).getPreviewConfig().getSelects());
 
 		// TODO make sure that subqueries are also system
 		// TODO do not persist system queries

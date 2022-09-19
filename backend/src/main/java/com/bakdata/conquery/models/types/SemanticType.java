@@ -65,18 +65,6 @@ public abstract class SemanticType {
 	}
 
 	/**
-	 * Column contains an Entity's Id of a kind.
-	 * <p>
-	 * See {@link com.bakdata.conquery.models.config.ColumnConfig} / {@link com.bakdata.conquery.models.config.FrontendConfig.UploadConfig}for the source of this.
-	 */
-	@CPSType(id = "DESCRIPTION", base = SemanticType.class)
-	@Data
-	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-	public static class DescriptionT extends SemanticType {
-		private final String description;
-	}
-
-	/**
 	 * Column contains values of a {@link SecondaryIdDescription}.
 	 */
 	@CPSType(id = "SECONDARY_ID", base = SemanticType.class)
@@ -85,6 +73,24 @@ public abstract class SemanticType {
 	public static class SecondaryIdT extends SemanticType {
 		@NsIdRef
 		private final SecondaryIdDescription secondaryId;
+	}
+
+	/**
+	 * Columns marked with {@link GroupT} should be used to merge events in the preview.
+	 */
+	@CPSType(id = "GROUP", base = SemanticType.class)
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	public static class GroupT extends SemanticType {
+	}
+
+	/**
+	 * Columns marked with {@link GroupT} should not be displayed by default in the preview.
+	 */
+	@CPSType(id = "HIDDEN", base = SemanticType.class)
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	public static class HiddenT extends SemanticType {
 	}
 
 	/**

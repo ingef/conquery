@@ -134,6 +134,8 @@
     "unshare": "Revoke sharing"
   },
   "common": {
+    "manual": "Manual",
+    "contact": "Contact",
     "optional": "Optional",
     "back": "Back",
     "any": "Any",
@@ -259,6 +261,7 @@
     "maxDaysLabel": "Max. days"
   },
   "externalForms": {
+    "manualButton": "Go to manual",
     "forms": "Forms",
     "formValidation": {
       "mustBePositiveNumber": "Must be a positive number",
@@ -456,9 +459,10 @@
     "downloadButtonLabel": "Download list",
     "nextButtonLabel": "Next entity",
     "prevButtonLabel": "Previous entity",
-    "downloadEntityData": "CSV",
+    "downloadEntityData": "Download entity history as CSV",
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
+    "dates": "Dates",
     "options": {
       "check": "interesting",
       "noCheck": "not interesting"
@@ -472,7 +476,8 @@
       "money": "Money",
       "secondaryId": "IDs from analysis layer",
       "concept": "Concepts",
-      "rest": "Additional infos"
+      "rest": "Additional infos",
+      "fingerprint": "IDs"
     },
     "settings": {
       "headline": "History session settings",

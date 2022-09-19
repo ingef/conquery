@@ -41,6 +41,11 @@ public class SelectResultInfo extends ResultInfo {
 	}
 
 	@Override
+	public String getDescription() {
+		return select.getDescription();
+	}
+
+	@Override
 	public ResultType getType() {
 		return select.getResultType();
 	}
@@ -52,6 +57,7 @@ public class SelectResultInfo extends ResultInfo {
 							   .defaultLabel(defaultColumnName(settings))
 							   .type(getType().typeInfo())
 							   .semantics(getSemantics())
+							   .description(getSelect().getDescription())
 							   .build();
 	}
 

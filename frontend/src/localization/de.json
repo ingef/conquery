@@ -133,6 +133,8 @@
     "unshare": "Freigabe aufheben"
   },
   "common": {
+    "manual": "Handbuch",
+    "contact": "Kontakt",
     "optional": "Optional",
     "back": "Zurück",
     "any": "Beliebig",
@@ -192,7 +194,7 @@
     "today": "Heute",
     "dateFormat": "dd.MM.yyyy",
     "tooltip": {
-      "possiblePattern": "Folgende Abkürzungen sind erlaubt: <br/> Eingabe: j2020/j.2020 wird zu: Von 01.01.2020; Bis 31.12.2020 <br/> Eingabe: q2.2020 wird zu: Von 01.04.2020; Bis 30.06.2020 <br/> Eingabe: m8.2020 wird zu: Von 01.08.2020; Bis 31.08.2020"
+      "possiblePattern": "Folgende Abkürzungen sind erlaubt <table><tr><td>m8.2020</td><td>von 01.08.2020<br/>bis 31.08.2020</td></tr><tr><td>q2.2020</td><td>von 01.04.2020<br/>bis 30.06.2020</td></tr><tr><td>j2020 j.2020</td><td>von 01.01.2020<br/>bis 31.12.2020</td></tr></table>"
     }
   },
   "inputSelect": {
@@ -258,6 +260,7 @@
     "maxDaysLabel": "Ende Tage"
   },
   "externalForms": {
+    "manualButton": "Hilfe zum Formular im Handbuch öffnen",
     "forms": "Formulare",
     "formValidation": {
       "mustBePositiveNumber": "Muss positive Zahl sein",
@@ -455,9 +458,10 @@
     "downloadButtonLabel": "Liste herunterladen",
     "nextButtonLabel": "Weiterblättern",
     "prevButtonLabel": "Zurückblättern",
-    "downloadEntityData": "CSV",
+    "downloadEntityData": "Einzelhistorie als CSV herunterladen",
     "differencesTooltip": "Unterschiede aus den Einzeleinträgen",
     "closeAll": "Alle schließen",
+    "dates": "Datumswerte",
     "options": {
       "check": "auffällig",
       "noCheck": "unauffällig"
@@ -471,7 +475,8 @@
       "money": "Geldbeträge",
       "secondaryId": "IDs aus Analyse-Ebene",
       "concept": "Konzepte",
-      "rest": "Zusatzinfos"
+      "rest": "Zusatzinfos",
+      "fingerprint": "IDs"
     },
     "settings": {
       "headline": "Historie-Einstellungen",

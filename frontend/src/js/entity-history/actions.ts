@@ -6,11 +6,10 @@ import {
   useGetEntityHistory,
   useGetEntityHistoryDefaultParams,
 } from "../api/api";
-import type { ColumnDescription, DatasetT } from "../api/types";
+import type { ColumnDescription, DatasetT, EntityInfo } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { ErrorObject, errorPayload } from "../common/actions";
-import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
 import { formatStdDate, getFirstAndLastDateOfRange } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
@@ -37,20 +36,20 @@ export const loadDefaultHistoryParamsSuccess = createAction(
 export const useLoadDefaultHistoryParams = () => {
   const dispatch = useDispatch();
   const getEntityHistoryDefaultParams = useGetEntityHistoryDefaultParams();
-  const isHistoryEnabled = useIsHistoryEnabled();
 
-  return async (datasetId: DatasetT["id"]) => {
-    if (!isHistoryEnabled) return;
+  return useCallback(
+    async (datasetId: DatasetT["id"]) => {
+      try {
+        const result = await getEntityHistoryDefaultParams(datasetId);
 
-    try {
-      const result = await getEntityHistoryDefaultParams(datasetId);
-
-      dispatch(loadDefaultHistoryParamsSuccess({ sources: result }));
-    } catch (error) {
-      // TODO: Fail without noticing user, maybe change this later if required
-      console.error(error);
-    }
-  };
+        dispatch(loadDefaultHistoryParamsSuccess({ sources: result }));
+      } catch (error) {
+        // TODO: Fail without noticing user, maybe change this later if required
+        console.error(error);
+      }
+    },
+    [dispatch, getEntityHistoryDefaultParams],
+  );
 };
 
 export const resetCurrentEntity = createAction(
@@ -66,6 +65,7 @@ export const loadHistoryData = createAsyncAction(
   {
     currentEntityCsvUrl: string;
     currentEntityData: EntityEvent[];
+    currentEntityInfos: EntityInfo[];
     currentEntityId: string;
     uniqueSources: string[];
     entityIds?: string[];
@@ -141,11 +141,12 @@ export function useUpdateHistorySession() {
       try {
         dispatch(loadHistoryData.request());
 
-        const { resultUrls, columnDescriptions } = await getEntityHistory(
-          datasetId,
-          entityId,
-          defaultEntityHistoryParams.sources,
-        );
+        const { resultUrls, columnDescriptions, infos } =
+          await getEntityHistory(
+            datasetId,
+            entityId,
+            defaultEntityHistoryParams.sources,
+          );
 
         const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
 
@@ -180,6 +181,7 @@ export function useUpdateHistorySession() {
             currentEntityCsvUrl: csvUrl,
             currentEntityData: currentEntityDataProcessed,
             currentEntityId: entityId,
+            currentEntityInfos: infos,
             columnDescriptions,
             columns,
             uniqueSources,

@@ -1,9 +1,9 @@
 package com.bakdata.conquery.integration.tests;
 
+import static com.bakdata.conquery.integration.common.LoadingUtil.importInternToExternMappers;
 import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondaryIds;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
@@ -23,12 +23,12 @@ import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.PreviewConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
@@ -36,9 +36,9 @@ import com.bakdata.conquery.models.query.preview.EntityPreviewStatus;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
-import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
@@ -51,14 +51,6 @@ import org.assertj.core.description.LazyTextDescription;
 @Slf4j
 public class EntityExportTest implements ProgrammaticIntegrationTest {
 
-	@Override
-	public ConqueryConfig overrideConfig(ConqueryConfig conf, File workdir) {
-		return conf.withPreview(new PreviewConfig(List.of(
-						   new PreviewConfig.InfoCardSelect("Age", "tree1.connector.age"),
-						   new PreviewConfig.InfoCardSelect("Values", "tree2.connector.values")
-				   )))
-				   .withStorage(new NonPersistentStoreFactory());
-	}
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
@@ -69,11 +61,14 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		final Dataset dataset = conquery.getDataset();
 
-		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
+
+			importInternToExternMappers(conquery, test.getInternToExternMappings());
+			conquery.waitUntilWorkDone();
 
 			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
 			conquery.waitUntilWorkDone();
@@ -86,6 +81,31 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
 			conquery.waitUntilWorkDone();
+
+			LoadingUtil.updateMatchingStats(conquery);
+			conquery.waitUntilWorkDone();
+
+			final URI setPreviewConfig = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder(), AdminDatasetResource.class, "setPreviewConfig")
+														.buildFromMap(Map.of(ResourceConstants.DATASET, dataset.getId()));
+
+			final PreviewConfig previewConfig = new PreviewConfig();
+
+			previewConfig.setInfoCardSelects(List.of(
+					new PreviewConfig.InfoCardSelect("Age", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age")),
+					new PreviewConfig.InfoCardSelect("Values", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))
+			));
+
+			previewConfig.setHidden(Set.of(ColumnId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "table1.column")));
+
+			try (Response response = conquery.getClient().target(setPreviewConfig)
+											 .request(MediaType.APPLICATION_JSON_TYPE)
+											 .header("Accept-Language", "en-Us")
+											 .post(Entity.json(previewConfig))) {
+
+				assertThat(response.getStatusInfo().getFamily())
+						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+						.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			}
 		}
 
 		final URI entityExport = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getEntityData")
@@ -97,23 +117,25 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 													  .flatMap(List::stream)
 													  .collect(Collectors.toList());
 
-		final Response allEntityDataResponse =
-				conquery.getClient().target(entityExport)
-						.request(MediaType.APPLICATION_JSON_TYPE)
-						.header("Accept-Language", "en-Us")
-						.post(Entity.json(new QueryResource.EntityPreview("ID", "1", Range.all(), allConnectors)));
+		final EntityPreviewStatus result;
+		try (Response allEntityDataResponse = conquery.getClient().target(entityExport)
+													  .request(MediaType.APPLICATION_JSON_TYPE)
+													  .header("Accept-Language", "en-Us")
+													  .post(Entity.json(new QueryResource.EntityPreview("ID", "1", Range.all(), allConnectors)))) {
 
-		assertThat(allEntityDataResponse.getStatusInfo().getFamily())
-				.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
-				.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(allEntityDataResponse.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
 
-		final EntityPreviewStatus result = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
+			result = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
+		}
 
 		assertThat(result.getInfos()).isEqualTo(List.of(
 				new EntityPreviewStatus.Info(
 						"Age",
 						"8",
 						ResultType.IntegerT.INSTANCE.typeInfo(),
+						"",
 						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
 																	  .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
 				),
@@ -121,8 +143,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						"Values",
 						"A1 ; B2",
 						new ResultType.ListT(ResultType.StringT.INSTANCE).typeInfo(),
+						"This is a column",
 						Set.of(
-								new SemanticType.DescriptionT("This is a column"),
 								new SemanticType.SelectResultT(conquery.getDatasetRegistry()
 																	   .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values")))
 						)
@@ -138,10 +160,11 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 														  .findFirst();
 
 		assertThat(t2values).isPresent();
+		assertThat(t2values.get().getDescription()).isEqualTo("This is a column");
 		assertThat(t2values.get().getSemantics())
 				.contains(
-						new SemanticType.DescriptionT("This is a column"),
-						new SemanticType.ConceptColumnT(conquery.getDatasetRegistry().resolve(ConceptId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2")))
+						new SemanticType.ConceptColumnT(conquery.getDatasetRegistry()
+																.resolve(ConceptId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2")))
 				);
 
 
@@ -151,24 +174,26 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		assertThat(csvUrl).isPresent();
 
-		final Response resultLines = conquery.getClient().target(csvUrl.get().toURI())
-											 .queryParam("pretty", false)
-											 .request(AdditionalMediaTypes.CSV)
-											 .header("Accept-Language", "en-Us")
-											 .get();
+		try (Response resultLines = conquery.getClient().target(csvUrl.get().toURI())
+											.queryParam("pretty", false)
+											.request(AdditionalMediaTypes.CSV)
+											.header("Accept-Language", "en-Us")
+											.get()) {
 
-		assertThat(resultLines.getStatusInfo().getFamily())
-				.describedAs(new LazyTextDescription(() -> resultLines.readEntity(String.class)))
-				.isEqualTo(Response.Status.Family.SUCCESSFUL);
+			assertThat(resultLines.getStatusInfo().getFamily())
+					.describedAs(new LazyTextDescription(() -> resultLines.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
 
 
-		assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
-				.containsExactlyInAnyOrder(
-						"result,dates,source,table1 column,table2 column",
-						"1,{2012-01-01/2012-01-01},table2,,tree2",
-						"1,{2010-07-15/2010-07-15},table2,,tree2",
-						"1,{2013-11-10/2013-11-10},table1,tree1.child_a,"
-				);
+			assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
+					.containsExactlyInAnyOrder(
+							"result,dates,source,secondaryid,table1 column,table2 column",
+						"1,{2013-11-10/2013-11-10},table1,External: oneone,tree1.child_a,",
+							"1,{2012-01-01/2012-01-01},table2,2222,,tree2",
+							"1,{2010-07-15/2010-07-15},table2,External: threethree,,tree2"
+
+					);
+		}
 
 
 	}

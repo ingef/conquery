@@ -3,18 +3,19 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ColumnDescription } from "../api/types";
-import DownloadButton from "../button/DownloadButton";
 import HistoryButton from "../button/HistoryButton";
 import PreviewButton from "../button/PreviewButton";
-import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
+
+import DownloadResultsDropdownButton from "./DownloadResultsDropdownButton";
 
 const Root = styled("div")`
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 7px;
 `;
 
 const Text = styled("p")`
@@ -26,18 +27,6 @@ const Text = styled("p")`
 const LgText = styled(Text)`
   font-size: ${({ theme }) => theme.font.lg};
   white-space: nowrap;
-`;
-
-const SxDownloadButton = styled(DownloadButton)`
-  margin-left: 7px;
-`;
-
-const SxPreviewButton = styled(PreviewButton)`
-  margin-left: 7px;
-`;
-
-const SxHistoryButton = styled(HistoryButton)`
-  margin-left: 7px;
 `;
 
 const Bold = styled("span")`
@@ -60,7 +49,6 @@ const QueryResults: FC<PropsT> = ({
   queryType,
 }) => {
   const { t } = useTranslation();
-  const isHistoryEnabled = useIsHistoryEnabled();
   const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
 
   return (
@@ -79,24 +67,18 @@ const QueryResults: FC<PropsT> = ({
         </LgText>
       )}
       {!!csvUrl && exists(resultColumns) && (
-        <SxPreviewButton columns={resultColumns} url={csvUrl} />
+        <>
+          <PreviewButton columns={resultColumns} url={csvUrl} />
+          <HistoryButton
+            columns={resultColumns}
+            url={csvUrl}
+            label={resultLabel}
+          />
+        </>
       )}
-      {isHistoryEnabled && !!csvUrl && exists(resultColumns) && (
-        <SxHistoryButton
-          columns={resultColumns}
-          url={csvUrl}
-          label={resultLabel}
-        />
+      {resultUrls.length > 0 && (
+        <DownloadResultsDropdownButton resultUrls={resultUrls} />
       )}
-      {resultUrls.map((url) => {
-        const ending = url.split(".").reverse()[0];
-
-        return (
-          <SxDownloadButton key={url} frame url={url}>
-            {ending.toUpperCase()}
-          </SxDownloadButton>
-        );
-      })}
     </Root>
   );
 };

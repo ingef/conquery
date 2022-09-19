@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { ActionType, createAsyncAction } from "typesafe-actions";
 
@@ -17,12 +18,14 @@ export const useLoadMe = () => {
   const dispatch = useDispatch();
   const getMe = useGetMe();
 
-  return () => {
+  return useCallback(async () => {
     dispatch(loadMe.request());
 
-    return getMe().then(
-      (r) => dispatch(loadMe.success(successPayload(r, {}))),
-      (e) => dispatch(loadMe.failure(errorPayload(e, {}))),
-    );
-  };
+    try {
+      const response = await getMe();
+      dispatch(loadMe.success(successPayload(response, {})));
+    } catch (error) {
+      dispatch(loadMe.failure(errorPayload(error as Error, {})));
+    }
+  }, [dispatch, getMe]);
 };

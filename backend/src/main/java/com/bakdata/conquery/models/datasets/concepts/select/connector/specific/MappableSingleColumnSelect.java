@@ -53,11 +53,6 @@ public abstract class MappableSingleColumnSelect extends SingleColumnSelect {
 
 		final Set<SemanticType> semantics = new HashSet<>();
 
-		// Since these kind of selects work on raw-columns, we embed the columns description.
-		if (getColumn().getDescription() != null) {
-			semantics.add(new SemanticType.DescriptionT(getColumn().getDescription()));
-		}
-
 		if (isCategorical()) {
 			semantics.add(new SemanticType.CategoricalT());
 		}

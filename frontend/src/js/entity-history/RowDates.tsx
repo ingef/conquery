@@ -12,7 +12,7 @@ const Line = styled("div")`
   background-color: ${({ theme }) => theme.col.gray};
 `;
 
-const format = (dateStr: string) => {
+export const formatHistoryDayRange = (dateStr: string) => {
   const [, month, day] = dateStr.split("-");
   return `${day}.${month}.`;
 };
@@ -28,14 +28,16 @@ export const RowDates = ({ dates }: Props) => {
   const sameDate = dates.from === dates.to;
 
   return sameDate ? (
-    <DateText style={{ flexShrink: 0 }}>{format(dates.from)}</DateText>
+    <DateText style={{ flexShrink: 0 }}>
+      {formatHistoryDayRange(dates.from)}
+    </DateText>
   ) : (
     <DateText
       style={{ display: "flex", flexDirection: "column", flexShrink: 0 }}
     >
-      {format(dates.from)}
+      {formatHistoryDayRange(dates.from)}
       <Line />
-      {format(dates.to)}
+      {formatHistoryDayRange(dates.to)}
     </DateText>
   );
 };
