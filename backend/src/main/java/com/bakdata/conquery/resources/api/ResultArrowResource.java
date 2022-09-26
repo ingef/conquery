@@ -37,8 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 public class ResultArrowResource {
 
 	private final ResultArrowProcessor processor;
-	private final DatasetRegistry datasetRegistry;
-	private final ConqueryConfig config;
 
 	@GET
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_FILE)

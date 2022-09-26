@@ -1,8 +1,10 @@
 package com.bakdata.conquery.io.result.arrow;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
@@ -15,6 +17,7 @@ import org.apache.arrow.vector.types.FloatingPointPrecision;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.FieldType;
+import org.jetbrains.annotations.NotNull;
 
 @UtilityClass
 public class ArrowUtil {
@@ -87,5 +90,21 @@ public class ArrowUtil {
 		// Fallback to string field if type is not explicitly registered
 		BiFunction<ResultInfo, String, Field> fieldCreator = FIELD_MAP.getOrDefault(info.getType().getClass(), ArrowUtil::stringField);
 		return fieldCreator.apply(info, collector.getUniqueName(info));
+	}
+
+	public static List<Field> generateFields(@NonNull List<ResultInfo> info, UniqueNamer collector) {
+		return info.stream()
+				   .map(i -> createField(i, collector))
+				   .collect(Collectors.toUnmodifiableList());
+
+	}
+
+	@NotNull
+	public static List<Field> generateFields(List<ResultInfo> idHeaders, List<ResultInfo> resultInfo, UniqueNamer uniqueNamer) {
+		// Combine id and value Fields to one vector to build a schema
+		final List<Field> idFields = generateFields(idHeaders, uniqueNamer);
+		List<Field> fields = new ArrayList<>(idFields);
+		fields.addAll(generateFields(resultInfo, uniqueNamer));
+		return fields;
 	}
 }
