@@ -37,7 +37,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j @CPSBase
 public abstract class ConqueryTestSpec {
 	
-	@Getter @Setter @NotNull
+	@Getter
+	@Setter
 	private String label;
 
 	@Setter

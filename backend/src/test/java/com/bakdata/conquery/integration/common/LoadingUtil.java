@@ -35,6 +35,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -105,11 +106,17 @@ public class LoadingUtil {
 		}
 	}
 
-	public static void importTables(StandaloneSupport support, List<RequiredTable> tables) throws JSONException {
+	public static void importTables(StandaloneSupport support, List<RequiredTable> tables, boolean autoConcept) throws JSONException {
 
 		for (RequiredTable rTable : tables) {
 			final Table table = rTable.toTable(support.getDataset(), support.getNamespace().getStorage().getCentralRegistry());
 			uploadTable(support, table);
+
+			if (autoConcept) {
+				final TreeConcept concept = AutoConceptUtil.createConcept(table);
+
+				uploadConcept(support, table.getDataset(), concept);
+			}
 		}
 	}
 
@@ -176,7 +183,7 @@ public class LoadingUtil {
 
 		final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
 											 .queryParam("file", cqpp)
-											 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
+											 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId().toString()));
 
 		final Invocation.Builder request = support.getClient()
 												  .target(addImport)

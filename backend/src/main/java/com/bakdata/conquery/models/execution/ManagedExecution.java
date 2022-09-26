@@ -127,7 +127,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Executed right before execution submission.
 	 */
-	public void initExecutable(DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public final void initExecutable(DatasetRegistry datasetRegistry, ConqueryConfig config) {
 		synchronized (this) {
 			if (initialized) {
 				log.trace("Execution {} was already initialized", getId());

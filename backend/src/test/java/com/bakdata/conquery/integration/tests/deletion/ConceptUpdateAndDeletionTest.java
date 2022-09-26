@@ -61,7 +61,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTables(conquery, test.getContent().getTables());
+			LoadingUtil.importTables(conquery, test.getContent().getTables(), test.getContent().isAutoConcept());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());

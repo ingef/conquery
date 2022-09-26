@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.integration.common.LoadingUtil;
+import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -70,16 +71,17 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			importInternToExternMappers(conquery, test.getInternToExternMappings());
 			conquery.waitUntilWorkDone();
 
-			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
+			final RequiredData content = test.getContent();
+			importSecondaryIds(conquery, content.getSecondaryIds());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTables(conquery, test.getContent().getTables());
+			LoadingUtil.importTables(conquery, content.getTables(), content.isAutoConcept());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
+			LoadingUtil.importTableContents(conquery, content.getTables());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.updateMatchingStats(conquery);

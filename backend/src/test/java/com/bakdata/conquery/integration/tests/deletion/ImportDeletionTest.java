@@ -18,6 +18,7 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
+import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -68,19 +69,20 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
+		final RequiredData content = test.getContent();
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
+			importSecondaryIds(conquery, content.getSecondaryIds());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTables(conquery, test.getContent().getTables());
+			LoadingUtil.importTables(conquery, content.getTables(), content.isAutoConcept());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
+			LoadingUtil.importTableContents(conquery, content.getTables());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -200,10 +202,10 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		// Load more data under the same name into the same table, with only the deleted import/table
 		{
 			// only import the deleted import/table
-			final RequiredTable import2Table = test.getContent().getTables().stream()
-													 .filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable()))
-													 .findFirst()
-													 .orElseThrow();
+			final RequiredTable import2Table = content.getTables().stream()
+													  .filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable()))
+													  .findFirst()
+													  .orElseThrow();
 
 
 			final ResourceFile csv = import2Table.getCsv();
