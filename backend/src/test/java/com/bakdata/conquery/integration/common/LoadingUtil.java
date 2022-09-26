@@ -183,7 +183,7 @@ public class LoadingUtil {
 
 		final URI addImport = HierarchyHelper.hierarchicalPath(support.defaultAdminURIBuilder(), AdminDatasetResource.class, "addImport")
 											 .queryParam("file", cqpp)
-											 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getName()));
+											 .buildFromMap(Map.of(ResourceConstants.DATASET, support.getDataset().getId().toString()));
 
 		final Invocation.Builder request = support.getClient()
 												  .target(addImport)

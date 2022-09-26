@@ -24,9 +24,12 @@ import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.deidentifier.arx.AttributeType;
 import org.deidentifier.arx.DataType;
 import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
+import org.deidentifier.arx.aggregates.HierarchyBuilderIntervalBased;
+import org.deidentifier.arx.aggregates.HierarchyBuilderIntervalBased.Range;
 
 /**
  * Helper classes that allow us to gather values for possible attribute hierarchies, while
@@ -34,12 +37,37 @@ import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
  */
 public interface AttributeTypeBuilder {
 
+	/**
+	 * Fixed bucket sized for interval based hierarchies
+	 */
+	long BUCKET_SIZE = 5;
+
+	/**
+	 * Number of groups within a bucket for interval based hierarchies
+	 */
+	int GROUPS_PER_LEVEL = 2;
+
+
+	/**
+	 * Register and transform a value that should be covered by the AttributeType (i.e. a {@link org.deidentifier.arx.AttributeType.Hierarchy}).
+	 * <p>
+	 * The return value is the string representation that was registered needs to be put into the {@link org.deidentifier.arx.Data}
+	 * structure that is anonymized.
+	 *
+	 * @param value cell of the column that corresponds to this {@link AttributeTypeBuilder} of the result provided by conquery
+	 * @return the registered value
+	 */
 	String register(Object value);
 
+	/**
+	 * Method to produce the AttributeType ({@link org.deidentifier.arx.AttributeType.Hierarchy}) after all data of a column was registered.
+	 *
+	 * @return the AttributeType for the corresponding column
+	 */
 	AttributeType build();
 
 	/**
-	 * Builds a two level hierarchy. Bottom level are the actual values. Top level is "*".
+	 * Builds a two level {@link org.deidentifier.arx.AttributeType.Hierarchy}. Bottom level are the actual values. Top level is "*".
 	 */
 	@RequiredArgsConstructor
 	class Flat implements AttributeTypeBuilder {
@@ -90,6 +118,156 @@ public interface AttributeTypeBuilder {
 			).build(values.stream().filter(Predicate.not(Strings::isNullOrEmpty)).toArray(String[]::new));
 
 			return AttributeType.Hierarchy.create(build.getHierarchy());
+		}
+	}
+
+	@Slf4j
+	class IntegerInterval implements AttributeTypeBuilder {
+
+		/**
+		 * Keeps track of the smallest value in the data
+		 */
+		private long min = Long.MAX_VALUE;
+
+		/**
+		 * Keeps track of the largest value in the data
+		 */
+		private long max = Long.MIN_VALUE;
+
+		/**
+		 * Tracks all data for hierarchy preparation step
+		 */
+		private final Set<String> values = new HashSet<>();
+
+		@Override
+		public String register(Object value) {
+
+			if (value == null) {
+				values.add(DataType.NULL_VALUE);
+				return DataType.NULL_VALUE;
+			}
+
+			if (!(value instanceof Number)) {
+				throw new IllegalArgumentException("Expected a " + Number.class + " type, but got " + value.getClass() + ".");
+			}
+
+			final long l = ((Number) value).longValue();
+			min = Math.min(min, l);
+			max = Math.max(max, l);
+
+			final String returnVal = Long.toString(l);
+			values.add(returnVal);
+			return returnVal;
+		}
+
+		/**
+		 * Builds an interval based {@link org.deidentifier.arx.AttributeType.Hierarchy} for integer values.
+		 * If the differnce between min and max of the registered data is larger than BUCKET_SIZE,
+		 * the hierarchy will form a binary tree were the leaf nodes span over an interval of BUCKET_SIZE.
+		 *
+		 * @return the hierarchy
+		 */
+		@Override
+		public AttributeType.Hierarchy build() {
+			final HierarchyBuilderIntervalBased<Long> builder = HierarchyBuilderIntervalBased.create(
+					DataType.INTEGER,
+					new Range<>(min, min, min),
+					new Range<>(max + 1, max + 1, max + 1)
+			);
+
+			// Convert data for builder#prepare
+			final String[] data = values.toArray(String[]::new);
+
+			// Test if BUCKET_SIZE is suitable for data
+			final long difference = max - min;
+			if (difference < BUCKET_SIZE) {
+				// If the difference is smaller than BUCKET_SIZE, we fall back to a flat hierarchy
+				builder.addInterval(min, max);
+				builder.prepare(data);
+				return builder.build();
+			}
+
+			builder.setAggregateFunction(DataType.INTEGER.createAggregate().createIntervalFunction(true, false));
+
+			// Define the interval for the first bucket on the lowest level
+			builder.addInterval(min, min + BUCKET_SIZE);
+
+			// Intervals of all other buckets are derived through the number of levels and groups in a level
+			final int countLevels = Math.toIntExact(difference / BUCKET_SIZE);
+			log.debug("Creating {} levels.", countLevels);
+			for (int i = 0; i < countLevels; i++) {
+				builder.getLevel(i).addGroup(GROUPS_PER_LEVEL);
+			}
+			// Add a final group that allows to differentiate between a present value ([min; max[) and NULL
+			builder.getLevel(countLevels - 1).addGroup(1);
+
+			// Preparation, so only hierarchy paths are created that are actually needed
+			builder.prepare(data);
+
+			return builder.build();
+		}
+	}
+
+
+	@Slf4j
+	class DecimalInterval implements AttributeTypeBuilder {
+		private double min = Double.MAX_VALUE;
+		private double max = Double.MIN_VALUE;
+
+		private final Set<String> values = new HashSet<>();
+
+		@Override
+		public String register(Object value) {
+
+			if (value == null) {
+				values.add(DataType.NULL_VALUE);
+				return DataType.NULL_VALUE;
+			}
+
+			if (!(value instanceof Number)) {
+				throw new IllegalArgumentException("Expected a " + Number.class + " type, but got " + value.getClass() + ".");
+			}
+
+			final double l = ((Number) value).doubleValue();
+			min = Math.min(min, l);
+			max = Math.max(max, l);
+
+			final String returnVal = Double.toString(l);
+			values.add(returnVal);
+			return returnVal;
+		}
+
+		@Override
+		public AttributeType.Hierarchy build() {
+
+			final HierarchyBuilderIntervalBased<Double> builder = HierarchyBuilderIntervalBased.create(
+					DataType.DECIMAL,
+					new Range<>(min, min, min),
+					new Range<>(max + 1, max + 1, max + 1)
+			);
+
+			final String[] data = values.toArray(String[]::new);
+
+			final double difference = max - min;
+			if (difference < BUCKET_SIZE) {
+				builder.addInterval(min, max);
+				builder.prepare(data);
+				return builder.build();
+			}
+
+			builder.setAggregateFunction(DataType.DECIMAL.createAggregate().createIntervalFunction(true, false));
+			builder.addInterval(min, min + BUCKET_SIZE);
+
+			final int countLevels = Math.toIntExact((long) (difference / BUCKET_SIZE));
+			log.debug("Creating {} levels.", countLevels);
+			for (int i = 0; i < countLevels; i++) {
+				builder.getLevel(i).addGroup(GROUPS_PER_LEVEL);
+			}
+			builder.getLevel(countLevels - 1).addGroup(1);
+
+			builder.prepare(data);
+
+			return builder.build();
 		}
 	}
 

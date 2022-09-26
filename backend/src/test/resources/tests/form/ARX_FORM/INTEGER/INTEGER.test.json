@@ -1,0 +1,36 @@
+{
+    "type": "FORM_TEST",
+    "expectedCsv": {
+        "results": "tests/form/ARX_FORM/INTEGER/expected.csv"
+    },
+    "form": {
+        "type": "ARX_FORM",
+        "queryGroup": "00000000-0000-0000-0000-000000000001"
+    },
+    "content": {
+        "autoConcept": true,
+        "tables": [
+            "/tests/form/shared/integer.table.json"
+        ],
+        "previousQueries": [
+            {
+                "type": "CONCEPT_QUERY",
+                "dateAggregationMode": "NONE",
+                "root": {
+                    "ids": [
+                        "integer_AUTO"
+                    ],
+                    "type": "CONCEPT",
+                    "tables": [
+                        {
+                            "id": "integer_AUTO.connector",
+                            "selects": [
+                                "integer_AUTO.connector.integer_FIRST"
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}

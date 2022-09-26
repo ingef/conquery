@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
@@ -195,6 +196,22 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 						 return Optional.of(new AttributeTypeBuilder.ConceptHierarchyNodeId(concept));
 
 					 })
+				.or(// Handle Selects that output numbers
+					() -> {
+						if (!(resultInfo instanceof SelectResultInfo)) {
+							return Optional.empty();
+						}
+						final ResultType resultType = ((SelectResultInfo) resultInfo).getSelect().getResultType();
+
+						if (resultType instanceof ResultType.IntegerT) {
+							return Optional.of(new AttributeTypeBuilder.IntegerInterval());
+						}
+						else if (resultType instanceof ResultType.NumericT) {
+							return Optional.of(new AttributeTypeBuilder.DecimalInterval());
+						}
+						return Optional.empty();
+					}
+				)
 				// Default case: use a flat "hierarchy" for every other attribute
 				.orElse(new AttributeTypeBuilder.Flat((cell) -> resultInfo.getType().printNullable(printSettings, cell)));
 	}

@@ -1,0 +1,14 @@
+{
+    "csv": "tests/form/shared/integer.csv",
+    "name": "integer",
+    "primaryColumn": {
+        "name": "id",
+        "type": "STRING"
+    },
+    "columns": [
+        {
+            "name": "integer",
+            "type": "INTEGER"
+        }
+    ]
+}
