@@ -45,7 +45,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	private boolean isDefault = false;
 
 	@JsonIgnore
-	public abstract Column[] getRequiredColumns();
+	public abstract Column[] getRequiredColumns(); // TODO make list
 
 	@JsonIgnore @Getter(lazy=true)
 	private final ResultType resultType = createAggregator().getResultType();

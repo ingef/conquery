@@ -64,7 +64,7 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 	protected abstract void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException;
 
 	@JsonIgnore
-	public abstract Column[] getRequiredColumns();
+	public abstract Column[] getRequiredColumns(); //TODO make list
 
 	public abstract FilterNode<?> createFilterNode(FILTER_VALUE filterValue);
 
