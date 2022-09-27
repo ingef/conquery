@@ -4,6 +4,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.SelectHolder;
 import com.bakdata.conquery.models.identifiable.Labeled;
@@ -18,12 +19,15 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
+@Slf4j
 public abstract class Select extends Labeled<SelectId> implements NamespacedIdentifiable<SelectId> {
 
 	@JsonBackReference @Getter @Setter
@@ -78,5 +82,31 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 
 	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
 		return new SelectResultInfo(this, cqConcept);
+	}
+
+
+	@JsonIgnore
+	@ValidationMethod(message = "Not all Filters are for Connector's table.")
+	public boolean isForConnectorsTable() {
+		boolean valid = true;
+
+		if(holder instanceof Concept){
+			return getRequiredColumns().length == 0;
+		}
+
+		final Connector connector = (Connector) holder;
+
+		for (Column column : getRequiredColumns()) {
+
+			if (column == null || column.getTable() == connector.getTable()) {
+				continue;
+			}
+
+			log.error("Select[{}] of Table[{}] is not of Connector[{}]#Table[{}]", getId(), column.getTable().getId(), connector.getId(), connector.getTable().getId());
+
+			valid = false;
+		}
+
+		return valid;
 	}
 }
