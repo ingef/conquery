@@ -11,10 +11,10 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.types.ResultType;
+import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * Helper Aggregator, forwarding only events with distinct values to {@code aggregator}.
@@ -39,8 +39,11 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	}
 
 	@Override
-	public Column[] getRequiredColumns() {
-		return ArrayUtils.addAll(aggregator.getRequiredColumns(), getColumns().toArray(Column[]::new));
+	public List<Column> getRequiredColumns() {
+		return ImmutableList.<Column>builder()
+							.addAll(aggregator.getRequiredColumns())
+							.addAll(getColumns())
+							.build();
 	}
 
 	@Override
