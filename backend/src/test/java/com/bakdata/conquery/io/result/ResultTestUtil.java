@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.result;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -94,7 +95,7 @@ public class ResultTestUtil {
 		@Nullable
 		@Override
 		public List<Column> getRequiredColumns() {
-			return new Column[0];
+			return Collections.emptyList();
 		}
 
 		@Override

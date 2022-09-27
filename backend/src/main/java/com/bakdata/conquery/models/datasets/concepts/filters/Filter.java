@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters;
 
+import java.util.List;
+
 import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.Column;
@@ -64,7 +66,7 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 	protected abstract void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException;
 
 	@JsonIgnore
-	public abstract Column[] getRequiredColumns(); //TODO make list
+	public abstract List<Column> getRequiredColumns();
 
 	public abstract FilterNode<?> createFilterNode(FILTER_VALUE filterValue);
 

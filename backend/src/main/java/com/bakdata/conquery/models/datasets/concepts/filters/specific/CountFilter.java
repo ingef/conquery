@@ -57,11 +57,11 @@ public class CountFilter extends Filter<Range.LongRange> {
 	}
 
 	@Override
-	public Column[] getRequiredColumns() {
+	public List<Column> getRequiredColumns() {
 		final List<Column> out = new ArrayList<>();
 		out.add(getColumn());
 		out.addAll(getDistinctByColumn());
 
-		return out.toArray(Column[]::new);
+		return out;
 	}
 }

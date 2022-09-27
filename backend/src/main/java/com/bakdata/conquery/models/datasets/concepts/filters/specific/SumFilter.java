@@ -76,7 +76,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	}
 
 	@Override
-	public Column[] getRequiredColumns() {
+	public List<Column> getRequiredColumns() {
 		List<Column> out = new ArrayList<>();
 
 		out.add(getColumn());
@@ -86,7 +86,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 			out.add(getSubtractColumn());
 		}
 
-		return out.toArray(Column[]::new);
+		return out;
 	}
 
 	@Override
