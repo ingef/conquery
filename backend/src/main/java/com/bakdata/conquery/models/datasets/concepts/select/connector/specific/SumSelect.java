@@ -102,8 +102,8 @@ public class SumSelect extends Select {
 	private static final EnumSet<MajorTypeId> NUMBER_COMPATIBLE = EnumSet.of(MajorTypeId.INTEGER, MajorTypeId.MONEY, MajorTypeId.DECIMAL, MajorTypeId.REAL);
 
 	@Override
-	public Column[] getRequiredColumns() {
-		List<Column> out = new ArrayList<>();
+	public List<Column> getRequiredColumns() {
+		final List<Column> out = new ArrayList<>();
 
 		out.add(getColumn());
 
@@ -113,7 +113,7 @@ public class SumSelect extends Select {
 
 		out.addAll(getDistinctByColumn());
 
-		return out.toArray(Column[]::new);
+		return out;
 	}
 
 

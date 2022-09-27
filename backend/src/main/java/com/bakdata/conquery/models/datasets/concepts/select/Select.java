@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select;
 
+import java.util.List;
+
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.Column;
@@ -49,7 +51,7 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 	private boolean isDefault = false;
 
 	@JsonIgnore
-	public abstract Column[] getRequiredColumns(); // TODO make list
+	public abstract List<Column> getRequiredColumns(); // TODO make list
 
 	@JsonIgnore @Getter(lazy=true)
 	private final ResultType resultType = createAggregator().getResultType();
@@ -86,12 +88,12 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 
 
 	@JsonIgnore
-	@ValidationMethod(message = "Not all Filters are for Connector's table.")
+	@ValidationMethod(message = "Select is not for Connector or not universal.")
 	public boolean isForConnectorsTable() {
 		boolean valid = true;
 
 		if(holder instanceof Concept){
-			return getRequiredColumns().length == 0;
+			return getRequiredColumns().isEmpty();
 		}
 
 		final Connector connector = (Connector) holder;

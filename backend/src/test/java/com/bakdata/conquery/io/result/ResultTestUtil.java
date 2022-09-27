@@ -93,7 +93,7 @@ public class ResultTestUtil {
 
 		@Nullable
 		@Override
-		public Column[] getRequiredColumns() {
+		public List<Column> getRequiredColumns() {
 			return new Column[0];
 		}
 

@@ -48,11 +48,11 @@ public class CountSelect extends Select {
 
 	@Nullable
 	@Override
-	public Column[] getRequiredColumns() {
+	public List<Column> getRequiredColumns() {
 		final List<Column> out = new ArrayList<>();
 		out.add(getColumn());
 		out.addAll(getDistinctByColumn());
 
-		return out.toArray(Column[]::new);
+		return out;
 	}
 }
