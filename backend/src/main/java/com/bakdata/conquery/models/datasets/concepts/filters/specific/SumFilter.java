@@ -93,6 +93,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	public FilterNode createFilterNode(RANGE value) {
 		IRange<? extends Number, ?> range = value;
 
+		// Double values are parsed as BigDecimal, we convert to double if necessary
 		if (getColumn().getType() == MajorTypeId.REAL) {
 			range = Range.DoubleRange.fromNumberRange(value);
 		}
