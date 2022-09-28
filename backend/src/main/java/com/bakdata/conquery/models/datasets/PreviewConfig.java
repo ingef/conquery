@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import com.google.common.collect.Sets;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -51,6 +52,8 @@ public class PreviewConfig {
 	private Set<ColumnId> hidden = Collections.emptySet();
 
 	private Set<SecondaryIdDescriptionId> grouping = Collections.emptySet();
+
+	private Set<ConnectorId> allConnectors = Collections.emptySet();
 
 	private Set<ConnectorId> defaultConnectors = Collections.emptySet();
 
@@ -84,6 +87,14 @@ public class PreviewConfig {
 		private final SelectId select;
 
 	}
+
+
+	@JsonIgnore
+	@ValidationMethod(message = "Default Connectors must also be available Connectors.")
+	public boolean isDefaultSubsetOfAvailable() {
+		return Sets.difference(getAllConnectors(), getDefaultConnectors()).isEmpty();
+	}
+
 
 	@JsonIgnore
 	@ValidationMethod(message = "Selects may be used only once.")

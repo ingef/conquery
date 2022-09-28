@@ -2,8 +2,6 @@ package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
-import java.util.stream.Stream;
-
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -37,7 +35,7 @@ public class DatasetResource extends HDatasets {
 	 */
 	@GET
 	@Path("entity-preview")
-	public Stream<ConnectorId> getEntityPreviewDefaultConnectors() {
-		return processor.getEntityPreviewDefaultConnectors(getDataset());
+	public ConceptsProcessor.FrontendPreviewConfig getEntityPreviewDefaultConnectors() {
+		return processor.getEntityPreviewFrontendConfig(getDataset());
 	}
 }
