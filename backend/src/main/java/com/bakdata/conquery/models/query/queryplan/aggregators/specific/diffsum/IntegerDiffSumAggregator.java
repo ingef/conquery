@@ -43,9 +43,7 @@ public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 		final List<Column> out = new ArrayList<>();
 
 		out.add(getAddendColumn());
-		if (getSubtrahendColumn() != null){
-			out.add(getSubtrahendColumn());
-		}
+		out.add(getSubtrahendColumn());
 
 		return out;
 	}
