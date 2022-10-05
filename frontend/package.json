@@ -35,7 +35,7 @@
     "@types/file-saver": "^2.0.5",
     "@types/react-highlight-words": "^0.16.4",
     "@types/react-window": "^1.8.5",
-    "axios": "^0.25.0",
+    "axios": "^1.0.0",
     "babel-loader": "^8.1.0",
     "chance": "^1.1.8",
     "classnames": "^2.3.1",
