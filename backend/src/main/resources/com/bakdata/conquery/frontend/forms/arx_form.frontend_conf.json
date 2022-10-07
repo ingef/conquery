@@ -4,9 +4,9 @@
         "de": "ARX Anonymisierung"
     },
     "description": {
-        "en": "With this form, the actual result of the provided query is anonymized using [ARX](https://arx.deidentifier.org/).",
-        "de": "Mit diesem Formular wird das eigentliche Ergebnis der übergebenen Anfrage mittels [ARX](https://arx.deidentifier.org/) anonymisiert."
-    },
+		"en": "With this form, the actual result of the provided query is anonymized using ARX.",
+		"de": "Mit diesem Formular wird das eigentliche Ergebnis der übergebenen Anfrage mittels ARX anonymisiert."
+	},
     "type": "ARX_FORM",
     "fields": [
         {
@@ -29,85 +29,57 @@
             }
         },
         {
-            "name": "kAnonymityParam",
-            "type": "NUMBER",
-            "defaultValue": 2,
-            "min": 2,
-            "label": {
-                "en": "k Parameter für k-Anonymität",
-                "de": "k Parameter für k-Anonymität"
-            },
-            "placeholder": {
-                "de": "k"
-            },
-            "pattern": "^\\d+$",
-            "validations": [
-                "NOT_EMPTY",
-                "GREATER_THAN_ZERO"
-            ]
-        },
-        {
             "name": "suppressionLimit",
             "type": "NUMBER",
             "defaultValue": 0.02,
             "min": 0,
             "max": 1,
-            "label": {
-                "en": "Suppression Limit",
-                "de": "Unterdrückungslimit"
-            },
-            "pattern": "^\\d+.?\\d*$",
-            "validations": [
-                "NOT_EMPTY",
-                "GREATER_THAN_ZERO"
-            ]
-        },
-        {
-            "name": "maximumSnapshotSizeDataset",
-            "type": "NUMBER",
-            "defaultValue": 0.2,
-            "min": 0,
-            "max": 1,
-            "label": {
-                "en": "Maximum Snapshot Size Dataset",
-                "de": "Maximum Snapshot Size Dataset"
-            },
-            "pattern": "^\\d+.?\\d*$",
-            "validations": [
-                "NOT_EMPTY",
-                "GREATER_THAN_ZERO"
-            ]
-        },
-        {
-            "name": "maximumSnapshotSizeSnapshot",
-            "type": "NUMBER",
-            "defaultValue": 0.2,
-            "min": 0,
-            "max": 1,
-            "label": {
-                "en": "Maximum Snapshot Size Snapshot",
-                "de": "Maximum Snapshot Size Snapshot"
-            },
-            "pattern": "^\\d+.?\\d*$",
-            "validations": [
-                "NOT_EMPTY",
-                "GREATER_THAN_ZERO"
-            ]
-        },
-        {
-            "name": "historySize",
-            "type": "NUMBER",
-            "defaultValue": 200,
-            "min": 1,
-            "label": {
-                "en": "History Size",
-                "de": "History Size"
-            },
-            "pattern": "^\\d+$",
-            "validations": [
-                "NOT_EMPTY",
-                "GREATER_THAN_ZERO"
-            ]
-        }
-    ]
+			"label": {
+				"en": "Suppression Limit",
+				"de": "Unterdrückungslimit"
+			},
+			"pattern": "^\\d+.?\\d*$",
+			"validations": [
+				"NOT_EMPTY",
+				"GREATER_THAN_ZERO"
+			]
+		},
+		{
+			"name": "privacyModel",
+			"type": "SELECT",
+			"label": {
+				"en": "Privacy Model",
+				"de": "Datenschutz Modell"
+			},
+			"defaultValue": "K_ANONYMITY_11",
+			"options": [
+				{
+					"label": {
+						"de": "K-Anonymität 5",
+						"en": "K-Anonymity 5"
+					},
+					"value": "K_ANONYMITY_5"
+				},
+				{
+					"label": {
+						"de": "K-Anonymität 11",
+						"en": "K-Anonymity 11"
+					},
+					"value": "K_ANONYMITY_11"
+				},
+				{
+					"label": {
+						"de": "Pitman 1%",
+						"en": "Pitman 1%"
+					},
+					"value": "PITMAN_1_PERCENT"
+				}
+			],
+			"validations": [
+				"NOT_EMPTY"
+			],
+			"tooltip": {
+			}
+		}
+	]
 }

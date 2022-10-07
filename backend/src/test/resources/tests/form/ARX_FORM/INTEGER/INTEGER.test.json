@@ -4,9 +4,10 @@
         "results": "tests/form/ARX_FORM/INTEGER/expected.csv"
     },
     "form": {
-        "type": "ARX_FORM",
-        "queryGroup": "00000000-0000-0000-0000-000000000001"
-    },
+		"type": "ARX_FORM",
+		"queryGroup": "00000000-0000-0000-0000-000000000001",
+		"privacyModel": "K_ANONYMITY_2"
+	},
     "content": {
         "autoConcept": true,
         "tables": [

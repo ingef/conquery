@@ -1,4 +1,4 @@
-package com.bakdata.conquery.apiv1.forms;
+package com.bakdata.conquery.apiv1.forms.arx;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +29,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 import org.deidentifier.arx.ARXAnonymizer;
+import org.deidentifier.arx.ARXPopulationModel;
+import org.deidentifier.arx.criteria.KAnonymity;
+import org.deidentifier.arx.criteria.PopulationUniqueness;
+import org.deidentifier.arx.criteria.PrivacyCriterion;
+import org.deidentifier.arx.risk.RiskModelPopulationUniqueness;
+import org.jetbrains.annotations.TestOnly;
 
 /**
  * Form that performs an anonymization using the ARX library on the result of the given execution.
@@ -45,14 +51,6 @@ public class ArxForm extends Form {
 	private ManagedExecutionId queryGroupId;
 
 	/**
-	 * @see org.deidentifier.arx.criteria.KAnonymity#KAnonymity(int)
-	 */
-	@Getter
-	@Min(2)
-	@JsonProperty("kAnonymityParam")
-	private int kAnonymityParam = 2;
-
-	/**
 	 * @see org.deidentifier.arx.ARXConfiguration#setSuppressionLimit(double)
 	 */
 	@Getter
@@ -60,32 +58,47 @@ public class ArxForm extends Form {
 	@DecimalMin(value = "0")
 	private double suppressionLimit = 0.02;
 
-
 	/**
-	 * @see ARXAnonymizer#setMaximumSnapshotSizeDataset(double)
+	 * The PrivacyModel to use
 	 */
+	@NotNull
 	@Getter
-	@DecimalMax(value = "1")
-	@DecimalMin(value = "0", inclusive = false)
-	private double maximumSnapshotSizeDataset = 0.2;
-
-	/**
-	 * @see ARXAnonymizer#setMaximumSnapshotSizeSnapshot(double)
-	 */
-	@Getter
-	@DecimalMax(value = "1")
-	@DecimalMin(value = "0", inclusive = false)
-	private double maximumSnapshotSizeSnapshot = 0.2;
-
-	/**
-	 * @see ARXAnonymizer#setHistorySize(int)
-	 */
-	@Getter
-	@Min(1)
-	private int historySize = 200;
+	private PrivacyModel privacyModel;
 
 	@JsonIgnore
 	private ManagedQuery queryGroup;
+
+	public enum PrivacyModel {
+		/**
+		 * Use for testing only
+		 */
+		K_ANONYMITY_2() {
+			@Override
+			public PrivacyCriterion getPrivacyCriterion() {
+				return new KAnonymity(2);
+			}
+		},
+		K_ANONYMITY_5() {
+			@Override
+			public PrivacyCriterion getPrivacyCriterion() {
+				return new KAnonymity(5);
+			}
+		},
+		K_ANONYMITY_11() {
+			@Override
+			public PrivacyCriterion getPrivacyCriterion() {
+				return new KAnonymity(11);
+			}
+		},
+		PITMAN_1_PERCENT() {
+			@Override
+			public PrivacyCriterion getPrivacyCriterion() {
+				return new PopulationUniqueness(0.001, RiskModelPopulationUniqueness.PopulationUniquenessModel.PITMAN, ARXPopulationModel.create(ARXPopulationModel.Region.EUROPEAN_UNION));
+			}
+		};
+
+		public abstract PrivacyCriterion getPrivacyCriterion();
+	}
 
 	@Override
 	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {

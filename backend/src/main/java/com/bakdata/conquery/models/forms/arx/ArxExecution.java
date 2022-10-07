@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.apiv1.forms.ArxForm;
+import com.bakdata.conquery.apiv1.forms.arx.ArxForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -144,14 +144,11 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 
 		// Configure ARX
 		ARXConfiguration config = ARXConfiguration.create();
-		config.addPrivacyModel(new KAnonymity(form.getKAnonymityParam()));
+		config.addPrivacyModel(form.getPrivacyModel().getPrivacyCriterion());
 		config.setSuppressionLimit(form.getSuppressionLimit());
 
 		// Run ARX
 		ARXAnonymizer anonymizer = new ARXAnonymizer();
-		anonymizer.setMaximumSnapshotSizeDataset(form.getMaximumSnapshotSizeDataset());
-		anonymizer.setMaximumSnapshotSizeSnapshot(form.getMaximumSnapshotSizeSnapshot());
-		anonymizer.setHistorySize(form.getHistorySize());
 
 		result = anonymizer.anonymize(data, config);
 
