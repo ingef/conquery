@@ -456,7 +456,7 @@
     "marked": "with status",
     "events_one": "Event",
     "events_other": "Events",
-    "downloadButtonLabel": "Download list",
+    "downloadButtonLabel": "Download list with status entries",
     "nextButtonLabel": "Next entity",
     "prevButtonLabel": "Previous entity",
     "downloadEntityData": "Download entity history as CSV",
