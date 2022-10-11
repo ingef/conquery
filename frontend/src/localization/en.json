@@ -83,7 +83,8 @@
   "datasetSelector": {
     "label": "Data sets",
     "pleaseChoose": "Choose a data set",
-    "error": "Could not load data sets"
+    "error": "Could not load data sets",
+    "disabled": "Can't change the data set at the moment."
   },
   "queryNodeEditor": {
     "conceptTree": "Concept Tree",
