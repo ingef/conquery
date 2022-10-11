@@ -83,7 +83,8 @@
   "datasetSelector": {
     "label": "Datensatz",
     "pleaseChoose": "Datensatz auswählen",
-    "error": "Konnte Datensätze nicht laden"
+    "error": "Konnte Datensätze nicht laden",
+    "disabled": "Der Datensatz kann geraden nicht verändert werden."
   },
   "queryNodeEditor": {
     "conceptTree": "Konzept",
@@ -453,13 +454,13 @@
     "backButtonWarning": "Achtung: Wenn Du zurück gehst, werden Änderungen an der Liste verworfen. Lade die Liste vorher herunter, um sie zu speichern.",
     "history": "Historie",
     "marked": "mit Status",
-    "events_one": "Eintrag",
-    "events_other": "Einträge",
+    "events_one": "Datenpunkt",
+    "events_other": "Datenpunkte",
     "downloadButtonLabel": "Liste mit Status-Einträgen herunterladen",
     "nextButtonLabel": "Weiterblättern",
     "prevButtonLabel": "Zurückblättern",
     "downloadEntityData": "Einzelhistorie als CSV herunterladen",
-    "differencesTooltip": "Unterschiede aus den Einzeleinträgen",
+    "differencesTooltip": "Unterschiede aus den einzelnen Datenpunkten",
     "closeAll": "Alle schließen",
     "dates": "Datumswerte",
     "options": {
@@ -469,7 +470,7 @@
     "detail": {
       "summary": "Zusammenfassung",
       "detail": "Gruppiert",
-      "full": "Alle Einzeleinträge"
+      "full": "Alle Einzeldatenpunkte"
     },
     "content": {
       "money": "Geldbeträge",
