@@ -27,6 +27,19 @@ const SxInputSelect = styled(InputSelect)`
   min-width: 300px;
 `;
 
+const useIsDatasetSelectDisabled = () => {
+  const isHistoryOpen = useSelector<StateT, boolean>(
+    (state) => state.entityHistory.isOpen,
+  );
+  const isPreviewOpen = useSelector<StateT, boolean>(
+    (state) => state.preview.isOpen,
+  );
+
+  return useMemo(() => {
+    return isHistoryOpen || isPreviewOpen;
+  }, [isHistoryOpen, isPreviewOpen]);
+};
+
 const DatasetSelector: FC = () => {
   const selectedDatasetId = useSelector<StateT, string | null>(
     (state) => state.datasets.selectedDatasetId,
@@ -59,12 +72,15 @@ const DatasetSelector: FC = () => {
     [options, selectedDatasetId],
   );
 
+  const disabled = useIsDatasetSelectDisabled();
+
   return (
     <DatasetSelectorUI
       options={options}
       selected={selected}
       onChange={onChange}
       error={error}
+      disabled={disabled}
     />
   );
 };
@@ -72,16 +88,28 @@ const DatasetSelector: FC = () => {
 interface DatasetSelectorUIProps {
   error: string | null;
   selected?: SelectOptionT;
+  disabled?: boolean;
   options: SelectOptionT[];
   onChange: (datasetId: SelectOptionT | null) => void;
 }
 
 const DatasetSelectorUI = memo(
-  ({ selected, onChange, error, options }: DatasetSelectorUIProps) => {
+  ({
+    selected,
+    onChange,
+    error,
+    options,
+    disabled,
+  }: DatasetSelectorUIProps) => {
     const { t } = useTranslation();
 
     return (
-      <WithTooltip text={t("help.datasetSelector")} lazy>
+      <WithTooltip
+        text={
+          disabled ? t("datasetSelector.disabled") : t("help.datasetSelector")
+        }
+        lazy
+      >
         <Root data-test-id="dataset-selector">
           <Headline>{t("datasetSelector.label")}</Headline>
           <SxInputSelect
@@ -90,7 +118,7 @@ const DatasetSelectorUI = memo(
             placeholder={
               error ? t("datasetSelector.error") : t("inputSelect.placeholder")
             }
-            disabled={exists(error)}
+            disabled={disabled || exists(error)}
             options={options}
           />
         </Root>
