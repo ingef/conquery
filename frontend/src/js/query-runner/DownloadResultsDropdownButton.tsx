@@ -6,10 +6,12 @@ import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
 import { getUserSettings, storeUserSettings } from "../user/userSettings";
 
-const Frame = styled("div")`
+const Frame = styled("div")<{ noborder?: boolean }>`
   display: flex;
   align-items: center;
-  border: 1px solid ${({ theme }) => theme.col.gray};
+  justify-content: center;
+  border: ${({ noborder, theme }) =>
+    noborder ? "none" : `1px solid ${theme.col.gray}`};
   border-radius: ${({ theme }) => theme.borderRadius};
   transition: opacity ${({ theme }) => theme.transitionTime};
 `;
@@ -37,10 +39,6 @@ const Separator = styled("div")`
   background-color: ${({ theme }) => theme.col.gray};
 `;
 
-interface Props {
-  resultUrls: string[];
-}
-
 // Skidding makes Dropdown align the right edge with the button,
 // might need to adjust this when adding more content.
 const dropdownOffset: [number, number] = [-37, 8]; // [skidding, distance] / default [0, 10]
@@ -57,7 +55,13 @@ const getInitialEndingChoice = (resultUrls: string[]) => {
   return found ? getEnding(found) : getEnding(resultUrls[0]);
 };
 
-const DownloadResultsDropdownButton = ({ resultUrls }: Props) => {
+const DownloadResultsDropdownButton = ({
+  resultUrls,
+  tiny,
+}: {
+  resultUrls: string[];
+  tiny?: boolean;
+}) => {
   const [endingChoice, setEndingChoice] = useState(
     getInitialEndingChoice(resultUrls),
   );
@@ -95,11 +99,15 @@ const DownloadResultsDropdownButton = ({ resultUrls }: Props) => {
   }, [resultUrls]);
 
   return (
-    <Frame>
-      <SxDownloadButton bgHover url={urlChoice}>
-        {endingChoice}
-      </SxDownloadButton>
-      <Separator />
+    <Frame noborder={tiny}>
+      {!tiny && (
+        <>
+          <SxDownloadButton bgHover url={urlChoice}>
+            {endingChoice}
+          </SxDownloadButton>
+          <Separator />
+        </>
+      )}
       <WithTooltip
         html={dropdown}
         interactive
@@ -107,7 +115,7 @@ const DownloadResultsDropdownButton = ({ resultUrls }: Props) => {
         trigger="click"
         offset={dropdownOffset}
       >
-        <SxIconButton bgHover icon="caret-down" />
+        <SxIconButton bgHover icon={tiny ? "download" : "caret-down"} />
       </WithTooltip>
     </Frame>
   );

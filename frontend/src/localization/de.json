@@ -456,7 +456,7 @@
     "marked": "mit Status",
     "events_one": "Datenpunkt",
     "events_other": "Datenpunkte",
-    "downloadButtonLabel": "Liste herunterladen",
+    "downloadButtonLabel": "Liste mit Status-Einträgen herunterladen",
     "nextButtonLabel": "Weiterblättern",
     "prevButtonLabel": "Zurückblättern",
     "downloadEntityData": "Einzelhistorie als CSV herunterladen",

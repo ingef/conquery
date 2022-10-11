@@ -28,6 +28,7 @@ export type EntityHistoryStateT = {
   isOpen: boolean;
   columns: Record<string, ColumnDescription>;
   columnDescriptions: ColumnDescription[];
+  resultUrls: string[];
   label: string;
   entityIds: string[];
   uniqueSources: string[];
@@ -44,6 +45,7 @@ const initialState: EntityHistoryStateT = {
   label: "",
   columns: {},
   columnDescriptions: [],
+  resultUrls: [],
   isLoading: false,
   isOpen: false,
   uniqueSources: [],

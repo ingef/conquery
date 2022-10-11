@@ -68,6 +68,7 @@ export const loadHistoryData = createAsyncAction(
     currentEntityInfos: EntityInfo[];
     currentEntityId: string;
     uniqueSources: string[];
+    resultUrls?: string[];
     entityIds?: string[];
     label?: string;
     columns?: Record<string, ColumnDescription>;
@@ -183,6 +184,7 @@ export function useUpdateHistorySession() {
             currentEntityId: entityId,
             currentEntityInfos: infos,
             columnDescriptions,
+            resultUrls,
             columns,
             uniqueSources,
             ...(entityIds ? { entityIds } : {}),
