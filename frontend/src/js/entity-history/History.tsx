@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
-import type { EntityInfo, SelectOptionT } from "../api/types";
+import type { EntityInfo, HistorySources, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import ErrorFallback from "../error-fallback/ErrorFallback";
 import DownloadResultsDropdownButton from "../query-runner/DownloadResultsDropdownButton";
@@ -280,32 +280,39 @@ const useEntityStatus = ({
 const useSourcesControl = () => {
   const [sourcesFilter, setSourcesFilter] = useState<SelectOptionT[]>([]);
 
-  // TODO: Potentially use the defaultParams.sources.all here, once those
-  // connector ids can be replaced with connector labels
-  // const sources = useSelector<StateT, HistorySources>(
-  //   (state) => state.entityHistory.defaultParams.sources,
-  // );
-  // const allSourcesOptions = useMemo(
-  //   () => sources.all.map((s) => ({ label: s, value: s })),
-  //   [sources.all],
-  // );
-  // const defaultSourcesOptions = useMemo(
-  //   () => sources.default.map((s) => ({ label: s, value: s })),
-  //   [sources.default],
-  // );
-
-  const currentEntityUniqueSources = useSelector<StateT, string[]>(
-    (state) => state.entityHistory.currentEntityUniqueSources,
+  const sources = useSelector<StateT, HistorySources>(
+    (state) => state.entityHistory.defaultParams.sources,
   );
-
-  const currentEntitySourcesOptions = useMemo(
+  const allSourcesOptions = useMemo(
     () =>
-      currentEntityUniqueSources.map((s) => ({
-        label: s,
-        value: s,
+      sources.all.map((s) => ({
+        label: s.label,
+        value: s.label, // Gotta use label since the value in the entity CSV is the source label as well
       })),
-    [currentEntityUniqueSources],
+    [sources.all],
   );
+  const defaultSourcesOptions = useMemo(
+    () =>
+      sources.default.map((s) => ({
+        label: s.label,
+        value: s.label, // Gotta use label since the value in the entity CSV is the source label as well
+      })),
+    [sources.default],
+  );
+
+  // TODO: Figure out whether we still need the current entity unique sources
+  //
+  // const currentEntityUniqueSources = useSelector<StateT, string[]>(
+  //   (state) => state.entityHistory.currentEntityUniqueSources,
+  // );
+  // const currentEntitySourcesOptions = useMemo(
+  //   () =>
+  //     currentEntityUniqueSources.map((s) => ({
+  //       label: s,
+  //       value: s,
+  //     })),
+  //   [currentEntityUniqueSources],
+  // );
 
   const sourcesSet = useMemo(
     () => new Set(sourcesFilter.map((o) => o.value as string)),
@@ -315,14 +322,14 @@ const useSourcesControl = () => {
   useEffect(
     function takeDefaultIfEmpty() {
       setSourcesFilter((curr) =>
-        curr.length === 0 ? currentEntitySourcesOptions : curr,
+        curr.length === 0 ? defaultSourcesOptions : curr,
       );
     },
-    [currentEntitySourcesOptions],
+    [defaultSourcesOptions],
   );
 
   return {
-    options: currentEntitySourcesOptions,
+    options: allSourcesOptions,
     sourcesSet,
     sourcesFilter,
     setSourcesFilter,

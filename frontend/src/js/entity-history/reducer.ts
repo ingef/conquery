@@ -1,6 +1,10 @@
 import { getType } from "typesafe-actions";
 
-import type { ColumnDescription, EntityInfo, TableT } from "../api/types";
+import type {
+  ColumnDescription,
+  EntityInfo,
+  HistorySources,
+} from "../api/types";
 import type { Action } from "../app/actions";
 
 import {
@@ -19,11 +23,6 @@ export type EntityEvent = {
   };
   [key: string]: any;
 };
-
-export interface HistorySources {
-  all: TableT["id"][];
-  default: TableT["id"][];
-}
 
 export type EntityHistoryStateT = {
   defaultParams: {
