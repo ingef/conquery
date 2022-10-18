@@ -20,9 +20,14 @@ export type EntityEvent = {
   [key: string]: any;
 };
 
+export interface HistorySources {
+  all: TableT["id"][];
+  default: TableT["id"][];
+}
+
 export type EntityHistoryStateT = {
   defaultParams: {
-    sources: TableT["id"][];
+    sources: HistorySources;
   };
   isLoading: boolean;
   isOpen: boolean;
@@ -31,7 +36,7 @@ export type EntityHistoryStateT = {
   resultUrls: string[];
   label: string;
   entityIds: string[];
-  uniqueSources: string[];
+  currentEntityUniqueSources: string[];
   currentEntityId: string | null;
   currentEntityData: EntityEvent[];
   currentEntityCsvUrl: string;
@@ -40,7 +45,7 @@ export type EntityHistoryStateT = {
 
 const initialState: EntityHistoryStateT = {
   defaultParams: {
-    sources: [],
+    sources: { all: [], default: [] },
   },
   label: "",
   columns: {},
@@ -48,8 +53,8 @@ const initialState: EntityHistoryStateT = {
   resultUrls: [],
   isLoading: false,
   isOpen: false,
-  uniqueSources: [],
   entityIds: [],
+  currentEntityUniqueSources: [],
   currentEntityId: null,
   currentEntityData: [],
   currentEntityCsvUrl: "",

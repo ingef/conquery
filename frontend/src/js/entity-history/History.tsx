@@ -20,6 +20,7 @@ import { Navigation } from "./Navigation";
 import SourcesControl from "./SourcesControl";
 import { Timeline } from "./Timeline";
 import { useUpdateHistorySession } from "./actions";
+import { HistorySources } from "./reducer";
 
 const FullScreen = styled("div")`
   position: fixed;
@@ -279,17 +280,31 @@ const useEntityStatus = ({
 
 const useSourcesControl = () => {
   const [sourcesFilter, setSourcesFilter] = useState<SelectOptionT[]>([]);
-  const uniqueSources = useSelector<StateT, string[]>(
-    (state) => state.entityHistory.uniqueSources,
+  const sources = useSelector<StateT, HistorySources>(
+    (state) => state.entityHistory.defaultParams.sources,
   );
 
-  const defaultSources = useMemo(
-    () =>
-      uniqueSources.map((s) => ({
-        label: s,
-        value: s,
-      })),
-    [uniqueSources],
+  // TODO: Potentially do something with the entity's unique sources
+  // const currentEntityUniqueSources = useSelector<StateT, string[]>(
+  //   (state) => state.entityHistory.currentEntityUniqueSources,
+  // );
+
+  // const currentEntitySourcesOptions = useMemo(
+  //   () =>
+  //     currentEntityUniqueSources.map((s) => ({
+  //       label: s,
+  //       value: s,
+  //     })),
+  //   [currentEntityUniqueSources],
+  // );
+
+  const allSourcesOptions = useMemo(
+    () => sources.all.map((s) => ({ label: s, value: s })),
+    [sources.all],
+  );
+  const defaultSourcesOptions = useMemo(
+    () => sources.default.map((s) => ({ label: s, value: s })),
+    [sources.default],
   );
 
   const sourcesSet = useMemo(
@@ -299,13 +314,15 @@ const useSourcesControl = () => {
 
   useEffect(
     function takeDefaultIfEmpty() {
-      setSourcesFilter((curr) => (curr.length === 0 ? defaultSources : curr));
+      setSourcesFilter((curr) =>
+        curr.length === 0 ? defaultSourcesOptions : curr,
+      );
     },
-    [defaultSources],
+    [defaultSourcesOptions],
   );
 
   return {
-    options: defaultSources,
+    options: allSourcesOptions,
     sourcesSet,
     sourcesFilter,
     setSourcesFilter,

@@ -16,7 +16,7 @@ import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { useLoadPreviewData } from "../preview/actions";
 
-import { EntityEvent } from "./reducer";
+import { EntityEvent, HistorySources } from "./reducer";
 
 export type EntityHistoryActions = ActionType<
   | typeof openHistory
@@ -31,7 +31,7 @@ export const closeHistory = createAction("history/CLOSE")();
 
 export const loadDefaultHistoryParamsSuccess = createAction(
   "history/LOAD_DEFAULT_HISTORY_PARAMS_SUCCESS",
-)<{ sources: string[] }>();
+)<{ sources: { all: string[]; default: string[] } }>();
 
 export const useLoadDefaultHistoryParams = () => {
   const dispatch = useDispatch();
@@ -67,7 +67,7 @@ export const loadHistoryData = createAsyncAction(
     currentEntityData: EntityEvent[];
     currentEntityInfos: EntityInfo[];
     currentEntityId: string;
-    uniqueSources: string[];
+    currentEntityUniqueSources: string[];
     resultUrls?: string[];
     entityIds?: string[];
     label?: string;
@@ -122,9 +122,10 @@ export function useUpdateHistorySession() {
   const getEntityHistory = useGetEntityHistory();
   const getAuthorizedUrl = useGetAuthorizedUrl();
 
-  const defaultEntityHistoryParams = useSelector<StateT, { sources: string[] }>(
-    (state) => state.entityHistory.defaultParams,
-  );
+  const defaultEntityHistoryParams = useSelector<
+    StateT,
+    { sources: HistorySources }
+  >((state) => state.entityHistory.defaultParams);
 
   return useCallback(
     async ({
@@ -177,16 +178,18 @@ export function useUpdateHistorySession() {
             .filter(([, columnDescription]) => exists(columnDescription)),
         );
 
+        const nonNullInfos = infos.filter((i) => exists(i.value));
+
         dispatch(
           loadHistoryData.success({
             currentEntityCsvUrl: csvUrl,
             currentEntityData: currentEntityDataProcessed,
             currentEntityId: entityId,
-            currentEntityInfos: infos,
+            currentEntityInfos: nonNullInfos,
+            currentEntityUniqueSources: uniqueSources,
             columnDescriptions,
             resultUrls,
             columns,
-            uniqueSources,
             ...(entityIds ? { entityIds } : {}),
             ...(label ? { label } : {}),
           }),
