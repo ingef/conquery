@@ -83,7 +83,8 @@
   "datasetSelector": {
     "label": "Data sets",
     "pleaseChoose": "Choose a data set",
-    "error": "Could not load data sets"
+    "error": "Could not load data sets",
+    "disabled": "Can't change the data set at the moment."
   },
   "queryNodeEditor": {
     "conceptTree": "Concept Tree",
@@ -456,7 +457,7 @@
     "marked": "with status",
     "events_one": "Event",
     "events_other": "Events",
-    "downloadButtonLabel": "Download list",
+    "downloadButtonLabel": "Download list with status entries",
     "nextButtonLabel": "Next entity",
     "prevButtonLabel": "Previous entity",
     "downloadEntityData": "Download entity history as CSV",

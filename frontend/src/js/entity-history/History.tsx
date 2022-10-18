@@ -9,10 +9,10 @@ import SplitPane from "react-split-pane";
 import type { EntityInfo, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import ErrorFallback from "../error-fallback/ErrorFallback";
+import DownloadResultsDropdownButton from "../query-runner/DownloadResultsDropdownButton";
 
 import ContentControl, { useContentControl } from "./ContentControl";
 import { DetailControl, DetailLevel } from "./DetailControl";
-import { DownloadEntityDataButton } from "./DownloadEntityDataButton";
 import { EntityHeader } from "./EntityHeader";
 import InteractionControl from "./InteractionControl";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
@@ -102,6 +102,9 @@ export const History = () => {
   );
   const currentEntityInfos = useSelector<StateT, EntityInfo[]>(
     (state) => state.entityHistory.currentEntityInfos,
+  );
+  const resultUrls = useSelector<StateT, string[]>(
+    (state) => state.entityHistory.resultUrls,
   );
 
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
@@ -204,7 +207,12 @@ export const History = () => {
                   onChange={setContentFilter}
                 />
                 <SidebarBottom>
-                  <DownloadEntityDataButton />
+                  {resultUrls.length > 0 && (
+                    <DownloadResultsDropdownButton
+                      tiny
+                      resultUrls={resultUrls}
+                    />
+                  )}
                 </SidebarBottom>
               </Sidebar>
               <SxTimeline

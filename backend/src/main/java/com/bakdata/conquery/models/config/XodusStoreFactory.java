@@ -145,6 +145,13 @@ public class XodusStoreFactory implements StoreFactory {
 	@Nullable
 	private File unreadableDataDumpDirectory = null;
 
+	/**
+	 * If set, an environment will not be loaded if it misses a required store.
+	 * If not set, the environment is loaded and the application needs to create the store.
+	 * This is useful if a new version introduces a new store, but will also alter the environment upon reading.
+	 */
+	private boolean loadEnvironmentWithMissingStores = false;
+
 	@JsonIgnore
 	private transient Validator validator;
 
@@ -204,12 +211,16 @@ public class XodusStoreFactory implements StoreFactory {
 				log.trace("Storage contained all stores: {}", storesToTest);
 				return true;
 			}
-			if (log.isWarnEnabled()) {
-				final HashSet<String> missing = Sets.newHashSet(storesToTest);
-				allStoreNames.forEach(missing::remove);
-				log.warn("Storage did not contain all required stores. It is missing: {}. It had {}", missing, allStoreNames);
-			}
-			return false;
+
+			final HashSet<String> missing = Sets.newHashSet(storesToTest);
+			allStoreNames.forEach(missing::remove);
+			log.warn("Environment did not contain all required stores. It is missing: {}. It had {}. {}", missing, allStoreNames,
+					 loadEnvironmentWithMissingStores
+					 ? "Loading environment anyway."
+					 : "Skipping environment."
+			);
+
+			return loadEnvironmentWithMissingStores;
 		});
 		if (!exists) {
 			closeEnvironment(env);
