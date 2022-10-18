@@ -43,6 +43,7 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.search.Cursor;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -91,6 +92,8 @@ public class ConceptsProcessor {
 		}
 
 	});
+
+
 
 	/**
 	 * Container class to pair number of available values and Cursor for those values.
@@ -141,6 +144,22 @@ public class ConceptsProcessor {
 						 .sorted(Comparator.comparing(Dataset::getWeight).thenComparing(Dataset::getLabel))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
 						 .collect(Collectors.toList());
+	}
+
+	@Data
+	public static class FrontendPreviewConfig {
+		private final Collection<ConnectorId> all;
+		@JsonProperty("default")
+		private final Collection<ConnectorId> defaultConnectors;
+	}
+
+	public FrontendPreviewConfig getEntityPreviewFrontendConfig(Dataset dataset) {
+		return new FrontendPreviewConfig(
+				namespaces.get(dataset.getId()).getPreviewConfig()
+						.getAllConnectors(),
+				namespaces.get(dataset.getId()).getPreviewConfig()
+						  .getDefaultConnectors()
+		);
 	}
 
 	public Stream<ConnectorId> getEntityPreviewDefaultConnectors(Dataset dataset) {
