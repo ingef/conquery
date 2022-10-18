@@ -178,14 +178,14 @@ export function useUpdateHistorySession() {
             .filter(([, columnDescription]) => exists(columnDescription)),
         );
 
-        const nonNullInfos = infos.filter((i) => exists(i.value));
+        const nonEmptyInfos = infos.filter((i) => exists(i.value) && !!i.value);
 
         dispatch(
           loadHistoryData.success({
             currentEntityCsvUrl: csvUrl,
             currentEntityData: currentEntityDataProcessed,
             currentEntityId: entityId,
-            currentEntityInfos: nonNullInfos,
+            currentEntityInfos: nonEmptyInfos,
             currentEntityUniqueSources: uniqueSources,
             columnDescriptions,
             resultUrls,
