@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.index.IndexService;
@@ -251,6 +252,10 @@ public class Namespace implements Closeable {
 		for (WorkerInformation w : getWorkers()) {
 			w.send(new UpdateWorkerBucket(w));
 		}
+	}
+
+	public CentralRegistry getCentralRegistry() {
+		return getStorage().getCentralRegistry();
 	}
 
 	public int getNumberOfEntities() {
