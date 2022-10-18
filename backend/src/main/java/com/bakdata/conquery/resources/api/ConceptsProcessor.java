@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.validation.Validator;
@@ -26,6 +25,7 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
@@ -94,7 +94,6 @@ public class ConceptsProcessor {
 	});
 
 
-
 	/**
 	 * Container class to pair number of available values and Cursor for those values.
 	 */
@@ -148,23 +147,35 @@ public class ConceptsProcessor {
 
 	@Data
 	public static class FrontendPreviewConfig {
-		private final Collection<ConnectorId> all;
+		@Data
+		public static class Labelled {
+			private final String name;
+			private final String label;
+		}
+
+		private final Collection<Labelled> all;
 		@JsonProperty("default")
-		private final Collection<ConnectorId> defaultConnectors;
+		private final Collection<Labelled> defaultConnectors;
 	}
+
 
 	public FrontendPreviewConfig getEntityPreviewFrontendConfig(Dataset dataset) {
-		return new FrontendPreviewConfig(
-				namespaces.get(dataset.getId()).getPreviewConfig()
-						.getAllConnectors(),
-				namespaces.get(dataset.getId()).getPreviewConfig()
-						  .getDefaultConnectors()
-		);
-	}
+		final Namespace namespace = namespaces.get(dataset.getId());
+		final PreviewConfig previewConfig = namespace.getPreviewConfig();
 
-	public Stream<ConnectorId> getEntityPreviewDefaultConnectors(Dataset dataset) {
-		return namespaces.get(dataset.getId()).getPreviewConfig()
-						 .getDefaultConnectors().stream();
+		// Connectors only act as bridge to table for the fronted, but also provide ConceptColumnT semantic
+
+		return new FrontendPreviewConfig(
+				previewConfig.getAllConnectors()
+							 .stream()
+							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .collect(Collectors.toSet()),
+
+				previewConfig.getDefaultConnectors()
+							 .stream()
+							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .collect(Collectors.toSet())
+		);
 	}
 
 	/**
