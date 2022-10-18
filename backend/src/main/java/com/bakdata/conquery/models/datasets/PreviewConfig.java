@@ -92,7 +92,7 @@ public class PreviewConfig {
 	@JsonIgnore
 	@ValidationMethod(message = "Default Connectors must also be available Connectors.")
 	public boolean isDefaultSubsetOfAvailable() {
-		return Sets.difference(getAllConnectors(), getDefaultConnectors()).isEmpty();
+		return Sets.difference(getDefaultConnectors(), getAllConnectors()).isEmpty();
 	}
 
 
