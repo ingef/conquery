@@ -129,6 +129,7 @@ export const useSelectDataset = () => {
       loadQueries,
       locallySavedQueries,
       previouslySelectedDatasetId,
+      loadDefaultHistoryParams,
     ],
   );
 };

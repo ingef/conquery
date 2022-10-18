@@ -279,17 +279,32 @@ const useEntityStatus = ({
 
 const useSourcesControl = () => {
   const [sourcesFilter, setSourcesFilter] = useState<SelectOptionT[]>([]);
-  const uniqueSources = useSelector<StateT, string[]>(
-    (state) => state.entityHistory.uniqueSources,
+
+  // TODO: Potentially use the defaultParams.sources.all here, once those
+  // connector ids can be replaced with connector labels
+  // const sources = useSelector<StateT, HistorySources>(
+  //   (state) => state.entityHistory.defaultParams.sources,
+  // );
+  // const allSourcesOptions = useMemo(
+  //   () => sources.all.map((s) => ({ label: s, value: s })),
+  //   [sources.all],
+  // );
+  // const defaultSourcesOptions = useMemo(
+  //   () => sources.default.map((s) => ({ label: s, value: s })),
+  //   [sources.default],
+  // );
+
+  const currentEntityUniqueSources = useSelector<StateT, string[]>(
+    (state) => state.entityHistory.currentEntityUniqueSources,
   );
 
-  const defaultSources = useMemo(
+  const currentEntitySourcesOptions = useMemo(
     () =>
-      uniqueSources.map((s) => ({
+      currentEntityUniqueSources.map((s) => ({
         label: s,
         value: s,
       })),
-    [uniqueSources],
+    [currentEntityUniqueSources],
   );
 
   const sourcesSet = useMemo(
@@ -299,13 +314,15 @@ const useSourcesControl = () => {
 
   useEffect(
     function takeDefaultIfEmpty() {
-      setSourcesFilter((curr) => (curr.length === 0 ? defaultSources : curr));
+      setSourcesFilter((curr) =>
+        curr.length === 0 ? currentEntitySourcesOptions : curr,
+      );
     },
-    [defaultSources],
+    [currentEntitySourcesOptions],
   );
 
   return {
-    options: defaultSources,
+    options: currentEntitySourcesOptions,
     sourcesSet,
     sourcesFilter,
     setSourcesFilter,
