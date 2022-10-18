@@ -1,6 +1,5 @@
 import { useCallback } from "react";
 
-import { HistorySources } from "../entity-history/reducer";
 import { apiUrl } from "../environment";
 import type {
   BaseFormConfigT,
@@ -34,6 +33,7 @@ import type {
   GetEntityHistoryResponse,
   GetEntityHistoryDefaultParamsResponse,
   DatasetT,
+  HistorySources,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
@@ -428,7 +428,7 @@ export const useGetEntityHistory = () => {
           idKind: "PID", // TODO: Figure out which other strings are possible here
           entityId,
           time,
-          sources: sources.all,
+          sources: sources.all.map((s) => s.name),
         },
       }),
     [api],

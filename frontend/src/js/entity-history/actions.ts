@@ -6,7 +6,12 @@ import {
   useGetEntityHistory,
   useGetEntityHistoryDefaultParams,
 } from "../api/api";
-import type { ColumnDescription, DatasetT, EntityInfo } from "../api/types";
+import type {
+  ColumnDescription,
+  DatasetT,
+  EntityInfo,
+  HistorySources,
+} from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { ErrorObject, errorPayload } from "../common/actions";
@@ -16,7 +21,7 @@ import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { useLoadPreviewData } from "../preview/actions";
 
-import { EntityEvent, HistorySources } from "./reducer";
+import { EntityEvent } from "./reducer";
 
 export type EntityHistoryActions = ActionType<
   | typeof openHistory
@@ -31,7 +36,7 @@ export const closeHistory = createAction("history/CLOSE")();
 
 export const loadDefaultHistoryParamsSuccess = createAction(
   "history/LOAD_DEFAULT_HISTORY_PARAMS_SUCCESS",
-)<{ sources: { all: string[]; default: string[] } }>();
+)<{ sources: HistorySources }>();
 
 export const useLoadDefaultHistoryParams = () => {
   const dispatch = useDispatch();
