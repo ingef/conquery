@@ -4,7 +4,6 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.IntSummaryStatistics;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -53,10 +52,8 @@ import org.apache.commons.lang3.StringUtils;
 @ToString(callSuper = true, of = {"encoding", "prefix", "suffix"})
 public class StringParser extends Parser<Integer, StringStore> {
 
-	/**
-	 * It's either exactly `0`, or a string of digits, not starting with `0`.
-	 */
-	private static final Pattern DIGITS = Pattern.compile("(^0$)|(^[1-9][0-9]*$)");
+
+	private static final Pattern DIGITS = Pattern.compile("^\\d+$");
 
 	private Object2IntMap<String> strings = new Object2IntOpenHashMap<>();
 
@@ -72,53 +69,59 @@ public class StringParser extends Parser<Integer, StringStore> {
 		super(config);
 	}
 
-	public static NumberStringStore tryCreateNumberStringStore(StringParser stringParser, ConqueryConfig config) {
-		//check if the remaining strings are all numbers
-		Range<Integer> range = new Range.IntegerRange(0, 0);
-		IntegerParser numberParser = new IntegerParser(config);
-
-
-		// Ensure there are only digits and no other leading zeroes.
-		if (stringParser.getStrings().keySet().parallelStream().allMatch(StringParser::isOnlyDigits)) {
-			return null;
+	/**
+	 * It's either exactly `0`, or a string of digits, not starting with `0`, and no leading +-.
+	 */
+	public static boolean isOnlyDigits(String value) {
+		if (value.startsWith("0")) {
+			return value.length() == 1;
 		}
+
+		return DIGITS.matcher(value).matches();
+	}
+
+	public NumberStringStore tryCreateNumberStringStore(ConqueryConfig config) {
+
+		//check if the remaining strings are all numbers
+		final IntegerParser numberParser = new IntegerParser(config);
 
 		try {
 
-			for (Map.Entry<String, Integer> e : stringParser.getStrings().entrySet()) {
-				int intValue = Integer.parseInt(e.getKey());
-				range = range.span(new Range.IntegerRange(intValue, intValue));
+			for (String s : getStrings().keySet()) {
 
-				numberParser.addLine((long) intValue);
+				// Ensure there are only digits and no other leading zeroes.
+				if (!isOnlyDigits(s)) {
+					return null;
+				}
+
+				long parseInt = Integer.parseInt(s);
+				numberParser.addLine(parseInt);
 			}
 		}
 		catch (NumberFormatException e) {
 			return null;
 		}
 
-		numberParser.setLines(stringParser.getLines());
+
+		numberParser.setLines(getLines());
 
 		/*
 		Do not use a number type if the range is much larger than the number if distinct values
 		e.g. if the column contains only 0 and 5M
 		 */
 
-		final long span = range.getMax() - range.getMin() + 1;
+		final long span = numberParser.getMaxValue() - numberParser.getMinValue() + 1;
 
-		if (span > stringParser.getStrings().size()) {
+		if (span > getStrings().size()) {
 			return null;
 		}
 
 		IntegerStore decision = numberParser.findBestType();
 
-		Int2ObjectMap<String> inverse = new Int2ObjectOpenHashMap<>(stringParser.getStrings().size());
-		stringParser.getStrings().forEach((key, value) -> inverse.putIfAbsent((int) value, key));
+		Int2ObjectMap<String> inverse = new Int2ObjectOpenHashMap<>(getStrings().size());
+		getStrings().forEach((key, value) -> inverse.putIfAbsent((int) value, key));
 
-		return new NumberStringStore(range, decision, inverse);
-	}
-
-	public static boolean isOnlyDigits(String value) {
-		return DIGITS.matcher(value).matches();
+		return new NumberStringStore(new Range.IntegerRange((int) numberParser.getMinValue(), (int) numberParser.getMaxValue()), decision, inverse);
 	}
 
 	@Override
@@ -175,7 +178,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 	private StringStore decideStorageType() {
 
-		NumberStringStore numberType = tryCreateNumberStringStore(this, getConfig());
+		NumberStringStore numberType = tryCreateNumberStringStore(getConfig());
 
 		if (numberType != null) {
 			log.debug("Decided for {}", numberType);
@@ -190,7 +193,7 @@ public class StringParser extends Parser<Integer, StringStore> {
 
 		final long mapTypeEstimate = MapDictionary.estimateMemoryConsumption(getStrings().size(), getDecoded().stream().mapToLong(s -> s.length).sum());
 
-		Dictionary dictionary;
+		final Dictionary dictionary;
 
 		if (trie.estimateMemoryConsumption() < mapTypeEstimate) {
 			trie.compress();

@@ -103,7 +103,7 @@
 			{
 				method: 'post',
 				credentials: 'same-origin',
-				headers: {'Content-Type': 'text/plain'},
+				headers: {'Content-Type': 'application/json'},
 				body: permission
 			});
 		location.reload();
