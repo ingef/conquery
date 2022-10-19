@@ -49,7 +49,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 			return new RangeFilterNode(value, new CountAggregator(getColumn()));
 		}
 
-		if (getDistinctByColumn().isEmpty()) {
+		if (distinctByColumn != null && getDistinctByColumn().isEmpty()) {
 			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(), List.of(getColumn())));
 		}
 
@@ -60,7 +60,9 @@ public class CountFilter extends Filter<Range.LongRange> {
 	public List<Column> getRequiredColumns() {
 		final List<Column> out = new ArrayList<>();
 		out.add(getColumn());
-		out.addAll(getDistinctByColumn());
+		if (distinctByColumn != null) {
+			out.addAll(getDistinctByColumn());
+		}
 
 		return out;
 	}
