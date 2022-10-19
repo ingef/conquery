@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	public static final String DUMP_FILE_EXTENTION = "json";
-	
+
 	/**
 	 * Used for serializing keys.
 	 */
@@ -121,11 +121,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		removeUnreadablesFromUnderlyingStore = removeUnreadableFromStore;
 
 		unreadableValuesDumpDir = unreadableDataDumpDirectory;
-		if(unreadableValuesDumpDir != null) {
-			if(!unreadableValuesDumpDir.exists() && !unreadableValuesDumpDir.mkdirs()) {
+		if (unreadableValuesDumpDir != null) {
+			if (!unreadableValuesDumpDir.exists() && !unreadableValuesDumpDir.mkdirs()) {
 				throw new IllegalStateException("Could not create dump directory: " + unreadableValuesDumpDir);
 			}
-			else if(!unreadableValuesDumpDir.isDirectory()) {
+			else if (!unreadableValuesDumpDir.isDirectory()) {
 				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir.getAbsolutePath()));
 			}
 		}
@@ -147,12 +147,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public VALUE get(KEY key) {
 		ByteIterable binValue = store.get(writeKey(key));
 		try {
-			return readValue(binValue);			
-		} catch (Exception e) {
-			if(unreadableValuesDumpDir != null) {
+			return readValue(binValue);
+		}
+		catch (Exception e) {
+			if (unreadableValuesDumpDir != null) {
 				dumpToFile(binValue, key.toString(), unreadableValuesDumpDir, store.getName(), objectMapper);
 			}
-			if(removeUnreadablesFromUnderlyingStore) {
+			if (removeUnreadablesFromUnderlyingStore) {
 				remove(key);
 				// Null seems to be an acceptable return value in this case
 				return null;
@@ -180,7 +181,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 					this::readKey,
 					() -> new String(k.getBytesUnsafe()),
 					v,
-					"Could not parse key [{}]");
+					"Could not parse key [{}]"
+			);
 			if (key == null) {
 				unreadables.add(k);
 				result.incrFailedKeys();
@@ -189,11 +191,12 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 			// Try to read the value
 			VALUE value = getDeserializedAndDumpFailed(
-				v, 
-				this::readValue,
-				key::toString,
-				v, 
-				"Could not parse value for key [{}]");
+					v,
+					this::readValue,
+					key::toString,
+					v,
+					"Could not parse value for key [{}]"
+			);
 			if (value == null) {
 				unreadables.add(k);
 				result.incrFailedValues();
@@ -212,14 +215,15 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		// Print some statistics
 		int total = result.getTotalProcessed();
 		log.debug(
-			String.format(
-				"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
-				store.getName(),
-				total,
-				result.getFailedKeys(),
-				total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
-				result.getFailedValues(),
-				total > 0 ? (float) result.getFailedValues() / total * 100 : 0));
+				String.format(
+						"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
+						store.getName(),
+						total,
+						result.getFailedKeys(),
+						total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
+						result.getFailedValues(),
+						total > 0 ? (float) result.getFailedValues() / total * 100 : 0
+				));
 
 		// Remove corrupted entries from the store if configured so
 		if (removeUnreadablesFromUnderlyingStore) {
@@ -355,7 +359,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
 		}
 		catch (IOException e) {
-			log.error("Unable to dump unreadable value of key `{}` to file `{}`",keyOfDump, dumpfile, e);
+			log.error("Unable to dump unreadable value of key `{}` to file `{}`", keyOfDump, dumpfile, e);
 		}
 	}
 
@@ -365,12 +369,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 */
 	private static String makeDumpfileName(String keyOfDump, String storeName) {
 		return FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(
-			String.format("%s-%s-%s.%s",
-				DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
-				storeName,
-				keyOfDump,
-				DUMP_FILE_EXTENTION
-			)).replaceAll("_");
+				String.format(
+						"%s-%s-%s.%s",
+						DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()),
+						storeName,
+						keyOfDump,
+						DUMP_FILE_EXTENTION
+				)).replaceAll("_");
 	}
 
 	@Override
@@ -412,15 +417,15 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		private int totalProcessed = 0;
 		private int failedKeys = 0;
 		private int failedValues = 0;
-		
+
 		public void incrTotalProcessed() {
 			totalProcessed++;
 		}
-		
+
 		public void incrFailedKeys() {
 			failedKeys++;
 		}
-		
+
 		public void incrFailedValues() {
 			failedValues++;
 		}
