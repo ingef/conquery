@@ -59,7 +59,7 @@ public class SumSelect extends Select {
 
 	@Override
 	public Aggregator<? extends Number> createAggregator() {
-		if (!distinctByColumn.isEmpty()) {
+		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
 			return new DistinctValuesWrapperAggregator<>(getAggregator(), getDistinctByColumn());
 		}
 		return getAggregator();
@@ -111,7 +111,9 @@ public class SumSelect extends Select {
 			out.add(getSubtractColumn());
 		}
 
-		out.addAll(getDistinctByColumn());
+		if(distinctByColumn == null) {
+			out.addAll(getDistinctByColumn());
+		}
 
 		return out;
 	}
