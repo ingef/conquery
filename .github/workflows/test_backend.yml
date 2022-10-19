@@ -23,7 +23,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          distribution: adopt-hotspot
+          distribution: temurin
           java-version: 17
       - name: Build Backend
         run: mvn -T 1C install -pl backend -DskipTests -am
