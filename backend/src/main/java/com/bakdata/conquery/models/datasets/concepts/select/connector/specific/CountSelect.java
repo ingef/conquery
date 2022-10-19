@@ -39,11 +39,11 @@ public class CountSelect extends Select {
 			return new CountAggregator(getColumn());
 		}
 
-		if (distinctByColumn != null && getDistinctByColumn().isEmpty()) {
-			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), List.of(getColumn()));
+		if (distinctByColumn != null && !getDistinctByColumn().isEmpty()) {
+			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), getDistinctByColumn());
 		}
 
-		return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), getDistinctByColumn());
+		return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), List.of(getColumn()));
 	}
 
 	@Nullable
