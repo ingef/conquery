@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: adopt-hotspot
-          java-version: 11
+          java-version: 17
       - name: Build Backend
         run: mvn -T 1C install -pl backend -DskipTests -am
       - name: Unit Test

@@ -1,5 +1,5 @@
 # Builder
-FROM maven:3.8-openjdk-11-slim AS builder
+FROM maven:3.8-openjdk-17-slim AS builder
 
 COPY . /app
 
@@ -9,7 +9,7 @@ RUN ./scripts/build_backend_version.sh
 
 
 # Runner
-FROM eclipse-temurin:11.0.15_10-jre-alpine AS runner
+FROM eclipse-temurin:17-jre-alpine AS runner
 
 ## Apache POI needs some extra libs to auto-size columns
 RUN apk add --no-cache fontconfig ttf-dejavu
