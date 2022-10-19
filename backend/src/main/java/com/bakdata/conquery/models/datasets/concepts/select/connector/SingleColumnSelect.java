@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -65,8 +66,8 @@ public abstract class SingleColumnSelect extends Select {
 
 	@Nullable
 	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[]{getColumn()};
+	public List<Column> getRequiredColumns() {
+		return List.of(getColumn());
 	}
 
 	@JsonIgnore

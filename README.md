@@ -20,6 +20,7 @@ Conquery supplies a powerful interface to group event types in a hierarchical *c
 - Node.js 16 + Yarn
 - curl (to import the test data)
 
+
 ## Starting the demo
 
 ### Frontend only
@@ -49,14 +50,18 @@ You can then run `conquery/scripts/run_e2e_all.sh` to start frontend and backend
 
 After that, you can visit http://localhost:8081/admin-ui and explore the Admin Panel.
 
-The frontend is accessible at http://localhost:8000 as the default "superuser" implicitly. Since the backend uses a development authentication, you can switch users by passing another users "UserId" as the access token in the query string when accessing the frontend, e.g.: http://localhost:8000/?access_token=user.user2.
+The frontend is accessible at http://localhost:8000 as the default "superuser" implicitly. Since the backend uses a
+development authentication, you can switch users by passing another users "UserId" as the access token in the query
+string when accessing the frontend, e.g.: http://localhost:8000/?access_token=user.user2.
 
 ## Development
 
 ### Testing
+
 Apart from separate frontend and backend tests, the project also contains end-to-end tests powered by cypress.
 
 To run the end-to-end test locally:
+
 1. Make sure you installed all [requirements](#requirements)
 2. From the repo root folder run  `conquery/scripts/run_e2e_all.sh`
 3. Wait until the output: `Node server listening on port: 8000` appears

@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
@@ -38,8 +40,13 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	}
 
 	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[]{getAddendColumn(), getSubtrahendColumn()};
+	public List<Column> getRequiredColumns() {
+		final List<Column> out = new ArrayList<>();
+
+		out.add(getAddendColumn());
+		out.add(getSubtrahendColumn());
+
+		return out;
 	}
 
 	@Override

@@ -94,7 +94,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		importInternToExternMappers(support, internToExternMappings);
 		importSearchIndexes(support, searchIndices);
-		importTables(support, content.getTables());
+		LoadingUtil.importTables(support, content.getTables(), content.isAutoConcept());
 		support.waitUntilWorkDone();
 
 		importConcepts(support);

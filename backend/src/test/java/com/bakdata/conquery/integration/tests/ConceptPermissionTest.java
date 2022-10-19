@@ -7,6 +7,7 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
+import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -38,16 +39,17 @@ public class ConceptPermissionTest extends IntegrationTest.Simple implements Pro
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
+			final RequiredData content = test.getContent();
+			importSecondaryIds(conquery, content.getSecondaryIds());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTables(conquery, test.getContent().getTables());
+			LoadingUtil.importTables(conquery, content.getTables(), content.isAutoConcept());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
+			LoadingUtil.importTableContents(conquery, content.getTables());
 			conquery.waitUntilWorkDone();
 
 			storage.addUser(user);
