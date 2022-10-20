@@ -22,7 +22,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>${java.required}</maven.compiler.source>
 		<maven.compiler.target>${java.required}</maven.compiler.target>
-		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
+        <maven-dependency-plugin.version>3.3.0</maven-dependency-plugin.version>
+        <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
 		<build.time>${maven.build.timestamp}</build.time>
 	</properties>
 
