@@ -109,12 +109,18 @@ public class AdminResource {
 
 	@GET
 	@Path("/queries")
-	public FullExecutionStatus[] getQueries(@Auth Subject currentUser, @QueryParam("limit") OptionalLong limit, @QueryParam("since") Optional<String> since) {
+	public FullExecutionStatus[] getQueries(@Auth Subject currentUser, @QueryParam("limit") OptionalLong maybeLimit, @QueryParam("since") Optional<String> maybeSince) {
+
+		final LocalDate since = maybeSince.map(LocalDate::parse).orElse(LocalDate.now());
+		final long limit = maybeLimit.orElse(100);
+
 		final MetaStorage storage = processor.getStorage();
 		final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
+
+
 		return storage.getAllExecutions().stream()
-					  .filter(t -> t.getCreationTime().toLocalDate().isEqual(since.map(LocalDate::parse).orElse(LocalDate.now())))
-					  .limit(limit.orElse(100))
+					  .filter(t -> t.getCreationTime().toLocalDate().isAfter(since) || t.getCreationTime().toLocalDate().isEqual(since))
+					  .limit(limit)
 					  .map(t -> {
 						  try {
 							  return t.buildStatusFull(storage, currentUser, datasetRegistry, processor.getConfig());
