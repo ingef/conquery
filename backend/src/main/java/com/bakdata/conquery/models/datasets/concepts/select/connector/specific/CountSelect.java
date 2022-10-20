@@ -39,11 +39,11 @@ public class CountSelect extends Select {
 			return new CountAggregator(getColumn());
 		}
 
-		if (getDistinctByColumn().isEmpty()) {
-			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), List.of(getColumn()));
+		if (distinctByColumn != null && !getDistinctByColumn().isEmpty()) {
+			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), getDistinctByColumn());
 		}
 
-		return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), getDistinctByColumn());
+		return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), List.of(getColumn()));
 	}
 
 	@Nullable
@@ -51,7 +51,10 @@ public class CountSelect extends Select {
 	public List<Column> getRequiredColumns() {
 		final List<Column> out = new ArrayList<>();
 		out.add(getColumn());
-		out.addAll(getDistinctByColumn());
+
+		if(distinctByColumn != null) {
+			out.addAll(getDistinctByColumn());
+		}
 
 		return out;
 	}

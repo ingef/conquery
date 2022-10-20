@@ -77,10 +77,13 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	@Override
 	public List<Column> getRequiredColumns() {
-		List<Column> out = new ArrayList<>();
+		final List<Column> out = new ArrayList<>();
 
 		out.add(getColumn());
-		out.addAll(getDistinctByColumn());
+
+		if(distinctByColumn != null) {
+			out.addAll(getDistinctByColumn());
+		}
 
 		if(getSubtractColumn() != null){
 			out.add(getSubtractColumn());
@@ -98,7 +101,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 			range = Range.DoubleRange.fromNumberRange(value);
 		}
 
-		if (!distinctByColumn.isEmpty()) {
+		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
 			return new RangeFilterNode(range, new DistinctValuesWrapperAggregator(getAggregator(), getDistinctByColumn()));
 		}
 
