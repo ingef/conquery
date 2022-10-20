@@ -23,8 +23,9 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-#          distribution: 'temurin'
+          distribution: 'temurin'
           java-version: '17'
+          overwrite-settings: false
       - name: Build Backend
         run: mvn -T 1C install -pl backend -DskipTests -am
       - name: Unit Test
