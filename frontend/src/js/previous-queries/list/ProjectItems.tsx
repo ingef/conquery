@@ -33,12 +33,10 @@ const Root = styled("div")`
 `;
 
 const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
-  const [itemToDelete, setItemToDelete] = useState<ProjectItemT | null>(null);
   const [itemToShare, setItemToShare] = useState<ProjectItemT | null>(null);
   const [itemToEditFolders, setItemToEditFolders] =
     useState<ProjectItemT | null>(null);
 
-  const onCloseDeleteModal = () => setItemToDelete(null);
   const onCloseShareModal = () => setItemToShare(null);
   const onCloseEditFoldersModal = () => setItemToEditFolders(null);
 
@@ -47,12 +45,6 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
 
   useEffect(
     function updateSelectedItemsOnListUpdate() {
-      if (itemToDelete) {
-        const updatedItem = items.find((i) => i.id === itemToDelete.id);
-
-        if (updatedItem) setItemToDelete((item) => (item ? updatedItem : null));
-      }
-
       if (itemToEditFolders) {
         const updatedItem = items.find((i) => i.id === itemToEditFolders.id);
 
@@ -66,7 +58,7 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
         if (updatedItem) setItemToShare((item) => (item ? updatedItem : null));
       }
     },
-    [items, itemToDelete, itemToEditFolders, itemToShare],
+    [items, itemToEditFolders, itemToShare],
   );
 
   useResizeObserver(
@@ -101,12 +93,6 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
       {!!itemToShare && (
         <ShareProjectItemModal item={itemToShare} onClose={onCloseShareModal} />
       )}
-      {!!itemToDelete && (
-        <DeleteProjectItemModal
-          item={itemToDelete}
-          onClose={onCloseDeleteModal}
-        />
-      )}
       {!!itemToEditFolders && (
         <EditProjectItemFoldersModal
           item={itemToEditFolders}
@@ -126,7 +112,6 @@ const ProjectItems: FC<PropsT> = ({ datasetId, items }) => {
               <div style={style}>
                 <ProjectItemDragContainer
                   item={items[index]}
-                  onIndicateDeletion={() => setItemToDelete(items[index])}
                   onIndicateShare={() => setItemToShare(items[index])}
                   onIndicateEditFolders={() =>
                     setItemToEditFolders(items[index])

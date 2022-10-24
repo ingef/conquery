@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { parseISO } from "date-fns";
-import { forwardRef, useState } from "react";
+import { forwardRef, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -13,6 +13,7 @@ import { exists } from "../../common/helpers/exists";
 import { useFormLabelByType } from "../../external-forms/stateSelectors";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
+import { ConfirmableTooltip } from "../../tooltip/ConfirmableTooltip";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import ProjectItemLabel from "./ProjectItemLabel";
@@ -130,174 +131,207 @@ const FoldersButton = styled(IconButton)`
   margin-right: 10px;
 `;
 
-interface PropsT {
+const DeleteProjectItemButton = ({
+  item,
+  mayDeleteRightAway,
+}: {
   item: ProjectItemT;
-  onIndicateDeletion: () => void;
-  onIndicateShare: () => void;
-  onIndicateEditFolders: () => void;
-}
+  mayDeleteRightAway: boolean;
+}) => {
+  const { t } = useTranslation();
+  const { removeQuery } = useRemoveQuery();
+  const { removeFormConfig } = useRemoveFormConfig();
 
-const ProjectItem = forwardRef<HTMLDivElement, PropsT>(
-  function PreviousQueryComponent(
-    { item, onIndicateDeletion, onIndicateShare, onIndicateEditFolders },
-    ref,
-  ) {
-    const { t } = useTranslation();
+  const onDelete = useCallback(() => {
+    if (isFormConfig(item)) {
+      removeFormConfig(item.id);
+    } else {
+      removeQuery(item.id);
+    }
+  }, [item, removeQuery, removeFormConfig]);
 
-    const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
-      (state) => state.conceptTrees.secondaryIds,
-    );
+  const confirmationText = useMemo(
+    () =>
+      isFormConfig(item)
+        ? t("formConfig.deleteNow")
+        : t("previousQuery.deleteNow"),
+    [item, t],
+  );
 
-    const { updateQuery } = useUpdateQuery();
-    const { updateFormConfig } = useUpdateFormConfig();
-    const { removeQuery } = useRemoveQuery();
-    const { removeFormConfig } = useRemoveFormConfig();
+  return mayDeleteRightAway ? (
+    <WithTooltip text={t("common.delete")}>
+      <IconButton
+        icon="times"
+        bare
+        data-test-id="project-item-delete-button"
+        onClick={onDelete}
+      />
+    </WithTooltip>
+  ) : (
+    <ConfirmableTooltip
+      red
+      onConfirm={onDelete}
+      confirmationText={confirmationText}
+    >
+      <WithTooltip text={t("common.delete")}>
+        <IconButton
+          icon="times"
+          bare
+          data-test-id="project-item-delete-button"
+        />
+      </WithTooltip>
+    </ConfirmableTooltip>
+  );
+};
 
-    const mayDeleteRightAway = item.tags.length === 0 && !!item.isPristineLabel;
+const ProjectItem = forwardRef<
+  HTMLDivElement,
+  {
+    item: ProjectItemT;
+    onIndicateShare: () => void;
+    onIndicateEditFolders: () => void;
+  }
+>(function ProjectItemComponent(
+  { item, onIndicateShare, onIndicateEditFolders },
+  ref,
+) {
+  const { t } = useTranslation();
 
-    const formLabel = useFormLabelByType(
-      isFormConfig(item) ? item.formType : null,
-    );
-    const topLeftLabel = isFormConfig(item)
-      ? formLabel!
-      : exists(item.numberOfResults)
-      ? `${item.numberOfResults} ${t("previousQueries.results")}`
-      : t("previousQuery.notExecuted");
+  const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
+    (state) => state.conceptTrees.secondaryIds,
+  );
 
-    const dateFormat = `${t("inputDateRange.dateFormat")} HH:mm`;
-    const executedAtDate = parseISO(item.createdAt);
-    const executedAt = formatDate(executedAtDate, dateFormat);
+  const { updateQuery } = useUpdateQuery();
+  const { updateFormConfig } = useUpdateFormConfig();
 
-    const isShared = item.shared || (item.groups && item.groups.length > 0);
-    const label = item.label || item.id.toString();
-    const mayEdit = item.own || isShared;
+  const mayDeleteRightAway = item.tags.length === 0 && !!item.isPristineLabel;
 
-    const secondaryId =
-      !isFormConfig(item) && item.secondaryId
-        ? loadedSecondaryIds.find((secId) => item.secondaryId === secId.id)
-        : null;
+  const formLabel = useFormLabelByType(
+    isFormConfig(item) ? item.formType : null,
+  );
+  const topLeftLabel = isFormConfig(item)
+    ? formLabel!
+    : exists(item.numberOfResults)
+    ? `${item.numberOfResults} ${t("previousQueries.results")}`
+    : t("previousQuery.notExecuted");
 
-    const [isEditingLabel, setIsEditingLabel] = useState<boolean>(false);
+  const dateFormat = `${t("inputDateRange.dateFormat")} HH:mm`;
+  const executedAtDate = parseISO(item.createdAt);
+  const executedAt = formatDate(executedAtDate, dateFormat);
 
-    const folders = item.tags;
+  const isShared = item.shared || (item.groups && item.groups.length > 0);
+  const label = item.label || item.id.toString();
+  const mayEdit = item.own || isShared;
 
-    const onRenameLabel = (label: string) => {
-      if (isFormConfig(item)) {
-        updateFormConfig(item.id, { label }, t("formConfig.renameError"));
-      } else {
-        updateQuery(item.id, { label }, t("previousQuery.renameError"));
-      }
-    };
+  const secondaryId =
+    !isFormConfig(item) && item.secondaryId
+      ? loadedSecondaryIds.find((secId) => item.secondaryId === secId.id)
+      : null;
 
-    return (
-      <Root ref={ref}>
-        {isFormConfig(item) ? <SxFormSymbol /> : <SxQuerySymbol />}
-        <Content
-          own={!!item.own}
-          system={!!item.system || (!item.own && !isShared)}
-        >
-          <TopInfos>
-            <TopLeft>
+  const [isEditingLabel, setIsEditingLabel] = useState<boolean>(false);
+
+  const folders = item.tags;
+
+  const onRenameLabel = (label: string) => {
+    if (isFormConfig(item)) {
+      updateFormConfig(item.id, { label }, t("formConfig.renameError"));
+    } else {
+      updateQuery(item.id, { label }, t("previousQuery.renameError"));
+    }
+  };
+
+  return (
+    <Root ref={ref}>
+      {isFormConfig(item) ? <SxFormSymbol /> : <SxQuerySymbol />}
+      <Content
+        own={!!item.own}
+        system={!!item.system || (!item.own && !isShared)}
+      >
+        <TopInfos>
+          <TopLeft>
+            <WithTooltip
+              html={
+                <TooltipText>
+                  {t("previousQuery.editFolders")}
+                  {folders.length > 0 && (
+                    <ActiveFolders>
+                      {folders.map((f) => (
+                        <li key={f}>{f}</li>
+                      ))}
+                    </ActiveFolders>
+                  )}
+                </TooltipText>
+              }
+            >
+              <FoldersButton
+                icon={"folder"}
+                regular={folders.length === 0}
+                tight
+                small
+                bare
+                onClick={onIndicateEditFolders}
+                disabled={!mayEdit}
+              />
+            </WithTooltip>
+            {!isFormConfig(item) && item.resultUrls.length > 0 ? (
+              <WithTooltip text={t("previousQuery.downloadResults")}>
+                <SxDownloadButton tight small bare url={item.resultUrls[0]}>
+                  {topLeftLabel}
+                </SxDownloadButton>
+              </WithTooltip>
+            ) : (
+              <NonBreakingText>{topLeftLabel}</NonBreakingText>
+            )}
+          </TopLeft>
+          <TopRight>
+            {executedAt}
+            {secondaryId &&
+              !isFormConfig(item) &&
+              item.queryType === "SECONDARY_ID_QUERY" && (
+                <WithTooltip
+                  text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
+                >
+                  <IconButton icon="microscope" bare onClick={() => {}} />
+                </WithTooltip>
+              )}
+            {item.own && (
               <WithTooltip
                 html={
                   <TooltipText>
-                    {t("previousQuery.editFolders")}
-                    {folders.length > 0 && (
-                      <ActiveFolders>
-                        {folders.map((f) => (
-                          <li key={f}>{f}</li>
-                        ))}
-                      </ActiveFolders>
-                    )}
+                    {isShared ? t("common.shared") : t("common.share")}
                   </TooltipText>
                 }
               >
-                <FoldersButton
-                  icon={"folder"}
-                  regular={folders.length === 0}
-                  tight
-                  small
+                <IconButton
+                  icon="user"
+                  regular={!isShared}
                   bare
-                  onClick={onIndicateEditFolders}
-                  disabled={!mayEdit}
+                  onClick={onIndicateShare}
                 />
               </WithTooltip>
-              {!isFormConfig(item) && item.resultUrls.length > 0 ? (
-                <WithTooltip text={t("previousQuery.downloadResults")}>
-                  <SxDownloadButton tight small bare url={item.resultUrls[0]}>
-                    {topLeftLabel}
-                  </SxDownloadButton>
-                </WithTooltip>
-              ) : (
-                <NonBreakingText>{topLeftLabel}</NonBreakingText>
-              )}
-            </TopLeft>
-            <TopRight>
-              {executedAt}
-              {secondaryId &&
-                !isFormConfig(item) &&
-                item.queryType === "SECONDARY_ID_QUERY" && (
-                  <WithTooltip
-                    text={`${t("queryEditor.secondaryId")}: ${
-                      secondaryId.label
-                    }`}
-                  >
-                    <IconButton icon="microscope" bare onClick={() => {}} />
-                  </WithTooltip>
-                )}
-              {item.own && (
-                <WithTooltip
-                  html={
-                    <TooltipText>
-                      {isShared ? t("common.shared") : t("common.share")}
-                    </TooltipText>
-                  }
-                >
-                  <IconButton
-                    icon="user"
-                    regular={!isShared}
-                    bare
-                    onClick={onIndicateShare}
-                  />
-                </WithTooltip>
-              )}
-              {item.own && (
-                <WithTooltip text={t("common.delete")}>
-                  <IconButton
-                    icon="times"
-                    bare
-                    data-test-id="project-item-delete-button"
-                    onClick={() => {
-                      if (mayDeleteRightAway) {
-                        if (isFormConfig(item)) {
-                          removeFormConfig(item.id);
-                        } else {
-                          removeQuery(item.id);
-                        }
-                      } else {
-                        onIndicateDeletion();
-                      }
-                    }}
-                  />
-                </WithTooltip>
-              )}
-            </TopRight>
-          </TopInfos>
-          <LabelRow>
-            <ProjectItemLabel
-              mayEdit={mayEdit}
-              label={label}
-              selectTextOnMount={true}
-              onSubmit={onRenameLabel}
-              isEditing={isEditingLabel}
-              setIsEditing={setIsEditingLabel}
-            />
-            <OwnerName>{item.ownerName}</OwnerName>
-          </LabelRow>
-        </Content>
-      </Root>
-    );
-  },
-);
+            )}
+            {item.own && (
+              <DeleteProjectItemButton
+                item={item}
+                mayDeleteRightAway={mayDeleteRightAway}
+              />
+            )}
+          </TopRight>
+        </TopInfos>
+        <LabelRow>
+          <ProjectItemLabel
+            mayEdit={mayEdit}
+            label={label}
+            selectTextOnMount={true}
+            onSubmit={onRenameLabel}
+            isEditing={isEditingLabel}
+            setIsEditing={setIsEditingLabel}
+          />
+          <OwnerName>{item.ownerName}</OwnerName>
+        </LabelRow>
+      </Content>
+    </Root>
+  );
+});
 
 export default ProjectItem;

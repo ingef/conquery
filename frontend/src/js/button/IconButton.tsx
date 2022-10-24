@@ -41,13 +41,16 @@ const SxBasicButton = styled(BasicButton)<{
   secondary?: boolean;
   tight?: boolean;
   bgHover?: boolean;
+  red?: boolean;
 }>`
   background-color: transparent;
-  color: ${({ theme, active, secondary }) =>
+  color: ${({ theme, active, secondary, red }) =>
     active
       ? theme.col.blueGrayDark
       : secondary
       ? theme.col.orange
+      : red
+      ? theme.col.red
       : theme.col.black};
   opacity: ${({ frame }) => (frame ? 1 : 0.75)};
   transition: opacity ${({ theme }) => theme.transitionTime},
@@ -161,6 +164,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
         secondary={secondary}
         tight={tight}
         bgHover={bgHover}
+        red={red}
         {...restProps}
         ref={ref}
       >

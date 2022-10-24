@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import { useActiveLang } from "../localization/useActiveLang";
+import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
@@ -92,9 +93,14 @@ const FormsNavigation = ({ reset }: Props) => {
             }
           }}
         />
-        <WithTooltip text={t("externalForms.common.clear")}>
-          <SxIconButton frame regular icon="trash-alt" onClick={onClear} />
-        </WithTooltip>
+        <ConfirmableTooltip
+          onConfirm={onClear}
+          confirmationText={t("externalForms.common.clearConfirm")}
+        >
+          <WithTooltip text={t("externalForms.common.clear")}>
+            <SxIconButton frame regular icon="trash-alt" />
+          </WithTooltip>
+        </ConfirmableTooltip>
       </Row>
     </Root>
   );

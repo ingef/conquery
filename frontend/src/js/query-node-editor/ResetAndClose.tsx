@@ -32,8 +32,6 @@ const ResetAndClose = ({
     <Row>
       {showClearReset && (
         <ResetAllSettingsButton
-          text={t("queryNodeEditor.clearAllSettings")}
-          icon="trash"
           onClick={() => onResetAllSettings({ useDefaults: false })}
           compact={isCompact}
         />
