@@ -12,7 +12,6 @@ import { FixedSizeList } from "react-window";
 import type { DatasetT } from "../../api/types";
 import { useResizeObserver } from "../../common/helpers/useResizeObserver";
 
-import DeleteProjectItemModal from "./DeleteProjectItemModal";
 import EditProjectItemFoldersModal from "./EditProjectItemFoldersModal";
 import type { ProjectItemT } from "./ProjectItem";
 import ProjectItemDragContainer from "./ProjectItemDragContainer";
