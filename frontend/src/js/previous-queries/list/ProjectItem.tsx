@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { parseISO } from "date-fns";
-import { forwardRef, useCallback, useMemo, useState } from "react";
+import { forwardRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -13,16 +13,11 @@ import { exists } from "../../common/helpers/exists";
 import { useFormLabelByType } from "../../external-forms/stateSelectors";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
-import { ConfirmableTooltip } from "../../tooltip/ConfirmableTooltip";
 import WithTooltip from "../../tooltip/WithTooltip";
 
+import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import ProjectItemLabel from "./ProjectItemLabel";
-import {
-  useRemoveQuery,
-  useUpdateQuery,
-  useUpdateFormConfig,
-  useRemoveFormConfig,
-} from "./actions";
+import { useUpdateQuery, useUpdateFormConfig } from "./actions";
 import { isFormConfig } from "./helpers";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
@@ -130,59 +125,6 @@ const SxDownloadButton = styled(DownloadButton)`
 const FoldersButton = styled(IconButton)`
   margin-right: 10px;
 `;
-
-const DeleteProjectItemButton = ({
-  item,
-  mayDeleteRightAway,
-}: {
-  item: ProjectItemT;
-  mayDeleteRightAway: boolean;
-}) => {
-  const { t } = useTranslation();
-  const { removeQuery } = useRemoveQuery();
-  const { removeFormConfig } = useRemoveFormConfig();
-
-  const onDelete = useCallback(() => {
-    if (isFormConfig(item)) {
-      removeFormConfig(item.id);
-    } else {
-      removeQuery(item.id);
-    }
-  }, [item, removeQuery, removeFormConfig]);
-
-  const confirmationText = useMemo(
-    () =>
-      isFormConfig(item)
-        ? t("formConfig.deleteNow")
-        : t("previousQuery.deleteNow"),
-    [item, t],
-  );
-
-  return mayDeleteRightAway ? (
-    <WithTooltip text={t("common.delete")}>
-      <IconButton
-        icon="times"
-        bare
-        data-test-id="project-item-delete-button"
-        onClick={onDelete}
-      />
-    </WithTooltip>
-  ) : (
-    <ConfirmableTooltip
-      red
-      onConfirm={onDelete}
-      confirmationText={confirmationText}
-    >
-      <WithTooltip text={t("common.delete")}>
-        <IconButton
-          icon="times"
-          bare
-          data-test-id="project-item-delete-button"
-        />
-      </WithTooltip>
-    </ConfirmableTooltip>
-  );
-};
 
 const ProjectItem = forwardRef<
   HTMLDivElement,
