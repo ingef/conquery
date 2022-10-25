@@ -336,7 +336,7 @@ interface ColumnDescriptionSemanticSecondaryId {
   type: "SECONDARY_ID";
   secondaryId: string;
 }
-interface ColumnDescriptionSemanticId {
+export interface ColumnDescriptionSemanticId {
   type: "ID";
   kind: string;
 }
