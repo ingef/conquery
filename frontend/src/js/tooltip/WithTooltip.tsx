@@ -1,7 +1,7 @@
 import { css, useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import Tippy, { TippyProps } from "@tippyjs/react";
-import { memo, ReactElement, useMemo } from "react";
+import { forwardRef, memo, ReactElement, useMemo } from "react";
 import "tippy.js/dist/tippy.css";
 import "tippy.js/themes/light.css";
 
@@ -65,6 +65,7 @@ interface Props {
   trigger?: string;
   arrow?: TippyProps["arrow"];
   offset?: TippyProps["offset"];
+  hideOnClick?: TippyProps["hideOnClick"];
 
   // Some others are possible in @tippyjs/react, but those should be enough
   // default: "auto"
@@ -74,56 +75,65 @@ interface Props {
 // Show and hide duration
 const shortDuration = [100, 100] as [number, number];
 
-const WithTooltip = ({
-  className,
-  children,
-  text,
-  html,
-  lazy,
-  wide,
-  placement,
-  interactive,
-  trigger,
-  arrow,
-  offset,
-}: Props) => {
-  const theme = useTheme();
+const WithTooltip = forwardRef<HTMLElement, Props>(
+  (
+    {
+      className,
+      children,
+      text,
+      html,
+      lazy,
+      wide,
+      placement,
+      interactive,
+      trigger,
+      arrow,
+      offset,
+      hideOnClick,
+    },
+    ref,
+  ) => {
+    const theme = useTheme();
 
-  const content = useMemo(() => {
-    return text ? (
-      <Text
-        theme={theme}
-        wide={wide}
-        dangerouslySetInnerHTML={{ __html: text }}
-      />
-    ) : (
-      html
+    const content = useMemo(() => {
+      return text ? (
+        <Text
+          theme={theme}
+          wide={wide}
+          dangerouslySetInnerHTML={{ __html: text }}
+        />
+      ) : (
+        html
+      );
+    }, [theme, wide, text, html]);
+
+    const delay = useMemo(
+      () => (lazy ? ([1000, 0] as [number, number]) : 0),
+      [lazy],
     );
-  }, [theme, wide, text, html]);
 
-  const delay = useMemo(
-    () => (lazy ? ([1000, 0] as [number, number]) : 0),
-    [lazy],
-  );
+    if (!text && !html) return <>{children}</>;
 
-  if (!text && !html) return <>{children}</>;
-
-  return (
-    <Tippy
-      className={className}
-      duration={shortDuration}
-      content={content}
-      placement={placement}
-      theme="light"
-      delay={delay}
-      interactive={interactive}
-      trigger={trigger}
-      arrow={arrow}
-      offset={offset}
-    >
-      {children}
-    </Tippy>
-  );
-};
+    return (
+      <Tippy
+        className={className}
+        duration={shortDuration}
+        content={content}
+        placement={placement}
+        theme="light"
+        delay={delay}
+        interactive={interactive}
+        trigger={trigger}
+        arrow={arrow}
+        offset={offset}
+        ref={ref}
+        zIndex={9999}
+        hideOnClick={hideOnClick}
+      >
+        {children}
+      </Tippy>
+    );
+  },
+);
 
 export default memo(WithTooltip);
