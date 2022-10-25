@@ -4,13 +4,13 @@ on:
   push:
     branches:
       - feature/auto-doc-wiki
-    paths:
-      - "autodoc/**"
-      - "backend/src/main/java/com/bakdata/conquery/models/dataset/**"
-      - "backend/src/main/java/com/bakdata/conquery/models/config/**"
-      - "backend/src/main/java/com/bakdata/conquery/preproc/**"
-      - "backend/src/main/java/com/bakdata/conquery/resources/**"
-      - "backend/src/main/java/com/bakdata/conquery/apiv1/**"
+#    paths:
+#      - "autodoc/**"
+#      - "backend/src/main/java/com/bakdata/conquery/models/dataset/**"
+#      - "backend/src/main/java/com/bakdata/conquery/models/config/**"
+#      - "backend/src/main/java/com/bakdata/conquery/preproc/**"
+#      - "backend/src/main/java/com/bakdata/conquery/resources/**"
+#      - "backend/src/main/java/com/bakdata/conquery/apiv1/**"
 
 jobs:
   generate_auto_doc:
@@ -36,11 +36,6 @@ jobs:
         run: mvn install -T 1C -DskipTests -pl '!executable'
       - name: Run AutoDoc
         run: mvn exec:java -f autodoc/pom.xml -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
-      - name: Check for changes
-        id: check-changes
-        run: |
-          echo $(git diff HEAD)
-          echo "::set-output name=changed::$(if git diff HEAD --quiet ; then echo false; else echo true; fi)"
       - name: Upload Documentation to Wiki
         uses: SwiftDocOrg/github-wiki-publish-action@v1
         with:
