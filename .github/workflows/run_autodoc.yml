@@ -1,7 +1,9 @@
-name: "Generate Documentation"
+name: "Generate Documentation and Push to Repo-Wiki"
 
 on:
-  pull_request:
+  push:
+    branches:
+      - feature/auto-doc-wiki
     paths:
       - "autodoc/**"
       - "backend/src/main/java/com/bakdata/conquery/models/dataset/**"
@@ -39,17 +41,10 @@ jobs:
         run: |
           echo $(git diff HEAD)
           echo "::set-output name=changed::$(if git diff HEAD --quiet ; then echo false; else echo true; fi)"
-      - name: Commit files
-        id: commit-files
-        if: ${{ steps.check-changes.outputs.changed == 'true' }}
-        run: |
-          echo ${{ env.GITHUB_REF }}
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git commit -m "Update AutoDoc" -a
-      - name: Push changes
-        if: ${{ steps.commit-files.conclusion == 'success' }}
-        uses: ad-m/github-push-action@master
+      - name: Upload Documentation to Wiki
+        uses: SwiftDocOrg/github-wiki-publish-action@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.head_ref }}
+          path: "docs"
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
+          
