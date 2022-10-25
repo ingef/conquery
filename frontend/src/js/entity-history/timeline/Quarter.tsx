@@ -49,7 +49,7 @@ const QuarterHead = styled("div")<{ empty?: boolean }>`
 
 const InlineGrid = styled("div")`
   display: inline-grid;
-  grid-template-columns: 20px 20px 100px 1fr;
+  grid-template-columns: 20px 20px 110px 1fr;
   align-items: center;
   cursor: pointer;
   border: 1px solid transparent;
