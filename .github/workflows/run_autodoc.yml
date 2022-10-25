@@ -5,6 +5,7 @@ on:
     branches:
       - feature/auto-doc-wiki
     paths:
+      - ".github/**"
       - "autodoc/**"
       - "backend/src/main/java/com/bakdata/conquery/models/dataset/**"
       - "backend/src/main/java/com/bakdata/conquery/models/config/**"
