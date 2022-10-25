@@ -3,11 +3,9 @@ package com.bakdata.conquery.io.result.arrow;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.CDate;
@@ -17,7 +15,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.util.Preconditions;
 import org.apache.arrow.vector.BitVector;
@@ -47,35 +44,31 @@ public class ArrowRenderer {
             List<ResultInfo> resultInfo,
             Stream<EntityResult> results) throws IOException {
 
-        // Combine id and value Fields to one vector to build a schema
-		final UniqueNamer uniqNamer = new UniqueNamer(printSettings);
-		final List<Field> idFields = generateFields(idHeaders, uniqNamer);
-        List<Field> fields = new ArrayList<>(idFields);
-        fields.addAll(generateFields(resultInfo, uniqNamer));
-        VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
+		List<Field> fields = ArrowUtil.generateFields(idHeaders, resultInfo, new UniqueNamer(printSettings));
+		VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
 
-        // Build separate pipelines for id and value, as they have different sources but the same target
-        RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), printSettings, idHeaders);
+		// Build separate pipelines for id and value, as they have different sources but the same target
+		RowConsumer[] idWriters = generateWriterPipeline(root, 0, idHeaders.size(), printSettings, idHeaders);
 		RowConsumer[] valueWriter = generateWriterPipeline(root, idHeaders.size(), resultInfo.size(), printSettings, resultInfo);
 
-        // Write the data
-        try (ArrowWriter writer = writerProducer.apply(root)) {
-            write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), results, batchSize);
-        }
+		// Write the data
+		try (ArrowWriter writer = writerProducer.apply(root)) {
+			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), results, batchSize);
+		}
 
     }
 
 
-    public static void write(
-            ArrowWriter writer,
-            VectorSchemaRoot root,
-            RowConsumer[] idWriter,
-            RowConsumer[] valueWriter,
-            PrintIdMapper idMapper,
-            Stream<EntityResult> results,
-            int batchSize) throws IOException {
-        Preconditions.checkArgument(batchSize > 0, "Batch size needs be larger than 0.");
-        // TODO add time metric for writing
+	public static void write(
+			ArrowWriter writer,
+			VectorSchemaRoot root,
+			RowConsumer[] idWriter,
+			RowConsumer[] valueWriter,
+			PrintIdMapper idMapper,
+			Stream<EntityResult> results,
+			int batchSize) throws IOException {
+		Preconditions.checkArgument(batchSize > 0, "Batch size needs be larger than 0.");
+		// TODO add time metric for writing
 
         log.trace("Starting result write");
         writer.start();
@@ -312,13 +305,6 @@ public class ArrowRenderer {
         }
 
         throw new IllegalArgumentException("Unsupported vector type " + vector);
-    }
-
-    public static List<Field> generateFields(@NonNull List<ResultInfo> info, UniqueNamer collector) {
-        return info.stream()
-                .map(i -> ArrowUtil.createField(i, collector))
-                .collect(Collectors.toUnmodifiableList());
-
     }
 
 }

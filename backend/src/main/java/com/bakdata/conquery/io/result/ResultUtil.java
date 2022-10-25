@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.result;
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
@@ -7,6 +9,9 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.util.io.FileUtil;
@@ -77,6 +82,18 @@ public class ResultUtil {
 		if (!(exec instanceof SingleTableResult)) {
 			throw new BadRequestException("Execution cannot be rendered as the requested format");
 		}
+	}
+
+
+	public static void authorizeExecutable(Subject subject, ManagedExecution<?> exec, Dataset dataset) {
+		subject.authorize(dataset, Ability.READ);
+		subject.authorize(dataset, Ability.DOWNLOAD);
+
+
+		subject.authorize(exec, Ability.READ);
+
+		// Check if subject is permitted to download on all datasets that were referenced by the query
+		authorizeDownloadDatasets(subject, exec);
 	}
 
 }
