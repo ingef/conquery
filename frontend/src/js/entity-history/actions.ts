@@ -21,7 +21,7 @@ import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { useLoadPreviewData } from "../preview/actions";
 
-import { EntityEvent } from "./reducer";
+import { EntityEvent, EntityId } from "./reducer";
 
 export type EntityHistoryActions = ActionType<
   | typeof openHistory
@@ -71,16 +71,33 @@ export const loadHistoryData = createAsyncAction(
     currentEntityCsvUrl: string;
     currentEntityData: EntityEvent[];
     currentEntityInfos: EntityInfo[];
-    currentEntityId: string;
+    currentEntityId: EntityId;
     currentEntityUniqueSources: string[];
     resultUrls?: string[];
-    entityIds?: string[];
+    entityIds?: EntityId[];
     label?: string;
     columns?: Record<string, ColumnDescription>;
     columnDescriptions?: ColumnDescription[];
   },
   ErrorObject
 >();
+
+// HARD-CODED values that make sense with our particular data.
+// TODO: Make this configurable / get a preferred id kind list from backend
+export const PREFERRED_ID_KINDS = ["EGK", "PID"];
+export const DEFAULT_ID_KIND = "EGK";
+
+function getPreferredIdColumns(columns: ColumnDescription[]) {
+  const findColumnIdxWithIdKind = (kind: string) =>
+    columns.findIndex((col) =>
+      col.semantics.some((s) => s.type === "ID" && s.kind === kind),
+    );
+
+  return PREFERRED_ID_KINDS.map((kind) => ({
+    columnIdx: findColumnIdxWithIdKind(kind),
+    idKind: kind,
+  }));
+}
 
 // TODO: This starts a session with the current query results,
 // but there will be other ways of starting a history session
@@ -103,9 +120,27 @@ export function useNewHistorySession() {
       return;
     }
 
-    // hard-coded column index to use for entity ids (should be "PID")
-    const entityIdsColumn = result.csv.map((row) => row[2]);
-    const entityIds = entityIdsColumn.slice(1); // remove header;
+    const preferredIdColumns = getPreferredIdColumns(columns);
+    if (preferredIdColumns.length === 0) {
+      dispatch(loadHistoryData.failure(new Error("No valid ID columns found")));
+      return;
+    }
+
+    const entityIds = result.csv
+      .slice(1) // remove header
+      .map((row) => {
+        for (const col of preferredIdColumns) {
+          // some values might be empty, search for defined values
+          if (row[col.columnIdx]) {
+            return {
+              id: row[col.columnIdx],
+              kind: col.idKind,
+            };
+          }
+        }
+        return null;
+      })
+      .filter(exists);
 
     if (entityIds.length === 0) {
       dispatch(loadHistoryData.failure(new Error("No entity IDs found")));
@@ -138,8 +173,8 @@ export function useUpdateHistorySession() {
       entityIds,
       label,
     }: {
-      entityId: string;
-      entityIds?: string[];
+      entityId: EntityId;
+      entityIds?: EntityId[];
       years?: number[];
       label?: string;
     }) => {

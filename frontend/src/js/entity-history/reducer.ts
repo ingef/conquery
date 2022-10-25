@@ -2,6 +2,7 @@ import { getType } from "typesafe-actions";
 
 import type {
   ColumnDescription,
+  ColumnDescriptionSemanticId,
   EntityInfo,
   HistorySources,
 } from "../api/types";
@@ -24,6 +25,11 @@ export type EntityEvent = {
   [key: string]: any;
 };
 
+export interface EntityId {
+  id: string;
+  kind: ColumnDescriptionSemanticId["kind"];
+}
+
 export type EntityHistoryStateT = {
   defaultParams: {
     sources: HistorySources;
@@ -34,9 +40,9 @@ export type EntityHistoryStateT = {
   columnDescriptions: ColumnDescription[];
   resultUrls: string[];
   label: string;
-  entityIds: string[];
+  entityIds: EntityId[];
   currentEntityUniqueSources: string[];
-  currentEntityId: string | null;
+  currentEntityId: EntityId | null;
   currentEntityData: EntityEvent[];
   currentEntityCsvUrl: string;
   currentEntityInfos: EntityInfo[];
