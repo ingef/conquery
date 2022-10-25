@@ -32,8 +32,8 @@ import type {
   UploadQueryResponseT,
   GetEntityHistoryResponse,
   GetEntityHistoryDefaultParamsResponse,
-  TableT,
   DatasetT,
+  HistorySources,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
@@ -412,7 +412,7 @@ export const useGetEntityHistory = () => {
     (
       datasetId: DatasetT["id"],
       entityId: string,
-      sources: TableT["id"][],
+      sources: HistorySources,
       time: {
         min: string; // Format like "2020-01-01"
         max: string; // Format like "2020-12-31"
@@ -428,7 +428,7 @@ export const useGetEntityHistory = () => {
           idKind: "PID", // TODO: Figure out which other strings are possible here
           entityId,
           time,
-          sources,
+          sources: sources.all.map((s) => s.name),
         },
       }),
     [api],

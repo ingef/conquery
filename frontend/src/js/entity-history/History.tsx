@@ -6,13 +6,13 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
-import type { EntityInfo, SelectOptionT } from "../api/types";
+import type { EntityInfo, HistorySources, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import ErrorFallback from "../error-fallback/ErrorFallback";
+import DownloadResultsDropdownButton from "../query-runner/DownloadResultsDropdownButton";
 
 import ContentControl, { useContentControl } from "./ContentControl";
 import { DetailControl, DetailLevel } from "./DetailControl";
-import { DownloadEntityDataButton } from "./DownloadEntityDataButton";
 import { EntityHeader } from "./EntityHeader";
 import InteractionControl from "./InteractionControl";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
@@ -102,6 +102,9 @@ export const History = () => {
   );
   const currentEntityInfos = useSelector<StateT, EntityInfo[]>(
     (state) => state.entityHistory.currentEntityInfos,
+  );
+  const resultUrls = useSelector<StateT, string[]>(
+    (state) => state.entityHistory.resultUrls,
   );
 
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
@@ -204,7 +207,12 @@ export const History = () => {
                   onChange={setContentFilter}
                 />
                 <SidebarBottom>
-                  <DownloadEntityDataButton />
+                  {resultUrls.length > 0 && (
+                    <DownloadResultsDropdownButton
+                      tiny
+                      resultUrls={resultUrls}
+                    />
+                  )}
                 </SidebarBottom>
               </Sidebar>
               <SxTimeline
@@ -271,18 +279,40 @@ const useEntityStatus = ({
 
 const useSourcesControl = () => {
   const [sourcesFilter, setSourcesFilter] = useState<SelectOptionT[]>([]);
-  const uniqueSources = useSelector<StateT, string[]>(
-    (state) => state.entityHistory.uniqueSources,
+
+  const sources = useSelector<StateT, HistorySources>(
+    (state) => state.entityHistory.defaultParams.sources,
+  );
+  const allSourcesOptions = useMemo(
+    () =>
+      sources.all.map((s) => ({
+        label: s.label,
+        value: s.label, // Gotta use label since the value in the entity CSV is the source label as well
+      })),
+    [sources.all],
+  );
+  const defaultSourcesOptions = useMemo(
+    () =>
+      sources.default.map((s) => ({
+        label: s.label,
+        value: s.label, // Gotta use label since the value in the entity CSV is the source label as well
+      })),
+    [sources.default],
   );
 
-  const defaultSources = useMemo(
-    () =>
-      uniqueSources.map((s) => ({
-        label: s,
-        value: s,
-      })),
-    [uniqueSources],
-  );
+  // TODO: Figure out whether we still need the current entity unique sources
+  //
+  // const currentEntityUniqueSources = useSelector<StateT, string[]>(
+  //   (state) => state.entityHistory.currentEntityUniqueSources,
+  // );
+  // const currentEntitySourcesOptions = useMemo(
+  //   () =>
+  //     currentEntityUniqueSources.map((s) => ({
+  //       label: s,
+  //       value: s,
+  //     })),
+  //   [currentEntityUniqueSources],
+  // );
 
   const sourcesSet = useMemo(
     () => new Set(sourcesFilter.map((o) => o.value as string)),
@@ -291,13 +321,15 @@ const useSourcesControl = () => {
 
   useEffect(
     function takeDefaultIfEmpty() {
-      setSourcesFilter((curr) => (curr.length === 0 ? defaultSources : curr));
+      setSourcesFilter((curr) =>
+        curr.length === 0 ? defaultSourcesOptions : curr,
+      );
     },
-    [defaultSources],
+    [defaultSourcesOptions],
   );
 
   return {
-    options: defaultSources,
+    options: allSourcesOptions,
     sourcesSet,
     sourcesFilter,
     setSourcesFilter,

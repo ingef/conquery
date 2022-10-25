@@ -63,6 +63,7 @@
     "removeNode": "Knoten entfernen",
     "removeColumn": "Spalte entfernen",
     "clear": "Editor-Oberfläche zurücksetzen",
+    "clearConfirm": "Jetzt zurücksetzen",
     "hasDefaultSettings": "Standardeinstellungen",
     "hasNonDefaultSettings": "Eigene Einstellungen"
   },
@@ -83,7 +84,8 @@
   "datasetSelector": {
     "label": "Datensatz",
     "pleaseChoose": "Datensatz auswählen",
-    "error": "Konnte Datensätze nicht laden"
+    "error": "Konnte Datensätze nicht laden",
+    "disabled": "Der Datensatz kann geraden nicht verändert werden."
   },
   "queryNodeEditor": {
     "conceptTree": "Konzept",
@@ -94,6 +96,7 @@
     "reset": "Zurücksetzen",
     "resetSettings": "Auf Standard zurücksetzen",
     "clearAllSettings": "Alle Felder leeren",
+    "clearAllSettingsConfirm": "Jetzt leeren",
     "clearSettings": "Felder leeren",
     "excludeTimestamps": "Von Zeitberechnung ausschließen",
     "excludingTimestamps": "Von Zeitberechnung ausgeschlossen",
@@ -119,9 +122,6 @@
     "dateRange": "Datumsbereich",
     "headlineStart": "Konzepte:"
   },
-  "deletePreviousQueryModal": {
-    "areYouSure": "Diese Anfrage wirklich löschen?"
-  },
   "deletePreviousQueryFolderModal": {
     "areYouSure": "Diesen Ordner wirklich löschen?",
     "description": "Alle Anfragen aus dem Ordner {{folder}} werden aus dem Ordner entfernt, bleiben aber gespeichert."
@@ -135,6 +135,7 @@
   "common": {
     "manual": "Handbuch",
     "contact": "Kontakt",
+    "confirm": "Bestätigen",
     "optional": "Optional",
     "back": "Zurück",
     "any": "Beliebig",
@@ -227,7 +228,8 @@
     "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Anfrage nicht freigeben",
     "deleteError": "Konnte Anfrage nicht löschen",
-    "editFolders": "Ordner bearbeiten"
+    "editFolders": "Ordner bearbeiten",
+    "deleteNow": "Anfrage jetzt löschen"
   },
   "projectItemsFilter": {
     "all": "Alle",
@@ -309,7 +311,8 @@
         "copyFrom": "Kopieren von ...",
         "copying": "Kopieren"
       },
-      "clear": "Formular leeren"
+      "clear": "Formular leeren",
+      "clearConfirm": "Formular jetzt leeren"
     }
   },
   "uploadQueryResultsModal": {
@@ -409,10 +412,8 @@
     "renameError": "Konnte Formular-Konfiguration nicht umbenennen",
     "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Formular-Konfiguration nicht freigeben",
-    "deleteError": "Konnte Formular-Konfiguration nicht löschen"
-  },
-  "deleteFormConfigModal": {
-    "areYouSure": "Diese Formular-Konfiguration wirklich löschen?"
+    "deleteError": "Konnte Formular-Konfiguration nicht löschen",
+    "deleteNow": "Formular-Konfiguration jetzt löschen"
   },
   "conceptTreesOpen": {
     "resetAll": "Zurück zu Standardansicht",
@@ -453,13 +454,13 @@
     "backButtonWarning": "Achtung: Wenn Du zurück gehst, werden Änderungen an der Liste verworfen. Lade die Liste vorher herunter, um sie zu speichern.",
     "history": "Historie",
     "marked": "mit Status",
-    "events_one": "Eintrag",
-    "events_other": "Einträge",
-    "downloadButtonLabel": "Liste herunterladen",
+    "events_one": "Datenpunkt",
+    "events_other": "Datenpunkte",
+    "downloadButtonLabel": "Liste mit Status-Einträgen herunterladen",
     "nextButtonLabel": "Weiterblättern",
     "prevButtonLabel": "Zurückblättern",
     "downloadEntityData": "Einzelhistorie als CSV herunterladen",
-    "differencesTooltip": "Unterschiede aus den Einzeleinträgen",
+    "differencesTooltip": "Unterschiede aus den einzelnen Datenpunkten",
     "closeAll": "Alle schließen",
     "dates": "Datumswerte",
     "options": {
@@ -469,7 +470,7 @@
     "detail": {
       "summary": "Zusammenfassung",
       "detail": "Gruppiert",
-      "full": "Alle Einzeleinträge"
+      "full": "Alle Einzeldatenpunkte"
     },
     "content": {
       "money": "Geldbeträge",

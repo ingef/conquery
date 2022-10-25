@@ -515,7 +515,12 @@ export type UploadQueryResponseT = {
   unreadableDate: string[][];
 };
 
-export type GetEntityHistoryDefaultParamsResponse = string[]; // connectors
+export interface HistorySources {
+  all: { label: string; name: TableT["id"] }[];
+  default: { label: string; name: TableT["id"] }[];
+}
+
+export type GetEntityHistoryDefaultParamsResponse = HistorySources;
 
 export interface EntityInfo {
   label: string;

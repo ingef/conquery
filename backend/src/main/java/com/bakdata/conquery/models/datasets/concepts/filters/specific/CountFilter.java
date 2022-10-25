@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import java.util.Objects;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
@@ -16,37 +16,24 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.MultiDistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import lombok.Getter;
-import lombok.Setter;
-import org.apache.commons.lang3.ArrayUtils;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-/**
- * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
- */
-@Getter
-@Setter
 @CPSType(id = "COUNT", base = Filter.class)
+@NoArgsConstructor
+@Data
 public class CountFilter extends Filter<Range.LongRange> {
 
-	@Valid
-	@NotNull
-	@Getter
-	@Setter
 	@NsIdRef
 	private Column column;
 
-	private boolean distinct;
-
-	// todo FK: don't think the array notation is used anywhere. Del?
-	@Valid
-	@Getter
-	@Setter
 	@NsIdRefCollection
-	private Column[] distinctByColumn;
+	@NotNull
+	private List<Column> distinctByColumn = Collections.emptyList();
 
+	private boolean distinct;
 
 	@Override
 	public void configureFrontend(FEFilterConfiguration.Top f) {
@@ -58,28 +45,26 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
-		if (distinct || distinctByColumn != null) {
-			if (ArrayUtils.isEmpty(distinctByColumn) || distinctByColumn.length < 2) {
-				return new RangeFilterNode(
-						value,
-						new DistinctValuesWrapperAggregator(
-								new CountAggregator(getColumn()),
-								ArrayUtils.isEmpty(getDistinctByColumn()) ?
-								getColumn()
-																		  :
-								getDistinctByColumn()[0]
-						)
-				);
-			}
-			return new RangeFilterNode(value, new MultiDistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getDistinctByColumn()));
+		if (!isDistinct()) {
+			return new RangeFilterNode(value, new CountAggregator(getColumn()));
 		}
-		return new RangeFilterNode(value, new CountAggregator(getColumn()));
+
+		if (distinctByColumn != null && !getDistinctByColumn().isEmpty()) {
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getDistinctByColumn()));
+		}
+
+		return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(), List.of(getColumn())));
+
 	}
 
 	@Override
-	public Column[] getRequiredColumns() {
-		return Stream.of(getColumn(), (distinct && !ArrayUtils.isEmpty(distinctByColumn)) ? distinctByColumn[0] : null)
-					 .filter(Objects::nonNull)
-					 .toArray(Column[]::new);
+	public List<Column> getRequiredColumns() {
+		final List<Column> out = new ArrayList<>();
+		out.add(getColumn());
+		if (distinctByColumn != null) {
+			out.addAll(getDistinctByColumn());
+		}
+
+		return out;
 	}
 }
