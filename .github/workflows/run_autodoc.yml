@@ -3,9 +3,8 @@ name: "Generate Documentation and Push to Repo-Wiki"
 on:
   push:
     branches:
-      - feature/auto-doc-wiki
+      - master
     paths:
-      - ".github/**"
       - "autodoc/**"
       - "backend/src/main/java/com/bakdata/conquery/models/dataset/**"
       - "backend/src/main/java/com/bakdata/conquery/models/config/**"
