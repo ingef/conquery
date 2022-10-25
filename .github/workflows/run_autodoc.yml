@@ -36,10 +36,13 @@ jobs:
         run: mvn install -T 1C -DskipTests -pl '!executable'
       - name: Run AutoDoc
         run: mvn exec:java -f autodoc/pom.xml -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
+      - name: run rename
+        run: |
+          rename -v " " _  docs/*" jsons"
       - name: run ls
         run: |
           ls
-      - name: run ls
+      - name: run ls docs
         run: |
           ls docs
       - name: Upload Documentation to Wiki
