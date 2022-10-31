@@ -42,6 +42,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>tests</id>
                         <goals>
                             <goal>test-jar</goal>
                         </goals>
@@ -50,6 +51,19 @@
                                 <exclude>tests/**/*</exclude>
                                 <exclude>com/bakdata/conquery/integration/ConqueryIntegrationTests</exclude>
                             </excludes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>default-jar</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifestEntries>
+                                    <Add-Opens>java.base/java.lang ALL-UNNAMED java.base/java.util ALL-UNNAMED java.base/java.nio ALL-UNNAMED java.base/sun.nio.ch ALL-UNNAMED</Add-Opens>
+                                </manifestEntries>
+                            </archive>
                         </configuration>
                     </execution>
                 </executions>
