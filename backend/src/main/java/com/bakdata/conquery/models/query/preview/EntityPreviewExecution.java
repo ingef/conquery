@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.preview;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -18,6 +17,7 @@ import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
@@ -62,7 +62,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		final Object[] values = result.getValues().get(0);
 
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
-		final PrintSettings printSettings = new PrintSettings(true, Locale.getDefault(), datasetRegistry, config, null, previewConfig::resolveSelectLabel);
+		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null, previewConfig::resolveSelectLabel);
 
 		// We are only interested in the Select results.
 		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {

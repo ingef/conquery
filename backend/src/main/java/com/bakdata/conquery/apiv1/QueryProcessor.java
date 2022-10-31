@@ -412,7 +412,7 @@ public class QueryProcessor {
 
 
 		FullExecutionStatus status = execution.buildStatusFull(storage, subject, datasetRegistry, config);
-		status.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, true));
+		status.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, false));
 		return status;
 	}
 
