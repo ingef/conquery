@@ -459,7 +459,7 @@
     "downloadButtonLabel": "Liste mit Status-Einträgen herunterladen",
     "nextButtonLabel": "Weiterblättern",
     "prevButtonLabel": "Zurückblättern",
-    "downloadEntityData": "Einzelhistorie als CSV herunterladen",
+    "downloadEntityData": "Einzelhistorie herunterladen",
     "differencesTooltip": "Unterschiede aus den einzelnen Datenpunkten",
     "closeAll": "Alle schließen",
     "dates": "Datumswerte",

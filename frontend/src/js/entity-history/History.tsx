@@ -95,6 +95,7 @@ export interface EntityIdsStatus {
 }
 
 export const History = () => {
+  const { t } = useTranslation();
   const entityIds = useSelector<StateT, EntityId[]>(
     (state) => state.entityHistory.entityIds,
   );
@@ -214,6 +215,7 @@ export const History = () => {
                     <DownloadResultsDropdownButton
                       tiny
                       resultUrls={resultUrls}
+                      tooltip={t("history.downloadEntityData")}
                     />
                   )}
                 </SidebarBottom>

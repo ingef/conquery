@@ -460,7 +460,7 @@
     "downloadButtonLabel": "Download list with status entries",
     "nextButtonLabel": "Next entity",
     "prevButtonLabel": "Previous entity",
-    "downloadEntityData": "Download entity history as CSV",
+    "downloadEntityData": "Download entity history",
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
     "dates": "Dates",
