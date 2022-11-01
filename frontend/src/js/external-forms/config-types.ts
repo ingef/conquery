@@ -79,9 +79,12 @@ interface CommonField {
 
 /* ------------------------------ */
 
-interface Headline {
+export interface Headline {
   type: "HEADLINE";
   label: TranslatableString;
+  style?: {
+    size?: "h1" /* default */ | "h2" | "h3";
+  };
 }
 
 /* ------------------------------ */
