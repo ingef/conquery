@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
@@ -67,9 +68,9 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	private MetaStorage metaStorage;
 
 
-	public Namespace createNamespace(Dataset dataset) throws IOException {
+	public Namespace createNamespace(Dataset dataset, Validator validator) throws IOException {
 		// Prepare empty storage
-		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), getValidator());
+		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
 		final ObjectMapper persistenceMapper = internalObjectMapperCreator.apply(View.Persistence.Manager.class);
 		datasetStorage.openStores(persistenceMapper);
 		datasetStorage.loadData();
