@@ -58,9 +58,11 @@ const getInitialEndingChoice = (resultUrls: string[]) => {
 const DownloadResultsDropdownButton = ({
   resultUrls,
   tiny,
+  tooltip,
 }: {
   resultUrls: string[];
   tiny?: boolean;
+  tooltip?: string;
 }) => {
   const [endingChoice, setEndingChoice] = useState(
     getInitialEndingChoice(resultUrls),
@@ -108,14 +110,16 @@ const DownloadResultsDropdownButton = ({
           <Separator />
         </>
       )}
-      <WithTooltip
-        html={dropdown}
-        interactive
-        arrow={false}
-        trigger="click"
-        offset={dropdownOffset}
-      >
-        <SxIconButton bgHover icon={tiny ? "download" : "caret-down"} />
+      <WithTooltip text={tooltip} hideOnClick>
+        <WithTooltip
+          html={dropdown}
+          interactive
+          arrow={false}
+          trigger="click"
+          offset={dropdownOffset}
+        >
+          <SxIconButton bgHover icon={tiny ? "download" : "caret-down"} />
+        </WithTooltip>
       </WithTooltip>
     </Frame>
   );
