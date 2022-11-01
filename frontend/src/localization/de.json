@@ -85,7 +85,7 @@
     "label": "Datensatz",
     "pleaseChoose": "Datensatz auswählen",
     "error": "Konnte Datensätze nicht laden",
-    "disabled": "Der Datensatz kann geraden nicht verändert werden."
+    "disabled": "Der Datensatz kann gerade nicht verändert werden."
   },
   "queryNodeEditor": {
     "conceptTree": "Konzept",
