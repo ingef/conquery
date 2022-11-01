@@ -69,7 +69,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 	public Namespace createNamespace(Dataset dataset) throws IOException {
 		// Prepare empty storage
-		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName());
+		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), getValidator());
 		final ObjectMapper persistenceMapper = internalObjectMapperCreator.apply(View.Persistence.Manager.class);
 		datasetStorage.openStores(persistenceMapper);
 		datasetStorage.loadData();
