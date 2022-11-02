@@ -86,7 +86,7 @@ public class AdminDatasetProcessor {
 			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
 		}
 
-		return datasetRegistry.createNamespace(dataset).getDataset();
+		return datasetRegistry.createNamespace(dataset, getValidator()).getDataset();
 	}
 
 	/**

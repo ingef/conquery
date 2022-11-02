@@ -34,6 +34,7 @@ public class ResourceConstants {
 
 	public static final String FILE_EXTENTION_ARROW_FILE = "arrf";
 	public static final String FILE_EXTENTION_ARROW_STREAM = "arrs";
+	public static final String FILE_EXTENTION_PARQUET = "parquet";
 	
 	/**
 	 * Method to generate a data-model of this class's static members so that they

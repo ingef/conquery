@@ -8,6 +8,7 @@ import { BadgeToggleButton } from "../button/BadgeToggleButton";
 import { Heading3 } from "../headings/Headings";
 
 import EntityInfos from "./EntityInfos";
+import { EntityId } from "./reducer";
 
 const Root = styled("div")`
   display: flex;
@@ -50,7 +51,7 @@ const Avatar = styled(SxHeading3)`
 interface Props {
   className?: string;
   currentEntityIndex: number;
-  currentEntityId: string;
+  currentEntityId: EntityId;
   currentEntityInfos: EntityInfo[];
   status: SelectOptionT[];
   setStatus: (value: SelectOptionT[]) => void;
@@ -89,7 +90,7 @@ export const EntityHeader = ({
         <div>
           <EntityBadge>
             <Avatar>#{currentEntityIndex + 1}</Avatar>
-            <SxHeading3>{currentEntityId}</SxHeading3>
+            <SxHeading3>{currentEntityId.id}</SxHeading3>
           </EntityBadge>
           <Subtitle>
             {totalEvents} {t("history.events", { count: totalEvents })}

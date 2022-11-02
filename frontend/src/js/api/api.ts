@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 
+import { EntityId } from "../entity-history/reducer";
 import { apiUrl } from "../environment";
 import type {
   BaseFormConfigT,
@@ -32,8 +33,8 @@ import type {
   UploadQueryResponseT,
   GetEntityHistoryResponse,
   GetEntityHistoryDefaultParamsResponse,
-  TableT,
   DatasetT,
+  HistorySources,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
@@ -411,8 +412,8 @@ export const useGetEntityHistory = () => {
   return useCallback(
     (
       datasetId: DatasetT["id"],
-      entityId: string,
-      sources: TableT["id"][],
+      entityId: EntityId,
+      sources: HistorySources,
       time: {
         min: string; // Format like "2020-01-01"
         max: string; // Format like "2020-12-31"
@@ -425,10 +426,10 @@ export const useGetEntityHistory = () => {
         method: "POST",
         url: getProtectedUrl(`/datasets/${datasetId}/queries/entity`),
         data: {
-          idKind: "PID", // TODO: Figure out which other strings are possible here
-          entityId,
+          idKind: entityId.kind,
+          entityId: entityId.id,
           time,
-          sources,
+          sources: sources.all.map((s) => s.name),
         },
       }),
     [api],

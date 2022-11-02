@@ -63,6 +63,7 @@
     "removeNode": "Remove node",
     "removeColumn": "Remove column",
     "clear": "Clear the Editor",
+    "clearConfirm": "Clear now",
     "hasDefaultSettings": "Uses default settings",
     "hasNonDefaultSettings": "Has changed settings"
   },
@@ -83,7 +84,8 @@
   "datasetSelector": {
     "label": "Data sets",
     "pleaseChoose": "Choose a data set",
-    "error": "Could not load data sets"
+    "error": "Could not load data sets",
+    "disabled": "Can't change the data set at the moment."
   },
   "queryNodeEditor": {
     "conceptTree": "Concept Tree",
@@ -94,6 +96,7 @@
     "reset": "Reset",
     "resetSettings": "Reset to default settings",
     "clearAllSettings": "Clear all fields",
+    "clearAllSettingsConfirm": "Clear now",
     "clearSettings": "Clear fields",
     "excludeTimestamps": "Exclude from time calculation",
     "excludingTimestamps": "Excluded from time calculation",
@@ -119,9 +122,6 @@
     "dateRange": "Date range",
     "headlineStart": "Concepts:"
   },
-  "deletePreviousQueryModal": {
-    "areYouSure": "Should this query be deleted?"
-  },
   "deletePreviousQueryFolderModal": {
     "areYouSure": "Are you sure you want to delete this folder?",
     "description": "All queries from the folder {{folder}} will be removed from the folder, but will remain stored."
@@ -136,6 +136,7 @@
   "common": {
     "manual": "Manual",
     "contact": "Contact",
+    "confirm": "Confirm",
     "optional": "Optional",
     "back": "Back",
     "any": "Any",
@@ -228,7 +229,8 @@
     "retagError": "Could not save folders",
     "shareError": "Could not share query",
     "deleteError": "Could not delete query",
-    "editFolders": "Edit folders"
+    "editFolders": "Edit folders",
+    "deleteNow": "Delete query now"
   },
   "projectItemsFilter": {
     "all": "All",
@@ -310,7 +312,8 @@
         "copyFrom": "Copy from ...",
         "copying": "Copy"
       },
-      "clear": "Clear form"
+      "clear": "Clear form",
+      "clearConfirm": "Clear form now"
     }
   },
   "uploadQueryResultsModal": {
@@ -410,10 +413,8 @@
     "renameError": "Could not rename form configuration",
     "retagError": "Could not save folders",
     "shareError": "Could not share form configuration",
-    "deleteError": "Could not delete form configuration"
-  },
-  "deleteFormConfigModal": {
-    "areYouSure": "Are you sure you want to delete this form configuration?"
+    "deleteError": "Could not delete form configuration",
+    "deleteNow": "Delete form configuration now"
   },
   "conceptTreesOpen": {
     "resetAll": "Back to default view",
@@ -456,10 +457,10 @@
     "marked": "with status",
     "events_one": "Event",
     "events_other": "Events",
-    "downloadButtonLabel": "Download list",
+    "downloadButtonLabel": "Download list with status entries",
     "nextButtonLabel": "Next entity",
     "prevButtonLabel": "Previous entity",
-    "downloadEntityData": "Download entity history as CSV",
+    "downloadEntityData": "Download entity history",
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
     "dates": "Dates",

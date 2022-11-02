@@ -1,6 +1,11 @@
 import { getType } from "typesafe-actions";
 
-import type { ColumnDescription, EntityInfo, TableT } from "../api/types";
+import type {
+  ColumnDescription,
+  ColumnDescriptionSemanticId,
+  EntityInfo,
+  HistorySources,
+} from "../api/types";
 import type { Action } from "../app/actions";
 
 import {
@@ -20,18 +25,24 @@ export type EntityEvent = {
   [key: string]: any;
 };
 
+export interface EntityId {
+  id: string;
+  kind: ColumnDescriptionSemanticId["kind"];
+}
+
 export type EntityHistoryStateT = {
   defaultParams: {
-    sources: TableT["id"][];
+    sources: HistorySources;
   };
   isLoading: boolean;
   isOpen: boolean;
   columns: Record<string, ColumnDescription>;
   columnDescriptions: ColumnDescription[];
+  resultUrls: string[];
   label: string;
-  entityIds: string[];
-  uniqueSources: string[];
-  currentEntityId: string | null;
+  entityIds: EntityId[];
+  currentEntityUniqueSources: string[];
+  currentEntityId: EntityId | null;
   currentEntityData: EntityEvent[];
   currentEntityCsvUrl: string;
   currentEntityInfos: EntityInfo[];
@@ -39,15 +50,16 @@ export type EntityHistoryStateT = {
 
 const initialState: EntityHistoryStateT = {
   defaultParams: {
-    sources: [],
+    sources: { all: [], default: [] },
   },
   label: "",
   columns: {},
   columnDescriptions: [],
+  resultUrls: [],
   isLoading: false,
   isOpen: false,
-  uniqueSources: [],
   entityIds: [],
+  currentEntityUniqueSources: [],
   currentEntityId: null,
   currentEntityData: [],
   currentEntityCsvUrl: "",

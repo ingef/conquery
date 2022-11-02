@@ -62,7 +62,12 @@
   {
     "method": "GET",
     "path": "/datasets/{dataset}/result/{query}.arrf",
-      "clazz": "ResultArrowResource"
+    "clazz": "ResultArrowResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/result/{query}.parquet",
+    "clazz": "ResultParquetResource"
   },
   {
     "method": "GET",
