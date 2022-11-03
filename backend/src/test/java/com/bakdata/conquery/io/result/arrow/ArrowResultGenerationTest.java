@@ -1,7 +1,8 @@
 package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultTestUtil.*;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.*;
+import static com.bakdata.conquery.io.result.arrow.ArrowUtil.generateFields;
+import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,19 +19,19 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.FieldVector;
@@ -83,8 +84,6 @@ public class ArrowResultGenerationTest {
                         new Field("BOOLEAN", FieldType.nullable(ArrowType.Bool.INSTANCE), null),
                         new Field("INTEGER", FieldType.nullable(new ArrowType.Int(32, true)), null),
                         new Field("NUMERIC", FieldType.nullable(new ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)), null),
-                        new Field("CATEGORICAL", FieldType.nullable(new ArrowType.Utf8()), null),
-                        new Field("RESOLUTION", FieldType.nullable(new ArrowType.Utf8()), null),
                         new Field("DATE", FieldType.nullable(new ArrowType.Date(DateUnit.DAY)), null),
                         new Field("DATE_RANGE",
                                 FieldType.nullable(ArrowType.Struct.INSTANCE),
@@ -145,40 +144,40 @@ public class ArrowResultGenerationTest {
 
     }
 
-    private static String readTSV(InputStream inputStream) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        try (ArrowStreamReader arrowReader = new ArrowStreamReader(inputStream, ROOT_ALLOCATOR)) {
-            log.info("Reading the produced arrow data.");
-            VectorSchemaRoot readRoot = arrowReader.getVectorSchemaRoot();
-            sb.append(readRoot.getSchema().getFields().stream().map(Field::getName).collect(Collectors.joining("\t"))).append("\n");
-            readRoot.setRowCount(BATCH_SIZE);
-            while (arrowReader.loadNextBatch()) {
-                List<FieldVector> vectors = readRoot.getFieldVectors();
-                for (int rowI = 0; rowI < readRoot.getRowCount(); rowI++) {
-                    final int currentRow = rowI;
-                    sb.append(
-                            vectors.stream()
-                                    .map(vec -> vec.getObject(currentRow))
-                                    .map(ArrowResultGenerationTest::getPrintValue)
-                                    .collect(Collectors.joining("\t")))
-                            .append("\n");
+    public static String readTSV(InputStream inputStream) throws IOException {
+		StringJoiner stringJoiner = new StringJoiner("\n");
+		try (ArrowStreamReader arrowReader = new ArrowStreamReader(inputStream, ROOT_ALLOCATOR)) {
+			log.info("Reading the produced arrow data.");
+			VectorSchemaRoot readRoot = arrowReader.getVectorSchemaRoot();
+			stringJoiner.add(readRoot.getSchema().getFields().stream().map(Field::getName).collect(Collectors.joining("\t")));
+			readRoot.setRowCount(BATCH_SIZE);
+			while (arrowReader.loadNextBatch()) {
+				List<FieldVector> vectors = readRoot.getFieldVectors();
+
+				for (int rowI = 0; rowI < readRoot.getRowCount(); rowI++) {
+					final int currentRow = rowI;
+					stringJoiner.add(
+							vectors.stream()
+								   .map(vec -> vec.getObject(currentRow))
+								   .map(ArrowResultGenerationTest::getPrintValue)
+								   .collect(Collectors.joining("\t")));
                 }
             }
         }
-        return sb.toString();
+		return stringJoiner.toString();
     }
 
-    private String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings settings) {
-        String expected = results.stream()
-                .map(EntityResult.class::cast)
-                .map(res -> {
-                    StringJoiner lineJoiner = new StringJoiner("\n");
+	public static String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings settings) {
+		String expected = results.stream()
+								 .map(EntityResult.class::cast)
+								 .map(res -> {
+									 StringJoiner lineJoiner = new StringJoiner("\n");
 
-                    for (Object[] line : res.listResultLines()) {
-                        StringJoiner valueJoiner = new StringJoiner("\t");
-                        valueJoiner.add(String.valueOf(res.getEntityId()));
-                        valueJoiner.add(String.valueOf(res.getEntityId()));
-                        for (int lIdx = 0; lIdx < line.length; lIdx++) {
+									 for (Object[] line : res.listResultLines()) {
+										 StringJoiner valueJoiner = new StringJoiner("\t");
+										 valueJoiner.add(String.valueOf(res.getEntityId()));
+										 valueJoiner.add(String.valueOf(res.getEntityId()));
+										 for (int lIdx = 0; lIdx < line.length; lIdx++) {
                             Object val = line[lIdx];
                             ResultInfo info = resultInfos.get(lIdx);
                             valueJoiner.add(getPrintValue(val, info.getType(), settings));
@@ -189,13 +188,13 @@ public class ArrowResultGenerationTest {
                 })
                 .collect(Collectors.joining("\n"));
 
-        return Stream.concat(
-						// Id column headers
-						ResultTestUtil.ID_FIELDS.stream().map(i -> i.defaultColumnName(settings)),
-						// result column headers
-						getResultTypes().stream().map(ResultType::typeInfo)
-				).collect(Collectors.joining("\t"))
-			   + "\n" + expected + "\n";
+		return Stream.concat(
+				// Id column headers
+				ResultTestUtil.ID_FIELDS.stream().map(i -> i.defaultColumnName(settings)),
+				// result column headers
+				getResultTypes().stream().map(ResultType::typeInfo)
+		).collect(Collectors.joining("\t"))
+			   + "\n" + expected;
     }
 
     private static String getPrintValue(Object obj, ResultType type, PrintSettings settings) {
@@ -222,24 +221,22 @@ public class ArrowResultGenerationTest {
             sb.append("}");
             return sb.toString();
         }
-        if (type.equals(ResultType.ResolutionT.INSTANCE)) {
-            return type.printNullable(settings, obj);
-        }
         if(obj instanceof Collection) {
             Collection<?> col = (Collection<?>) obj;
             // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
-            new StringJoiner(",","[", "]");
             @NonNull ResultType elemType = ((ResultType.ListT) type).getElementType();
-            return col.stream().map(v -> getPrintValue(v, elemType, settings)).collect(Collectors.joining(", ","[", "]"));
+			return col.stream().map(v -> getPrintValue(v, elemType, settings)).collect(Collectors.joining(",", "[", "]"));
         }
         return obj.toString();
     }
 
     private static String getPrintValue(Object obj) {
         if(obj instanceof JsonStringArrayList) {
-            // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
-            return getPrintValue(new ArrayList<>((JsonStringArrayList<?>)obj));
-        }
+			// Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
+			return new ArrayList<>((JsonStringArrayList<?>) obj).stream()
+																.map(ArrowResultGenerationTest::getPrintValue)
+																.collect(Collectors.joining(",", "[", "]"));
+		}
         return Objects.toString(obj);
     }
 

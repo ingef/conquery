@@ -2,20 +2,20 @@ package com.bakdata.conquery.io.jackson;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
-import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.fasterxml.jackson.annotation.JsonView;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import lombok.Data;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 
 public class JacksonTest {
@@ -33,50 +33,55 @@ public class JacksonTest {
 		assertThat(Jackson.MAPPER.writeValueAsString(list))
 			.isEqualTo("[\"singular\"]");
 	}
-	
-	@Test
-	public void testBiMapSerialization() throws JSONException, IOException {
-		BiMap<String, String> map = HashBiMap.create();
-		map.put("a", "1");
-		map.put("b", "2");
-		SerializationTestUtil
-			.forType(new TypeReference<BiMap<String, String>>() {})
-			.test(map);
-	}
-	
-	@Test
-	public void testNonStrictNumbers() throws JSONException, IOException {
-		SerializationTestUtil.forType(Double.class).test(Double.NaN, null);
-		SerializationTestUtil.forType(Double.class).test(Double.NEGATIVE_INFINITY, null);
-		SerializationTestUtil.forType(Double.class).test(Double.POSITIVE_INFINITY, null);
-		SerializationTestUtil.forType(Double.class).test(Double.MAX_VALUE);
-		SerializationTestUtil.forType(Double.class).test(Double.MIN_VALUE);
-		SerializationTestUtil
-				.forType(EntityResult.class)
-				.test(
-						new MultilineEntityResult(4, List.of(
-								new Object[]{0, 1, 2},
-								new Object[]{Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
-						)),
-						new MultilineEntityResult(4, List.of(
-								new Object[]{0, 1, 2},
-								new Object[]{null, null, null}
-						))
-				);
+
+	public static Stream<Arguments> arguments() {
+		return Stream
+				.of(
+						Arguments.of(null, "{\"external\":0}"),
+						Arguments.of(View.InternalCommunication.class, "{\"external\":0,\"internalOnly\":2,\"internalCommunication\":3}"),
+						Arguments.of(View.Persistence.Manager.class, "{\"external\":0,\"apiPersistent\":1,\"internalOnly\":2,\"persistentManager\":5,\"persistent\":7}"),
+						Arguments.of(View.Persistence.Shard.class, "{\"external\":0,\"internalOnly\":2,\"persistentShard\":6,\"persistent\":7}"),
+						Arguments.of(View.Api.class, "{\"external\":0,\"apiPersistent\":1,\"api\":8}")
+						);
 	}
 
-	@Test
-	public void testInternalOnly() throws JsonProcessingException {
+	@ParameterizedTest
+	@MethodSource("arguments")
+	public void testViews(Class<? extends View> viewClass, String expected) throws JsonProcessingException {
 		InternalTestClass test = new InternalTestClass();
-		assertThat(Jackson.MAPPER.writeValueAsString(test))
-			.isEqualTo("{\"external\":4}");
+		ObjectWriter writer = Jackson.MAPPER.writerFor(InternalTestClass.class);
+		if (viewClass != null) {
+			writer = writer.withView(viewClass);
+		}
+		assertThat(writer.writeValueAsString(test))
+				.isEqualTo(expected);
 	}
 	
 	@Data
 	public static class InternalTestClass {
-		private int external = 4;
-		@InternalOnly
-		private int internal = 7;
+
+		private int external = 0;
+
+		@View.ApiManagerPersistence
+		private int apiPersistent = 1;
+
+		@View.Internal
+		private int internalOnly = 2;
+
+		@JsonView(View.InternalCommunication.class)
+		private int internalCommunication = 3;
+
+		@JsonView(View.Persistence.Manager.class)
+		private int persistentManager = 5;
+
+		@JsonView(View.Persistence.Shard.class)
+		private int persistentShard = 6;
+
+		@JsonView(View.Persistence.class)
+		private int persistent = 7;
+
+		@JsonView(View.Api.class)
+		private int api = 8;
 	}
 	
 	public static class Marker {}

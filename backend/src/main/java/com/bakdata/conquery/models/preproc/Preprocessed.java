@@ -11,17 +11,19 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
-import com.bakdata.conquery.models.preproc.parser.specific.string.MapTypeGuesser;
 import com.fasterxml.jackson.core.JsonGenerator;
 import it.unimi.dsi.fastutil.ints.Int2IntAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -98,6 +100,7 @@ public class Preprocessed {
 		Dictionary primaryDictionary = encodePrimaryDictionary();
 
 		Map<String, Dictionary> dicts = collectDictionaries(columnStores);
+
 
 		log.debug("Writing Headers");
 
@@ -216,12 +219,12 @@ public class Preprocessed {
 	private Dictionary encodePrimaryDictionary() {
 		log.debug("Encode primary Dictionary");
 
-		primaryColumn.applyEncoding(StringTypeEncoded.Encoding.UTF8);
+		primaryColumn.applyEncoding(EncodedStringStore.Encoding.UTF8);
 
-		final Dictionary primaryDictionary = new MapTypeGuesser(primaryColumn).createGuess().getType().getUnderlyingDictionary();
-		log.trace("\tPrimaryColumn -> {}", primaryDictionary);
+		MapDictionary primaryDict = new MapDictionary(Dataset.PLACEHOLDER, ConqueryConstants.PRIMARY_DICTIONARY);
+		primaryColumn.getDecoded().forEach(primaryDict::add);
 
-		return primaryDictionary;
+		return primaryDict;
 	}
 
 	private static Map<String, Dictionary> collectDictionaries(Map<String, ColumnStore> columnStores) {

@@ -4,8 +4,7 @@ import { useSelector } from "react-redux";
 import type { PostPrefixForSuggestionsParams } from "../../api/api";
 import {
   ConceptIdT,
-  CurrencyConfigT,
-  DatasetIdT,
+  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
@@ -62,7 +61,7 @@ interface PropsT {
 }
 
 const FormQueryNodeEditor = (props: PropsT) => {
-  const datasetId = useSelector<StateT, DatasetIdT | null>(
+  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
     (state) => state.datasets.selectedDatasetId,
   );
 
@@ -102,11 +101,7 @@ const FormQueryNodeEditor = (props: PropsT) => {
     editedNode.tables.length > 1 &&
     editedNode.tables.some((table) => tableIsEditable(table));
 
-  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-    (state) => state.startup.config.currency,
-  );
-
-  if (!datasetId) {
+  if (!datasetId || !editedNode) {
     return null;
   }
 
@@ -121,7 +116,6 @@ const FormQueryNodeEditor = (props: PropsT) => {
       allowlistedTables={props.allowlistedTables}
       blocklistedSelects={props.blocklistedSelects}
       allowlistedSelects={props.allowlistedSelects}
-      currencyConfig={currencyConfig}
       onCloseModal={props.onCloseModal}
       onUpdateLabel={props.onUpdateLabel}
       onDropConcept={props.onDropConcept}

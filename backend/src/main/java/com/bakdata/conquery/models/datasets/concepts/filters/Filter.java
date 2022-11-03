@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.datasets.concepts.filters;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
+import java.util.List;
+
+import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -10,6 +12,7 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -31,7 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements NamespacedIdentifiable<FilterId> {
 
 	private String unit;
-	private String description;
+	@JsonAlias("description")
+	private String tooltip;
 	@JsonBackReference
 	private Connector connector;
 	private String pattern;
@@ -45,24 +49,24 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 		return getConnector().getDataset();
 	}
 
-	public FEFilter createFrontendConfig() throws ConceptConfigurationException {
-		FEFilter f = FEFilter.builder()
-							 .id(getId())
-							 .label(getLabel())
-							 .description(getDescription())
-							 .unit(getUnit())
-							 .allowDropFile(getAllowDropFile())
-							 .pattern(getPattern())
-							 .defaultValue(getDefaultValue())
-							 .build();
+	public FEFilterConfiguration.Top createFrontendConfig() throws ConceptConfigurationException {
+		FEFilterConfiguration.Top f = FEFilterConfiguration.Top.builder()
+															   .id(getId())
+															   .label(getLabel())
+															   .tooltip(getTooltip())
+															   .unit(getUnit())
+															   .allowDropFile(getAllowDropFile())
+															   .pattern(getPattern())
+															   .defaultValue(getDefaultValue())
+															   .build();
 		configureFrontend(f);
 		return f;
 	}
 
-	protected abstract void configureFrontend(FEFilter f) throws ConceptConfigurationException;
+	protected abstract void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException;
 
 	@JsonIgnore
-	public abstract Column[] getRequiredColumns();
+	public abstract List<Column> getRequiredColumns();
 
 	public abstract FilterNode<?> createFilterNode(FILTER_VALUE filterValue);
 

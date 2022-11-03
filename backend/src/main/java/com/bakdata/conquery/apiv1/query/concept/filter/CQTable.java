@@ -3,12 +3,14 @@ package com.bakdata.conquery.apiv1.query.concept.filter;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.CheckForNull;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -69,4 +71,19 @@ public class CQTable {
 		filters.forEach(f -> f.resolve(context));
 	}
 
+	@CheckForNull
+	public Column findValidityDateColumn() {
+
+		// if no dateColumn is provided, we use the default instead which is always the first one.
+		// Set to null if none-available in the connector.
+		if (dateColumn != null) {
+			return dateColumn.getValue().getColumn();
+		}
+
+		if (!connector.getValidityDates().isEmpty()) {
+			return connector.getValidityDates().get(0).getColumn();
+		}
+
+		return null;
+	}
 }

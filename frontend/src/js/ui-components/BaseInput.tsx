@@ -41,8 +41,7 @@ const RedIcon = styled(FaIcon)`
   color: ${({ theme }) => theme.col.red};
   opacity: 0.8;
 `;
-
-const SxWithTooltip = styled(WithTooltip)`
+const AbsoluteWrap = styled("div")`
   position: absolute;
   top: 5px;
   right: 35px;
@@ -173,6 +172,10 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
             value={exists(value) ? value : ""}
             large={large}
             onBlur={onBlur}
+            onWheel={
+              (e) =>
+                (e.target as any).blur() /* to disable scrolling for number */
+            }
             {...inputProps}
             {...patternMatchingProps}
           />
@@ -181,9 +184,11 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
           <>
             {valid && !invalid && <GreenIcon icon="check" large={large} />}
             {invalid && (
-              <SxWithTooltip text={invalidText}>
-                <RedIcon icon="exclamation-triangle" large={large} />
-              </SxWithTooltip>
+              <WithTooltip text={invalidText}>
+                <AbsoluteWrap>
+                  <RedIcon icon="exclamation-triangle" large={large} />
+                </AbsoluteWrap>
+              </WithTooltip>
             )}
             <ClearZoneIconButton
               tiny

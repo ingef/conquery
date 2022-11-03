@@ -13,11 +13,17 @@ import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.With;
+import lombok.experimental.Wither;
 
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
+@With
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PrintSettings {
 
 	private static final Function<Locale, NumberFormat> NUMBER_FORMAT = NumberFormat::getNumberInstance;
@@ -52,8 +58,6 @@ public class PrintSettings {
 
 	private final LocaleConfig.ListFormat listFormat;
 
-	private final String listElementEscaper = "\\";
-
 	private final PrintIdMapper idMapper;
 
 	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
@@ -72,6 +76,7 @@ public class PrintSettings {
 
 		this.dateFormat = config.getLocale().findDateFormat(locale);
 		this.dateFormatter = prettyPrint ? DateTimeFormatter.ofPattern(dateFormat) : UNPRETTY_DATEFORMATTER;
+
 	}
 
 	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper) {

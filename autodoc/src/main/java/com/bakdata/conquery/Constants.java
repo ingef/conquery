@@ -69,6 +69,8 @@ import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRe
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConfigResource;
@@ -147,6 +149,9 @@ public class Constants {
 				 .base(new Base(QueryDescription.class, ""))
 				 .base(new Base(CQElement.class, ""))
 				 .base(new Base(FilterValue.class, ""))
+
+				 .base(new Base(ResultType.class, ""))
+				 .base(new Base(SemanticType.class, ""))
 
 				 .hide(Response.class)
 				 .hide(ZonedDateTime.class)

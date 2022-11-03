@@ -2,6 +2,7 @@ package com.bakdata.conquery.resources.api;
 
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -14,8 +15,7 @@ import lombok.RequiredArgsConstructor;
 
 @Path("config")
 @Produces(AdditionalMediaTypes.JSON)
-
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ConfigResource {
 
 	private final ConqueryConfig config;

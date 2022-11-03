@@ -4,15 +4,15 @@ import { useTranslation } from "react-i18next";
 
 import type { ConceptIdT } from "../api/types";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import { Heading3, Heading4 } from "../headings/Headings";
+import { Heading3 } from "../headings/Headings";
 import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
 import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 
-import ConceptDropzone from "./ConceptDropzone";
-import ConceptEntry from "./ConceptEntry";
+import AdditionalConceptNodeChildren from "./AdditionalConceptNodeChildren";
+import { HeadingBetween } from "./HeadingBetween";
 import MenuColumnItem from "./MenuColumnItem";
 
 const FixedColumn = styled("div")<{ isEmpty?: boolean }>`
@@ -22,25 +22,11 @@ const FixedColumn = styled("div")<{ isEmpty?: boolean }>`
   overflow: hidden;
   flex-shrink: 0;
   flex-grow: 1;
+  height: 100%;
 
   &:first-of-type {
     border-right: 1px solid ${({ theme }) => theme.col.grayLight};
   }
-`;
-
-const Padded = styled("div")`
-  padding: 0 15px 15px;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-`;
-
-const HeadingBetween = styled(Heading4)`
-  margin: 15px 15px 0;
-`;
-const Heading4Highlighted = styled(Heading4)`
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  font-weight: 700;
-  margin: 10px 0 5px;
 `;
 
 const DimmedNote = styled(Heading3)`
@@ -111,7 +97,7 @@ const MenuColumn: FC<PropsT> = ({
         <DimmedNote>{t("queryNodeEditor.emptyMenuColumn")}</DimmedNote>
       )}
       {nodeIsConceptQueryNode(node) && showTables && (
-        <div>
+        <>
           <CommonSettingsLabel onClick={onCommonSettingsClick}>
             {t("queryNodeEditor.properties")}
           </CommonSettingsLabel>
@@ -137,34 +123,18 @@ const MenuColumn: FC<PropsT> = ({
               }
             />
           ))}
-        </div>
+        </>
       )}
       {nodeIsConceptQueryNode(node) &&
         rootConcept &&
         rootConcept.children &&
         rootConcept.children.length > 0 && (
-          <>
-            <HeadingBetween>
-              {t("queryNodeEditor.dropMoreConcepts")}
-            </HeadingBetween>
-            <Padded>
-              <Heading4Highlighted>{rootConcept.label}</Heading4Highlighted>
-              <div>
-                <ConceptDropzone node={node} onDropConcept={onDropConcept} />
-              </div>
-              <div>
-                {node.ids.map((conceptId) => (
-                  <ConceptEntry
-                    key={conceptId}
-                    node={getConceptById(conceptId)}
-                    conceptId={conceptId}
-                    canRemoveConcepts={node.ids.length > 1}
-                    onRemoveConcept={onRemoveConcept}
-                  />
-                ))}
-              </div>
-            </Padded>
-          </>
+          <AdditionalConceptNodeChildren
+            node={node}
+            rootConcept={rootConcept}
+            onDropConcept={onDropConcept}
+            onRemoveConcept={onRemoveConcept}
+          />
         )}
     </FixedColumn>
   );

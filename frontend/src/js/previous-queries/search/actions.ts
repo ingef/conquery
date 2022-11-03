@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction } from "typesafe-actions";
 
@@ -76,9 +76,12 @@ export const useSearchItems = () => {
     [previousQueries, formConfigs, filter],
   );
 
-  return (searchTerm: string) => {
-    const result = searchItems(searchTerm, filteredItems);
+  return useCallback(
+    (searchTerm: string) => {
+      const result = searchItems(searchTerm, filteredItems);
 
-    dispatch(setSearch({ searchTerm, result, words: searchTerm.split(" ") }));
-  };
+      dispatch(setSearch({ searchTerm, result, words: searchTerm.split(" ") }));
+    },
+    [dispatch, filteredItems],
+  );
 };

@@ -1,0 +1,182 @@
+{
+  "type": "QUERY_TEST",
+  "label": "TABLE_EXPORT Test",
+  "expectedCsv": "tests/query/TABLE_EXPORT/raw_expected.csv",
+  "query": {
+    "type": "TABLE_EXPORT",
+    "tables": [
+      {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.value",
+                "type": "REAL_RANGE",
+                "value": {
+                  "min": 1,
+                  "max": 1
+                }
+              }
+            ]
+          },
+          {
+            "id": "concept.connector2"
+          }
+        ]
+      }
+    ],
+    "dateRange": {
+      "min": "2000-01-01",
+      "max": "2020-12-31"
+    },
+    "query": {
+      "type": "CONCEPT_QUERY",
+      "root": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.value",
+                "type": "REAL_RANGE",
+                "value": {
+                  "min": 1,
+                  "max": 1
+                }
+              }
+            ]
+          },
+          {
+            "id": "concept.connector2",
+            "filters": [
+              {
+                "filter": "concept.connector2.value",
+                "type": "REAL_RANGE",
+                "value": {
+                  "min": 1,
+                  "max": 1
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "column": "table1.code",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          },
+          "filters": {
+            "name": "value",
+            "column": "table1.value",
+            "type": "NUMBER"
+          }
+        },
+        {
+          "label": "connector2",
+          "column": "table2.code",
+          "validityDates": {
+            "label": "datum",
+            "column": "table2.datum"
+          },
+          "filters": {
+            "name": "value",
+            "column": "table2.value",
+            "type": "NUMBER"
+          }
+        }
+      ],
+      "children": [
+        {
+          "label": "A Child",
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "a"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "secondaryIds": {
+      "name": "sid",
+      "label": "SecondaryId"
+    },
+    "tables": [
+      {
+        "csv": "tests/query/TABLE_EXPORT/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "sid",
+            "type": "STRING",
+            "secondaryId": "sid"
+          },
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          },
+          {
+            "name": "code",
+            "type": "STRING"
+          }
+        ]
+      },
+      {
+        "csv": "tests/query/TABLE_EXPORT/content2.csv",
+        "name": "table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "sid",
+            "type": "STRING",
+            "secondaryId": "sid"
+          },
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          },
+          {
+            "name": "code",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.identifiable;
 
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 
-public interface Named<ID extends IId<? extends Identifiable<? extends ID>>> extends Identifiable<ID> {
+public interface Named<ID extends Id<? extends Identifiable<? extends ID>>> extends Identifiable<ID> {
 
 	String getName();
 }

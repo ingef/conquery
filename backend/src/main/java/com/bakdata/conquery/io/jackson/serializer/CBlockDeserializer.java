@@ -44,7 +44,7 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 				}
 
 				log.trace("Getting Elements for local ids: {}", mostSpecificChildren);
-				block.getMostSpecificChildren()[event] = concept.getElementByLocalId(mostSpecificChildren).getPrefix();
+				block.getMostSpecificChildren()[event] = concept.getElementByLocalIdPath(mostSpecificChildren).getPrefix();
 			}
 		}
 		return block;

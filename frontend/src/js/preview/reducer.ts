@@ -3,18 +3,26 @@ import { getType } from "typesafe-actions";
 import type { ColumnDescription } from "../api/types";
 import { Action } from "../app/actions";
 
-import { closePreview, loadCSVForPreview } from "./actions";
+import { openPreview, closePreview, loadCSVForPreview } from "./actions";
 
 export type PreviewStateT = {
-  csv: string[][] | null;
-  resultColumns: ColumnDescription[] | null;
+  isOpen: boolean;
   isLoading: boolean;
+  dataLoadedForResultUrl: string | null;
+  data: {
+    csv: string[][] | null;
+    resultColumns: ColumnDescription[] | null;
+  };
 };
 
 const initialState: PreviewStateT = {
-  csv: null,
-  resultColumns: null,
+  isOpen: false,
   isLoading: false,
+  dataLoadedForResultUrl: null,
+  data: {
+    csv: null,
+    resultColumns: null,
+  },
 };
 
 export default function reducer(
@@ -35,15 +43,22 @@ export default function reducer(
     case getType(loadCSVForPreview.success):
       return {
         ...state,
-        csv: action.payload.csv,
-        resultColumns: action.payload.columns,
         isLoading: false,
+        dataLoadedForResultUrl: action.payload.resultUrl,
+        data: {
+          csv: action.payload.csv,
+          resultColumns: action.payload.columns,
+        },
+      };
+    case getType(openPreview):
+      return {
+        ...state,
+        isOpen: true,
       };
     case getType(closePreview):
       return {
         ...state,
-        csv: null,
-        resultColumns: null,
+        isOpen: false,
       };
     default:
       return state;

@@ -13,7 +13,7 @@ const Root = styled("div")`
 const StyledIconButton = styled(IconButton)`
   position: absolute;
   top: 45px;
-  padding: 6px 10px;
+  padding: 7px 10px;
   right: 0;
   border-right: 0;
   border-top-right-radius: 0;

@@ -1,22 +1,11 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.admin.rest.UIProcessor;
-import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import io.dropwizard.views.View;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBlocksSizeBytes;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -24,26 +13,40 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
-import static com.bakdata.conquery.resources.admin.rest.UIProcessor.calculateCBlocksSizeBytes;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
+import com.bakdata.conquery.resources.admin.ui.model.UIView;
+import io.dropwizard.views.View;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @Produces(MediaType.TEXT_HTML)
 @Getter
 @Setter
 @Path("datasets")
 @Slf4j
+@RequiredArgsConstructor(onConstructor_ = @Inject)
 public class DatasetsUIResource {
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
 	private static final String ABBREVIATION_MARKER = "\u2026";
 
-
-	@Inject
-	private UIProcessor uiProcessor;
+	private final UIProcessor uiProcessor;
 
 
 	@GET
@@ -52,7 +55,8 @@ public class DatasetsUIResource {
 		return new UIView<>(
 				"datasets.html.ftl",
 				uiProcessor.getUIContext(),
-				uiProcessor.getDatasetRegistry().getAllDatasets());
+				uiProcessor.getDatasetRegistry().getAllDatasets()
+		);
 	}
 
 
@@ -66,17 +70,20 @@ public class DatasetsUIResource {
 				new DatasetInfos(
 						namespace.getDataset(),
 						namespace.getStorage().getSecondaryIds(),
+						namespace.getStorage().getInternToExternMappers(),
+						namespace.getStorage().getSearchIndices(),
 						namespace.getStorage().getTables().stream()
-								.map(table -> new TableInfos(
-										table.getId(),
-										table.getName(),
-										table.getLabel(),
-										StringUtils.abbreviate(table.findImports(namespace.getStorage())
-												.map(Import::getName)
-												.collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
-										table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
-								))
-								.collect(Collectors.toList()),
+								 .map(table -> new TableInfos(
+										 table.getId(),
+										 table.getName(),
+										 table.getLabel(),
+										 StringUtils.abbreviate(table.findImports(namespace.getStorage())
+																	 .map(Import::getName)
+																	 .sorted()
+																	 .collect(Collectors.joining(", ")), ABBREVIATION_MARKER, MAX_IMPORTS_TEXT_LENGTH),
+										 table.findImports(namespace.getStorage()).mapToLong(Import::getNumberOfEntries).sum()
+								 ))
+								 .collect(Collectors.toList()),
 						namespace.getStorage().getAllConcepts(),
 						// total size of dictionaries
 						namespace
@@ -105,7 +112,6 @@ public class DatasetsUIResource {
 	}
 
 
-
 	@GET
 	@Path("{" + DATASET + "}/mapping")
 	public View getIdMapping(@PathParam(DATASET) Dataset dataset) {
@@ -132,6 +138,8 @@ public class DatasetsUIResource {
 
 		private Dataset ds;
 		private Collection<SecondaryIdDescription> secondaryIds;
+		private Collection<InternToExternMapper> internToExternMappers;
+		private Collection<SearchIndex> searchIndices;
 		private Collection<TableInfos> tables;
 		private Collection<? extends Concept<?>> concepts;
 		private long dictionariesSize;

@@ -38,11 +38,11 @@ public class IdRefrenceTest {
 		registry.register(dataset);
 		registry.register(table);
 
-		final DatasetRegistry datasetRegistry = new DatasetRegistry(0);
+		final DatasetRegistry datasetRegistry = new DatasetRegistry(0, null, null);
 
-		final MetaStorage metaStorage = new MetaStorage(datasetRegistry);
+		final MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory(),datasetRegistry);
 
-		metaStorage.openStores(new NonPersistentStoreFactory());
+		metaStorage.openStores(null);
 		datasetRegistry.setMetaStorage(metaStorage);
 
 

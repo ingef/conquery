@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { ActionType, createAsyncAction } from "typesafe-actions";
 
@@ -17,7 +18,7 @@ export const useLoadConfig = () => {
   const dispatch = useDispatch();
   const getFrontendConfig = useGetFrontendConfig();
 
-  return async () => {
+  return useCallback(async () => {
     dispatch(loadConfig.request());
 
     try {
@@ -26,5 +27,5 @@ export const useLoadConfig = () => {
     } catch (error) {
       dispatch(loadConfig.failure(errorPayload(error as Error, {})));
     }
-  };
+  }, [dispatch, getFrontendConfig]);
 };

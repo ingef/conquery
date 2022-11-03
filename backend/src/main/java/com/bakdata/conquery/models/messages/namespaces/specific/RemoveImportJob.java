@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id="REMOVE_IMPORT", base= NamespacedMessage.class)
 @RequiredArgsConstructor(onConstructor_=@JsonCreator)  @ToString
 @Slf4j
-public class RemoveImportJob extends WorkerMessage.Slow {
+public class RemoveImportJob extends WorkerMessage {
 
 	@NsIdRef
 	private final Import imp;

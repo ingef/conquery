@@ -5,12 +5,19 @@ import static com.bakdata.conquery.resources.ResourceConstants.ADMIN_UI_SERVLET_
 
 import java.util.Collections;
 
+import javax.validation.Validator;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
+import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
@@ -68,7 +75,6 @@ public class AdminServlet {
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
 		// freemarker support
-		jerseyConfigUI.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)));
 
 
 		adminProcessor = new AdminProcessor(
@@ -81,38 +87,53 @@ public class AdminServlet {
 		);
 
 		adminDatasetProcessor = new AdminDatasetProcessor(
-				manager.getStorage(),
 				manager.getConfig(),
 				manager.getValidator(),
 				manager.getDatasetRegistry(),
 				manager.getJobManager()
 		);
 
+		final AuthCookieFilter authCookieFilter = manager.getConfig().getAuthentication().getAuthCookieFilter();
 
-		// inject required services
 		jerseyConfig.register(new AbstractBinder() {
+						@Override
+						protected void configure() {
+							bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
+							bind(manager.getStorage()).to(MetaStorage.class);
+							bind(manager.getValidator()).to(Validator.class);
+							bind(manager.getJobManager()).to(JobManager.class);
+							bind(manager.getConfig()).to(ConqueryConfig.class);
+							bind(adminProcessor).to(AdminProcessor.class);
+							bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
+						}
+					})
+					.register(PathParamInjector.class)
+					.register(AdminPermissionFilter.class)
+					.register(IdRefPathParamConverterProvider.class)
+					.register(new MultiPartFeature())
+					.register(IdParamConverter.Provider.INSTANCE)
+					.register(authCookieFilter)
+					.register(manager.getAuthController().getAuthenticationFilter());
 
-			@Override
-			protected void configure() {
-				bind(adminProcessor).to(AdminProcessor.class);
-				bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
-			}
-		});
 
-		// inject required services
-		jerseyConfigUI.register(new AbstractBinder() {
-
-			@Override
-			protected void configure() {
-				bind(new UIProcessor(adminProcessor)).to(UIProcessor.class);
-			}
-		});
-
-		jerseyConfig.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
-		jerseyConfigUI.register(new IdRefPathParamConverterProvider(manager.getDatasetRegistry(), manager.getDatasetRegistry().getMetaRegistry()));
+		jerseyConfigUI.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)))
+					  .register(new AbstractBinder() {
+						  @Override
+						  protected void configure() {
+							  bind(adminProcessor).to(AdminProcessor.class);
+							  bindAsContract(UIProcessor.class);
+							  bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
+							  bind(manager.getStorage()).to(MetaStorage.class);
+						  }
+					  })
+					  .register(AdminPermissionFilter.class)
+					  .register(IdRefPathParamConverterProvider.class)
+					  .register(authCookieFilter)
+					  .register(manager.getAuthController().getRedirectingAuthFilter());
+		;
 	}
 
-	public void register(ManagerNode manager) {
+	public void register() {
 
 		// register root resources
 		jerseyConfig
@@ -137,17 +158,5 @@ public class AdminServlet {
 				.register(ConceptsUIResource.class)
 				.register(AuthOverviewUIResource.class);
 
-		// register features
-		final AuthCookieFilter authCookieFilter = manager.getConfig().getAuthentication().getAuthCookieFilter();
-		jerseyConfig
-				.register(new MultiPartFeature())
-				.register(IdParamConverter.Provider.INSTANCE)
-				.register(authCookieFilter)
-				.register(manager.getAuthController().getAuthenticationFilter());
-
-
-		jerseyConfigUI
-				.register(authCookieFilter)
-				.register(manager.getAuthController().getRedirectingAuthFilter());
 	}
 }

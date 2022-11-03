@@ -7,8 +7,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,7 @@ public class StringEncodingTest {
 	@TestFactory
 	public Stream<DynamicTest> testEncodings() {
 
-		StringTypeEncoded.Encoding encoding = StringTypeEncoded.Encoding.Base64;
+		EncodedStringStore.Encoding encoding = EncodedStringStore.Encoding.Base64;
 
 		return Stream.generate(() -> UUID.randomUUID().toString().replace("-", ""))
 					 .map(uuid -> DynamicTest.dynamicTest(uuid, () -> {
@@ -54,10 +53,10 @@ public class StringEncodingTest {
 			  .forEach(parser::addLine);
 
 
-		StringTypeEncoded subType = (StringTypeEncoded) parser.findBestType();
+		EncodedStringStore subType = (EncodedStringStore) parser.findBestType();
 
 		assertThat(subType)
-				.isInstanceOf(StringTypeEncoded.class);
-		assertThat(subType.getEncoding()).isEqualByComparingTo(StringTypeEncoded.Encoding.Base16UpperCase);
+				.isInstanceOf(EncodedStringStore.class);
+		assertThat(subType.getEncoding()).isEqualByComparingTo(EncodedStringStore.Encoding.Base16UpperCase);
 	}
 }

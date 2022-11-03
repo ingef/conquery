@@ -8,7 +8,7 @@
 	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
 	<@layout.kc k="Tags">
 		<ul>
-		<#list c.imports as import>
+		<#list c.imports?sort_by("name") as import>
 			<li>
 				<a href="/admin-ui/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/${import.id}">${import.name} (${import.numberOfEntries})</a>
 				<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/imports/${import.id}', {method : 'delete'}).then(() => location.reload());"><i class="fas fa-trash-alt text-danger"></i></a>
@@ -16,6 +16,15 @@
 		</#list>
 		</ul>
 	</@layout.kc>
+	<@layout.kc k="Concepts">
+    		<ul>
+    		<#list c.concepts?sort_by("name") as concept>
+    			<li>
+    				<a href="/admin-ui/datasets/${c.table.dataset.id}/concepts/${concept.id}">${concept.name}</a>
+    			</li>
+    		</#list>
+    		</ul>
+    </@layout.kc>
 	<@layout.kc k="Columns">
 		<table class="headed-table">
 			<tr>
@@ -24,7 +33,7 @@
 				<th>Type</th>
 				<th>Infos</th>
 			</tr>
-		<#list c.table.columns as column>
+		<#list c.table.columns?sort_by("name") as column>
 			<tr>
 				<td>${column.label}</td>
 				<td><code>${column.id}</code></td>

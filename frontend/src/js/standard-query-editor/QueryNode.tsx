@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useRef, FC } from "react";
+import { memo, useCallback, useRef } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -8,7 +8,6 @@ import type { QueryT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import ErrorMessage from "../error-message/ErrorMessage";
 import {
   nodeHasNonDefaultSettings,
   nodeHasFilterValues,
@@ -16,9 +15,9 @@ import {
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
-import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryNodeActions from "./QueryNodeActions";
+import QueryNodeContent from "./QueryNodeContent";
 import { getRootNodeLabel } from "./helper";
 import { StandardQueryNodeT } from "./types";
 
@@ -47,57 +46,15 @@ const Root = styled("div")<{
   }
 `;
 
-const Node = styled("div")`
-  flex-grow: 1;
-  padding-top: 2px;
-`;
-
-const Label = styled("p")`
-  margin: 0;
-  word-break: break-word;
-  line-height: 1.2;
-  font-size: ${({ theme }) => theme.font.md};
-`;
-const Description = styled("p")`
-  margin: 3px 0 0;
-  word-break: break-word;
-  line-height: 1.2;
-  text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-`;
-
-const PreviousQueryLabel = styled("p")`
-  margin: 0 0 3px;
-  line-height: 1.2;
-  font-size: ${({ theme }) => theme.font.xs};
-  text-transform: uppercase;
-  font-weight: 700;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
-
-const StyledErrorMessage = styled(ErrorMessage)`
-  margin: 0;
-`;
-
-const RootNode = styled("p")`
-  margin: 0 0 4px;
-  line-height: 1;
-  text-transform: uppercase;
-  font-weight: 700;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  word-break: break-word;
-`;
-
 interface PropsT {
   node: StandardQueryNodeT;
   andIdx: number;
   orIdx: number;
-  onDeleteNode: () => void;
-  onEditClick: () => void;
-  onToggleTimestamps: () => void;
-  onToggleSecondaryIdExclude: () => void;
+  onDeleteNode: (andIdx: number, orIdx: number) => void;
+  onEditClick: (andIdx: number, orIdx: number) => void;
   onExpandClick: (q: QueryT) => void;
+  onToggleTimestamps: (andIdx: number, orIdx: number) => void;
+  onToggleSecondaryIdExclude: (andIdx: number, orIdx: number) => void;
 }
 
 const nodeHasActiveSecondaryId = (
@@ -123,7 +80,7 @@ const nodeHasActiveSecondaryId = (
   }
 };
 
-const QueryNode: FC<PropsT> = ({
+const QueryNode = ({
   node,
   andIdx,
   orIdx,
@@ -132,7 +89,7 @@ const QueryNode: FC<PropsT> = ({
   onDeleteNode,
   onToggleTimestamps,
   onToggleSecondaryIdExclude,
-}) => {
+}: PropsT) => {
   const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(node);
   const ref = useRef<HTMLDivElement | null>(null);
@@ -207,6 +164,12 @@ const QueryNode: FC<PropsT> = ({
     ? t("queryEditor.hasDefaultSettings")
     : undefined;
 
+  const expandClick = useCallback(() => {
+    if (nodeIsConceptQueryNode(node) || !node.query) return;
+
+    onExpandClick(node.query);
+  }, [onExpandClick, node]);
+
   const QueryNodeRoot = (
     <Root
       ref={(instance) => {
@@ -214,44 +177,33 @@ const QueryNode: FC<PropsT> = ({
         drag(instance);
       }}
       active={hasNonDefaultSettings || hasFilterValues}
-      onClick={!!node.error ? () => {} : onEditClick}
+      onClick={!!node.error ? () => {} : () => onEditClick(andIdx, orIdx)}
     >
-      <WithTooltip text={tooltipText}>
-        <Node>
-          {!nodeIsConceptQueryNode(node) && (
-            <PreviousQueryLabel>
-              {t("queryEditor.previousQuery")}
-            </PreviousQueryLabel>
-          )}
-          {node.error ? (
-            <StyledErrorMessage message={node.error} />
-          ) : (
-            <>
-              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-              <Label>
-                {node.label || (!nodeIsConceptQueryNode(node) && node.id)}
-              </Label>
-              {nodeIsConceptQueryNode(node) &&
-                (!node.ids || node.ids.length === 1) && (
-                  <Description>{node.description}</Description>
-                )}
-            </>
-          )}
-        </Node>
-      </WithTooltip>
+      <QueryNodeContent
+        error={node.error}
+        isConceptQueryNode={nodeIsConceptQueryNode(node)}
+        tooltipText={tooltipText}
+        label={
+          nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
+        }
+        description={
+          nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
+            ? node.description
+            : undefined
+        }
+        rootNodeLabel={rootNodeLabel}
+      />
       <QueryNodeActions
+        andIdx={andIdx}
+        orIdx={orIdx}
         excludeTimestamps={node.excludeTimestamps}
-        onDeleteNode={onDeleteNode}
-        onToggleTimestamps={onToggleTimestamps}
         isExpandable={isQueryExpandable(node)}
         hasActiveSecondaryId={hasActiveSecondaryId}
         excludeFromSecondaryId={node.excludeFromSecondaryId}
+        onDeleteNode={onDeleteNode}
+        onToggleTimestamps={onToggleTimestamps}
         onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
-        onExpandClick={() => {
-          if (nodeIsConceptQueryNode(node) || !node.query) return;
-
-          onExpandClick(node.query);
-        }}
+        onExpandClick={expandClick}
         previousQueryLoading={node.loading}
         error={node.error}
       />
@@ -273,4 +225,4 @@ const QueryNode: FC<PropsT> = ({
   return QueryNodeRoot;
 };
 
-export default QueryNode;
+export default memo(QueryNode);

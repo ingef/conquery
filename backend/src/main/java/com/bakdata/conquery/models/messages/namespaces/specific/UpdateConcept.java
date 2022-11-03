@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id="UPDATE_CONCEPT", base=NamespacedMessage.class)
 @RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString
 @Slf4j
-public class UpdateConcept extends WorkerMessage.Slow {
+public class UpdateConcept extends WorkerMessage {
 
 	private final Concept<?> concept;
 

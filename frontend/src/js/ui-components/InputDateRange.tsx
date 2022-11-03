@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FC, ReactNode } from "react";
+import { FC, ReactNode, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
@@ -41,6 +41,39 @@ const SxLabeled = styled(Labeled)`
   &:first-of-type {
     margin-right: 10px;
   }
+`;
+
+const CustomTooltip = styled("div")`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 14px;
+
+  font-size: ${({ theme }) => theme.font.md};
+  font-weight: 400;
+  table {
+    margin-top: 5px;
+    width: 100%;
+  }
+  table,
+  th,
+  td {
+    border: 1px solid ${({ theme }) => theme.col.grayLight};
+    border-collapse: collapse;
+  }
+  td {
+    padding: 2px 5px;
+    line-height: 1.2;
+  }
+`;
+
+const TooltipMain = styled("div")`
+  font-size: ${({ theme }) => theme.font.md};
+`;
+
+const TooltipTutorial = styled("div")<{ hasMain?: boolean }>`
+  font-size: ${({ theme, hasMain }) =>
+    hasMain ? theme.font.sm : theme.font.md};
 `;
 
 interface PropsT {
@@ -135,34 +168,35 @@ const InputDateRange: FC<PropsT> = ({
   const isMinValid = exists(value.min && parseDate(min, displayDateFormat));
   const isMaxValid = exists(value.max && parseDate(max, displayDateFormat));
 
+  const labelWithSuffix = useMemo(() => {
+    if (!label) return null;
+
+    return (
+      <StyledLabel large={large}>
+        {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
+        {optional && <Optional />}
+        {label}
+        <InfoTooltip
+          html={
+            <CustomTooltip>
+              {exists(tooltip) && <TooltipMain>{tooltip}</TooltipMain>}
+              <TooltipTutorial
+                hasMain={exists(tooltip)}
+                dangerouslySetInnerHTML={{
+                  __html: t("inputDateRange.tooltip.possiblePattern"),
+                }}
+              />
+            </CustomTooltip>
+          }
+        />
+        {labelSuffix && labelSuffix}
+      </StyledLabel>
+    );
+  }, [t, label, labelSuffix, large, optional, tooltip, indexPrefix]);
+
   return (
     <Root center={center}>
-      {label && (
-        <StyledLabel large={large}>
-          {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
-          {optional && <Optional />}
-          {label}
-          <InfoTooltip
-            html={
-              <>
-                {exists(tooltip) && (
-                  <>
-                    {tooltip}
-                    <br />
-                    <br />
-                  </>
-                )}
-                <span
-                  dangerouslySetInnerHTML={{
-                    __html: t("inputDateRange.tooltip.possiblePattern"),
-                  }}
-                />
-              </>
-            }
-          />
-          {labelSuffix && labelSuffix}
-        </StyledLabel>
-      )}
+      {labelWithSuffix}
       <Pickers inline={inline} center={center}>
         <SxLabeled label={t("inputDateRange.from")}>
           <BaseInput

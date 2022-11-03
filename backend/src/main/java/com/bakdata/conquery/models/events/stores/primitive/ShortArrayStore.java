@@ -31,6 +31,7 @@ public class ShortArrayStore implements IntegerStore {
 	}
 
 	@Override
+	@ToString.Include
 	public int getLines() {
 		return values.length;
 	}
@@ -42,6 +43,11 @@ public class ShortArrayStore implements IntegerStore {
 
 	public ShortArrayStore select(int[] starts, int[] ends) {
 		return new ShortArrayStore(ColumnStore.selectArray(starts, ends, values, short[]::new), nullValue);
+	}
+
+	@Override
+	public ShortArrayStore createDescription() {
+		return ColumnStore.emptyCopy(this);
 	}
 
 	@Override

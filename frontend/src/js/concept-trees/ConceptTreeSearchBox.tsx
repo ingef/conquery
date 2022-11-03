@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { FC, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -46,11 +46,8 @@ const StyledButton = styled(TransparentButton)`
 const TopRow = styled("div")`
   display: flex;
   align-items: center;
+  gap: 5px;
 `;
-const SxConceptTreeOpenButtons = styled(ConceptTreesOpenButtons)`
-  margin-right: 5px;
-`;
-
 interface PropsT {
   className?: string;
 }
@@ -65,28 +62,36 @@ const ConceptTreeSearchBox: FC<PropsT> = ({ className }) => {
   const trees = useSelector<StateT, TreesT>(
     (state) => state.conceptTrees.trees,
   );
+  const treesRef = useRef(trees);
+  treesRef.current = trees;
 
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
   const searchTrees = useSearchTrees();
-  const onSearch = (trees: TreesT, searchString: string) => {
-    if (searchString.length > 1) {
-      searchTrees(trees, searchString);
-    }
-  };
-  const onClearQuery = () => dispatch(clearSearchQuery());
+  const onSearch = useCallback(
+    (searchString: string) => {
+      if (searchString.length > 1) {
+        searchTrees(treesRef.current, searchString);
+      }
+    },
+    [searchTrees],
+  );
+  const onClearQuery = useCallback(
+    () => dispatch(clearSearchQuery()),
+    [dispatch],
+  );
   const onToggleShowMismatches = () => dispatch(toggleShowMismatches());
 
   return (
     <Root className={className}>
       <TopRow>
-        <SxConceptTreeOpenButtons />
+        <ConceptTreesOpenButtons />
         <SearchBar
           searchTerm={search.query}
           placeholder={t("conceptTreeList.searchPlaceholder")}
           onClear={onClearQuery}
-          onSearch={(value) => onSearch(trees, value)}
+          onSearch={onSearch}
         />
       </TopRow>
       {search.loading ? (

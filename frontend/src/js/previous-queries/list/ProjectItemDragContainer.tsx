@@ -12,7 +12,6 @@ import { PreviousQueryT } from "./reducer";
 
 interface PropsT {
   item: ProjectItemT;
-  onIndicateDeletion: () => void;
   onIndicateShare: () => void;
   onIndicateEditFolders: () => void;
 }

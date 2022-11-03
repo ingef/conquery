@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 
-import type { PermissionsT, GetMeResponseT, DatasetIdT } from "../api/types";
+import type { PermissionsT, GetMeResponseT, DatasetT } from "../api/types";
 import type { StateT } from "../app/reducers";
 
 interface ContextT {
@@ -9,14 +9,14 @@ interface ContextT {
 
 export function selectPermissions(
   state: StateT,
-): Record<DatasetIdT, PermissionsT> | null {
+): Record<DatasetT["id"], PermissionsT> | null {
   return !!state.user.me && !!state.user.me.datasetAbilities
     ? state.user.me.datasetAbilities
     : null;
 }
 
 function canDoNothing(
-  permissions: Record<DatasetIdT, PermissionsT>,
+  permissions: Record<DatasetT["id"], PermissionsT>,
   datasetId: string,
 ) {
   return !permissions[datasetId];
@@ -25,7 +25,7 @@ function canDoNothing(
 function canDo(
   state: StateT,
   canDoWithPermissions: (
-    permissions: Record<DatasetIdT, PermissionsT>,
+    permissions: Record<DatasetT["id"], PermissionsT>,
     datasetId: string,
   ) => boolean,
   context?: ContextT,

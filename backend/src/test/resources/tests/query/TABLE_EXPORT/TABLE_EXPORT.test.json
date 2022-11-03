@@ -6,22 +6,35 @@
     "type": "TABLE_EXPORT",
     "tables": [
       {
-        "id": "concept.connector",
-        "dateColumn": {
-          "value": "concept.connector.datum"
-        }
-      },
-      {
-        "id": "concept.connector2",
-        "dateColumn": {
-          "value": "concept.connector2.datum"
-        }
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.value",
+                "type": "REAL_RANGE",
+                "value": {
+                  "min": 1,
+                  "max": 1
+                }
+              }
+            ]
+          },
+          {
+            "id": "concept.connector2"
+          }
+        ]
       }
     ],
     "dateRange": {
       "min": "2000-01-01",
       "max": "2020-12-31"
     },
+    "rawConceptValues" : false,
     "query": {
       "type": "CONCEPT_QUERY",
       "root": {
@@ -67,7 +80,7 @@
       "connectors": [
         {
           "name": "connector",
-          "table": "table1",
+          "column": "table1.code",
           "validityDates": {
             "label": "datum",
             "column": "table1.datum"
@@ -80,7 +93,7 @@
         },
         {
           "label": "connector2",
-          "table": "table2",
+          "column": "table2.code",
           "validityDates": {
             "label": "datum",
             "column": "table2.datum"
@@ -91,13 +104,24 @@
             "type": "NUMBER"
           }
         }
+      ],
+      "children": [
+        {
+          "label": "A Child",
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "a"
+            ]
+          }
+        }
       ]
     }
   ],
   "content": {
-    "secondaryIds" : {
-      "name" : "sid",
-      "label" : "SecondaryId"
+    "secondaryIds": {
+      "name": "sid",
+      "label": "SecondaryId"
     },
     "tables": [
       {
@@ -111,7 +135,7 @@
           {
             "name": "sid",
             "type": "STRING",
-            "secondaryId" : "sid"
+            "secondaryId": "sid"
           },
           {
             "name": "value",
@@ -120,6 +144,10 @@
           {
             "name": "datum",
             "type": "DATE_RANGE"
+          },
+          {
+            "name": "code",
+            "type": "STRING"
           }
         ]
       },
@@ -134,7 +162,7 @@
           {
             "name": "sid",
             "type": "STRING",
-            "secondaryId" : "sid"
+            "secondaryId": "sid"
           },
           {
             "name": "value",
@@ -143,6 +171,10 @@
           {
             "name": "datum",
             "type": "DATE_RANGE"
+          },
+          {
+            "name": "code",
+            "type": "STRING"
           }
         ]
       }

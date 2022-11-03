@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.result.csv;
 
-import static com.bakdata.conquery.io.result.ResultUtil.determineCharset;
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
@@ -9,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
+import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -32,15 +32,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
 
 @Slf4j
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultCsvProcessor {
 
-	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
+	private final DatasetRegistry datasetRegistry;
 
+	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty, Charset charset) {
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getResult(Subject subject, Dataset dataset, E exec, String userAgent, String queryCharset, boolean pretty) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
+
 		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {} on dataset {}", exec, dataset);
 		subject.authorize(namespace.getDataset(), Ability.READ);
@@ -63,8 +64,6 @@ public class ResultCsvProcessor {
 				config,
 				idPrinter::createId
 		);
-		Charset charset = determineCharset(userAgent, queryCharset);
-
 
 		StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
@@ -72,13 +71,17 @@ public class ResultCsvProcessor {
 				renderer.toCSV(config.getFrontend().getQueryUpload().getIdResultInfos(), exec.getResultInfos(), exec.streamResults());
 			}
 			catch (EofException e) {
-				log.info("User canceled download");
+				log.trace("User canceled download");
 			}
 			catch (Exception e) {
 				throw new WebApplicationException("Failed to load result", e);
 			}
+			finally {
+				log.trace("FINISHED downloading {}", exec.getId());
+			}
 		};
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "csv", new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.ATTACHMENT);
-	}
 
+		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "csv", new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.ATTACHMENT);
+
+	}
 }

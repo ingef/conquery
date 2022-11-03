@@ -33,9 +33,8 @@ export interface FormConfigT extends BaseFormConfigT {
   groups?: UserGroupIdT[];
 }
 
-export type PreviousQueryIdT = string;
 export interface PreviousQueryT {
-  id: PreviousQueryIdT;
+  id: string;
   label: string;
   numberOfResults: number | null;
   createdAt: string;

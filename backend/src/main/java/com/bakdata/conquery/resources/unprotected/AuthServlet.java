@@ -6,7 +6,6 @@ import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
-import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +15,6 @@ import io.dropwizard.jersey.setup.JerseyContainerHolder;
 import io.dropwizard.jetty.setup.ServletEnvironment;
 import io.dropwizard.views.ViewMessageBodyWriter;
 import lombok.experimental.UtilityClass;
-import org.apache.shiro.realm.Realm;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 /**

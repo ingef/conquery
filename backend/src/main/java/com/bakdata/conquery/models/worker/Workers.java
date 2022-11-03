@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import javax.validation.Validator;
 
@@ -44,25 +45,34 @@ public class Workers extends IdResolveContext {
 	private final ThreadPoolExecutor jobsThreadPool;
 	private final ThreadPoolDefinition queryThreadPoolDefinition;
 
-	@Getter
-	private final ObjectMapper binaryMapper;
+	private final Supplier<ObjectMapper> persistenceMapperSupplier;
+	private final Supplier<ObjectMapper> communicationMapperSupplier;
 
 	private final int entityBucketSize;
 
 	
-	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, ObjectMapper binaryMapper, int entityBucketSize) {
+	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, Supplier<ObjectMapper> persistenceMapperSupplier, Supplier<ObjectMapper> communicationMapperSupplier, int entityBucketSize) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
 		jobsThreadPool = queryThreadPoolDefinition.createService("Workers");
 
-		this.binaryMapper = injectIntoNew(binaryMapper);
+		this.persistenceMapperSupplier = persistenceMapperSupplier;
+		this.communicationMapperSupplier = communicationMapperSupplier;
 		this.entityBucketSize = entityBucketSize;
 
 		jobsThreadPool.prestartAllCoreThreads();
 	}
 
 	public Worker createWorker(WorkerStorage storage, boolean failOnError) {
-		final Worker worker = Worker.newWorker(queryThreadPoolDefinition, jobsThreadPool, storage, failOnError, entityBucketSize);
+
+		ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
+		this.injectInto(persistenceMapper);
+
+		ObjectMapper communicationMapper = communicationMapperSupplier.get();
+		this.injectInto(communicationMapper);
+
+		final Worker worker =
+				new Worker(queryThreadPoolDefinition, storage, jobsThreadPool, failOnError, entityBucketSize, persistenceMapper, communicationMapper);
 
 		addWorker(worker);
 
@@ -70,7 +80,16 @@ public class Workers extends IdResolveContext {
 	}
 
 	public Worker createWorker(Dataset dataset, StoreFactory storageConfig, @NonNull String name, Validator validator, boolean failOnError) {
-		final Worker worker = Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize);
+
+		ObjectMapper persistenceMapper = persistenceMapperSupplier.get();
+		this.injectInto(persistenceMapper);
+
+		ObjectMapper communicationMapper = communicationMapperSupplier.get();
+		this.injectInto(communicationMapper);
+
+		final Worker
+				worker =
+				Worker.newWorker(dataset, queryThreadPoolDefinition, jobsThreadPool, storageConfig, name, validator, failOnError, entityBucketSize, persistenceMapper, communicationMapper);
 
 		addWorker(worker);
 
@@ -87,6 +106,7 @@ public class Workers extends IdResolveContext {
 		return Objects.requireNonNull(workers.get(worker));
 	}
 
+
 	@Override
 	public CentralRegistry findRegistry(DatasetId dataset) {
 		if (!dataset2Worker.containsKey(dataset)) {
@@ -101,12 +121,20 @@ public class Workers extends IdResolveContext {
 		return null; // Workers simply have no MetaRegistry.
 	}
 
-	public void removeWorkersFor(DatasetId dataset) {
+	public void removeWorkerFor(DatasetId dataset) {
+		final Worker worker = dataset2Worker.get(dataset);
+
+		/*
+		 Close the job manager first, so all jobs are done and none can be added, when the worker is
+		 removed from dataset2Worker (which is used in deserialization of NamespacedIds, i.e. content of ForwardToWorkerMessages)
+		 */
+		worker.getJobManager().close();
+
 		Worker removed = dataset2Worker.remove(dataset);
-		if(removed == null) {
+		if (removed == null) {
 			return;
 		}
-		
+
 		workers.remove(removed.getInfo().getId());
 		try {
 			removed.remove();

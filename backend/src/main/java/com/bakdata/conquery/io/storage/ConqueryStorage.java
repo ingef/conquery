@@ -1,25 +1,57 @@
 package com.bakdata.conquery.io.storage;
 
 import java.io.Closeable;
+import java.io.IOException;
 
-import com.bakdata.conquery.models.config.StoreFactory;
+import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import lombok.extern.slf4j.Slf4j;
 
-public interface ConqueryStorage extends Closeable {
+@Slf4j
+public abstract class ConqueryStorage implements Closeable {
 
-	CentralRegistry getCentralRegistry();
+	public abstract CentralRegistry getCentralRegistry();
 
-	void openStores(StoreFactory storageFactory);
+	/**
+	 * @implSpec The order defines the order of loading. Dependencies should be modeled here.
+	 * @implNote If you implement this method, please do it always from scratch and not using calls to super, it can be quite annoying.
+	 */
+	public abstract ImmutableList<KeyIncludingStore<?,?>> getStores();
+
+	public abstract void openStores(ObjectMapper objectMapper);
 	
-	void loadData();
+	public final void loadData(){
+		for (KeyIncludingStore<?, ?> store : getStores()) {
+			store.loadData();
+		}
+	}
 
 	/**
 	 * Delete the storage's contents.
 	 */
-	void clear();
+	public void clear(){
+		for (KeyIncludingStore<?, ?> store : getStores()) {
+			store.clear();
+		}
+	}
 
 	/**
 	 * Remove the storage.
 	 */
-	void removeStorage();
+	public final void removeStorage(){
+		for (KeyIncludingStore<?, ?> store : getStores()) {
+			store.removeStore();
+		}
+	}
+
+	/**
+	 * Close the storage.
+	 */
+	public final void close() throws IOException {
+		for (KeyIncludingStore<?, ?> store : getStores()) {
+			store.close();
+		}
+	}
 }

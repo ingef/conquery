@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -22,13 +24,14 @@ import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Strings;
 import io.github.classgraph.Resource;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -49,8 +52,8 @@ public class IntegrationTests {
 	static {
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 
-		MAPPER = mapper.setConfig(mapper.getDeserializationConfig().withView(InternalOnly.class))
-					   .setConfig(mapper.getSerializationConfig().withView(InternalOnly.class));
+		MAPPER = mapper.setConfig(mapper.getDeserializationConfig().withView(View.Persistence.class))
+					   .setConfig(mapper.getSerializationConfig().withView(View.Persistence.class));
 
 		CONFIG_WRITER = MAPPER.writerFor(ConqueryConfig.class);
 	}
@@ -100,6 +103,15 @@ public class IntegrationTests {
 		List<Class<?>> programmatic =
 				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 											 .filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
+											 .filter(classInfo -> {
+												 String regexFilter = System.getenv(TestTags.TEST_PROGRAMMATIC_REGEX_FILTER);
+												 if (Strings.isNullOrEmpty(regexFilter)) {
+													 // No filter set: allow all tests
+													 return true;
+												 }
+												 return classInfo.getSimpleName().matches(regexFilter);
+
+											 })
 											 .loadClasses();
 
 		return programmatic
@@ -149,13 +161,21 @@ public class IntegrationTests {
 		try (InputStream in = resource.open()) {
 			JsonIntegrationTest test = new JsonIntegrationTest(in);
 
-			name = test.getTestSpec().getLabel();
+			String testLabel = Optional.ofNullable(test.getTestSpec().getLabel())
+									   // If no label was defined use the filename part before the first dot
+									   .orElse(name.split("\\.", 1)[0]);
+
+			// For easier modification we link the source- not the target-resource of the json tests.
+			// Otherwise, a modification might affect the current test runs,
+			// but it won't persist over rebuilds or in version control
+			final URI compileTargetURI = resource.getURI();
+			final URI sourceResourceURI = URI.create(compileTargetURI.toString().replace("/target/test-classes/", "/src/test/resources/"));
 
 			return DynamicTest.dynamicTest(
-					name,
-					URI.create("classpath:/" + resource.getPath()),
+					testLabel,
+					sourceResourceURI,
 					new IntegrationTest.Wrapper(
-							name,
+							testLabel,
 							this,
 							test
 					)

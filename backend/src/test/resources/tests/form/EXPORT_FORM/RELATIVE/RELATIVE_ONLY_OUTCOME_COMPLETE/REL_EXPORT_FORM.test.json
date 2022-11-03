@@ -13,7 +13,7 @@
       "value": "RELATIVE",
       "indexSelector": "EARLIEST",
       "timeUnit": "QUARTERS",
-      "outcomes": [
+      "features": [
         {
           "ids": [
             "alter"

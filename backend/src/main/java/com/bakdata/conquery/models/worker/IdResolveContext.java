@@ -7,7 +7,7 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -39,15 +39,15 @@ public abstract class IdResolveContext implements Injectable {
 	@JsonIgnore
 	public abstract CentralRegistry getMetaRegistry();
 
-	public <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> T resolve(ID id) {
+	public <ID extends Id<T> & NamespacedId, T extends Identifiable<?>> T resolve(ID id) {
 		return findRegistry(id.getDataset()).resolve(id);
 	}
 
-	public <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> Optional<T> getOptional(ID id) {
+	public <ID extends Id<T> & NamespacedId, T extends Identifiable<?>> Optional<T> getOptional(ID id) {
 		return findRegistry(id.getDataset()).getOptional(id);
 	}
 
-	public <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> Optional<T> getOptional(DatasetId dataset, ID id) {
+	public <ID extends Id<T> & NamespacedId, T extends Identifiable<?>> Optional<T> getOptional(DatasetId dataset, ID id) {
 		return findRegistry(dataset).getOptional(id);
 	}
 }

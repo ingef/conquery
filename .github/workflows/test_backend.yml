@@ -6,7 +6,7 @@ on:
       - "backend/**"
 
 jobs:
-  tests:
+  run_tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -21,11 +21,13 @@ jobs:
         with:
           submodules: true
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '17'
+          overwrite-settings: false
       - name: Build Backend
-        run: mvn -T 1C install -pl backend -DskipTests
+        run: mvn -T 1C install -pl backend -DskipTests -am
       - name: Unit Test
         run: mvn test -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
       - name: Programmatic Integration Tests

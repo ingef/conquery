@@ -5,9 +5,8 @@ import type { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import type { ModeT } from "../ui-components/InputRange";
 
-export type DatasetIdT = string;
 export interface DatasetT {
-  id: DatasetIdT;
+  id: string;
   label: string;
 }
 
@@ -32,9 +31,8 @@ export interface CurrencyConfigT {
   decimalScale: number;
 }
 
-export type FilterIdT = string;
 export interface FilterBaseT {
-  id: FilterIdT;
+  id: string;
   label: string;
   description?: string;
   tooltip?: string;
@@ -71,16 +69,18 @@ export interface MultiSelectFilterT extends MultiSelectFilterBaseT {
   type: "MULTI_SELECT";
 }
 
+// Big = so many options that they need to be fetched async
+// using autocomplete, pagination, etc
 export interface BigMultiSelectFilterT extends MultiSelectFilterBaseT {
   type: "BIG_MULTI_SELECT";
   // Not needed in this format:
-  template: {
-    filePath: string; // "/.../import/stable/Referenzen/example.csv",
-    columns: string[];
-    columnValue: string; // Unclear, what that's even needed for
-    value: string;
-    optionValue: string;
-  };
+  // template: {
+  //   filePath: string; // "/.../import/stable/Referenzen/example.csv",
+  //   columns: string[];
+  //   columnValue: string; // Unclear, what that's even needed for
+  //   value: string;
+  //   optionValue: string;
+  // };
 }
 
 export type SelectFilterValueT = string | number;
@@ -103,9 +103,8 @@ export type FilterT =
   | RangeFilterT
   | BigMultiSelectFilterT;
 
-export type TableIdT = string;
 export interface TableT {
-  id: TableIdT;
+  id: string;
   dateColumn: DateColumnT | null;
   connectorId: string; // TODO: Get rid of two ids here (unclear when which one should be used)
   label: string;
@@ -173,7 +172,7 @@ export interface ConceptElementT extends ConceptBaseT {
 export type ConceptT = ConceptElementT | ConceptStructT;
 
 export interface FilterConfigT {
-  filter: FilterIdT; // TODO: Rename this: "id"
+  filter: FilterT["id"]; // TODO: Rename this: "id"
   type:
     | "INTEGER_RANGE"
     | "REAL_RANGE"
@@ -190,7 +189,7 @@ export interface DateColumnConfigT {
 }
 
 export interface TableConfigT {
-  id: TableIdT;
+  id: TableT["id"];
   filters?: FilterConfigT[];
   dateColumn?: DateColumnConfigT;
   selects: SelectorIdT[];
@@ -291,6 +290,8 @@ export interface GetFrontendConfigResponseT {
   version: string;
   currency: CurrencyConfigT;
   queryUpload: QueryUploadConfigT;
+  manualUrl?: string;
+  contactEmail?: string;
 }
 
 export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
@@ -314,26 +315,82 @@ export interface PostQueriesResponseT {
 }
 
 export type ColumnDescriptionKind =
+  | "INTEGER"
+  | "NUMERIC"
   | "BOOLEAN"
   | "STRING"
-  | "INTEGER"
   | "MONEY"
-  | "NUMERIC"
   | "DATE"
   | "DATE_RANGE"
-  | "LIST[DATE_RANGE]"
-  | "CATEGORICAL"
-  | "RESOLUTION";
+  | "LIST[DATE_RANGE]";
+
+export interface ColumnDescriptionSemanticConceptColumn {
+  type: "CONCEPT_COLUMN";
+  concept: string;
+}
+interface ColumnDescriptionSemanticSelect {
+  type: "SELECT";
+  select: string;
+}
+interface ColumnDescriptionSemanticSecondaryId {
+  type: "SECONDARY_ID";
+  secondaryId: string;
+}
+export interface ColumnDescriptionSemanticId {
+  type: "ID";
+  kind: string;
+}
+interface ColumnDescriptionSemanticEventDate {
+  type: "EVENT_DATE";
+}
+interface ColumnDescriptionSemanticSources {
+  type: "SOURCES";
+}
+interface ColumnDescriptionSemanticCategorical {
+  type: "CATEGORICAL";
+}
+interface ColumnDescriptionSemanticResolution {
+  type: "RESOLUTION";
+}
+interface ColumnDescriptionSemanticGroup {
+  type: "GROUP";
+}
+interface ColumnDescriptionSemanticHidden {
+  type: "HIDDEN";
+}
+
+export type ColumnDescriptionSemantic =
+  | ColumnDescriptionSemanticId
+  | ColumnDescriptionSemanticSecondaryId
+  | ColumnDescriptionSemanticSelect
+  | ColumnDescriptionSemanticConceptColumn
+  | ColumnDescriptionSemanticEventDate
+  | ColumnDescriptionSemanticSources
+  | ColumnDescriptionSemanticCategorical // Probably won't be used by us
+  | ColumnDescriptionSemanticResolution // Probably won't be used by us
+  | ColumnDescriptionSemanticGroup
+  | ColumnDescriptionSemanticHidden;
 
 export interface ColumnDescription {
+  // `label` matches column name in CSV
+  // So it's more of an id, TODO: rename this to 'id',
   label: string;
-  selectId: string | null;
+
   type: ColumnDescriptionKind;
+  semantics: ColumnDescriptionSemantic[];
+
+  // More of a "real" label, TODO: rename this to "label"
+  defaultLabel: string;
+
+  // NOT USED BY US:
+  selectId: string | null;
+  userConceptLabel: string | null;
 }
 
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields
 export interface GetQueryResponseDoneT {
   status: "DONE" | "NEW"; // NEW might mean canceled (query not (yet) executed)
+  label: string;
   numberOfResults: number | null;
   resultUrls: string[];
   columnDescriptions: ColumnDescription[] | null;
@@ -396,13 +453,15 @@ export interface PostConceptResolveResponseT {
 }
 
 export interface PostFilterResolveResponseT {
-  unknownCodes?: string[];
+  resolvedConcepts: null; // TODO: Weird that this unnecessary field comes back, we're not using it
+  unknownCodes: string[];
   resolvedFilter?: {
-    filterId: FilterIdT;
-    tableId: TableIdT;
+    filterId: FilterT["id"];
+    tableId: TableT["id"];
     value: {
       label: string;
       value: string;
+      optionValue: string;
     }[];
   };
 }
@@ -433,7 +492,7 @@ export interface UserGroupT {
 
 export interface GetMeResponseT {
   userName: string;
-  datasetAbilities: Record<DatasetIdT, PermissionsT>;
+  datasetAbilities: Record<DatasetT["id"], PermissionsT>;
   groups: UserGroupT[];
   hideLogoutButton?: boolean;
 }
@@ -454,4 +513,24 @@ export type UploadQueryResponseT = {
   resolved: number;
   unresolvedId: string[][];
   unreadableDate: string[][];
+};
+
+export interface HistorySources {
+  all: { label: string; name: TableT["id"] }[];
+  default: { label: string; name: TableT["id"] }[];
+}
+
+export type GetEntityHistoryDefaultParamsResponse = HistorySources;
+
+export interface EntityInfo {
+  label: string;
+  value: string;
+  type: ColumnDescriptionKind;
+  semantics: ColumnDescriptionSemantic[];
+}
+
+export type GetEntityHistoryResponse = {
+  resultUrls: string[];
+  columnDescriptions: ColumnDescription[];
+  infos: EntityInfo[];
 };

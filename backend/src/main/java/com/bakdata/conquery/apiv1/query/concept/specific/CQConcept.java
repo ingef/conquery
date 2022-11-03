@@ -18,12 +18,13 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.InternalOnly;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -41,11 +42,11 @@ import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
@@ -83,9 +84,10 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@JsonAlias("excludeFromSecondaryIdQuery")
 	private boolean excludeFromSecondaryId = false;
 
-	@InternalOnly
-	@NotNull
+	@JsonView(View.InternalCommunication.class)
 	private boolean aggregateEventDates;
+
+
 
 	@Override
 	public String defaultLabel(Locale locale) {
@@ -249,12 +251,12 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		List<ResultInfo> resultInfos = new ArrayList<>();
 
 		for (Select select : selects) {
-			resultInfos.add(new SelectResultInfo(select, this));
+			resultInfos.add(select.getResultInfo(this));
 		}
 
 		for (CQTable table : tables) {
 			for (Select sel : table.getSelects()) {
-				resultInfos.add(new SelectResultInfo(sel, this));
+				resultInfos.add(sel.getResultInfo(this));
 			}
 		}
 
@@ -296,4 +298,30 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			t.setSelects(conSelects);
 		}
 	}
+
+	public static CQConcept forSelect(Select select) {
+		CQConcept cqConcept = new CQConcept();
+		cqConcept.setElements(List.of(select.getHolder().findConcept()));
+		CQTable table = new CQTable();
+		cqConcept.setTables(List.of(table));
+
+		table.setConnector(((Connector) select.getHolder()));
+
+		table.setSelects(List.of(select));
+
+		return cqConcept;
+	}
+
+	public static CQConcept forConnector(Connector source) {
+		final CQConcept cqConcept = new CQConcept();
+		cqConcept.setElements(List.of(source.getConcept()));
+		final CQTable cqTable = new CQTable();
+		cqTable.setConcept(cqConcept);
+		cqTable.setConnector(source);
+		cqConcept.setTables(List.of(cqTable));
+
+		return cqConcept;
+	}
+
+
 }

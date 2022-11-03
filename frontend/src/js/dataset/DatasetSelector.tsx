@@ -1,16 +1,15 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { FC, memo, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
+import type { DatasetT, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
-import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import WithTooltip from "../tooltip/WithTooltip";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import { useSelectDataset } from "./actions";
-import { DatasetT } from "./reducer";
 
 const Root = styled("div")`
   color: ${({ theme }) => theme.col.black};
@@ -28,8 +27,20 @@ const SxInputSelect = styled(InputSelect)`
   min-width: 300px;
 `;
 
+const useIsDatasetSelectDisabled = () => {
+  const isHistoryOpen = useSelector<StateT, boolean>(
+    (state) => state.entityHistory.isOpen,
+  );
+  const isPreviewOpen = useSelector<StateT, boolean>(
+    (state) => state.preview.isOpen,
+  );
+
+  return useMemo(() => {
+    return isHistoryOpen || isPreviewOpen;
+  }, [isHistoryOpen, isPreviewOpen]);
+};
+
 const DatasetSelector: FC = () => {
-  const { t } = useTranslation();
   const selectedDatasetId = useSelector<StateT, string | null>(
     (state) => state.datasets.selectedDatasetId,
   );
@@ -39,39 +50,81 @@ const DatasetSelector: FC = () => {
   const error = useSelector<StateT, string | null>(
     (state) => state.datasets.error,
   );
-  const query = useSelector<StateT, StandardQueryStateT>(
-    (state) => state.queryEditor.query,
-  );
 
   const selectDataset = useSelectDataset();
 
-  const onSelectDataset = (datasetId: string | null) =>
-    selectDataset(datasets, datasetId, selectedDatasetId, query);
+  const onChange = useCallback(
+    (value: SelectOptionT | null) =>
+      exists(value)
+        ? selectDataset(value.value as string)
+        : selectDataset(null),
 
-  const options =
-    datasets && datasets.map((db) => ({ value: db.id, label: db.label }));
-  const selected = options.find((set) => selectedDatasetId === set.value);
+    [selectDataset],
+  );
+
+  const options = useMemo(
+    () => datasets.map((db) => ({ value: db.id, label: db.label })),
+    [datasets],
+  );
+
+  const selected = useMemo(
+    () => options.find((set) => selectedDatasetId === set.value),
+    [options, selectedDatasetId],
+  );
+
+  const disabled = useIsDatasetSelectDisabled();
 
   return (
-    <WithTooltip text={t("help.datasetSelector")} lazy>
-      <Root data-test-id="dataset-selector">
-        <Headline>{t("datasetSelector.label")}</Headline>
-        <SxInputSelect
-          value={selected || null}
-          onChange={(value) =>
-            exists(value)
-              ? onSelectDataset(value.value as string)
-              : onSelectDataset(null)
-          }
-          placeholder={
-            error ? t("datasetSelector.error") : t("inputSelect.placeholder")
-          }
-          disabled={exists(error)}
-          options={options}
-        />
-      </Root>
-    </WithTooltip>
+    <DatasetSelectorUI
+      options={options}
+      selected={selected}
+      onChange={onChange}
+      error={error}
+      disabled={disabled}
+    />
   );
 };
+
+interface DatasetSelectorUIProps {
+  error: string | null;
+  selected?: SelectOptionT;
+  disabled?: boolean;
+  options: SelectOptionT[];
+  onChange: (datasetId: SelectOptionT | null) => void;
+}
+
+const DatasetSelectorUI = memo(
+  ({
+    selected,
+    onChange,
+    error,
+    options,
+    disabled,
+  }: DatasetSelectorUIProps) => {
+    const { t } = useTranslation();
+
+    return (
+      <WithTooltip
+        text={
+          disabled ? t("datasetSelector.disabled") : t("help.datasetSelector")
+        }
+        lazy
+      >
+        <Root data-test-id="dataset-selector">
+          <Headline>{t("datasetSelector.label")}</Headline>
+          <SxInputSelect
+            value={selected || null}
+            onChange={onChange}
+            placeholder={
+              error ? t("datasetSelector.error") : t("inputSelect.placeholder")
+            }
+            disabled={disabled || exists(error)}
+            options={options}
+          />
+        </Root>
+      </WithTooltip>
+    );
+  },
+);
 
 export default DatasetSelector;

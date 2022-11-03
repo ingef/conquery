@@ -8,12 +8,12 @@ import type { StateT } from "../app/reducers";
 import DatasetSelector from "../dataset/DatasetSelector";
 import { useHideLogoutButton } from "../user/selectors";
 
+import { HelpMenu } from "./HelpMenu";
 import LogoutButton from "./LogoutButton";
 
 const Root = styled("header")`
   background-color: ${({ theme }) => theme.col.bg};
-  border-bottom: 1px solid ${({ theme }) => theme.col.grayMediumLight};
-  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.3);
   padding: 0 20px;
   display: flex;
   flex-direction: row;
@@ -32,6 +32,7 @@ const Right = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: center;
+  gap: 5px;
 `;
 
 const OverflowHidden = styled("div")`
@@ -67,10 +68,6 @@ const Headline = styled("h1")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-const SxLogoutButton = styled(LogoutButton)`
-  margin-left: 5px;
-`;
-
 const useVersion = () => {
   const backendVersion = useSelector<StateT, string>(
     (state) => state.startup.config.version,
@@ -98,6 +95,10 @@ const Header: FC = () => {
   const { t } = useTranslation();
   const { backendVersion, frontendVersion } = useVersion();
   const hideLogoutButton = useHideLogoutButton();
+  const { manualUrl, contactEmail } = useSelector<
+    StateT,
+    StateT["startup"]["config"]
+  >((state) => state.startup.config);
 
   const versionString = `BE: ${backendVersion}, FE: ${frontendVersion}`;
 
@@ -116,7 +117,10 @@ const Header: FC = () => {
       </OverflowHidden>
       <Right>
         <DatasetSelector />
-        {!hideLogoutButton && <SxLogoutButton />}
+        {(manualUrl || contactEmail) && (
+          <HelpMenu manualUrl={manualUrl} contactEmail={contactEmail} />
+        )}
+        {!hideLogoutButton && <LogoutButton />}
       </Right>
     </Root>
   );
