@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
-import { forwardRef } from "react";
+import { forwardRef, memo, useMemo } from "react";
 
 import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
 
@@ -14,41 +14,60 @@ interface StyledFaIconProps extends FaIconPropsT {
 }
 
 const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
-  color: ${({ theme, active, red, secondary }) =>
+  color: ${({ theme, active, red, secondary, light }) =>
     red
       ? theme.col.red
       : active
       ? theme.col.blueGrayDark
+      : light
+      ? theme.col.gray
       : secondary
       ? theme.col.orange
       : theme.col.black};
   font-size: ${({ theme, large, small }) =>
     large ? theme.font.md : small ? theme.font.xs : theme.font.sm};
-  margin-right: ${({ hasChildren, tight }) =>
-    hasChildren ? (tight ? "5px" : "10px") : "0"};
+`;
+
+const FixedIconContainer = styled("span")`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: inline-block;
 `;
 
 const SxBasicButton = styled(BasicButton)<{
   frame?: boolean;
   active?: boolean;
   secondary?: boolean;
+  tight?: boolean;
+  bgHover?: boolean;
+  red?: boolean;
 }>`
   background-color: transparent;
-  color: ${({ theme, active, secondary }) =>
+  color: ${({ theme, active, secondary, red }) =>
     active
       ? theme.col.blueGrayDark
       : secondary
       ? theme.col.orange
+      : red
+      ? theme.col.red
       : theme.col.black};
-  opacity: 0.7;
-  transition: opacity ${({ theme }) => theme.transitionTime};
+  opacity: ${({ frame }) => (frame ? 1 : 0.75)};
+  transition: opacity ${({ theme }) => theme.transitionTime},
+    background-color ${({ theme }) => theme.transitionTime};
 
   border-radius: ${({ theme }) => theme.borderRadius};
   border: ${({ theme, frame }) =>
     frame ? "1px solid " + theme.col.gray : "none"};
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ tight }) => (tight ? "5px" : "10px")};
 
   &:hover {
     opacity: 1;
+
+    background-color: ${({ frame, bgHover, theme }) =>
+      frame || bgHover ? theme.col.grayVeryLight : " inherit"};
   }
 
   &:disabled {
@@ -71,6 +90,9 @@ export interface IconButtonPropsT extends BasicButtonProps {
   left?: boolean;
   frame?: boolean;
   bare?: boolean;
+  light?: boolean;
+  fixedIconWidth?: number;
+  bgHover?: boolean;
 }
 
 // A button that is prefixed by an icon
@@ -88,33 +110,69 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       iconProps,
       small,
       secondary,
+      light,
+      fixedIconWidth,
+      bgHover,
       ...restProps
     },
     ref,
-  ) => (
-    <SxBasicButton
-      active={active}
-      secondary={secondary}
-      {...restProps}
-      ref={ref}
-    >
-      <SxFaIcon
-        main
-        left={left}
-        regular={regular}
-        large={large}
+  ) => {
+    const iconElement = useMemo(() => {
+      const iconEl = (
+        <SxFaIcon
+          main
+          left={left}
+          regular={regular}
+          large={large}
+          active={active}
+          red={red}
+          secondary={secondary}
+          icon={icon}
+          hasChildren={!!children}
+          tight={tight}
+          small={small}
+          light={light}
+          {...iconProps}
+        />
+      );
+
+      return fixedIconWidth ? (
+        <FixedIconContainer style={{ width: fixedIconWidth }}>
+          {iconEl}
+        </FixedIconContainer>
+      ) : (
+        iconEl
+      );
+    }, [
+      icon,
+      active,
+      red,
+      large,
+      regular,
+      left,
+      children,
+      tight,
+      iconProps,
+      small,
+      secondary,
+      light,
+      fixedIconWidth,
+    ]);
+    return (
+      <SxBasicButton
         active={active}
-        red={red}
         secondary={secondary}
-        icon={icon}
-        hasChildren={!!children}
         tight={tight}
-        small={small}
-        {...iconProps}
-      />
-      {children}
-    </SxBasicButton>
-  ),
+        bgHover={bgHover}
+        red={red}
+        {...restProps}
+        ref={ref}
+      >
+        {iconElement}
+        {children && <span>{children}</span>}
+      </SxBasicButton>
+    );
+  },
 );
 
-export default IconButton;
+export default memo(IconButton);

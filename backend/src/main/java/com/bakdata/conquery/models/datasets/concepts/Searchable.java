@@ -1,26 +1,26 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import javax.validation.constraints.Min;
 
 import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.models.query.FilterSearch;
+import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
- * @implNote This class is tightly coupled with {@link com.bakdata.conquery.apiv1.FilterSearch} and {@link com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter}.
- *
+ * @implNote This class is tightly coupled with {@link FilterSearch} and {@link com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter}.
+ * <p>
  * Searchable classes describe how a search should be constructed, and provide the values with getSearchValues.
- *
  */
 public interface Searchable {
 	/**
-	 * All available {@link FEValue}s for searching.
+	 * All available {@link FEValue}s for searching in a {@link TrieSearch}.
 	 */
-	Stream<FEValue> getSearchValues(CSVConfig config, NamespaceStorage storage);
+	List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage);
 
 	/**
 	 * The actual Searchables to use, if there is potential for deduplication/pooling.

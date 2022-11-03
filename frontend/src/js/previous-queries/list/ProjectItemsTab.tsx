@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
-import type { DatasetIdT } from "../../api/types";
+import type { DatasetT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import { selectFormConfigs } from "../../external-forms/form-configs/selectors";
@@ -88,7 +88,7 @@ const Expand = styled("div")<{ areFoldersOpen?: boolean }>`
 `;
 
 interface PropsT {
-  datasetId: DatasetIdT | null;
+  datasetId: DatasetT["id"] | null;
 }
 
 const ProjectItemsTab = ({ datasetId }: PropsT) => {
@@ -182,7 +182,7 @@ const useLeftPaneSize = ({ areFoldersOpen }: { areFoldersOpen?: boolean }) => {
 };
 
 interface FilterAndFetchConfig {
-  datasetId: DatasetIdT | null;
+  datasetId: DatasetT["id"] | null;
   searchTerm: string | null;
   filter: ProjectItemsFilterStateT;
   typeFilter: ProjectItemsTypeFilterStateT;
@@ -190,7 +190,11 @@ interface FilterAndFetchConfig {
   noFoldersActive: boolean;
 }
 
-const useProjectItems = ({ datasetId }: { datasetId: DatasetIdT | null }) => {
+const useProjectItems = ({
+  datasetId,
+}: {
+  datasetId: DatasetT["id"] | null;
+}) => {
   const searchTerm = useSelector<StateT, string | null>(
     (state) => state.projectItemsSearch.searchTerm,
   );
@@ -262,7 +266,7 @@ const useQueries = ({
     if (datasetId) {
       loadQueries(datasetId);
     }
-  }, [datasetId]);
+  }, [datasetId, loadQueries]);
 
   return {
     queries,
@@ -295,7 +299,7 @@ const useFormConfigs = ({
     if (datasetId) {
       loadFormConfigs(datasetId);
     }
-  }, [datasetId]);
+  }, [datasetId, loadFormConfigs]);
 
   return {
     formConfigs,

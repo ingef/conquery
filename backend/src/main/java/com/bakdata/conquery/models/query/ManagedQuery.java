@@ -24,15 +24,15 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -41,6 +41,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
@@ -70,11 +71,10 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	 */
 	private Long lastResultCount;
 
-	//we don't want to store or send query results or other result metadata
+	//TODO this can actually be known ahead and reduced to speedup queries.
 	@JsonIgnore
-	private transient int involvedWorkers;
-	@JsonIgnore
-	private transient AtomicInteger executingThreads = new AtomicInteger(0);
+	private transient Set<WorkerId> involvedWorkers;
+
 	@JsonIgnore
 	private transient ConqueryConfig config;
 	@JsonIgnore
@@ -92,8 +92,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		namespace = namespaces.get(getDataset().getId());
 
-		involvedWorkers = namespace.getWorkers().size();
-
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, config, null));
 	}
 
@@ -108,11 +106,11 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 			return;
 		}
 
-		final int remaining = executingThreads.decrementAndGet();
+		involvedWorkers.remove(result.getWorkerId());
 
 		getExecutionManager().addQueryResult(this, result.getResults());
 
-		if (remaining == 0 && getState() == ExecutionState.RUNNING) {
+		if (involvedWorkers.isEmpty() && getState() == ExecutionState.RUNNING) {
 			finish(storage, ExecutionState.DONE);
 		}
 	}
@@ -131,8 +129,9 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@Override
 	public void start() {
 		super.start();
-
-		executingThreads.set(involvedWorkers);
+		involvedWorkers = Collections.synchronizedSet(namespace.getWorkers().stream()
+															   .map(WorkerInformation::getId)
+															   .collect(Collectors.toSet()));
 	}
 
 	@Override
@@ -173,7 +172,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		for (ResultInfo header : config.getFrontend().getQueryUpload().getIdResultInfos()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(uniqNamer.getUniqueName(header))
-												   .type(ResultType.IdT.INSTANCE.typeInfo())
+												   .type(header.getType().typeInfo())
+												   .semantics(header.getSemantics())
 												   .build());
 		}
 
@@ -262,7 +262,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 						  .forEach(label -> sb.append(label).append(" "));
 
 			// Last entry will output one Space that we don't want
-			if(sb.length() > 0) {
+			if (sb.length() > 0) {
 				sb.deleteCharAt(sb.length() - 1);
 			}
 
@@ -271,7 +271,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 				sb.append(" ").append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).furtherConcepts());
 			}
 		}
-
 
 
 		// Fallback to id if nothing could be extracted from the query description

@@ -3,25 +3,23 @@ import { FC, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
-import {
-  CurrencyConfigT,
-  DatasetIdT,
+import type {
+  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
 import { Heading3 } from "../headings/Headings";
 import { nodeIsConceptQueryNode } from "../model/node";
-import { sortSelects, isSelectDisabled } from "../model/select";
 import {
   ConceptQueryNodeType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
-import InputCheckbox from "../ui-components/InputCheckbox";
-import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 import type { ModeT } from "../ui-components/InputRange";
 
+import CommonNodeSettings from "./CommonNodeSettings";
 import ContentCell from "./ContentCell";
+import NodeSelects from "./NodeSelects";
 import TableView from "./TableView";
 
 const Column = styled("div")`
@@ -30,17 +28,8 @@ const Column = styled("div")`
   flex-direction: column;
 `;
 
-const Row = styled("div")`
-  max-width: 300px;
-  margin-bottom: 10px;
-`;
-
 const SectionHeading = styled(Heading3)`
   margin: 10px 10px 0;
-`;
-
-const CommonSettingsContainer = styled("div")`
-  margin: 15px 10px;
 `;
 
 const ContentCellGroup = styled(ContentCell)`
@@ -57,8 +46,7 @@ const ContentCellGroup = styled(ContentCell)`
 
 interface PropsT {
   node: StandardQueryNodeT;
-  datasetId: DatasetIdT;
-  currencyConfig: CurrencyConfigT;
+  datasetId: DatasetT["id"];
   selectedTableIdx: number | null;
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
@@ -76,7 +64,7 @@ interface PropsT {
     params: PostPrefixForSuggestionsParams,
     tableIdx: number,
     filterIdx: number,
-    { returnOnly }?: { returnOnly?: boolean },
+    config?: { returnOnly?: boolean },
   ) => Promise<PostFilterSuggestionsResponseT | null>;
   onSetDateColumn: (tableIdx: number, value: string) => void;
 }
@@ -84,7 +72,6 @@ interface PropsT {
 const ContentColumn: FC<PropsT> = ({
   node,
   datasetId,
-  currencyConfig,
   selectedTableIdx,
   blocklistedSelects,
   allowlistedSelects,
@@ -121,48 +108,19 @@ const ContentColumn: FC<PropsT> = ({
     <Column>
       <ContentCellGroup>
         <SectionHeading>{t("queryNodeEditor.properties")}</SectionHeading>
-        <CommonSettingsContainer>
-          {onToggleTimestamps && (
-            <Row>
-              <InputCheckbox
-                label={t("queryNodeEditor.excludeTimestamps")}
-                tooltip={t("help.excludeTimestamps")}
-                tooltipLazy
-                value={node.excludeTimestamps}
-                onChange={onToggleTimestamps}
-              />
-            </Row>
-          )}
-          {onToggleSecondaryIdExclude && (
-            <Row>
-              <InputCheckbox
-                label={t("queryNodeEditor.excludeFromSecondaryId")}
-                tooltip={t("help.excludeFromSecondaryId")}
-                tooltipLazy
-                value={node.excludeFromSecondaryId}
-                onChange={onToggleSecondaryIdExclude}
-              />
-            </Row>
-          )}
-        </CommonSettingsContainer>
+        <CommonNodeSettings
+          excludeFromSecondaryId={node.excludeFromSecondaryId}
+          onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
+          excludeTimestamps={node.excludeTimestamps}
+          onToggleTimestamps={onToggleTimestamps}
+        />
         {nodeIsConceptQueryNode(node) && node.selects && (
-          <ContentCell headline={t("queryNodeEditor.commonSelects")}>
-            <InputMultiSelect
-              onChange={onSelectSelects}
-              value={node.selects
-                .filter(({ selected }) => !!selected)
-                .map(({ id, label }) => ({ value: id, label: label }))}
-              options={sortSelects(node.selects).map((select) => ({
-                value: select.id,
-                label: select.label,
-                disabled: isSelectDisabled(
-                  select,
-                  blocklistedSelects,
-                  allowlistedSelects,
-                ),
-              }))}
-            />
-          </ContentCell>
+          <NodeSelects
+            selects={node.selects}
+            onSelectSelects={onSelectSelects}
+            blocklistedSelects={blocklistedSelects}
+            allowlistedSelects={allowlistedSelects}
+          />
         )}
       </ContentCellGroup>
       {tables.map((table, idx) => {
@@ -181,7 +139,6 @@ const ContentColumn: FC<PropsT> = ({
                 node as ConceptQueryNodeType /* otherwise there won't be tables */
               }
               datasetId={datasetId}
-              currencyConfig={currencyConfig}
               tableIdx={idx}
               allowlistedSelects={allowlistedSelects}
               blocklistedSelects={blocklistedSelects}

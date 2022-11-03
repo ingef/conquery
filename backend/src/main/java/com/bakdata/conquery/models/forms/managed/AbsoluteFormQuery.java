@@ -17,8 +17,8 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -32,6 +32,11 @@ import lombok.RequiredArgsConstructor;
 @CPSType(id="ABSOLUTE_FORM_QUERY", base=QueryDescription.class)
 @RequiredArgsConstructor(onConstructor_=@JsonCreator)
 public class AbsoluteFormQuery extends Query {
+
+	/**
+	 * see {@linkplain this#getResultInfos()}.
+	 */
+	public static final int FEATURES_OFFSET = 3;
 
 	@NotNull @Valid
 	private final Query query;
@@ -54,7 +59,9 @@ public class AbsoluteFormQuery extends Query {
 			query.createQueryPlan(context),
 			new FormQueryPlan(
 					DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resolutionsAndAlignmentMap),
-					features.createQueryPlan(context))
+					features.createQueryPlan(context),
+					false
+			)
 		);
 	}
 	
@@ -78,7 +85,7 @@ public class AbsoluteFormQuery extends Query {
 	}
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		query.collectRequiredQueries(requiredQueries);
 		features.collectRequiredQueries(requiredQueries);
 	}

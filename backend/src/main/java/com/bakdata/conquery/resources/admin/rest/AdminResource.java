@@ -37,14 +37,15 @@ import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.auth.Auth;
+import lombok.RequiredArgsConstructor;
 
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Produces(ExtraMimeTypes.JSON_STRING)
 @Path("/")
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AdminResource {
 
-	@Inject
-	private AdminProcessor processor;
+	private final AdminProcessor processor;
 
 	/**
 	 * Execute script and serialize value with {@link Objects#toString}.
@@ -93,6 +94,12 @@ public class AdminResource {
 	}
 
 	@GET
+	@Path("/busy")
+	public boolean isBusy() {
+		return processor.isBusy();
+	}
+
+	@GET
 	@Path("logout")
 	public Response logout(@Context ContainerRequestContext requestContext) {
 		// Invalidate all cookies. At the moment the adminEnd uses cookies only for authentication, so this does not interfere with other things
@@ -102,12 +109,18 @@ public class AdminResource {
 
 	@GET
 	@Path("/queries")
-	public FullExecutionStatus[] getQueries(@Auth Subject currentUser, @QueryParam("limit") OptionalLong limit, @QueryParam("since") Optional<String> since) {
+	public FullExecutionStatus[] getQueries(@Auth Subject currentUser, @QueryParam("limit") OptionalLong maybeLimit, @QueryParam("since") Optional<String> maybeSince) {
+
+		final LocalDate since = maybeSince.map(LocalDate::parse).orElse(LocalDate.now());
+		final long limit = maybeLimit.orElse(100);
+
 		final MetaStorage storage = processor.getStorage();
 		final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
+
+
 		return storage.getAllExecutions().stream()
-					  .filter(t -> t.getCreationTime().toLocalDate().isEqual(since.map(LocalDate::parse).orElse(LocalDate.now())))
-					  .limit(limit.orElse(100))
+					  .filter(t -> t.getCreationTime().toLocalDate().isAfter(since) || t.getCreationTime().toLocalDate().isEqual(since))
+					  .limit(limit)
 					  .map(t -> {
 						  try {
 							  return t.buildStatusFull(storage, currentUser, datasetRegistry, processor.getConfig());

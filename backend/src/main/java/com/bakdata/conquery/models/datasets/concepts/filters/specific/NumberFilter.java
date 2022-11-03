@@ -2,14 +2,13 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.math.BigDecimal;
 
-import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
+import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.number.DecimalFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
@@ -30,9 +29,8 @@ import lombok.extern.slf4j.Slf4j;
 public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends SingleColumnFilter<RANGE> {
 
 	@Override
-	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
-		Column column = getColumn();
-		switch (column.getType()) {
+	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
+		switch (getColumn().getType()) {
 			case MONEY:
 				f.setType(FEFilterType.Fields.MONEY_RANGE);
 				return;
@@ -44,14 +42,10 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 				f.setType(FEFilterType.Fields.REAL_RANGE);
 				return;
 			default:
-				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + column.getType());
+				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + getColumn().getType());
 		}
 	}
 
-	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[]{getColumn()};
-	}
 
 	@Override
 	public FilterNode<?> createFilterNode(RANGE value) {

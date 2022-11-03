@@ -1,16 +1,21 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.apiv1.frontend.FEFilter;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
@@ -25,43 +30,35 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * This filter represents a filter on the sum of one integer column.
  */
-@Getter
-@Setter
 @Slf4j
+@NoArgsConstructor
+@Data
 @CPSType(id = "SUM", base = Filter.class)
 public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter<RANGE> {
 
-
-	@Valid
 	@NotNull
-	@Getter
-	@Setter
 	@NsIdRef
 	private Column column;
 
-	@Valid
-	@Getter
-	@Setter
 	@NsIdRef
+	@Nullable
 	private Column subtractColumn;
 
-	@Valid
-	@Getter
-	@Setter
-	@NsIdRef
-	private Column distinctByColumn;
+	@NsIdRefCollection
+	@NotNull
+	private List<Column> distinctByColumn = Collections.emptyList();
 
 	@Override
-	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
-		Column column = getColumn();
-		switch (column.getType()) {
+	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
+		switch (getColumn().getType()) {
 			case MONEY:
 				f.setType(FEFilterType.Fields.MONEY_RANGE);
 				return;
@@ -74,30 +71,44 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 				return;
 			}
 			default:
-				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + column.getType());
+				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + getColumn().getType());
 		}
 	}
 
 	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[]{getColumn(), getSubtractColumn(), getDistinctByColumn()};
+	public List<Column> getRequiredColumns() {
+		final List<Column> out = new ArrayList<>();
+
+		out.add(getColumn());
+
+		if(distinctByColumn != null) {
+			out.addAll(getDistinctByColumn());
+		}
+
+		if(getSubtractColumn() != null){
+			out.add(getSubtractColumn());
+		}
+
+		return out;
 	}
 
 	@Override
 	public FilterNode createFilterNode(RANGE value) {
-		ColumnAggregator<?> aggregator = getAggregator();
+		IRange<? extends Number, ?> range = value;
 
-		if (distinctByColumn != null) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn()));
-		}
-
+		// Double values are parsed as BigDecimal, we convert to double if necessary
 		if (getColumn().getType() == MajorTypeId.REAL) {
-			return new RangeFilterNode(Range.DoubleRange.fromNumberRange(value), aggregator);
+			range = Range.DoubleRange.fromNumberRange(value);
 		}
 
-		return new RangeFilterNode(value, aggregator);
+		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
+			return new RangeFilterNode(range, new DistinctValuesWrapperAggregator(getAggregator(), getDistinctByColumn()));
+		}
+
+		return new RangeFilterNode(range, getAggregator());
 	}
 
+	@JsonIgnore
 	private ColumnAggregator<?> getAggregator() {
 		if (getSubtractColumn() == null) {
 			switch (getColumn().getType()) {

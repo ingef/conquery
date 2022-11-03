@@ -10,43 +10,55 @@ import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.ExcelResultProvider;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.SingleTableResult;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourceConstants;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.auth.Auth;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Path("datasets/{" + DATASET + "}/result/")
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultExcelResource {
 
 	public static final String GET_RESULT_PATH_METHOD = "get";
 
-	@Inject
-	private ResultExcelProcessor processor;
-	
+	private final DatasetRegistry datasetRegistry;
+
+	private final ConqueryConfig config;
+
+	private final ResultExcelProcessor processor;
+
 	@GET
 	@Path("{" + QUERY + "}.xlsx")
-	@Produces(AdditionalMediaTypes.ARROW_FILE)
-	public Response get(
-		@Auth Subject subject,
-		@PathParam(DATASET) DatasetId datasetId,
-		@PathParam(QUERY) ManagedExecution<?> execution,
-		@QueryParam("pretty") Optional<Boolean> pretty) {
+	@Produces(AdditionalMediaTypes.EXCEL)
+	public <E extends ManagedExecution<?> & SingleTableResult> Response get(
+			@Auth Subject subject,
+			@PathParam(DATASET) Dataset dataset,
+			@PathParam(QUERY) ManagedExecution<?> execution,
+			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
+			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), datasetId, subject.getId(), subject.getName());
-		return processor.getExcelResult(subject, (ManagedExecution<?> & SingleTableResult) execution, datasetId, pretty.orElse(true));
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), dataset, subject.getId(), subject.getName());
+		return processor.createResult(subject, (E) execution, dataset, pretty.orElse(true));
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

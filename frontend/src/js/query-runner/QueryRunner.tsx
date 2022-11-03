@@ -1,9 +1,8 @@
 import styled from "@emotion/styled";
 import { FC } from "react";
-import Hotkeys from "react-hot-keys";
+import { useHotkeys } from "react-hotkeys-hook";
 
 import { exists } from "../common/helpers/exists";
-import Preview from "../preview/Preview";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryResults from "./QueryResults";
@@ -56,22 +55,22 @@ const QueryRunner: FC<PropsT> = ({
   isButtonEnabled,
 }) => {
   const btnAction = isQueryRunning ? stopQuery : startQuery;
-
   const isStartStopLoading =
     !!queryRunner &&
     !!(queryRunner.startQuery.loading || queryRunner.stopQuery.loading);
 
   const progress = queryRunner?.progress;
 
+  useHotkeys(
+    "shift+enter",
+    () => {
+      if (isButtonEnabled) btnAction();
+    },
+    [isButtonEnabled, btnAction],
+  );
+
   return (
     <Root>
-      <Hotkeys
-        keyName="shift+enter"
-        onKeyDown={() => {
-          if (isButtonEnabled) btnAction();
-        }}
-      />
-      <Preview />
       <Left>
         <WithTooltip text={buttonTooltip}>
           <QueryRunnerButton
@@ -93,8 +92,10 @@ const QueryRunner: FC<PropsT> = ({
           !queryRunner.queryResult.error &&
           !queryRunner.queryResult.loading &&
           exists(queryRunner.queryResult.resultUrls) &&
+          exists(queryRunner.queryResult.resultLabel) &&
           !isQueryRunning && (
             <QueryResults
+              resultLabel={queryRunner.queryResult.resultLabel}
               resultCount={queryRunner.queryResult.resultCount}
               resultUrls={queryRunner.queryResult.resultUrls}
               resultColumns={queryRunner.queryResult.resultColumns}

@@ -1,9 +1,11 @@
+import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { ActionType, createAction } from "typesafe-actions";
 
 import {
   PostPrefixForSuggestionsParams,
+  usePostFilterValuesResolve,
   usePostPrefixForSuggestions,
 } from "../api/api";
 import type {
@@ -16,10 +18,12 @@ import type {
 } from "../api/types";
 import { successPayload } from "../common/actions";
 import type { TreesT } from "../concept-trees/reducer";
-import type { NodeResetConfig } from "../model/node";
+import { useDatasetId } from "../dataset/selectors";
+import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
 
+import { expandNode } from "./expandNode";
 import { StandardQueryStateT } from "./queryReducer";
 import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
 
@@ -97,13 +101,86 @@ const findPreviousQueryIds = (node: QueryNodeT, queries = []): string[] => {
   }
 };
 
-export const expandPreviousQuery = createAction(
-  "query-editor/EXPAND_PREVIOUS_QUERY",
-)<{
+// Completely override all groups in the editor with the previous groups, but
+// a) merge elements with concept data from concept trees (esp. "tables")
+// b) load nested previous queries contained in that query,
+//    so they can also be expanded
+const createExpandedQueryState = ({
+  rootConcepts,
+  query,
+  expandErrorMessage,
+}: {
   rootConcepts: TreesT;
   query: AndQueryT;
   expandErrorMessage: string;
-}>();
+}): StandardQueryStateT => {
+  return query.root.children.map((child) =>
+    expandNode(rootConcepts, child, expandErrorMessage),
+  );
+};
+
+export const expandPreviousQuery = createAction(
+  "query-editor/EXPAND_PREVIOUS_QUERY",
+)<StandardQueryStateT>();
+
+const useLoadBigMultiSelectValues = () => {
+  const datasetId = useDatasetId();
+  const postFilterValuesResolve = usePostFilterValuesResolve();
+
+  return useCallback(
+    // Actually, state is a StandardQueryStateT
+    // where all big multi select filters
+    // don't have value: SelectOptionT[] yet, but string[]
+    // we just don't have an extra type for it.
+    async (state: StandardQueryStateT): Promise<StandardQueryStateT> => {
+      if (!datasetId) return state;
+
+      return Promise.all(
+        state.map(async (val) => ({
+          ...val,
+          elements: await Promise.all(
+            val.elements.map(async (el) => {
+              if (!nodeIsConceptQueryNode(el)) return el;
+              return {
+                ...el,
+                tables: await Promise.all(
+                  el.tables.map(async (table) => ({
+                    ...table,
+                    filters: await Promise.all(
+                      table.filters.map(async (filter) => {
+                        if (filter.type !== "BIG_MULTI_SELECT") return filter;
+                        if (!filter.value || filter.value.length === 0)
+                          return filter;
+
+                        try {
+                          const result = await postFilterValuesResolve(
+                            datasetId,
+                            el.tree,
+                            table.id,
+                            filter.id,
+                            filter.value as unknown as string[], // See explanation above
+                          );
+                          return {
+                            ...filter,
+                            value: result.resolvedFilter?.value || [],
+                          };
+                        } catch (e) {
+                          console.error(e);
+                          return { ...filter, value: [] };
+                        }
+                      }),
+                    ),
+                  })),
+                ),
+              };
+            }),
+          ),
+        })),
+      );
+    },
+    [datasetId, postFilterValuesResolve],
+  );
+};
 
 const isAndQuery = (query: QueryT): query is AndQueryT => {
   return query.root.type === "AND";
@@ -116,32 +193,38 @@ export const useExpandPreviousQuery = () => {
   const dispatch = useDispatch();
   const { loadQuery } = useLoadQuery();
   const { t } = useTranslation();
+  const loadBigMultiSelectValues = useLoadBigMultiSelectValues();
 
-  return async (rootConcepts: TreesT, query: QueryT) => {
-    if (!isAndQuery(query)) {
-      throw new Error("Cant expand query, because root is not AND");
-    }
+  return useCallback(
+    async (rootConcepts: TreesT, query: QueryT) => {
+      if (!isAndQuery(query)) {
+        throw new Error("Cant expand query, because root is not AND");
+      }
 
-    const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
+      const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
 
-    dispatch(
-      expandPreviousQuery({
-        rootConcepts,
-        query,
-        expandErrorMessage: t("queryEditor.couldNotExpandNode"),
-      }),
-    );
+      const expandedQueryState = await loadBigMultiSelectValues(
+        createExpandedQueryState({
+          rootConcepts,
+          query,
+          expandErrorMessage: t("queryEditor.couldNotExpandNode"),
+        }),
+      );
 
-    await Promise.all(
-      nestedPreviousQueryIds.map((queryId) => loadQuery(queryId)),
-    );
+      dispatch(expandPreviousQuery(expandedQueryState));
 
-    dispatch(
-      setSelectedSecondaryId({
-        secondaryId: query.secondaryId ? query.secondaryId : null,
-      }),
-    );
-  };
+      await Promise.all(
+        nestedPreviousQueryIds.map((queryId) => loadQuery(queryId)),
+      );
+
+      dispatch(
+        setSelectedSecondaryId({
+          secondaryId: query.secondaryId ? query.secondaryId : null,
+        }),
+      );
+    },
+    [dispatch, t, loadQuery, loadBigMultiSelectValues],
+  );
 };
 
 export const updateNodeLabel = createAction("query-editor/UPDATE_NODE_LABEL")<{
@@ -250,26 +333,29 @@ export const useLoadFilterSuggestions = (
   const dispatch = useDispatch();
   const postPrefixForSuggestions = usePostPrefixForSuggestions();
 
-  return async (
-    params: PostPrefixForSuggestionsParams,
-    tableIdx: number,
-    filterIdx: number,
-    { returnOnly }: { returnOnly?: boolean } = {},
-  ) => {
-    if (!editedNode) return null;
+  return useCallback(
+    async (
+      params: PostPrefixForSuggestionsParams,
+      tableIdx: number,
+      filterIdx: number,
+      { returnOnly }: { returnOnly?: boolean } = {},
+    ) => {
+      if (!editedNode) return null;
 
-    const context = { ...editedNode, tableIdx, filterIdx, page: params.page };
+      const context = { ...editedNode, tableIdx, filterIdx, page: params.page };
 
-    const suggestions = await postPrefixForSuggestions(params);
+      const suggestions = await postPrefixForSuggestions(params);
 
-    if (!returnOnly) {
-      dispatch(
-        loadFilterSuggestionsSuccess(successPayload(suggestions, context)),
-      );
-    }
+      if (!returnOnly) {
+        dispatch(
+          loadFilterSuggestionsSuccess(successPayload(suggestions, context)),
+        );
+      }
 
-    return suggestions;
-  };
+      return suggestions;
+    },
+    [dispatch, editedNode, postPrefixForSuggestions],
+  );
 };
 
 export const setSelectedSecondaryId = createAction(

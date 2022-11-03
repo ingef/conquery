@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
@@ -19,7 +19,7 @@ public abstract class ColumnAggregator<T> extends Aggregator<T> {
 		}
 	}
 
-	public abstract Column[] getRequiredColumns();
+	public abstract List<Column> getRequiredColumns();
 
 	@Override
 	public abstract void acceptEvent(Bucket bucket, int event);
@@ -43,7 +43,7 @@ public abstract class ColumnAggregator<T> extends Aggregator<T> {
 
 	@Override
 	public String toString() {
-		return "ColumnAggregator(column=" + Arrays.toString(getRequiredColumns()) + ')';
+		return "ColumnAggregator(column=" + getRequiredColumns() + ')';
 	}
 
 }

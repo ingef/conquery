@@ -132,13 +132,13 @@
                         {
                             "name": "timeCountBefore",
                             "type": "NUMBER",
-                            "defaultValue": 1,
+                            "defaultValue": 4,
                             "min": 1,
                             "label": {
                                 "de": "Zeit davor"
                             },
                             "placeholder": {
-                                "de": "1"
+                                "de": "4"
                             },
                             "pattern": "^(?!-)\\d*$",
                             "validations": [
@@ -153,12 +153,12 @@
                             "name": "timeCountAfter",
                             "type": "NUMBER",
                             "min": 1,
-                            "defaultValue": 1,
+                            "defaultValue": 4,
                             "label": {
                                 "de": "Zeit danach"
                             },
                             "placeholder": {
-                                "de": "1"
+                                "de": "4"
                             },
                             "pattern": "^(?!-)\\d*$",
                             "validations": [
@@ -241,24 +241,7 @@
                             "name": "features",
                             "type": "CONCEPT_LIST",
                             "label": {
-                                "de": "Konzepte im Vorbeobachtungszeitraum (Feature Zeitraum)"
-                            },
-                            "isTwoDimensional": true,
-                            "conceptDropzoneLabel": {
-                                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
-                            },
-                            "conceptColumnDropzoneLabel": {
-                                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
-                            },
-                            "validations": [
-                                "NOT_EMPTY"
-                            ]
-                        },
-                        {
-                            "name": "outcomes",
-                            "type": "CONCEPT_LIST",
-                            "label": {
-                                "de": "Konzepte im Nachbeobachtungszeitraum (Outcome Zeitraum)"
+                                "de": "Konzepte im Vorbeobachtungs-/Nachbetrachtungszeitraum"
                             },
                             "isTwoDimensional": true,
                             "conceptDropzoneLabel": {

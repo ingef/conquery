@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { useDatasetId } from "../dataset/selectors";
 import QueryUploadConceptListModal from "../query-upload-concept-list-modal/QueryUploadConceptListModal";
@@ -26,13 +26,14 @@ export const QueryEditor = () => {
     setEditedNode(null);
   }, [datasetId]);
 
+  const onClose = useCallback(() => setEditedNode(null), []);
+
   return (
     <Root>
       <Query setEditedNode={setEditedNode} />
-      <StandardQueryNodeEditor
-        editedNode={editedNode}
-        setEditedNode={setEditedNode}
-      />
+      {editedNode && (
+        <StandardQueryNodeEditor editedNode={editedNode} onClose={onClose} />
+      )}
       <QueryUploadConceptListModal />
     </Root>
   );

@@ -5,26 +5,36 @@
     "clazz": "ConfigResource"
   },
   {
-    "method": "GET",
-    "path": "/me",
-    "clazz": "MeResource"
+      "method": "GET",
+      "path": "/me",
+      "clazz": "MeResource"
   },
-  {
-    "method": "POST",
-    "path": "/datasets/{dataset}/queries",
-    "clazz": "QueryResource"
-  },
-  {
-    "method": "POST",
-    "path": "/datasets/{dataset}/queries/upload",
-    "clazz": "QueryResource"
-  },
-  {
-    "method": "GET",
-    "path": "/datasets/{dataset}/queries/{query}",
-    "clazz": "QueryResource"
-  },
-  {
+    {
+        "method": "POST",
+        "path": "/datasets/{dataset}/queries",
+        "clazz": "QueryResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/entity-preview",
+        "clazz": "DatasetResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{dataset}/queries/entity",
+        "clazz": "QueryResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{dataset}/queries/upload",
+        "clazz": "QueryResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/queries/{query}",
+        "clazz": "QueryResource"
+    },
+    {
     "method": "POST",
     "path": "/datasets/{dataset}/queries/{query}/cancel",
     "clazz": "QueryResource"
@@ -47,12 +57,17 @@
   {
     "method": "GET",
     "path": "/datasets/{dataset}/result/{query}.arrs",
-    "clazz": "ResultArrowStreamResource"
+    "clazz": "ResultArrowResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}/result/{query}.arrf",
-    "clazz": "ResultArrowFileResource"
+    "clazz": "ResultArrowResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/result/{query}.parquet",
+    "clazz": "ResultParquetResource"
   },
   {
     "method": "GET",

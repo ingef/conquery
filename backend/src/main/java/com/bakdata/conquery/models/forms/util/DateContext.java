@@ -79,7 +79,7 @@ public class DateContext {
 			int index = 0;
 			for (CDateRange quarterInMask : divider.apply(dateRangeMask)) {
 				index++;
-				DateContext dc = new DateContext(quarterInMask, FeatureGroup.OUTCOME,
+				DateContext dc = new DateContext(quarterInMask, FeatureGroup.SINGLE_GROUP,
 					// For now there is no index for complete
 					mode.getResolution().equals(Resolution.COMPLETE) ? null : index, null, mode.getResolution());
 				dcList.add(dc);
@@ -162,11 +162,11 @@ public class DateContext {
 				List<CDateRange> featureRanges = featureRangeDivider.apply(featureRange);
 				/*
 				 *  Depending on the index placement the event date belong to the feature range , outcome range or neither. This is represented in the index.
-				 *  If the index placement is BEFORE, the event date is included in the most recent feature date range, which is marked by an index of 0.
-				 *  If the index placement is NEUTRAL, the event date is not included in any date range and not range index is marked with 0.
-				 *  If the index placement is AFTER, the event date is included in the earliest outcome date range, which is marked by 0.
+				 *  If the index placement is BEFORE, the event date is included in the most recent feature date range, which is marked by an index of -1.
+				 *  If the index placement is NEUTRAL, the event date is not included in any date range and no range index is marked with 0.
+				 *  If the index placement is AFTER, the event date is included in the earliest outcome date range, which is marked by 1.
 				 */
-				int index = indexPlacement.equals(IndexPlacement.BEFORE) ? featureRanges.size() - 1 : featureRanges.size();
+				int index = featureRanges.size();
 				for (CDateRange subRange : featureRanges) {
 					DateContext dc = new DateContext(
 							subRange,
@@ -183,7 +183,7 @@ public class DateContext {
 
 			if (outcomeRange != null) {
 
-				int index = indexPlacement.equals(IndexPlacement.AFTER) ? 0 : 1;
+				int index = 1;
 				for (CDateRange subRange : outcomeRangeDivider.apply(outcomeRange)) {
 					DateContext dc = new DateContext(
 							subRange,
@@ -210,6 +210,8 @@ public class DateContext {
 	 * @param featureTime the time units to be included.
 	 * @param timeUnit  The time unit.
 	 * @return The feature range.
+	 *
+	 * TODO Replace this and the following function by a function with an interface like this: private static CDateRange generateRelativeRange(int event, boolean indexIncluded, int relativeAmount, CalendarUnit timeUnit)
 	 */
 	private static CDateRange generateFeatureRange(int event, IndexPlacement indexPlacement, int featureTime, CalendarUnit timeUnit) {
 		if(featureTime <= 0){

@@ -3,33 +3,95 @@
 	"description": "The concept format of conquery",
 	"type": "object",
 	"properties": {
-		"name": { "$ref": "cqIdPart.json#" },
-		"type": { "type": "string", "pattern": "^TREE$" },
+		"name": {
+			"$ref": "cqIdPart.json#"
+		},
+		"type": {
+			"type": "string",
+			"pattern": "^TREE$"
+		},
 		"connectors": {
 			"type": "array",
 			"items": {
 				"type": "object",
 				"properties": {
-					"column": { "type": "string" },
-					"label": { "type": "string" }
+					"column": {
+						"type": "string"
+					},
+					"label": {
+						"type": "string"
+					},
+					"selects": {
+						"oneOf": [
+							{
+								"type": "array",
+								"items": {
+									"properties": {
+										"type": {
+											"type": "string"
+										},
+										"name": {
+											"type": "string"
+										},
+										"label": {
+											"type": "string"
+										}
+									},
+									"required": [
+										"type",
+										"name"
+									],
+									"oneOf": [
+										{
+											"type": "object",
+											"properties": {
+												"type": {
+													"pattern": "^CONCEPT_VALUES$"
+												},
+												"asIds": {
+													"type": "boolean"
+												}
+											}
+										}
+									]
+								}
+							}
+						]
+					}
 				}
 			}
 		},
-		"children": { "$ref": "concept.json#/$defs/treeChildren" }
+		"children": {
+			"$ref": "concept.json#/$defs/treeChildren"
+		}
 	},
-	"required": ["name", "children", "connectors"],
+	"required": [
+		"name",
+		"connectors"
+	],
 	"$defs": {
 		"treeChildren": {
 			"type": "array",
 			"items": {
 				"type": "object",
 				"properties": {
-					"label": { "type": "string" },
-					"description": { "type:": "string" },
-					"condition": { "$ref": "concept.json#/$defs/condition" },
-					"children": { "$ref": "concept.json#/$defs/treeChildren" }
+					"label": {
+						"type": "string"
+					},
+					"description": {
+						"type:": "string"
+					},
+					"condition": {
+						"$ref": "concept.json#/$defs/condition"
+					},
+					"children": {
+						"$ref": "concept.json#/$defs/treeChildren"
+					}
 				},
-				"required": ["condition", "children"]
+				"required": [
+					"condition",
+					"children"
+				]
 			}
 		},
 		"condition": {
@@ -39,25 +101,49 @@
 					"properties": {
 						"type": {
 							"type": "string",
-							"enum": ["PREFIX_RANGE"]
+							"enum": [
+								"PREFIX_RANGE"
+							]
 						},
-						"min": { "type": "string" },
-						"max": { "type": "string" }
+						"min": {
+							"type": "string"
+						},
+						"max": {
+							"type": "string"
+						}
 					},
-					"required": ["type", "min", "max"]
+					"required": [
+						"type",
+						"min",
+						"max"
+					]
 				},
 				{
 					"type": "object",
 					"properties": {
 						"type": {
 							"type": "string",
-							"enum": ["PREFIX_LIST"]
+							"enum": [
+								"PREFIX_LIST"
+							]
 						},
 						"prefixes": {
-							"type": "array",
-							"items": { "type": "string" }
+							"oneOf": [
+								{
+									"type": "array",
+									"items": {
+										"type": "string"
+									}
+								},
+								{
+									"type": "string"
+								}
+							]
 						},
-						"required": ["type", "items"]
+						"required": [
+							"type",
+							"items"
+						]
 					}
 				}
 			]

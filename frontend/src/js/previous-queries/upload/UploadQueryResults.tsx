@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import { usePostQueryUpload } from "../../api/api";
 import type {
-  DatasetIdT,
+  DatasetT,
   QueryUploadConfigT,
   UploadQueryResponseT,
 } from "../../api/types";
@@ -19,12 +19,12 @@ import { QueryToUploadT } from "./CSVColumnPicker";
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
 
 const SxIconButton = styled(IconButton)`
-  padding: 8px 6px;
+  padding: 9px 6px;
 `;
 
 interface PropsT {
   className?: string;
-  datasetId: DatasetIdT | null;
+  datasetId: DatasetT["id"] | null;
 }
 
 const UploadQueryResults = ({ className, datasetId }: PropsT) => {
@@ -73,11 +73,8 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
   };
 
   return (
-    <>
-      <WithTooltip
-        text={t("uploadQueryResults.uploadResults")}
-        className={className}
-      >
+    <div className={className}>
+      <WithTooltip text={t("uploadQueryResults.uploadResults")}>
         <SxIconButton
           frame
           icon="upload"
@@ -94,7 +91,7 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
           onUpload={onUpload}
         />
       )}
-    </>
+    </div>
   );
 };
 

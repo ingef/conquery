@@ -44,18 +44,16 @@ const SxIconButton = styled(IconButton)`
   padding: 2px 8px;
   opacity: 1;
   border-radius: 0;
+
+  position: absolute;
+  right: 0px;
+  top: 0px;
+  display: none;
 `;
 
 const AddFolderIconButton = styled(IconButton)`
   text-align: left;
   padding: 4px 6px;
-`;
-
-const SxWithTooltip = styled(WithTooltip)`
-  position: absolute;
-  right: 0px;
-  top: 0px;
-  display: none !important; /* to override display: inline */
 `;
 
 const Row = styled("div")`
@@ -74,8 +72,8 @@ const SxDropzone = styled(Dropzone)`
 
   &:hover {
     background-color: ${({ theme }) => theme.col.grayVeryLight};
-    ${SxWithTooltip} {
-      display: inherit !important; /* to override display: inline */
+    ${SxIconButton} {
+      display: block;
     }
   }
 `;
@@ -228,24 +226,24 @@ const Folders: FC<Props> = ({ className }) => {
           }}
         />
       )}
+      <SxPreviousQueriesFolder
+        key="all-queries"
+        folder={t("folders.allQueries")}
+        active={folderFilter.length === 0 && !noFoldersActive}
+        onClick={onResetFolderFilter}
+        resultCount={searchResult ? searchResult["__all__"] : null}
+        resultWords={[]}
+      />
+      <SxPreviousQueriesFolder
+        key="no-folder"
+        special
+        folder={t("folders.noFolders")}
+        active={noFoldersActive}
+        onClick={onToggleNoFoldersActive}
+        resultCount={searchResult ? searchResult["__without_folder__"] : null}
+        resultWords={[]}
+      />
       <ScrollContainer>
-        <SxPreviousQueriesFolder
-          key="all-queries"
-          folder={t("folders.allQueries")}
-          active={folderFilter.length === 0 && !noFoldersActive}
-          onClick={onResetFolderFilter}
-          resultCount={searchResult ? searchResult["__all__"] : null}
-          resultWords={[]}
-        />
-        <SxPreviousQueriesFolder
-          key="no-folder"
-          special
-          folder={t("folders.noFolders")}
-          active={noFoldersActive}
-          onClick={onToggleNoFoldersActive}
-          resultCount={searchResult ? searchResult["__without_folder__"] : null}
-          resultWords={[]}
-        />
         {folders.map((folder, i) => {
           return (
             <SxDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
@@ -277,7 +275,7 @@ const Folders: FC<Props> = ({ className }) => {
                     resultCount={searchResult ? searchResult[folder] : null}
                     resultWords={searchResultWords}
                   />
-                  <SxWithTooltip text={t("common.delete")}>
+                  <WithTooltip text={t("common.delete")}>
                     <SxIconButton
                       icon="times"
                       onClick={(e) => {
@@ -285,7 +283,7 @@ const Folders: FC<Props> = ({ className }) => {
                         e.stopPropagation();
                       }}
                     />
-                  </SxWithTooltip>
+                  </WithTooltip>
                 </>
               )}
             </SxDropzone>

@@ -83,12 +83,8 @@ public class ExportForm extends Form {
 	}
 
 	@Override
-	public Set<ManagedExecution<?>> collectRequiredQueries() {
-		if(queryGroup == null){
-			return Collections.emptySet();
-		}
-
-		return Set.of(queryGroup);
+	public Set<ManagedExecutionId> collectRequiredQueries() {
+		return Set.of(queryGroupId);
 	}
 
 	@Override

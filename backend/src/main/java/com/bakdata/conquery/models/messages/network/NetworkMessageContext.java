@@ -14,12 +14,10 @@ import lombok.Getter;
 
 @Getter
 public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> extends MessageSender.Simple<MESSAGE> {
-	private final JobManager jobManager;
 	private final int backpressure;
 
-	public NetworkMessageContext(JobManager jobManager, NetworkSession session, int backpressure) {
+	public NetworkMessageContext(NetworkSession session, int backpressure) {
 		super(session);
-		this.jobManager = jobManager;
 		this.backpressure = backpressure;
 	}
 	
@@ -32,14 +30,14 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	 */
 	@Getter
 	public static class ShardNodeNetworkContext extends NetworkMessageContext<MessageToManagerNode> {
-		
+
 		private final Workers workers;
 		private final ConqueryConfig config;
 		private final Validator validator;
-		private NetworkSession rawSession;
+		private final NetworkSession rawSession;
 
-		public ShardNodeNetworkContext(JobManager jobManager, NetworkSession session, Workers workers, ConqueryConfig config, Validator validator) {
-			super(jobManager, session, config.getCluster().getBackpressure());
+		public ShardNodeNetworkContext(NetworkSession session, Workers workers, ConqueryConfig config, Validator validator) {
+			super(session, config.getCluster().getBackpressure());
 			this.workers = workers;
 			this.config = config;
 			this.validator = validator;
@@ -56,8 +54,8 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 		private final DatasetRegistry namespaces;
 
 
-		public ManagerNodeNetworkContext(JobManager jobManager, NetworkSession session, DatasetRegistry namespaces, int backpressure) {
-			super(jobManager, session, backpressure);
+		public ManagerNodeNetworkContext(NetworkSession session, DatasetRegistry namespaces, int backpressure) {
+			super(session, backpressure);
 			this.namespaces = namespaces;
 		}
 	}

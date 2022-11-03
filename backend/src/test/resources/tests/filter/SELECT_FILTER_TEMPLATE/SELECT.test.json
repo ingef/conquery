@@ -1,0 +1,61 @@
+{
+    "type": "FILTER_TEST",
+    "label": "SELECT Test",
+    "expectedCsv": "tests/filter/SELECT_FILTER_TEMPLATE/expected_SELECT_Filter.csv",
+    "content": {
+        "tables": {
+            "csv": "tests/filter/SELECT_FILTER_TEMPLATE/content_SELECT_Filter.csv",
+            "primaryColumn": {
+                "name": "pid",
+                "type": "STRING"
+            },
+            "columns": [
+                {
+                    "name": "value",
+                    "type": "STRING"
+                },
+                {
+                    "name": "datum",
+                    "type": "DATE"
+                }
+            ]
+        }
+    },
+    "internToExternMappings": {
+        "name": "test_map",
+        "type": "CSV_MAP",
+        "internalColumn": "internal",
+        "externalTemplate": "External: {{external}} {{external_option}}",
+        "csv": "classpath:/tests/filter/SELECT_FILTER_TEMPLATE/search_index.csv"
+    },
+    "searchIndices": {
+        "type": "CSV_TEMPLATE",
+        "name": "search_index",
+        "filePath": "classpath:/tests/filter/SELECT_FILTER_TEMPLATE/search_index.csv",
+        "columnValue": "internal",
+        "value": "{{external}}",
+        "optionValue": "{{external_option}}"
+    },
+    "connector": {
+        "validityDates": {
+            "label": "Datum",
+            "column": "table.datum"
+        },
+        "filters": {
+            "description": "Test SELECT_Filter",
+            "column": "table.value",
+            "type": "SINGLE_SELECT",
+            "template": "search_index"
+        },
+        "selects": {
+            "name": "select",
+            "type": "FIRST",
+            "column": "table.value",
+            "mapping": "test_map"
+        }
+    },
+    "filterValue": {
+        "type": "SELECT",
+        "value": "1"
+    }
+}

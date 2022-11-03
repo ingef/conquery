@@ -14,7 +14,7 @@ import {
   useGetFormConfigs,
 } from "../../api/api";
 import {
-  DatasetIdT,
+  DatasetT,
   GetQueriesResponseT,
   GetQueryResponseT,
   QueryIdT,
@@ -22,7 +22,7 @@ import {
 import { useDatasetId } from "../../dataset/selectors";
 import { setMessage } from "../../snack-message/actions";
 
-import type { FormConfigT, PreviousQueryIdT, PreviousQueryT } from "./reducer";
+import type { FormConfigT, PreviousQueryT } from "./reducer";
 
 export type PreviousQueryListActions = ActionType<
   | typeof loadQueriesSuccess
@@ -47,17 +47,20 @@ export const useLoadQueries = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const loadQueries = async (datasetId: DatasetIdT) => {
-    setLoading(true);
-    try {
-      const data = await getQueries(datasetId);
+  const loadQueries = useCallback(
+    async (datasetId: DatasetT["id"]) => {
+      setLoading(true);
+      try {
+        const data = await getQueries(datasetId);
 
-      dispatch(loadQueriesSuccess({ data }));
-    } catch (e) {
-      dispatch(setMessage({ message: t("previousQueries.error") }));
-    }
-    setLoading(false);
-  };
+        dispatch(loadQueriesSuccess({ data }));
+      } catch (e) {
+        dispatch(setMessage({ message: t("previousQueries.error") }));
+      }
+      setLoading(false);
+    },
+    [dispatch, getQueries, t],
+  );
 
   return {
     loading,
@@ -78,19 +81,22 @@ export const useLoadQuery = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const loadQuery = async (queryId: PreviousQueryIdT) => {
-    if (!datasetId) return;
+  const loadQuery = useCallback(
+    async (queryId: PreviousQueryT["id"]) => {
+      if (!datasetId) return;
 
-    setLoading(true);
-    try {
-      const query = await getQuery(datasetId, queryId);
+      setLoading(true);
+      try {
+        const query = await getQuery(datasetId, queryId);
 
-      dispatch(loadQuerySuccess({ id: queryId, data: query }));
-    } catch (e) {
-      dispatch(setMessage({ message: t("previousQuery.loadError") }));
-    }
-    setLoading(false);
-  };
+        dispatch(loadQuerySuccess({ id: queryId, data: query }));
+      } catch (e) {
+        dispatch(setMessage({ message: t("previousQuery.loadError") }));
+      }
+      setLoading(false);
+    },
+    [dispatch, datasetId, getQuery, t],
+  );
 
   return {
     loading,
@@ -147,7 +153,7 @@ export const useRemoveQuery = () => {
   const deleteQuery = useDeleteQuery();
   const [loading, setLoading] = useState(false);
 
-  const removeQuery = async (queryId: PreviousQueryIdT) => {
+  const removeQuery = async (queryId: PreviousQueryT["id"]) => {
     if (!datasetId) return;
 
     setLoading(true);
@@ -190,7 +196,7 @@ export const useLoadFormConfigs = () => {
   const getFormConfigs = useGetFormConfigs();
 
   const loadFormConfigs = useCallback(
-    async (datasetId: DatasetIdT) => {
+    async (datasetId: DatasetT["id"]) => {
       setLoading(true);
       try {
         const data = await getFormConfigs(datasetId);

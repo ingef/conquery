@@ -15,6 +15,16 @@
     "clazz": "AdminDatasetResource"
   },
   {
+    "method": "POST",
+    "path": "/datasets/{dataset}/preview",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/datasets/{dataset}/preview",
+    "clazz": "AdminDatasetResource"
+  },
+  {
     "method": "GET",
     "path": "/datasets/{dataset}",
     "clazz": "AdminDatasetResource"
@@ -75,8 +85,33 @@
     "clazz": "AdminDatasetResource"
   },
   {
+    "method": "POST",
+    "path": "/datasets/{dataset}/internToExtern",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/searchIndex",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/clear-index-cache",
+    "clazz": "AdminDatasetResource"
+  },
+  {
     "method": "DELETE",
     "path": "/datasets/{dataset}/secondaryId/{secondaryId}",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/datasets/{dataset}/internToExtern/{internToExternId}",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "DELETE",
+    "path": "/datasets/{dataset}/searchIndex/{searchIndexId}",
     "clazz": "AdminDatasetResource"
   },
   {
@@ -252,6 +287,11 @@
   {
     "method": "GET",
     "path": "/jobs/",
+    "clazz": "AdminResource"
+  },
+  {
+    "method": "GET",
+    "path": "/busy",
     "clazz": "AdminResource"
   },
   {

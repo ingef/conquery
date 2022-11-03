@@ -51,7 +51,8 @@ public class DefaultLabelTest {
 
 	@BeforeAll
 	public static void beforeAll() {
-		STORAGE.openStores(new NonPersistentStoreFactory());
+		// no mapper required
+		STORAGE.openStores(null);
 
 		I18n.init();
 
@@ -146,7 +147,7 @@ public class DefaultLabelTest {
 	void autoLabelUploadQuery(Locale locale, String autoLabel) {
 		I18n.LOCALE.set(locale);
 
-		CQExternal external = new CQExternal(List.of(), new String[0][0]);
+		CQExternal external = new CQExternal(List.of(), new String[0][0], false);
 		ConceptQuery cq = new ConceptQuery(external);
 		ManagedQuery mQuery = cq.toManagedExecution(user, DATASET);
 
@@ -173,7 +174,7 @@ public class DefaultLabelTest {
 		CQConcept concept3 = makeCQConcept("Concept3veryveryveryveryveryveryveryverylooooooooooooooooooooonglabel");
 
 		and.setChildren(List.of(
-				new CQExternal(List.of(), new String[0][0]),
+				new CQExternal(List.of(), new String[0][0], false),
 				new CQReusedQuery(managedQuery.getId()),
 				concept1,
 				concept2,
@@ -207,7 +208,7 @@ public class DefaultLabelTest {
 		CQConcept concept2 = makeCQConcept("Concept2");
 		CQConcept concept3 = makeCQConcept("Concept3");
 		and.setChildren(List.of(
-				new CQExternal(List.of(), new String[0][0]),
+				new CQExternal(List.of(), new String[0][0], false),
 				new CQReusedQuery(managedQuery.getId()),
 				concept1,
 				concept2,

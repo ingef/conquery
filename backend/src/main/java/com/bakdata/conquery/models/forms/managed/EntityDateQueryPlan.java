@@ -62,7 +62,7 @@ public class EntityDateQueryPlan implements QueryPlan<MultilineEntityResult> {
             contexts.addAll(DateContext.generateAbsoluteContexts(range, resolutionsAndAlignments));
         }
 
-        FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features);
+        FormQueryPlan resolutionQuery = new FormQueryPlan(contexts, features, false);
 
         return resolutionQuery.execute(ctx, entity);
     }

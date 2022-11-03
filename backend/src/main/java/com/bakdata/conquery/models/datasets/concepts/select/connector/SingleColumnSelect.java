@@ -1,15 +1,20 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector;
 
 import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
@@ -17,6 +22,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -44,12 +50,24 @@ public abstract class SingleColumnSelect extends Select {
 	}
 
 	@Override
-	public ResultType getResultType() {
-		if (categorical) {
-			return ResultType.CategoricalT.INSTANCE;
+	public SelectResultInfo getResultInfo(CQConcept cqConcept) {
+
+		if(categorical){
+			return new SelectResultInfo(this, cqConcept, Set.of(new SemanticType.CategoricalT()));
 		}
 
+		return new SelectResultInfo(this, cqConcept);
+	}
+
+	@Override
+	public ResultType getResultType() {
 		return super.getResultType();
+	}
+
+	@Nullable
+	@Override
+	public List<Column> getRequiredColumns() {
+		return List.of(getColumn());
 	}
 
 	@JsonIgnore

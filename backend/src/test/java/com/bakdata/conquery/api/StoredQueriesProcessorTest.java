@@ -41,10 +41,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.resources.api.ResultArrowFileResource;
-import com.bakdata.conquery.resources.api.ResultArrowStreamResource;
+import com.bakdata.conquery.resources.api.ResultArrowResource;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.resources.api.ResultExcelResource;
+import com.bakdata.conquery.resources.api.ResultParquetResource;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
@@ -53,12 +53,17 @@ import org.junit.jupiter.api.Test;
 public class StoredQueriesProcessorTest {
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 	// Marked Unused, but does inject itself.
-	public static final AuthorizationController AUTHORIZATION_CONTROLLER = new AuthorizationController(STORAGE,new DevelopmentAuthorizationConfig());
+	public static final AuthorizationController AUTHORIZATION_CONTROLLER = new AuthorizationController(STORAGE, new DevelopmentAuthorizationConfig());
 
-	private static final QueryProcessor processor = new QueryProcessor(new DatasetRegistry(0), STORAGE, new ConqueryConfig());
+	public static final ConqueryConfig CONFIG = new ConqueryConfig();
+	private static final QueryProcessor processor = new QueryProcessor(new DatasetRegistry(0, CONFIG, null), STORAGE, CONFIG);
 
-	private static final Dataset DATASET_0 = new Dataset() {{setName("dataset0");}};
-	private static final Dataset DATASET_1 = new Dataset() {{setName("dataset1");}};
+	private static final Dataset DATASET_0 = new Dataset() {{
+		setName("dataset0");
+	}};
+	private static final Dataset DATASET_1 = new Dataset() {{
+		setName("dataset1");
+	}};
 
 	private static final ManagedExecutionId QUERY_ID_0 = createExecutionId(DATASET_0, "0");
 	private static final ManagedExecutionId QUERY_ID_1 = createExecutionId(DATASET_1, "1");
@@ -92,11 +97,13 @@ public class StoredQueriesProcessorTest {
 			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_4, DONE, DATASET_0),        // included
 			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED, DATASET_0),        // not included: wrong state
 			mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW, DATASET_0),                                                    // not included: wrong query structure
-			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd(){{setChildren(List.of(new CQConcept()));}}, DATASET_0),    // included, but secondaryId-Query
+			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd() {{
+				setChildren(List.of(new CQConcept()));
+			}}, DATASET_0),    // included, but secondaryId-Query
 			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_8, DONE, new CQConcept(), DATASET_0),    // not-included, wrong structure
-			mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0])), USERS[1], QUERY_ID_9, DONE, DATASET_0)        // included
+			mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0], false)), USERS[1], QUERY_ID_9, DONE, DATASET_0)        // included
 
-		);
+	);
 
 
 	@Test
@@ -197,8 +204,10 @@ public class StoredQueriesProcessorTest {
 			status.setResultUrls(List.of(
 					ResultExcelResource.getDownloadURL(URI_BUILDER.clone(), execMock),
 					ResultCsvResource.getDownloadURL(URI_BUILDER.clone(), execMock),
-					ResultArrowFileResource.getDownloadURL(URI_BUILDER.clone(), execMock),
-					ResultArrowStreamResource.getDownloadURL(URI_BUILDER.clone(), execMock)));
+					ResultArrowResource.getFileDownloadURL(URI_BUILDER.clone(), execMock),
+					ResultArrowResource.getStreamDownloadURL(URI_BUILDER.clone(), execMock),
+					ResultParquetResource.getDownloadURL(URI_BUILDER.clone(), execMock)
+			));
 		}
 
 		return status;

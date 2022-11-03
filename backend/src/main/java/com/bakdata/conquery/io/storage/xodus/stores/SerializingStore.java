@@ -62,7 +62,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * Deserializer for values
 	 */
-	private ObjectReader valueReader;
+	private final ObjectReader valueReader;
 
 	/**
 	 * Optional validator used for serialization.
@@ -89,12 +89,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * If set, all values that cannot be read are dumped as single files into this directory.
 	 */
 	private final File unreadableValuesDumpDir;
-	
+
 	private final boolean removeUnreadablesFromUnderlyingStore;
 
 	private final ObjectMapper objectMapper;
 
-	@SuppressWarnings("unchecked")
 	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStore store,
 																					   Validator validator,
 																					   ObjectMapper objectMapper,
@@ -177,11 +176,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 			// Try to read the key first
 			KEY key = getDeserializedAndDumpFailed(
-				k,
-				this::readKey,
-				() -> new String(k.getBytesUnsafe()),
-				v,
-				"Could not parse key [{}]");
+					k,
+					this::readKey,
+					() -> new String(k.getBytesUnsafe()),
+					v,
+					"Could not parse key [{}]");
 			if (key == null) {
 				unreadables.add(k);
 				result.incrFailedKeys();
@@ -229,26 +228,28 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 		return result;
 	}
-	
+
 	/**
 	 * Deserializes the gives serial value (either a key or a value of an store entry) to a concrete object. If that fails the entry-value is dumped if configured so to a file using the entry-key for the filename.
-	 * @param <TYPE> The deserialized object type.
-	 * @param serial The to be deserialized object (key or value of an entry)
-	 * @param deserializer The concrete deserializer to use.
+	 *
+	 * @param <TYPE>                  The deserialized object type.
+	 * @param serial                  The to be deserialized object (key or value of an entry)
+	 * @param deserializer            The concrete deserializer to use.
 	 * @param onFailKeyStringSupplier When deserilization failed and dump is enabled this is used in the dump file name.
-	 * @param onFailOrigValue Will be the dumpfile content rendered as a json.
-	 * @param onFailWarnMsgFmt The warn message that will be logged on failure.
+	 * @param onFailOrigValue         Will be the dumpfile content rendered as a json.
+	 * @param onFailWarnMsgFmt        The warn message that will be logged on failure.
 	 * @return The deserialized value
 	 */
-	private <TYPE> TYPE getDeserializedAndDumpFailed(ByteIterable serial, Function<ByteIterable, TYPE> deserializer, Supplier<String> onFailKeyStringSupplier, ByteIterable onFailOrigValue, String onFailWarnMsgFmt ){
+	private <TYPE> TYPE getDeserializedAndDumpFailed(ByteIterable serial, Function<ByteIterable, TYPE> deserializer, Supplier<String> onFailKeyStringSupplier, ByteIterable onFailOrigValue, String onFailWarnMsgFmt) {
 		try {
-			return deserializer.apply(serial);			
-		} catch (Exception e) {
-			if(unreadableValuesDumpDir != null) {
+			return deserializer.apply(serial);
+		}
+		catch (Exception e) {
+			if (unreadableValuesDumpDir != null) {
 				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), unreadableValuesDumpDir, store.getName(), objectMapper);
 			}
 			// With trace also print the stacktrace
-			log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), (Throwable) (log.isTraceEnabled()? e : null));
+			log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), (Throwable) (log.isTraceEnabled() ? e : null));
 		}
 		return null;
 	}
@@ -311,7 +312,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				log.trace("Written Messagepack ({}): {}", valueType.getName(), json);
 			}
 			return new ArrayByteIterable(bytes);
-		} catch (JsonProcessingException e) {
+		}
+		catch (JsonProcessingException e) {
 			throw new RuntimeException("Failed to write " + obj, e);
 		}
 	}
@@ -325,23 +327,25 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 		try {
 			return reader.readValue(obj.getBytesUnsafe(), 0, obj.getLength());
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new RuntimeException("Failed to read " + JacksonUtil.toJsonDebug(obj.getBytesUnsafe()), e);
 		}
 	}
 
 	/**
 	 * Dumps the content of an unreadable value to a file as a json (it tries to parse it as an object and than tries to dump it as a json).
-	 * @param obj The object to dump.
-	 * @param keyOfDump The key under which the unreadable value is accessible. It is used for the file name.
+	 *
+	 * @param obj               The object to dump.
+	 * @param keyOfDump         The key under which the unreadable value is accessible. It is used for the file name.
 	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
-	 * @param storeName The name of the store which is also used in the dump file name.
+	 * @param storeName         The name of the store which is also used in the dump file name.
 	 */
 	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, @NonNull File unreadableDumpDir, @NonNull String storeName, ObjectMapper objectMapper) {
 		// Create dump filehandle
 		File dumpfile = new File(unreadableDumpDir, makeDumpfileName(keyOfDump, storeName));
-		if(dumpfile.exists()) {
-			log.warn("Abort dumping of file {} because it already exists.",dumpfile);
+		if (dumpfile.exists()) {
+			log.warn("Abort dumping of file {} because it already exists.", dumpfile);
 			return;
 		}
 		// Write dump

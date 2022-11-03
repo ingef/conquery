@@ -60,32 +60,32 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Getter
 	private final BucketManager bucketManager;
 
+	@Getter
+	private final ObjectMapper communicationMapper;
 
-	private Worker(
+
+	public Worker(
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
 			@NonNull WorkerStorage storage,
 			@NonNull ExecutorService jobsExecutorService,
 			boolean failOnError,
-			int entityBucketSize
-	) {
+			int entityBucketSize,
+			ObjectMapper persistenceMapper,
+			ObjectMapper communicationMapper) {
 		this.storage = storage;
 		this.jobsExecutorService = jobsExecutorService;
+		this.communicationMapper = communicationMapper;
+
+
+		storage.openStores(persistenceMapper);
+		storage.loadData();
 
 		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
 		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"));
 		bucketManager = BucketManager.create(this, storage, entityBucketSize);
 	}
 
-	public static Worker newWorker(
-			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-			@NonNull ExecutorService executorService,
-			@NonNull WorkerStorage storage,
-			boolean failOnError,
-			int entityBucketSize) {
-
-		return new Worker(queryThreadPoolDefinition, storage, executorService, failOnError, entityBucketSize);
-	}
-
+	@SneakyThrows(IOException.class)
 	public static Worker newWorker(
 			@NonNull Dataset dataset,
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
@@ -94,9 +94,11 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			@NonNull String directory,
 			@NonNull Validator validator,
 			boolean failOnError,
-			int entityBucketSize) {
+			int entityBucketSize,
+			ObjectMapper persistenceMapper,
+			ObjectMapper communicationMapper) {
 
-		WorkerStorage workerStorage = new WorkerStorage(validator, "worker_" + directory);
+		WorkerStorage workerStorage = new WorkerStorage(config, validator, directory);
 
 		// On the worker side we don't have to set the object writer vor ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();
@@ -104,12 +106,13 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
 
-		workerStorage.openStores(config);
+		workerStorage.openStores(persistenceMapper);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
+		workerStorage.close();
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize);
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper);
 	}
 
 	public ModificationShieldedWorkerStorage getStorage() {
@@ -162,11 +165,11 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	@Override
 	public String toString() {
-		return "Worker[" + getInfo().getId() + ", " + session.getLocalAddress() + "]";
+		return "Worker[" + getInfo().getId() + ", " + (session != null ? session.getLocalAddress() : "no session") + "]";
 	}
 
 	public boolean isBusy() {
-		return queryExecutor.isBusy();
+		return queryExecutor.isBusy() || jobManager.isSlowWorkerBusy();
 	}
 
 	public void addImport(Import imp) {

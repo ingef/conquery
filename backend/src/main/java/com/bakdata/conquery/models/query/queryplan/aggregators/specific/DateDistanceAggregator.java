@@ -7,10 +7,10 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.ToString;
 
 /**
@@ -39,7 +39,7 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
-			reference = null;
+			reference = LocalDate.now();
 		}
 		else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
@@ -53,10 +53,6 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if(reference == null) {
-			return;
-		}
-
 		if(!bucket.has(event, getColumn())) {
 			return;
 		}

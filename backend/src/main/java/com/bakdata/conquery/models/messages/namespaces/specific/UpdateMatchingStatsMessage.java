@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.google.common.base.Functions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @CPSType(id = "UPDATE_MATCHING_STATS", base = NamespacedMessage.class)
 @Slf4j
-public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
+public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 
 	@Override
@@ -53,11 +54,11 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 		public void execute() throws Exception {
 			if (worker.getStorage().getAllCBlocks().isEmpty()) {
 				log.debug("Worker {} is empty, skipping.", worker);
-				getProgressReporter().done();
 				return;
 			}
 
-			getProgressReporter().setMax(worker.getStorage().getAllConcepts().size());
+			final ProgressReporter progressReporter = getProgressReporter();
+			progressReporter.setMax(worker.getStorage().getAllConcepts().size());
 
 			log.info("BEGIN update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
 
@@ -72,7 +73,10 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 						  .stream()
 						  .collect(Collectors.toMap(
 								  Functions.identity(),
-								  concept -> CompletableFuture.runAsync(() -> calculateConceptMatches(concept, messages, worker), worker.getJobsExecutorService())
+								  concept -> CompletableFuture.runAsync(() -> {
+									  calculateConceptMatches(concept, messages, worker);
+									  progressReporter.report(1);
+								  }, worker.getJobsExecutorService())
 						  ));
 
 
@@ -115,7 +119,6 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 				worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), messages));
 			}
 
-			getProgressReporter().done();
 		}
 
 
@@ -138,7 +141,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 
 						for (int event = bucket.getEntityStart(entity); event < entityEnd; event++) {
 
-							final int[] localIds = cBlock.getEventMostSpecificChild(event);
+							final int[] localIds = cBlock.getPathToMostSpecificChild(event);
 
 
 							if (!(concept instanceof TreeConcept) || localIds == null) {
@@ -153,7 +156,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 								continue;
 							}
 
-							ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalId(localIds);
+							ConceptTreeNode<?> element = ((TreeConcept) concept).getElementByLocalIdPath(localIds);
 
 							while (element != null) {
 								results.computeIfAbsent(((ConceptElement<?>) element), (ignored) -> new MatchingStats.Entry())
@@ -168,8 +171,6 @@ public class UpdateMatchingStatsMessage extends WorkerMessage.Slow {
 					log.error("Failed to collect the matching stats for {}", cBlock, e);
 				}
 			}
-
-			getProgressReporter().report(1);
 
 			log.trace("DONE calculating for `{}`", concept.getId());
 		}

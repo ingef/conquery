@@ -1,35 +1,41 @@
+import styled from "@emotion/styled";
 import { memo, useMemo } from "react";
+import { useSelector } from "react-redux";
 
-import {
+import type {
   ConceptIdT,
   CurrencyConfigT,
-  DatasetIdT,
-  FilterIdT,
+  DatasetT,
+  FilterT,
   PostFilterSuggestionsResponseT,
-  TableIdT,
+  TableT,
 } from "../api/types";
+import { StateT } from "../app/reducers";
 import { FilterWithValueType } from "../standard-query-editor/types";
 import InputRange, { ModeT } from "../ui-components/InputRange";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
 import FilterListMultiSelect from "./FilterListMultiSelect";
 
+const Container = styled("div")`
+  margin-bottom: 10px;
+`;
+
 export interface FiltersContextT {
-  datasetId: DatasetIdT;
+  datasetId: DatasetT["id"];
   treeId: ConceptIdT;
-  tableId: TableIdT;
+  tableId: TableT["id"];
 }
 
 export interface BaseTableFilterProps {
   className?: string;
   context: FiltersContextT;
   excludeTable?: boolean;
-  currencyConfig: CurrencyConfigT;
   onSwitchFilterMode: (filterIdx: number, mode: ModeT) => void;
   onSetFilterValue: (filterIdx: number, value: unknown) => void;
   onLoadFilterSuggestions: (
     tableIdx: number,
-    filterId: FilterIdT,
+    filterId: FilterT["id"],
     prefix: string,
     page: number,
     pageSize: number,
@@ -48,11 +54,14 @@ const TableFilter = ({
   excludeTable,
   context,
   className,
-  currencyConfig,
   onLoadFilterSuggestions,
   onSetFilterValue,
   onSwitchFilterMode,
 }: TableFilterProps) => {
+  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
+    (state) => state.startup.config.currency,
+  );
+
   const filterContext = useMemo(
     () => ({ ...context, filterId: filter.id }),
     [context, filter.id],
@@ -98,7 +107,6 @@ const TableFilter = ({
             indexPrefix={filterIdx + 1}
             context={filterContext}
             value={filter.value || []}
-            defaultValue={filter.defaultValue}
             onChange={(value) => onSetFilterValue(filterIdx, value)}
             label={filter.label}
             tooltip={filter.tooltip}
@@ -181,7 +189,7 @@ const TableFilter = ({
   })();
 
   return filterComponent ? (
-    <div className={className}>{filterComponent}</div>
+    <Container className={className}>{filterComponent}</Container>
   ) : null;
 };
 

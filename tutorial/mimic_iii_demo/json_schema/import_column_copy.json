@@ -1,0 +1,16 @@
+{
+	"title": "Copy Import Column",
+	"description": "The import column format for columns those data is simply copies and then parsed with the specified inputType",
+	"type": "object",
+	"properties": {
+		"inputColumn": { "type": "string" },
+		"name": { "$ref": "cqIdPart.json#" },
+		"inputType": {"$ref": "cqType.json#"},
+        "operation": {
+            "type": "string",
+            "pattern": "^COPY$"
+        },
+        "required": {"type": "boolean"}
+	},
+	"required": ["name", "inputColumn", "inputType", "operation"]
+}

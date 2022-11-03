@@ -22,12 +22,24 @@
                         </#if>
                     <td>
                         <#if abilities?has_content>
-                            <#list abilities as ability>${ability} </#list>
+                            <ul class="list-group">
+                                <#list abilities as ability>
+                                    <li class="list-group-item p-1">
+                                        ${ability}
+                                    </li>
+                                </#list>
+                            </ul>
                         </#if>
                     </td>
                     <td>
                         <#if targets?has_content>
-                            <#list targets as target> ${target} </#list>
+                            <ul class="list-group">
+                                <#list targets as target>
+                                    <li class="list-group-item p-1">
+                                        ${target}
+                                    </li>
+                                </#list>
+                            </ul>
                         </#if>
                     </td>
                     <td>${permission.creationTime}</td>
@@ -45,7 +57,7 @@
             {
                 method: 'delete',
                 credentials: 'same-origin',
-                headers: {'Content-Type': 'text/plain'},
+                headers: {'Content-Type': 'application/json'},
                 body: permission
             })
             .then(function(){location.reload()});

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { forwardRef } from "react";
+import { forwardRef, memo } from "react";
 import ReactMarkdown from "react-markdown";
 
 import type { SelectOptionT } from "../../api/types";
@@ -31,17 +31,36 @@ const SelectedItem = forwardRef<
     active?: boolean;
     disabled?: boolean;
     option: SelectOptionT;
-    onRemoveClick: () => void;
+    index: number;
+    getSelectedItemProps: (props: {
+      selectedItem: SelectOptionT;
+      index: number;
+    }) => any;
+    removeSelectedItem: (item: SelectOptionT) => void;
   }
->(({ option, disabled, onRemoveClick, ...rest }, ref) => {
-  const label = option.selectedLabel || option.label || option.value;
+>(
+  (
+    { index, option, disabled, removeSelectedItem, getSelectedItemProps },
+    ref,
+  ) => {
+    const label = option.selectedLabel || option.label || option.value;
 
-  return (
-    <Container ref={ref} {...rest}>
-      <ReactMarkdown>{String(label)}</ReactMarkdown>
-      <SxIconButton icon="times" disabled={disabled} onClick={onRemoveClick} />
-    </Container>
-  );
-});
+    const selectedItemProps = getSelectedItemProps({
+      selectedItem: option,
+      index,
+    });
 
-export default SelectedItem;
+    return (
+      <Container ref={ref} {...selectedItemProps}>
+        <ReactMarkdown>{String(label)}</ReactMarkdown>
+        <SxIconButton
+          icon="times"
+          disabled={disabled}
+          onClick={() => removeSelectedItem(option)}
+        />
+      </Container>
+    );
+  },
+);
+
+export default memo(SelectedItem);

@@ -1,10 +1,11 @@
 import styled from "@emotion/styled";
-import { useRef, ReactNode } from "react";
+import { useRef, ReactNode, Ref, forwardRef, ReactElement } from "react";
 import { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 
 import { SelectFileButton } from "../button/SelectFileButton";
+import FaIcon from "../icon/FaIcon";
 
 import Dropzone, { ChildArgs, PossibleDroppableObject } from "./Dropzone";
 
@@ -33,6 +34,11 @@ const SxSelectFileButton = styled(SelectFileButton)`
   right: 10px;
 `;
 
+const SxFaIcon = styled(FaIcon)`
+  height: 10px;
+  padding-right: 3px;
+`;
+
 interface PropsT<DroppableObject> {
   children: (args: ChildArgs<DroppableObject>) => ReactNode;
   onSelectFile: (file: File) => void;
@@ -58,17 +64,20 @@ interface PropsT<DroppableObject> {
 */
 const DropzoneWithFileInput = <
   DroppableObject extends PossibleDroppableObject = DragItemFile,
->({
-  onSelectFile,
-  acceptedDropTypes,
-  disableClick,
-  showFileSelectButton,
-  children,
-  onDrop,
-  isInitial,
-  className,
-  accept,
-}: PropsT<DroppableObject>) => {
+>(
+  {
+    onSelectFile,
+    acceptedDropTypes,
+    disableClick,
+    showFileSelectButton,
+    children,
+    onDrop,
+    isInitial,
+    className,
+    accept,
+  }: PropsT<DroppableObject>,
+  ref: Ref<HTMLDivElement>,
+) => {
   const { t } = useTranslation();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -98,11 +107,13 @@ const DropzoneWithFileInput = <
       }}
       isInitial={isInitial}
       className={className}
+      ref={ref}
     >
       {(args) => (
         <>
           {showFileSelectButton && (
             <SxSelectFileButton onClick={onOpenFileDialog}>
+              <SxFaIcon icon="file" regular gray />
               {t("inputMultiSelect.openFileDialog")}
             </SxSelectFileButton>
           )}
@@ -127,4 +138,8 @@ const DropzoneWithFileInput = <
   );
 };
 
-export default DropzoneWithFileInput;
+export default forwardRef(DropzoneWithFileInput) as <
+  DroppableObject extends PossibleDroppableObject = DragItemFile,
+>(
+  p: PropsT<DroppableObject> & { ref?: Ref<HTMLDivElement> },
+) => ReactElement;

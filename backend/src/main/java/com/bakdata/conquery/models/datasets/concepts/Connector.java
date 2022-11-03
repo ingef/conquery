@@ -6,9 +6,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.CheckForNull;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
@@ -20,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMultiset;
@@ -37,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Valid
 @Slf4j
+@JsonIgnoreProperties({"defaultForEntityPreview"})
 public abstract class Connector extends Labeled<ConnectorId> implements SelectHolder<Select>, NamespacedIdentifiable<ConnectorId> {
 
 	public static final int[] NOT_CONTAINED = new int[]{-1};
@@ -67,13 +71,20 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	@Valid
 	private List<Select> selects = new ArrayList<>();
 
+	/**
+	 * Determines if the connector is preselected for the user when creating a new {@link com.bakdata.conquery.apiv1.query.concept.specific.CQConcept}.
+	 */
 	@JsonProperty("default")
 	private boolean isDefault = true;
 
+	@CheckForNull
+	public abstract Column getColumn();
+
+	@JsonIgnore
 	public List<Select> getDefaultSelects() {
 		return getSelects()
-					   .stream().filter(Select::isDefault)
-					   .collect(Collectors.toList());
+				.stream().filter(Select::isDefault)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -116,5 +127,9 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	@Override
 	public Dataset getDataset() {
 		return getConcept().getDataset();
+	}
+
+	public void init() {
+		getSelects().forEach(Select::init);
 	}
 }

@@ -108,7 +108,7 @@ public class ConceptNode extends QPChainNode {
 		}
 
 		//check concepts
-		int[] mostSpecificChildren = currentRow.getEventMostSpecificChild(event);
+		int[] mostSpecificChildren = currentRow.getPathToMostSpecificChild(event);
 		if (mostSpecificChildren == null) {
 			for (ConceptElement<?> ce : concepts) {
 				// having no specific child set maps directly to root.
@@ -121,7 +121,7 @@ public class ConceptNode extends QPChainNode {
 		}
 
 		for (ConceptElement<?> ce : concepts) {
-			//see #177  we could improve this by building a a prefix tree over concepts.prefix
+			//see #177  we could improve this by building a prefix tree over concepts.prefix
 			if (ce.matchesPrefix(mostSpecificChildren)) {
 				getChild().acceptEvent(bucket, event);
 			}

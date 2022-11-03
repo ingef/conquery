@@ -1,53 +1,41 @@
 import styled from "@emotion/styled";
-import { FC, useContext } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import type { ColumnDescription } from "../api/types";
-import type { StateT } from "../app/reducers";
-import { AuthTokenContext } from "../authorization/AuthTokenProvider";
-import { useOpenPreview } from "../preview/actions";
-import WithTooltip from "../tooltip/WithTooltip";
+import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
+import { openPreview, useLoadPreviewData } from "../preview/actions";
 
-import IconButton from "./IconButton";
+import { TransparentButton } from "./TransparentButton";
 
-const SxIconButton = styled(IconButton)`
+const Button = styled(TransparentButton)`
   white-space: nowrap;
+  height: 35px;
 `;
 
 interface PropsT {
   columns: ColumnDescription[];
   url: string;
-  className?: string;
 }
 
-const PreviewButton: FC<PropsT> = ({
-  url,
-  columns,
-  className,
-  ...restProps
-}) => {
-  const { authToken } = useContext(AuthTokenContext);
-  const isLoading = useSelector<StateT, boolean>(
-    (state) => state.preview.isLoading,
-  );
+const PreviewButton: FC<PropsT> = ({ url, columns, ...restProps }) => {
   const { t } = useTranslation();
+  const dispatch = useDispatch();
 
-  const openPreview = useOpenPreview();
-  const onOpenPreview = (url: string) => openPreview(url, columns);
-
-  const href = `${url}?access_token=${encodeURIComponent(
-    authToken,
-  )}&charset=utf-8&pretty=false`;
+  const loadPreviewData = useLoadPreviewData();
+  const getAuthorizedUrl = useGetAuthorizedUrl();
 
   return (
-    <WithTooltip text={t("preview.preview")} className={className}>
-      <SxIconButton
-        icon={isLoading ? "spinner" : "search"}
-        onClick={() => onOpenPreview(href)}
-        {...restProps}
-      />
-    </WithTooltip>
+    <Button
+      onClick={async () => {
+        await loadPreviewData(getAuthorizedUrl(url), columns);
+        dispatch(openPreview());
+      }}
+      {...restProps}
+    >
+      {t("preview.preview")}
+    </Button>
   );
 };
 

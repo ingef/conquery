@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.config;
 
+import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -11,7 +13,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -19,13 +23,15 @@ import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.FullIdPrinter;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.resultinfo.LocalizedDefaultResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.VersionInfo;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -44,8 +50,8 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Slf4j
 @With
 public class FrontendConfig {
@@ -56,6 +62,33 @@ public class FrontendConfig {
 	private CurrencyConfig currency = new CurrencyConfig();
 
 	private UploadConfig queryUpload = new UploadConfig();
+
+	/**
+	 * The url that points a manual. This is also used by the {@link FormScanner}
+	 * as the base url for forms that specify a relative url. Internally {@link URI#resolve(URI)}
+	 * is used to concatenate this base url and the manual url from the form.
+	 * An final slash ('{@code /}') on the base url has the following effect:
+	 * <ul>
+	 *     <li>
+	 *         <strong>No slash:</strong><br/>
+	 *         {@code baseUrl = http://example.org/manual/welcome}<br/>
+	 *         {@code formUrl = ./form}<br/>
+	 *         &#8594; {@code http://example.org/manual/form}
+	 *     </li>
+	 *     <li>
+	 * 	       <strong>Slash:</strong><br/>
+	 *           {@code baseUrl = http://example.org/manual/}<br/>
+	 *           {@code formUrl = ./form}<br/>
+	 * 	       &#8594; {@code http://example.org/manual/form}
+	 * 	   </li>
+	 * </ul>
+	 */
+	@Nullable
+	private URL manualUrl;
+
+	@Nullable
+	@Email
+	private String contactEmail;
 
 
 	/**
@@ -87,6 +120,7 @@ public class FrontendConfig {
 
 		/**
 		 * Localized header for output CSV.
+		 *
 		 * @return
 		 */
 		@JsonIgnore
@@ -94,9 +128,11 @@ public class FrontendConfig {
 			return ids.stream()
 					  .filter(ColumnConfig::isPrint)
 					  .map(col -> new LocalizedDefaultResultInfo(
-					  		locale -> col.getLabel().getOrDefault(locale.getLanguage(),col.getField()),
-							locale -> col.getField(),
-							ResultType.IdT.getINSTANCE()))
+							  locale -> col.getLabel().getOrDefault(locale.getLanguage(), col.getField()),
+							  locale -> col.getField(),
+							  ResultType.StringT.getINSTANCE(),
+							  Set.of(new SemanticType.IdT(col.getName()))
+					  ))
 					  .collect(Collectors.toUnmodifiableList());
 		}
 

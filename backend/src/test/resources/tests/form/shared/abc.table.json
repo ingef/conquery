@@ -1,23 +1,23 @@
 {
-    "csv": "tests/form/shared/abc.csv",
-    "name": "table",
-    "primaryColumn": {
-      "name": "pid",
-      "type": "STRING"
-    },
-    "columns": [
-      {
-        "name": "second_id",
-        "type": "STRING",
-        "secondaryId": "secondary"
-      },
-      {
-        "name": "datum",
-        "type": "DATE"
-      },
-      {
-        "name": "column",
-        "type": "STRING"
-      }
-    ]
-  }
+	"csv": "tests/form/shared/abc.csv",
+	"name": "table",
+	"primaryColumn": {
+		"name": "pid",
+		"type": "STRING"
+	},
+	"columns": [
+		{
+			"name": "second_id",
+			"type": "STRING",
+			"secondaryId": "secondary"
+		},
+		{
+			"name": "datum",
+			"type": "DATE"
+		},
+		{
+			"name": "column",
+			"type": "STRING"
+		}
+	]
+}

@@ -1,11 +1,14 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -36,8 +39,13 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 
 
 	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[]{getAddendColumn(), getSubtrahendColumn()};
+	public List<Column> getRequiredColumns() {
+		final List<Column> out = new ArrayList<>();
+
+		out.add(getAddendColumn());
+		out.add(getSubtrahendColumn());
+
+		return out;
 	}
 
 	@Override
@@ -50,12 +58,12 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 		hit = true;
 
 		double addend = bucket.has(event, getAddendColumn())
-								? bucket.getReal(event, getAddendColumn())
-								: 0;
+						? bucket.getReal(event, getAddendColumn())
+						: 0;
 
 		double subtrahend = bucket.has(event, getSubtrahendColumn())
-									? bucket.getReal(event, getSubtrahendColumn())
-									: 0;
+							? bucket.getReal(event, getSubtrahendColumn())
+							: 0;
 
 		sum = sum + addend - subtrahend;
 	}
@@ -64,7 +72,7 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	public Double createAggregationResult() {
 		return hit ? sum : null;
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.NumericT.INSTANCE;

@@ -14,6 +14,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+import javax.validation.Validator;
+
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FEList;
 import com.bakdata.conquery.apiv1.frontend.FERoot;
@@ -22,12 +25,14 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -38,10 +43,12 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.search.Cursor;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Iterators;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
@@ -54,41 +61,38 @@ import org.apache.commons.lang3.tuple.Pair;
 
 @Getter
 @Slf4j
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ConceptsProcessor {
 
 	private final DatasetRegistry namespaces;
+	private final Validator validator;
 
-	private final LoadingCache<Concept<?>, FEList> nodeCache =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.expireAfterWrite(10, TimeUnit.MINUTES)
-						.build(new CacheLoader<>() {
-							@Override
-							public FEList load(Concept<?> concept) {
-								return FrontEndConceptBuilder.createTreeMap(concept);
-							}
-						});
+	private final LoadingCache<Concept<?>, FEList>
+			nodeCache =
+			CacheBuilder.newBuilder().softValues().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
+				@Override
+				public FEList load(Concept<?> concept) {
+					return FrontEndConceptBuilder.createTreeMap(concept);
+				}
+			});
 
 	/**
 	 * Cache of all search results on SelectFilters.
 	 */
-	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchResults =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.build(new CacheLoader<>() {
+	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
 
-							@Override
-							public List<FEValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
-								String searchTerm = filterAndSearch.getValue();
-								SelectFilter<?> filter = filterAndSearch.getKey();
+		@Override
+		public List<FEValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
+			String searchTerm = filterAndSearch.getValue();
+			SelectFilter<?> filter = filterAndSearch.getKey();
 
-								log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
+			log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
 
-								return autocompleteTextFilter(filter, searchTerm);
-							}
+			return autocompleteTextFilter(filter, searchTerm);
+		}
 
-						});
+	});
+
 
 	/**
 	 * Container class to pair number of available values and Cursor for those values.
@@ -103,22 +107,24 @@ public class ConceptsProcessor {
 	 * Cache of raw listing of values on a filter.
 	 * We use Cursor here to reduce strain on memory and increase response time.
 	 */
-	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.build(new CacheLoader<>() {
-							@Override
-							public CursorAndLength load(SelectFilter<?> filter) {
-								log.debug("Creating cursor for `{}`", filter.getId());
-								return new CursorAndLength(listAllValues(filter), countAllValues(filter));
-							}
+	private final LoadingCache<SelectFilter<?>, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
+		@Override
+		public CursorAndLength load(SelectFilter<?> filter) {
+			log.debug("Creating cursor for `{}`", filter.getId());
+			return new CursorAndLength(listAllValues(filter), countAllValues(filter));
+		}
 
-						});
+	});
 
 
 	public FERoot getRoot(NamespaceStorage storage, Subject subject) {
 
-		return FrontEndConceptBuilder.createRoot(storage, subject);
+		final FERoot root = FrontEndConceptBuilder.createRoot(storage, subject);
+
+		// Report Violation
+		ValidatorHelper.createViolationsString(validator.validate(root), log.isTraceEnabled()).ifPresent(log::warn);
+
+		return root;
 	}
 
 	public FEList getNode(Concept<?> concept) {
@@ -134,10 +140,42 @@ public class ConceptsProcessor {
 		return namespaces.getAllDatasets()
 						 .stream()
 						 .filter(d -> subject.isPermitted(d, Ability.READ))
-						 .sorted(Comparator.comparing(Dataset::getWeight)
-										   .thenComparing(Dataset::getLabel))
+						 .sorted(Comparator.comparing(Dataset::getWeight).thenComparing(Dataset::getLabel))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
 						 .collect(Collectors.toList());
+	}
+
+	@Data
+	public static class FrontendPreviewConfig {
+		@Data
+		public static class Labelled {
+			private final String name;
+			private final String label;
+		}
+
+		private final Collection<Labelled> all;
+		@JsonProperty("default")
+		private final Collection<Labelled> defaultConnectors;
+	}
+
+
+	public FrontendPreviewConfig getEntityPreviewFrontendConfig(Dataset dataset) {
+		final Namespace namespace = namespaces.get(dataset.getId());
+		final PreviewConfig previewConfig = namespace.getPreviewConfig();
+
+		// Connectors only act as bridge to table for the fronted, but also provide ConceptColumnT semantic
+
+		return new FrontendPreviewConfig(
+				previewConfig.getAllConnectors()
+							 .stream()
+							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .collect(Collectors.toSet()),
+
+				previewConfig.getDefaultConnectors()
+							 .stream()
+							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
+							 .collect(Collectors.toSet())
+		);
 	}
 
 	/**
@@ -168,15 +206,7 @@ public class ConceptsProcessor {
 			}
 		}
 
-		return new ResolvedConceptsResult(
-				null,
-				new ResolvedFilterResult(
-						filter.getConnector().getId(),
-						filter.getId(),
-						out
-				),
-				openSearchTerms
-		);
+		return new ResolvedConceptsResult(null, new ResolvedFilterResult(filter.getConnector().getId(), filter.getId(), out), openSearchTerms);
 	}
 
 	@Data
@@ -225,23 +255,29 @@ public class ConceptsProcessor {
 
 	private Cursor<FEValue> listAllValues(SelectFilter<?> filter) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
+		/*
+		Don't worry, I am as confused as you are!
+		For some reason, flatMapped streams in conjunction with distinct will be evaluated full before further operation.
+		This in turn causes initial loads of this endpoint to extremely slow. By instead using iterators we have uglier code but enforce laziness.
 
+		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
+		 */
 
-		return new Cursor<>(namespace.getFilterSearch()
-									 .getSearchesFor(filter).stream()
-									 .flatMap(TrieSearch::stream)
-									 .distinct()
-									 .iterator());
+		final Iterator<FEValue>
+				iterators =
+				Iterators.concat(Iterators.transform(namespace.getFilterSearch().getSearchesFor(filter).iterator(), TrieSearch::iterator));
+
+		// Use Set to accomplish distinct values
+		final Set<FEValue> seen = new HashSet<>();
+
+		return new Cursor<>(Iterators.filter(iterators, seen::add));
 	}
 
 	private long countAllValues(SelectFilter<?> filter) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
 
-		return namespace.getFilterSearch()
-						.getSearchesFor(filter).stream()
-						.mapToLong(TrieSearch::calculateSize)
-						.sum();
+		return namespace.getFilterSearch().getTotal(filter);
 	}
 
 	/**
@@ -256,12 +292,10 @@ public class ConceptsProcessor {
 		// they are already sorted in terms of information weight by getSearchesFor
 
 		// Also note: currently we are still issuing large search requests, but much smaller allocations at once, and querying only when the past is not sufficient
-		return namespace.getFilterSearch().getSearchesFor(filter).stream()
-						.map(search -> createSourceSearchResult(
-								search,
-								Collections.singletonList(text),
-								OptionalInt.empty()
-						))
+		return namespace.getFilterSearch()
+						.getSearchesFor(filter)
+						.stream()
+						.map(search -> createSourceSearchResult(search, Collections.singletonList(text), OptionalInt.empty()))
 						.flatMap(Collection::stream)
 						.distinct()
 						.collect(Collectors.toList());

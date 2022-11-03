@@ -1,13 +1,17 @@
 package com.bakdata.conquery.models.datasets.concepts.select.connector.specific;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
@@ -33,10 +37,9 @@ import lombok.Setter;
 @NoArgsConstructor(onConstructor_ = @JsonCreator)
 public class SumSelect extends Select {
 
-	@Getter
-	@Setter
-	@NsIdRef
-	private Column distinctByColumn;
+	@NsIdRefCollection
+	@NotNull
+	private List<Column> distinctByColumn = Collections.emptyList();
 
 	@NsIdRef
 	@NotNull
@@ -56,7 +59,7 @@ public class SumSelect extends Select {
 
 	@Override
 	public Aggregator<? extends Number> createAggregator() {
-		if (distinctByColumn != null) {
+		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
 			return new DistinctValuesWrapperAggregator<>(getAggregator(), getDistinctByColumn());
 		}
 		return getAggregator();
@@ -79,7 +82,7 @@ public class SumSelect extends Select {
 		}
 		if (getColumn().getType() != getSubtractColumn().getType()) {
 			throw new IllegalStateException(String.format("Column types are not the same: Column %s\tSubstractColumn %s", getColumn().getType(), getSubtractColumn()
-																																						 .getType()));
+					.getType()));
 		}
 		switch (getColumn().getType()) {
 			case INTEGER:
@@ -98,11 +101,28 @@ public class SumSelect extends Select {
 
 	private static final EnumSet<MajorTypeId> NUMBER_COMPATIBLE = EnumSet.of(MajorTypeId.INTEGER, MajorTypeId.MONEY, MajorTypeId.DECIMAL, MajorTypeId.REAL);
 
+	@Override
+	public List<Column> getRequiredColumns() {
+		final List<Column> out = new ArrayList<>();
+
+		out.add(getColumn());
+
+		if(getSubtractColumn() != null){
+			out.add(getSubtractColumn());
+		}
+
+		if(distinctByColumn == null) {
+			out.addAll(getDistinctByColumn());
+		}
+
+		return out;
+	}
+
 
 	@ValidationMethod(message = "Column is not of Summable Type.")
 	@JsonIgnore
 	public boolean isSummableColumnType() {
-		return  NUMBER_COMPATIBLE.contains(getColumn().getType());
+		return NUMBER_COMPATIBLE.contains(getColumn().getType());
 	}
 
 	@ValidationMethod(message = "Columns are not of same Type.")

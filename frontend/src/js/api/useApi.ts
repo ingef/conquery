@@ -1,13 +1,13 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { useContext, useEffect, useRef } from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
+import { useIsCacheEnabled } from "../common/feature-flags/useIsCacheEnabled";
 import {
   getCachedEtagResource,
   storeEtagResource,
 } from "../common/helpers/etagCache";
-import { useIsCacheEnabled } from "../common/useIsCacheEnabled";
 import { isIDPEnabled, isLoginDisabled } from "../environment";
 
 export const useApiUnauthorized = <T>(
@@ -24,7 +24,7 @@ interface CustomCacheConfig {
   etagCacheKey?: string;
 }
 
-export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
+export const useApi = <T>() => {
   const navigate = useNavigate();
   const cacheEnabled = useIsCacheEnabled();
   const { authToken } = useContext(AuthTokenContext);
@@ -39,41 +39,42 @@ export const useApi = <T>(requestConfig: Partial<AxiosRequestConfig> = {}) => {
     [authToken],
   );
 
-  return async (
-    finalRequestConfig: Partial<AxiosRequestConfig> = {},
-    cacheConfig: CustomCacheConfig = {},
-  ): Promise<T> => {
-    try {
-      const axiosRequestConfig = {
-        ...requestConfig,
-        ...finalRequestConfig,
-        headers: {
-          Authorization: `Bearer ${authTokenRef.current}`,
-          ...(requestConfig.headers || {}),
-          ...(finalRequestConfig.headers || {}),
-        },
-      };
+  return useCallback(
+    async (
+      finalRequestConfig: Partial<AxiosRequestConfig> = {},
+      cacheConfig: CustomCacheConfig = {},
+    ): Promise<T> => {
+      try {
+        const axiosRequestConfig = {
+          ...finalRequestConfig,
+          headers: {
+            Authorization: `Bearer ${authTokenRef.current}`,
+            ...(finalRequestConfig.headers || {}),
+          },
+        };
 
-      const response = await fetchJsonUnauthorized(
-        axiosRequestConfig,
-        cacheEnabled ? cacheConfig : {},
-      );
+        const response = await fetchJsonUnauthorized(
+          axiosRequestConfig,
+          cacheEnabled ? cacheConfig : {},
+        );
 
-      return response;
-    } catch (error) {
-      if (
-        !isIDPEnabled &&
-        !isLoginDisabled &&
-        (error as { status?: number }).status &&
-        (error as { status?: number }).status === 401
-      ) {
-        navigate("/login");
+        return response;
+      } catch (error) {
+        if (
+          !isIDPEnabled &&
+          !isLoginDisabled &&
+          (error as { status?: number }).status &&
+          (error as { status?: number }).status === 401
+        ) {
+          navigate("/login");
+        }
+
+        console.error(error);
+        throw error;
       }
-
-      console.error(error);
-      throw error;
-    }
-  };
+    },
+    [navigate, cacheEnabled],
+  );
 };
 
 async function getCacheHeaders(

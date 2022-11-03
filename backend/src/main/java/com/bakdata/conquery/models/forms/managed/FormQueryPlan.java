@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
+import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.forms.util.ResultModifier;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -25,37 +27,53 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private final ArrayConceptQueryPlan features;
 
 	private final int constantCount;
+	private final boolean withRelativeEventDate;
+	private final boolean withObservationScope;
 
-	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features) {
+	public FormQueryPlan(List<DateContext> dateContexts, ArrayConceptQueryPlan features, boolean withObservationScope ) {
 		this.dateContexts = dateContexts;
 		this.features = features;
+		this.withObservationScope = withObservationScope;
+
 
 		if (dateContexts.size() <= 0) {
 			// There is nothing to do for this FormQueryPlan but we will return an empty result when its executed
 			constantCount = 3;
+			withRelativeEventDate = false;
 			return;
 		}
 
+		withRelativeEventDate = dateContexts.get(0).getEventDate() != null;
+
 		// Either all date contexts have an relative event date or none has one
-		boolean withRelativeEventDate = dateContexts.get(0).getEventDate() != null;
 
 		for (DateContext dateContext : dateContexts) {
 			if ((dateContext.getEventDate() == null) == withRelativeEventDate) {
 				throw new IllegalStateException("QueryPlan has absolute AND relative date contexts. Only one kind is allowed.");
 			}
 		}
-		constantCount = withRelativeEventDate ? 4 : 3; // resolution indicator, index value, (event date,) date range
+		constantCount = calculateConstantCount(withRelativeEventDate, this.withObservationScope);
+	}
+
+	private static int calculateConstantCount(boolean hasEventDate, boolean needsobservationScope) {
+		// resolution indicator, index value, (event date,) date range,( observation_scope)
+		int consts = 3;
+		if (hasEventDate) {
+			consts++;
+		}
+		if (needsobservationScope) {
+			consts++;
+		}
+
+		return consts;
 	}
 
 	@Override
 	public Optional<MultilineEntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
 		if (!isOfInterest(entity)) {
-			// If the entity is not covered by the query generate a basic result line with constants but without features
-			return Optional.of(createResultForNotContained(entity, null));
+			return Optional.empty();
 		}
-
-
 
 		List<Object[]> resultValues = new ArrayList<>(dateContexts.size());
 
@@ -119,7 +137,10 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		}
 
 		//add resolution indicator
-		result[0] = dateContext.getSubdivisionMode().toString();
+		final Resolution subdivisionMode = dateContext.getSubdivisionMode();
+		if (subdivisionMode != null) {
+			result[0] = subdivisionMode.toString();
+		}
 		//add index value
 		result[1] = dateContext.getIndex();
 		// add event date
@@ -129,11 +150,16 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		//add date range at [2] or [3]
 		result[getDateRangeResultPosition()] = dateContext.getDateRange();
 
+		if(withObservationScope){
+			//add observation scope at [3] or [4]
+			result[getDateRangeResultPosition() + 1] = dateContext.getFeatureGroup();
+		}
+
 		return result;
 	}
 
 	private int getDateRangeResultPosition() {
-		return constantCount - 1;
+		return constantCount - (withObservationScope ? 2 : 1 );
 	}
 
 	@Override

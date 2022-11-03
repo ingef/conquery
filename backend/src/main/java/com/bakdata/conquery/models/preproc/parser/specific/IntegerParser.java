@@ -1,13 +1,12 @@
 package com.bakdata.conquery.models.preproc.parser.specific;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ParserConfig;
 import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.IntArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.LongArrayStore;
 import com.bakdata.conquery.models.events.stores.primitive.ShortArrayStore;
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
-import com.bakdata.conquery.models.events.stores.specific.RebasingStore;
+import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.parser.ColumnValues;
 import com.bakdata.conquery.models.preproc.parser.Parser;
@@ -70,7 +69,7 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 				return ByteArrayStore.create(getLines());
 			}
 
-			return new RebasingStore(minValue, Byte.MIN_VALUE, ByteArrayStore.create(getLines()));
+			return new RebasingIntegerStore(minValue, Byte.MIN_VALUE, ByteArrayStore.create(getLines()));
 		}
 
 		if (span + 1 <= (long) Short.MAX_VALUE - (long) Short.MIN_VALUE) {
@@ -78,7 +77,7 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 				return ShortArrayStore.create(getLines());
 			}
 
-			return new RebasingStore(minValue, Short.MIN_VALUE, ShortArrayStore.create(getLines()));
+			return new RebasingIntegerStore(minValue, Short.MIN_VALUE, ShortArrayStore.create(getLines()));
 		}
 
 		if (span + 1 <= (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE) {
@@ -86,7 +85,7 @@ public class IntegerParser extends Parser<Long, IntegerStore> {
 				return IntArrayStore.create(getLines());
 			}
 
-			return new RebasingStore(minValue, Integer.MIN_VALUE, IntArrayStore.create(getLines()));
+			return new RebasingIntegerStore(minValue, Integer.MIN_VALUE, IntArrayStore.create(getLines()));
 		}
 
 		if (maxValue == Long.MAX_VALUE) {

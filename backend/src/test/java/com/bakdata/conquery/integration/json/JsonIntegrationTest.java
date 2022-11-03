@@ -54,15 +54,15 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 		testSpec.executeTest(conquery);
 	}
 
-	public static ConqueryTestSpec readJson(DatasetId dataset, String json) throws IOException {
+	public static <T extends ConqueryTestSpec> T readJson(DatasetId dataset, String json) throws IOException {
 		return readJson(dataset, json, TEST_SPEC_READER);
 	}
 
-	public static ConqueryTestSpec readJson(Dataset dataset, String json) throws IOException {
+	public static <T extends ConqueryTestSpec> T readJson(Dataset dataset, String json) throws IOException {
 		return readJson(dataset.getId(), json, dataset.injectIntoNew(TEST_SPEC_READER));
 	}
 
-	private static ConqueryTestSpec readJson(DatasetId dataset, String json, ObjectReader jsonReader) throws IOException {
+	private static <T extends ConqueryTestSpec> T readJson(DatasetId dataset, String json, ObjectReader jsonReader) throws IOException {
 		json = StringUtils.replace(
 				json,
 				"${dataset}",

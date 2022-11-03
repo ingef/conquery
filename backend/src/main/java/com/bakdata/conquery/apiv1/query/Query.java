@@ -1,6 +1,5 @@
 package com.bakdata.conquery.apiv1.query;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +9,7 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -24,21 +23,21 @@ import lombok.EqualsAndHashCode;
 public abstract class Query implements QueryDescription {
 
 	public abstract QueryPlan<?> createQueryPlan(QueryPlanContext context);
-	
-	public abstract void collectRequiredQueries(Set<ManagedExecution<?>> requiredQueries);
-	
+
+	public abstract void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries);
+
 	@Override
 	public abstract void resolve(QueryResolveContext context);
-	
-	public Set<ManagedExecution<?>> collectRequiredQueries() {
-		Set<ManagedExecution<?>> set = new HashSet<>();
+
+	public Set<ManagedExecutionId> collectRequiredQueries() {
+		Set<ManagedExecutionId> set = new HashSet<>();
 		collectRequiredQueries(set);
 		return set;
 	}
 
 	@JsonIgnore
 	public abstract List<ResultInfo> getResultInfos();
-	
+
 	@Override
 	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset) {
 		return new ManagedQuery(this, user, submittedDataset);

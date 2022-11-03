@@ -10,6 +10,7 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
+import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
@@ -43,19 +44,20 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 
 		// Manually import data, so we can do our own work.
+		final RequiredData content = test.getContent();
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			importSecondaryIds(conquery, test.getContent().getSecondaryIds());
+			importSecondaryIds(conquery, content.getSecondaryIds());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTables(conquery, test.getContent().getTables());
+			LoadingUtil.importTables(conquery, content.getTables(), content.isAutoConcept());
 			conquery.waitUntilWorkDone();
 
 			LoadingUtil.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			LoadingUtil.importTableContents(conquery, test.getContent().getTables());
+			LoadingUtil.importTableContents(conquery, content.getTables());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -165,12 +167,12 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		final StandaloneSupport conqueryReimport = testConquery.getSupport(namespace.getDataset().getName());
 		{
 			// only import the deleted import/table
-			LoadingUtil.importTables(conqueryReimport,test.getContent().getTables());
+			LoadingUtil.importTables(conqueryReimport, content.getTables(), content.isAutoConcept());
 
 			assertThat(conqueryReimport.getNamespace().getStorage().getTables()).isNotEmpty();
 
 			conqueryReimport.waitUntilWorkDone();
-			LoadingUtil.importTableContents(conqueryReimport, test.getContent().getTables());
+			LoadingUtil.importTableContents(conqueryReimport, content.getTables());
 
 			conqueryReimport.waitUntilWorkDone();
 

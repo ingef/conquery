@@ -25,60 +25,63 @@ import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 
 @CPSType(id = "DATE_RESTRICTION", base = CQElement.class)
-@Setter
 @Getter
+@RequiredArgsConstructor
 public class CQDateRestriction extends CQElement {
-    @NotNull
-    private Range<LocalDate> dateRange;
-    @Valid
-    @NotNull
-    private CQElement child;
+	@NotNull
+	@Valid
+	private final Range<LocalDate> dateRange;
+	@Valid
+	@NotNull
+	private final CQElement child;
 
-    @Override
-    public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-        QPNode childAgg = child.createQueryPlan(context.withDateRestriction(CDateRange.of(dateRange)), plan);
+	@Override
+	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
+		QPNode childAgg = child.createQueryPlan(context.withDateRestriction(CDateRange.of(dateRange)), plan);
 
-        //insert behind every ValidityDateNode
-        Queue<QPNode> openList = new ArrayDeque<>();
+		//insert behind every ValidityDateNode
+		Queue<QPNode> openList = new ArrayDeque<>();
 
-        openList.add(childAgg);
+		openList.add(childAgg);
 
-        while (!openList.isEmpty()) {
-            QPNode current = openList.poll();
-            if (current instanceof ValidityDateNode) {
-                ValidityDateNode validityDateNode = (ValidityDateNode) current;
+		while (!openList.isEmpty()) {
+			QPNode current = openList.poll();
+			if (current instanceof ValidityDateNode) {
+				ValidityDateNode validityDateNode = (ValidityDateNode) current;
 
-                validityDateNode.setChild(new DateRestrictingNode(
-                        CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
-                        validityDateNode.getChild()
-                ));
-            } else if (current instanceof NegatingNode) {
-                //we can't push date restrictions past negations
-            } else {
-                openList.addAll(current.getChildren());
-            }
-        }
+				validityDateNode.setChild(new DateRestrictingNode(
+						CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
+						validityDateNode.getChild()
+				));
+			}
+			else if (current instanceof NegatingNode) {
+				//we can't push date restrictions past negations
+			}
+			else {
+				openList.addAll(current.getChildren());
+			}
+		}
 
-        return childAgg;
-    }
+		return childAgg;
+	}
 
-    @Override
-    public void resolve(QueryResolveContext context) {
-        child.resolve(context);
-    }
+	@Override
+	public void resolve(QueryResolveContext context) {
+		child.resolve(context);
+	}
 
-    @Override
+	@Override
 	public List<ResultInfo> getResultInfos() {
-        return child.getResultInfos();
-    }
+		return child.getResultInfos();
+	}
 
-    @Override
-    public void visit(Consumer<Visitable> visitor) {
-        super.visit(visitor);
-        child.visit(visitor);
-    }
+	@Override
+	public void visit(Consumer<Visitable> visitor) {
+		super.visit(visitor);
+		child.visit(visitor);
+	}
 }

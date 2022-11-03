@@ -44,8 +44,8 @@ public abstract class OutputDescription {
 
 	/**
 	 * Set the {@link TableInputDescriptor} as parent of an {@link OutputDescription}
-	 * It can be used later for many purposes.
-	 * For example it is used in {@link CompoundDateRangeOutput} to check if the neighbour-columns exist in the table
+	 * Used in {@link CompoundDateRangeOutput} to check if the neighbour-columns exist in the table
+	 *
 	 * @implNote BackReference set here because Jackson does not support for fields in interfaces and abstract classes see also https://github.com/FasterXML/jackson-databind/issues/3304
 	 */
 	@JsonBackReference
@@ -131,9 +131,10 @@ public abstract class OutputDescription {
 	 *
 	 * @param headers    A map from column names to column indices.
 	 * @param dateReader
+	 * @param config
 	 * @return the output for the specific headers.
 	 */
-	public abstract Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader);
+	public abstract Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config);
 
 	/**
 	 * The resulting type after {@link Output} has been applied.

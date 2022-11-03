@@ -9,7 +9,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
@@ -58,10 +57,10 @@ public class ConqueryConfig extends Configuration {
 	@Valid
 	@NotNull
 	private List<ResultRendererProvider> resultProviders = List.of(
-			new XlsxResultProvider(),
-			new CsvResultRendererProvider(),
-			new ArrowFileResultProvider(),
-			new ArrowStreamResultProvider()
+			new ExcelResultProvider(),
+			new CsvResultProvider(),
+			new ArrowResultProvider(),
+			new ParquetResultProvider()
 	);
 	@Valid
 	@NotNull
@@ -117,12 +116,7 @@ public class ConqueryConfig extends Configuration {
 	private boolean failOnError = false;
 
 	public void initialize(ManagerNode node) {
-		storage.init(node);
 		plugins.forEach(config -> config.initialize((node)));
-	}
-
-	public void initialize(ShardNode node) {
-		storage.init(node);
 	}
 
 	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {
