@@ -17,11 +17,11 @@ jobs:
         with:
           submodules: true
       - name: Set up JDK
-          uses: actions/setup-java@v2
-          with:
-            distribution: 'temurin'
-            java-version: '17'
-            overwrite-settings: false
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          overwrite-settings: false
       - name: Cache local Maven repository
         uses: actions/cache@v2
         with:
