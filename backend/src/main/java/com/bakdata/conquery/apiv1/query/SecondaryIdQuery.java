@@ -161,13 +161,6 @@ public class SecondaryIdQuery extends Query {
 	}
 
 	@Override
-	public long countResults(Stream<EntityResult> results) {
-		return results.map(EntityResult::listResultLines)
-					  .mapToLong(List::size)
-					  .sum();
-	}
-
-	@Override
 	public CQElement getReusableComponents() {
 		return getRoot();
 	}

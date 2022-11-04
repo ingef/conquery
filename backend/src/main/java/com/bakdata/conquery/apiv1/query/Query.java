@@ -59,6 +59,8 @@ public abstract class Query implements QueryDescription {
 	 * @param results
 	 */
 	public long countResults(Stream<EntityResult> results) {
-		return results.count();
+		return results.map(EntityResult::listResultLines)
+					  .mapToLong(List::size)
+					  .sum();
 	}
 }

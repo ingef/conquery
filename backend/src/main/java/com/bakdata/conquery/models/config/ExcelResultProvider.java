@@ -42,30 +42,36 @@ public class ExcelResultProvider implements ResultRendererProvider {
 	@SneakyThrows(MalformedURLException.class)
 	public Collection<URL> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 		// We only support/produce xlsx files with one sheet for now
-		if (!(exec instanceof SingleTableResult)) {
+		if (!(exec instanceof SingleTableResult singleExecution)) {
 			log.trace("Execution result is not a single table");
+
 			return Collections.emptyList();
 		}
 
 		// Check if the url should be hidden by default
 		if (hidden && !allProviders) {
 			log.trace("XLSX result urls are hidden");
+
 			return Collections.emptyList();
 		}
 
 		// Check if resulting dimensions are possible for the xlsx format
-		if (exec instanceof final ManagedQuery managedQuery) {
-			if (managedQuery.getLastResultCount() + 1 /* Header */ > SpreadsheetVersion.EXCEL2007.getLastRowIndex()) {
-				log.trace("Row count is too high for XLSX format. Not producing a result URL");
-				return Collections.emptyList();
-			}
+		final long rowCount = singleExecution.resultRowCount();
+		final int maxRowCount = SpreadsheetVersion.EXCEL2007.getMaxRows();
+		if (rowCount + 1 /* header row*/ > maxRowCount) {
 
-			final int resultColumnCount = managedQuery.getResultInfos().size();
-			if (resultColumnCount + idColumnsCount > SpreadsheetVersion.EXCEL2007.getMaxColumns()) {
-				log.trace("Column count is too high for XLSX format. Not producing a result URL");
-				return Collections.emptyList();
+			log.trace("Row count is too high for XLSX format (is: {}, max: {}). Not producing a result URL", rowCount, maxRowCount);
 
-			}
+			return Collections.emptyList();
+		}
+
+		final int columnCount = singleExecution.getResultInfos().size() + idColumnsCount;
+		final int maxColumnCount = SpreadsheetVersion.EXCEL2007.getMaxColumns();
+		if (columnCount > maxColumnCount) {
+
+			log.trace("Column count is too high for XLSX format (is: {}, max: {}). Not producing a result URL", columnCount, maxColumnCount);
+
+			return Collections.emptyList();
 		}
 
 		final URL resultUrl = ResultExcelResource.getDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec);
