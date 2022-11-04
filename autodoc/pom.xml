@@ -5,7 +5,7 @@
 
 
 	<properties>
-		<javaparser.version>3.24.4</javaparser.version>
+		<javaparser.version>3.24.7</javaparser.version>
 	</properties>
 
 	<parent>
