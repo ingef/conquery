@@ -16,11 +16,6 @@ import type {
 } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
 
-export interface InfoType {
-  key: string;
-  value: string;
-}
-
 export type RangeFilterWithValueType = RangeFilterT;
 
 export interface MultiSelectFilterWithValueType extends MultiSelectFilterT {

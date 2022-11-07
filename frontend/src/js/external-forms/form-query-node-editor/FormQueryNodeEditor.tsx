@@ -10,7 +10,7 @@ import {
   SelectorResultType,
 } from "../../api/types";
 import type { StateT } from "../../app/reducers";
-import { toUpperCaseUnderscore } from "../../common/helpers";
+import { toUpperCaseUnderscore } from "../../common/helpers/commonHelper";
 import { usePrevious } from "../../common/helpers/usePrevious";
 import type { NodeResetConfig } from "../../model/node";
 import { tableIsEditable } from "../../model/table";

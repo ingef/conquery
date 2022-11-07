@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import { SelectOptionT } from "../../api/types";
-import { getUniqueFileRows } from "../../common/helpers";
+import { getUniqueFileRows } from "../../common/helpers/fileHelper";
 import { usePrevious } from "../../common/helpers/usePrevious";
 
 export const useResolvableSelect = ({

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import type { CurrencyConfigT } from "../api/types";
 import IconButton from "../button/IconButton";
-import { isEmpty } from "../common/helpers";
+import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import WithTooltip from "../tooltip/WithTooltip";

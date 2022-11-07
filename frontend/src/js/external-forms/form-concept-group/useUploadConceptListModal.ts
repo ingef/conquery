@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 
-import { getUniqueFileRows } from "../../common/helpers";
+import { getUniqueFileRows } from "../../common/helpers/fileHelper";
 import { TreesT } from "../../concept-trees/reducer";
 import { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import {

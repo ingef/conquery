@@ -8,7 +8,7 @@ import type { SecondaryId } from "../../api/types";
 import type { StateT } from "../../app/reducers";
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
-import { formatDate } from "../../common/helpers";
+import { formatDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { useFormLabelByType } from "../../external-forms/stateSelectors";
 import FormSymbol from "../../symbols/FormSymbol";

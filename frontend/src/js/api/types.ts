@@ -501,10 +501,6 @@ export interface PostLoginResponseT {
   access_token: string;
 }
 
-export interface PostFormConfigsResponseT {
-  id: string;
-}
-
 export type GetFormConfigsResponseT = FormConfigT[];
 
 export type GetFormConfigResponseT = FormConfigT;
