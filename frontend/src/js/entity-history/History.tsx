@@ -18,7 +18,7 @@ import InteractionControl from "./InteractionControl";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import SourcesControl from "./SourcesControl";
-import { Timeline } from "./Timeline";
+import Timeline from "./Timeline";
 import { DEFAULT_ID_KIND, useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
 

@@ -1,5 +1,4 @@
 import type { ConceptT, ConceptIdT, GetConceptResponseT } from "../api/types";
-import { includes } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { nodeIsElement, NodeResetConfig } from "../model/node";
 import { resetSelects } from "../model/select";
@@ -116,7 +115,7 @@ const findRootConceptFromNodeIds = (
   );
 
   return Object.keys(rootConcepts).find(
-    (id) => includes(parentConceptIds, id) && nodeIsElement(rootConcepts[id]),
+    (id) => parentConceptIds.includes(id) && nodeIsElement(rootConcepts[id]),
   );
 };
 

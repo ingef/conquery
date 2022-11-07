@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { isEmpty } from "../common/helpers";
+import { isEmpty } from "../common/helpers/commonHelper";
 import type { DragItemQuery } from "../standard-query-editor/types";
 import VerticalToggleButton from "../ui-components/VerticalToggleButton";
 

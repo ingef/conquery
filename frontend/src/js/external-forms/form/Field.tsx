@@ -10,7 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
-import type { DateStringMinMax } from "../../common/helpers";
+import type { DateStringMinMax } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import type { Language } from "../../localization/useActiveLang";
 import { nodeIsInvalid } from "../../model/node";

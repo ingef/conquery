@@ -1,5 +1,5 @@
 import type { TableT } from "../api/types";
-import { compose } from "../common/helpers";
+import { compose } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
