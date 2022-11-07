@@ -17,7 +17,9 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.arx.ARXConfig;
 import com.bakdata.conquery.models.forms.arx.ArxExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -63,42 +65,15 @@ public class ArxForm extends Form {
 	 */
 	@NotNull
 	@Getter
-	private PrivacyModel privacyModel;
+	private String privacyModel;
+
+	@JsonIgnore
+	@Getter
+	private PrivacyCriterion resolvedPrivacyModel;
 
 	@JsonIgnore
 	private ManagedQuery queryGroup;
 
-	public enum PrivacyModel {
-		/**
-		 * Use for testing only
-		 */
-		K_ANONYMITY_2() {
-			@Override
-			public PrivacyCriterion getPrivacyCriterion() {
-				return new KAnonymity(2);
-			}
-		},
-		K_ANONYMITY_5() {
-			@Override
-			public PrivacyCriterion getPrivacyCriterion() {
-				return new KAnonymity(5);
-			}
-		},
-		K_ANONYMITY_11() {
-			@Override
-			public PrivacyCriterion getPrivacyCriterion() {
-				return new KAnonymity(11);
-			}
-		},
-		PITMAN_1_PERCENT() {
-			@Override
-			public PrivacyCriterion getPrivacyCriterion() {
-				return new PopulationUniqueness(0.001, RiskModelPopulationUniqueness.PopulationUniquenessModel.PITMAN, ARXPopulationModel.create(ARXPopulationModel.Region.EUROPEAN_UNION));
-			}
-		};
-
-		public abstract PrivacyCriterion getPrivacyCriterion();
-	}
 
 	@Override
 	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
@@ -124,6 +99,11 @@ public class ArxForm extends Form {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		queryGroup = (ManagedQuery) context.getDatasetRegistry().getMetaRegistry().resolve(queryGroupId);
+		final ARXConfig
+				arxConfig =
+				context.getConfig().getPluginConfig(ARXConfig.class).orElseThrow(() -> new ConqueryError.ExecutionCreationErrorUnspecified());
+
+		resolvedPrivacyModel = arxConfig.getPrivacyModels().get(privacyModel).getPrivacyCriterion();
 	}
 
 	@Override

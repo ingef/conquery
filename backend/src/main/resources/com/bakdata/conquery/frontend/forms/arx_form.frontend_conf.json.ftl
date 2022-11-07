@@ -53,27 +53,18 @@
 			},
 			"defaultValue": "K_ANONYMITY_11",
 			"options": [
-				{
-					"label": {
-						"de": "K-Anonymität 5",
-						"en": "K-Anonymity 5"
-					},
-					"value": "K_ANONYMITY_5"
-				},
-				{
-					"label": {
-						"de": "K-Anonymität 11",
-						"en": "K-Anonymity 11"
-					},
-					"value": "K_ANONYMITY_11"
-				},
-				{
-					"label": {
-						"de": "Pitman 1%",
-						"en": "Pitman 1%"
-					},
-					"value": "PITMAN_1_PERCENT"
-				}
+                <#list privacyModels as modelId, model>
+                    {
+                        "label": {
+                            <#list model.localizedLabels as locale, label>
+                            "${locale}": "${label}"
+                            <#sep>,</#sep>
+                            </#list>
+                        },
+                        "value": "${modelId}"
+                    }
+                    <#sep>,</#sep>
+                </#list>
 			],
 			"validations": [
 				"NOT_EMPTY"
