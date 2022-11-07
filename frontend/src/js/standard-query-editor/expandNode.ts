@@ -109,8 +109,9 @@ const mergeMultiSelectFilter = ({
   }
 
   const hasOptions = savedFilter.options.length > 0;
+  const isMultiSelect = savedFilter.type === "MULTI_SELECT";
 
-  if (hasOptions) {
+  if (isMultiSelect && hasOptions) {
     return {
       ...basicFilter,
       value: matchingFilter.value
