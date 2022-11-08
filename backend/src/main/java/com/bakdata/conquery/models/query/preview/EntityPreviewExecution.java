@@ -137,4 +137,9 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	public Stream<EntityResult> streamResults() {
 		return getValuesQuery().streamResults();
 	}
+
+	@Override
+	public long resultRowCount() {
+		return getValuesQuery().resultRowCount();
+	}
 }
