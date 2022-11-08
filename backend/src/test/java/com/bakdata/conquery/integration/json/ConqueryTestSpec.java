@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
@@ -61,14 +62,18 @@ public abstract class ConqueryTestSpec {
 
 		// Configure test privacy model that works with small datasets
 		ARXConfig arxConfig = new ARXConfig();
-		arxConfig.setPrivacyModels(Map.of("K_ANONYMITY_5", KAnonymity.builder()
-
-																	 .localizedLabels(
-																			 Map.of(
-																					 "de", "K-Anonymität 5",
-																					 "en", "K-Anonymity 5"
-																			 ))
-																	 .k(5).build()));
+		arxConfig.setPrivacyModels(new TreeMap<>(
+				Map.of(
+						"K_ANONYMITY_5", KAnonymity.builder()
+												   .localizedLabels(
+														   Map.of(
+																   "de", "K-Anonymität 5",
+																   "en", "K-Anonymity 5"
+														   )
+												   )
+												   .k(5)
+												   .build()
+				)));
 
 		config.setPlugins(List.of(
 				arxConfig
