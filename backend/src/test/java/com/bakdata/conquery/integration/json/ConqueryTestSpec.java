@@ -8,14 +8,12 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.PluginConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.forms.arx.ARXConfig;
@@ -64,14 +62,14 @@ public abstract class ConqueryTestSpec {
 		ARXConfig arxConfig = new ARXConfig();
 		arxConfig.setPrivacyModels(new TreeMap<>(
 				Map.of(
-						"K_ANONYMITY_5", KAnonymity.builder()
+						"K_ANONYMITY_2", KAnonymity.builder()
 												   .localizedLabels(
 														   Map.of(
-																   "de", "K-Anonymität 5",
-																   "en", "K-Anonymity 5"
+																   "de", "K-Anonymität 2",
+																   "en", "K-Anonymity 2"
 														   )
 												   )
-												   .k(5)
+												   .k(2)
 												   .build()
 				)));
 

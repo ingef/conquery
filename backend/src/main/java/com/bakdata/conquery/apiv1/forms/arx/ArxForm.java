@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.arx.ARXConfig;
 import com.bakdata.conquery.models.forms.arx.ArxExecution;
+import com.bakdata.conquery.models.forms.arx.models.PrivacyModel;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -103,7 +104,12 @@ public class ArxForm extends Form {
 				arxConfig =
 				context.getConfig().getPluginConfig(ARXConfig.class).orElseThrow(() -> new ConqueryError.ExecutionCreationErrorUnspecified());
 
-		resolvedPrivacyModel = arxConfig.getPrivacyModels().get(privacyModel).getPrivacyCriterion();
+		final PrivacyModel configuredPrivacyModel = arxConfig.getPrivacyModels().get(privacyModel);
+		if (configuredPrivacyModel == null) {
+			throw new ConqueryError("Unknown privacy model referenced: ${MODEL}", Map.of("MODEL", privacyModel)) {
+			};
+		}
+		resolvedPrivacyModel = configuredPrivacyModel.getPrivacyCriterion();
 	}
 
 	@Override
