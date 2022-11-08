@@ -300,7 +300,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	/**
 	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
 	 *
-	 * @implNote This is an unrolled implementation of {@link CDateRange#spanClosed(CDateRange)}.
+	 * @implNote This is an unrolled implementation of {@link CDateRange#span(CDateRange)}.
 	 */
 	private static CDateRange[] calculateEntityDateIndices(Bucket bucket, int bucketSize) {
 		final CDateRange[] spans = new CDateRange[bucketSize];
