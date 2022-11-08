@@ -94,7 +94,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	private final int[][] mostSpecificChildren;
 
 	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize) {
-		int root = bucket.getBucket() * bucketSize;
+		final int root = bucket.getBucket() * bucketSize;
 
 		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector);
 		final long[] includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
@@ -117,7 +117,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			return -1;
 		}
 
-		int[] mostSpecificChild = mostSpecificChildren[event];
+		final int[] mostSpecificChild = mostSpecificChildren[event];
 		return mostSpecificChild[mostSpecificChild.length - 1];
 	}
 
@@ -138,7 +138,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 		final int index = bucket.getEntityIndex(entity);
 
-		long bits = includedConceptElementsPerEntity[index];
+		final long bits = includedConceptElementsPerEntity[index];
 
 		return (bits & requiredBits) != 0L;
 	}
@@ -217,7 +217,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 					continue;
 				}
 
-				ConceptTreeChild child = cache == null
+				final ConceptTreeChild child = cache == null
 										 ? treeConcept.findMostSpecificChild(stringValue, rowMap)
 										 : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
 
@@ -255,7 +255,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * the bitmask of the event with the bitmask calculated by {@link ConceptNode#calculateBitMask(List)}
 	 */
 	private static long[] calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
-		long[] includedConcepts = new long[bucketSize];
+		final long[] includedConcepts = new long[bucketSize];
 
 		for (int entity : bucket.getEntities()) {
 
@@ -299,13 +299,11 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * @implNote This is an unrolled implementation of {@link CDateRange#spanClosed(CDateRange)}.
 	 */
 	private static CDateRange[] calculateEntityDateIndices(Bucket bucket, int bucketSize) {
-		CDateRange[] spans = new CDateRange[bucketSize];
+		final CDateRange[] spans = new CDateRange[bucketSize];
 
 		Arrays.fill(spans, CDateRange.all());
 
-		// First initialize to an illegal state that's easy on our comparisons
-
-		Table table = bucket.getTable();
+		final Table table = bucket.getTable();
 
 
 		for (Column column : table.getColumns()) {
@@ -317,7 +315,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				final int index = bucket.getEntityIndex(entity);
 				final int end = bucket.getEntityEnd(entity);
 
-				// We unroll spanClosed for the whole bucket/entity, this avoids costly
+				// We unroll spanClosed for the whole bucket/entity, this avoids costly reallocation in a loop
+				// First we initialize the values to illegal values, making Min/Max easier
 				int max = Integer.MIN_VALUE;
 				int min = Integer.MAX_VALUE;
 
@@ -327,7 +326,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 						continue;
 					}
 
-					CDateRange range = bucket.getAsDateRange(event, column);
+					final CDateRange range = bucket.getAsDateRange(event, column);
 
 					if (range.hasLowerBound()) {
 						final int minValue = range.getMinValue();
@@ -345,7 +344,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				}
 
 
-				spans[index] = createClosed(max, min, spans[index]);
+				spans[index] = calculateSpan(max, min, spans[index]);
 			}
 		}
 
@@ -355,19 +354,19 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	/**
 	 * Helper method for calculateEntityDateIndices, swapping {@link Integer#MIN_VALUE}/{@link Integer#MAX_VALUE} for higher performance.
 	 */
-	private static CDateRange createClosed(int max, int min, CDateRange in) {
+	private static CDateRange calculateSpan(int max, int min, CDateRange in) {
 		if (max == Integer.MIN_VALUE && min == Integer.MAX_VALUE) {
 			return in;
 		}
 
 		if (max == Integer.MIN_VALUE) {
-			return in.spanClosed(CDateRange.atLeast(min));
+			return in.span(CDateRange.atLeast(min));
 		}
 
 		if (min == Integer.MAX_VALUE) {
-			return in.spanClosed(CDateRange.atMost(max));
+			return in.span(CDateRange.atMost(max));
 		}
 
-		return in.spanClosed(CDateRange.of(min, max));
+		return in.span(CDateRange.of(min, max));
 	}
 }
