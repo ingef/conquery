@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -45,6 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonDeserialize(using = CBlockDeserializer.class)
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 @Slf4j
+@ToString(onlyExplicitlyIncluded = true)
 public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIdentifiable<CBlockId> {
 
 	/**
@@ -63,11 +65,13 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		);
 	}
 
+	@ToString.Include
 	@NsIdRef
 	private final Bucket bucket;
 
 	@NotNull
 	@NsIdRef
+	@ToString.Include
 	private final ConceptTreeConnector connector;
 
 	/**
@@ -218,8 +222,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				}
 
 				final ConceptTreeChild child = cache == null
-										 ? treeConcept.findMostSpecificChild(stringValue, rowMap)
-										 : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
+											   ? treeConcept.findMostSpecificChild(stringValue, rowMap)
+											   : cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
 
 				// All unresolved elements resolve to the root.
 				if (child == null) {
