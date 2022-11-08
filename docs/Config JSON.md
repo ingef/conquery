@@ -143,6 +143,20 @@ A `PluginConfig` is used to define settings for Conquery plugins.
 Different types of PluginConfig can be used by setting `type` to one of the following values:
 
 
+### ARX<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/arx/ARXConfig.java#L36)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.forms.arx.ARXConfig`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/forms/arx/ARXConfig.java#L41) | privacyModels | map from `String` to `PrivacyModel` |  |  |  | 
+</p></details>
+
 ### MANUAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ManualConfig.java#L17-L20)</sup></sub></sup>
 Configuration of manual links for {@link org.checkerframework.checker.signature.qual.InternalForm} and overriding of other {@link com.bakdata.conquery.apiv1.forms.Form}s.
 
