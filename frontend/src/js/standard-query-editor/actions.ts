@@ -148,9 +148,13 @@ const useLoadBigMultiSelectValues = () => {
                     ...table,
                     filters: await Promise.all(
                       table.filters.map(async (filter) => {
-                        if (filter.type !== "BIG_MULTI_SELECT") return filter;
-                        if (!filter.value || filter.value.length === 0)
+                        if (
+                          filter.type !== "BIG_MULTI_SELECT" ||
+                          !filter.value ||
+                          filter.value.length === 0
+                        ) {
                           return filter;
+                        }
 
                         try {
                           const result = await postFilterValuesResolve(
