@@ -35,7 +35,6 @@ public abstract class ANode<N extends ANode<N>> extends NodeParent<N> {
 				}
 				setRight(newNode);
 			}
-			default -> throw new IllegalStateException();
 		}
 	}
 
