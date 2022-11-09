@@ -48,18 +48,18 @@ public class FrontEndConceptBuilder {
 
 		FERoot root = new FERoot();
 		Map<Id<?>, FENode> roots = root.getConcepts();
-		
+
 		List<? extends Concept<?>> allConcepts = new ArrayList<>(storage.getAllConcepts());
 		// Remove any hidden concepts
 		allConcepts.removeIf(Concept::isHidden);
-		
+
 		if(allConcepts.isEmpty()) {
 			log.warn("There are no displayable concepts in the dataset {}", storage.getDataset().getId());
 		}
 
 		// Submit all permissions to Shiro
 		boolean[] isPermitted = subject.isPermitted(allConcepts, Ability.READ);
-		
+
 		for (int i = 0; i<allConcepts.size(); i++) {
 			if(isPermitted[i]) {
 				roots.put(allConcepts.get(i).getId(), createCTRoot(allConcepts.get(i), storage.getStructure()));
@@ -125,18 +125,14 @@ public class FrontEndConceptBuilder {
 						.collect(Collectors.toList())
 				)
 				.build();
-		
-		if(c instanceof ConceptTreeNode) {
-			ConceptTreeNode<?> tree = (ConceptTreeNode<?>)c;
-			if(tree.getChildren()!=null) {
-				n.setChildren(
-					tree
-						.getChildren()
+
+		if (c instanceof ConceptTreeNode<?> tree && tree.getChildren() != null) {
+			n.setChildren(
+					tree.getChildren()
 						.stream()
 						.map(ConceptTreeChild::getId)
 						.toArray(ConceptTreeChildId[]::new)
-				);
-			}
+			);
 		}
 		return n;
 	}
@@ -155,7 +151,7 @@ public class FrontEndConceptBuilder {
 		if (unstructured.isEmpty()) {
 			return null;
 		}
-		
+
 		return FENode.builder()
 			.active(false)
 			.description(cn.getDescription())
@@ -184,10 +180,9 @@ public class FrontEndConceptBuilder {
 				.matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
 				.dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
 				.build();
-		
-		if(ce instanceof ConceptTreeNode) {
-			ConceptTreeNode<?> tree = (ConceptTreeNode<?>)ce;
-			if(tree.getChildren()!=null) {
+
+		if (ce instanceof ConceptTreeNode<?> tree) {
+			if (tree.getChildren() != null) {
 				n.setChildren(tree.getChildren().stream().map(IdentifiableImpl::getId).toArray(ConceptTreeChildId[]::new));
 			}
 			if (tree.getParent() != null) {
@@ -224,7 +219,7 @@ public class FrontEndConceptBuilder {
 									 .collect(Collectors.toSet())
 					   )
 					   .build();
-		
+
 		if(con.getValidityDates().size() > 1) {
 			result.setDateColumn(
 				new FEValidityDate(
@@ -236,12 +231,12 @@ public class FrontEndConceptBuilder {
 							.collect(Collectors.toList())
 				)
 			);
-			
+
 			if(!result.getDateColumn().getOptions().isEmpty()) {
 				result.getDateColumn().setDefaultValue(result.getDateColumn().getOptions().get(0).getValue());
 			}
 		}
-		
+
 		return result;
 	}
 

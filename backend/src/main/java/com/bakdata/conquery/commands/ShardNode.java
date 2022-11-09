@@ -183,9 +183,9 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			return;
 		}
 
-		MessageToShardNode srm = (MessageToShardNode) message;
+		MessageToShardNode toShardNode = (MessageToShardNode) message;
 		log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
-		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>(srm, context);
+		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>(toShardNode, context);
 
 		if (((Message) message).isSlowMessage()) {
 			((SlowMessage) message).setProgressReporter(job.getProgressReporter());
