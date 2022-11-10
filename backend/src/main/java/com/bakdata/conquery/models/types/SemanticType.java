@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.types;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -115,6 +116,21 @@ public abstract class SemanticType {
 	public static class ConceptColumnT extends SemanticType {
 		@NsIdRef
 		private final Concept<?> concept;
+
+	}
+
+
+	/**
+	 * Column contains values from {@link Column}
+	 *
+	 * Only used for {@link com.bakdata.conquery.apiv1.query.TableExportQuery}.
+	 */
+	@CPSType(id = "COLUMN", base = SemanticType.class)
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	public static class ColumnT extends SemanticType {
+		@NsIdRef
+		private final Column column;
 
 	}
 }
