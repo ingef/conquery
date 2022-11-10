@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @Setter
 @Getter
@@ -62,9 +63,14 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		// If either not searches are available or all are disabled, we allow users to supply their own values
 		f.setCreatable(getSearchReferences().stream().noneMatch(Predicate.not(Searchable::isSearchDisabled)));
 
-		f.setOptions(labels.entrySet().stream()
-						   .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
-						   .collect(Collectors.toList()));
+		f.setOptions(collectLabels());
+	}
+
+	@NotNull
+	protected List<FEValue> collectLabels() {
+		return labels.entrySet().stream()
+					 .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
+					 .collect(Collectors.toList());
 	}
 
 	@JsonIgnore
