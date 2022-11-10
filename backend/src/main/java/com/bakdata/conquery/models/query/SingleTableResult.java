@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -17,5 +16,8 @@ public interface SingleTableResult {
 	List<ResultInfo> getResultInfos();
 
 	Stream<EntityResult> streamResults();
+
+	@JsonIgnore
+	long resultRowCount();
 
 }
