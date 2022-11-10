@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -39,7 +40,10 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.api.ResultArrowResource;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
@@ -161,7 +165,7 @@ public class StoredQueriesProcessorTest {
 	private static ManagedQuery mockManagedSecondaryIdQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState, CQElement root, Dataset dataset){
 		final SecondaryIdQuery sid = new SecondaryIdQuery();
 		sid.setSecondaryId(new SecondaryIdDescription() {{
-			setDataset(DATASET_0);
+			setDataset(dataset);
 			setName("sid");
 		}});
 		sid.setRoot(root);
@@ -176,6 +180,14 @@ public class StoredQueriesProcessorTest {
 				setState(execState);
 				setCreationTime(LocalDateTime.MIN);
 				setQueryId(id.getExecution());
+				setLastResultCount(100L);
+			}
+
+			@Override
+			public List<ResultInfo> getResultInfos() {
+				// With method is mocked because the ExcelResultProvider needs some info to check dimensions,
+				// but actually resolving the query here requires much more setup
+				return Collections.emptyList();
 			}
 		};
 	}
@@ -199,6 +211,7 @@ public class StoredQueriesProcessorTest {
 		status.setId(id);
 		status.setStatus(state);
 		status.setQueryType(typeLabel);
+		status.setNumberOfResults(100L);
 		status.setSecondaryId(secondaryId); // This is probably not interesting on the overview (only if there is an filter for the search)
 		if(state.equals(DONE)) {
 			status.setResultUrls(List.of(

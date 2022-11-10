@@ -17,6 +17,7 @@ public interface SingleTableResult {
 
 	Stream<EntityResult> streamResults();
 
+	@JsonIgnore
 	long resultRowCount();
 
 }
