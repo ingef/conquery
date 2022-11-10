@@ -43,7 +43,6 @@ import org.deidentifier.arx.ARXResult;
 import org.deidentifier.arx.Data;
 import org.deidentifier.arx.DataHandle;
 import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
-import org.deidentifier.arx.criteria.KAnonymity;
 
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "ARX_EXECUTION")
@@ -145,7 +144,7 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 		// Configure ARX
 		ARXConfiguration config = ARXConfiguration.create();
 		config.addPrivacyModel(form.getResolvedPrivacyModel());
-		config.setSuppressionLimit(form.getSuppressionLimit());
+		config.setSuppressionLimit(form.getSuppressionLimit().doubleValue());
 
 		// Run ARX
 		ARXAnonymizer anonymizer = new ARXAnonymizer();

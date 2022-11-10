@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -112,6 +113,8 @@ public abstract class ConqueryTestSpec {
 								om.addHandler(new DatasetPlaceHolderFiller(support))
 						)
 		);
+		final MutableInjectableValues injectableValues = (MutableInjectableValues) mapper.getInjectableValues();
+		injectableValues.add(ConqueryConfig.class, support.getConfig());
 
 		T result = mapper.readerFor(expectedType).readValue(node);
 
