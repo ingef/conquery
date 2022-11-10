@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
@@ -187,8 +186,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
 		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>(toShardNode, context);
 
-		if (((Message) message).isSlowMessage()) {
-			((SlowMessage) message).setProgressReporter(job.getProgressReporter());
+		if (message instanceof SlowMessage slowMessage) {
+			slowMessage.setProgressReporter(job.getProgressReporter());
 			jobManager.addSlowJob(job);
 		}
 		else {

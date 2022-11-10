@@ -353,8 +353,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 					datasetRegistry, config.getCluster().getBackpressure()
 			));
 
-			if (toManagerNode.isSlowMessage()) {
-				((SlowMessage) toManagerNode).setProgressReporter(job.getProgressReporter());
+			if (toManagerNode instanceof SlowMessage slowMessage) {
+				slowMessage.setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
 			}
 			else {
