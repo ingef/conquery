@@ -17,10 +17,39 @@
       ]
     }
   },
+  "internToExternMappings": [
+    {
+      "name": "mapping",
+      "type": "CSV_MAP",
+      "internalColumn": "code",
+      "externalTemplate": "External: {{external}}",
+      "csv": "classpath:/tests/query/ENTITY_EXPORT_TESTS/mapping.csv"
+    }
+  ],
   "concepts": [
     {
       "label": "tree1",
       "type": "TREE",
+      "children": [
+        {
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "A1"
+            ]
+          },
+          "label": "Child A"
+        },
+        {
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "B2"
+            ]
+          },
+          "label": "Child B"
+        }
+      ],
       "connectors": [
         {
           "name": "connector",
@@ -72,6 +101,13 @@
     }
   ],
   "content": {
+    "secondaryIds": [
+      {
+        "name": "secondaryid",
+        "mapping": "mapping",
+        "description": "This is a SecondaryId"
+      }
+    ],
     "tables": [
       {
         "csv": "tests/query/ENTITY_EXPORT_TESTS/content1.csv",
@@ -88,6 +124,11 @@
           {
             "name": "column",
             "type": "STRING"
+          },
+          {
+            "name": "codes",
+            "type": "STRING",
+            "secondaryId": "secondaryid"
           }
         ]
       },
@@ -106,7 +147,12 @@
           {
             "name": "column",
             "type": "STRING",
-            "description" : "This is a column"
+            "description": "This is a column"
+          },
+          {
+            "name": "codes",
+            "type": "STRING",
+            "secondaryId": "secondaryid"
           }
         ]
       }

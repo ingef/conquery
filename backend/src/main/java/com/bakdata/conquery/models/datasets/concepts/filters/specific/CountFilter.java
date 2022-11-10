@@ -1,13 +1,15 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
@@ -16,8 +18,6 @@ import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -26,10 +26,12 @@ import lombok.NoArgsConstructor;
 @Data
 public class CountFilter extends Filter<Range.LongRange> {
 
-	@Valid
-	@NotEmpty
+	@NsIdRef
+	private Column column;
+
 	@NsIdRefCollection
-	private List<Column> column;
+	@NotNull
+	private List<Column> distinctByColumn = Collections.emptyList();
 
 	private boolean distinct;
 
@@ -43,24 +45,26 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
-		if (distinct) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(), getColumn()));
+		if (!isDistinct()) {
+			return new RangeFilterNode(value, new CountAggregator(getColumn()));
 		}
-		return new RangeFilterNode(value, new CountAggregator(getColumn().get(0)));
+
+		if (distinctByColumn != null && !getDistinctByColumn().isEmpty()) {
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getDistinctByColumn()));
+		}
+
+		return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(), List.of(getColumn())));
+
 	}
 
 	@Override
-	public Column[] getRequiredColumns() {
-		return getColumn().toArray(Column[]::new);
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Cannot use multiple columns, when distinct is not set.")
-	public boolean isMultiOnlyWhenDistinct() {
-		if(!isDistinct()){
-			return getColumn().size() == 1;
+	public List<Column> getRequiredColumns() {
+		final List<Column> out = new ArrayList<>();
+		out.add(getColumn());
+		if (distinctByColumn != null) {
+			out.addAll(getDistinctByColumn());
 		}
 
-		return true;
+		return out;
 	}
 }

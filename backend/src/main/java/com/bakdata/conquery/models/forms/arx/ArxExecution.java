@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.forms.arx;
 
-import static com.bakdata.conquery.models.types.SemanticType.IdentificationT;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -11,7 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.apiv1.forms.ArxForm;
+import com.bakdata.conquery.apiv1.forms.arx.ArxForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -34,7 +32,6 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.MoreCollectors;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.deidentifier.arx.ARXAnonymizer;
@@ -43,7 +40,6 @@ import org.deidentifier.arx.ARXResult;
 import org.deidentifier.arx.Data;
 import org.deidentifier.arx.DataHandle;
 import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
-import org.deidentifier.arx.criteria.KAnonymity;
 
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "ARX_EXECUTION")
@@ -144,14 +140,11 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 
 		// Configure ARX
 		ARXConfiguration config = ARXConfiguration.create();
-		config.addPrivacyModel(new KAnonymity(form.getKAnonymityParam()));
-		config.setSuppressionLimit(form.getSuppressionLimit());
+		config.addPrivacyModel(form.getResolvedPrivacyModel());
+		config.setSuppressionLimit(form.getSuppressionLimit().doubleValue());
 
 		// Run ARX
 		ARXAnonymizer anonymizer = new ARXAnonymizer();
-		anonymizer.setMaximumSnapshotSizeDataset(form.getMaximumSnapshotSizeDataset());
-		anonymizer.setMaximumSnapshotSizeSnapshot(form.getMaximumSnapshotSizeSnapshot());
-		anonymizer.setHistorySize(form.getHistorySize());
 
 		result = anonymizer.anonymize(data, config);
 
@@ -168,16 +161,10 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 	private AttributeTypeBuilder createAttributeTypeBuilder(ResultInfo resultInfo) {
 
 		// Check semantics for identification attributes
-		final Optional<IdentificationT>
-				identType = resultInfo.getSemantics().stream()
-									  .filter(IdentificationT.class::isInstance)
-									  .map(IdentificationT.class::cast)
-									  .collect(MoreCollectors.toOptional());
+		final Optional<AttributeTypeBuilder>
+				identType = Optional.empty();
 
 		return identType
-				.map(IdentificationT::getAttributeType)
-				.map((type) -> new AttributeTypeBuilder.Fixed(type, (cell) -> resultInfo.getType().printNullable(printSettings, cell)))
-				.map(AttributeTypeBuilder.class::cast)
 				// Special cases
 				.or( // Handle ResultType.DateT: Provide date hierarchy
 					 () -> {
@@ -223,7 +210,7 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 		// Other types only affect value presentation in a view (sorting, ...)
 		return super.getResultInfos()
 					.stream()
-					.map(resultInfo -> new SimpleResultInfo(resultInfo.defaultColumnName(printSettings), ResultType.StringT.INSTANCE, resultInfo.getSemantics()))
+					.map(resultInfo -> new SimpleResultInfo(resultInfo.defaultColumnName(printSettings), ResultType.StringT.INSTANCE, resultInfo.getDescription(), resultInfo.getSemantics()))
 					.collect(Collectors.toList());
 	}
 

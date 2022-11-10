@@ -58,7 +58,7 @@ public class ResultArrowProcessor {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
-				((ManagedExecution<?> & SingleTableResult) exec),
+				(ManagedExecution<?> & SingleTableResult) exec,
 				dataset,
 				datasetRegistry,
 				pretty,
@@ -97,14 +97,7 @@ public class ResultArrowProcessor {
 
 		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {} on dataset {}", exec, dataset);
-		subject.authorize(dataset, Ability.READ);
-		subject.authorize(dataset, Ability.DOWNLOAD);
-
-
-		subject.authorize(exec, Ability.READ);
-
-		// Check if subject is permitted to download on all datasets that were referenced by the query
-		authorizeDownloadDatasets(subject, exec);
+		ResultUtil.authorizeExecutable(subject, exec, dataset);
 
 		if (!(exec instanceof ManagedQuery || (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1))) {
 			return Response.status(HttpStatus.SC_UNPROCESSABLE_ENTITY, "Execution result is not a single Table").build();
@@ -146,5 +139,6 @@ public class ResultArrowProcessor {
 
 		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
+
 
 }

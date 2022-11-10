@@ -17,7 +17,8 @@ const DeleteFolderModal: FC<PropsT> = ({
   onDeleteSuccess,
 }) => {
   const { t } = useTranslation();
-  const onDeleteFolder = useDeleteProjectItemFolder(folder);
+
+  const onDeleteFolder = useDeleteProjectItemFolder();
 
   return (
     <DeleteModal
@@ -25,7 +26,7 @@ const DeleteFolderModal: FC<PropsT> = ({
       headline={t("deletePreviousQueryFolderModal.areYouSure")}
       description={t("deletePreviousQueryFolderModal.description", { folder })}
       onDelete={async () => {
-        await onDeleteFolder();
+        await onDeleteFolder(folder);
         onDeleteSuccess();
       }}
     />

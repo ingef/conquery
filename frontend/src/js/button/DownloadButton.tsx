@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, FC, useContext } from "react";
+import { ReactNode, useContext, forwardRef } from "react";
 
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 
@@ -9,33 +9,35 @@ const SxIconButton = styled(IconButton)`
   white-space: nowrap;
 `;
 
-interface PropsT extends Omit<IconButtonPropsT, "icon" | "onClick"> {
+const Link = styled("a")`
+  line-height: 1;
+`;
+
+interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
   url: string;
   className?: string;
   children?: ReactNode;
+  onClick?: () => void;
 }
 
-const DownloadButton: FC<PropsT> = ({
-  url,
-  className,
-  children,
-  ...restProps
-}) => {
-  const { authToken } = useContext(AuthTokenContext);
+const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
+  ({ url, className, children, onClick, ...restProps }, ref) => {
+    const { authToken } = useContext(AuthTokenContext);
 
-  const href = `${url}?access_token=${encodeURIComponent(
-    authToken,
-  )}&charset=ISO_8859_1`;
+    const href = `${url}?access_token=${encodeURIComponent(
+      authToken,
+    )}&charset=ISO_8859_1`;
 
-  const icon = "download";
+    const icon = "download";
 
-  return (
-    <a href={href} className={className}>
-      <SxIconButton {...restProps} icon={icon} onClick={() => {}}>
-        {children}
-      </SxIconButton>
-    </a>
-  );
-};
+    return (
+      <Link href={href} className={className} ref={ref}>
+        <SxIconButton {...restProps} icon={icon} onClick={onClick}>
+          {children}
+        </SxIconButton>
+      </Link>
+    );
+  },
+);
 
 export default DownloadButton;

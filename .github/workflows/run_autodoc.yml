@@ -1,7 +1,9 @@
-name: "Generate Documentation"
+name: "Generate Documentation and Push to Repo-Wiki"
 
 on:
-  pull_request:
+  push:
+    branches:
+      - master
     paths:
       - "autodoc/**"
       - "backend/src/main/java/com/bakdata/conquery/models/dataset/**"
@@ -29,7 +31,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
       - name: Download ARX
         run: curl  https://github.com/arx-deidentifier/arx/releases/download/v3.9.0/libarx-3.9.0.jar -OL
       - name: Register ARX
@@ -44,23 +46,11 @@ jobs:
       - name: Build Backend
         run: mvn install -T 1C -DskipTests -pl '!executable'
       - name: Run AutoDoc
-        run: mvn exec:java -f autodoc/pom.xml -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=docs
-      - name: Check for changes
-        id: check-changes
-        run: |
-          echo $(git diff HEAD)
-          echo "::set-output name=changed::$(if git diff HEAD --quiet ; then echo false; else echo true; fi)"
-      - name: Commit files
-        id: commit-files
-        if: ${{ steps.check-changes.outputs.changed == 'true' }}
-        run: |
-          echo ${{ env.GITHUB_REF }}
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git commit -m "Update AutoDoc" -a
-      - name: Push changes
-        if: ${{ steps.commit-files.conclusion == 'success' }}
-        uses: ad-m/github-push-action@master
+        run: mvn exec:java -f autodoc/pom.xml -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=documentation
+      - name: Upload Documentation to Wiki
+        uses: SwiftDocOrg/github-wiki-publish-action@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.head_ref }}
+          path: "documentation"
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
+

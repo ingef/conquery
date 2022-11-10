@@ -26,7 +26,7 @@ const Row = styled("div")`
 `;
 
 const SxIconButton = styled(IconButton)`
-  padding: 6px 10px;
+  padding: 7px 10px;
   margin-left: 3px;
 `;
 

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators;
 
+import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
@@ -21,8 +22,8 @@ public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 	protected Column column;
 
 	@Override
-	public final Column[] getRequiredColumns() {
-		return new Column[] { getColumn() };
+	public final List<Column> getRequiredColumns() {
+		return List.of(getColumn());
 	}
 
 	@Override

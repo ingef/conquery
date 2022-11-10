@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
-import { DateStringMinMax } from "../common/helpers";
+import { DateStringMinMax } from "../common/helpers/dateHelper";
 import Modal from "../modal/Modal";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";

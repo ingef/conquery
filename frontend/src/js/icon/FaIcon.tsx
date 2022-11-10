@@ -5,7 +5,7 @@ import { IconName, library } from "@fortawesome/fontawesome-svg-core";
 import { far } from "@fortawesome/free-regular-svg-icons";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { FC } from "react";
+import { FC, forwardRef } from "react";
 
 library.add(fas, far);
 
@@ -22,6 +22,7 @@ export interface IconStyleProps {
   tiny?: boolean;
   large?: boolean;
   small?: boolean;
+  style?: React.CSSProperties;
 }
 
 export interface FaIconPropsT extends IconStyleProps {
@@ -72,19 +73,17 @@ export const Icon = styled(FontAwesomeIcon, {
   }
 `;
 
-const FaIcon: FC<FaIconPropsT> = ({
-  icon,
-  regular,
-  className,
-  ...restProps
-}) => {
-  return (
-    <Icon
-      className={`fa-fw ${className}`}
-      icon={regular ? ["far", icon] : icon}
-      {...restProps}
-    />
-  );
-};
+const FaIcon: FC<FaIconPropsT> = forwardRef(
+  ({ icon, regular, className, ...restProps }, ref) => {
+    return (
+      <Icon
+        forwardedRef={ref}
+        className={`fa-fw ${className}`}
+        icon={regular ? ["far", icon] : icon}
+        {...restProps}
+      />
+    );
+  },
+);
 
 export default FaIcon;

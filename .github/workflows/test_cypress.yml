@@ -25,7 +25,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v1
         with:
-          java-version: 11
+          java-version: 17
 
       - name: Download ARX
         run: curl  https://github.com/arx-deidentifier/arx/releases/download/v3.9.0/libarx-3.9.0.jar -OL

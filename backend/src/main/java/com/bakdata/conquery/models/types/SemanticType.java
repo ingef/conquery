@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.types;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -66,18 +67,6 @@ public abstract class SemanticType {
 	}
 
 	/**
-	 * Column contains an Entity's Id of a kind.
-	 * <p>
-	 * See {@link com.bakdata.conquery.models.config.ColumnConfig} / {@link com.bakdata.conquery.models.config.FrontendConfig.UploadConfig}for the source of this.
-	 */
-	@CPSType(id = "DESCRIPTION", base = SemanticType.class)
-	@Data
-	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-	public static class DescriptionT extends SemanticType {
-		private final String description;
-	}
-
-	/**
 	 * Column contains values of a {@link SecondaryIdDescription}.
 	 */
 	@CPSType(id = "SECONDARY_ID", base = SemanticType.class)
@@ -86,6 +75,24 @@ public abstract class SemanticType {
 	public static class SecondaryIdT extends SemanticType {
 		@NsIdRef
 		private final SecondaryIdDescription secondaryId;
+	}
+
+	/**
+	 * Columns marked with {@link GroupT} should be used to merge events in the preview.
+	 */
+	@CPSType(id = "GROUP", base = SemanticType.class)
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	public static class GroupT extends SemanticType {
+	}
+
+	/**
+	 * Columns marked with {@link GroupT} should not be displayed by default in the preview.
+	 */
+	@CPSType(id = "HIDDEN", base = SemanticType.class)
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	public static class HiddenT extends SemanticType {
 	}
 
 	/**
@@ -113,13 +120,18 @@ public abstract class SemanticType {
 
 	}
 
+
 	/**
-	 * Column is annotated with a specific identification type.
+	 * Column contains values from {@link Column}
+	 *
+	 * Only used for {@link com.bakdata.conquery.apiv1.query.TableExportQuery}.
 	 */
-	@CPSType(id = "ARX_ATTR", base = SemanticType.class)
+	@CPSType(id = "COLUMN", base = SemanticType.class)
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-	public static class IdentificationT extends SemanticType {
-		private final AttributeType attributeType;
+	public static class ColumnT extends SemanticType {
+		@NsIdRef
+		private final Column column;
+
 	}
 }

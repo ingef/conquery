@@ -23,8 +23,9 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          distribution: adopt-hotspot
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '17'
+          overwrite-settings: false
       - name: Download ARX
         run: curl  https://github.com/arx-deidentifier/arx/releases/download/v3.9.0/libarx-3.9.0.jar -OL
       - name: Register ARX

@@ -43,6 +43,39 @@ const SxLabeled = styled(Labeled)`
   }
 `;
 
+const CustomTooltip = styled("div")`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 14px;
+
+  font-size: ${({ theme }) => theme.font.md};
+  font-weight: 400;
+  table {
+    margin-top: 5px;
+    width: 100%;
+  }
+  table,
+  th,
+  td {
+    border: 1px solid ${({ theme }) => theme.col.grayLight};
+    border-collapse: collapse;
+  }
+  td {
+    padding: 2px 5px;
+    line-height: 1.2;
+  }
+`;
+
+const TooltipMain = styled("div")`
+  font-size: ${({ theme }) => theme.font.md};
+`;
+
+const TooltipTutorial = styled("div")<{ hasMain?: boolean }>`
+  font-size: ${({ theme, hasMain }) =>
+    hasMain ? theme.font.sm : theme.font.md};
+`;
+
 interface PropsT {
   label?: ReactNode;
   indexPrefix?: number;
@@ -145,20 +178,15 @@ const InputDateRange: FC<PropsT> = ({
         {label}
         <InfoTooltip
           html={
-            <>
-              {exists(tooltip) && (
-                <>
-                  {tooltip}
-                  <br />
-                  <br />
-                </>
-              )}
-              <span
+            <CustomTooltip>
+              {exists(tooltip) && <TooltipMain>{tooltip}</TooltipMain>}
+              <TooltipTutorial
+                hasMain={exists(tooltip)}
                 dangerouslySetInnerHTML={{
                   __html: t("inputDateRange.tooltip.possiblePattern"),
                 }}
               />
-            </>
+            </CustomTooltip>
           }
         />
         {labelSuffix && labelSuffix}

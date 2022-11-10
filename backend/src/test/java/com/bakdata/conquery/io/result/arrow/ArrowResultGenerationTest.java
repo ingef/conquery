@@ -1,7 +1,7 @@
 package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultTestUtil.*;
-import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.generateFields;
+import static com.bakdata.conquery.io.result.arrow.ArrowUtil.generateFields;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -144,40 +144,40 @@ public class ArrowResultGenerationTest {
 
     }
 
-    private static String readTSV(InputStream inputStream) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        try (ArrowStreamReader arrowReader = new ArrowStreamReader(inputStream, ROOT_ALLOCATOR)) {
-            log.info("Reading the produced arrow data.");
-            VectorSchemaRoot readRoot = arrowReader.getVectorSchemaRoot();
-            sb.append(readRoot.getSchema().getFields().stream().map(Field::getName).collect(Collectors.joining("\t"))).append("\n");
-            readRoot.setRowCount(BATCH_SIZE);
-            while (arrowReader.loadNextBatch()) {
-                List<FieldVector> vectors = readRoot.getFieldVectors();
-                for (int rowI = 0; rowI < readRoot.getRowCount(); rowI++) {
-                    final int currentRow = rowI;
-                    sb.append(
-                            vectors.stream()
-                                    .map(vec -> vec.getObject(currentRow))
-                                    .map(ArrowResultGenerationTest::getPrintValue)
-                                    .collect(Collectors.joining("\t")))
-                            .append("\n");
+    public static String readTSV(InputStream inputStream) throws IOException {
+		StringJoiner stringJoiner = new StringJoiner("\n");
+		try (ArrowStreamReader arrowReader = new ArrowStreamReader(inputStream, ROOT_ALLOCATOR)) {
+			log.info("Reading the produced arrow data.");
+			VectorSchemaRoot readRoot = arrowReader.getVectorSchemaRoot();
+			stringJoiner.add(readRoot.getSchema().getFields().stream().map(Field::getName).collect(Collectors.joining("\t")));
+			readRoot.setRowCount(BATCH_SIZE);
+			while (arrowReader.loadNextBatch()) {
+				List<FieldVector> vectors = readRoot.getFieldVectors();
+
+				for (int rowI = 0; rowI < readRoot.getRowCount(); rowI++) {
+					final int currentRow = rowI;
+					stringJoiner.add(
+							vectors.stream()
+								   .map(vec -> vec.getObject(currentRow))
+								   .map(ArrowResultGenerationTest::getPrintValue)
+								   .collect(Collectors.joining("\t")));
                 }
             }
         }
-        return sb.toString();
+		return stringJoiner.toString();
     }
 
-    private String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings settings) {
-        String expected = results.stream()
-                .map(EntityResult.class::cast)
-                .map(res -> {
-                    StringJoiner lineJoiner = new StringJoiner("\n");
+	public static String generateExpectedTSV(List<EntityResult> results, List<ResultInfo> resultInfos, PrintSettings settings) {
+		String expected = results.stream()
+								 .map(EntityResult.class::cast)
+								 .map(res -> {
+									 StringJoiner lineJoiner = new StringJoiner("\n");
 
-                    for (Object[] line : res.listResultLines()) {
-                        StringJoiner valueJoiner = new StringJoiner("\t");
-                        valueJoiner.add(String.valueOf(res.getEntityId()));
-                        valueJoiner.add(String.valueOf(res.getEntityId()));
-                        for (int lIdx = 0; lIdx < line.length; lIdx++) {
+									 for (Object[] line : res.listResultLines()) {
+										 StringJoiner valueJoiner = new StringJoiner("\t");
+										 valueJoiner.add(String.valueOf(res.getEntityId()));
+										 valueJoiner.add(String.valueOf(res.getEntityId()));
+										 for (int lIdx = 0; lIdx < line.length; lIdx++) {
                             Object val = line[lIdx];
                             ResultInfo info = resultInfos.get(lIdx);
                             valueJoiner.add(getPrintValue(val, info.getType(), settings));
@@ -188,13 +188,13 @@ public class ArrowResultGenerationTest {
                 })
                 .collect(Collectors.joining("\n"));
 
-        return Stream.concat(
-						// Id column headers
-						ResultTestUtil.ID_FIELDS.stream().map(i -> i.defaultColumnName(settings)),
-						// result column headers
-						getResultTypes().stream().map(ResultType::typeInfo)
-				).collect(Collectors.joining("\t"))
-			   + "\n" + expected + "\n";
+		return Stream.concat(
+				// Id column headers
+				ResultTestUtil.ID_FIELDS.stream().map(i -> i.defaultColumnName(settings)),
+				// result column headers
+				getResultTypes().stream().map(ResultType::typeInfo)
+		).collect(Collectors.joining("\t"))
+			   + "\n" + expected;
     }
 
     private static String getPrintValue(Object obj, ResultType type, PrintSettings settings) {
@@ -224,18 +224,19 @@ public class ArrowResultGenerationTest {
         if(obj instanceof Collection) {
             Collection<?> col = (Collection<?>) obj;
             // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
-            new StringJoiner(",","[", "]");
             @NonNull ResultType elemType = ((ResultType.ListT) type).getElementType();
-            return col.stream().map(v -> getPrintValue(v, elemType, settings)).collect(Collectors.joining(", ","[", "]"));
+			return col.stream().map(v -> getPrintValue(v, elemType, settings)).collect(Collectors.joining(",", "[", "]"));
         }
         return obj.toString();
     }
 
     private static String getPrintValue(Object obj) {
         if(obj instanceof JsonStringArrayList) {
-            // Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
-            return getPrintValue(new ArrayList<>((JsonStringArrayList<?>)obj));
-        }
+			// Workaround: Arrow deserializes lists as a JsonStringArrayList which has a JSON String method
+			return new ArrayList<>((JsonStringArrayList<?>) obj).stream()
+																.map(ArrowResultGenerationTest::getPrintValue)
+																.collect(Collectors.joining(",", "[", "]"));
+		}
         return Objects.toString(obj);
     }
 

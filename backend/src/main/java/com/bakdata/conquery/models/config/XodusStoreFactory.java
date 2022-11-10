@@ -38,6 +38,7 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -109,7 +110,8 @@ public class XodusStoreFactory implements StoreFactory {
 					ID_MAPPING.storeInfo().getName() + BigStore.DATA,
 					STRUCTURE.storeInfo().getName(),
 					WORKER_TO_BUCKETS.storeInfo().getName(),
-					PRIMARY_DICTIONARY.storeInfo().getName()
+					PRIMARY_DICTIONARY.storeInfo().getName(),
+					ENTITY_PREVIEW.storeInfo().getName()
 			)
 	);
 	public static final Set<String> WORKER_STORES = Sets.union(
@@ -143,6 +145,13 @@ public class XodusStoreFactory implements StoreFactory {
 	@Nullable
 	private File unreadableDataDumpDirectory = null;
 
+	/**
+	 * If set, an environment will not be loaded if it misses a required store.
+	 * If not set, the environment is loaded and the application needs to create the store.
+	 * This is useful if a new version introduces a new store, but will also alter the environment upon reading.
+	 */
+	private boolean loadEnvironmentWithMissingStores = false;
+
 	@JsonIgnore
 	private transient Validator validator;
 
@@ -156,7 +165,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 	@Override
 	public Collection<NamespaceStorage> discoverNamespaceStorages() {
-		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, storePath), NAMESPACE_STORES);
+		return loadNamespacedStores("dataset_", (storePath) -> new NamespaceStorage(this, storePath, getValidator()), NAMESPACE_STORES);
 	}
 
 	@Override
@@ -202,12 +211,16 @@ public class XodusStoreFactory implements StoreFactory {
 				log.trace("Storage contained all stores: {}", storesToTest);
 				return true;
 			}
-			if (log.isWarnEnabled()) {
-				final HashSet<String> missing = Sets.newHashSet(storesToTest);
-				allStoreNames.forEach(missing::remove);
-				log.warn("Storage did not contain all required stores. It is missing: {}. It had {}", missing, allStoreNames);
-			}
-			return false;
+
+			final HashSet<String> missing = Sets.newHashSet(storesToTest);
+			allStoreNames.forEach(missing::remove);
+			log.warn("Environment did not contain all required stores. It is missing: {}. It had {}. {}", missing, allStoreNames,
+					 loadEnvironmentWithMissingStores
+					 ? "Loading environment anyway."
+					 : "Skipping environment."
+			);
+
+			return loadEnvironmentWithMissingStores;
 		});
 		if (!exists) {
 			closeEnvironment(env);
@@ -233,6 +246,11 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	public IdentifiableStore<SearchIndex> createSearchIndexStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, SEARCH_INDEX, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
+	}
+
+	@Override
+	public SingletonStore<PreviewConfig> createPreviewStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
+		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, ENTITY_PREVIEW, centralRegistry.injectIntoNew(objectMapper)));
 	}
 
 	@Override

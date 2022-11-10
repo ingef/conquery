@@ -19,12 +19,16 @@ public class ConqueryConstants {
 	public static final String EXTENSION_PREPROCESSED = ".cqpp";
 	public static final String EXTENSION_DESCRIPTION = ".import.json";
 
-	public static final ResultInfo
-			DATES_INFO =
+	public static final ResultInfo DATES_INFO =
 			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).dates(), new ResultType.ListT(ResultType.DateRangeT.INSTANCE), Set.of(new SemanticType.EventDateT()));
+
+	public static final ResultInfo DATES_INFO_HISTORY =
+			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).dates(), new ResultType.ListT(ResultType.DateRangeT.INSTANCE), Set.of(new SemanticType.EventDateT(), new SemanticType.GroupT()));
+
+
 	public static final ResultInfo
 			SOURCE_INFO =
-			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).source(), ResultType.StringT.INSTANCE, Set.of(new SemanticType.SourcesT(), new SemanticType.CategoricalT()));
+			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).source(), ResultType.StringT.INSTANCE, Set.of(new SemanticType.SourcesT(), new SemanticType.CategoricalT(), new SemanticType.GroupT()));
 
 	// Form related constants
 	public static final String SINGLE_RESULT_TABLE_NAME = "results";

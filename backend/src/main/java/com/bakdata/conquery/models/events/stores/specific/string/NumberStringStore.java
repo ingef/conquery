@@ -76,7 +76,8 @@ public class NumberStringStore implements StringStore {
 
 	@Override
 	public int size() {
-		return range.getMax() - range.getMin() + 1;
+		// Size here is maximum id
+		return range.getMax() + 1;
 	}
 
 	@JsonView(View.Persistence.Manager.class)

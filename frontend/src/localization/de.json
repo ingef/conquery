@@ -63,6 +63,7 @@
     "removeNode": "Knoten entfernen",
     "removeColumn": "Spalte entfernen",
     "clear": "Editor-Oberfläche zurücksetzen",
+    "clearConfirm": "Jetzt zurücksetzen",
     "hasDefaultSettings": "Standardeinstellungen",
     "hasNonDefaultSettings": "Eigene Einstellungen"
   },
@@ -83,7 +84,8 @@
   "datasetSelector": {
     "label": "Datensatz",
     "pleaseChoose": "Datensatz auswählen",
-    "error": "Konnte Datensätze nicht laden"
+    "error": "Konnte Datensätze nicht laden",
+    "disabled": "Der Datensatz kann gerade nicht verändert werden."
   },
   "queryNodeEditor": {
     "conceptTree": "Konzept",
@@ -94,6 +96,7 @@
     "reset": "Zurücksetzen",
     "resetSettings": "Auf Standard zurücksetzen",
     "clearAllSettings": "Alle Felder leeren",
+    "clearAllSettingsConfirm": "Jetzt leeren",
     "clearSettings": "Felder leeren",
     "excludeTimestamps": "Von Zeitberechnung ausschließen",
     "excludingTimestamps": "Von Zeitberechnung ausgeschlossen",
@@ -119,9 +122,6 @@
     "dateRange": "Datumsbereich",
     "headlineStart": "Konzepte:"
   },
-  "deletePreviousQueryModal": {
-    "areYouSure": "Diese Anfrage wirklich löschen?"
-  },
   "deletePreviousQueryFolderModal": {
     "areYouSure": "Diesen Ordner wirklich löschen?",
     "description": "Alle Anfragen aus dem Ordner {{folder}} werden aus dem Ordner entfernt, bleiben aber gespeichert."
@@ -133,6 +133,9 @@
     "unshare": "Freigabe aufheben"
   },
   "common": {
+    "manual": "Handbuch",
+    "contact": "Kontakt",
+    "confirm": "Bestätigen",
     "optional": "Optional",
     "back": "Zurück",
     "any": "Beliebig",
@@ -192,7 +195,7 @@
     "today": "Heute",
     "dateFormat": "dd.MM.yyyy",
     "tooltip": {
-      "possiblePattern": "Folgende Abkürzungen sind erlaubt: <br/> Eingabe: j2020/j.2020 wird zu: Von 01.01.2020; Bis 31.12.2020 <br/> Eingabe: q2.2020 wird zu: Von 01.04.2020; Bis 30.06.2020 <br/> Eingabe: m8.2020 wird zu: Von 01.08.2020; Bis 31.08.2020"
+      "possiblePattern": "Folgende Abkürzungen sind erlaubt <table><tr><td>m8.2020</td><td>von 01.08.2020<br/>bis 31.08.2020</td></tr><tr><td>q2.2020</td><td>von 01.04.2020<br/>bis 30.06.2020</td></tr><tr><td>j2020 j.2020</td><td>von 01.01.2020<br/>bis 31.12.2020</td></tr></table>"
     }
   },
   "inputSelect": {
@@ -225,7 +228,8 @@
     "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Anfrage nicht freigeben",
     "deleteError": "Konnte Anfrage nicht löschen",
-    "editFolders": "Ordner bearbeiten"
+    "editFolders": "Ordner bearbeiten",
+    "deleteNow": "Anfrage jetzt löschen"
   },
   "projectItemsFilter": {
     "all": "Alle",
@@ -258,6 +262,7 @@
     "maxDaysLabel": "Ende Tage"
   },
   "externalForms": {
+    "manualButton": "Hilfe zum Formular im Handbuch öffnen",
     "forms": "Formulare",
     "formValidation": {
       "mustBePositiveNumber": "Muss positive Zahl sein",
@@ -306,7 +311,8 @@
         "copyFrom": "Kopieren von ...",
         "copying": "Kopieren"
       },
-      "clear": "Formular leeren"
+      "clear": "Formular leeren",
+      "clearConfirm": "Formular jetzt leeren"
     }
   },
   "uploadQueryResultsModal": {
@@ -406,10 +412,8 @@
     "renameError": "Konnte Formular-Konfiguration nicht umbenennen",
     "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Formular-Konfiguration nicht freigeben",
-    "deleteError": "Konnte Formular-Konfiguration nicht löschen"
-  },
-  "deleteFormConfigModal": {
-    "areYouSure": "Diese Formular-Konfiguration wirklich löschen?"
+    "deleteError": "Konnte Formular-Konfiguration nicht löschen",
+    "deleteNow": "Formular-Konfiguration jetzt löschen"
   },
   "conceptTreesOpen": {
     "resetAll": "Zurück zu Standardansicht",
@@ -450,24 +454,30 @@
     "backButtonWarning": "Achtung: Wenn Du zurück gehst, werden Änderungen an der Liste verworfen. Lade die Liste vorher herunter, um sie zu speichern.",
     "history": "Historie",
     "marked": "mit Status",
-    "events_one": "Eintrag",
-    "events_other": "Einträge",
-    "downloadButtonLabel": "Liste herunterladen",
+    "events_one": "Datenpunkt",
+    "events_other": "Datenpunkte",
+    "downloadButtonLabel": "Liste mit Status-Einträgen herunterladen",
     "nextButtonLabel": "Weiterblättern",
     "prevButtonLabel": "Zurückblättern",
-    "downloadEntityData": "CSV",
-    "differencesTooltip": "Unterschiede aus den Einzeleinträgen",
+    "downloadEntityData": "Einzelhistorie herunterladen",
+    "differencesTooltip": "Unterschiede aus den einzelnen Datenpunkten",
     "closeAll": "Alle schließen",
+    "dates": "Datumswerte",
+    "options": {
+      "check": "auffällig",
+      "noCheck": "unauffällig"
+    },
     "detail": {
       "summary": "Zusammenfassung",
       "detail": "Gruppiert",
-      "full": "Alle Einzeleinträge"
+      "full": "Alle Einzeldatenpunkte"
     },
     "content": {
       "money": "Geldbeträge",
       "secondaryId": "IDs aus Analyse-Ebene",
       "concept": "Konzepte",
-      "rest": "Zusatzinfos"
+      "rest": "Zusatzinfos",
+      "fingerprint": "IDs"
     },
     "settings": {
       "headline": "Historie-Einstellungen",

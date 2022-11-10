@@ -1,70 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.bakdata.conquery</groupId>
-	<artifactId>parent</artifactId>
-	<version>0.0.0-SNAPSHOT</version>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.bakdata.conquery</groupId>
+    <artifactId>parent</artifactId>
+    <version>0.0.0-SNAPSHOT</version>
 
-	<packaging>pom</packaging>
-	<name>Conquery Parent</name>
-	
-	<parent>
-  		<groupId>io.dropwizard</groupId>
-  		<artifactId>dropwizard-dependencies</artifactId>
-  		<version>2.1.1</version>
-	</parent>
+    <packaging>pom</packaging>
+    <name>Conquery Parent</name>
 
-	<properties>
-		<java.required>11</java.required>
-		<lombok.version>1.18.22</lombok.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>${java.required}</maven.compiler.source>
-		<maven.compiler.target>${java.required}</maven.compiler.target>
-		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
-		<build.time>${maven.build.timestamp}</build.time>
-	</properties>
+    <parent>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-dependencies</artifactId>
+        <version>2.1.1</version>
+    </parent>
 
-	<modules>
-		<module>backend</module>
-		<module>executable</module>
-		<module>autodoc</module>
-	</modules>
+    <properties>
+        <java.required>17</java.required>
+        <lombok.version>1.18.22</lombok.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>${java.required}</maven.compiler.source>
+        <maven.compiler.target>${java.required}</maven.compiler.target>
+        <maven-dependency-plugin.version>3.3.0</maven-dependency-plugin.version>
+        <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
+        <build.time>${maven.build.timestamp}</build.time>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <modules>
+        <module>backend</module>
+        <module>executable</module>
+        <module>autodoc</module>
+    </modules>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${java.required}</source>
-					<target>${java.required}</target>
-					<parameters>true</parameters>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<trimStackTrace>false</trimStackTrace>
-					<argLine>-Xmx4G</argLine>
-					<properties>
-						<configurationParameters>
-							junit.jupiter.execution.parallel.enabled=false
-							junit.jupiter.execution.parallel.mode.default = concurrent
-						</configurationParameters>
-					</properties>
-				</configuration>
-			</plugin>
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.required}</source>
+                    <target>${java.required}</target>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <trimStackTrace>false</trimStackTrace>
+                    <argLine>-Xmx4G
+                        <!-- TODO this should be refined. We only need this for arrow as of now. -->
+                        --add-opens java.base/java.lang=ALL-UNNAMED
+                        --add-opens java.base/java.util=ALL-UNNAMED
+                        --add-opens java.base/java.nio=ALL-UNNAMED
+                        --add-opens java.base/sun.nio.ch=ALL-UNNAMED
+                    </argLine>
+                    <properties>
+                        <configurationParameters>
+                            junit.jupiter.execution.parallel.enabled=false
+                            junit.jupiter.execution.parallel.mode.default = concurrent
+                        </configurationParameters>
+                    </properties>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -76,107 +83,107 @@
                             <goal>analyze-only</goal>
                         </goals>
                         <configuration>
-                        	<!-- Allow transitive dependencies for now -->
+                            <!-- Allow transitive dependencies for now -->
                             <failOnWarning>false</failOnWarning>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-		</plugins>
-	</build>
+        </plugins>
+    </build>
 
-	<profiles>
-		<profile>
-			<id>setVersion</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>pl.project13.maven</groupId>
-						<artifactId>git-commit-id-plugin</artifactId>
-						<version>4.9.10</version>
-						<inherited>false</inherited>
-						<executions>
-							<execution>
-								<id>get-the-git-infos</id>
-								<goals>
-									<goal>revision</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
-							<dateFormat>${maven.build.timestamp.format}</dateFormat>
-							<skipPoms>false</skipPoms>
-							<gitDescribe>
-								<skip>false</skip>
-								<!-- do not only use annotated tags -->
-								<tags>true</tags>
-							</gitDescribe>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>build-helper-maven-plugin</artifactId>
-						<version>3.3.0</version>
-						<inherited>false</inherited>
-						<executions>
-							<execution>
-								<id>regex-property-snapshot</id>
-								<goals>
-									<goal>regex-property</goal>
-								</goals>
-								<phase>initialize</phase>
-								<configuration>
-									<name>newVersion</name>
-									<value>${git.commit.id.describe}</value>
-									<regex>^v(\d\.\d\.\d-[\w\d]+-)(.*)</regex>
-									<replacement>$1$2-SNAPSHOT</replacement>
-									<failIfNoMatch>false</failIfNoMatch>
-								</configuration>
-							</execution>
-							<execution>
-								<id>regex-property</id>
-								<goals>
-									<goal>regex-property</goal>
-								</goals>
-								<phase>initialize</phase>
-								<configuration>
-									<name>newVersion</name>
-									<value>${newVersion}</value>
-									<regex>^v(\d\.\d\.\d-[\w\d]+$)</regex>
-									<replacement>$1</replacement>
-									<failIfNoMatch>false</failIfNoMatch>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>versions-maven-plugin</artifactId>
-						<version>2.8.1</version>
-						<inherited>false</inherited>
-						<executions>
-							<execution>
-								<id>set</id>
-								<phase>initialize</phase>
-								<goals>
-									<goal>set</goal>
-								</goals>
-								<configuration>
-									<newVersion>${newVersion}</newVersion>
-								</configuration>
-							</execution>
-							<execution>
-								<id>commit</id>
-								<phase>initialize</phase>
-								<goals>
-									<goal>commit</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+    <profiles>
+        <profile>
+            <id>setVersion</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>pl.project13.maven</groupId>
+                        <artifactId>git-commit-id-plugin</artifactId>
+                        <version>4.9.10</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>get-the-git-infos</id>
+                                <goals>
+                                    <goal>revision</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
+                            <dateFormat>${maven.build.timestamp.format}</dateFormat>
+                            <skipPoms>false</skipPoms>
+                            <gitDescribe>
+                                <skip>false</skip>
+                                <!-- do not only use annotated tags -->
+                                <tags>true</tags>
+                            </gitDescribe>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <version>3.3.0</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>regex-property-snapshot</id>
+                                <goals>
+                                    <goal>regex-property</goal>
+                                </goals>
+                                <phase>initialize</phase>
+                                <configuration>
+                                    <name>newVersion</name>
+                                    <value>${git.commit.id.describe}</value>
+                                    <regex>^v(\d\.\d\.\d-[\w\d]+-)(.*)</regex>
+                                    <replacement>$1$2-SNAPSHOT</replacement>
+                                    <failIfNoMatch>false</failIfNoMatch>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>regex-property</id>
+                                <goals>
+                                    <goal>regex-property</goal>
+                                </goals>
+                                <phase>initialize</phase>
+                                <configuration>
+                                    <name>newVersion</name>
+                                    <value>${newVersion}</value>
+                                    <regex>^v(\d\.\d\.\d-[\w\d]+$)</regex>
+                                    <replacement>$1</replacement>
+                                    <failIfNoMatch>false</failIfNoMatch>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>versions-maven-plugin</artifactId>
+                        <version>2.8.1</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>set</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>set</goal>
+                                </goals>
+                                <configuration>
+                                    <newVersion>${newVersion}</newVersion>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>commit</id>
+                                <phase>initialize</phase>
+                                <goals>
+                                    <goal>commit</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

@@ -42,14 +42,14 @@ const QuarterHead = styled("div")<{ empty?: boolean }>`
   top: 0;
   z-index: 2;
   background-color: ${({ theme }) => theme.col.bgAlt};
-  margin-left: -5px;
+  margin-left: -6px;
   line-height: 1;
-  width: 100%;
+  width: calc(100% + 8px);
 `;
 
 const InlineGrid = styled("div")`
   display: inline-grid;
-  grid-template-columns: 20px 20px 100px 1fr;
+  grid-template-columns: 20px 20px 110px 1fr;
   align-items: center;
   cursor: pointer;
   border: 1px solid transparent;
@@ -98,7 +98,7 @@ const Quarter = ({
   groupedEvents: EntityEvent[][];
   detailLevel: DetailLevel;
   toggleOpenQuarter: (year: number, quarter: number) => void;
-  differences: Record<string, Set<any>>[];
+  differences: string[][];
   datasetId: DatasetT["id"];
   columns: Record<string, ColumnDescription>;
   columnBuckets: ColumnBuckets;
@@ -124,11 +124,7 @@ const Quarter = ({
             })}
           </span>
           {detailLevel === "summary" && (
-            <Boxes>
-              {new Array(totalEventsPerQuarter).fill(0).map((_, i) => (
-                <Box key={i} />
-              ))}
-            </Boxes>
+            <MemoizedBoxes totalEventsPerQuarter={totalEventsPerQuarter} />
           )}
         </InlineGrid>
       </QuarterHead>
@@ -137,9 +133,16 @@ const Quarter = ({
           <VerticalLine />
           <EventItemList>
             {groupedEvents.map((group, index) => {
-              const groupDifferences = differences[index];
-
               if (group.length === 0) return null;
+
+              const groupDifferences = [
+                ...new Set([
+                  ...differences[index],
+                  ...columnBuckets.concepts
+                    .filter((c) => !!group[0][c.label])
+                    .map((c) => c.label),
+                ]),
+              ];
 
               if (detailLevel === "full") {
                 return group.map((evt, evtIdx) => (
@@ -156,8 +159,12 @@ const Quarter = ({
                 ));
               } else {
                 const firstRowWithoutDifferences = Object.fromEntries(
-                  Object.entries(group[0]).filter(([k]) => {
-                    return !groupDifferences[k];
+                  Object.entries(group[0]).filter(([key]) => {
+                    if (key === "dates") {
+                      return true; // always show dates, despite it being part of groupDifferences
+                    }
+
+                    return !groupDifferences.includes(key);
                   }),
                 ) as EntityEvent;
 
@@ -172,11 +179,7 @@ const Quarter = ({
                     row={firstRowWithoutDifferences}
                     currencyConfig={currencyConfig}
                     groupedRows={group}
-                    groupedRowsDifferences={
-                      Object.keys(groupDifferences).length > 0
-                        ? groupDifferences
-                        : undefined
-                    }
+                    groupedRowsKeysWithDifferentValues={groupDifferences}
                   />
                 );
               }
@@ -187,5 +190,17 @@ const Quarter = ({
     </QuarterGroup>
   );
 };
+
+const MemoizedBoxes = memo(
+  ({ totalEventsPerQuarter }: { totalEventsPerQuarter: number }) => {
+    return (
+      <Boxes>
+        {new Array(totalEventsPerQuarter).fill(0).map((_, i) => (
+          <Box key={i} />
+        ))}
+      </Boxes>
+    );
+  },
+);
 
 export default memo(Quarter);

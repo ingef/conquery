@@ -6,7 +6,7 @@ import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 import { useGetDatasets } from "../api/api";
 import type { DatasetT, GetDatasetsResponseT } from "../api/types";
 import { StateT } from "../app/reducers";
-import { ErrorObject } from "../common/actions";
+import { ErrorObject } from "../common/actions/genericActions";
 import { exists } from "../common/helpers/exists";
 import { useLoadTrees } from "../concept-trees/actions";
 import { useLoadDefaultHistoryParams } from "../entity-history/actions";
@@ -37,7 +37,7 @@ export const useLoadDatasets = () => {
   const loadTrees = useLoadTrees();
   const loadDefaultHistoryParams = useLoadDefaultHistoryParams();
 
-  return async () => {
+  return useCallback(async () => {
     dispatch(loadDatasets.request());
 
     try {
@@ -60,7 +60,7 @@ export const useLoadDatasets = () => {
       dispatch(setMessage({ message: t("datasetSelector.error") }));
       dispatch(loadDatasets.failure(e as Error));
     }
-  };
+  }, [dispatch, getDatasets, loadDefaultHistoryParams, loadTrees, t]);
 };
 
 export const selectDatasetInput =
@@ -129,6 +129,7 @@ export const useSelectDataset = () => {
       loadQueries,
       locallySavedQueries,
       previouslySelectedDatasetId,
+      loadDefaultHistoryParams,
     ],
   );
 };

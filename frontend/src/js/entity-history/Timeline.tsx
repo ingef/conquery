@@ -17,8 +17,11 @@ import type { EntityHistoryStateT, EntityEvent } from "./reducer";
 import Year from "./timeline/Year";
 import {
   isConceptColumn,
+  isGroupableColumn,
+  isIdColumn,
   isMoneyColumn,
   isSecondaryIdColumn,
+  isVisibleColumn,
 } from "./timeline/util";
 
 const Root = styled("div")`
@@ -42,7 +45,7 @@ interface Props {
   toggleOpenQuarter: (year: number, quarter: number) => void;
 }
 
-export const Timeline = ({
+const Timeline = ({
   className,
   detailLevel,
   sources,
@@ -94,15 +97,15 @@ export const Timeline = ({
 
 export default memo(Timeline);
 
-const diffObjects = (objects: Object[]) => {
-  if (objects.length < 2) return {};
+const diffObjects = (objects: Object[]): string[] => {
+  if (objects.length < 2) return [];
 
-  const differences: Record<string, Set<any>> = {};
+  const keysWithDifferentValues = new Set<string>();
 
   for (let i = 0; i < objects.length - 1; i++) {
     const o1 = objects[i] as any;
     const o2 = objects[i + 1] as any;
-    const keys = Object.keys(o1);
+    const keys = Object.keys(o1); // Assumption: all objs have same keys
 
     for (const key of keys) {
       if (
@@ -110,54 +113,64 @@ const diffObjects = (objects: Object[]) => {
         o2.hasOwnProperty(key) &&
         JSON.stringify(o1[key]) !== JSON.stringify(o2[key])
       ) {
-        if (differences[key]) {
-          differences[key].add(o1[key]);
-          differences[key].add(o2[key]);
-        } else {
-          differences[key] = new Set([o1[key], o2[key]]);
-        }
+        keysWithDifferentValues.add(key);
       }
     }
   }
 
-  return differences;
+  return [...keysWithDifferentValues];
 };
 
 const findGroupsWithinQuarter =
   (secondaryIds: ColumnDescription[]) =>
   ({ quarter, events }: { quarter: number; events: EntityEvent[] }) => {
     if (events.length < 2) {
-      return { quarter, groupedEvents: [events], differences: [{}] };
+      return { quarter, groupedEvents: [events], differences: [[]] };
     }
 
-    const groupedEvents: EntityEvent[][] = [[events[0]]];
+    const eventGroupBuckets: Record<string, EntityEvent[]> = {};
 
-    for (let i = 1; i < events.length - 1; i++) {
+    for (let i = 0; i < events.length - 1; i++) {
       const evt = events[i];
-      const lastEvt = groupedEvents[groupedEvents.length - 1][0];
-
-      const isDuplicateEvent = JSON.stringify(evt) === JSON.stringify(lastEvt);
+      const prevEvt = events[i - 1];
+      const isDuplicateEvent =
+        !!evt && !!prevEvt && JSON.stringify(evt) === JSON.stringify(prevEvt);
 
       if (isDuplicateEvent) {
         continue;
       }
 
-      const datesMatch =
-        evt.dates.from === lastEvt.dates.from &&
-        evt.dates.to === lastEvt.dates.to;
-      const sourcesMatch = evt.source === lastEvt.source;
-      const allSecondaryIdsMatch = secondaryIds.every(
-        ({ label }) => evt[label] === lastEvt[label],
-      );
+      const groupKey =
+        evt.source +
+        secondaryIds
+          .filter(isGroupableColumn)
+          .map(({ label }) => evt[label])
+          .join(",");
 
-      const similarEvents = datesMatch && sourcesMatch && allSecondaryIdsMatch;
-
-      if (similarEvents) {
-        groupedEvents[groupedEvents.length - 1].push(evt);
+      if (eventGroupBuckets[groupKey]) {
+        eventGroupBuckets[groupKey].push(evt);
       } else {
-        groupedEvents.push([evt]);
+        eventGroupBuckets[groupKey] = [evt];
       }
     }
+
+    const groupedEvents = Object.values(eventGroupBuckets).map((events) => {
+      if (events.length > 0) {
+        return [
+          {
+            ...events[0],
+            dates: {
+              from: events[0].dates.from,
+              to: events[events.length - 1].dates.to,
+            },
+          },
+          ...events.slice(1),
+        ];
+      }
+
+      return events;
+    });
+
     return {
       quarter,
       groupedEvents,
@@ -199,7 +212,7 @@ interface EventsByYearWithGroups {
 export interface EventsByQuarterWithGroups {
   quarter: number;
   groupedEvents: EntityEvent[][];
-  differences: Record<string, Set<any>>[];
+  differences: string[][];
 }
 
 const useTimeBucketedSortedData = (
@@ -243,30 +256,28 @@ const useTimeBucketedSortedData = (
     }
 
     const sortedEvents = Object.entries(result)
-      .sort(([yearA], [yearB]) => {
-        return parseInt(yearB) - parseInt(yearA);
-      })
+      .sort(([yearA], [yearB]) => parseInt(yearB) - parseInt(yearA))
       .map(([year, quarterwiseData]) => ({
         year: parseInt(year),
         quarterwiseData: Object.entries(quarterwiseData)
-          .sort(([quarterA], [quarterB]) => {
-            return parseInt(quarterB) - parseInt(quarterA);
-          })
+          .sort(([qA], [qB]) => parseInt(qB) - parseInt(qA))
           .map(([quarter, events]) => ({ quarter: parseInt(quarter), events })),
       }));
 
+    if (sortedEvents.length === 0) {
+      return sortedEvents;
+    }
+
     // Fill empty years
     const currentYear = new Date().getFullYear();
-    if (sortedEvents.length > 0 && sortedEvents[0].year < currentYear) {
-      while (sortedEvents[0].year < currentYear) {
-        sortedEvents.unshift({
-          year: sortedEvents[0].year + 1,
-          quarterwiseData: [1, 2, 3, 4].map((q) => ({
-            quarter: q,
-            events: [],
-          })),
-        });
-      }
+    while (sortedEvents[0].year < currentYear) {
+      sortedEvents.unshift({
+        year: sortedEvents[0].year + 1,
+        quarterwiseData: [1, 2, 3, 4].map((q) => ({
+          quarter: q,
+          events: [],
+        })),
+      });
     }
 
     return sortedEvents;
@@ -287,6 +298,7 @@ export interface ColumnBuckets {
   concepts: ColumnDescription[];
   secondaryIds: ColumnDescription[];
   rest: ColumnDescription[];
+  groupableIds: ColumnDescription[];
 }
 
 const useColumnInformation = () => {
@@ -299,12 +311,19 @@ const useColumnInformation = () => {
   );
 
   const columnBuckets: ColumnBuckets = useMemo(() => {
+    const visibleColumnDescriptions =
+      columnDescriptions.filter(isVisibleColumn);
+
     return {
-      money: columnDescriptions.filter(isMoneyColumn),
-      concepts: columnDescriptions.filter(isConceptColumn),
-      secondaryIds: columnDescriptions.filter(isSecondaryIdColumn),
-      rest: columnDescriptions.filter(
-        (c) => c.type !== "MONEY" && c.semantics.length === 0,
+      money: visibleColumnDescriptions.filter(isMoneyColumn),
+      concepts: visibleColumnDescriptions.filter(isConceptColumn),
+      secondaryIds: visibleColumnDescriptions.filter(isSecondaryIdColumn),
+      groupableIds: visibleColumnDescriptions.filter(isGroupableColumn),
+      rest: visibleColumnDescriptions.filter(
+        (c) =>
+          !isMoneyColumn(c) &&
+          (c.semantics.length === 0 ||
+            (!isGroupableColumn(c) && !isIdColumn(c))),
       ),
     };
   }, [columnDescriptions]);

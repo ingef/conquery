@@ -14,6 +14,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
@@ -36,8 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 public class ResultArrowResource {
 
 	private final ResultArrowProcessor processor;
-	private final DatasetRegistry datasetRegistry;
-	private final ConqueryConfig config;
 
 	@GET
 	@Path("{" + QUERY + "}." + FILE_EXTENTION_ARROW_FILE)
@@ -46,7 +45,7 @@ public class ResultArrowResource {
 			@Auth Subject subject,
 			@PathParam(DATASET) Dataset dataset,
 			@PathParam(QUERY) ManagedExecution<?> query,
-			@HeaderParam("subject-agent") String userAgent,
+			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 
 		checkSingleTableResult(query);
@@ -82,7 +81,7 @@ public class ResultArrowResource {
 			@Auth Subject subject,
 			@PathParam(DATASET) Dataset dataset,
 			@PathParam(QUERY) ManagedExecution<?> execution,
-			@HeaderParam("subject-agent") String userAgent,
+			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset, subject.getId(), subject.getName());

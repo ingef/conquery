@@ -76,28 +76,32 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	}
 
 	@Override
-	public Column[] getRequiredColumns() {
-		List<Column> out = new ArrayList<>();
+	public List<Column> getRequiredColumns() {
+		final List<Column> out = new ArrayList<>();
 
 		out.add(getColumn());
-		out.addAll(getDistinctByColumn());
+
+		if(distinctByColumn != null) {
+			out.addAll(getDistinctByColumn());
+		}
 
 		if(getSubtractColumn() != null){
 			out.add(getSubtractColumn());
 		}
 
-		return out.toArray(Column[]::new);
+		return out;
 	}
 
 	@Override
 	public FilterNode createFilterNode(RANGE value) {
 		IRange<? extends Number, ?> range = value;
 
+		// Double values are parsed as BigDecimal, we convert to double if necessary
 		if (getColumn().getType() == MajorTypeId.REAL) {
 			range = Range.DoubleRange.fromNumberRange(value);
 		}
 
-		if (!distinctByColumn.isEmpty()) {
+		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
 			return new RangeFilterNode(range, new DistinctValuesWrapperAggregator(getAggregator(), getDistinctByColumn()));
 		}
 

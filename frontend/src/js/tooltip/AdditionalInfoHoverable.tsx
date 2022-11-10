@@ -2,8 +2,8 @@ import styled from "@emotion/styled";
 import { FC } from "react";
 import { useDispatch } from "react-redux";
 
-import type { ConceptT, DateRangeT, InfoT } from "../api/types";
-import { isEmpty } from "../common/helpers";
+import type { ConceptT } from "../api/types";
+import { isEmpty } from "../common/helpers/commonHelper";
 
 import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";
 import { AdditionalInfosType } from "./reducer";
@@ -11,16 +11,6 @@ import { AdditionalInfosType } from "./reducer";
 const Root = styled("div")`
   cursor: pointer;
 `;
-
-export type AdditionalInfoHoverableNodeType = {
-  label: string;
-  description?: string;
-  children?: string[];
-  matchingEntries: number;
-  matchingEntities: number;
-  dateRange?: DateRangeT;
-  additionalInfos: InfoT[];
-};
 
 // Allowlist the data we pass (especially: don't pass all children)
 const getAdditionalInfos = (node: ConceptT): AdditionalInfosType => ({

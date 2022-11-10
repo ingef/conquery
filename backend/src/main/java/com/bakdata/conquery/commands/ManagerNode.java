@@ -111,6 +111,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
 		this.environment = environment;
+		this.config = config;
 		validator = environment.getValidator();
 
 		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
@@ -132,7 +133,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		formScanner = new FormScanner(config);
 
 
-		this.config = config;
 		config.initialize(this);
 
 
@@ -243,6 +243,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
 		injectableValues.add(Validator.class, getValidator());
+		injectableValues.add(ConqueryConfig.class, getConfig());
 
 		getDatasetRegistry().injectInto(objectMapper);
 		getStorage().injectInto(objectMapper);
@@ -261,6 +262,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		final MutableInjectableValues injectableValues = new MutableInjectableValues();
 		objectMapper.setInjectableValues(injectableValues);
 		injectableValues.add(Validator.class, getValidator());
+		injectableValues.add(ConqueryConfig.class, getConfig());
 		getDatasetRegistry().injectInto(objectMapper);
 		getStorage().injectInto(objectMapper);
 

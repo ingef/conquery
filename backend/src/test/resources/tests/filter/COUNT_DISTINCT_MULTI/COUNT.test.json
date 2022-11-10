@@ -35,7 +35,8 @@
       "column": "table.datum"
     },
     "filters": {
-      "column": [
+      "column": "table.nr",
+      "distinctByColumn": [
         "table.nr",
         "table.a",
         "table.b"
