@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -123,7 +124,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		try (Response allEntityDataResponse = conquery.getClient().target(entityExport)
 													  .request(MediaType.APPLICATION_JSON_TYPE)
 													  .header("Accept-Language", "en-Us")
-													  .post(Entity.json(new QueryResource.EntityPreview("ID", "1", Range.all(), allConnectors)))) {
+													  .post(Entity.json(new QueryResource.EntityPreview("ID", "1", Range.atMost(LocalDate.of(2022, 11, 10)), allConnectors)))) {
 
 			assertThat(allEntityDataResponse.getStatusInfo().getFamily())
 					.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
@@ -135,7 +136,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		assertThat(result.getInfos()).isEqualTo(List.of(
 				new EntityPreviewStatus.Info(
 						"Age",
-						"8",
+						"9",
 						ResultType.IntegerT.INSTANCE.typeInfo(),
 						"",
 						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
@@ -190,7 +191,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			assertThat(resultLines.readEntity(String.class).lines().collect(Collectors.toList()))
 					.containsExactlyInAnyOrder(
 							"result,dates,source,secondaryid,table1 column,table2 column",
-						"1,{2013-11-10/2013-11-10},table1,External: oneone,tree1.child_a,",
+							"1,{2013-11-10/2013-11-10},table1,External: oneone,tree1.child_a,",
 							"1,{2012-01-01/2012-01-01},table2,2222,,tree2",
 							"1,{2010-07-15/2010-07-15},table2,External: threethree,,tree2"
 
