@@ -37,7 +37,7 @@ import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownWorkers;
+import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownShard;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -382,6 +382,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void stop() throws Exception {
+		datasetRegistry.getShardNodes().forEach(((socketAddress, shardNodeInformation) -> shardNodeInformation.send(new ShutdownShard())));
 
 		jobManager.close();
 
@@ -412,6 +413,5 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		client.close();
 
-		datasetRegistry.getShardNodes().forEach(((socketAddress, shardNodeInformation) -> shardNodeInformation.send(new ShutdownWorkers())));
 	}
 }
