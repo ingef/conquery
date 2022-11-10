@@ -17,15 +17,19 @@ public class ShutdownShard extends MessageToShardNode.Slow {
 
 	@Override
 	public void react(NetworkMessageContext.ShardNodeNetworkContext context) throws Exception {
-		new Thread("shutdown waiter thread") {
+		final Thread shutdownDaemon = new Thread("shard shutdown waiter thread") {
 			@Override
 			public void run() {
 				try {
 					context.getShardNode().stop();
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					log.error("Failed while shutting down Shard", e);
 				}
 			}
-		}.start();
+		};
+
+		shutdownDaemon.setDaemon(true);
+		shutdownDaemon.start();
 	}
 }
