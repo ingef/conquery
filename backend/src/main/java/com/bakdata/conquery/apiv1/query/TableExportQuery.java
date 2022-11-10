@@ -29,7 +29,6 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -105,12 +104,9 @@ public class TableExportQuery extends Query {
 	private Map<Column, Integer> positions;
 
 
-
 	@JsonIgnore
 	private List<ResultInfo> resultInfos = Collections.emptyList();
 
-	@JsonIgnore
-	private PreviewConfig previewConfig;
 
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
@@ -141,7 +137,6 @@ public class TableExportQuery extends Query {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		previewConfig = context.getNamespace().getPreviewConfig();
 
 		query.resolve(context);
 
@@ -232,10 +227,6 @@ public class TableExportQuery extends Query {
 
 			semantics.add(new SemanticType.SecondaryIdT(desc));
 
-			if (previewConfig.isGroupingColumn(desc)){
-				semantics.add(new SemanticType.GroupT());
-			}
-
 			infos[pos] = new SimpleResultInfo(desc.getLabel(), resultType, desc.getDescription(), semantics);
 		}
 
@@ -253,16 +244,13 @@ public class TableExportQuery extends Query {
 			final int position = entry.getValue();
 
 			final Column column = entry.getKey();
+
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
 			if (position == 0 || column.getSecondaryId() != null) {
 				continue;
 			}
 
 			final Set<SemanticType> semantics = new HashSet<>();
-
-			if(previewConfig.isHidden(column)){
-				semantics.add(new SemanticType.HiddenT());
-			}
 
 			ResultType resultType = ResultType.resolveResultType(column.getType());
 
@@ -277,6 +265,10 @@ public class TableExportQuery extends Query {
 				if (!isRawConceptValues()) {
 					resultType = new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
 				}
+			}
+			else {
+				// If it's not a connector column, we just link to the source column.
+				semantics.add(new SemanticType.ColumnT(column));
 			}
 
 			infos[position] = new ColumnResultInfo(column, resultType, semantics);

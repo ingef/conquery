@@ -13,7 +13,7 @@ import {
   TableConfigT,
 } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
-import { isEmpty } from "../common/helpers";
+import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 import { TreesT } from "../concept-trees/reducer";
@@ -109,8 +109,9 @@ const mergeMultiSelectFilter = ({
   }
 
   const hasOptions = savedFilter.options.length > 0;
+  const isMultiSelect = savedFilter.type === "MULTI_SELECT";
 
-  if (hasOptions) {
+  if (isMultiSelect && hasOptions) {
     return {
       ...basicFilter,
       value: matchingFilter.value

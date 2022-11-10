@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
@@ -38,6 +39,8 @@ import lombok.NonNull;
  */
 @CPSType(id = "ENTITY_PREVIEW_EXECUTION", base = ManagedExecution.class)
 public class EntityPreviewExecution extends ManagedForm implements SingleTableResult {
+
+	private PreviewConfig previewConfig;
 
 	@Override
 	public boolean isSystem() {
@@ -55,7 +58,6 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	 */
 	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 
-		final PreviewConfig previewConfig = datasetRegistry.get(getDataset().getId()).getPreviewConfig();
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
 		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
@@ -80,6 +82,12 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		}
 
 		return extraInfos;
+	}
+
+	@Override
+	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
+		super.doInitExecutable(datasetRegistry, config);
+		previewConfig = datasetRegistry.get(getDataset().getId()).getPreviewConfig();
 	}
 
 	/**
@@ -125,7 +133,29 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 	@Override
 	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
-		return getValuesQuery().generateColumnDescriptions(datasetRegistry);
+		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(datasetRegistry);
+
+		for (ColumnDescriptor descriptor : descriptors) {
+			for (SemanticType semanticType : descriptor.getSemantics()) {
+				if (semanticType instanceof SemanticType.SecondaryIdT desc
+					&& previewConfig.isGroupingColumn(desc.getSecondaryId())) {
+					descriptor.getSemantics().add(new SemanticType.GroupT());
+					break;
+				}
+			}
+
+
+			for (SemanticType semanticType : descriptor.getSemantics()) {
+				if (semanticType instanceof SemanticType.ColumnT desc
+					&& previewConfig.isHidden(desc.getColumn())) {
+					descriptor.getSemantics().add(new SemanticType.HiddenT());
+					break;
+				}
+			}
+		}
+
+
+		return descriptors;
 	}
 
 	@Override

@@ -45,7 +45,7 @@ interface Props {
   toggleOpenQuarter: (year: number, quarter: number) => void;
 }
 
-export const Timeline = ({
+const Timeline = ({
   className,
   detailLevel,
   sources,
