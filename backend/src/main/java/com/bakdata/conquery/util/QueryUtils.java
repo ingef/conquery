@@ -158,8 +158,7 @@ public class QueryUtils {
 
 		@Override
 		public void accept(Visitable element) {
-			if (element instanceof NamespacedIdentifiableHolding) {
-				NamespacedIdentifiableHolding idHolder = (NamespacedIdentifiableHolding) element;
+			if (element instanceof NamespacedIdentifiableHolding idHolder) {
 				idHolder.collectNamespacedObjects(identifiables);
 			}
 		}
@@ -176,8 +175,7 @@ public class QueryUtils {
 
 		@Override
 		public void accept(Visitable element) {
-			if(element instanceof CQConcept){
-				final CQConcept cqConcept = (CQConcept) element;
+			if(element instanceof final CQConcept cqConcept){
 
 				// Excluded Concepts are not available
 				if(cqConcept.isExcludeFromSecondaryId()){

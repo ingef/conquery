@@ -114,19 +114,15 @@ public class ExcelResultRenderTest {
 			StringJoiner sj = new StringJoiner("\t");
 			for (Cell cell : row) {
 				DataFormatter formatter = new DataFormatter(settings.getLocale());
-				switch (cell.getCellType()) {
-					case STRING:
-					case FORMULA:
-					case BOOLEAN:
-					case NUMERIC:
-						sj.add(formatter.formatCellValue(cell));
-						break;
-					case BLANK:
-						// We write 'null' here to express that the cell was empty
-						sj.add("null");
-						break;
-					default: throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
-				}
+
+				final String formatted = switch (cell.getCellType()) {
+					case STRING, FORMULA, BOOLEAN, NUMERIC -> formatter.formatCellValue(cell);
+					// We write 'null' here to express that the cell was empty
+					case BLANK -> "null";
+					default -> throw new IllegalStateException("Unknown cell type: " + cell.getCellType());
+				};
+
+				sj.add(formatted);
 			}
 			computed.add(sj.toString());
 			i++;

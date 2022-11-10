@@ -67,35 +67,26 @@ public class SumSelect extends Select {
 
 	private ColumnAggregator<? extends Number> getAggregator() {
 		if (subtractColumn == null) {
-			switch (getColumn().getType()) {
-				case INTEGER:
-					return new IntegerSumAggregator(getColumn());
-				case MONEY:
-					return new MoneySumAggregator(getColumn());
-				case DECIMAL:
-					return new DecimalSumAggregator(getColumn());
-				case REAL:
-					return new RealSumAggregator(getColumn());
-				default:
-					throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
-			}
+			return switch (getColumn().getType()) {
+				case INTEGER -> new IntegerSumAggregator(getColumn());
+				case MONEY -> new MoneySumAggregator(getColumn());
+				case DECIMAL -> new DecimalSumAggregator(getColumn());
+				case REAL -> new RealSumAggregator(getColumn());
+				default -> throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
+			};
 		}
 		if (getColumn().getType() != getSubtractColumn().getType()) {
 			throw new IllegalStateException(String.format("Column types are not the same: Column %s\tSubstractColumn %s", getColumn().getType(), getSubtractColumn()
 					.getType()));
 		}
-		switch (getColumn().getType()) {
-			case INTEGER:
-				return new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
-			case MONEY:
-				return new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
-			case DECIMAL:
-				return new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
-			case REAL:
-				return new RealDiffSumAggregator(getColumn(), getSubtractColumn());
-			default:
-				throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
-		}
+
+		return switch (getColumn().getType()) {
+			case INTEGER -> new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
+			case MONEY -> new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
+			case DECIMAL -> new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
+			case REAL -> new RealDiffSumAggregator(getColumn(), getSubtractColumn());
+			default -> throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
+		};
 	}
 
 
@@ -107,11 +98,11 @@ public class SumSelect extends Select {
 
 		out.add(getColumn());
 
-		if(getSubtractColumn() != null){
+		if (getSubtractColumn() != null) {
 			out.add(getSubtractColumn());
 		}
 
-		if(distinctByColumn == null) {
+		if (distinctByColumn == null) {
 			out.addAll(getDistinctByColumn());
 		}
 

@@ -58,21 +58,14 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 	@Override
 	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
-		switch (getColumn().getType()) {
-			case MONEY:
-				f.setType(FEFilterType.Fields.MONEY_RANGE);
-				return;
-			case INTEGER:
-				f.setType(FEFilterType.Fields.INTEGER_RANGE);
-				return;
-			case DECIMAL:
-			case REAL: {
-				f.setType(FEFilterType.Fields.REAL_RANGE);
-				return;
-			}
-			default:
-				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + getColumn().getType());
-		}
+		final String type = switch (getColumn().getType()) {
+			case MONEY -> FEFilterType.Fields.MONEY_RANGE;
+			case INTEGER -> FEFilterType.Fields.INTEGER_RANGE;
+			case DECIMAL, REAL -> FEFilterType.Fields.REAL_RANGE;
+			default -> throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + getColumn().getType());
+		};
+
+		f.setType(type);
 	}
 
 	@Override
@@ -81,11 +74,11 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 
 		out.add(getColumn());
 
-		if(distinctByColumn != null) {
+		if (distinctByColumn != null) {
 			out.addAll(getDistinctByColumn());
 		}
 
-		if(getSubtractColumn() != null){
+		if (getSubtractColumn() != null) {
 			out.add(getSubtractColumn());
 		}
 
@@ -111,30 +104,21 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	@JsonIgnore
 	private ColumnAggregator<?> getAggregator() {
 		if (getSubtractColumn() == null) {
-			switch (getColumn().getType()) {
-				case MONEY:
-					return new MoneySumAggregator(getColumn());
-				case INTEGER:
-					return new IntegerSumAggregator(getColumn());
-				case DECIMAL:
-					return new DecimalSumAggregator(getColumn());
-				case REAL:
-					return new RealSumAggregator(getColumn());
-				default:
-					throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
-			}
+			return switch (getColumn().getType()) {
+				case MONEY -> new MoneySumAggregator(getColumn());
+				case INTEGER -> new IntegerSumAggregator(getColumn());
+				case DECIMAL -> new DecimalSumAggregator(getColumn());
+				case REAL -> new RealSumAggregator(getColumn());
+				default -> throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
+			};
 		}
-		switch (getColumn().getType()) {
-			case MONEY:
-				return new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
-			case INTEGER:
-				return new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
-			case DECIMAL:
-				return new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
-			case REAL:
-				return new RealDiffSumAggregator(getColumn(), getSubtractColumn());
-			default:
-				throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
-		}
+
+		return switch (getColumn().getType()) {
+			case MONEY -> new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
+			case INTEGER -> new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
+			case DECIMAL -> new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
+			case REAL -> new RealDiffSumAggregator(getColumn(), getSubtractColumn());
+			default -> throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
+		};
 	}
 }

@@ -36,14 +36,11 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
-		switch (getColumn().getType()) {
-			case DATE: {
-				f.setType(FEFilterType.Fields.INTEGER_RANGE);
-				return;
-			}
-			default:
-				throw new ConceptConfigurationException(getConnector(), "DATE_DISTANCE filter is incompatible with columns of type " + getColumn().getType());
+		if (getColumn().getType() != MajorTypeId.DATE) {
+			throw new ConceptConfigurationException(getConnector(), "DATE_DISTANCE filter is incompatible with columns of type " + getColumn().getType());
 		}
+
+		f.setType(FEFilterType.Fields.INTEGER_RANGE);
 	}
 	
 	@Override

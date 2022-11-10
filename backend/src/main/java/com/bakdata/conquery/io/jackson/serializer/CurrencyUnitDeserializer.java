@@ -18,13 +18,12 @@ public class CurrencyUnitDeserializer extends StdScalarDeserializer<Currency> {
 	
 	@Override
 	public Currency deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-		switch (p.getCurrentTokenId()) {
-			case JsonTokenId.ID_STRING: // let's do implicit re-parse
-				String text = p.getText().trim();
-				return Currency.getInstance(text);
-			default:
-				return (Currency) ctxt.handleUnexpectedToken(_valueClass, p);
+		if (p.currentTokenId() != JsonTokenId.ID_STRING) {
+			return (Currency) ctxt.handleUnexpectedToken(_valueClass, p);
 		}
+		// let's do implicit re-parse
+		final String text = p.getText().trim();
+		return Currency.getInstance(text);
 	}
 
 	

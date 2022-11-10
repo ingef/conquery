@@ -136,23 +136,22 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 		subQuery.addResult(storage, result);
 
 		switch (subQuery.getState()) {
-			case DONE:
+			case DONE -> {
 				if (allSubQueriesDone()) {
 					finish(storage, ExecutionState.DONE);
 				}
-				break;
-			case FAILED:
-				// Fail the whole execution if a subquery fails
-				fail(storage, result.getError().orElseThrow(
-						() -> new IllegalStateException(String.format("Query [%s] failed but no error was set.", getId()))
-					 )
+			}
+			// Fail the whole execution if a subquery fails
+			case FAILED -> {
+				fail(storage,
+						result.getError().orElseThrow(
+								() -> new IllegalStateException(String.format("Query [%s] failed but no error was set.", getId()))
+						)
 				);
-				break;
-			case NEW:
-			case RUNNING:
-			default:
-				break;
+			}
 
+			default -> {
+			}
 		}
 
 	}
@@ -201,7 +200,7 @@ public abstract class ManagedForm extends ManagedExecution<FormShardResult> {
 		if (subQueries.size() != 1) {
 			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported
 			log.trace("Column description is not generated for {} ({} from Form {}), because the form does not consits of a single subquery. Subquery size was {}.", subQueries
-																																											 .size(),
+							  .size(),
 					  this.getClass().getSimpleName(), getId(), getSubmitted().getClass().getSimpleName()
 			);
 			return;
