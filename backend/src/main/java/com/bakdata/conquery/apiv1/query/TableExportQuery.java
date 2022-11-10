@@ -43,6 +43,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.TableExportQueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ColumnResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
@@ -87,7 +88,7 @@ public class TableExportQuery extends Query {
 	private List<CQConcept> tables;
 
 	/**
-	 * @see TableExportQueryPlan#rawConceptValues
+	 * @see TableExportQueryPlan#isRawConceptValues()
 	 */
 	private boolean rawConceptValues = true;
 
@@ -102,8 +103,10 @@ public class TableExportQuery extends Query {
 	@JsonView(View.InternalCommunication.class)
 	private Map<Column, Integer> positions;
 
+
 	@JsonIgnore
 	private List<ResultInfo> resultInfos = Collections.emptyList();
+
 
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
@@ -134,6 +137,7 @@ public class TableExportQuery extends Query {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
+
 		query.resolve(context);
 
 		// First is dates, second is source id
@@ -143,7 +147,7 @@ public class TableExportQuery extends Query {
 
 		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions);
 
-		resultInfos = createResultInfos(secondaryIdPositions, positions, getTables(), rawConceptValues);
+		resultInfos = createResultInfos(secondaryIdPositions);
 	}
 
 	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
@@ -195,27 +199,35 @@ public class TableExportQuery extends Query {
 		return secondaryIdPositions;
 	}
 
-	private static List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Map<Column, Integer> positions, @NotEmpty @Valid List<CQConcept> tables, boolean rawConceptColumns) {
+	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
 
 		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
 		final ResultInfo[] infos = new ResultInfo[size];
 
-		infos[0] = ConqueryConstants.DATES_INFO;
+		infos[0] = ConqueryConstants.DATES_INFO_HISTORY;
 		infos[1] = ConqueryConstants.SOURCE_INFO;
 
 		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
-			SecondaryIdDescription desc = e.getKey();
-			Integer pos = e.getValue();
+			final SecondaryIdDescription desc = e.getKey();
+			final Integer pos = e.getValue();
 
-			infos[pos] = new SimpleResultInfo(
-					desc.getLabel(),
-					ResultType.StringT.INSTANCE,
-					Set.of(
-							new SemanticType.SecondaryIdT(desc),
-							new SemanticType.DescriptionT(desc.getDescription())
-					)
-			);
+			// If mapping is available, values are mapped
+			final ResultType.StringT resultType =
+					desc.getMapping() != null
+					? new ResultType.StringT((internal, printSettings) -> {
+						if (internal == null) {
+							return null;
+						}
+						return desc.getMapping().external((String) internal);
+					})
+					: ResultType.StringT.INSTANCE;
+
+			final Set<SemanticType> semantics = new HashSet<>();
+
+			semantics.add(new SemanticType.SecondaryIdT(desc));
+
+			infos[pos] = new SimpleResultInfo(desc.getLabel(), resultType, desc.getDescription(), semantics);
 		}
 
 
@@ -232,6 +244,7 @@ public class TableExportQuery extends Query {
 			final int position = entry.getValue();
 
 			final Column column = entry.getKey();
+
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
 			if (position == 0 || column.getSecondaryId() != null) {
 				continue;
@@ -239,13 +252,9 @@ public class TableExportQuery extends Query {
 
 			final Set<SemanticType> semantics = new HashSet<>();
 
-			if (column.getDescription() != null) {
-				semantics.add(new SemanticType.DescriptionT(column.getDescription()));
-			}
-
 			ResultType resultType = ResultType.resolveResultType(column.getType());
 
-			if (!rawConceptColumns && connectorColumns.containsKey(column)) {
+			if (connectorColumns.containsKey(column)) {
 				// Additionally, Concept Columns are returned as ConceptElementId, when rawConceptColumns is not set.
 
 				final Concept<?> concept = connectorColumns.get(column).getConcept();
@@ -253,10 +262,16 @@ public class TableExportQuery extends Query {
 				// Columns that are used to build concepts are marked as ConceptColumn.
 				semantics.add(new SemanticType.ConceptColumnT(concept));
 
-				resultType = new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
+				if (!isRawConceptValues()) {
+					resultType = new ResultType.StringT((o, printSettings) -> printValue(concept, o, printSettings));
+				}
+			}
+			else {
+				// If it's not a connector column, we just link to the source column.
+				semantics.add(new SemanticType.ColumnT(column));
 			}
 
-			infos[position] = new SimpleResultInfo(column.getTable().getLabel() + " " + column.getLabel(), resultType, semantics);
+			infos[position] = new ColumnResultInfo(column, resultType, semantics);
 		}
 
 		return List.of(infos);

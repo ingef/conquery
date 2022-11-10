@@ -108,6 +108,15 @@
                 }
               },
               {
+                "type": "HEADLINE",
+                "label": {
+                  "de": "Jetzt noch eine kleinere Headline"
+                },
+                "style": {
+                  "size": "h2"
+                }
+              },
+              {
                 "name": "timeCountBefore",
                 "type": "NUMBER",
                 "defaultValue": 1,
@@ -356,6 +365,15 @@
                     "label": { "de": "Supershort" }
                   }
                 ]
+              },
+              {
+                "type": "HEADLINE",
+                "label": {
+                  "de": "Und das ist noch ne super kleine Headline"
+                },
+                "style": {
+                  "size": "h3"
+                }
               },
               {
                 "name": "features",

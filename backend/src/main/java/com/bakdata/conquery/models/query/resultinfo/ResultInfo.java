@@ -38,6 +38,8 @@ public abstract class ResultInfo {
 	@ToString.Include
 	public abstract Set<SemanticType> getSemantics();
 
+	public abstract String getDescription();
+
 	public <T> void addAppendix(Class<T> cl, T obj) {
 		appendices.putInstance(cl, obj);
 	}
@@ -48,6 +50,7 @@ public abstract class ResultInfo {
 							   .defaultLabel(defaultColumnName(settings))
 							   .type(getType().typeInfo())
 							   .semantics(getSemantics())
+							   .description(getDescription())
 							   .build();
 	}
 }

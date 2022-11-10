@@ -4,6 +4,7 @@ import ReactList from "react-list";
 
 import type { EntityIdsStatus } from "./History";
 import { useUpdateHistorySession } from "./actions";
+import { EntityId } from "./reducer";
 
 const Row = styled("div")<{ active?: boolean }>`
   padding: 1px 3px;
@@ -37,7 +38,7 @@ const EntityStatus = styled("div")`
   color: ${({ theme }) => theme.col.blueGrayDark};
   font-weight: 700;
 `;
-const EntityId = styled("div")<{ active?: boolean }>`
+const TheEntityId = styled("div")<{ active?: boolean }>`
   font-weight: 700;
 `;
 const Number = styled("div")`
@@ -47,8 +48,8 @@ const Number = styled("div")`
 `;
 
 interface Props {
-  currentEntityId: string | null;
-  entityIds: string[];
+  currentEntityId: EntityId | null;
+  entityIds: EntityId[];
   updateHistorySession: ReturnType<typeof useUpdateHistorySession>;
   entityIdsStatus: EntityIdsStatus;
 }
@@ -70,16 +71,16 @@ export const EntityIdsList = ({
 
     return (
       <Row
-        key={entityId}
-        active={entityId === currentEntityId}
+        key={entityId.id}
+        active={entityId.id === currentEntityId?.id}
         className="scrollable-list-item"
         onClick={() => updateHistorySession({ entityId, years: [] })}
       >
         <Number style={{ width: numberWidth }}>#{index + 1}</Number>
-        <EntityId>{entityId}</EntityId>
+        <TheEntityId>{entityId.id}</TheEntityId>
         <Statuses>
-          {entityIdsStatus[entityId] &&
-            entityIdsStatus[entityId].map((val) => (
+          {entityIdsStatus[entityId.id] &&
+            entityIdsStatus[entityId.id].map((val) => (
               <EntityStatus key={val.value}>{val.label}</EntityStatus>
             ))}
         </Statuses>

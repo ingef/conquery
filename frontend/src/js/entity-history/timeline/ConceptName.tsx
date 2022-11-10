@@ -3,7 +3,13 @@ import { memo } from "react";
 
 import { ConceptIdT, DatasetT } from "../../api/types";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
+import FaIcon from "../../icon/FaIcon";
 
+const Root = styled("div")`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
 const Named = styled("span")`
   font-weight: 400;
 `;
@@ -59,10 +65,13 @@ const ConceptName = ({
   const rootConcept = getConceptById(rootConceptId, rootConceptId);
 
   return (
-    <div title={title} className={className}>
-      {rootConcept ? `${rootConcept.label} ` : null}
-      {conceptName}
-    </div>
+    <Root title={title} className={className}>
+      <FaIcon icon="folder" active />
+      <span>
+        {rootConcept ? `${rootConcept.label} ` : null}
+        {conceptName}
+      </span>
+    </Root>
   );
 };
 

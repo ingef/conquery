@@ -148,7 +148,7 @@ public class SecondaryIdQuery extends Query {
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		List<ResultInfo> resultInfos = new ArrayList<>();
-		resultInfos.add(new SimpleResultInfo(secondaryId.getName(), ResultType.StringT.INSTANCE, Set.of(new SemanticType.SecondaryIdT(getSecondaryId()), new SemanticType.DescriptionT(getSecondaryId().getDescription()))));
+		resultInfos.add(new SimpleResultInfo(secondaryId.getName(), ResultType.StringT.INSTANCE, secondaryId.getDescription(), Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))));
 		resultInfos.addAll(query.getResultInfos());
 
 		return resultInfos;

@@ -4,7 +4,7 @@
 // Mainly, certain keys are allowlisted
 // (to exclude others that are relevant to the frontend only)
 // Some keys are added (e.g. the query type attribute)
-import { isEmpty } from "../common/helpers";
+import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";

@@ -14,7 +14,7 @@ import {
 } from "./actions";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
-export const useDeleteProjectItemFolder = (folder: string) => {
+export const useDeleteProjectItemFolder = () => {
   const { t } = useTranslation();
   const datasetId = useDatasetId();
   const dispatch = useDispatch();
@@ -34,7 +34,7 @@ export const useDeleteProjectItemFolder = (folder: string) => {
     (state) => state.previousQueries.localFolders,
   );
 
-  return async () => {
+  return async (folder: string) => {
     if (!datasetId) return;
 
     if (localFolders.includes(folder)) {

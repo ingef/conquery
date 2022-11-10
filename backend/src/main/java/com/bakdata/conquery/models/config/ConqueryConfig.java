@@ -59,7 +59,8 @@ public class ConqueryConfig extends Configuration {
 	private List<ResultRendererProvider> resultProviders = List.of(
 			new ExcelResultProvider(),
 			new CsvResultProvider(),
-			new ArrowResultProvider()
+			new ArrowResultProvider(),
+			new ParquetResultProvider()
 	);
 	@Valid
 	@NotNull
@@ -79,8 +80,6 @@ public class ConqueryConfig extends Configuration {
 	@Valid
 	@NotNull
 	private FrontendConfig frontend = new FrontendConfig();
-
-	private PreviewConfig preview = new PreviewConfig();
 
 	@NotNull
 	@Valid

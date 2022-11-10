@@ -59,7 +59,7 @@ public class SumSelect extends Select {
 
 	@Override
 	public Aggregator<? extends Number> createAggregator() {
-		if (!distinctByColumn.isEmpty()) {
+		if (distinctByColumn != null && !distinctByColumn.isEmpty()) {
 			return new DistinctValuesWrapperAggregator<>(getAggregator(), getDistinctByColumn());
 		}
 		return getAggregator();
@@ -102,8 +102,8 @@ public class SumSelect extends Select {
 	private static final EnumSet<MajorTypeId> NUMBER_COMPATIBLE = EnumSet.of(MajorTypeId.INTEGER, MajorTypeId.MONEY, MajorTypeId.DECIMAL, MajorTypeId.REAL);
 
 	@Override
-	public Column[] getRequiredColumns() {
-		List<Column> out = new ArrayList<>();
+	public List<Column> getRequiredColumns() {
+		final List<Column> out = new ArrayList<>();
 
 		out.add(getColumn());
 
@@ -111,9 +111,11 @@ public class SumSelect extends Select {
 			out.add(getSubtractColumn());
 		}
 
-		out.addAll(getDistinctByColumn());
+		if(distinctByColumn == null) {
+			out.addAll(getDistinctByColumn());
+		}
 
-		return out.toArray(Column[]::new);
+		return out;
 	}
 
 

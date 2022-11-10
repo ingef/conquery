@@ -44,6 +44,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.api.ResultArrowResource;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.resources.api.ResultExcelResource;
+import com.bakdata.conquery.resources.api.ResultParquetResource;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
@@ -204,7 +205,8 @@ public class StoredQueriesProcessorTest {
 					ResultExcelResource.getDownloadURL(URI_BUILDER.clone(), execMock),
 					ResultCsvResource.getDownloadURL(URI_BUILDER.clone(), execMock),
 					ResultArrowResource.getFileDownloadURL(URI_BUILDER.clone(), execMock),
-					ResultArrowResource.getStreamDownloadURL(URI_BUILDER.clone(), execMock)
+					ResultArrowResource.getStreamDownloadURL(URI_BUILDER.clone(), execMock),
+					ResultParquetResource.getDownloadURL(URI_BUILDER.clone(), execMock)
 			));
 		}
 

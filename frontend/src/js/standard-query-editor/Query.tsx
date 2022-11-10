@@ -5,8 +5,8 @@ import { useDispatch, useSelector } from "react-redux";
 
 import type { QueryT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { getUniqueFileRows } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
+import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import { TreesT } from "../concept-trees/reducer";
 import { useDatasetId } from "../dataset/selectors";
 import { useLoadQuery } from "../previous-queries/list/actions";

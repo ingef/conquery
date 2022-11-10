@@ -14,6 +14,7 @@ import type { EntityIdsStatus } from "./History";
 import { LoadHistoryDropzone, LoadingPayload } from "./LoadHistoryDropzone";
 import { NavigationHeader } from "./NavigationHeader";
 import { closeHistory, useUpdateHistorySession } from "./actions";
+import { EntityId } from "./reducer";
 
 const Root = styled("div")`
   display: grid;
@@ -50,10 +51,12 @@ const BottomActions = styled("div")`
 
 const BackButton = styled(IconButton)`
   margin: 0 10px 0 20px;
+  justify-content: center;
 `;
 
 const SxIconButton = styled(IconButton)`
   width: 100%;
+  justify-content: center;
 `;
 
 const SxWithTooltip = styled(WithTooltip)`
@@ -61,17 +64,6 @@ const SxWithTooltip = styled(WithTooltip)`
   flex-shrink: 0;
   width: 100%;
 `;
-
-interface Props {
-  className?: string;
-  entityIds: string[];
-  entityIdsStatus: EntityIdsStatus;
-  currentEntityId: string | null;
-  currentEntityIndex: number;
-  entityStatusOptions: SelectOptionT[];
-  setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
-  onLoadFromFile: (payload: LoadingPayload) => void;
-}
 
 export const Navigation = memo(
   ({
@@ -83,7 +75,16 @@ export const Navigation = memo(
     entityStatusOptions,
     setEntityStatusOptions,
     onLoadFromFile,
-  }: Props) => {
+  }: {
+    className?: string;
+    entityIds: EntityId[];
+    entityIdsStatus: EntityIdsStatus;
+    currentEntityId: EntityId | null;
+    currentEntityIndex: number;
+    entityStatusOptions: SelectOptionT[];
+    setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
+    onLoadFromFile: (payload: LoadingPayload) => void;
+  }) => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
     const updateHistorySession = useUpdateHistorySession();
@@ -101,6 +102,26 @@ export const Navigation = memo(
 
       updateHistorySession({ entityId: entityIds[nextIdx] });
     }, [entityIds, currentEntityIndex, updateHistorySession]);
+
+    const onDownload = useCallback(() => {
+      const idToRow = (entityId: EntityId) => [
+        entityId.id,
+        entityIdsStatus[entityId.id]
+          ? entityIdsStatus[entityId.id].map((o) => o.value)
+          : "",
+      ];
+
+      const csvString = entityIds
+        .map(idToRow)
+        .map((row) => row.join(";"))
+        .join("\n");
+
+      const blob = new Blob([csvString], {
+        type: "application/csv",
+      });
+
+      downloadBlob(blob, "list.csv");
+    }, [entityIds, entityIdsStatus]);
 
     useHotkeys("shift+up", goToPrev, [goToPrev]);
     useHotkeys("shift+down", goToNext, [goToNext]);
@@ -157,25 +178,7 @@ export const Navigation = memo(
                 style={{ backgroundColor: "white" }}
                 frame
                 icon="download"
-                onClick={() => {
-                  const idToRow = (id: string) => [
-                    id,
-                    entityIdsStatus[id]
-                      ? entityIdsStatus[id].map((o) => o.value)
-                      : "",
-                  ];
-
-                  const csvString = entityIds
-                    .map(idToRow)
-                    .map((row) => row.join(";"))
-                    .join("\n");
-
-                  const blob = new Blob([csvString], {
-                    type: "application/csv",
-                  });
-
-                  downloadBlob(blob, "list.csv");
-                }}
+                onClick={onDownload}
               >
                 CSV
               </SxIconButton>

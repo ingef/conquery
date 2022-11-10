@@ -290,6 +290,8 @@ export interface GetFrontendConfigResponseT {
   version: string;
   currency: CurrencyConfigT;
   queryUpload: QueryUploadConfigT;
+  manualUrl?: string;
+  contactEmail?: string;
 }
 
 export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
@@ -334,7 +336,7 @@ interface ColumnDescriptionSemanticSecondaryId {
   type: "SECONDARY_ID";
   secondaryId: string;
 }
-interface ColumnDescriptionSemanticId {
+export interface ColumnDescriptionSemanticId {
   type: "ID";
   kind: string;
 }
@@ -350,6 +352,12 @@ interface ColumnDescriptionSemanticCategorical {
 interface ColumnDescriptionSemanticResolution {
   type: "RESOLUTION";
 }
+interface ColumnDescriptionSemanticGroup {
+  type: "GROUP";
+}
+interface ColumnDescriptionSemanticHidden {
+  type: "HIDDEN";
+}
 
 export type ColumnDescriptionSemantic =
   | ColumnDescriptionSemanticId
@@ -359,15 +367,22 @@ export type ColumnDescriptionSemantic =
   | ColumnDescriptionSemanticEventDate
   | ColumnDescriptionSemanticSources
   | ColumnDescriptionSemanticCategorical // Probably won't be used by us
-  | ColumnDescriptionSemanticResolution; // Probably won't be used by us
+  | ColumnDescriptionSemanticResolution // Probably won't be used by us
+  | ColumnDescriptionSemanticGroup
+  | ColumnDescriptionSemanticHidden;
 
 export interface ColumnDescription {
-  label: string; // Matches column name in CSV
+  // `label` matches column name in CSV
+  // So it's more of an id, TODO: rename this to 'id',
+  label: string;
+
   type: ColumnDescriptionKind;
   semantics: ColumnDescriptionSemantic[];
 
-  // NOT USED BY US:
+  // More of a "real" label, TODO: rename this to "label"
   defaultLabel: string;
+
+  // NOT USED BY US:
   selectId: string | null;
   userConceptLabel: string | null;
 }
@@ -486,10 +501,6 @@ export interface PostLoginResponseT {
   access_token: string;
 }
 
-export interface PostFormConfigsResponseT {
-  id: string;
-}
-
 export type GetFormConfigsResponseT = FormConfigT[];
 
 export type GetFormConfigResponseT = FormConfigT;
@@ -500,9 +511,22 @@ export type UploadQueryResponseT = {
   unreadableDate: string[][];
 };
 
-export type GetEntityHistoryDefaultParamsResponse = string[]; // connectors
+export interface HistorySources {
+  all: { label: string; name: TableT["id"] }[];
+  default: { label: string; name: TableT["id"] }[];
+}
+
+export type GetEntityHistoryDefaultParamsResponse = HistorySources;
+
+export interface EntityInfo {
+  label: string;
+  value: string;
+  type: ColumnDescriptionKind;
+  semantics: ColumnDescriptionSemantic[];
+}
 
 export type GetEntityHistoryResponse = {
   resultUrls: string[];
   columnDescriptions: ColumnDescription[];
+  infos: EntityInfo[];
 };

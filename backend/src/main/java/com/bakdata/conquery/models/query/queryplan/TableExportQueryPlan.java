@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -42,6 +43,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 	 * If true, Connector {@link Column}s will be output raw.
 	 * If false, the {@link com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId} will be output.
 	 */
+	@Getter
 	private final boolean rawConceptValues;
 
 
@@ -127,11 +129,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		query.nextTable(ctx, bucket.getTable());
 		query.nextBlock(bucket);
 
-		if (!query.isOfInterest(bucket)) {
-			return false;
-		}
-
-		return true;
+		return query.isOfInterest(bucket);
 	}
 
 	/**

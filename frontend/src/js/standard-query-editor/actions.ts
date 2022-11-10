@@ -16,7 +16,7 @@ import type {
   PostFilterSuggestionsResponseT,
   SelectOptionT,
 } from "../api/types";
-import { successPayload } from "../common/actions";
+import { successPayload } from "../common/actions/genericActions";
 import type { TreesT } from "../concept-trees/reducer";
 import { useDatasetId } from "../dataset/selectors";
 import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
@@ -148,9 +148,13 @@ const useLoadBigMultiSelectValues = () => {
                     ...table,
                     filters: await Promise.all(
                       table.filters.map(async (filter) => {
-                        if (filter.type !== "BIG_MULTI_SELECT") return filter;
-                        if (!filter.value || filter.value.length === 0)
+                        if (
+                          filter.type !== "BIG_MULTI_SELECT" ||
+                          !filter.value ||
+                          filter.value.length === 0
+                        ) {
                           return filter;
+                        }
 
                         try {
                           const result = await postFilterValuesResolve(

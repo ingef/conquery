@@ -210,30 +210,29 @@ public class FormTest extends ConqueryTestSpec {
 	private <F extends ManagedForm & SingleTableResult> void checkSingleResult(F managedForm, ConqueryConfig config, PrintSettings printSettings)
 			throws IOException {
 
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-		final CsvWriter writer = config.getCsv().createWriter(output);
+		try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+			final CsvWriter writer = config.getCsv().createWriter(output);
+			final CsvRenderer renderer =
+					new CsvRenderer(writer, printSettings);
+
+			renderer.toCSV(
+					config.getFrontend().getQueryUpload().getIdResultInfos(),
+					managedForm.getResultInfos(),
+					managedForm.streamResults()
+			);
+			writer.close();
+
+			assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
+					.as("Checking result " + managedForm.getLabelWithoutAutoLabelSuffix())
+					.containsExactlyInAnyOrderElementsOf(
+							In.stream(expectedCsv.values().iterator().next().stream())
+							  .withUTF8()
+							  .readLines()
+					);
+		}
 
 
-		CsvRenderer renderer =
-				new CsvRenderer(writer, printSettings);
-
-		renderer.toCSV(
-				config.getFrontend().getQueryUpload().getIdResultInfos(),
-				managedForm.getResultInfos(),
-				managedForm.streamResults()
-		);
-
-		writer.close();
-		output.close();
-
-		assertThat(In.stream(new ByteArrayInputStream(output.toByteArray())).withUTF8().readLines())
-				.as("Checking result " + managedForm.getLabelWithoutAutoLabelSuffix())
-				.containsExactlyInAnyOrderElementsOf(
-						In.stream(expectedCsv.values().iterator().next().stream())
-						  .withUTF8()
-						  .readLines()
-				);
 	}
 
 	private static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException {

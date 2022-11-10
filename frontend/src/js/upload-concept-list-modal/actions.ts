@@ -3,7 +3,7 @@ import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
 import { usePostConceptsListToResolve } from "../api/api";
 import type { ConceptIdT, PostConceptResolveResponseT } from "../api/types";
-import { errorPayload, ErrorObject } from "../common/actions";
+import { errorPayload, ErrorObject } from "../common/actions/genericActions";
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 

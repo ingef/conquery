@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { useTranslation } from "react-i18next";
 import NumberFormat from "react-number-format";
 
 import type {
@@ -12,9 +13,9 @@ import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
+import { ColumnBuckets } from "../Timeline";
 import type { EntityEvent } from "../reducer";
 
-import ConceptName from "./ConceptName";
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
 import { TinyLabel } from "./TinyLabel";
@@ -37,17 +38,35 @@ const EventItemContent = styled("div")`
 `;
 const MainContent = styled("div")`
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 5px;
-  padding: 15px 8px 8px;
+  grid-template-columns: 1.618fr 1fr;
+  gap: 6px;
+  padding: 15px 15px 12px 6px;
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+const Col = styled("div")`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 `;
 
 const ColBucket = styled("div")`
   color: black;
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0 10px;
   padding: 1px 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  @media (min-width: 1800px) {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  @media (min-width: 2500px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+  gap: 3px 10px;
+`;
+
+const Flex = styled("div")`
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
 `;
 
 const SxRawDataBadge = styled(RawDataBadge)`
@@ -58,13 +77,11 @@ const SxRawDataBadge = styled(RawDataBadge)`
 `;
 
 const SxFaIcon = styled(FaIcon)`
-  width: 20px !important;
+  width: 24px !important;
   text-align: center;
+  margin: 8px 5px;
+  font-size: ${({ theme }) => theme.font.md};
 `;
-
-const ColBucketCode = styled((props: any) => (
-  <ColBucket as="code" {...props} />
-))``;
 
 const Bullet = styled("div")`
   width: 10px;
@@ -75,13 +92,6 @@ const Bullet = styled("div")`
   flex-shrink: 0;
 `;
 
-interface ColumnBuckets {
-  money: ColumnDescription[];
-  concepts: ColumnDescription[];
-  secondaryIds: ColumnDescription[];
-  rest: ColumnDescription[];
-}
-
 interface Props {
   row: EntityEvent;
   columns: Record<string, ColumnDescription>;
@@ -91,7 +101,7 @@ interface Props {
   currencyConfig: CurrencyConfigT;
   rootConceptIdsByColumn: Record<string, ConceptIdT>;
   groupedRows?: EntityEvent[];
-  groupedRowsDifferences?: Record<string, Set<any>>;
+  groupedRowsKeysWithDifferentValues?: string[];
 }
 
 const EventCard = ({
@@ -103,29 +113,24 @@ const EventCard = ({
   contentFilter,
   rootConceptIdsByColumn,
   groupedRows,
-  groupedRowsDifferences,
+  groupedRowsKeysWithDifferentValues,
 }: Props) => {
-  const applicableSecondaryIds = columnBuckets.secondaryIds.filter((column) =>
-    exists(row[column.label]),
-  );
-  const secondaryIdsTooltip = applicableSecondaryIds
-    .map((c) => c.label)
-    .join(", ");
+  const { t } = useTranslation();
 
-  const applicableConcepts = columnBuckets.concepts.filter((column) =>
+  const applicableGroupableIds = columnBuckets.groupableIds.filter((column) =>
     exists(row[column.label]),
   );
-  const conceptsTooltip = applicableConcepts.map((c) => c.label).join(", ");
+  const groupableIdsTooltip = t("history.content.fingerprint");
 
   const applicableMoney = columnBuckets.money.filter((column) =>
     exists(row[column.label]),
   );
-  const moneyTooltip = applicableMoney.map((c) => c.label).join(", ");
+  const moneyTooltip = t("history.content.money");
 
   const applicableRest = columnBuckets.rest.filter((column) =>
     exists(row[column.label]),
   );
-  const restTooltip = applicableRest.map((c) => c.label).join(", ");
+  const restTooltip = t("history.content.rest");
 
   return (
     <Card>
@@ -134,72 +139,79 @@ const EventCard = ({
       <SxRawDataBadge event={row} />
       <EventItemContent>
         <MainContent>
-          {contentFilter.secondaryId && applicableSecondaryIds.length > 0 && (
-            <>
-              <WithTooltip text={secondaryIdsTooltip}>
-                <SxFaIcon icon="microscope" active tiny />
+          <Col>
+            {contentFilter.money && applicableMoney.length > 0 && (
+              <Flex>
+                <WithTooltip text={moneyTooltip}>
+                  <span>
+                    <SxFaIcon icon="euro-sign" active large />
+                  </span>
+                </WithTooltip>
+                <ColBucket>
+                  {applicableMoney.map((column) => (
+                    <div key={column.label}>
+                      <TinyLabel>{column.defaultLabel}</TinyLabel>
+                      <code>
+                        <NumberFormat
+                          thousandSeparator={currencyConfig.thousandSeparator}
+                          decimalSeparator={currencyConfig.decimalSeparator}
+                          decimalScale={currencyConfig.decimalScale}
+                          suffix={currencyConfig.prefix}
+                          displayType="text"
+                          value={parseInt(row[column.label]) / 100}
+                        />
+                      </code>
+                    </div>
+                  ))}
+                </ColBucket>
+              </Flex>
+            )}
+            {contentFilter.rest && applicableRest.length > 0 && (
+              <Flex>
+                <WithTooltip text={restTooltip}>
+                  <span>
+                    <SxFaIcon icon="info" active large />
+                  </span>
+                </WithTooltip>
+                <ColBucket>
+                  {applicableRest.map((column) => (
+                    <div key={column.label}>
+                      <TinyLabel>{column.defaultLabel}</TinyLabel>
+                      <span>{row[column.label]}</span>
+                    </div>
+                  ))}
+                </ColBucket>
+              </Flex>
+            )}
+          </Col>
+
+          {contentFilter.groupId && applicableGroupableIds.length > 0 && (
+            <Flex>
+              <WithTooltip text={groupableIdsTooltip}>
+                <span>
+                  <SxFaIcon icon="fingerprint" active large />
+                </span>
               </WithTooltip>
-              <ColBucket>
-                {applicableSecondaryIds.map((column) => (
-                  <div>
-                    <TinyLabel>{column.label}</TinyLabel>
+              <ColBucket style={{ gridTemplateColumns: "1fr" }}>
+                {applicableGroupableIds.map((column) => (
+                  <div key={column.label}>
+                    <TinyLabel>{column.defaultLabel}</TinyLabel>
                     {row[column.label]}
                   </div>
                 ))}
               </ColBucket>
-            </>
-          )}
-          {contentFilter.money && applicableMoney.length > 0 && (
-            <>
-              <WithTooltip text={moneyTooltip}>
-                <SxFaIcon icon="money-bill-alt" active tiny />
-              </WithTooltip>
-              <ColBucketCode>
-                {applicableMoney.map((column) => (
-                  <NumberFormat
-                    {...currencyConfig}
-                    displayType="text"
-                    value={parseInt(row[column.label]) / 100}
-                  />
-                ))}
-              </ColBucketCode>
-            </>
-          )}
-          {contentFilter.rest && applicableRest.length > 0 && (
-            <>
-              <WithTooltip text={restTooltip}>
-                <SxFaIcon icon="info" active tiny />
-              </WithTooltip>
-              <ColBucket>
-                {applicableRest.map((column) => (
-                  <span>{row[column.label]}</span>
-                ))}
-              </ColBucket>
-            </>
-          )}
-          {contentFilter.concept && applicableConcepts.length > 0 && (
-            <>
-              <WithTooltip text={conceptsTooltip}>
-                <SxFaIcon icon="folder" active tiny />
-              </WithTooltip>
-              <ColBucket>
-                {applicableConcepts.map((column) => (
-                  <ConceptName
-                    rootConceptId={rootConceptIdsByColumn[column.label]}
-                    conceptId={row[column.label]}
-                    datasetId={datasetId}
-                  />
-                ))}
-              </ColBucket>
-            </>
+            </Flex>
           )}
         </MainContent>
-        {groupedRowsDifferences && groupedRows && (
+        {groupedRowsKeysWithDifferentValues && groupedRows && (
           <GroupedContent
             datasetId={datasetId}
             columns={columns}
+            contentFilter={contentFilter}
             groupedRows={groupedRows}
-            groupedRowsDifferences={groupedRowsDifferences}
+            groupedRowsKeysWithDifferentValues={
+              groupedRowsKeysWithDifferentValues
+            }
             currencyConfig={currencyConfig}
             rootConceptIdsByColumn={rootConceptIdsByColumn}
           />

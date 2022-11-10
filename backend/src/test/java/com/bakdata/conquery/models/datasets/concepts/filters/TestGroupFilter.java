@@ -12,7 +12,6 @@ import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.QueryContextResolvable;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
@@ -33,10 +32,6 @@ public class TestGroupFilter extends SingleColumnFilter<TestGroupFilter.GroupFil
 		f.setFilters(getFEFilter());
 	}
 
-	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[]{getColumn()};
-	}
 
 	@Override
 	public FilterNode<?> createFilterNode(GroupFilterValue compoundFilterValue) {

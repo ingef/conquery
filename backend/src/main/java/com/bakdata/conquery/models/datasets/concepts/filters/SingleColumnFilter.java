@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.filters;
 
 import java.util.EnumSet;
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -25,8 +26,8 @@ public abstract class SingleColumnFilter<FE_TYPE> extends Filter<FE_TYPE> {
 	private Column column;
 
 	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[]{getColumn()};
+	public List<Column> getRequiredColumns() {
+		return List.of(getColumn());
 	}
 
 	@JsonIgnore

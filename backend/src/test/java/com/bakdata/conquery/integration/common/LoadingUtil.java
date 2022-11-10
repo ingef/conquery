@@ -213,11 +213,11 @@ public class LoadingUtil {
 				.put(Entity.entity(Entity.json(""), MediaType.APPLICATION_JSON_TYPE))) {
 
 			assertThat(response.getStatusInfo().getFamily())
-								.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-								.isEqualTo(expectedResponseFamily);
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(expectedResponseFamily);
 			assertThat(response.getStatusInfo().getReasonPhrase())
-								.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-								.isEqualTo(expectedReason);
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(expectedReason);
 		}
 	}
 
@@ -293,8 +293,8 @@ public class LoadingUtil {
 				.put(Entity.entity(concept, MediaType.APPLICATION_JSON_TYPE))) {
 
 			assertThat(response.getStatusInfo().getFamily())
-						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-						.isEqualTo(expectedResponseFamily);
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(expectedResponseFamily);
 		}
 	}
 
@@ -312,7 +312,9 @@ public class LoadingUtil {
 		Map<String, SecondaryIdDescription> out = new HashMap<>();
 
 		for (RequiredSecondaryId required : secondaryIds) {
-			final SecondaryIdDescription description = required.toSecondaryId();
+			final SecondaryIdDescription description =
+					required.toSecondaryId(support.getDataset(), support.getDatasetRegistry().findRegistry(support.getDataset().getId()));
+
 			support.getDatasetsProcessor()
 				   .addSecondaryId(support.getNamespace(), description);
 
@@ -344,8 +346,8 @@ public class LoadingUtil {
 
 
 			assertThat(response.getStatusInfo().getFamily())
-						.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
-						.isEqualTo(Response.Status.Family.SUCCESSFUL);
+					.describedAs(new LazyTextDescription(() -> response.readEntity(String.class)))
+					.isEqualTo(Response.Status.Family.SUCCESSFUL);
 		}
 	}
 

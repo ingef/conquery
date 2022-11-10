@@ -165,9 +165,15 @@ public class IntegrationTests {
 									   // If no label was defined use the filename part before the first dot
 									   .orElse(name.split("\\.", 1)[0]);
 
+			// For easier modification we link the source- not the target-resource of the json tests.
+			// Otherwise, a modification might affect the current test runs,
+			// but it won't persist over rebuilds or in version control
+			final URI compileTargetURI = resource.getURI();
+			final URI sourceResourceURI = URI.create(compileTargetURI.toString().replace("/target/test-classes/", "/src/test/resources/"));
+
 			return DynamicTest.dynamicTest(
 					testLabel,
-					resource.getURI(),
+					sourceResourceURI,
 					new IntegrationTest.Wrapper(
 							testLabel,
 							this,

@@ -17,7 +17,9 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.index.IndexService;
@@ -252,6 +254,10 @@ public class Namespace implements Closeable {
 		}
 	}
 
+	public CentralRegistry getCentralRegistry() {
+		return getStorage().getCentralRegistry();
+	}
+
 	public int getNumberOfEntities() {
 		return getStorage().getPrimaryDictionary().getSize();
 	}
@@ -263,13 +269,19 @@ public class Namespace implements Closeable {
 			   .flatMap(con -> con.getSelects().stream())
 			   .filter(MappableSingleColumnSelect.class::isInstance)
 			   .map(MappableSingleColumnSelect.class::cast)
-			   .forEach((s) ->
-								jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping))
-			   );
+			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
+
+		storage.getSecondaryIds().stream()
+			   .filter(desc -> desc.getMapping() != null)
+			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping()::init)));
 
 	}
 
 	public void clearIndexCache() {
 		indexService.evictCache();
+	}
+
+	public PreviewConfig getPreviewConfig() {
+		return getStorage().getPreviewConfig();
 	}
 }

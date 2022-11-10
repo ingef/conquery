@@ -6,18 +6,25 @@ import {
   useGetEntityHistory,
   useGetEntityHistoryDefaultParams,
 } from "../api/api";
-import type { ColumnDescription, DatasetT } from "../api/types";
+import type {
+  ColumnDescription,
+  DatasetT,
+  EntityInfo,
+  HistorySources,
+} from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
-import { ErrorObject, errorPayload } from "../common/actions";
-import { useIsHistoryEnabled } from "../common/feature-flags/useIsHistoryEnabled";
-import { formatStdDate, getFirstAndLastDateOfRange } from "../common/helpers";
+import { ErrorObject, errorPayload } from "../common/actions/genericActions";
+import {
+  formatStdDate,
+  getFirstAndLastDateOfRange,
+} from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { useLoadPreviewData } from "../preview/actions";
 
-import { EntityEvent } from "./reducer";
+import { EntityEvent, EntityId } from "./reducer";
 
 export type EntityHistoryActions = ActionType<
   | typeof openHistory
@@ -32,25 +39,25 @@ export const closeHistory = createAction("history/CLOSE")();
 
 export const loadDefaultHistoryParamsSuccess = createAction(
   "history/LOAD_DEFAULT_HISTORY_PARAMS_SUCCESS",
-)<{ sources: string[] }>();
+)<{ sources: HistorySources }>();
 
 export const useLoadDefaultHistoryParams = () => {
   const dispatch = useDispatch();
   const getEntityHistoryDefaultParams = useGetEntityHistoryDefaultParams();
-  const isHistoryEnabled = useIsHistoryEnabled();
 
-  return async (datasetId: DatasetT["id"]) => {
-    if (!isHistoryEnabled) return;
+  return useCallback(
+    async (datasetId: DatasetT["id"]) => {
+      try {
+        const result = await getEntityHistoryDefaultParams(datasetId);
 
-    try {
-      const result = await getEntityHistoryDefaultParams(datasetId);
-
-      dispatch(loadDefaultHistoryParamsSuccess({ sources: result }));
-    } catch (error) {
-      // TODO: Fail without noticing user, maybe change this later if required
-      console.error(error);
-    }
-  };
+        dispatch(loadDefaultHistoryParamsSuccess({ sources: result }));
+      } catch (error) {
+        // TODO: Fail without noticing user, maybe change this later if required
+        console.error(error);
+      }
+    },
+    [dispatch, getEntityHistoryDefaultParams],
+  );
 };
 
 export const resetCurrentEntity = createAction(
@@ -66,15 +73,34 @@ export const loadHistoryData = createAsyncAction(
   {
     currentEntityCsvUrl: string;
     currentEntityData: EntityEvent[];
-    currentEntityId: string;
-    uniqueSources: string[];
-    entityIds?: string[];
+    currentEntityInfos: EntityInfo[];
+    currentEntityId: EntityId;
+    currentEntityUniqueSources: string[];
+    resultUrls?: string[];
+    entityIds?: EntityId[];
     label?: string;
     columns?: Record<string, ColumnDescription>;
     columnDescriptions?: ColumnDescription[];
   },
   ErrorObject
 >();
+
+// HARD-CODED values that make sense with our particular data.
+// TODO: Make this configurable / get a preferred id kind list from backend
+export const PREFERRED_ID_KINDS = ["EGK", "PID"];
+export const DEFAULT_ID_KIND = "EGK";
+
+function getPreferredIdColumns(columns: ColumnDescription[]) {
+  const findColumnIdxWithIdKind = (kind: string) =>
+    columns.findIndex((col) =>
+      col.semantics.some((s) => s.type === "ID" && s.kind === kind),
+    );
+
+  return PREFERRED_ID_KINDS.map((kind) => ({
+    columnIdx: findColumnIdxWithIdKind(kind),
+    idKind: kind,
+  }));
+}
 
 // TODO: This starts a session with the current query results,
 // but there will be other ways of starting a history session
@@ -97,9 +123,27 @@ export function useNewHistorySession() {
       return;
     }
 
-    // hard-coded column index to use for entity ids (should be "PID")
-    const entityIdsColumn = result.csv.map((row) => row[2]);
-    const entityIds = entityIdsColumn.slice(1); // remove header;
+    const preferredIdColumns = getPreferredIdColumns(columns);
+    if (preferredIdColumns.length === 0) {
+      dispatch(loadHistoryData.failure(new Error("No valid ID columns found")));
+      return;
+    }
+
+    const entityIds = result.csv
+      .slice(1) // remove header
+      .map((row) => {
+        for (const col of preferredIdColumns) {
+          // some values might be empty, search for defined values
+          if (row[col.columnIdx]) {
+            return {
+              id: row[col.columnIdx],
+              kind: col.idKind,
+            };
+          }
+        }
+        return null;
+      })
+      .filter(exists);
 
     if (entityIds.length === 0) {
       dispatch(loadHistoryData.failure(new Error("No entity IDs found")));
@@ -121,9 +165,10 @@ export function useUpdateHistorySession() {
   const getEntityHistory = useGetEntityHistory();
   const getAuthorizedUrl = useGetAuthorizedUrl();
 
-  const defaultEntityHistoryParams = useSelector<StateT, { sources: string[] }>(
-    (state) => state.entityHistory.defaultParams,
-  );
+  const defaultEntityHistoryParams = useSelector<
+    StateT,
+    { sources: HistorySources }
+  >((state) => state.entityHistory.defaultParams);
 
   return useCallback(
     async ({
@@ -131,8 +176,8 @@ export function useUpdateHistorySession() {
       entityIds,
       label,
     }: {
-      entityId: string;
-      entityIds?: string[];
+      entityId: EntityId;
+      entityIds?: EntityId[];
       years?: number[];
       label?: string;
     }) => {
@@ -141,11 +186,12 @@ export function useUpdateHistorySession() {
       try {
         dispatch(loadHistoryData.request());
 
-        const { resultUrls, columnDescriptions } = await getEntityHistory(
-          datasetId,
-          entityId,
-          defaultEntityHistoryParams.sources,
-        );
+        const { resultUrls, columnDescriptions, infos } =
+          await getEntityHistory(
+            datasetId,
+            entityId,
+            defaultEntityHistoryParams.sources,
+          );
 
         const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
 
@@ -175,14 +221,18 @@ export function useUpdateHistorySession() {
             .filter(([, columnDescription]) => exists(columnDescription)),
         );
 
+        const nonEmptyInfos = infos.filter((i) => exists(i.value) && !!i.value);
+
         dispatch(
           loadHistoryData.success({
             currentEntityCsvUrl: csvUrl,
             currentEntityData: currentEntityDataProcessed,
             currentEntityId: entityId,
+            currentEntityInfos: nonEmptyInfos,
+            currentEntityUniqueSources: uniqueSources,
             columnDescriptions,
+            resultUrls,
             columns,
-            uniqueSources,
             ...(entityIds ? { entityIds } : {}),
             ...(label ? { label } : {}),
           }),

@@ -2,23 +2,25 @@ import styled from "@emotion/styled";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
-import type { SelectOptionT } from "../api/types";
+import type { EntityInfo, HistorySources, SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import ErrorFallback from "../error-fallback/ErrorFallback";
+import DownloadResultsDropdownButton from "../query-runner/DownloadResultsDropdownButton";
 
 import ContentControl, { useContentControl } from "./ContentControl";
 import { DetailControl, DetailLevel } from "./DetailControl";
-import { DownloadEntityDataButton } from "./DownloadEntityDataButton";
 import { EntityHeader } from "./EntityHeader";
 import InteractionControl from "./InteractionControl";
 import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import SourcesControl from "./SourcesControl";
-import { Timeline } from "./Timeline";
-import { useUpdateHistorySession } from "./actions";
+import Timeline from "./Timeline";
+import { DEFAULT_ID_KIND, useUpdateHistorySession } from "./actions";
+import { EntityId } from "./reducer";
 
 const FullScreen = styled("div")`
   position: fixed;
@@ -43,15 +45,23 @@ const Controls = styled("div")`
 `;
 
 const Sidebar = styled("div")`
-  padding: 10px 0;
+  padding: 10px 0 0;
   border-right: 1px solid ${({ theme }) => theme.col.grayLight};
   display: flex;
   flex-direction: column;
   gap: 20px;
 `;
+const SidebarBottom = styled("div")`
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  justify-content: flex-end;
+`;
 
 const Header = styled("div")`
   display: flex;
+  gap: 15px;
   justify-content: space-between;
 `;
 
@@ -85,11 +95,18 @@ export interface EntityIdsStatus {
 }
 
 export const History = () => {
-  const entityIds = useSelector<StateT, string[]>(
+  const { t } = useTranslation();
+  const entityIds = useSelector<StateT, EntityId[]>(
     (state) => state.entityHistory.entityIds,
   );
-  const currentEntityId = useSelector<StateT, string | null>(
+  const currentEntityId = useSelector<StateT, EntityId | null>(
     (state) => state.entityHistory.currentEntityId,
+  );
+  const currentEntityInfos = useSelector<StateT, EntityInfo[]>(
+    (state) => state.entityHistory.currentEntityInfos,
+  );
+  const resultUrls = useSelector<StateT, string[]>(
+    (state) => state.entityHistory.resultUrls,
   );
 
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
@@ -117,7 +134,7 @@ export const History = () => {
     setEntityIdsStatus,
     currentEntityStatus,
     setCurrentEntityStatus,
-  } = useEntityStatus({ currentEntityId });
+  } = useEntityStatus({ currentEntityId: currentEntityId?.id || null });
 
   const onLoadFromFile = useCallback(
     ({
@@ -128,8 +145,10 @@ export const History = () => {
     }: LoadingPayload) => {
       updateHistorySession({
         label,
-        entityIds: loadedEntityIds,
-        entityId: loadedEntityIds[0],
+        // Here, we're assuming that ids from the uploaded file have a default id kind
+        // TODO: possibly allow users to specifiy the id kind from the file they're uploading
+        entityIds: loadedEntityIds.map((id) => ({ id, kind: DEFAULT_ID_KIND })),
+        entityId: { id: loadedEntityIds[0], kind: DEFAULT_ID_KIND },
       });
       setEntityIdsStatus(loadedEntityStatus);
       setEntityStatusOptions(loadedEntityStatusOptions);
@@ -164,6 +183,7 @@ export const History = () => {
                 <EntityHeader
                   currentEntityIndex={currentEntityIndex}
                   currentEntityId={currentEntityId}
+                  currentEntityInfos={currentEntityInfos}
                   status={currentEntityStatus}
                   setStatus={setCurrentEntityStatus}
                   entityStatusOptions={entityStatusOptions}
@@ -175,7 +195,6 @@ export const History = () => {
                   sourcesFilter={sourcesFilter}
                   setSourcesFilter={setSourcesFilter}
                 />
-                <DownloadEntityDataButton />
               </Controls>
             </Header>
             <Flex>
@@ -191,6 +210,15 @@ export const History = () => {
                   value={contentFilter}
                   onChange={setContentFilter}
                 />
+                <SidebarBottom>
+                  {resultUrls.length > 0 && (
+                    <DownloadResultsDropdownButton
+                      tiny
+                      resultUrls={resultUrls}
+                      tooltip={t("history.downloadEntityData")}
+                    />
+                  )}
+                </SidebarBottom>
               </Sidebar>
               <SxTimeline
                 detailLevel={detailLevel}
@@ -213,9 +241,19 @@ const useEntityStatus = ({
 }: {
   currentEntityId: string | null;
 }) => {
+  const { t } = useTranslation();
   const [entityStatusOptions, setEntityStatusOptions] = useState<
     SelectOptionT[]
-  >([]);
+  >([
+    {
+      label: t("history.options.check"),
+      value: t("history.options.check") as string,
+    },
+    {
+      label: t("history.options.noCheck"),
+      value: t("history.options.noCheck") as string,
+    },
+  ]);
 
   const [entityIdsStatus, setEntityIdsStatus] = useState<EntityIdsStatus>({});
   const setCurrentEntityStatus = useCallback(
@@ -246,18 +284,40 @@ const useEntityStatus = ({
 
 const useSourcesControl = () => {
   const [sourcesFilter, setSourcesFilter] = useState<SelectOptionT[]>([]);
-  const uniqueSources = useSelector<StateT, string[]>(
-    (state) => state.entityHistory.uniqueSources,
+
+  const sources = useSelector<StateT, HistorySources>(
+    (state) => state.entityHistory.defaultParams.sources,
+  );
+  const allSourcesOptions = useMemo(
+    () =>
+      sources.all.map((s) => ({
+        label: s.label,
+        value: s.label, // Gotta use label since the value in the entity CSV is the source label as well
+      })),
+    [sources.all],
+  );
+  const defaultSourcesOptions = useMemo(
+    () =>
+      sources.default.map((s) => ({
+        label: s.label,
+        value: s.label, // Gotta use label since the value in the entity CSV is the source label as well
+      })),
+    [sources.default],
   );
 
-  const defaultSources = useMemo(
-    () =>
-      uniqueSources.map((s) => ({
-        label: s,
-        value: s,
-      })),
-    [uniqueSources],
-  );
+  // TODO: Figure out whether we still need the current entity unique sources
+  //
+  // const currentEntityUniqueSources = useSelector<StateT, string[]>(
+  //   (state) => state.entityHistory.currentEntityUniqueSources,
+  // );
+  // const currentEntitySourcesOptions = useMemo(
+  //   () =>
+  //     currentEntityUniqueSources.map((s) => ({
+  //       label: s,
+  //       value: s,
+  //     })),
+  //   [currentEntityUniqueSources],
+  // );
 
   const sourcesSet = useMemo(
     () => new Set(sourcesFilter.map((o) => o.value as string)),
@@ -266,13 +326,15 @@ const useSourcesControl = () => {
 
   useEffect(
     function takeDefaultIfEmpty() {
-      setSourcesFilter((curr) => (curr.length === 0 ? defaultSources : curr));
+      setSourcesFilter((curr) =>
+        curr.length === 0 ? defaultSourcesOptions : curr,
+      );
     },
-    [defaultSources],
+    [defaultSourcesOptions],
   );
 
   return {
-    options: defaultSources,
+    options: allSourcesOptions,
     sourcesSet,
     sourcesFilter,
     setSourcesFilter,

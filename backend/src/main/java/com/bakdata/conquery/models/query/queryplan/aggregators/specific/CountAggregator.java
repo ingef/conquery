@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -57,17 +58,17 @@ public class CountAggregator extends ColumnAggregator<Long> {
 	}
 
 	@Override
-	public final Column[] getRequiredColumns() {
-		if (column == null){
-			return new Column[0];
+	public final List<Column> getRequiredColumns() {
+		if (column == null) {
+			return List.of();
 		}
 
-		return new Column[] { column };
+		return List.of(column);
 	}
 
 	@Override
 	public final void collectRequiredTables(Set<Table> out) {
-		if (column == null){
+		if (column == null) {
 			return;
 		}
 		out.add(column.getTable());

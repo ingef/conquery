@@ -1,6 +1,6 @@
 import { TFunction } from "react-i18next";
 
-import { isEmpty } from "../common/helpers";
+import { isEmpty } from "../common/helpers/commonHelper";
 
 import { CheckboxField, Field, FormField } from "./config-types";
 

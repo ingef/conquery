@@ -9,8 +9,12 @@ import type {
   GetConceptsResponseT,
   GetConceptResponseT,
 } from "../api/types";
-import { ErrorObject, successPayload, errorPayload } from "../common/actions";
-import { isEmpty } from "../common/helpers";
+import {
+  ErrorObject,
+  successPayload,
+  errorPayload,
+} from "../common/actions/genericActions";
+import { isEmpty } from "../common/helpers/commonHelper";
 import { Sema } from "../common/helpers/rateLimitHelper";
 import { getDatasetId } from "../dataset/globalDatasetHelper";
 
