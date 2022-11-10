@@ -199,7 +199,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
 		setLocation(session);
-		log.error("cought exception", cause);
+		log.error("Exception caught", cause);
 	}
 
 	@Override
@@ -207,8 +207,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, validator);
-		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
+		context = new NetworkMessageContext.ShardNodeNetworkContext(this, networkSession, workers, config, validator);
+		log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode
 		context.send(new AddShardNode());
