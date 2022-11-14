@@ -1,19 +1,26 @@
 import styled from "@emotion/styled";
-import { FormEvent, useState, useEffect } from "react";
+import { FormEvent, useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import type { ConceptIdT, SelectOptionT } from "../api/types";
+import type {
+  ConceptIdT,
+  ConceptT,
+  FilterT,
+  PostConceptResolveResponseT,
+  SelectOptionT,
+} from "../api/types";
 import type { StateT } from "../app/reducers";
 import PrimaryButton from "../button/PrimaryButton";
 import type { TreesT } from "../concept-trees/reducer";
 import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
+import { nodeIsElement } from "../model/node";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
-import { useSelectConceptRootNodeAndResolveCodes } from "./actions";
+import { useResolveCodes } from "./actions";
 import { UploadConceptListModalStateT } from "./reducer";
 
 const Root = styled("div")`
@@ -53,39 +60,114 @@ const SxPrimaryButton = styled(PrimaryButton)`
   margin-left: 15px;
   flex-shrink: 0;
 `;
+const SxInputSelect = styled(InputSelect)`
+  width: 500px;
+`;
 
-const selectUnresolvedItemsCount = (state: StateT) => {
-  const { resolved } = state.uploadConceptListModal;
+const useUnresolvedItemsCount = () => {
+  const resolved = useSelector<StateT, PostConceptResolveResponseT>(
+    (state) => state.uploadConceptListModal.resolved,
+  );
 
-  return resolved && resolved.unknownCodes && resolved.unknownCodes.length
-    ? resolved.unknownCodes.length
-    : 0;
+  return useMemo(
+    () =>
+      resolved && resolved.unknownCodes && resolved.unknownCodes.length > 0
+        ? resolved.unknownCodes.length
+        : 0,
+    [resolved],
+  );
 };
 
-const selectResolvedItemsCount = (state: StateT) => {
-  const { resolved } = state.uploadConceptListModal;
+const useResolvedItemsCount = () => {
+  const resolved = useSelector<StateT, PostConceptResolveResponseT>(
+    (state) => state.uploadConceptListModal.resolved,
+  );
 
-  return resolved &&
-    resolved.resolvedConcepts &&
-    resolved.resolvedConcepts.length
-    ? resolved.resolvedConcepts.length
-    : 0;
+  return useMemo(
+    () =>
+      resolved && resolved.resolvedConcepts && resolved.resolvedConcepts.length
+        ? resolved.resolvedConcepts.length
+        : 0,
+    [resolved],
+  );
 };
 
-const selectAvailableConceptRootNodes = (state: StateT): SelectOptionT[] => {
-  const { trees } = state.conceptTrees;
+const getCombinedLabel = (concept: ConceptT, filter: FilterT) => {
+  if (concept.label === filter.label) return concept.label;
 
-  if (!trees) return [];
+  return `${concept.label} – ${filter.label}`;
+};
 
-  return Object.entries(trees)
-    .map(([treeId, concept]) => ({ value: treeId, concept }))
-    .filter(({ concept }) => concept.codeListResolvable)
-    .sort((a, b) =>
-      a.concept.label
-        .toLowerCase()
-        .localeCompare(b.concept.label.toLowerCase()),
-    )
-    .map(({ value, concept }) => ({ value, label: concept.label }));
+const useDropdownOptions = () => {
+  const trees = useSelector((state: StateT) => state.conceptTrees.trees);
+
+  const conceptRootNodes = useMemo(
+    () =>
+      Object.entries(trees)
+        .filter(([, concept]) => concept.codeListResolvable)
+        .map(([treeId, concept]) => ({
+          id: treeId,
+          type: "concept" as const,
+          concept,
+        })),
+    [trees],
+  );
+
+  const allBigMultiSelectFilters = useMemo(() => {
+    return Object.values(trees)
+      .filter(nodeIsElement)
+      .flatMap(
+        (concept) =>
+          concept.tables
+            ?.flatMap((t) => t.filters)
+            .filter(
+              (filter) =>
+                filter.type === "BIG_MULTI_SELECT" && filter.allowDropFile,
+            )
+            .map((filter) => {
+              return {
+                id: filter.id,
+                type: "filter" as const,
+                concept,
+                filter,
+              };
+            }) || [],
+      );
+  }, [trees]);
+
+  const allOptions = useMemo(
+    () => [...conceptRootNodes, ...allBigMultiSelectFilters],
+    [conceptRootNodes, allBigMultiSelectFilters],
+  );
+
+  const selectOptionsDetails = useMemo(
+    () => Object.fromEntries(allOptions.map((opt) => [opt.id, opt])),
+    [allOptions],
+  );
+
+  const selectOptions = useMemo(
+    () =>
+      allOptions
+        .map((opt) => {
+          if (opt.type === "concept") {
+            return { value: opt.id, label: opt.concept.label };
+          } else {
+            return {
+              value: opt.id,
+              label: getCombinedLabel(opt.concept, opt.filter),
+            };
+          }
+        })
+        .sort((a, b) =>
+          a.label.toLowerCase().localeCompare(b.label.toLowerCase()),
+        ),
+    [allOptions],
+  );
+
+  return {
+    selectOptions,
+    selectOptionsDetails, // Used to look up details about the selected option
+  };
 };
 
 interface PropsT {
@@ -99,29 +181,20 @@ interface PropsT {
 
 const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
   const { t } = useTranslation();
-  const {
-    filename,
-    conceptCodesFromFile,
-    selectedConceptRootNode,
-    loading,
-    resolved,
-    error,
-  } = useSelector<StateT, UploadConceptListModalStateT>(
-    (state) => state.uploadConceptListModal,
-  );
+  const { filename, conceptCodesFromFile, loading, resolved, error } =
+    useSelector<StateT, UploadConceptListModalStateT>(
+      (state) => state.uploadConceptListModal,
+    );
 
-  const availableConceptRootNodes = useSelector<StateT, SelectOptionT[]>(
-    (state) => selectAvailableConceptRootNodes(state),
-  );
+  const { selectOptions, selectOptionsDetails } = useDropdownOptions();
+
+  const [selectedValue, setSelectedValue] = useState<string | null>(null);
+
   const rootConcepts = useSelector<StateT, TreesT>(
     (state) => state.conceptTrees.trees,
   );
-  const resolvedItemsCount = useSelector<StateT, number>((state) =>
-    selectResolvedItemsCount(state),
-  );
-  const unresolvedItemsCount = useSelector<StateT, number>((state) =>
-    selectUnresolvedItemsCount(state),
-  );
+  const resolvedItemsCount = useResolvedItemsCount();
+  const unresolvedItemsCount = useUnresolvedItemsCount();
 
   const [label, setLabel] = useState<string>(filename || "");
 
@@ -131,8 +204,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
     }
   }, [filename]);
 
-  const selectConceptRootNodeAndResolveCode =
-    useSelectConceptRootNodeAndResolveCodes();
+  const resolveCodes = useResolveCodes();
 
   if (!conceptCodesFromFile || conceptCodesFromFile.length === 0) {
     onClose();
@@ -150,6 +222,26 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
     onClose();
   };
 
+  const onChange = useCallback(
+    (opt: SelectOptionT | null) => {
+      if (!opt) {
+        setSelectedValue(null);
+        return;
+      }
+
+      setSelectedValue(opt.value as string);
+
+      const optionDetails = selectOptionsDetails[opt.value];
+
+      if (optionDetails.type === "concept") {
+        resolveCodes(opt.value as string, conceptCodesFromFile);
+      } else {
+        console.log(optionDetails);
+      }
+    },
+    [conceptCodesFromFile, resolveCodes, selectOptionsDetails],
+  );
+
   return (
     <Modal
       closeIcon
@@ -157,20 +249,13 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
       headline={t("uploadConceptListModal.headline")}
     >
       <Root>
-        <InputSelect
+        <SxInputSelect
           label={t("uploadConceptListModal.selectConceptRootNode")}
           value={
-            availableConceptRootNodes.find(
-              (node) => node.value === selectedConceptRootNode,
-            ) || null
+            selectOptions.find(({ value }) => value === selectedValue) || null
           }
-          onChange={(value) =>
-            selectConceptRootNodeAndResolveCode(
-              (value?.value as string) || null,
-              conceptCodesFromFile,
-            )
-          }
-          options={availableConceptRootNodes}
+          onChange={onChange}
+          options={selectOptions}
         />
         {!!resolved && !hasResolvedItems && !hasUnresolvedItems && (
           <Section>

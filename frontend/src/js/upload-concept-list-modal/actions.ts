@@ -1,15 +1,14 @@
+import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
 import { usePostConceptsListToResolve } from "../api/api";
-import type { ConceptIdT, PostConceptResolveResponseT } from "../api/types";
+import type { PostConceptResolveResponseT } from "../api/types";
 import { errorPayload, ErrorObject } from "../common/actions/genericActions";
-import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 
 export type UploadConceptListModalActions = ActionType<
   | typeof resolveConcepts
-  | typeof selectConceptRootNode
   | typeof initUploadConceptListModal
   | typeof resetUploadConceptListModal
 >;
@@ -26,33 +25,31 @@ export const resolveConcepts = createAsyncAction(
   ErrorObject
 >();
 
-export const selectConceptRootNode = createAction(
-  "upload-concept-list-modal/SELECT_CONCEPT_ROOT_NODE",
-)<{ conceptId: ConceptIdT }>();
-
-export const useSelectConceptRootNodeAndResolveCodes = () => {
+export const useResolveCodes = () => {
   const dispatch = useDispatch();
   const postConceptsListToResolve = usePostConceptsListToResolve();
   const datasetId = useDatasetId();
 
-  return (treeId: string | null, conceptCodes: string[]) => {
-    if (exists(treeId)) {
-      dispatch(selectConceptRootNode({ conceptId: treeId }));
-    } else {
-      return dispatch(selectConceptRootNode({ conceptId: "" }));
-    }
+  return useCallback(
+    async (treeId: string, conceptCodes: string[]) => {
+      if (!datasetId) {
+        return;
+      }
 
-    if (!datasetId) {
-      return;
-    }
-
-    dispatch(resolveConcepts.request());
-
-    return postConceptsListToResolve(datasetId, treeId, conceptCodes).then(
-      (r) => dispatch(resolveConcepts.success({ data: r })),
-      (e) => dispatch(resolveConcepts.failure(errorPayload(e, {}))),
-    );
-  };
+      dispatch(resolveConcepts.request());
+      try {
+        const results = await postConceptsListToResolve(
+          datasetId,
+          treeId,
+          conceptCodes,
+        );
+        dispatch(resolveConcepts.success({ data: results }));
+      } catch (e) {
+        dispatch(resolveConcepts.failure(errorPayload(e as Error, {})));
+      }
+    },
+    [datasetId, dispatch, postConceptsListToResolve],
+  );
 };
 
 export const initUploadConceptListModal = createAction(

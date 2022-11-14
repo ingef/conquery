@@ -8,13 +8,11 @@ import {
   initUploadConceptListModal,
   resetUploadConceptListModal,
   resolveConcepts,
-  selectConceptRootNode,
 } from "./actions";
 
 export type UploadConceptListModalStateT = {
   filename: string | null;
   conceptCodesFromFile: string[];
-  selectedConceptRootNode: string;
   loading: boolean;
   resolved: PostConceptResolveResponseT;
   error: Error | null;
@@ -23,7 +21,6 @@ export type UploadConceptListModalStateT = {
 const initialState: UploadConceptListModalStateT = {
   filename: null,
   conceptCodesFromFile: [],
-  selectedConceptRootNode: "",
   loading: false,
   resolved: {},
   error: null,
@@ -41,13 +38,6 @@ const uploadConcepts = (
         ...state,
         filename: stripFilename(filename),
         conceptCodesFromFile: rows,
-        selectedConceptRootNode: null,
-        resolved: null,
-      };
-    case getType(selectConceptRootNode):
-      return {
-        ...state,
-        selectedConceptRootNode: action.payload.conceptId,
         resolved: null,
       };
     case getType(resolveConcepts.request):
