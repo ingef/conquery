@@ -34,6 +34,8 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 	@Override
 	public void nextBlock(Bucket bucket) {
 		store = (StringStore) bucket.getStore(getColumn());
+		super.nextBlock(bucket);
+
 	}
 
 	@Override
