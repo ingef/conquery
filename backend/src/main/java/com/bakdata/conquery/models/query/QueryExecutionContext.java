@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
@@ -41,7 +40,7 @@ public class QueryExecutionContext {
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 
 
-	private final com.google.common.collect.Table<Bucket, FilterValue, boolean[]> hitCache = HashBasedTable.create();
+	private final com.google.common.collect.Table<Bucket, Object /* this should be FilterValue */, boolean[]> hitCache = HashBasedTable.create();
 
 
 	/**

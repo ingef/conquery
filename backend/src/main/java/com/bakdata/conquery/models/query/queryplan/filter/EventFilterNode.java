@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan.filter;
 
-import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -26,7 +25,7 @@ public abstract class EventFilterNode<FILTER_VALUE> extends FilterNode<FILTER_VA
 				hits[event] = checkEvent(bucket, event);
 			}
 
-			context.getHitCache().put(bucket, (FilterValue) getFilterValue(), hits);
+			context.getHitCache().put(bucket, getFilterValue(), hits);
 		}
 		else {
 			hits = context.getHitCache().get(bucket, getFilterValue());
