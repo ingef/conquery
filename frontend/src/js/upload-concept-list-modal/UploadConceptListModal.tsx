@@ -3,16 +3,23 @@ import { FormEvent, useState, useEffect, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
+import {
+  usePostConceptsListToResolve,
+  usePostFilterValuesResolve,
+} from "../api/api";
 import type {
+  ConceptElementT,
   ConceptIdT,
   ConceptT,
   FilterT,
   PostConceptResolveResponseT,
+  PostFilterResolveResponseT,
   SelectOptionT,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import PrimaryButton from "../button/PrimaryButton";
 import type { TreesT } from "../concept-trees/reducer";
+import { useDatasetId } from "../dataset/selectors";
 import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import { nodeIsElement } from "../model/node";
@@ -20,7 +27,6 @@ import ScrollableList from "../scrollable-list/ScrollableList";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
-import { useResolveCodes } from "./actions";
 import { UploadConceptListModalStateT } from "./reducer";
 
 const Root = styled("div")`
@@ -64,32 +70,38 @@ const SxInputSelect = styled(InputSelect)`
   width: 500px;
 `;
 
-const useUnresolvedItemsCount = () => {
-  const resolved = useSelector<StateT, PostConceptResolveResponseT>(
-    (state) => state.uploadConceptListModal.resolved,
+const useUnresolvedItemsCount = (
+  resolvedConcepts: PostConceptResolveResponseT | null,
+  resolvedFilters: PostFilterResolveResponseT | null,
+) => {
+  const conceptsCount = useMemo(
+    () => resolvedConcepts?.unknownCodes?.length || 0,
+    [resolvedConcepts],
   );
 
-  return useMemo(
-    () =>
-      resolved && resolved.unknownCodes && resolved.unknownCodes.length > 0
-        ? resolved.unknownCodes.length
-        : 0,
-    [resolved],
+  const filtersCount = useMemo(
+    () => resolvedFilters?.unknownCodes?.length || 0,
+    [resolvedFilters],
   );
+
+  return conceptsCount + filtersCount;
 };
 
-const useResolvedItemsCount = () => {
-  const resolved = useSelector<StateT, PostConceptResolveResponseT>(
-    (state) => state.uploadConceptListModal.resolved,
+const useResolvedItemsCount = (
+  resolvedConcepts: PostConceptResolveResponseT | null,
+  resolvedFilters: PostFilterResolveResponseT | null,
+) => {
+  const conceptsCount = useMemo(
+    () => resolvedConcepts?.resolvedConcepts?.length || 0,
+    [resolvedConcepts],
   );
 
-  return useMemo(
-    () =>
-      resolved && resolved.resolvedConcepts && resolved.resolvedConcepts.length
-        ? resolved.resolvedConcepts.length
-        : 0,
-    [resolved],
+  const filtersCount = useMemo(
+    () => resolvedFilters?.resolvedFilter?.value?.length || 0,
+    [resolvedFilters],
   );
+
+  return conceptsCount + filtersCount;
 };
 
 const getCombinedLabel = (concept: ConceptT, filter: FilterT) => {
@@ -114,24 +126,29 @@ const useDropdownOptions = () => {
   );
 
   const allBigMultiSelectFilters = useMemo(() => {
-    return Object.values(trees)
-      .filter(nodeIsElement)
+    return Object.entries(trees)
+      .filter((entry): entry is [id: string, concept: ConceptElementT] =>
+        nodeIsElement(entry[1]),
+      )
       .flatMap(
-        (concept) =>
-          concept.tables
-            ?.flatMap((t) => t.filters)
-            .filter(
-              (filter) =>
-                filter.type === "BIG_MULTI_SELECT" && filter.allowDropFile,
-            )
-            .map((filter) => {
-              return {
-                id: filter.id,
-                type: "filter" as const,
-                concept,
-                filter,
-              };
-            }) || [],
+        ([conceptId, concept]) =>
+          concept.tables?.flatMap((table) =>
+            table.filters
+              .filter(
+                (filter) =>
+                  filter.type === "BIG_MULTI_SELECT" && filter.allowDropFile,
+              )
+              .map((filter) => {
+                return {
+                  id: filter.id,
+                  type: "filter" as const,
+                  conceptId,
+                  concept,
+                  tableId: table.id,
+                  filter,
+                };
+              }),
+          ) || [],
       );
   }, [trees]);
 
@@ -170,6 +187,134 @@ const useDropdownOptions = () => {
   };
 };
 
+export const useResolveConcepts = () => {
+  const postConceptsListToResolve = usePostConceptsListToResolve();
+  const datasetId = useDatasetId();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [resolved, setResolved] = useState<PostConceptResolveResponseT | null>(
+    null,
+  );
+
+  const onResolve = useCallback(
+    async (treeId: string, conceptCodes: string[]) => {
+      if (!datasetId) {
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const results = await postConceptsListToResolve(
+          datasetId,
+          treeId,
+          conceptCodes,
+        );
+        setResolved(results);
+      } catch (e) {
+        setError(e as Error);
+      }
+      setLoading(false);
+    },
+    [datasetId, postConceptsListToResolve],
+  );
+
+  const onReset = useCallback(() => {
+    setResolved(null);
+    setError(null);
+  }, []);
+
+  return {
+    loading,
+    error,
+    resolved,
+    onResolve,
+    onReset,
+  };
+};
+
+const useResolveFilterValues = () => {
+  const datasetId = useDatasetId();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [resolved, setResolved] = useState<PostFilterResolveResponseT | null>(
+    null,
+  );
+  const postFilterValuesResolve = usePostFilterValuesResolve();
+
+  const onResolve = useCallback(
+    async (
+      conceptId: string,
+      tableId: string,
+      filterId: string,
+      values: string[],
+    ) => {
+      if (!datasetId) return;
+
+      setLoading(true);
+      try {
+        const results = await postFilterValuesResolve(
+          datasetId,
+          conceptId,
+          tableId,
+          filterId,
+          values,
+        );
+
+        setResolved(results);
+      } catch (e) {
+        setError(e as Error);
+      }
+      setLoading(false);
+    },
+    [datasetId, postFilterValuesResolve],
+  );
+
+  const onReset = useCallback(() => {
+    setResolved(null);
+    setError(null);
+  }, []);
+
+  return {
+    loading,
+    error,
+    resolved,
+    onResolve,
+    onReset,
+  };
+};
+
+const useResolveConceptsAndFilterValues = () => {
+  const {
+    resolved: resolvedConcepts,
+    loading: conceptsLoading,
+    error: conceptsError,
+    onResolve: onResolveConcepts,
+    onReset: onResetConcepts,
+  } = useResolveConcepts();
+  const {
+    resolved: resolvedFilters,
+    loading: filterLoading,
+    error: filterError,
+    onResolve: onResolveFilters,
+    onReset: onResetFilters,
+  } = useResolveFilterValues();
+
+  const onReset = useCallback(() => {
+    onResetConcepts();
+    onResetFilters();
+  }, [onResetConcepts, onResetFilters]);
+
+  return {
+    resolvedConcepts,
+    resolvedFilters,
+    loading: conceptsLoading || filterLoading,
+    error: conceptsError || filterError,
+    onResolveConcepts,
+    onResolveFilters,
+    onReset,
+  };
+};
+
 interface PropsT {
   onAccept: (
     label: string,
@@ -181,10 +326,10 @@ interface PropsT {
 
 const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
   const { t } = useTranslation();
-  const { filename, conceptCodesFromFile, loading, resolved, error } =
-    useSelector<StateT, UploadConceptListModalStateT>(
-      (state) => state.uploadConceptListModal,
-    );
+  const { filename, fileRows } = useSelector<
+    StateT,
+    UploadConceptListModalStateT
+  >((state) => state.uploadConceptListModal);
 
   const { selectOptions, selectOptionsDetails } = useDropdownOptions();
 
@@ -193,8 +338,28 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
   const rootConcepts = useSelector<StateT, TreesT>(
     (state) => state.conceptTrees.trees,
   );
-  const resolvedItemsCount = useResolvedItemsCount();
-  const unresolvedItemsCount = useUnresolvedItemsCount();
+
+  const {
+    resolvedConcepts,
+    resolvedFilters,
+    loading,
+    error,
+    onResolveConcepts,
+    onResolveFilters,
+    onReset,
+  } = useResolveConceptsAndFilterValues();
+
+  const resolvedItemsCount = useResolvedItemsCount(
+    resolvedConcepts,
+    resolvedFilters,
+  );
+  const unresolvedItemsCount = useUnresolvedItemsCount(
+    resolvedConcepts,
+    resolvedFilters,
+  );
+
+  const hasUnresolvedItems = unresolvedItemsCount > 0;
+  const hasResolvedItems = resolvedItemsCount > 0;
 
   const [label, setLabel] = useState<string>(filename || "");
 
@@ -204,23 +369,21 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
     }
   }, [filename]);
 
-  const resolveCodes = useResolveCodes();
-
-  if (!conceptCodesFromFile || conceptCodesFromFile.length === 0) {
+  if (!fileRows || fileRows.length === 0) {
     onClose();
   }
 
-  const hasUnresolvedItems = unresolvedItemsCount > 0;
-  const hasResolvedItems = resolvedItemsCount > 0;
+  const onSubmit = useCallback(
+    (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (label && resolved.resolvedConcepts) {
-      onAccept(label, rootConcepts, resolved.resolvedConcepts);
-    }
-    onClose();
-  };
+      if (label && resolvedConcepts?.resolvedConcepts) {
+        onAccept(label, rootConcepts, resolvedConcepts.resolvedConcepts);
+      }
+      onClose();
+    },
+    [label, onAccept, onClose, resolvedConcepts, rootConcepts],
+  );
 
   const onChange = useCallback(
     (opt: SelectOptionT | null) => {
@@ -229,17 +392,32 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
         return;
       }
 
-      setSelectedValue(opt.value as string);
+      // Either a conceptId or a filterId
+      const id = opt.value as string;
 
-      const optionDetails = selectOptionsDetails[opt.value];
+      setSelectedValue(id);
+      onReset();
+
+      const optionDetails = selectOptionsDetails[id];
 
       if (optionDetails.type === "concept") {
-        resolveCodes(opt.value as string, conceptCodesFromFile);
+        onResolveConcepts(id, fileRows);
       } else {
-        console.log(optionDetails);
+        onResolveFilters(
+          optionDetails.conceptId,
+          optionDetails.tableId,
+          id,
+          fileRows,
+        );
       }
     },
-    [conceptCodesFromFile, resolveCodes, selectOptionsDetails],
+    [
+      onReset,
+      selectOptionsDetails,
+      onResolveConcepts,
+      fileRows,
+      onResolveFilters,
+    ],
   );
 
   return (
@@ -257,14 +435,17 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
           onChange={onChange}
           options={selectOptions}
         />
-        {!!resolved && !hasResolvedItems && !hasUnresolvedItems && (
-          <Section>
-            <Msg>{t("uploadConceptListModal.nothingResolved")}</Msg>
-          </Section>
-        )}
+        {(!!resolvedFilters || !!resolvedConcepts) &&
+          !hasResolvedItems &&
+          !hasUnresolvedItems && (
+            <Section>
+              <Msg>{t("uploadConceptListModal.nothingResolved")}</Msg>
+            </Section>
+          )}
         {(!!error ||
           !!loading ||
-          (!!resolved && (hasResolvedItems || hasUnresolvedItems))) && (
+          ((!!resolvedConcepts || !!resolvedFilters) &&
+            (hasResolvedItems || hasUnresolvedItems))) && (
           <Section>
             {error && (
               <p>
@@ -273,7 +454,7 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
               </p>
             )}
             {loading && <CenteredIcon icon="spinner" />}
-            {resolved && (
+            {(!!resolvedConcepts || !!resolvedFilters) && (
               <>
                 {hasResolvedItems && (
                   <form onSubmit={onSubmit}>
@@ -312,7 +493,11 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
                     <ScrollableList
                       maxVisibleItems={3}
                       fullWidth
-                      items={resolved.unknownCodes || []}
+                      items={
+                        resolvedFilters?.unknownCodes ||
+                        resolvedConcepts?.unknownCodes ||
+                        []
+                      }
                     />
                   </div>
                 )}
