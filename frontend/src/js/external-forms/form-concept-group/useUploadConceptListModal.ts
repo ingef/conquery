@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { SelectOptionT } from "../../api/types";
 import { StateT } from "../../app/reducers";
 import { getUniqueFileRows } from "../../common/helpers/fileHelper";
 import { TreesT } from "../../concept-trees/reducer";
@@ -44,16 +45,15 @@ export const useUploadConceptListModal = ({
 
     return dispatch(initUploadConceptListModal({ rows, filename: file.name }));
   };
-  const resetModal = () => dispatch(resetUploadConceptListModal());
 
   const [isOpen, setIsOpen] = useState(false);
   const [modalContext, setModalContext] =
     useState<UploadConceptListModalContext | null>(null);
 
-  const onClose = () => {
-    setIsOpen(false); // For the Modal "container"
-    resetModal(); // For the common UploadConceptListModal
-  };
+  const onClose = useCallback(() => {
+    setIsOpen(false);
+    dispatch(resetUploadConceptListModal());
+  }, [dispatch]);
 
   const onDropFile = async (
     file: File,
@@ -69,7 +69,15 @@ export const useUploadConceptListModal = ({
     setIsOpen(true); // For the Modal "container"
   };
 
-  const onAcceptConcepts = (label: string, resolvedConcepts: string[]) => {
+  const onAcceptConceptsOrFilter = (
+    label: string,
+    resolvedConcepts: string[],
+    resolvedFilter?: {
+      tableId: string;
+      filterId: string;
+      value: SelectOptionT[];
+    },
+  ) => {
     if (!modalContext) return;
     const { valueIdx, conceptIdx } = modalContext;
 
@@ -87,22 +95,18 @@ export const useUploadConceptListModal = ({
 
         valueIdx,
         conceptIdx,
+
+        resolvedFilter,
       ),
     );
 
     onClose();
   };
 
-  const onAcceptFilters = () => {
-    // TODO: IMPLMENENT
-    console.log("FILTERS");
-  };
-
   return {
     isOpen,
     onClose,
     onDropFile,
-    onAcceptConcepts,
-    onAcceptFilters,
+    onAcceptConceptsOrFilter,
   };
 };

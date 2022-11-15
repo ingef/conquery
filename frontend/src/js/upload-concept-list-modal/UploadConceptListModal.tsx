@@ -323,17 +323,17 @@ const useResolveConceptsAndFilterValues = () => {
 
 const UploadConceptListModal = ({
   onClose,
-  onAcceptConcepts,
-  onAcceptFilters,
+  onAcceptConceptsOrFilter,
 }: {
   onClose: () => void;
-  onAcceptConcepts: (label: string, resolvedConcepts: ConceptIdT[]) => void;
-  onAcceptFilters: (
+  onAcceptConceptsOrFilter: (
     label: string,
     resolvedConcepts: ConceptIdT[],
-    tableId: string,
-    filterId: string,
-    resolvedFilterValue: SelectOptionT[],
+    resolvedFilter?: {
+      tableId: string;
+      filterId: string;
+      value: SelectOptionT[];
+    },
   ) => void;
 }) => {
   const { t } = useTranslation();
@@ -386,7 +386,7 @@ const UploadConceptListModal = ({
 
       // MAYBE ACCEPT CONCEPTS
       if (label && resolvedConcepts?.resolvedConcepts) {
-        onAcceptConcepts(label, resolvedConcepts.resolvedConcepts);
+        onAcceptConceptsOrFilter(label, resolvedConcepts.resolvedConcepts);
         onClose();
         return;
       }
@@ -401,13 +401,11 @@ const UploadConceptListModal = ({
         resolvedFilters?.resolvedFilter &&
         optionDetails.type === "filter"
       ) {
-        onAcceptFilters(
-          label,
-          [optionDetails.conceptId],
-          optionDetails.tableId,
-          optionDetails.id,
-          resolvedFilters.resolvedFilter.value,
-        );
+        onAcceptConceptsOrFilter(label, [optionDetails.conceptId], {
+          tableId: optionDetails.tableId,
+          filterId: optionDetails.id,
+          value: resolvedFilters.resolvedFilter.value,
+        });
         onClose();
       }
     },
@@ -418,8 +416,7 @@ const UploadConceptListModal = ({
       resolvedConcepts,
       resolvedFilters,
       onClose,
-      onAcceptConcepts,
-      onAcceptFilters,
+      onAcceptConceptsOrFilter,
     ],
   );
 

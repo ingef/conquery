@@ -16,10 +16,7 @@ import {
   queryGroupModalSetDate,
 } from "../query-group-modal/actions";
 import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
-import {
-  acceptUploadedConcepts,
-  acceptUploadedFilters,
-} from "../query-upload-concept-list-modal/actions";
+import { acceptUploadedConceptsOrFilter } from "../query-upload-concept-list-modal/actions";
 import { isMovedObject } from "../ui-components/Dropzone";
 
 import {
@@ -631,14 +628,15 @@ const createQueryNodeFromConceptListUploadResult = (
     : null;
 };
 
-const insertUploadedConceptList = (
+const insertUploadedConceptsOrFilter = (
   state: StandardQueryStateT,
   {
     label,
     rootConcepts,
     resolvedConcepts,
     andIdx,
-  }: ActionType<typeof acceptUploadedConcepts>["payload"],
+    resolvedFilter,
+  }: ActionType<typeof acceptUploadedConceptsOrFilter>["payload"],
 ) => {
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
@@ -648,43 +646,17 @@ const insertUploadedConceptList = (
 
   if (!queryElement) return state;
 
-  return exists(andIdx)
-    ? onDropOrNode(state, {
-        andIdx,
-        item: queryElement,
-      })
-    : onDropAndNode(state, {
-        item: queryElement,
-      });
-};
+  if (resolvedFilter) {
+    const table = queryElement.tables.find(
+      (t) => t.id === resolvedFilter.tableId,
+    );
+    const filter = table?.filters.find((f) => f.id === resolvedFilter.filterId);
 
-const insertUploadedConceptWithFilters = (
-  state: StandardQueryStateT,
-  {
-    label,
-    rootConcepts,
-    resolvedConcepts,
-    andIdx,
-    tableId,
-    filterId,
-    resolvedFilterValue,
-  }: ActionType<typeof acceptUploadedFilters>["payload"],
-) => {
-  const queryElement = createQueryNodeFromConceptListUploadResult(
-    label,
-    rootConcepts,
-    resolvedConcepts,
-  );
-
-  if (!queryElement) return state;
-
-  const table = queryElement.tables.find((t) => t.id === tableId);
-  const filter = table?.filters.find((f) => f.id === filterId);
-
-  if (!table || !filter) return state;
-
-  // Mutating is fine, because queryElement is a new object
-  filter.value = resolvedFilterValue;
+    if (table && filter) {
+      // Mutating is fine, because queryElement is a new object
+      filter.value = resolvedFilter.value;
+    }
+  }
 
   return exists(andIdx)
     ? onDropOrNode(state, {
@@ -821,10 +793,8 @@ const query = (
       return loadPreviousQuerySuccess(state, action);
     case getType(loadFilterSuggestionsSuccess):
       return onLoadFilterSuggestionsSuccess(state, action.payload);
-    case getType(acceptUploadedConcepts):
-      return insertUploadedConceptList(state, action.payload);
-    case getType(acceptUploadedFilters):
-      return insertUploadedConceptWithFilters(state, action.payload);
+    case getType(acceptUploadedConceptsOrFilter):
+      return insertUploadedConceptsOrFilter(state, action.payload);
     case getType(setDateColumn):
       return setNodeTableDateColumn(state, action.payload);
     default:

@@ -125,8 +125,7 @@ const FormConceptGroup = (props: Props) => {
   const {
     isOpen: isUploadConceptListModalOpen,
     onDropFile,
-    onAcceptConcepts: onAcceptUploadModalConcepts,
-    onAcceptFilters: onAcceptUploadModalFilters,
+    onAcceptConceptsOrFilter: onAcceptUploadModalConceptsOrFilter,
     onClose: onCloseUploadConceptListModal,
   } = useUploadConceptListModal({
     value: props.value,
@@ -343,8 +342,7 @@ const FormConceptGroup = (props: Props) => {
       )}
       {isUploadConceptListModalOpen && (
         <UploadConceptListModal
-          onAcceptConcepts={onAcceptUploadModalConcepts}
-          onAcceptFilters={onAcceptUploadModalFilters}
+          onAcceptConceptsOrFilter={onAcceptUploadModalConceptsOrFilter}
           onClose={onCloseUploadConceptListModal}
         />
       )}

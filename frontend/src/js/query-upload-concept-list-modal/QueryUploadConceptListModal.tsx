@@ -7,7 +7,7 @@ import { TreesT } from "../concept-trees/reducer";
 import UploadConceptListModal from "../upload-concept-list-modal/UploadConceptListModal";
 import { resetUploadConceptListModal } from "../upload-concept-list-modal/actions";
 
-import { acceptUploadedConcepts, acceptUploadedFilters } from "./actions";
+import { acceptUploadedConceptsOrFilter } from "./actions";
 
 const QueryUploadConceptListModal = ({
   andIdx,
@@ -26,47 +26,32 @@ const QueryUploadConceptListModal = ({
     onClose();
   }, [dispatch, onClose]);
 
-  const onAcceptConcepts = useCallback(
-    (label: string, resolvedConcepts: string[]) =>
+  const onAcceptConceptsOrFilter = useCallback(
+    (
+      label: string,
+      resolvedConcepts: string[],
+      resolvedFilter?: {
+        tableId: string;
+        filterId: string;
+        value: SelectOptionT[];
+      },
+    ) =>
       dispatch(
-        acceptUploadedConcepts({
+        acceptUploadedConceptsOrFilter({
           andIdx,
           label,
           rootConcepts,
           resolvedConcepts,
+          resolvedFilter,
         }),
       ),
     [andIdx, dispatch, rootConcepts],
   );
 
-  const onAcceptFilters = useCallback(
-    (
-      label: string,
-      resolvedConcepts: string[],
-      tableId: string,
-      filterId: string,
-      resolvedFilterValue: SelectOptionT[],
-    ) => {
-      dispatch(
-        acceptUploadedFilters({
-          andIdx,
-          label,
-          rootConcepts,
-          resolvedConcepts,
-          tableId,
-          filterId,
-          resolvedFilterValue,
-        }),
-      );
-    },
-    [dispatch, andIdx, rootConcepts],
-  );
-
   return (
     <UploadConceptListModal
       onClose={onCloseModal}
-      onAcceptConcepts={onAcceptConcepts}
-      onAcceptFilters={onAcceptFilters}
+      onAcceptConceptsOrFilter={onAcceptConceptsOrFilter}
     />
   );
 };
