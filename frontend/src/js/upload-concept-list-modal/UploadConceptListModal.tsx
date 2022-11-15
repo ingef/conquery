@@ -328,7 +328,13 @@ const UploadConceptListModal = ({
 }: {
   onClose: () => void;
   onAcceptConcepts: (label: string, resolvedConcepts: ConceptIdT[]) => void;
-  onAcceptFilters: () => void;
+  onAcceptFilters: (
+    label: string,
+    resolvedConcepts: ConceptIdT[],
+    tableId: string,
+    filterId: string,
+    resolvedFilterValue: SelectOptionT[],
+  ) => void;
 }) => {
   const { t } = useTranslation();
   const { filename, fileRows } = useSelector<
@@ -378,18 +384,37 @@ const UploadConceptListModal = ({
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
 
+      // MAYBE ACCEPT CONCEPTS
       if (label && resolvedConcepts?.resolvedConcepts) {
         onAcceptConcepts(label, resolvedConcepts.resolvedConcepts);
+        onClose();
+        return;
       }
 
-      if (label && resolvedFilters?.resolvedFilter) {
-        onAcceptFilters();
-      }
+      // MAYBE ACCEPT FILTERS
+      if (!selectedValue) return;
 
-      onClose();
+      const optionDetails = selectOptionsDetails[selectedValue];
+
+      if (
+        label &&
+        resolvedFilters?.resolvedFilter &&
+        optionDetails.type === "filter"
+      ) {
+        onAcceptFilters(
+          label,
+          [optionDetails.conceptId],
+          optionDetails.tableId,
+          optionDetails.id,
+          resolvedFilters.resolvedFilter.value,
+        );
+        onClose();
+      }
     },
     [
       label,
+      selectOptionsDetails,
+      selectedValue,
       resolvedConcepts,
       resolvedFilters,
       onClose,

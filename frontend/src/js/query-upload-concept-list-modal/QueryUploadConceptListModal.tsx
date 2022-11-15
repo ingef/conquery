@@ -1,12 +1,13 @@
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { TreesT } from "../concept-trees/reducer";
 import UploadConceptListModal from "../upload-concept-list-modal/UploadConceptListModal";
 import { resetUploadConceptListModal } from "../upload-concept-list-modal/actions";
 
-import { acceptQueryUploadConceptListModal } from "./actions";
+import { acceptUploadedConcepts, acceptUploadedFilters } from "./actions";
 
 const QueryUploadConceptListModal = ({
   andIdx,
@@ -28,7 +29,7 @@ const QueryUploadConceptListModal = ({
   const onAcceptConcepts = useCallback(
     (label: string, resolvedConcepts: string[]) =>
       dispatch(
-        acceptQueryUploadConceptListModal({
+        acceptUploadedConcepts({
           andIdx,
           label,
           rootConcepts,
@@ -39,16 +40,26 @@ const QueryUploadConceptListModal = ({
   );
 
   const onAcceptFilters = useCallback(
-    () => console.log("FILTER"),
-    // dispatch(
-    //   acceptQueryUploadConceptListModal({
-    //     andIdx,
-    //     label,
-    //     rootConcepts,
-    //     resolvedConcepts,
-    //   }),
-    // ),
-    [],
+    (
+      label: string,
+      resolvedConcepts: string[],
+      tableId: string,
+      filterId: string,
+      resolvedFilterValue: SelectOptionT[],
+    ) => {
+      dispatch(
+        acceptUploadedFilters({
+          andIdx,
+          label,
+          rootConcepts,
+          resolvedConcepts,
+          tableId,
+          filterId,
+          resolvedFilterValue,
+        }),
+      );
+    },
+    [dispatch, andIdx, rootConcepts],
   );
 
   return (

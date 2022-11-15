@@ -16,7 +16,10 @@ import {
   queryGroupModalSetDate,
 } from "../query-group-modal/actions";
 import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
-import { acceptQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
+import {
+  acceptUploadedConcepts,
+  acceptUploadedFilters,
+} from "../query-upload-concept-list-modal/actions";
 import { isMovedObject } from "../ui-components/Dropzone";
 
 import {
@@ -635,7 +638,7 @@ const insertUploadedConceptList = (
     rootConcepts,
     resolvedConcepts,
     andIdx,
-  }: ActionType<typeof acceptQueryUploadConceptListModal>["payload"],
+  }: ActionType<typeof acceptUploadedConcepts>["payload"],
 ) => {
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
@@ -644,6 +647,44 @@ const insertUploadedConceptList = (
   );
 
   if (!queryElement) return state;
+
+  return exists(andIdx)
+    ? onDropOrNode(state, {
+        andIdx,
+        item: queryElement,
+      })
+    : onDropAndNode(state, {
+        item: queryElement,
+      });
+};
+
+const insertUploadedConceptWithFilters = (
+  state: StandardQueryStateT,
+  {
+    label,
+    rootConcepts,
+    resolvedConcepts,
+    andIdx,
+    tableId,
+    filterId,
+    resolvedFilterValue,
+  }: ActionType<typeof acceptUploadedFilters>["payload"],
+) => {
+  const queryElement = createQueryNodeFromConceptListUploadResult(
+    label,
+    rootConcepts,
+    resolvedConcepts,
+  );
+
+  if (!queryElement) return state;
+
+  const table = queryElement.tables.find((t) => t.id === tableId);
+  const filter = table?.filters.find((f) => f.id === filterId);
+
+  if (!table || !filter) return state;
+
+  // Mutating is fine, because queryElement is a new object
+  filter.value = resolvedFilterValue;
 
   return exists(andIdx)
     ? onDropOrNode(state, {
@@ -780,8 +821,10 @@ const query = (
       return loadPreviousQuerySuccess(state, action);
     case getType(loadFilterSuggestionsSuccess):
       return onLoadFilterSuggestionsSuccess(state, action.payload);
-    case getType(acceptQueryUploadConceptListModal):
+    case getType(acceptUploadedConcepts):
       return insertUploadedConceptList(state, action.payload);
+    case getType(acceptUploadedFilters):
+      return insertUploadedConceptWithFilters(state, action.payload);
     case getType(setDateColumn):
       return setNodeTableDateColumn(state, action.payload);
     default:
