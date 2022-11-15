@@ -25,7 +25,7 @@ const QueryUploadConceptListModal = ({
     onClose();
   }, [dispatch, onClose]);
 
-  const onAccept = useCallback(
+  const onAcceptConcepts = useCallback(
     (label: string, resolvedConcepts: string[]) =>
       dispatch(
         acceptQueryUploadConceptListModal({
@@ -38,7 +38,26 @@ const QueryUploadConceptListModal = ({
     [andIdx, dispatch, rootConcepts],
   );
 
-  return <UploadConceptListModal onClose={onCloseModal} onAccept={onAccept} />;
+  const onAcceptFilters = useCallback(
+    () => console.log("FILTER"),
+    // dispatch(
+    //   acceptQueryUploadConceptListModal({
+    //     andIdx,
+    //     label,
+    //     rootConcepts,
+    //     resolvedConcepts,
+    //   }),
+    // ),
+    [],
+  );
+
+  return (
+    <UploadConceptListModal
+      onClose={onCloseModal}
+      onAcceptConcepts={onAcceptConcepts}
+      onAcceptFilters={onAcceptFilters}
+    />
+  );
 };
 
 export default QueryUploadConceptListModal;

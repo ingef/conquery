@@ -69,7 +69,7 @@ export const useUploadConceptListModal = ({
     setIsOpen(true); // For the Modal "container"
   };
 
-  const onAccept = (label: string, resolvedConcepts: string[]) => {
+  const onAcceptConcepts = (label: string, resolvedConcepts: string[]) => {
     if (!modalContext) return;
     const { valueIdx, conceptIdx } = modalContext;
 
@@ -93,10 +93,16 @@ export const useUploadConceptListModal = ({
     onClose();
   };
 
+  const onAcceptFilters = () => {
+    // TODO: IMPLMENENT
+    console.log("FILTERS");
+  };
+
   return {
     isOpen,
     onClose,
     onDropFile,
-    onAccept,
+    onAcceptConcepts,
+    onAcceptFilters,
   };
 };

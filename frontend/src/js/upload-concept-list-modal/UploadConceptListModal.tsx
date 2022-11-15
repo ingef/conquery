@@ -321,12 +321,15 @@ const useResolveConceptsAndFilterValues = () => {
   };
 };
 
-interface PropsT {
-  onAccept: (label: string, resolvedConcepts: ConceptIdT[]) => void;
+const UploadConceptListModal = ({
+  onClose,
+  onAcceptConcepts,
+  onAcceptFilters,
+}: {
   onClose: () => void;
-}
-
-const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
+  onAcceptConcepts: (label: string, resolvedConcepts: ConceptIdT[]) => void;
+  onAcceptFilters: () => void;
+}) => {
   const { t } = useTranslation();
   const { filename, fileRows } = useSelector<
     StateT,
@@ -376,11 +379,23 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
       e.preventDefault();
 
       if (label && resolvedConcepts?.resolvedConcepts) {
-        onAccept(label, resolvedConcepts.resolvedConcepts);
+        onAcceptConcepts(label, resolvedConcepts.resolvedConcepts);
       }
+
+      if (label && resolvedFilters?.resolvedFilter) {
+        onAcceptFilters();
+      }
+
       onClose();
     },
-    [label, onAccept, onClose, resolvedConcepts],
+    [
+      label,
+      resolvedConcepts,
+      resolvedFilters,
+      onClose,
+      onAcceptConcepts,
+      onAcceptFilters,
+    ],
   );
 
   const onChange = useCallback(
