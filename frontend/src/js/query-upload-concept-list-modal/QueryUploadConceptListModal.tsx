@@ -18,15 +18,15 @@ const QueryUploadConceptListModal: FC = () => {
   );
 
   const dispatch = useDispatch();
+  const rootConcepts = useSelector<StateT, TreesT>(
+    (state) => state.conceptTrees.trees,
+  );
+
   const onClose = () => {
     dispatch(closeQueryUploadConceptListModal());
     dispatch(resetUploadConceptListModal());
   };
-  const onAccept = (
-    label: string,
-    rootConcepts: TreesT,
-    resolvedConcepts: string[],
-  ) =>
+  const onAccept = (label: string, resolvedConcepts: string[]) =>
     dispatch(
       acceptQueryUploadConceptListModal({
         andIdx: context.andIdx,

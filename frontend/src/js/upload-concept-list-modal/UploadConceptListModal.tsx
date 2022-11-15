@@ -18,7 +18,6 @@ import type {
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import PrimaryButton from "../button/PrimaryButton";
-import type { TreesT } from "../concept-trees/reducer";
 import { useDatasetId } from "../dataset/selectors";
 import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
@@ -316,11 +315,7 @@ const useResolveConceptsAndFilterValues = () => {
 };
 
 interface PropsT {
-  onAccept: (
-    label: string,
-    rootConcepts: TreesT,
-    resolvedConcepts: ConceptIdT[],
-  ) => void;
+  onAccept: (label: string, resolvedConcepts: ConceptIdT[]) => void;
   onClose: () => void;
 }
 
@@ -334,10 +329,6 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
   const { selectOptions, selectOptionsDetails } = useDropdownOptions();
 
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
-
-  const rootConcepts = useSelector<StateT, TreesT>(
-    (state) => state.conceptTrees.trees,
-  );
 
   const {
     resolvedConcepts,
@@ -378,11 +369,11 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
       e.preventDefault();
 
       if (label && resolvedConcepts?.resolvedConcepts) {
-        onAccept(label, rootConcepts, resolvedConcepts.resolvedConcepts);
+        onAccept(label, resolvedConcepts.resolvedConcepts);
       }
       onClose();
     },
-    [label, onAccept, onClose, resolvedConcepts, rootConcepts],
+    [label, onAccept, onClose, resolvedConcepts],
   );
 
   const onChange = useCallback(

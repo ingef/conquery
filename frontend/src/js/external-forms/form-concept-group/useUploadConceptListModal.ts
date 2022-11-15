@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
+import { StateT } from "../../app/reducers";
 import { getUniqueFileRows } from "../../common/helpers/fileHelper";
 import { TreesT } from "../../concept-trees/reducer";
 import { DragItemConceptTreeNode } from "../../standard-query-editor/types";
@@ -34,6 +35,10 @@ export const useUploadConceptListModal = ({
   isValidConcept?: (concept: DragItemConceptTreeNode) => boolean;
 }) => {
   const dispatch = useDispatch();
+  const rootConcepts = useSelector<StateT, TreesT>(
+    (state) => state.conceptTrees.trees,
+  );
+
   const initModal = async (file: File) => {
     const rows = await getUniqueFileRows(file);
 
@@ -64,11 +69,7 @@ export const useUploadConceptListModal = ({
     setIsOpen(true); // For the Modal "container"
   };
 
-  const onAccept = (
-    label: string,
-    rootConcepts: TreesT,
-    resolvedConcepts: string[],
-  ) => {
+  const onAccept = (label: string, resolvedConcepts: string[]) => {
     if (!modalContext) return;
     const { valueIdx, conceptIdx } = modalContext;
 
