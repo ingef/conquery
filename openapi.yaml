@@ -1,0 +1,177 @@
+openapi: 3.1.3
+info:
+  version: 1.0.0
+  title: Conquery API
+  description: Conquery API
+  license:
+    name: TODO
+    url: http://TODO/
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    Ingef:
+      type: http
+      scheme: bearer
+      
+  responses:
+    unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error"
+      description: The user is not logged in.
+  schemas:
+    mail:
+      type: string
+      format: mail
+    column-config:
+      type: object
+      properties:
+        name:
+          description: Name of the Column-Config to be used when resolving with Upload.
+          type: string
+        label:
+          description: Map of Localized labels.
+          type: object
+          items:
+            type: string
+        description:
+          description: Map of Localized descriptions.
+          type: object
+          items:
+            type: string
+        field:
+          type: string
+          description: Name of column in csv
+      additionalProperties:
+        properties:
+          pad:
+            description: Pad-String when uploading data, to avoid problems with some tools truncating leading zeros or similar.
+            type: string
+          length:
+            description: In conjunction with pad, the length of the padded string.
+            type: integer
+          resolvable:
+            description: True, if the Column should be printed to output. This can be used to have resolvable but not printable fields in mapping.
+            type: boolean
+          print:
+            description: True, if the Column should be printed to output. This can be used to have resolvable but not printable fields in mapping.
+            type: boolean
+          fillAnon:
+            description: True, if the field will be used to fill with anonymized ids, when the user is not allowed seeing real ids.
+            type: boolean
+    upload-config:
+      description: Describes the format of ids for EXTERNAL and entity-preview id kinds. Also describes the output format for ids in the result files.
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            $ref: "#/components/schemas/column-config"
+
+    currency-config:
+      description: Describes how the frontend shall interpret and display currency values.
+      type: object
+      properties:
+        prefix:
+          type: string
+        thousandSeparator:
+          type: string
+        decimalSeparator:
+          type: string
+        decimalScale:
+          type: string
+
+    frontend-config:
+      type: object
+      properties:
+        version:
+          type: string
+        manualUrl:
+          type: string
+          format: url
+        contactEmail:
+          $ref: "#/components/schemas/mail"
+        currency:
+          $ref: "#/components/schemas/currency-config"
+        upload:
+          $ref: "#/components/schemas/upload-config"
+    id:
+      type: string
+    error:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+    id-label:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/id"
+        label:
+          type: string
+    datasetAbility:
+      type: object
+      properties:
+        canUpload:
+          type: boolean
+    me:
+      type: object
+      properties:
+        userName:
+          type: string
+        hideLogoutButton:
+          type: boolean
+        datasetAbilities:
+          description: per dataset abilities of the logged in User.
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/datasetAbility"
+        groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/id-label"
+
+security:
+  - BasicAuth: []
+  - Bearer: []
+
+servers:
+  - url: http://lyo-peva02:8080/api
+paths:
+  /frontend/config:
+    get:
+      summary: An Endpoint describing configuration for the frontend.
+      operationId: get-frontend-config
+      responses:
+        "200":
+          description: The Configuration for the Frontend
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/frontend-config"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+
+  /me:
+    get:
+      operationId: get-me
+      summary: Fetches description of the currently logged in user
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/me"
+          description: Description of the user
+        "401":
+          $ref: "#/components/responses/unauthorized"
