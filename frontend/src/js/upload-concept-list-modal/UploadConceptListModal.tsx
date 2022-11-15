@@ -1,5 +1,12 @@
 import styled from "@emotion/styled";
-import { FormEvent, useState, useEffect, useMemo, useCallback } from "react";
+import {
+  FormEvent,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  memo,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -501,4 +508,4 @@ const UploadConceptListModal = ({ onAccept, onClose }: PropsT) => {
   );
 };
 
-export default UploadConceptListModal;
+export default memo(UploadConceptListModal);

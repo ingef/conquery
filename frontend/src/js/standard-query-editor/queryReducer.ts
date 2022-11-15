@@ -645,12 +645,12 @@ const insertUploadedConceptList = (
 
   if (!queryElement) return state;
 
-  return andIdx === null
-    ? onDropAndNode(state, {
+  return exists(andIdx)
+    ? onDropOrNode(state, {
+        andIdx,
         item: queryElement,
       })
-    : onDropOrNode(state, {
-        andIdx,
+    : onDropAndNode(state, {
         item: queryElement,
       });
 };
