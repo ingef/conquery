@@ -2,13 +2,20 @@ import styled from "@emotion/styled";
 import { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 
-import PrimaryButton from "../button/PrimaryButton";
+import { DestroyButton } from "../button/DestroyButton";
 import { TransparentButton } from "../button/TransparentButton";
 
 import Modal from "./Modal";
 
 const Root = styled("div")`
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+`;
+
+const Content = styled("div")`
+  max-width: 400px;
 `;
 
 const Description = styled("p")`
@@ -16,10 +23,6 @@ const Description = styled("p")`
 `;
 
 const Btn = styled(TransparentButton)`
-  margin: 0 10px;
-`;
-
-const PrimaryBtn = styled(PrimaryButton)`
   margin: 0 10px;
 `;
 
@@ -40,11 +43,13 @@ const DeleteModal = ({
 
   return (
     <Modal onClose={onClose} headline={headline}>
-      {description && <Description>{description}</Description>}
-      <Root>
-        <Btn onClick={onClose}>{t("common.cancel")}</Btn>
-        <PrimaryBtn onClick={onDelete}>{t("common.delete")}</PrimaryBtn>
-      </Root>
+      <Content>
+        {description && <Description>{description}</Description>}
+        <Root>
+          <Btn onClick={onClose}>{t("common.cancel")}</Btn>
+          <DestroyButton onClick={onDelete}>{t("common.delete")}</DestroyButton>
+        </Root>
+      </Content>
     </Modal>
   );
 };
