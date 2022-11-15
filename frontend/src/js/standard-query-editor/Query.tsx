@@ -43,8 +43,7 @@ const useDropFileModal = () => {
 
   const onDropFile = useCallback(
     async (file: File, andIdx?: number) => {
-      // Need to wait until file is processed.
-      // Because if file is empty, modal would close automatically
+      // Wait until file is processed before opening modal
       const rows = await getUniqueFileRows(file);
 
       dispatch(initUploadConceptListModal({ rows, filename: file.name }));
