@@ -1,4 +1,4 @@
-openapi: 3.1.3
+openapi: 3.0.0
 info:
   version: 1.0.0
   title: Conquery API
@@ -6,11 +6,6 @@ info:
   license:
     name: TODO
     url: http://TODO/
-securityDefinitions:
-  Bearer:
-    type: apiKey
-    name: Authorization
-    in: header
 components:
   securitySchemes:
     BasicAuth:
@@ -28,6 +23,54 @@ components:
             $ref: "#/components/schemas/error"
       description: The user is not logged in.
   schemas:
+    id:
+      type: string
+    tableId:
+      $ref: "#/components/schemas/id"
+    filterId:
+      $ref: "#/components/schemas/id"
+    conceptId:
+      $ref: "#/components/schemas/id"
+    executionId:
+      $ref: "#/components/schemas/id"
+    
+    feValue:
+      type: object
+      properties:
+        value: 
+          type: string
+        label:
+          type: string
+        optionValue:
+          type: string
+      required:
+        - "value"
+    resolved-filter-result:
+      type: object
+      properties:
+        tableId:
+          $ref: "#/components/schemas/tableId"
+        filterId:
+          $ref: "#/components/schemas/filterId"
+        value:
+          type: array
+          items:
+            $ref: "#/components/schemas/feValue"
+    resolved-concepts-result:
+      type: object
+      properties:
+        resolvedConcepts:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        unkownCodes:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        resolvedFilter:
+          $ref: "#/components/responses/resolved-filter-result"
     mail:
       type: string
       format: mail
@@ -112,6 +155,14 @@ components:
           type: string
         code:
           type: string
+    concept-code-list:
+      type: object
+      properties:
+        concepts:
+          type: array
+          items:
+            type: string
+        
     id-label:
       type: object
       properties:
@@ -175,3 +226,30 @@ paths:
           description: Description of the user
         "401":
           $ref: "#/components/responses/unauthorized"
+
+  /datasets/{dataset}/concepts/{concept}/resolve/:
+    post:
+      operationId: resolve-concepts
+      summary: Resolve values to concept-ids
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/concept-code-list"
+      responses:
+        '400':
+            description: When the requested Concept does not have children.
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/responses/unauthorized"
+        '200':
+          description: Resolved Concepts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/responses/unauthorized"
+
+ 
+            
