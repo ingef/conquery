@@ -70,7 +70,7 @@ components:
           items:
             type: string
         resolvedFilter:
-          $ref: "#/components/responses/resolved-filter-result"
+          $ref: "#/components/schemas/resolved-filter-result"
     mail:
       type: string
       format: mail
@@ -146,8 +146,6 @@ components:
           $ref: "#/components/schemas/currency-config"
         upload:
           $ref: "#/components/schemas/upload-config"
-    id:
-      type: string
     error:
       type: object
       properties:
@@ -240,16 +238,12 @@ paths:
       responses:
         '400':
             description: When the requested Concept does not have children.
-            content:
-              application/json:
-                schema:
-                  $ref: "#/components/responses/unauthorized"
         '200':
           description: Resolved Concepts
           content:
             application/json:
               schema:
-                $ref: "#/components/responses/unauthorized"
+                $ref: "#/components/schemas/resolved-concepts-result"
 
  
             
