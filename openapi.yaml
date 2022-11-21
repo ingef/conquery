@@ -195,7 +195,7 @@ security:
   - Bearer: []
 
 servers:
-  - url: http://lyo-peva02:8080/api
+  - url: http://localhost:8080/api
 paths:
   /frontend/config:
     get:
