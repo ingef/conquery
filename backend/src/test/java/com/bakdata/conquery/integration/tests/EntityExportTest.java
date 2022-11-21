@@ -39,6 +39,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.api.DatasetQueryResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -124,7 +125,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		try (Response allEntityDataResponse = conquery.getClient().target(entityExport)
 													  .request(MediaType.APPLICATION_JSON_TYPE)
 													  .header("Accept-Language", "en-Us")
-													  .post(Entity.json(new QueryResource.EntityPreview("ID", "1", Range.atMost(LocalDate.of(2022, 11, 10)), allConnectors)))) {
+													  .post(Entity.json(new DatasetQueryResource.EntityPreview("ID", "1", Range.atMost(LocalDate.of(2022, 11, 10)), allConnectors)))) {
 
 			assertThat(allEntityDataResponse.getStatusInfo().getFamily())
 					.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))

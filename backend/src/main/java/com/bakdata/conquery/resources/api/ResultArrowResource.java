@@ -21,18 +21,16 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Path("datasets/{" + DATASET + "}/result/")
+@Path("result/")
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultArrowResource {
 

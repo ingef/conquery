@@ -3,11 +3,9 @@ package com.bakdata.conquery.resources.api;
 
 import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.resources.ResourceConstants.*;
-import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -21,7 +19,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.parquet.ResultParquetProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -33,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Path("datasets/{" + DATASET + "}/result/")
+@Path("result/")
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultParquetResource {
 

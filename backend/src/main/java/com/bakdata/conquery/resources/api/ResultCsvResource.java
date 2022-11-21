@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Path("datasets/{" + DATASET + "}/result/")
+@Path("result/")
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultCsvResource {
 
