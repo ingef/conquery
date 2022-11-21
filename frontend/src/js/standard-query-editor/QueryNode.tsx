@@ -170,6 +170,15 @@ const QueryNode = ({
     onExpandClick(node.query);
   }, [onExpandClick, node]);
 
+  const label = nodeIsConceptQueryNode(node)
+    ? node.label
+    : node.label || node.id;
+
+  const description =
+    nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
+      ? node.description
+      : undefined;
+
   const QueryNodeRoot = (
     <Root
       ref={(instance) => {
@@ -177,20 +186,14 @@ const QueryNode = ({
         drag(instance);
       }}
       active={hasNonDefaultSettings || hasFilterValues}
-      onClick={!!node.error ? () => {} : () => onEditClick(andIdx, orIdx)}
+      onClick={node.error ? undefined : () => onEditClick(andIdx, orIdx)}
     >
       <QueryNodeContent
         error={node.error}
         isConceptQueryNode={nodeIsConceptQueryNode(node)}
         tooltipText={tooltipText}
-        label={
-          nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
-        }
-        description={
-          nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
-            ? node.description
-            : undefined
-        }
+        label={label}
+        description={description}
         rootNodeLabel={rootNodeLabel}
       />
       <QueryNodeActions
