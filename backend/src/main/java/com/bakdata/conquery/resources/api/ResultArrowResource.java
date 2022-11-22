@@ -41,14 +41,13 @@ public class ResultArrowResource {
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response getFile(
 			@Auth Subject subject,
-			@PathParam(DATASET) Dataset dataset,
 			@PathParam(QUERY) ManagedExecution<?> query,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 
 		checkSingleTableResult(query);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), dataset.getId(), subject.getId(), subject.getName());
-		return processor.createResultFile(subject, query, dataset, pretty.orElse(false));
+		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), query.getDataset().getId(), subject.getId(), subject.getName());
+		return processor.createResultFile(subject, query, query.getDataset(), pretty.orElse(false));
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

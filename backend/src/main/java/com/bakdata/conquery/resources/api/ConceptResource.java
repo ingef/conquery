@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -67,6 +68,7 @@ public class ConceptResource extends HAuthorized {
 
 
 	@Data
+	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 	public static class ConceptCodeList {
 		private final List<String> concepts;
 	}

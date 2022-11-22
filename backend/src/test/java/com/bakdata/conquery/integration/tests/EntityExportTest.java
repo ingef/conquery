@@ -112,7 +112,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			}
 		}
 
-		final URI entityExport = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "getEntityData")
+		final URI entityExport = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "getEntityData")
 												.buildFromMap(Map.of(ResourceConstants.DATASET, conquery.getDataset().getName()));
 
 		// Api uses NsIdRef so we have to use the real objects here.
