@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
 import java.util.OptionalInt;
 
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -23,7 +24,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	private OptionalInt selectedEvent = OptionalInt.empty();
 	private Bucket selectedBucket;
 
-	private int date = Integer.MAX_VALUE;
+	private int date = CDateRange.MAX_VALUE;
 
 	private Column validityDateColumn;
 
@@ -34,7 +35,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		selectedEvent = OptionalInt.empty();
-		date = Integer.MAX_VALUE;
+		date = CDateRange.MAX_VALUE;
 		selectedBucket = null;
 	}
 

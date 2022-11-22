@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.io.result.arrow.ArrowUtil;
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
@@ -168,14 +169,16 @@ public class EntityResultWriteSupport extends WriteSupport<EntityResult> {
 			recordConsumer.startGroup();
 			Integer min = dateRange.get(0);
 
-			if (min != null && !(min == Integer.MIN_VALUE)) {
+
+
+			if (min != null && !(CDate.isNegativeInfinity(min))) {
 				recordConsumer.startField(MIN_FIELD_NAME, 0);
 				recordConsumer.addInteger(min);
 				recordConsumer.endField(MIN_FIELD_NAME, 0);
 			}
 
 			Integer max = dateRange.get(1);
-			if (max != null && !(max == Integer.MAX_VALUE)) {
+			if (max != null && !(CDate.isPositiveInfinity(max))) {
 				recordConsumer.startField(MAX_FIELD_NAME, 1);
 				recordConsumer.addInteger(max);
 				recordConsumer.endField(MAX_FIELD_NAME, 1);

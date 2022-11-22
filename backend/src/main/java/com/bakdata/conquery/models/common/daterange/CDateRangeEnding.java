@@ -27,7 +27,7 @@ public class CDateRangeEnding extends CDateRange {
 
 	@Override
 	public int getMinValue() {
-		return Integer.MIN_VALUE;
+		return CDateRange.MIN_VALUE;
 	}
 	
 	@Override

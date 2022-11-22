@@ -21,11 +21,11 @@ public class CDateRangeOpen extends CDateRange {
 	
 	@Override
 	public int getMaxValue() {
-		return Integer.MAX_VALUE;
+		return CDateRange.MAX_VALUE;
 	}
 
 	@Override
 	public int getMinValue() {
-		return Integer.MIN_VALUE;
+		return CDateRange.MIN_VALUE;
 	}
 }
