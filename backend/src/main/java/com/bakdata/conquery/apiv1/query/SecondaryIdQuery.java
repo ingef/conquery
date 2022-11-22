@@ -143,7 +143,15 @@ public class SecondaryIdQuery extends Query {
 	public List<ResultInfo> getResultInfos() {
 		List<ResultInfo> resultInfos = new ArrayList<>();
 
-		resultInfos.add(new SimpleResultInfo(secondaryId.getLabel(), ResultType.StringT.INSTANCE, secondaryId.getDescription(), Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))));
+		resultInfos.add(
+				new SimpleResultInfo(
+						secondaryId.getLabel(),
+						ResultType.StringT.INSTANCE,
+						secondaryId.getDescription(),
+						Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))
+				)
+		);
+
 		resultInfos.addAll(query.getResultInfos());
 
 		return resultInfos;
