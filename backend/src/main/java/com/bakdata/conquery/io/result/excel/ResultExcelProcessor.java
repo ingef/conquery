@@ -46,14 +46,14 @@ public class ResultExcelProcessor {
 		subject.authorize(dataset, Ability.DOWNLOAD);
 		subject.authorize(exec, Ability.READ);
 
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
+		final IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
 
 		final Locale locale = I18n.LOCALE.get();
-		PrintSettings settings = new PrintSettings(pretty, locale, datasetRegistry, config, idPrinter::createId);
+		final PrintSettings settings = new PrintSettings(pretty, locale, datasetRegistry, config, idPrinter::createId);
 
-		ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel(), settings);
+		final ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel(), settings);
 
-		StreamingOutput out = output -> {
+		final StreamingOutput out = output -> {
 			excelRenderer.renderToStream(config.getFrontend().getQueryUpload().getIdResultInfos(), exec, output);
 			log.trace("FINISHED downloading {}", exec.getId());
 		};

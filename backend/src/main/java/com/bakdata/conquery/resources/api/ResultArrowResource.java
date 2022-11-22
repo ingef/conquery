@@ -21,7 +21,6 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.ResourceConstants;
@@ -76,12 +75,11 @@ public class ResultArrowResource {
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
 	public Response getStream(
 			@Auth Subject subject,
-			@PathParam(DATASET) Dataset dataset,
 			@PathParam(QUERY) ManagedExecution<?> execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset, subject.getId(), subject.getName());
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset().getId(), subject.getId(), subject.getName());
 		return processor.createResultStream(subject, execution, pretty.orElse(false));
 	}
 }

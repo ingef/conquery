@@ -39,31 +39,20 @@ public class ResultCsvResource {
 	private final ResultCsvProcessor processor;
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
-		return uriBuilder
-				.path(ResultCsvResource.class)
-				.path(ResultCsvResource.class, GET_RESULT_PATH_METHOD)
-				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
-				.build()
-				.toURL();
+		return uriBuilder.path(ResultCsvResource.class)
+						 .path(ResultCsvResource.class, GET_RESULT_PATH_METHOD)
+						 .resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
+						 .build()
+						 .toURL();
 	}
 
 	@GET
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getAsCsv(
-			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution<?> execution,
-			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-			@QueryParam("charset") String queryCharset,
-			@QueryParam("pretty") Optional<Boolean> pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getAsCsv(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> execution, @HeaderParam(HttpHeaders.USER_AGENT) String userAgent, @QueryParam("charset") String queryCharset, @QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset().getId(), subject.getId(), subject.getName());
 
-		return processor.createResult(
-				subject,
-				(E) execution,
-				pretty.orElse(Boolean.TRUE),
-				determineCharset(userAgent, queryCharset)
-		);
+		return processor.createResult(subject, (E) execution, pretty.orElse(Boolean.TRUE), determineCharset(userAgent, queryCharset));
 	}
 }

@@ -18,35 +18,52 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
+import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import io.dropwizard.auth.Auth;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Setter
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Path("filters/{" + FILTER + "}")
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
-public class FilterResource {
+@ToString(onlyExplicitlyIncluded = true)
+public class FilterResource extends HAuthorized {
 
 	private final ConceptsProcessor processor;
+
+	@ToString.Include
 	@PathParam(FILTER)
 	protected Filter<?> filter;
+
+	@Auth
+	@ToString.Include
+	protected Subject subject;
 
 	@POST
 	@Path("resolve")
 	public ResolvedConceptsResult resolveFilterValues(FilterValues filterValues) {
+		subject.isPermitted(filter.getDataset(), Ability.READ);
+		subject.isPermitted(filter.getConnector().findConcept(), Ability.READ);
+
 		return processor.resolveFilterValues((SelectFilter<?>) filter, filterValues.getValues());
 	}
 
 	@POST
 	@Path("autocomplete")
 	public ConceptsProcessor.AutoCompleteResult autocompleteTextFilter(@Valid FilterResource.AutocompleteRequest request) {
+		subject.isPermitted(filter.getDataset(), Ability.READ);
+		subject.isPermitted(filter.getConnector().findConcept(), Ability.READ);
 
 		if (!(filter instanceof SelectFilter)) {
 			throw new WebApplicationException(filter.getId() + " is not a SELECT filter, but " + filter.getClass().getSimpleName() + ".", Status.BAD_REQUEST);

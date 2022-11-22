@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor.PostResponse;
+import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
 
@@ -31,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @Produces(ExtraMimeTypes.JSON_STRING)
 @Path("datasets/{" + DATASET + "}/form-configs")
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
-public class DatasetFormConfigResource {
+public class DatasetFormConfigResource extends HAuthorized {
 
 	private final FormConfigProcessor processor;
 	@PathParam(DATASET)

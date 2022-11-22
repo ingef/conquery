@@ -57,7 +57,6 @@ public class ResultArrowProcessor {
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
 				(ManagedExecution<?> & SingleTableResult) exec,
-				exec.getDataset(),
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_FILE,
@@ -71,7 +70,6 @@ public class ResultArrowProcessor {
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				subject,
 				((ManagedExecution<?> & SingleTableResult) exec),
-				exec.getDataset(), // TODO pull dataset up
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_STREAM,
@@ -84,12 +82,13 @@ public class ResultArrowProcessor {
 			Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
 			Subject subject,
 			E exec,
-			Dataset dataset,
 			DatasetRegistry datasetRegistry,
 			boolean pretty,
 			String fileExtension,
 			MediaType mediaType,
 			ConqueryConfig config) {
+
+		final Dataset dataset = exec.getDataset();
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
