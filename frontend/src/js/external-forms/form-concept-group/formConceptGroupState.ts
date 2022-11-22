@@ -273,6 +273,12 @@ export const addConceptsFromFile = (
 
   valueIdx: number,
   conceptIdx?: number,
+
+  resolvedFilter?: {
+    tableId: string;
+    filterId: string;
+    value: SelectOptionT[];
+  },
 ) => {
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
@@ -285,6 +291,15 @@ export const addConceptsFromFile = (
   const concept = initializeConcept(queryElement, defaults);
 
   if (!concept || (!!isValidConcept && !isValidConcept(concept))) return value;
+
+  if (resolvedFilter) {
+    const table = concept.tables.find((t) => t.id === resolvedFilter.tableId);
+    const filter = table?.filters.find((f) => f.id === resolvedFilter.filterId);
+
+    if (table && filter) {
+      filter.value = resolvedFilter.value;
+    }
+  }
 
   if (exists(conceptIdx)) {
     return setConcept(value, valueIdx, conceptIdx, concept);

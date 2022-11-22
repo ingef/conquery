@@ -88,14 +88,7 @@ const findParentConcepts = (
   ]);
 };
 
-interface ConceptsByIds {
-  concepts: ConceptT[];
-  root: ConceptIdT;
-  tables: TableWithFilterValueT[];
-  selects?: SelectedSelectorT[];
-}
-
-const findRootConceptFromNodeIds = (
+const findRootConceptIdFromConceptIds = (
   rootConcepts: TreesT,
   conceptIds: ConceptIdT[],
 ) => {
@@ -105,7 +98,7 @@ const findRootConceptFromNodeIds = (
     concept: ConceptT;
     id: ConceptIdT;
   }[] = conceptIds
-    .map((id) => ({ concept: getConceptById(id), id }))
+    .map((id) => ({ id, concept: getConceptById(id) }))
     .filter((d): d is { concept: ConceptT; id: string } => !!d.concept);
 
   if (conceptsWithIds.length !== conceptIds.length) return null;
@@ -119,12 +112,22 @@ const findRootConceptFromNodeIds = (
   );
 };
 
+interface ConceptsByIds {
+  concepts: ConceptT[];
+  root: ConceptIdT;
+  tables: TableWithFilterValueT[];
+  selects?: SelectedSelectorT[];
+}
+
 export const getConceptsByIdsWithTablesAndSelects = (
   rootConcepts: TreesT,
   conceptIds: ConceptIdT[],
   resetConfig: NodeResetConfig,
 ): ConceptsByIds | null => {
-  const rootConceptId = findRootConceptFromNodeIds(rootConcepts, conceptIds);
+  const rootConceptId = findRootConceptIdFromConceptIds(
+    rootConcepts,
+    conceptIds,
+  );
 
   // There should only be one exact root node that has table information
   // If it's more or less than one, something went wrong

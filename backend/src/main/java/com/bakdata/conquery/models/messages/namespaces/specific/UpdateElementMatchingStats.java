@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(id="UPDATE_METADATA", base=NamespacedMessage.class)
 @AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @ToString
-public class UpdateElementMatchingStats extends NamespaceMessage.Slow {
+public class UpdateElementMatchingStats extends NamespaceMessage {
 	private final WorkerId source;
 
 	@ToString.Exclude

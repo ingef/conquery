@@ -17,10 +17,7 @@ const SxWithTooltip = styled(WithTooltip)`
 `;
 
 interface Props {
-  onDropConceptListFile: (
-    file: File,
-    andIdx: number | null,
-  ) => Promise<unknown>;
+  onDropConceptListFile: (file: File, andIdx?: number) => Promise<unknown>;
   onDropAndNode: (node: DragItemQuery | DragItemConceptTreeNode) => void;
   onLoadQuery: (queryId: PreviousQueryT["id"]) => void;
 }
@@ -38,7 +35,7 @@ const QueryAndDropzone = ({
         <QueryEditorDropzone
           isAnd
           onDropNode={onDropAndNode}
-          onDropFile={(file) => onDropConceptListFile(file, null)}
+          onDropFile={(file) => onDropConceptListFile(file)}
           onLoadPreviousQuery={onLoadQuery}
         />
       </SxWithTooltip>
