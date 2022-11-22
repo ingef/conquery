@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import javax.annotation.CheckForNull;
 import javax.validation.constraints.NotNull;
@@ -28,7 +27,6 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -43,16 +41,12 @@ import lombok.extern.slf4j.Slf4j;
 public class SecondaryIdQuery extends Query {
 
 	@NotNull
+	protected DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
+	@NotNull
 	private CQElement root;
-
 	@NsIdRef
 	@NotNull
 	private SecondaryIdDescription secondaryId;
-
-	@NotNull
-	protected DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
-
-
 	/**
 	 * @apiNote not using {@link ConceptQuery} directly in the API-spec simplifies the API.
 	 */
@@ -148,7 +142,8 @@ public class SecondaryIdQuery extends Query {
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		List<ResultInfo> resultInfos = new ArrayList<>();
-		resultInfos.add(new SimpleResultInfo(secondaryId.getName(), ResultType.StringT.INSTANCE, secondaryId.getDescription(), Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))));
+
+		resultInfos.add(new SimpleResultInfo(secondaryId.getLabel(), ResultType.StringT.INSTANCE, secondaryId.getDescription(), Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))));
 		resultInfos.addAll(query.getResultInfos());
 
 		return resultInfos;
