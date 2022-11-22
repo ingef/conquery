@@ -3,13 +3,8 @@ package com.bakdata.conquery.models.index;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -23,7 +18,6 @@ import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -71,6 +65,10 @@ public class IndexService implements Injectable {
 
 					final String internalValue = pair.getLeft();
 					final Map<String, String> externalValue = pair.getRight();
+
+					// If the whole string is empty or just whitespaces, put in the original value
+					//TODO Maybe check against an empty render of the templates instead?
+					externalValue.replaceAll((ignored, value) -> value.isBlank() ? internalValue : value);
 
 					try {
 						int2ext.put(internalValue, externalValue);
