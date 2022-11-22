@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1.query;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -111,4 +112,7 @@ public interface QueryDescription extends Visitable {
 		}
 	}
 
+	default Optional<Set<Integer>> collectRequiredEntities(){
+		return Optional.empty();
+	}
 }

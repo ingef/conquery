@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -310,5 +311,10 @@ public class TableExportQuery extends Query {
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
 		query.visit(visitor);
+	}
+
+	@Override
+	public Optional<Set<Integer>> collectRequiredEntities() {
+		return query.collectRequiredEntities();
 	}
 }

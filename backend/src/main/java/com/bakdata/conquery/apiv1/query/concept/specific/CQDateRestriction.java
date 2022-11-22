@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Queue;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
@@ -82,5 +84,10 @@ public class CQDateRestriction extends CQElement {
 	public void visit(Consumer<Visitable> visitor) {
 		super.visit(visitor);
 		child.visit(visitor);
+	}
+
+	@Override
+	public Optional<Set<Integer>> collectRequiredEntities() {
+		return getChild().collectRequiredEntities();
 	}
 }

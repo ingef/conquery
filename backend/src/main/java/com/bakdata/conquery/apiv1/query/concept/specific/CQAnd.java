@@ -32,6 +32,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -140,5 +141,28 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 
 	private boolean createExists(){
 		return createExists.orElse(false);
+	}
+
+	@Override
+	public Optional<Set<Integer>> collectRequiredEntities() {
+		Set<Integer> current = null;
+
+
+		for (int index = 0; index < getChildren().size(); index++) {
+			final Optional<Set<Integer>> next = getChildren().get(index).collectRequiredEntities();
+
+			if (next.isEmpty()) {
+				continue;
+			}
+
+			if (current == null) {
+				current = next.get();
+			}
+			else {
+				current= Sets.intersection(current, next.get());
+			}
+		}
+
+		return Optional.ofNullable(current);
 	}
 }

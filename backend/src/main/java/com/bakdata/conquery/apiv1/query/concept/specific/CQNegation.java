@@ -1,6 +1,8 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
@@ -64,5 +66,10 @@ public class CQNegation extends CQElement {
 	public void visit(Consumer<Visitable> visitor) {
 		super.visit(visitor);
 		child.visit(visitor);
+	}
+
+	@Override
+	public Optional<Set<Integer>> collectRequiredEntities() {
+		return getChild().collectRequiredEntities();
 	}
 }

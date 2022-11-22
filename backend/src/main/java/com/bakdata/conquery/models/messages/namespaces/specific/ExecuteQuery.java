@@ -2,6 +2,12 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -11,8 +17,10 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,12 +42,7 @@ public class ExecuteQuery extends WorkerMessage {
 
 	private final Query query;
 
-
-	private ShardResult createShardResult(Worker worker) {
-		final ShardResult result = new ShardResult(id, worker.getInfo().getId());
-
-		return result;
-	}
+	private final Optional<Set<Integer>> requiredEntities;
 
 	@Override
 	public void react(Worker worker) throws Exception {
@@ -65,10 +68,30 @@ public class ExecuteQuery extends WorkerMessage {
 			return;
 		}
 
-		final QueryExecutionContext executionContext =
-				new QueryExecutionContext(executionId, queryExecutor, worker.getStorage(), worker.getBucketManager());
+		Set<Entity> entities;
+
+		if (getRequiredEntities().isEmpty()) {
+			entities = new HashSet<>(worker.getBucketManager().getEntities().values());
+		}
+		else {
+			final Int2ObjectMap<Entity> localEntities = worker.getBucketManager().getEntities();
+			entities =
+					requiredEntities.get().parallelStream()
+									.mapToInt(i -> i).mapToObj(localEntities::get)
+									.filter(Objects::nonNull)
+									.collect(Collectors.toSet());
+		}
+
+
+		final QueryExecutionContext executionContext = new QueryExecutionContext(executionId, queryExecutor, worker.getStorage(), worker.getBucketManager(), entities);
 
 		queryExecutor.execute(query, executionContext, result);
+	}
+
+	private ShardResult createShardResult(Worker worker) {
+		final ShardResult result = new ShardResult(id, worker.getInfo().getId());
+
+		return result;
 	}
 
 }

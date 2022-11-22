@@ -2,13 +2,14 @@ package com.bakdata.conquery.models.query;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -21,20 +22,24 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
-@Getter @AllArgsConstructor @RequiredArgsConstructor
+@Getter
+@AllArgsConstructor
+@RequiredArgsConstructor
 @With
 public class QueryExecutionContext {
 
 	private final ManagedExecutionId executionId;
 
 	private final QueryExecutor executor;
+	private final ModificationShieldedWorkerStorage storage;
+	private final BucketManager bucketManager;
+
+	private final Set<Entity> requiredEntities;
 
 	private Column validityDateColumn;
 	@NonNull
 	private CDateSet dateRestriction = CDateSet.createFull();
 	private Connector connector;
-	private final ModificationShieldedWorkerStorage storage;
-	private final BucketManager bucketManager;
 	@NonNull
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 

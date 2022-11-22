@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.query.concept.specific;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -32,6 +33,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -51,13 +53,14 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	@Setter
 	private Optional<Boolean> createExists = Optional.empty();
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	@JsonView(View.InternalCommunication.class)
 	private DateAggregationAction dateAction;
 
 	@Override
 	public void setDefaultExists() {
-		if (createExists.isEmpty()){
+		if (createExists.isEmpty()) {
 			createExists = Optional.of(true);
 		}
 	}
@@ -83,6 +86,10 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 		return or;
 	}
 
+	private boolean createExists() {
+		return createExists.orElse(false);
+	}
+
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		for (CQElement c : children) {
@@ -94,7 +101,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	public void resolve(QueryResolveContext context) {
 		Preconditions.checkNotNull(context.getDateAggregationMode());
 
-		dateAction =  determineDateAction(context);
+		dateAction = determineDateAction(context);
 
 		children.forEach(c -> c.resolve(context));
 	}
@@ -124,7 +131,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	@Override
 	public String getUserOrDefaultLabel(Locale locale) {
 		// Prefer the user label
-		if (getLabel() != null){
+		if (getLabel() != null) {
 			return getLabel();
 		}
 		return QueryUtils.createDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).or() + " ", locale);
@@ -144,7 +151,21 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 		}
 	}
 
-	private boolean createExists(){
-		return createExists.orElse(false);
+	@Override
+	public Optional<Set<Integer>> collectRequiredEntities() {
+		Set<Integer> current = Collections.emptySet();
+
+
+		for (int index = 0; index < getChildren().size(); index++) {
+			final Optional<Set<Integer>> next = getChildren().get(index).collectRequiredEntities();
+
+			if (next.isEmpty()) {
+				return Optional.empty();
+			}
+
+			current = Sets.union(current, next.get());
+		}
+
+		return Optional.of(current);
 	}
 }

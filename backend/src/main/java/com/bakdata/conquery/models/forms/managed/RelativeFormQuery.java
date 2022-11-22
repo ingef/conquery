@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -97,5 +98,10 @@ public class RelativeFormQuery extends Query {
 		visitor.accept(this);
 		query.visit(visitor);
 		features.visit(visitor);
+	}
+
+	@Override
+	public Optional<Set<Integer>> collectRequiredEntities() {
+		return query.collectRequiredEntities();
 	}
 }

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -11,7 +12,6 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -90,6 +90,12 @@ public class CQReusedQuery extends CQElement {
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		return resolvedQuery.getReusableComponents().getResultInfos();
+	}
+
+
+	@Override
+	public Optional<Set<Integer>> collectRequiredEntities() {
+		return getQuery().getQuery().collectRequiredEntities();
 	}
 
 }

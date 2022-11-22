@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -73,7 +74,7 @@ public class ExecuteForm extends WorkerMessage {
 				return;
 			}
 
-			final QueryExecutionContext subQueryContext = new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager());
+			final QueryExecutionContext subQueryContext = new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager(), new HashSet<>(worker.getBucketManager().getEntities().values())); //TODO
 
 			if (!queryExecutor.execute(query, subQueryContext, result)) {
 				return;

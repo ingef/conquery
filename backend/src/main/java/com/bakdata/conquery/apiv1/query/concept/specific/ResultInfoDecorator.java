@@ -1,7 +1,7 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -9,7 +9,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -73,5 +72,11 @@ public class ResultInfoDecorator extends CQElement {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		child.resolve(context);
+	}
+
+
+	@Override
+	public Optional<Set<Integer>> collectRequiredEntities() {
+		return getChild().collectRequiredEntities();
 	}
 }

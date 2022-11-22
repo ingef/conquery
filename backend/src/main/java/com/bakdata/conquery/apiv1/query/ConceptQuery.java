@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.query;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -11,7 +12,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -71,7 +71,7 @@ public class ConceptQuery extends Query {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		resolvedDateAggregationMode = dateAggregationMode;
-		if(context.getDateAggregationMode() != null) {
+		if (context.getDateAggregationMode() != null) {
 			log.trace("Overriding date aggregation mode ({}) with mode from context ({})", dateAggregationMode, context.getDateAggregationMode());
 			resolvedDateAggregationMode = context.getDateAggregationMode();
 		}
@@ -82,7 +82,7 @@ public class ConceptQuery extends Query {
 	public List<ResultInfo> getResultInfos() {
 		Preconditions.checkNotNull(resolvedDateAggregationMode);
 		List<ResultInfo> resultInfos = new ArrayList<>();
-		if(!DateAggregationMode.NONE.equals(resolvedDateAggregationMode)) {
+		if (!DateAggregationMode.NONE.equals(resolvedDateAggregationMode)) {
 			resultInfos.add(ConqueryConstants.DATES_INFO);
 		}
 		resultInfos.addAll(root.getResultInfos());
@@ -99,5 +99,10 @@ public class ConceptQuery extends Query {
 	@Override
 	public CQElement getReusableComponents() {
 		return getRoot();
+	}
+
+	@Override
+	public Optional<Set<Integer>> collectRequiredEntities() {
+		return getRoot().collectRequiredEntities();
 	}
 }

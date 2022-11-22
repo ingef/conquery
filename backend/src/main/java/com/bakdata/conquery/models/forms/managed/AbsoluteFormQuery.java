@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.forms.managed;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -88,5 +89,10 @@ public class AbsoluteFormQuery extends Query {
 	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		query.collectRequiredQueries(requiredQueries);
 		features.collectRequiredQueries(requiredQueries);
+	}
+
+	@Override
+	public Optional<Set<Integer>> collectRequiredEntities() {
+		return query.collectRequiredEntities();
 	}
 }

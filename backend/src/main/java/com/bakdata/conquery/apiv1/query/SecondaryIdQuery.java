@@ -3,9 +3,9 @@ package com.bakdata.conquery.apiv1.query;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import javax.annotation.CheckForNull;
 import javax.validation.constraints.NotNull;
@@ -28,7 +28,6 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -163,5 +162,10 @@ public class SecondaryIdQuery extends Query {
 	@Override
 	public CQElement getReusableComponents() {
 		return getRoot();
+	}
+
+	@Override
+	public Optional<Set<Integer>> collectRequiredEntities() {
+		return query.collectRequiredEntities();
 	}
 }
