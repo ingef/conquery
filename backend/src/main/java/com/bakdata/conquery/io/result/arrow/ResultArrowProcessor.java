@@ -2,7 +2,6 @@ package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
@@ -19,7 +18,6 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -54,12 +52,12 @@ public class ResultArrowProcessor {
 	private final ConqueryConfig config;
 
 
-	public Response createResultFile(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
+	public Response createResultFile(Subject subject, ManagedExecution<?> exec, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
 				(ManagedExecution<?> & SingleTableResult) exec,
-				dataset,
+				exec.getDataset(),
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_FILE,
@@ -68,12 +66,12 @@ public class ResultArrowProcessor {
 		);
 	}
 
-	public Response createResultStream(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
+	public Response createResultStream(Subject subject, ManagedExecution<?> exec, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				subject,
 				((ManagedExecution<?> & SingleTableResult) exec),
-				dataset, // TODO pull dataset up
+				exec.getDataset(), // TODO pull dataset up
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_STREAM,

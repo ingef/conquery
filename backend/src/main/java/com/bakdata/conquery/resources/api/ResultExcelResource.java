@@ -47,7 +47,7 @@ public class ResultExcelResource {
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset().getId(), subject.getId(), subject.getName());
-		return processor.createResult(subject, (E) execution, execution.getDataset(), pretty.orElse(true));
+		return processor.createResult(subject, (E) execution, pretty.orElse(true));
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {

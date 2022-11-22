@@ -62,7 +62,6 @@ public class ResultCsvResource {
 		return processor.createResult(
 				subject,
 				(E) execution,
-				execution.getDataset(),
 				pretty.orElse(Boolean.TRUE),
 				determineCharset(userAgent, queryCharset)
 		);

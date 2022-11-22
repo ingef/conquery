@@ -47,7 +47,7 @@ public class ResultArrowResource {
 
 		checkSingleTableResult(query);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), query.getDataset().getId(), subject.getId(), subject.getName());
-		return processor.createResultFile(subject, query, query.getDataset(), pretty.orElse(false));
+		return processor.createResultFile(subject, query, pretty.orElse(false));
 	}
 
 	public static <E extends ManagedExecution<?> & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
@@ -82,6 +82,6 @@ public class ResultArrowResource {
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, dataset, subject.getId(), subject.getName());
-		return processor.createResultStream(subject, execution, dataset, pretty.orElse(false));
+		return processor.createResultStream(subject, execution, pretty.orElse(false));
 	}
 }

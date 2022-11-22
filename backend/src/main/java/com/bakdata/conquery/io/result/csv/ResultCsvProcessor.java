@@ -38,7 +38,9 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 	private final DatasetRegistry datasetRegistry;
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty, Charset charset) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, Charset charset) {
+
+		final Dataset dataset = exec.getDataset();
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 

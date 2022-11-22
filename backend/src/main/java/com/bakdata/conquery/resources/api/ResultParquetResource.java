@@ -59,7 +59,7 @@ public class ResultParquetResource {
 
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset().getId(), subject.getId(), subject.getName());
-		return processor.createResultFile(subject, execution, execution.getDataset(), pretty);
+		return processor.createResultFile(subject, execution, pretty);
 	}
 
 }
