@@ -353,7 +353,7 @@
   "uploadConceptListModal": {
     "headline": "Upload concepts",
     "label": "Name of the concept",
-    "selectConceptRootNode": "Choose a concept tree root",
+    "selectConceptRootNode": "Resolve as a concept list or as a filter list",
     "insertNode": "Insert now",
     "result": "Result",
     "resolvedCodes_one": "1 value resolved.",
