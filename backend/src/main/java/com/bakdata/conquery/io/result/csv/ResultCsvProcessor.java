@@ -44,10 +44,8 @@ public class ResultCsvProcessor {
 
 		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {} on dataset {}", exec, dataset);
-		subject.authorize(namespace.getDataset(), Ability.READ);
-		subject.authorize(namespace.getDataset(), Ability.DOWNLOAD);
 
-		subject.authorize(exec, Ability.READ);
+		ResultUtil.authorizeExecutable(subject, exec, dataset);
 
 		// Check if subject is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(subject, exec);
