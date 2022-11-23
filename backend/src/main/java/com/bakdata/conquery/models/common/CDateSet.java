@@ -271,7 +271,11 @@ public class CDateSet {
 	}
 
 
-	public void maskedAdd(CDateRange toAdd, CDateSet mask){
+	public void maskedAdd(CDateRange toAdd, CDateSet mask) {
+		maskedAdd(toAdd, mask, CDateRange.POSITIVE_INFINITY);
+	}
+
+	public void maskedAdd(CDateRange toAdd, CDateSet mask, int truncateMax){
 		if(mask.isEmpty()){
 			return;
 		}
@@ -317,27 +321,29 @@ public class CDateSet {
 
 			search = mask.rangesByLowerBound.higherKey(search);
 
-			int min = range.getMinValue();
-			int max = range.getMaxValue();
+			int lowerBound = range.getMinValue();
+			int upperBound = range.getMaxValue();
 
-			if(max < toAdd.getMinValue()){
+			if(upperBound < toAdd.getMinValue()){
 				continue;
 			}
 
-			if(min < toAdd.getMinValue()){
-				min = toAdd.getMinValue();
+			if(lowerBound < toAdd.getMinValue()){
+				lowerBound = toAdd.getMinValue();
 			}
 
-			if(max > toAdd.getMaxValue()){
-				max = toAdd.getMaxValue();
+			if(upperBound > toAdd.getMaxValue()){
+				upperBound = toAdd.getMaxValue();
 			}
+
+			upperBound = Math.min(upperBound, truncateMax);
 
 			// value was not contained
-			if(min > max){
+			if(lowerBound > upperBound){
 				continue;
 			}
 
-			add(CDateRange.of(min, max));
+			add(CDateRange.of(lowerBound, upperBound));
 		}
 	}
 
