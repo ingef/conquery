@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -21,7 +21,7 @@ import ToggleButton from "../../ui-components/ToggleButton";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import { Description } from "../form-components/Description";
-import DropzoneList from "../form-components/DropzoneList";
+import DropzoneList, { dropzoneRef } from "../form-components/DropzoneList";
 import DynamicInputGroup from "../form-components/DynamicInputGroup";
 import FormQueryNodeEditor from "../form-query-node-editor/FormQueryNodeEditor";
 import {
@@ -112,6 +112,17 @@ const FormConceptGroup = (props: Props) => {
   const newValue = props.newValue;
   const defaults = props.defaults || {};
 
+  // indicator if it should be scrolled down back to the dropZone
+  const [scrollToDropzone, setScrollToDropzone] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (scrollToDropzone) {
+      dropzoneRef.current?.scrollIntoView({ behavior: "smooth" });
+      setScrollToDropzone(false);
+    }
+  });
+
+
   const [editedFormQueryNodePosition, setEditedFormQueryNodePosition] =
     useState<EditedFormQueryNodePosition | null>(null);
 
@@ -181,6 +192,7 @@ const FormConceptGroup = (props: Props) => {
           onDropFile(file, { valueIdx: props.value.length })
         }
         onDrop={(item: DragItemFile | DragItemConceptTreeNode) => {
+          setScrollToDropzone(true);
           if (item.type === "__NATIVE_FILE__") {
             onDropFile(item.files[0], { valueIdx: props.value.length });
 
