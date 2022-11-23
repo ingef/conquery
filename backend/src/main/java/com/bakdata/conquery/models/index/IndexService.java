@@ -116,20 +116,22 @@ public class IndexService implements Injectable {
 
 		final List<String> externalTemplates = key.getExternalTemplates();
 
-		final Map<String, String> templateToConcrete =
-				externalTemplates.stream()
-								 .collect(Collectors.toMap(
-												  Functions.identity(),
-												  value -> cleanOutput(substitutor.replace(value))
-										  )
-								 );
+		final Map<String, String> templateToConcrete = computeTemplates(substitutor, externalTemplates);
 
 		return Pair.of(internalValue, templateToConcrete);
 	}
 
 	@NotNull
-	private String cleanOutput(String externalValue) {
-		return CharMatcher.whitespace().trimAndCollapseFrom(externalValue, ' ');
+	private Map<String, String> computeTemplates(StringSubstitutor substitutor, List<String> externalTemplates) {
+		final CharMatcher whitespaceMatcher = CharMatcher.whitespace();
+
+		return externalTemplates.stream()
+								.distinct()
+								.collect(Collectors.toMap(
+												 Functions.identity(),
+												 value -> whitespaceMatcher.trimAndCollapseFrom(substitutor.replace(value), ' ')
+										 )
+								);
 	}
 
 	private Map<String, String> computeEmptyDefaults(IndexKey<?> key) {
@@ -137,11 +139,7 @@ public class IndexService implements Injectable {
 
 		final List<String> externalTemplates = key.getExternalTemplates();
 
-		return externalTemplates.stream()
-						.collect(Collectors.toMap(
-								Functions.identity(),
-								value -> cleanOutput(substitutor.replace(value)))
-						);
+		return computeTemplates(substitutor, externalTemplates);
 	}
 
 	public void evictCache() {
