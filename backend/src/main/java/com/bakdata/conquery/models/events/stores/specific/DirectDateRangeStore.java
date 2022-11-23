@@ -75,8 +75,8 @@ public class DirectDateRangeStore implements DateRangeStore {
 
 	@Override
 	public CDateRange getDateRange(int event) {
-		int min = CDateRange.MIN_VALUE;
-		int max = CDateRange.MAX_VALUE;
+		int min = CDateRange.NEGATIVE_INFINITY;
+		int max = CDateRange.POSITIVE_INFINITY;
 
 		if (minStore.has(event)) {
 			min = minStore.getDate(event);

@@ -35,7 +35,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		selectedEvent = OptionalInt.empty();
-		date = CDateRange.MIN_VALUE;
+		date = CDateRange.NEGATIVE_INFINITY;
 		selectedBucket = null;
 	}
 

@@ -23,8 +23,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 
-	public static final int MIN_VALUE = Integer.MIN_VALUE;
-	public static final int MAX_VALUE = Integer.MAX_VALUE;
+	public static final int NEGATIVE_INFINITY = Integer.MIN_VALUE;
+	public static final int POSITIVE_INFINITY = Integer.MAX_VALUE;
 
 	/**
 	 * Create a Range containing only the supplied date. The value needs to be a valid CDate.
@@ -49,21 +49,21 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 */
 	public static CDateRange of(Range<LocalDate> value) {
 		return of(
-			CDate.ofLocalDate(value.getMin(), MIN_VALUE),
-			CDate.ofLocalDate(value.getMax(), MAX_VALUE)
+			CDate.ofLocalDate(value.getMin(), NEGATIVE_INFINITY),
+			CDate.ofLocalDate(value.getMax(), POSITIVE_INFINITY)
 		);
 	}
 	
 	public static CDateRange of(int min, int max) {
-		if(min == MIN_VALUE && max == MAX_VALUE){
+		if(min == NEGATIVE_INFINITY && max == POSITIVE_INFINITY){
 			return CDateRange.all();
 		}
 
-		if(max == MAX_VALUE){
+		if(max == POSITIVE_INFINITY){
 			return atLeast(min);
 		}
 
-		if(min == MIN_VALUE){
+		if(min == NEGATIVE_INFINITY){
 			return atMost(max);
 		}
 
@@ -120,8 +120,8 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	@JsonCreator
 	public static CDateRange of(LocalDate min, LocalDate max) {
 		return of(
-			CDate.ofLocalDate(min, MIN_VALUE),
-			CDate.ofLocalDate(max, MAX_VALUE)
+			CDate.ofLocalDate(min, NEGATIVE_INFINITY),
+			CDate.ofLocalDate(max, POSITIVE_INFINITY)
 		);
 	}
 
@@ -135,7 +135,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	@Override
 	public LocalDate getMax() {
-		return getMaxValue() == MAX_VALUE ? null : CDate.toLocalDate(getMaxValue());
+		return getMaxValue() == POSITIVE_INFINITY ? null : CDate.toLocalDate(getMaxValue());
 	}
 
 	@EqualsAndHashCode.Include
@@ -146,7 +146,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	@Override
 	public LocalDate getMin() {
-		return getMinValue() == MIN_VALUE ? null : CDate.toLocalDate(getMinValue());
+		return getMinValue() == NEGATIVE_INFINITY ? null : CDate.toLocalDate(getMinValue());
 	}
 
 	@JsonCreator
@@ -210,7 +210,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 				min = getMaxValue();
 			}
 			else {
-				min = MAX_VALUE;
+				min = POSITIVE_INFINITY;
 			}
 
 			// then compare with others known min - if all fails, set it to MIN_VALUE
@@ -221,8 +221,8 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 				min = Math.min(min, other.getMaxValue());
 			}
 
-			if (min == MAX_VALUE) {
-				min = MIN_VALUE;
+			if (min == POSITIVE_INFINITY) {
+				min = NEGATIVE_INFINITY;
 			}
 		}
 
@@ -235,7 +235,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 				max = getMinValue();
 			}
 			else {
-				max = MIN_VALUE;
+				max = NEGATIVE_INFINITY;
 			}
 
 			if(other.hasUpperBound()){
@@ -245,17 +245,17 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 				max = Math.max(max, other.getMinValue());
 			}
 
-			if (max == MIN_VALUE) {
-				max = MAX_VALUE;
+			if (max == NEGATIVE_INFINITY) {
+				max = POSITIVE_INFINITY;
 			}
 		}
 
 
-		if(min == MIN_VALUE && max != MAX_VALUE){
+		if(min == NEGATIVE_INFINITY && max != POSITIVE_INFINITY){
 			min = max;
 		}
 
-		if(max == MAX_VALUE && min != MIN_VALUE){
+		if(max == POSITIVE_INFINITY && min != NEGATIVE_INFINITY){
 			max = min;
 		}
 
@@ -265,22 +265,22 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	@Override
 	public boolean isOpen() {
-		return getMinValue() == MIN_VALUE || getMaxValue() == MAX_VALUE;
+		return getMinValue() == NEGATIVE_INFINITY || getMaxValue() == POSITIVE_INFINITY;
 	}
 
 	@Override
 	public boolean isAll() {
-		return getMinValue() == MIN_VALUE && getMaxValue() == MAX_VALUE;
+		return getMinValue() == NEGATIVE_INFINITY && getMaxValue() == POSITIVE_INFINITY;
 	}
 
 	@Override
 	public boolean isAtMost() {
-		return getMinValue() == MIN_VALUE && getMaxValue() != MAX_VALUE;
+		return getMinValue() == NEGATIVE_INFINITY && getMaxValue() != POSITIVE_INFINITY;
 	}
 
 	@Override
 	public boolean isAtLeast() {
-		return getMinValue() != MIN_VALUE && getMaxValue() == MAX_VALUE;
+		return getMinValue() != NEGATIVE_INFINITY && getMaxValue() == POSITIVE_INFINITY;
 	}
 
 	@Override
@@ -332,7 +332,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return {@code true} if the Range has an upper bound
 	 */
 	public boolean hasUpperBound() {
-		return getMaxValue() != MAX_VALUE;
+		return getMaxValue() != POSITIVE_INFINITY;
 	}
 
 	/**
@@ -340,7 +340,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return {@code true} if the Range has a lower bound
 	 */
 	public boolean hasLowerBound() {
-		return getMinValue() != MIN_VALUE;
+		return getMinValue() != NEGATIVE_INFINITY;
 	}
 
 	/**

@@ -22,8 +22,8 @@ public class DateRangeParser extends Parser<CDateRange, DateRangeStore> {
 	private final DateReader dateReader;
 
 	private boolean onlyQuarters = true;
-	private int maxValue = CDateRange.MIN_VALUE;
-	private int minValue = CDateRange.MAX_VALUE;
+	private int maxValue = CDateRange.NEGATIVE_INFINITY;
+	private int minValue = CDateRange.POSITIVE_INFINITY;
 	private boolean anyOpen;
 
 	public DateRangeParser(ConqueryConfig config) {

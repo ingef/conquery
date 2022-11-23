@@ -40,8 +40,8 @@ class RangeTest {
 		Range<Integer> range = Range.atMost(5);
 
 		assertThat((IntPredicate) range::contains)
-				.accepts(5, 4, CDateRange.MIN_VALUE)
-				.rejects(6, CDateRange.MAX_VALUE);
+				.accepts(5, 4, CDateRange.NEGATIVE_INFINITY)
+				.rejects(6, CDateRange.POSITIVE_INFINITY);
 
 		assertThat((Predicate<Range<Integer>>) range::contains)
 				.accepts(Range.exactly(5), Range.atMost(4))
@@ -53,8 +53,8 @@ class RangeTest {
 		Range<Integer> range = Range.atLeast(5);
 
 		assertThat((IntPredicate) range::contains)
-				.accepts(5, 6, CDateRange.MAX_VALUE)
-				.rejects(4, CDateRange.MIN_VALUE)
+				.accepts(5, 6, CDateRange.POSITIVE_INFINITY)
+				.rejects(4, CDateRange.NEGATIVE_INFINITY)
 		;
 
 		assertThat((Predicate<Range<Integer>>) range::contains)
@@ -67,7 +67,7 @@ class RangeTest {
 		Range<Integer> range = Range.all();
 
 		assertThat((IntPredicate) range::contains)
-				.accepts(5, CDateRange.MAX_VALUE, CDateRange.MIN_VALUE);
+				.accepts(5, CDateRange.POSITIVE_INFINITY, CDateRange.NEGATIVE_INFINITY);
 
 		assertThat((Predicate<Range<Integer>>) range::contains)
 				.accepts(Range.exactly(5), Range.of(5, 10))
@@ -80,7 +80,7 @@ class RangeTest {
 
 		assertThat((IntPredicate) range::contains)
 				.accepts(5, 6, 7, 8, 9, 10)
-				.rejects(CDateRange.MIN_VALUE, 4, 11, CDateRange.MAX_VALUE);
+				.rejects(CDateRange.NEGATIVE_INFINITY, 4, 11, CDateRange.POSITIVE_INFINITY);
 
 		assertThat((Predicate<Range<Integer>>) range::contains)
 				.accepts(range, Range.of(5, 10), Range.exactly(7), Range.exactly(5), Range.exactly(10), Range.of(6, 9), Range.of(5, 9))

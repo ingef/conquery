@@ -24,7 +24,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	private OptionalInt selectedEvent = OptionalInt.empty();
 	private Bucket selectedBucket;
 
-	private int date = CDateRange.MAX_VALUE;
+	private int date = CDateRange.POSITIVE_INFINITY;
 
 	private Column validityDateColumn;
 
@@ -35,7 +35,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		selectedEvent = OptionalInt.empty();
-		date = CDateRange.MAX_VALUE;
+		date = CDateRange.POSITIVE_INFINITY;
 		selectedBucket = null;
 	}
 

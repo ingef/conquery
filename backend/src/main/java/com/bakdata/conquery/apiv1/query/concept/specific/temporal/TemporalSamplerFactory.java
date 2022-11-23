@@ -75,7 +75,7 @@ public enum TemporalSamplerFactory {
 					lower = span.getMinValue();
 				}
 				else {
-					lower = CDateRange.MIN_VALUE;
+					lower = CDateRange.NEGATIVE_INFINITY;
 				}
 
 
@@ -85,7 +85,7 @@ public enum TemporalSamplerFactory {
 					upper = span.getMaxValue();
 				}
 				else {
-					upper = CDateRange.MAX_VALUE;
+					upper = CDateRange.POSITIVE_INFINITY;
 				}
 
 

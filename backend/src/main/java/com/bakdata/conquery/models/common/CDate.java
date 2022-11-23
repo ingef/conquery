@@ -39,11 +39,11 @@ public final class CDate {
 	}
 
 	public boolean isPositiveInfinity(int epochDay) {
-		return epochDay == CDateRange.MAX_VALUE;
+		return epochDay == CDateRange.POSITIVE_INFINITY;
 	}
 
 	public boolean isNegativeInfinity(int epochDay) {
-		return epochDay == CDateRange.MIN_VALUE;
+		return epochDay == CDateRange.NEGATIVE_INFINITY;
 	}
 
 }
