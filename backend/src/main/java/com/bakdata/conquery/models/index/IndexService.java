@@ -2,14 +2,15 @@ package com.bakdata.conquery.models.index;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.google.common.base.CharMatcher;
+import com.google.common.base.Functions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -33,16 +34,12 @@ import org.jetbrains.annotations.Nullable;
 public class IndexService implements Injectable {
 
 	private final CsvParserSettings csvParserSettings;
-
-	public IndexService(CsvParserSettings csvParserSettings) {
-		this.csvParserSettings = csvParserSettings.clone();
-		this.csvParserSettings.setHeaderExtractionEnabled(true);
-	}
-
 	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<>() {
 		@Override
 		public Index<?> load(@NotNull IndexKey key) throws Exception {
 			log.info("Started to parse mapping {}", key);
+
+			final Map<String, String> emptyDefaults = computeEmptyDefaults(key);
 
 			final Index<?> int2ext = key.createIndex();
 
@@ -66,13 +63,13 @@ public class IndexService implements Injectable {
 					final String internalValue = pair.getLeft();
 					final Map<String, String> externalValue = pair.getRight();
 
-					// If the whole string is empty or just whitespaces, put in the original value
-					//TODO Maybe check against an empty render of the templates instead?
-					externalValue.replaceAll((ignored, value) -> value.isBlank() ? internalValue : value);
+					// If the computed value is equal to a template without any values, replace it with value
+					externalValue.replaceAll((template, value) -> emptyDefaults.get(template).equals(value) ? internalValue : value);
 
 					try {
 						int2ext.put(internalValue, externalValue);
-					} catch (IllegalArgumentException e) {
+					}
+					catch (IllegalArgumentException e) {
 						log.warn(
 								"Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
 								internalValue,
@@ -95,40 +92,57 @@ public class IndexService implements Injectable {
 
 			return int2ext;
 		}
-
-		@Nullable
-		private Pair<String, Map<String, String>> computeInternalExternal(@NotNull IndexKey<?> key, CsvParser csvParser, Record row) {
-			final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
-
-			final String internalValue = row.getString(key.getInternalColumn());
-
-			if (internalValue == null) {
-				log.trace("Could not create a mapping for row {} because the cell for the internal value was empty. Row: {}", csvParser.getContext()
-																																	   .currentLine(),
-						  log.isTraceEnabled()
-						  ? StringUtils.join(row.toFieldMap())
-						  : null
-				);
-				return null;
-			}
-
-			final List<String> externalTemplates = key.getExternalTemplates();
-
-			final Map<String, String> templateToConcrete = new HashMap<>();
-
-			for (String externalTemplate : externalTemplates) {
-
-				// We allow template values to be missing
-				final String externalValue = substitutor.replace(externalTemplate);
-
-				// Clean up the substitution by removing repeated white spaces
-				String externalValueCleaned = CharMatcher.whitespace().trimAndCollapseFrom(externalValue, ' ');
-				templateToConcrete.put(externalTemplate, externalValueCleaned);
-			}
-
-			return Pair.of(internalValue, templateToConcrete);
-		}
 	});
+
+	public IndexService(CsvParserSettings csvParserSettings) {
+		this.csvParserSettings = csvParserSettings.clone();
+		this.csvParserSettings.setHeaderExtractionEnabled(true);
+	}
+
+	@Nullable
+	private Pair<String, Map<String, String>> computeInternalExternal(@NotNull IndexKey<?> key, CsvParser csvParser, Record row) {
+		final StringSubstitutor substitutor = new StringSubstitutor(row::getString, "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
+
+		final String internalValue = row.getString(key.getInternalColumn());
+
+		if (internalValue == null) {
+			log.trace(
+					"Could not create a mapping for row {} because the cell for the internal value was empty. Row: {}",
+					csvParser.getContext().currentLine(),
+					log.isTraceEnabled() ? StringUtils.join(row.toFieldMap()) : null
+			);
+			return null;
+		}
+
+		final List<String> externalTemplates = key.getExternalTemplates();
+
+		final Map<String, String> templateToConcrete =
+				externalTemplates.stream()
+								 .collect(Collectors.toMap(
+												  Functions.identity(),
+												  value -> cleanOutput(substitutor.replace(value))
+										  )
+								 );
+
+		return Pair.of(internalValue, templateToConcrete);
+	}
+
+	@NotNull
+	private String cleanOutput(String externalValue) {
+		return CharMatcher.whitespace().trimAndCollapseFrom(externalValue, ' ');
+	}
+
+	private Map<String, String> computeEmptyDefaults(IndexKey<?> key) {
+		final StringSubstitutor substitutor = new StringSubstitutor((ignored) -> "", "{{", "}}", StringSubstitutor.DEFAULT_ESCAPE);
+
+		final List<String> externalTemplates = key.getExternalTemplates();
+
+		return externalTemplates.stream()
+						.collect(Collectors.toMap(
+								Functions.identity(),
+								value -> cleanOutput(substitutor.replace(value)))
+						);
+	}
 
 	public void evictCache() {
 		mappings.invalidateAll();
