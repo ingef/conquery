@@ -16,17 +16,19 @@ public enum TemporalSamplerFactory {
 	 */
 	EARLIEST {
 		@Override
-		public Sampler sampler() {
+		public Sampler sampler(int today) {
 			return data -> {
 				if (data.isEmpty()) {
 					return OptionalInt.empty();
 				}
 
-				if (!data.span().hasLowerBound()) {
-					return OptionalInt.empty();
+				final CDateRange span = data.span();
+
+				if (span.hasLowerBound()) {
+					return OptionalInt.of(span.getMinValue());
 				}
 
-				return OptionalInt.of(data.span().getMinValue());
+				return OptionalInt.empty();
 			};
 		}
 	},
@@ -35,14 +37,14 @@ public enum TemporalSamplerFactory {
 	 */
 	LATEST {
 		@Override
-		public Sampler sampler() {
+		public Sampler sampler(int today) {
 			return data -> {
 				if (data.isEmpty()) {
 					return OptionalInt.empty();
 				}
 
 				if (!data.span().hasUpperBound()) {
-					return OptionalInt.empty();
+					return OptionalInt.of(today);
 				}
 
 				return OptionalInt.of(data.span().getMaxValue());
@@ -54,7 +56,7 @@ public enum TemporalSamplerFactory {
 	 */
 	RANDOM {
 		@Override
-		public Sampler sampler() {
+		public Sampler sampler(int today) {
 			final Random random = new Random(ConqueryConstants.RANDOM_SEED);
 
 			return data -> {
@@ -75,6 +77,7 @@ public enum TemporalSamplerFactory {
 					lower = span.getMinValue();
 				}
 				else {
+					// Very rare edge case with no real answer to give
 					lower = CDateRange.NEGATIVE_INFINITY;
 				}
 
@@ -85,7 +88,8 @@ public enum TemporalSamplerFactory {
 					upper = span.getMaxValue();
 				}
 				else {
-					upper = CDateRange.POSITIVE_INFINITY;
+					// Since there is no satisfying real value, but real values are preferred, we set the maximum to today for sampling purposes.
+					upper = today;
 				}
 
 
@@ -106,16 +110,16 @@ public enum TemporalSamplerFactory {
 		}
 	};
 
-	@FunctionalInterface
-	public interface Sampler{
-		OptionalInt sample(CDateSet data);
-	}
-
 	/**
 	 * Get a date from within the {@link CDateSet} that is produced according to a sampling scheme.
 	 *
 	 * @return A sampler returning a date fitting the sampling criteria. Or {@link OptionalInt#empty()} if none is found.
 	 */
-	public abstract Sampler sampler();
+	public abstract Sampler sampler(int today);
+
+	@FunctionalInterface
+	public interface Sampler {
+		OptionalInt sample(CDateSet data);
+	}
 
 }

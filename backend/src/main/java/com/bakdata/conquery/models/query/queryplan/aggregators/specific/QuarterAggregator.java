@@ -42,8 +42,8 @@ public class QuarterAggregator extends Aggregator<String> {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		set.clear();
-		sampler = samplerFactory.sampler();
 		realUpperBound = context.getToday();
+		sampler = samplerFactory.sampler(realUpperBound);
 	}
 
 	@Override
