@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -20,6 +21,8 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
 
+	private int realUpperBound;
+
 	public DurationSumAggregator(Column column) {
 		super(column);
 	}
@@ -27,6 +30,7 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		set.clear();
+		realUpperBound = context.getToday();
 	}
 
 	@Override
@@ -42,17 +46,15 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 
 		final CDateRange value = bucket.getAsDateRange(event, getColumn());
 
-		if (value.isOpen()) {
-			return;
-		}
-
-
-		set.maskedAdd(value, dateRestriction);
+		set.maskedAdd(value, dateRestriction, realUpperBound);
 	}
 
 	@Override
 	public Long createAggregationResult() {
-		return set.isEmpty() ? null : set.countDays();
+		if (set.isEmpty() || CDate.isNegativeInfinity(set.getMinValue())) {
+			return null;
+		}
+		return set.countDays();
 	}
 
 	@Override
