@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @ToString(of = "result")
 @Slf4j
-public class CollectQueryResult extends NamespaceMessage.Slow {
+public class CollectQueryResult extends NamespaceMessage {
 
 	private ShardResult result;
 

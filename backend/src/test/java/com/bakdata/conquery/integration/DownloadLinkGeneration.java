@@ -42,6 +42,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		// Create execution for download
 		ManagedQuery exec = new ManagedQuery(test.getQuery(), user, conquery.getDataset());
+		exec.setLastResultCount(100L);
 
 		storage.addExecution(exec);
 

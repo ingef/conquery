@@ -31,7 +31,6 @@ interface Props {
   tooltip?: string;
   indexPrefix?: number;
   placeholder?: string;
-  loading?: boolean;
   clearable?: boolean;
   smallMenu?: boolean;
   className?: string;
@@ -87,7 +86,9 @@ const InputSelect = ({
     setInputValue,
   } = useCombobox({
     itemToString: (item) => {
-      return item?.label || "";
+      if (!item) return "";
+
+      return item.selectedLabel || item.label || String(item.value);
     },
     defaultSelectedItem: value,
     items: filteredOptions,
@@ -297,11 +298,11 @@ const InputSelect = ({
               return (
                 <SxSelectListOption
                   key={`${option.value}`}
+                  option={option}
                   active={
                     highlightedIndex === index ||
                     selectedItem?.value === option.value
                   }
-                  option={option}
                   {...itemProps}
                   ref={(instance) => {
                     itemPropsRef(instance);

@@ -111,7 +111,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 	@Override
 	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		status.setColumnDescriptions(getValuesQuery().generateColumnDescriptions(datasetRegistry));
+		status.setColumnDescriptions(generateColumnDescriptions(datasetRegistry));
 	}
 
 	@JsonIgnore
@@ -136,21 +136,16 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(datasetRegistry);
 
 		for (ColumnDescriptor descriptor : descriptors) {
-			for (SemanticType semanticType : descriptor.getSemantics()) {
-				if (semanticType instanceof SemanticType.SecondaryIdT desc
-					&& previewConfig.isGroupingColumn(desc.getSecondaryId())) {
-					descriptor.getSemantics().add(new SemanticType.GroupT());
-					break;
-				}
+			if (descriptor.getSemantics()
+						  .stream()
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc && previewConfig.isGroupingColumn(desc.getSecondaryId()))) {
+				descriptor.getSemantics().add(new SemanticType.GroupT());
 			}
 
-
-			for (SemanticType semanticType : descriptor.getSemantics()) {
-				if (semanticType instanceof SemanticType.ColumnT desc
-					&& previewConfig.isHidden(desc.getColumn())) {
-					descriptor.getSemantics().add(new SemanticType.HiddenT());
-					break;
-				}
+			if (descriptor.getSemantics()
+						  .stream()
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn()))) {
+				descriptor.getSemantics().add(new SemanticType.HiddenT());
 			}
 		}
 
@@ -166,5 +161,10 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	@Override
 	public Stream<EntityResult> streamResults() {
 		return getValuesQuery().streamResults();
+	}
+
+	@Override
+	public long resultRowCount() {
+		return getValuesQuery().resultRowCount();
 	}
 }

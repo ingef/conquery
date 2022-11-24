@@ -33,6 +33,8 @@ public class QuarterAggregator extends Aggregator<String> {
 
 	private Column column;
 
+	private int realUpperBound;
+
 	public QuarterAggregator(TemporalSamplerFactory samplerFactory) {
 		this.samplerFactory = samplerFactory;
 	}
@@ -41,6 +43,7 @@ public class QuarterAggregator extends Aggregator<String> {
 	public void init(Entity entity, QueryExecutionContext context) {
 		set.clear();
 		sampler = samplerFactory.sampler();
+		realUpperBound = context.getToday();
 	}
 
 	@Override
@@ -57,11 +60,7 @@ public class QuarterAggregator extends Aggregator<String> {
 
 		final CDateRange value = bucket.getAsDateRange(event, getColumn());
 
-		if (value.isOpen()) {
-			return;
-		}
-
-		set.maskedAdd(value, dateRestriction);
+		set.maskedAdd(value, dateRestriction, realUpperBound);
 	}
 
 	@Override
@@ -70,13 +69,19 @@ public class QuarterAggregator extends Aggregator<String> {
 			return null;
 		}
 
-		final OptionalInt sampled = sampler.sample(set);
+		final OptionalInt maybeSampled = sampler.sample(set);
 
-		if (sampled.isEmpty()) {
+		if (maybeSampled.isEmpty()) {
 			return null;
 		}
 
-		final LocalDate date = CDate.toLocalDate(sampled.getAsInt());
+		final int sampled = maybeSampled.getAsInt();
+
+		if (CDate.isNegativeInfinity(sampled) || CDate.isPositiveInfinity(sampled)) {
+			return null;
+		}
+
+		final LocalDate date = CDate.toLocalDate(sampled);
 		final int quarter = QuarterUtils.getQuarter(date);
 		final int year = date.getYear();
 

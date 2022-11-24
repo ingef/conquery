@@ -8,16 +8,17 @@
         "type": "EXPORT_FORM",
         "queryGroup": "00000000-0000-0000-0000-000000000001",
         "resolution": "QUARTERS",
-        "timeMode":{
+        "alsoCreateCoarserSubdivisions": true,
+        "timeMode": {
             "value": "RELATIVE",
             "indexSelector": "EARLIEST",
-            "timeUnit" : "QUARTERS",
+            "timeUnit": "QUARTERS",
             "features": [
-              {
-                "ids": [
-                  "alter"
-                ],
-                "type": "CONCEPT",
+                {
+                    "ids": [
+                        "alter"
+                    ],
+                    "type": "CONCEPT",
                 "tables": [
                   {
                     "id": "alter.alter",

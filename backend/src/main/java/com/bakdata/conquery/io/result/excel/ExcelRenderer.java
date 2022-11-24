@@ -304,8 +304,7 @@ public class ExcelRenderer {
 	 * Is not used at the moment because at least the german Excel does not seem to understand its own boolean format.
 	 */
 	private static void writeBooleanCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		if (value instanceof Boolean) {
-			Boolean aBoolean = (Boolean) value;
+		if (value instanceof Boolean aBoolean) {
 			cell.setCellValue(aBoolean);
 		}
 		cell.setCellValue(info.getType().printNullable(settings, value));

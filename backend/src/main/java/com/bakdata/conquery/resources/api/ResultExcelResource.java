@@ -41,10 +41,6 @@ public class ResultExcelResource {
 
 	public static final String GET_RESULT_PATH_METHOD = "get";
 
-	private final DatasetRegistry datasetRegistry;
-
-	private final ConqueryConfig config;
-
 	private final ResultExcelProcessor processor;
 
 	@GET

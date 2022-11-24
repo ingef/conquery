@@ -11,6 +11,7 @@ import c10n.C10N;
 import com.bakdata.conquery.internationalization.Results;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -43,25 +44,15 @@ public abstract class ResultType {
 	public abstract String typeInfo();
 
 	public static ResultType resolveResultType(MajorTypeId majorTypeId) {
-		switch (majorTypeId) {
-			case STRING:
-				return StringT.INSTANCE;
-			case BOOLEAN:
-				return BooleanT.INSTANCE;
-			case DATE:
-				return DateT.INSTANCE;
-			case DATE_RANGE:
-				return DateRangeT.INSTANCE;
-			case INTEGER:
-				return IntegerT.INSTANCE;
-			case MONEY:
-				return MoneyT.INSTANCE;
-			case DECIMAL:
-			case REAL:
-				return NumericT.INSTANCE;
-			default:
-				throw new IllegalStateException(String.format("Invalid column type '%s'", majorTypeId));
-		}
+		return switch (majorTypeId) {
+			case STRING -> StringT.INSTANCE;
+			case BOOLEAN -> BooleanT.INSTANCE;
+			case DATE -> DateT.INSTANCE;
+			case DATE_RANGE -> DateRangeT.INSTANCE;
+			case INTEGER -> IntegerT.INSTANCE;
+			case MONEY -> MoneyT.INSTANCE;
+			case DECIMAL, REAL -> NumericT.INSTANCE;
+		};
 	}
 
 	abstract static class PrimitiveResultType extends ResultType {
@@ -176,13 +167,13 @@ public abstract class ResultType {
 				log.warn("Encountered incomplete range, treating it as an open range. Either min or max was null: {}", list);
 			}
 			// Compute minString first because we need it either way
-			String minString = min == null || min == Integer.MIN_VALUE ? "-∞" : ResultType.DateT.print(min, dateFormat);
+			String minString = min == null || min == CDateRange.NEGATIVE_INFINITY ? "-∞" : ResultType.DateT.print(min, dateFormat);
 
 			if (cfg.isPrettyPrint() && min != null && min.equals(max)) {
 				// If the min and max are the same we print it like a singe date, not a range (only in pretty printing)
 				return minString;
 			}
-			String maxString = max == null || max == Integer.MAX_VALUE ? "+∞" : ResultType.DateT.print(max, dateFormat);
+			String maxString = max == null || max == CDateRange.POSITIVE_INFINITY ? "+∞" : ResultType.DateT.print(max, dateFormat);
 
 			return minString + cfg.getDateRangeSeparator() + maxString;
 		}

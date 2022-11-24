@@ -136,8 +136,8 @@ public class CompoundDateRangeStore implements DateRangeStore {
 
 	@Override
 	public CDateRange getDateRange(int event) {
-		int start = Integer.MIN_VALUE;
-		int end = Integer.MAX_VALUE;
+		int start = CDateRange.NEGATIVE_INFINITY;
+		int end = CDateRange.POSITIVE_INFINITY;
 
 		final DateStore startStore = getStartStore();
 		final DateStore endStore = getEndStore();

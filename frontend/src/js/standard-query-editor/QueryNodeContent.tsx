@@ -49,7 +49,7 @@ const Node = styled("div")`
 
 interface Props {
   tooltipText?: string;
-  isConceptQueryNode: boolean;
+  isConceptQueryNode?: boolean;
   error?: string;
   label: string;
   description?: string;

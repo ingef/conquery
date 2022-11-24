@@ -120,6 +120,14 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
+	public long resultRowCount() {
+		if (lastResultCount == null) {
+			throw new IllegalStateException("Result row count is unknown, because the query has not yet finished.");
+		}
+		return lastResultCount;
+	}
+
+	@Override
 	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
 		lastResultCount = query.countResults(streamResults());
 

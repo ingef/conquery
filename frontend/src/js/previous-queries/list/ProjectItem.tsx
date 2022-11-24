@@ -146,8 +146,6 @@ const ProjectItem = forwardRef<
   const { updateQuery } = useUpdateQuery();
   const { updateFormConfig } = useUpdateFormConfig();
 
-  const mayDeleteRightAway = item.tags.length === 0 && !!item.isPristineLabel;
-
   const formLabel = useFormLabelByType(
     isFormConfig(item) ? item.formType : null,
   );
@@ -252,12 +250,7 @@ const ProjectItem = forwardRef<
                 />
               </WithTooltip>
             )}
-            {item.own && (
-              <DeleteProjectItemButton
-                item={item}
-                mayDeleteRightAway={mayDeleteRightAway}
-              />
-            )}
+            {item.own && <DeleteProjectItemButton item={item} />}
           </TopRight>
         </TopInfos>
         <LabelRow>

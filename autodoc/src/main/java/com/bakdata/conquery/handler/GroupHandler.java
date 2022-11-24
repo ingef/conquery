@@ -121,7 +121,7 @@ public class GroupHandler {
 	}
 
 	private void handleEndpoint(String url, MethodInfo method) throws IOException {
-		Introspection introspec = Introspection.from(root, method.getClassInfo()).findMethod(method);
+		final Introspection introspec = Introspection.from(root, method.getClassInfo()).findMethod(method);
 
 		try (Closeable details = details(getRestMethod(method) + "\u2001" + url, method.getClassInfo(), introspec)) {
 			out.paragraph("Method: " + code(method.getName()));
@@ -136,7 +136,7 @@ public class GroupHandler {
 	}
 
 	private void collectEndpoints(Class<?> resource) throws IOException {
-		ClassInfo info = scan.getClassInfo(resource.getName());
+		final ClassInfo info = scan.getClassInfo(resource.getName());
 
 		for (MethodInfo method : info.getMethodInfo()) {
 			if (getRestMethod(method) == null) {
@@ -164,7 +164,7 @@ public class GroupHandler {
 	public void handleBase(Base base) throws IOException {
 		out.subHeading(baseTitle(base.getBaseClass()));
 		out.paragraph(base.getDescription());
-		String typeProperty = base.getBaseClass().getAnnotation(JsonTypeInfo.class).property();
+		final String typeProperty = base.getBaseClass().getAnnotation(JsonTypeInfo.class).property();
 
 		out.paragraph("Different types of "
 					  + base.getBaseClass().getSimpleName()
@@ -192,7 +192,7 @@ public class GroupHandler {
 	}
 
 	private void handleClass(String name, ClassInfo c) throws IOException {
-		Introspection source = Introspection.from(root, c);
+		final Introspection source = Introspection.from(root, c);
 		try (Closeable details = details(name, c, source)) {
 			if (c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 				out.line("Supported Fields:");
@@ -235,9 +235,9 @@ public class GroupHandler {
 	}
 
 	private void handleMarkerInterface(String name, ClassInfo c) throws IOException {
-		Introspection source = Introspection.from(root, c);
+		final Introspection source = Introspection.from(root, c);
 		try (Closeable details = details(name, c, source)) {
-			Set<String> values = new HashSet<>();
+			final Set<String> values = new HashSet<>();
 			for (Class<?> cl : group.getOtherClasses()) {
 				if (c.loadClass().isAssignableFrom(cl)) {
 					values.add("[" + cl.getSimpleName() + "](" + anchor(typeTitle(cl)) + ")");
@@ -268,12 +268,12 @@ public class GroupHandler {
 			return;
 		}
 
-		Introspection introspec = Introspection.from(root, field.getClassInfo()).findField(field);
-		String name = field.getName();
-		TypeSignature typeSignature = field.getTypeSignatureOrTypeDescriptor();
-		Ctx ctx = new Ctx().withField(field);
+		final Introspection introspec = Introspection.from(root, field.getClassInfo()).findField(field);
+		final String name = field.getName();
+		final TypeSignature typeSignature = field.getTypeSignatureOrTypeDescriptor();
+		final Ctx ctx = new Ctx().withField(field);
 
-		String type;
+		final String type;
 		if (ID_REF.stream().anyMatch(field::hasAnnotation)) {
 			type = ID_OF + printType(ctx.withIdOf(true), typeSignature);
 		}
@@ -296,9 +296,9 @@ public class GroupHandler {
 
 	private String findDefault(ClassInfo currentType, FieldInfo field) {
 		try {
-			Object value = currentType.loadClass().getConstructor().newInstance();
-			JsonNode node = Jackson.MAPPER.valueToTree(value);
-			JsonNode def = node.get(field.getName());
+			final Object value = currentType.loadClass().getConstructor().newInstance();
+			final JsonNode node = Jackson.MAPPER.valueToTree(value);
+			final JsonNode def = node.get(field.getName());
 			if (def == null) {
 				return "\u2400";
 			}
@@ -312,7 +312,7 @@ public class GroupHandler {
 				return "";
 			}
 			//check if file path not not generate absolute paths
-			String localPath = Jackson.MAPPER.writeValueAsString(new File("."));
+			final String localPath = Jackson.MAPPER.writeValueAsString(new File("."));
 			json = StringUtils.replace(json, localPath.substring(1, localPath.length() - 2), "./");
 			return code(json);
 		}
@@ -322,8 +322,8 @@ public class GroupHandler {
 	}
 
 	private String editLink(Introspection intro) throws IOException {
-		Path target = root.toPath().relativize(intro.getFile().getCanonicalFile().toPath());
-		String line = intro.getLine();
+		final Path target = root.toPath().relativize(intro.getFile().getCanonicalFile().toPath());
+		final String line = intro.getLine();
 		return "[✎]("
 			   + "https://github.com/bakdata/conquery/edit/develop/"
 			   + FilenameUtils.separatorsToUnix(target.toString())
@@ -335,16 +335,17 @@ public class GroupHandler {
 		if (type instanceof ArrayTypeSignature) {
 			return LIST_OF + printType(ctx, ((ArrayTypeSignature) type).getElementTypeSignature());
 		}
+
 		if (type instanceof BaseTypeSignature) {
 			return code(type.toString());
 		}
-		if (type instanceof ClassRefTypeSignature) {
-			ClassRefTypeSignature classRef = (ClassRefTypeSignature) type;
-			Class<?> cl = classRef.loadClass();
+
+		if (type instanceof ClassRefTypeSignature classRef) {
+			final Class<?> cl = classRef.loadClass();
 
 			//ID
 			if (Id.class.isAssignableFrom(cl)) {
-				String name = cl.getSimpleName();
+				final String name = cl.getSimpleName();
 				return ID_OF + code(name.substring(0, name.length() - 2));
 			}
 
@@ -356,7 +357,7 @@ public class GroupHandler {
 
 			//List
 			if (List.class.isAssignableFrom(cl)) {
-				TypeArgument param = classRef.getTypeArguments().get(0);
+				final TypeArgument param = classRef.getTypeArguments().get(0);
 				return LIST_OF + printType(ctx.withGeneric(true), param);
 			}
 
@@ -390,7 +391,7 @@ public class GroupHandler {
 				return "[" + type.toStringWithSimpleNames() + "](" + anchor(baseTitle(cl)) + ")";
 			}
 			//another contentClass
-			Optional<Pair<CPSType, ClassInfo>>
+			final Optional<Pair<CPSType, ClassInfo>>
 					match =
 					content.values().stream().filter(p -> p.getRight().loadClass().equals(cl)).collect(MoreCollectors.toOptional());
 			if (match.isPresent()) {
@@ -447,8 +448,8 @@ public class GroupHandler {
 			return "UNKNWON";
 		}
 		if (type.getTypeSignature() instanceof TypeVariableSignature) {
-			String v = type.getTypeSignature().toString();
-			TypeParameter typeParam = ctx
+			final String v = type.getTypeSignature().toString();
+			final TypeParameter typeParam = ctx
 											  .getField()
 											  .getClassInfo()
 											  .getTypeSignature()

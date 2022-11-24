@@ -1,11 +1,9 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
-import java.time.LocalDate;
 import java.util.OptionalInt;
 import java.util.Random;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 
@@ -64,29 +62,30 @@ public enum TemporalSamplerFactory {
 					return OptionalInt.empty();
 				}
 
-				CDateRange span = data.span();
+				final CDateRange span = data.span();
+
 				// It would not produce sensible to just return random data.
 				if (span.isAll()) {
 					return OptionalInt.empty();
 				}
 
-				int lower;
+				final int lower;
 
 				if (span.hasLowerBound()) {
 					lower = span.getMinValue();
 				}
 				else {
-					lower = CDate.ofLocalDate(LocalDate.MIN);
+					lower = CDateRange.NEGATIVE_INFINITY;
 				}
 
 
-				int upper;
+				final int upper;
 
 				if (span.hasUpperBound()) {
 					upper = span.getMaxValue();
 				}
 				else {
-					upper = CDate.ofLocalDate(LocalDate.MAX);
+					upper = CDateRange.POSITIVE_INFINITY;
 				}
 
 
@@ -108,8 +107,8 @@ public enum TemporalSamplerFactory {
 	};
 
 	@FunctionalInterface
-	public static interface Sampler{
-		public OptionalInt sample(CDateSet data);
+	public interface Sampler{
+		OptionalInt sample(CDateSet data);
 	}
 
 	/**

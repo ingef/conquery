@@ -39,13 +39,15 @@ public class ResultExcelProcessor {
 
 
 	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty) {
+
 		ConqueryMDC.setLocation(subject.getName());
+		log.info("Downloading results for {} on dataset {}", exec, dataset);
+
+		ResultUtil.authorizeExecutable(subject, exec, dataset);
+
+		ResultUtil.checkSingleTableResult(exec);
+
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-
-		subject.authorize(dataset, Ability.READ);
-		subject.authorize(dataset, Ability.DOWNLOAD);
-		subject.authorize(exec, Ability.READ);
-
 		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
 
 		final Locale locale = I18n.LOCALE.get();

@@ -1,6 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.apiv1.frontend.FEValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
@@ -8,6 +12,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
@@ -29,5 +34,11 @@ public class BigMultiSelectFilter extends SelectFilter<String[]> {
 	@Override
 	public FilterNode createFilterNode(String[] value) {
 		return new MultiSelectFilterNode(getColumn(), value);
+	}
+
+	@NotNull
+	protected List<FEValue> collectLabels() {
+		// Frontend expects no Labels when encountering BIG_MULTI_SELECT
+		return Collections.emptyList();
 	}
 }

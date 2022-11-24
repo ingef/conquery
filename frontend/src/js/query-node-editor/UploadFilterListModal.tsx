@@ -40,12 +40,7 @@ interface PropsT {
 const selectResolvedItemsCount = (
   resolved: PostFilterResolveResponseT | null,
 ) => {
-  return resolved &&
-    resolved.resolvedFilter &&
-    resolved.resolvedFilter.value &&
-    resolved.resolvedFilter.value.length
-    ? resolved.resolvedFilter.value.length
-    : 0;
+  return resolved?.resolvedFilter?.value?.length || 0;
 };
 
 const selectUnresolvedItemsCount = (
