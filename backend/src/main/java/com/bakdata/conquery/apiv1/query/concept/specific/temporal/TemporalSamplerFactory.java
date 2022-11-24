@@ -43,11 +43,18 @@ public enum TemporalSamplerFactory {
 					return OptionalInt.empty();
 				}
 
-				if (!data.span().hasUpperBound()) {
-					return OptionalInt.of(today);
+				final CDateRange span = data.span();
+
+				if (span.hasUpperBound()) {
+					return OptionalInt.of(span.getMaxValue());
 				}
 
-				return OptionalInt.of(data.span().getMaxValue());
+				if(span.hasLowerBound() && span.getMinValue() > today){
+					return OptionalInt.of(span.getMinValue());
+				}
+
+				return OptionalInt.of(today);
+
 			};
 		}
 	},

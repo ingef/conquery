@@ -25,7 +25,7 @@ class TemporalSamplerFactoryTest {
 				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
 
 		assertThat(sampler.sample(generateSet(atMost(LocalDate.of(2011, 1, 10)))))
-				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
+				.isEmpty();
 
 		assertThat(sampler.sample(generateSet(of(LocalDate.of(2011, 1, 10), LocalDate.of(2011, 1, 12)))))
 				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
