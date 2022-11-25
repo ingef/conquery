@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, createRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -21,7 +21,7 @@ import ToggleButton from "../../ui-components/ToggleButton";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import { Description } from "../form-components/Description";
-import DropzoneList, { dropzoneRef } from "../form-components/DropzoneList";
+import DropzoneList from "../form-components/DropzoneList";
 import DynamicInputGroup from "../form-components/DynamicInputGroup";
 import FormQueryNodeEditor from "../form-query-node-editor/FormQueryNodeEditor";
 import {
@@ -114,7 +114,7 @@ const FormConceptGroup = (props: Props) => {
 
   // indicator if it should be scrolled down back to the dropZone
   const [scrollToDropzone, setScrollToDropzone] = useState<boolean>(false);
-
+  const dropzoneRef = createRef<HTMLDivElement>();
   useEffect(() => {
     if (scrollToDropzone) {
       dropzoneRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -165,6 +165,7 @@ const FormConceptGroup = (props: Props) => {
   return (
     <div>
       <DropzoneList /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType> */
+        ref={dropzoneRef}
         tooltip={props.tooltip}
         optional={props.optional}
         label={
@@ -344,6 +345,7 @@ const FormConceptGroup = (props: Props) => {
             />
           </DropzoneListItem>
         ))}
+        
       />
       {isCopyModalOpen && (
         <FormConceptCopyModal

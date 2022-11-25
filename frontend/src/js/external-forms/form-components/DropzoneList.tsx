@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { ReactNode } from "react";
+import { ReactNode, forwardRef, Ref, ReactElement } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";
@@ -59,10 +59,10 @@ interface PropsT<DroppableObject> {
   disallowMultipleColumns?: boolean;
 }
 
-export const dropzoneRef = React.createRef<HTMLDivElement>();
 
 const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
   props: WithFileProps<DroppableObject> | WithoutFileProps<DroppableObject>,
+  ref: Ref<HTMLDivElement>,
 ) => {
   // allow at least one column
   const showDropzone =
@@ -92,27 +92,31 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
           ))}
         </div>
       )}
-      <div ref={dropzoneRef} >
-        {showDropzone &&
-          (props.onDropFile ? (
-            <DropzoneWithFileInput
-              acceptedDropTypes={props.acceptedDropTypes}
-              onDrop={props.onDrop}
-              onSelectFile={props.onDropFile}
-            >
-              {props.dropzoneChildren}
-            </DropzoneWithFileInput>
-          ) : (
-            <Dropzone
-              acceptedDropTypes={props.acceptedDropTypes}
-              onDrop={props.onDrop}
-            >
-              {props.dropzoneChildren}
-            </Dropzone>
-          ))}
+        <div ref={ref} >
+          {showDropzone &&
+            (props.onDropFile ? (
+              <DropzoneWithFileInput
+                acceptedDropTypes={props.acceptedDropTypes}
+                onDrop={props.onDrop}
+                onSelectFile={props.onDropFile}
+              >
+                {props.dropzoneChildren}
+              </DropzoneWithFileInput>
+            ) : (
+              <Dropzone
+                acceptedDropTypes={props.acceptedDropTypes}
+                onDrop={props.onDrop}
+              >
+                {props.dropzoneChildren}
+              </Dropzone>
+            ))}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+}; 
 
-export default DropzoneList;
+export default forwardRef(DropzoneList) as <
+  DroppableObject extends PossibleDroppableObject = DragItemFile,
+>(
+  props: (WithFileProps<DroppableObject> | WithoutFileProps<DroppableObject>) & { ref?: Ref<HTMLDivElement> },
+) => ReactElement;
