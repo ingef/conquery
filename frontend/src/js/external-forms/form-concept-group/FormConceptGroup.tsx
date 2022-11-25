@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useEffect, useState, createRef } from "react";
+import { ReactNode, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -114,7 +114,7 @@ const FormConceptGroup = (props: Props) => {
 
   // indicator if it should be scrolled down back to the dropZone
   const [scrollToDropzone, setScrollToDropzone] = useState<boolean>(false);
-  const dropzoneRef = createRef<HTMLDivElement>();
+  const dropzoneRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (scrollToDropzone) {
       dropzoneRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -165,7 +165,7 @@ const FormConceptGroup = (props: Props) => {
   return (
     <div>
       <DropzoneList /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType> */
-        ref={dropzoneRef}
+        ref={dropzoneRef == undefined ? null : dropzoneRef}
         tooltip={props.tooltip}
         optional={props.optional}
         label={

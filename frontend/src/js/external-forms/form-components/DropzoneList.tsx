@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, forwardRef, Ref, ReactElement } from "react";
+import { ReactNode, forwardRef, Ref, ReactElement, ForwardedRef } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";
@@ -118,5 +118,5 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
 export default forwardRef(DropzoneList) as <
   DroppableObject extends PossibleDroppableObject = DragItemFile,
 >(
-  props: (WithFileProps<DroppableObject> | WithoutFileProps<DroppableObject>) & { ref?: Ref<HTMLDivElement> },
+  props: (WithFileProps<DroppableObject> | WithoutFileProps<DroppableObject>) & { ref?: ForwardedRef<HTMLDivElement> },
 ) => ReactElement;
