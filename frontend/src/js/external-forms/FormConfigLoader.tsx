@@ -8,7 +8,6 @@ import { useGetFormConfig } from "../api/api";
 import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { DNDType } from "../common/constants/dndTypes";
-import { useDatasetId } from "../dataset/selectors";
 import { Language, useActiveLang } from "../localization/useActiveLang";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import { setMessage } from "../snack-message/actions";
@@ -95,7 +94,6 @@ const FormConfigLoader: FC<Props> = ({
   const { t } = useTranslation();
   const activeLang = useActiveLang();
   const dispatch = useDispatch();
-  const datasetId = useDatasetId();
   const [formConfigToLoadNext, setFormConfigToLoadNext] =
     useState<FormConfigT | null>(null);
 
@@ -164,10 +162,8 @@ const FormConfigLoader: FC<Props> = ({
   );
 
   async function onLoad(dragItem: DragItemFormConfig) {
-    if (!datasetId) return;
-
     try {
-      const config = await getFormConfig(datasetId, dragItem.id);
+      const config = await getFormConfig(dragItem.id);
 
       if (config.formType !== activeFormType) {
         dispatch(setExternalForm({ form: config.formType }));

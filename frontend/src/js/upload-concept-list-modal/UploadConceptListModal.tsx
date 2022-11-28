@@ -25,7 +25,6 @@ import type {
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import PrimaryButton from "../button/PrimaryButton";
-import { useDatasetId } from "../dataset/selectors";
 import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import { nodeIsElement } from "../model/node";
@@ -195,7 +194,6 @@ const useDropdownOptions = () => {
 
 export const useResolveConcepts = () => {
   const postConceptsListToResolve = usePostConceptsListToResolve();
-  const datasetId = useDatasetId();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [resolved, setResolved] = useState<PostConceptResolveResponseT | null>(
@@ -204,24 +202,16 @@ export const useResolveConcepts = () => {
 
   const onResolve = useCallback(
     async (treeId: string, conceptCodes: string[]) => {
-      if (!datasetId) {
-        return;
-      }
-
       setLoading(true);
       try {
-        const results = await postConceptsListToResolve(
-          datasetId,
-          treeId,
-          conceptCodes,
-        );
+        const results = await postConceptsListToResolve(treeId, conceptCodes);
         setResolved(results);
       } catch (e) {
         setError(e as Error);
       }
       setLoading(false);
     },
-    [datasetId, postConceptsListToResolve],
+    [postConceptsListToResolve],
   );
 
   const onReset = useCallback(() => {
@@ -239,7 +229,6 @@ export const useResolveConcepts = () => {
 };
 
 const useResolveFilterValues = () => {
-  const datasetId = useDatasetId();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [resolved, setResolved] = useState<PostFilterResolveResponseT | null>(
@@ -248,23 +237,10 @@ const useResolveFilterValues = () => {
   const postFilterValuesResolve = usePostFilterValuesResolve();
 
   const onResolve = useCallback(
-    async (
-      conceptId: string,
-      tableId: string,
-      filterId: string,
-      values: string[],
-    ) => {
-      if (!datasetId) return;
-
+    async (filterId: string, values: string[]) => {
       setLoading(true);
       try {
-        const results = await postFilterValuesResolve(
-          datasetId,
-          conceptId,
-          tableId,
-          filterId,
-          values,
-        );
+        const results = await postFilterValuesResolve(filterId, values);
 
         setResolved(results);
       } catch (e) {
@@ -272,7 +248,7 @@ const useResolveFilterValues = () => {
       }
       setLoading(false);
     },
-    [datasetId, postFilterValuesResolve],
+    [postFilterValuesResolve],
   );
 
   const onReset = useCallback(() => {
@@ -438,12 +414,7 @@ const UploadConceptListModal = ({
       if (optionDetails.type === "concept") {
         onResolveConcepts(id, fileRows);
       } else {
-        onResolveFilters(
-          optionDetails.conceptId,
-          optionDetails.tableId,
-          id,
-          fileRows,
-        );
+        onResolveFilters(id, fileRows);
       }
     },
     [

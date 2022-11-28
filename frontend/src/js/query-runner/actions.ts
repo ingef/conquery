@@ -129,10 +129,10 @@ export const useStopQuery = (queryType: QueryTypeT) => {
   const dispatch = useDispatch();
   const cancelQuery = usePostQueryCancel();
 
-  return (datasetId: DatasetT["id"], queryId: QueryIdT) => {
+  return (queryId: QueryIdT) => {
     dispatch(stopQuery.request({ queryType }));
 
-    return cancelQuery(datasetId, queryId).then(
+    return cancelQuery(queryId).then(
       (r) => dispatch(stopQuery.success(successPayload(r, { queryType }))),
       (e) => dispatch(stopQuery.failure(errorPayload(e, { queryType }))),
     );
@@ -218,7 +218,7 @@ const useQueryResult = (queryType: QueryTypeT) => {
   const queryResult = (datasetId: DatasetT["id"], queryId: QueryIdT) => {
     dispatch(queryResultStart({ queryType }));
 
-    return getQuery(datasetId, queryId).then(
+    return getQuery(queryId).then(
       (r) => {
         // Indicate that looking for the result has stopped,
         // but not necessarily succeeded

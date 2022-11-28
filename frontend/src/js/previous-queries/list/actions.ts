@@ -75,7 +75,6 @@ export const loadQuerySuccess = createAction("queries/LOAD_QUERY_SUCCESS")<{
 
 export const useLoadQuery = () => {
   const { t } = useTranslation();
-  const datasetId = useDatasetId();
   const dispatch = useDispatch();
   const getQuery = useGetQuery();
 
@@ -83,11 +82,9 @@ export const useLoadQuery = () => {
 
   const loadQuery = useCallback(
     async (queryId: PreviousQueryT["id"]) => {
-      if (!datasetId) return;
-
       setLoading(true);
       try {
-        const query = await getQuery(datasetId, queryId);
+        const query = await getQuery(queryId);
 
         dispatch(loadQuerySuccess({ id: queryId, data: query }));
       } catch (e) {
@@ -95,7 +92,7 @@ export const useLoadQuery = () => {
       }
       setLoading(false);
     },
-    [dispatch, datasetId, getQuery, t],
+    [dispatch, getQuery, t],
   );
 
   return {
@@ -110,7 +107,6 @@ export const patchQuerySuccess = createAction("query/UPDATE_SUCCESS")<{
 }>();
 
 export const useUpdateQuery = () => {
-  const datasetId = useDatasetId();
   const dispatch = useDispatch();
   const patchQuery = usePatchQuery();
 
@@ -126,11 +122,9 @@ export const useUpdateQuery = () => {
     },
     errorMessage: string,
   ) => {
-    if (!datasetId) return;
-
     setLoading(true);
     try {
-      await patchQuery(datasetId, id, attributes);
+      await patchQuery(id, attributes);
 
       dispatch(patchQuerySuccess({ id, data: attributes }));
     } catch (e) {
@@ -148,17 +142,14 @@ export const deleteQuerySuccess = createAction("queries/DELETE_QUERY_SUCCESS")<{
 
 export const useRemoveQuery = () => {
   const { t } = useTranslation();
-  const datasetId = useDatasetId();
   const dispatch = useDispatch();
   const deleteQuery = useDeleteQuery();
   const [loading, setLoading] = useState(false);
 
   const removeQuery = async (queryId: PreviousQueryT["id"]) => {
-    if (!datasetId) return;
-
     setLoading(true);
     try {
-      await deleteQuery(datasetId, queryId);
+      await deleteQuery(queryId);
 
       dispatch(deleteQuerySuccess({ queryId }));
     } catch (e) {
@@ -233,7 +224,7 @@ export const useLoadFormConfig = () => {
 
       setLoading(true);
       try {
-        const data = await getFormConfig(datasetId, id);
+        const data = await getFormConfig(id);
 
         dispatch(patchFormConfigSuccess({ id, data }));
       } catch (e) {
@@ -251,7 +242,6 @@ export const useLoadFormConfig = () => {
 };
 
 export const useUpdateFormConfig = () => {
-  const datasetId = useDatasetId();
   const dispatch = useDispatch();
   const patchFormConfig = usePatchFormConfig();
 
@@ -267,11 +257,9 @@ export const useUpdateFormConfig = () => {
     },
     errorMessage: string,
   ) => {
-    if (!datasetId) return;
-
     setLoading(true);
     try {
-      await patchFormConfig(datasetId, configId, attributes);
+      await patchFormConfig(configId, attributes);
 
       dispatch(patchFormConfigSuccess({ id: configId, data: attributes }));
     } catch (e) {
@@ -289,18 +277,15 @@ export const deleteFormConfigSuccess = createAction(
 
 export const useRemoveFormConfig = () => {
   const { t } = useTranslation();
-  const datasetId = useDatasetId();
   const dispatch = useDispatch();
   const deleteFormConfig = useDeleteFormConfig();
 
   const [loading, setLoading] = useState(false);
 
   const removeFormConfig = async (configId: string) => {
-    if (!datasetId) return;
-
     setLoading(true);
     try {
-      await deleteFormConfig(datasetId, configId);
+      await deleteFormConfig(configId);
 
       dispatch(deleteFormConfigSuccess({ configId }));
     } catch (e) {

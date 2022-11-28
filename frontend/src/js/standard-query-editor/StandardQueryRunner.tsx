@@ -64,8 +64,8 @@ const StandardQueryRunner = () => {
     }
   };
   const stopQuery = () => {
-    if (datasetId && queryId) {
-      stopStandardQuery(datasetId, queryId);
+    if (queryId) {
+      stopStandardQuery(queryId);
     }
   };
 
