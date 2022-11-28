@@ -117,11 +117,13 @@ const FormConceptGroup = (props: Props) => {
   const dropzoneRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (scrollToDropzone) {
-      dropzoneRef.current?.scrollIntoView({ behavior: "smooth" });
+      dropzoneRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
       setScrollToDropzone(false);
     }
   }, [scrollToDropzone]);
-
 
   const [editedFormQueryNodePosition, setEditedFormQueryNodePosition] =
     useState<EditedFormQueryNodePosition | null>(null);
@@ -345,7 +347,6 @@ const FormConceptGroup = (props: Props) => {
             />
           </DropzoneListItem>
         ))}
-        
       />
       {isCopyModalOpen && (
         <FormConceptCopyModal
