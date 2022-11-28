@@ -2,8 +2,20 @@
   "title": {
     "de": "Rohdatenexport"
   },
+  "description": {
+      "de": "Mit diesem Formular werden zu den angegebenen Konzepten die dahinterliegenden, rohen Tabellen ausgegeben, welche mit den Konzepten verknüpft sind. Die Daten können dabei in einem absoluten Beobachtungszeitraum analysiert werden. Die Ausgabe kann sowohl als Excel, als auch CSV heruntergeladen werden."
+  },
   "type": "FULL_EXPORT_FORM",
   "fields": [
+    {
+        "label": {
+            "de": "Versichertengruppe"
+         },
+        "style": {
+            "size": "h1"
+         },
+        "type": "HEADLINE"
+    },
     {
       "name": "queryGroup",
       "type": "RESULT_GROUP",
@@ -21,6 +33,15 @@
       }
     },
     {
+        "label": {
+            "de": "Zeitlicher Bezug"
+         },
+        "style": {
+            "size": "h1"
+         },
+        "type": "HEADLINE"
+    },
+    {
       "name": "dateRange",
       "type": "DATE_RANGE",
       "label": {
@@ -31,14 +52,23 @@
       ]
     },
     {
+        "label": {
+            "de": "Datengrundlage und Konzepte"
+         },
+        "style": {
+            "size": "h1"
+         },
+        "type": "HEADLINE"
+    },
+    {
       "name": "tables",
       "type": "CONCEPT_LIST",
       "label": {
-        "de": "Datenquellen"
+        "de": "Konzepte"
       },
       "isTwoDimensional": false,
       "conceptDropzoneLabel": {
-        "de": "Definiere hier die auszuspielenden Datenquellen."
+        "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
       },
       "validations": [
         "NOT_EMPTY"
