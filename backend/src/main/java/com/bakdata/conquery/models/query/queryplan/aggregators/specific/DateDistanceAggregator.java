@@ -39,7 +39,7 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
-			reference = LocalDate.now();
+			reference = CDate.toLocalDate(ctx.getToday());
 		}
 		else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
