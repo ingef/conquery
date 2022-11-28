@@ -120,7 +120,7 @@ const FormConceptGroup = (props: Props) => {
       dropzoneRef.current?.scrollIntoView({ behavior: "smooth" });
       setScrollToDropzone(false);
     }
-  });
+  }, [scrollToDropzone]);
 
 
   const [editedFormQueryNodePosition, setEditedFormQueryNodePosition] =
@@ -165,7 +165,7 @@ const FormConceptGroup = (props: Props) => {
   return (
     <div>
       <DropzoneList /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType> */
-        ref={dropzoneRef == undefined ? null : dropzoneRef}
+        ref={dropzoneRef}
         tooltip={props.tooltip}
         optional={props.optional}
         label={
