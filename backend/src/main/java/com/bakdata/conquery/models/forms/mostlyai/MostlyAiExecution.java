@@ -63,7 +63,7 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 	final static String EXECUTION_ID = "EXECUTION_ID";
 	final static String JOB_ID = "JOB_ID";
 	final static String CAUSE = "CAUSE";
-	final static ExternalResultProcessor.ResultFileReference RESULT_FILE_EXTENTION = new ExternalResultProcessor.ResultFileReference("zip", "synthetic-data");
+	final static ExternalResultProcessor.ResultFileReference RESULT_FILE_EXTENTION = new ExternalResultProcessor.ResultFileReference("synthetic-data", "zip");
 
 	@JsonIgnore
 	private UUID jobId;

@@ -52,7 +52,6 @@ public class ResultExternalResource {
 				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
 				.resolveTemplate(FILENAME, exec.getLabelWithoutAutoLabelSuffix())
 				.resolveTemplate(RESULT_FILE_EXTENSION, resultFileReference.fileExtension())
-				.queryParam(RESULT_ID, resultFileReference.resultId())
 				.build()
 				.toURL();
 	}
@@ -81,11 +80,10 @@ public class ResultExternalResource {
 			@PathParam(FILENAME) String fileName,
 			@HeaderParam("user-agent") String userAgent,
 			@QueryParam("charset") String queryCharset,
-			@QueryParam("pretty") Optional<Boolean> pretty,
-			@QueryParam(RESULT_ID) @NotEmpty String resultId
+			@QueryParam("pretty") Optional<Boolean> pretty
 	) {
 		log.info("Result for {} download on dataset {} by user {} ({}).", queryId, datasetId, subject.getId(), subject.getName());
-		return processor.getResult(subject, datasetId, queryId, fileName, fileExtension, resultId);
+		return processor.getResult(subject, datasetId, queryId, fileName, fileExtension);
 	}
 }
 

@@ -29,7 +29,7 @@ public class ExternalResultProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final MetaStorage storage;
 
-	public <T extends ManagedExecution<?> & ExternalResult> Response getResult(Subject subject, DatasetId datasetId, ManagedExecutionId executionId, String fileName, String fileExtension, String resultId) {
+	public <T extends ManagedExecution<?> & ExternalResult> Response getResult(Subject subject, DatasetId datasetId, ManagedExecutionId executionId, String fileName, String fileExtension) {
 		Dataset dataset = datasetRegistry.get(datasetId).getDataset();
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.DOWNLOAD);
@@ -47,11 +47,11 @@ public class ExternalResultProcessor {
 
 		T externalExecution = (T) execution;
 
-		Pair<StreamingOutput, MediaType> out = externalExecution.getExternalResult(new ResultFileReference(fileExtension, resultId));
+		Pair<StreamingOutput, MediaType> out = externalExecution.getExternalResult(new ResultFileReference(fileName, fileExtension));
 
-		return makeResponseWithFileName(out.key(), externalExecution.getLabelWithoutAutoLabelSuffix(), fileExtension, out.value(), ResultUtil.ContentDispositionOption.INLINE);
+		return makeResponseWithFileName(out.key(), fileName, fileExtension, out.value(), ResultUtil.ContentDispositionOption.INLINE);
 	}
 
-	public record ResultFileReference(String fileExtension, String resultId) {
+	public record ResultFileReference(String fileName, String fileExtension) {
 	}
 }
