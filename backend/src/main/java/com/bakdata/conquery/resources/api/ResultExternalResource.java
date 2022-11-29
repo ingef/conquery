@@ -50,7 +50,7 @@ public class ResultExternalResource {
 				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
 				.path(ResultExternalResource.class, DOWNLOAD_PATH_METHOD)
 				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
-				.resolveTemplate(FILENAME, exec.getLabelWithoutAutoLabelSuffix())
+				.resolveTemplate(FILENAME, resultFileReference.fileName())
 				.resolveTemplate(RESULT_FILE_EXTENSION, resultFileReference.fileExtension())
 				.build()
 				.toURL();
