@@ -52,7 +52,7 @@ public class ResultExternalResource {
 				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
 				.resolveTemplate(FILENAME, exec.getLabelWithoutAutoLabelSuffix())
 				.resolveTemplate(RESULT_FILE_EXTENSION, resultFileReference.fileExtension())
-				.resolveTemplate(RESULT_ID, resultFileReference.resultId())
+				.queryParam(RESULT_ID, resultFileReference.resultId())
 				.build()
 				.toURL();
 	}
