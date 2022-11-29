@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
+import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -27,6 +28,9 @@ import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Endpoint for result request those content is provided externally.
+ */
 @Path("datasets/{" + DATASET + "}/result/")
 @PermitAll
 @Slf4j
@@ -34,11 +38,12 @@ public class ResultExternalResource {
 
 	public static final String DOWNLOAD_PATH_METHOD = "download";
 	public static final String RESULT_FILE_EXTENSION = "download";
+	public static final String RESULT_ID = "result-id";
 	@Inject
 	private ExternalResultProcessor processor;
 
 
-	public static <E extends ManagedExecution<?> & ExternalResult> URL getDownloadURL(UriBuilder uriBuilder, E exec, String resultFileType)
+	public static <E extends ManagedExecution<?> & ExternalResult> URL getDownloadURL(UriBuilder uriBuilder, E exec, ExternalResultProcessor.ResultFileReference resultFileReference)
 			throws MalformedURLException {
 		return uriBuilder
 				.path(ResultExternalResource.class)
@@ -46,7 +51,8 @@ public class ResultExternalResource {
 				.path(ResultExternalResource.class, DOWNLOAD_PATH_METHOD)
 				.resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
 				.resolveTemplate(FILENAME, exec.getLabelWithoutAutoLabelSuffix())
-				.resolveTemplate(RESULT_FILE_EXTENSION, resultFileType)
+				.resolveTemplate(RESULT_FILE_EXTENSION, resultFileReference.fileExtension())
+				.resolveTemplate(RESULT_ID, resultFileReference.resultId())
 				.build()
 				.toURL();
 	}
@@ -75,10 +81,11 @@ public class ResultExternalResource {
 			@PathParam(FILENAME) String fileName,
 			@HeaderParam("user-agent") String userAgent,
 			@QueryParam("charset") String queryCharset,
-			@QueryParam("pretty") Optional<Boolean> pretty
+			@QueryParam("pretty") Optional<Boolean> pretty,
+			@QueryParam(RESULT_ID) @NotEmpty String resultId
 	) {
 		log.info("Result for {} download on dataset {} by user {} ({}).", queryId, datasetId, subject.getId(), subject.getName());
-		return processor.getResult(subject, datasetId, queryId, fileName, fileExtension);
+		return processor.getResult(subject, datasetId, queryId, fileName, fileExtension, resultId);
 	}
 }
 

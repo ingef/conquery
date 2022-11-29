@@ -19,6 +19,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
+/**
+ * Provider for results that are externally generated and are proxied through the backend.
+ */
 @Getter
 @CPSType(base = ResultRendererProvider.class, id = "EXTERNAL")
 public class ExternalResultProvider implements ResultRendererProvider {
@@ -26,6 +29,14 @@ public class ExternalResultProvider implements ResultRendererProvider {
 	@Setter
 	private boolean hidden = false;
 
+	/**
+	 * Checks if the execution is compatible and then ask it for suitable file extensions to build a 'virtual' file name.
+	 *
+	 * @param exec         The execution whose result needs to be rendered.
+	 * @param uriBuilder   The pre-configured builder for the url.
+	 * @param allProviders A flag that should override internal "hide-this-url" flags.
+	 * @return
+	 */
 	@Override
 	public Collection<URL> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 
@@ -38,9 +49,9 @@ public class ExternalResultProvider implements ResultRendererProvider {
 		}
 
 		return ((ExternalResult) exec).getResultFileExtensions().stream()
-									  .map(fileExtension -> {
+									  .map(resultFileReference -> {
 										  try {
-											  return ResultExternalResource.getDownloadURL(uriBuilder.clone(), (ManagedExecution<?> & ExternalResult) exec, fileExtension);
+											  return ResultExternalResource.getDownloadURL(uriBuilder.clone(), (ManagedExecution<?> & ExternalResult) exec, resultFileReference);
 										  }
 										  catch (MalformedURLException e) {
 											  Throwables.throwIfUnchecked(e);

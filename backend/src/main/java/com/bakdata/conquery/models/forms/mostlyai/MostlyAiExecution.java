@@ -15,6 +15,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -23,6 +24,7 @@ import com.bakdata.conquery.apiv1.forms.MostlyAiForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.csv.CsvRenderer;
 import com.bakdata.conquery.io.result.external.ExternalResult;
+import com.bakdata.conquery.io.result.external.ExternalResultProcessor;
 import com.bakdata.conquery.io.result.external.ExternalResultProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -61,7 +63,7 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 	final static String EXECUTION_ID = "EXECUTION_ID";
 	final static String JOB_ID = "JOB_ID";
 	final static String CAUSE = "CAUSE";
-	final static String RESULT_FILE_EXTENTION = "zip";
+	final static ExternalResultProcessor.ResultFileReference RESULT_FILE_EXTENTION = new ExternalResultProcessor.ResultFileReference("zip", "synthetic-data");
 
 	@JsonIgnore
 	private UUID jobId;
@@ -81,7 +83,7 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 	 * Mapping of different result types (file type suffixes) to their download URLs
 	 */
 	@JsonIgnore
-	private final Map<String, BiConsumer<UUID, Consumer<InputStream>>> resultUrls = new HashMap<>();
+	private final Map<ExternalResultProcessor.ResultFileReference, BiConsumer<UUID, Consumer<InputStream>>> resultUrls = new HashMap<>();
 
 	public MostlyAiExecution(MostlyAiForm form, User user, Dataset submittedDataset) {
 		super(form, user, submittedDataset);
@@ -232,7 +234,7 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 
 
 	@Override
-	public List<String> getResultFileExtensions() {
+	public List<ExternalResultProcessor.ResultFileReference> getResultFileExtensions() {
 		return List.of(RESULT_FILE_EXTENTION);
 	}
 
@@ -241,10 +243,10 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 	 */
 	@Override
 	@JsonIgnore
-	public Pair<StreamingOutput, MediaType> getExternalResult(String fileExtension) {
-		final BiConsumer<UUID, Consumer<InputStream>> resultStreamProvider = resultUrls.get(fileExtension);
+	public Pair<StreamingOutput, MediaType> getExternalResult(ExternalResultProcessor.ResultFileReference resultReference) {
+		final BiConsumer<UUID, Consumer<InputStream>> resultStreamProvider = resultUrls.get(resultReference);
 		if (resultStreamProvider == null) {
-			throw new IllegalStateException("Unsupported file type extension '" + fileExtension + "'. The execution only supports: " + resultUrls.keySet());
+			throw new BadRequestException("Unsupported result reference '" + resultReference + "'. The execution only supports: " + resultUrls.keySet());
 		}
 
 		return Pair.of(

@@ -18,11 +18,11 @@ public interface ExternalResult {
 	 * @implNote returns a {@link List} so that the ordering is intentional
 	 */
 	@JsonIgnore
-	List<String> getResultFileExtensions();
+	List<ExternalResultProcessor.ResultFileReference> getResultFileExtensions();
 
 	/**
 	 * This usually opens a direct download from the external service that provides the result.
 	 */
 	@JsonIgnore
-	Pair<StreamingOutput, MediaType> getExternalResult(String fileExtension);
+	Pair<StreamingOutput, MediaType> getExternalResult(ExternalResultProcessor.ResultFileReference resultRef);
 }
