@@ -35,11 +35,6 @@ public class MostlyAiAPIFactory implements PluginConfig {
 	@NotEmpty
 	private String apiKey;
 
-
-	@Valid
-	@NotNull
-	private ClientConfig clientConfig = new ClientConfig();
-
 	@JsonIgnore
 	@Setter(AccessLevel.PRIVATE)
 	private Client client;
@@ -50,7 +45,7 @@ public class MostlyAiAPIFactory implements PluginConfig {
 		/*
 		Because of this old bug https://groups.google.com/g/dropwizard-user/c/WeLt4J_dIqs we cannot use the io.dropwizard.client.JerseyClientBuilder
 		 */
-		client = JerseyClientBuilder.createClient(clientConfig);
+		client = JerseyClientBuilder.createClient();
 	}
 
 	public MostlyAiApi createAPI() {
