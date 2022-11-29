@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { Fragment, memo, useRef, useState } from "react";
+import { Fragment, memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
@@ -98,6 +98,7 @@ const InputMultiSelect = ({
     onResolve,
   });
 
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const [inputValue, setInputValue] = useState("");
   const { t } = useTranslation();
 
@@ -264,6 +265,16 @@ const InputMultiSelect = ({
       ? filteredOptions.length - 1
       : filteredOptions.length;
 
+  // scroll option list into view if neccessary
+  useEffect(
+    function scrollIntoView() {
+      if (isOpen) {
+        menuRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    },
+    [isOpen, menuRef]
+  );
+
   const Select = (
     <SelectContainer
       onBlur={clearStaleSearch}
@@ -355,6 +366,7 @@ const InputMultiSelect = ({
         <Menu
           {...menuProps}
           ref={(instance) => {
+            menuRef.current = instance;
             menuPropsRef(instance);
           }}
         >
