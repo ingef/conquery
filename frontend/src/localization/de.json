@@ -352,7 +352,7 @@
   "uploadConceptListModal": {
     "headline": "Konzepte aus Liste einfügen",
     "label": "Name der Liste",
-    "selectConceptRootNode": "Konzept-Wurzel auswählen",
+    "selectConceptRootNode": "Auflösen als Konzeptliste, oder als Filterliste in einem Konzept",
     "insertNode": "Jetzt einfügen",
     "result": "Ergebnis",
     "resolvedCodes_one": "1 Wert aufgelöst.",

@@ -16,7 +16,7 @@ import type {
   PostFilterSuggestionsResponseT,
   SelectOptionT,
 } from "../api/types";
-import { successPayload } from "../common/actions";
+import { successPayload } from "../common/actions/genericActions";
 import type { TreesT } from "../concept-trees/reducer";
 import { useDatasetId } from "../dataset/selectors";
 import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";

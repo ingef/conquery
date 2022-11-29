@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -112,6 +112,19 @@ const FormConceptGroup = (props: Props) => {
   const newValue = props.newValue;
   const defaults = props.defaults || {};
 
+  // indicator if it should be scrolled down back to the dropZone
+  const [scrollToDropzone, setScrollToDropzone] = useState<boolean>(false);
+  const dropzoneRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (scrollToDropzone) {
+      dropzoneRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+      setScrollToDropzone(false);
+    }
+  }, [scrollToDropzone]);
+
   const [editedFormQueryNodePosition, setEditedFormQueryNodePosition] =
     useState<EditedFormQueryNodePosition | null>(null);
 
@@ -125,7 +138,7 @@ const FormConceptGroup = (props: Props) => {
   const {
     isOpen: isUploadConceptListModalOpen,
     onDropFile,
-    onAccept: onAcceptUploadConceptListModal,
+    onAcceptConceptsOrFilter: onAcceptUploadModalConceptsOrFilter,
     onClose: onCloseUploadConceptListModal,
   } = useUploadConceptListModal({
     value: props.value,
@@ -154,6 +167,7 @@ const FormConceptGroup = (props: Props) => {
   return (
     <div>
       <DropzoneList /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType> */
+        ref={dropzoneRef}
         tooltip={props.tooltip}
         optional={props.optional}
         label={
@@ -181,6 +195,7 @@ const FormConceptGroup = (props: Props) => {
           onDropFile(file, { valueIdx: props.value.length })
         }
         onDrop={(item: DragItemFile | DragItemConceptTreeNode) => {
+          setScrollToDropzone(true);
           if (item.type === "__NATIVE_FILE__") {
             onDropFile(item.files[0], { valueIdx: props.value.length });
 
@@ -342,7 +357,7 @@ const FormConceptGroup = (props: Props) => {
       )}
       {isUploadConceptListModalOpen && (
         <UploadConceptListModal
-          onAccept={onAcceptUploadConceptListModal}
+          onAcceptConceptsOrFilter={onAcceptUploadModalConceptsOrFilter}
           onClose={onCloseUploadConceptListModal}
         />
       )}

@@ -33,10 +33,11 @@ import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownWorkers;
+import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownShard;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -265,7 +266,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		getStorage().injectInto(objectMapper);
 
 
-		if(viewClass != null) {
+		if (viewClass != null) {
 			// Set serialization config
 			SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
 
@@ -343,19 +344,17 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	@Override
 	public void messageReceived(IoSession session, Object message) {
 		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
-		if (message instanceof MessageToManagerNode) {
-			MessageToManagerNode mrm = (MessageToManagerNode) message;
+		if (message instanceof MessageToManagerNode toManagerNode) {
+
 			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 
-			ReactingJob<MessageToManagerNode, NetworkMessageContext.ManagerNodeNetworkContext>
-					job =
-					new ReactingJob<>(mrm, new NetworkMessageContext.ManagerNodeNetworkContext(
-							new NetworkSession(session),
-							datasetRegistry, config.getCluster().getBackpressure()
-					));
+			Job job = new ReactingJob<>(toManagerNode, new NetworkMessageContext.ManagerNodeNetworkContext(
+					new NetworkSession(session),
+					datasetRegistry, config.getCluster().getBackpressure()
+			));
 
-			if (mrm.isSlowMessage()) {
-				((SlowMessage) mrm).setProgressReporter(job.getProgressReporter());
+			if (toManagerNode instanceof SlowMessage slowMessage) {
+				slowMessage.setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
 			}
 			else {
@@ -383,6 +382,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void stop() throws Exception {
+		datasetRegistry.getShardNodes().forEach(((socketAddress, shardNodeInformation) -> shardNodeInformation.send(new ShutdownShard())));
 
 		jobManager.close();
 
@@ -413,6 +413,5 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		client.close();
 
-		datasetRegistry.getShardNodes().forEach(((socketAddress, shardNodeInformation) -> shardNodeInformation.send(new ShutdownWorkers())));
 	}
 }

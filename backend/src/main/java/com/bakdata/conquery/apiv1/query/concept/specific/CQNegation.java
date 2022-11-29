@@ -49,16 +49,10 @@ public class CQNegation extends CQElement {
 	}
 
 	private DateAggregationAction determineDateAction(QueryResolveContext context) {
-		switch(context.getDateAggregationMode()) {
-			case MERGE:
-			case NONE:
-			case INTERSECT:
-				return DateAggregationAction.BLOCK;
-			case LOGICAL:
-				return DateAggregationAction.NEGATE;
-			default:
-				throw new IllegalStateException("Cannot handle mode " + context.getDateAggregationMode());
-		}
+		return switch (context.getDateAggregationMode()) {
+			case MERGE, NONE, INTERSECT -> DateAggregationAction.BLOCK;
+			case LOGICAL -> DateAggregationAction.NEGATE;
+		};
 	}
 
 	@Override

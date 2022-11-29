@@ -30,16 +30,13 @@ public class DurationSumFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
-		switch (getColumn().getType()) {
-			case DATE: // TODO DATE is not supported according to getAcceptedColumnTypes
-			case DATE_RANGE: {
-				f.setType(FEFilterType.Fields.INTEGER_RANGE);
-				f.setMin(0);
-				return;
-			}
-			default:
-				throw new ConceptConfigurationException(getConnector(), "DURATION_SUM filter is incompatible with columns of type " + getColumn().getType());
+		if (getColumn().getType() != MajorTypeId.DATE_RANGE) {
+			throw new ConceptConfigurationException(getConnector(), "DURATION_SUM filter is incompatible with columns of type "
+																	+ getColumn().getType());
 		}
+
+		f.setType(FEFilterType.Fields.INTEGER_RANGE);
+		f.setMin(0);
 	}
 
 	@Override

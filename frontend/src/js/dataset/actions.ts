@@ -6,7 +6,7 @@ import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 import { useGetDatasets } from "../api/api";
 import type { DatasetT, GetDatasetsResponseT } from "../api/types";
 import { StateT } from "../app/reducers";
-import { ErrorObject } from "../common/actions";
+import { ErrorObject } from "../common/actions/genericActions";
 import { exists } from "../common/helpers/exists";
 import { useLoadTrees } from "../concept-trees/actions";
 import { useLoadDefaultHistoryParams } from "../entity-history/actions";

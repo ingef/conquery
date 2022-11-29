@@ -24,21 +24,18 @@ import {
 } from "./InputSelectComponents";
 import { optionMatchesQuery } from "./optionMatchesQuery";
 
-interface Props {
-  label?: string;
-  disabled?: boolean;
-  options: SelectOptionT[];
-  tooltip?: string;
-  indexPrefix?: number;
-  placeholder?: string;
-  loading?: boolean;
-  clearable?: boolean;
-  smallMenu?: boolean;
-  className?: string;
-  dataTestId?: string;
-  value: SelectOptionT | null;
-  optional?: boolean;
-  onChange: (value: SelectOptionT | null) => void;
+function filterOptions(
+  options: SelectOptionT[],
+  query: string,
+  sortOptions?: (a: SelectOptionT, b: SelectOptionT, query: string) => number,
+) {
+  const filtered = options.filter((option) =>
+    optionMatchesQuery(option, query),
+  );
+
+  return sortOptions
+    ? filtered.sort((a, b) => sortOptions(a, b, query))
+    : filtered;
 }
 
 const InputSelect = ({
@@ -55,7 +52,23 @@ const InputSelect = ({
   optional,
   smallMenu,
   onChange,
-}: Props) => {
+  sortOptions,
+}: {
+  label?: string;
+  disabled?: boolean;
+  options: SelectOptionT[];
+  tooltip?: string;
+  indexPrefix?: number;
+  placeholder?: string;
+  clearable?: boolean;
+  smallMenu?: boolean;
+  className?: string;
+  dataTestId?: string;
+  value: SelectOptionT | null;
+  optional?: boolean;
+  onChange: (value: SelectOptionT | null) => void;
+  sortOptions?: (a: SelectOptionT, b: SelectOptionT, query: string) => number;
+}) => {
   const { t } = useTranslation();
   const previousValue = usePrevious(value);
   const previousOptions = usePrevious(options);
@@ -87,7 +100,9 @@ const InputSelect = ({
     setInputValue,
   } = useCombobox({
     itemToString: (item) => {
-      return item?.label || "";
+      if (!item) return "";
+
+      return item.selectedLabel || item.label || String(item.value);
     },
     defaultSelectedItem: value,
     items: filteredOptions,
@@ -189,28 +204,24 @@ const InputSelect = ({
         if (inputValue === value?.label) {
           setFilteredOptions(options);
         } else {
-          setFilteredOptions(
-            options.filter((option) => optionMatchesQuery(option, inputValue)),
-          );
+          setFilteredOptions(filterOptions(options, inputValue, sortOptions));
         }
       }
     },
-    [inputValue, value, options, previousOptions],
+    [inputValue, value, options, previousOptions, sortOptions],
   );
 
   useEffect(
     function filterOptionsOnChangingInput() {
       if (exists(inputValue) && inputValue !== previousInputValue) {
         if (inputValue !== selectedItem?.label) {
-          setFilteredOptions(
-            options.filter((option) => optionMatchesQuery(option, inputValue)),
-          );
+          setFilteredOptions(filterOptions(options, inputValue, sortOptions));
         } else {
           setFilteredOptions(options);
         }
       }
     },
-    [inputValue, previousInputValue, options, selectedItem],
+    [inputValue, previousInputValue, options, selectedItem, sortOptions],
   );
 
   const Select = (
@@ -297,11 +308,11 @@ const InputSelect = ({
               return (
                 <SxSelectListOption
                   key={`${option.value}`}
+                  option={option}
                   active={
                     highlightedIndex === index ||
                     selectedItem?.value === option.value
                   }
-                  option={option}
                   {...itemProps}
                   ref={(instance) => {
                     itemPropsRef(instance);

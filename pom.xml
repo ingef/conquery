@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bakdata.conquery</groupId>
 	<artifactId>parent</artifactId>
@@ -9,19 +9,20 @@
 
 	<packaging>pom</packaging>
 	<name>Conquery Parent</name>
-	
+
 	<parent>
-  		<groupId>io.dropwizard</groupId>
-  		<artifactId>dropwizard-dependencies</artifactId>
-  		<version>2.1.1</version>
+		<groupId>io.dropwizard</groupId>
+		<artifactId>dropwizard-dependencies</artifactId>
+		<version>2.1.1</version>
 	</parent>
 
 	<properties>
-		<java.required>11</java.required>
+		<java.required>17</java.required>
 		<lombok.version>1.18.22</lombok.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>${java.required}</maven.compiler.source>
 		<maven.compiler.target>${java.required}</maven.compiler.target>
+		<maven-dependency-plugin.version>3.3.0</maven-dependency-plugin.version>
 		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
 		<build.time>${maven.build.timestamp}</build.time>
 	</properties>
@@ -56,7 +57,13 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<trimStackTrace>false</trimStackTrace>
-					<argLine>-Xmx4G</argLine>
+					<argLine>-Xmx4G
+						<!-- TODO this should be refined. We only need this for arrow as of now. -->
+						--add-opens java.base/java.lang=ALL-UNNAMED
+						--add-opens java.base/java.util=ALL-UNNAMED
+						--add-opens java.base/java.nio=ALL-UNNAMED
+						--add-opens java.base/sun.nio.ch=ALL-UNNAMED
+					</argLine>
 					<properties>
 						<configurationParameters>
 							junit.jupiter.execution.parallel.enabled=false
@@ -65,23 +72,23 @@
 					</properties>
 				</configuration>
 			</plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <!-- Override io.dropwizard.dropwizard-project's defaults -->
-                <executions>
-                    <execution>
-                        <id>analyze</id>
-                        <goals>
-                            <goal>analyze-only</goal>
-                        </goals>
-                        <configuration>
-                        	<!-- Allow transitive dependencies for now -->
-                            <failOnWarning>false</failOnWarning>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<!-- Override io.dropwizard.dropwizard-project's defaults -->
+				<executions>
+					<execution>
+						<id>analyze</id>
+						<goals>
+							<goal>analyze-only</goal>
+						</goals>
+						<configuration>
+							<!-- Allow transitive dependencies for now -->
+							<failOnWarning>false</failOnWarning>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -112,6 +119,11 @@
 								<!-- do not only use annotated tags -->
 								<tags>true</tags>
 							</gitDescribe>
+							<useNativeGit>true</useNativeGit>
+							<offline>true</offline>
+							<includeOnlyProperties>
+								<includeOnlyProperty>^git.commit.id.describe</includeOnlyProperty>
+							</includeOnlyProperties>
 						</configuration>
 					</plugin>
 					<plugin>

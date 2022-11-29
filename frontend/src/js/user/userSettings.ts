@@ -27,7 +27,3 @@ export const storeUserSettings = (
     JSON.stringify({ ...settings, ...nextSettings }),
   );
 };
-
-export const deleteUserSettings = (): void => {
-  localStorage.removeItem("userSettings");
-};

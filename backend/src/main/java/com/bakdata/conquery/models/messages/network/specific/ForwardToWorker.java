@@ -38,7 +38,7 @@ public class ForwardToWorker extends MessageToShardNode implements SlowMessage {
 		return new ForwardToWorker(
 				worker,
 				writer.writeValueAsBytes(message),
-				message.isSlowMessage(),
+				true,
 				message.toString()
 		);
 	}

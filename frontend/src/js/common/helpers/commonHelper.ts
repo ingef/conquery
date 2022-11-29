@@ -24,10 +24,6 @@ export const isEmptyObject = (variable: any) => {
   );
 };
 
-export const includes = (array: any[], element: any) => {
-  return array.indexOf(element) !== -1;
-};
-
 export const numberToThreeDigitArray = (number: number) => {
   // Input: 10       Output: [10]
   // Input: 1234     Output: [1, 234]
@@ -42,9 +38,6 @@ export const numberToThreeDigitArray = (number: number) => {
     .split(" ");
 };
 
-export const capitalize = (str: string) =>
-  str.charAt(0).toUpperCase() + str.slice(1);
-
 export const toUpperCaseUnderscore = (str: string) => {
   if (str.toUpperCase() === str) return str;
 
@@ -52,6 +45,3 @@ export const toUpperCaseUnderscore = (str: string) => {
     .replace(/[A-Z]/g, (upperCaseChar) => "_" + upperCaseChar.toLowerCase())
     .toUpperCase();
 };
-
-export const isObject = (item: any) =>
-  item && typeof item === "object" && !Array.isArray(item);

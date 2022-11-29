@@ -1,6 +1,8 @@
 // This file specifies
 // - response type provided by the backend API
 // - partial types that the reponses are built from
+import { ReactNode } from "react";
+
 import type { Forms } from "../external-forms/config-types";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import type { ModeT } from "../ui-components/InputRange";
@@ -16,6 +18,7 @@ export interface SelectOptionT {
   disabled?: boolean;
   selectedLabel?: string;
   alwaysShown?: boolean;
+  displayLabel?: ReactNode;
 }
 
 // Example: { min: "2019-01-01", max: "2019-12-31" }
@@ -499,10 +502,6 @@ export interface GetMeResponseT {
 
 export interface PostLoginResponseT {
   access_token: string;
-}
-
-export interface PostFormConfigsResponseT {
-  id: string;
 }
 
 export type GetFormConfigsResponseT = FormConfigT[];

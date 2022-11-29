@@ -47,11 +47,20 @@ public class ManagedInternalForm extends ManagedForm implements SingleTableResul
 
 	@Override
 	public Stream<EntityResult> streamResults() {
-		if(subQueries.size() != 1) {
+		if (subQueries.size() != 1) {
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
 		}
 		return subQueries.values().iterator().next().stream().flatMap(ManagedQuery::streamResults);
+	}
+
+	@Override
+	public long resultRowCount() {
+		if (subQueries.size() != 1) {
+			// Get the query, only if there is only one query set in the whole execution
+			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
+		}
+		return subQueries.values().iterator().next().stream().findFirst().map(ManagedQuery::resultRowCount).orElseThrow();
 	}
 
 	@Override
