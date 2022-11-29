@@ -112,7 +112,7 @@ public class ExcelResultRenderTest {
 		int i = 0;
 		for (Row row : sheet) {
 			StringJoiner sj = new StringJoiner("\t");
-			DataFormatter formatter = new DataFormatter(settings.getLocale(), true, false);
+			DataFormatter formatter = new DataFormatter(settings.getLocale());
 			for (Cell cell : row) {
 
 				final String formatted = switch (cell.getCellType()) {
