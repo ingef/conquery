@@ -112,8 +112,8 @@ public class ExcelResultRenderTest {
 		int i = 0;
 		for (Row row : sheet) {
 			StringJoiner sj = new StringJoiner("\t");
+			DataFormatter formatter = new DataFormatter(settings.getLocale(), true, false);
 			for (Cell cell : row) {
-				DataFormatter formatter = new DataFormatter(settings.getLocale());
 
 				final String formatted = switch (cell.getCellType()) {
 					case STRING, FORMULA, BOOLEAN, NUMERIC -> formatter.formatCellValue(cell);
@@ -160,8 +160,16 @@ public class ExcelResultRenderTest {
 
 	private void joinValue(PrintSettings settings, StringJoiner valueJoiner, Object val, ResultInfo info) {
 		String printVal = info.getType().printNullable(settings, val);
+
+		if (info.getType().equals(ResultType.BooleanT.INSTANCE)) {
+			/**
+			 * Even though we set the locale to GERMAN, poi's {@link DataFormatter#formatCellValue(Cell)} hardcoded english booleans
+			 */
+			printVal = (Boolean) val ? "TRUE" : "FALSE";
+		}
+
 		if (info.getType().equals(ResultType.MoneyT.INSTANCE)) {
-			printVal = printVal +" €";
+			printVal = printVal + " €";
 		}
 		valueJoiner.add(printVal);
 	}
