@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -123,7 +124,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		try (Response allEntityDataResponse = conquery.getClient().target(entityExport)
 													  .request(MediaType.APPLICATION_JSON_TYPE)
 													  .header("Accept-Language", "en-Us")
-													  .post(Entity.json(new QueryResource.EntityPreview("ID", "1", Range.all(), allConnectors)))) {
+													  .post(Entity.json(new QueryResource.EntityPreview("ID", "1", Range.atMost(LocalDate.of(2022,11,29)), allConnectors)))) {
 
 			assertThat(allEntityDataResponse.getStatusInfo().getFamily())
 					.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
@@ -135,7 +136,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		assertThat(result.getInfos()).isEqualTo(List.of(
 				new EntityPreviewStatus.Info(
 						"Age",
-						"8",
+						"9",
 						ResultType.IntegerT.INSTANCE.typeInfo(),
 						"",
 						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
