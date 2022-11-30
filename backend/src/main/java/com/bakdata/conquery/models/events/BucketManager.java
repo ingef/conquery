@@ -333,19 +333,26 @@ public class BucketManager {
 		final IntSet out = new IntOpenHashSet();
 
 		for (Connector connector : connectors) {
-			if(!connectorToCblocks.containsKey(connector))
+			if(!connectorToCblocks.containsKey(connector)) {
 				continue;
-			connectorToCblocks.get(connector).values()
-							  .stream()
-							  .map(Map::values)
-							  .flatMap(Collection::stream)
-							  .flatMapToInt(cblock -> {
-								  return cblock.getBucket().entities().stream()
-											   .mapToInt(i -> i)
-											   .filter(entity -> cblock.isConceptIncluded(entity, requiredBits))
-											   .filter(entity -> restriction.intersects(cblock.getEntityDateRange(entity)));
-							  })
-							  .forEach(out::add);
+			}
+
+			for (Map<Bucket, CBlock> bucketCBlockMap : connectorToCblocks.get(connector).values()) {
+				for (CBlock cblock : bucketCBlockMap.values()) {
+					for (int entity : cblock.getBucket().entities()) {
+
+						if (!cblock.isConceptIncluded(entity, requiredBits)) {
+							continue;
+						}
+
+						if (!restriction.intersects(cblock.getEntityDateRange(entity))) {
+							continue;
+						}
+
+						out.add(entity);
+					}
+				}
+			}
 		}
 
 		return out;
