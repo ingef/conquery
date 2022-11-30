@@ -18,8 +18,10 @@ import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -32,7 +34,6 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -45,16 +46,18 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	@Valid
 	private List<CQElement> children;
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	private Optional<Boolean> createExists = Optional.empty();
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	@JsonView(View.InternalCommunication.class)
 	private DateAggregationAction dateAction;
 
 	@Override
 	public void setDefaultExists() {
-		if (createExists.isEmpty()){
+		if (createExists.isEmpty()) {
 			createExists = Optional.of(true);
 		}
 	}
@@ -79,6 +82,10 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 		return node;
 	}
 
+	private boolean createExists() {
+		return createExists.orElse(false);
+	}
+
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		for (CQElement c : children) {
@@ -91,7 +98,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 		Preconditions.checkNotNull(context.getDateAggregationMode());
 
 		dateAction = determineDateAction(context);
-		children.forEach(c->c.resolve(context));
+		children.forEach(c -> c.resolve(context));
 	}
 
 	private DateAggregationAction determineDateAction(QueryResolveContext context) {
@@ -109,7 +116,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 			resultInfos.addAll(c.getResultInfos());
 		}
 
-		if(createExists()){
+		if (createExists()) {
 			resultInfos.add(new LocalizedDefaultResultInfo(this::getUserOrDefaultLabel, this::defaultLabel, ResultType.BooleanT.INSTANCE, Set.of()));
 		}
 
@@ -119,7 +126,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	@Override
 	public String getUserOrDefaultLabel(Locale locale) {
 		// Prefer the user label
-		if (getLabel() != null){
+		if (getLabel() != null) {
 			return getLabel();
 		}
 		return QueryUtils.createDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).and() + " ", locale);
@@ -139,30 +146,21 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 		}
 	}
 
-	private boolean createExists(){
-		return createExists.orElse(false);
-	}
-
 	@Override
-	public Optional<Set<Integer>> collectRequiredEntities() {
-		Set<Integer> current = null;
-
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		RequiredEntities current = null;
 
 		for (int index = 0; index < getChildren().size(); index++) {
-			final Optional<Set<Integer>> next = getChildren().get(index).collectRequiredEntities();
-
-			if (next.isEmpty()) {
-				continue;
-			}
+			final RequiredEntities next = getChildren().get(index).collectRequiredEntities(context);
 
 			if (current == null) {
-				current = next.get();
+				current = next;
 			}
 			else {
-				current= Sets.intersection(current, next.get());
+				current = current.and(next);
 			}
 		}
 
-		return Optional.ofNullable(current);
+		return current;
 	}
 }

@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -34,7 +33,6 @@ public class QueryExecutionContext {
 	private final ModificationShieldedWorkerStorage storage;
 	private final BucketManager bucketManager;
 
-	private final Set<Entity> requiredEntities;
 
 	private Column validityDateColumn;
 	@NonNull

@@ -2,7 +2,6 @@ package com.bakdata.conquery.apiv1.query.concept.specific;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -19,8 +18,10 @@ import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -33,7 +34,6 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -152,20 +152,20 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	}
 
 	@Override
-	public Optional<Set<Integer>> collectRequiredEntities() {
-		Set<Integer> current = Collections.emptySet();
-
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		RequiredEntities current = null;
 
 		for (int index = 0; index < getChildren().size(); index++) {
-			final Optional<Set<Integer>> next = getChildren().get(index).collectRequiredEntities();
+			final RequiredEntities next = getChildren().get(index).collectRequiredEntities(context);
 
-			if (next.isEmpty()) {
-				return Optional.empty();
+			if (current == null) {
+				current = next;
 			}
-
-			current = Sets.union(current, next.get());
+			else {
+				current = current.or(next);
+			}
 		}
 
-		return Optional.of(current);
+		return current;
 	}
 }

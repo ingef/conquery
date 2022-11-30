@@ -301,7 +301,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 	@Override
 	public WorkerMessage createExecutionMessage() {
-		return new ExecuteQuery(getId(), getQuery(), getQuery().collectRequiredEntities());
+		return new ExecuteQuery(getId(), getQuery());
 	}
 
 	@Override

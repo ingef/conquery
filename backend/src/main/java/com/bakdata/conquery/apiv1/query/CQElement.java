@@ -3,7 +3,6 @@ package com.bakdata.conquery.apiv1.query;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -14,8 +13,10 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -83,7 +84,7 @@ public abstract class CQElement implements Visitable {
 		visitor.accept(this);
 	}
 
-	public Optional<Set<Integer>> collectRequiredEntities() {
-		return Optional.empty();
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		return new RequiredEntities.All();
 	}
 }

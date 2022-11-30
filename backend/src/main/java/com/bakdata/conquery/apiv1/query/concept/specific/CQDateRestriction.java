@@ -4,9 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Queue;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
@@ -17,8 +15,10 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -87,7 +87,7 @@ public class CQDateRestriction extends CQElement {
 	}
 
 	@Override
-	public Optional<Set<Integer>> collectRequiredEntities() {
-		return getChild().collectRequiredEntities();
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		return getChild().collectRequiredEntities(context);
 	}
 }

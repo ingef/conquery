@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -25,8 +24,10 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
@@ -40,6 +41,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.Streams;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
@@ -405,8 +407,8 @@ public class CQExternal extends CQElement {
 
 
 	@Override
-	public Optional<Set<Integer>> collectRequiredEntities() {
-		return Optional.of(new HashSet<>(valuesResolved.keySet()));
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		return new RequiredEntities.Some(new IntOpenHashSet(valuesResolved.keySet()));
 	}
 
 	@Override

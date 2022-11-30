@@ -1,8 +1,6 @@
 package com.bakdata.conquery.apiv1.query.concept.specific;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
@@ -11,8 +9,10 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -69,7 +69,7 @@ public class CQNegation extends CQElement {
 	}
 
 	@Override
-	public Optional<Set<Integer>> collectRequiredEntities() {
-		return getChild().collectRequiredEntities();
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		return getChild().collectRequiredEntities(context);
 	}
 }

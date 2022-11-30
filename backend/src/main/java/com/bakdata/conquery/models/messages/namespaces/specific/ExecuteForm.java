@@ -2,9 +2,9 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.FormShardResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
@@ -74,9 +75,13 @@ public class ExecuteForm extends WorkerMessage {
 				return;
 			}
 
-			final QueryExecutionContext subQueryContext = new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager(), new HashSet<>(worker.getBucketManager().getEntities().values())); //TODO
+			final QueryExecutionContext
+					subQueryContext =
+					new QueryExecutionContext(formId, queryExecutor, worker.getStorage(), worker.getBucketManager());
 
-			if (!queryExecutor.execute(query, subQueryContext, result)) {
+			Set<Entity> entities = query.collectRequiredEntities(subQueryContext).resolve(worker.getBucketManager());
+
+			if (!queryExecutor.execute(query, subQueryContext, result, entities)) {
 				return;
 			}
 		}

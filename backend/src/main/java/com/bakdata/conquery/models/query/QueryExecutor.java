@@ -6,7 +6,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -51,8 +50,7 @@ public class QueryExecutor implements Closeable {
 		return cancelledQueries.contains(query);
 	}
 
-	public boolean execute(Query query, QueryExecutionContext executionContext, ShardResult result) {
-		final Collection<Entity> entities = executionContext.getRequiredEntities();
+	public boolean execute(Query query, QueryExecutionContext executionContext, ShardResult result, Set<Entity> entities) {
 
 		final ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(worker)));
 
