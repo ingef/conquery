@@ -26,6 +26,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * Form that forwards the results of the referenced {@link ManagedQuery} to the
+ * synthetization service of Mostly-AI.
+ * <p>
+ * The result of this form is the synthesized data provided in a
+ * zipped folder as it is provided by the service.
+ */
 @Getter
 @CPSType(id = "MOSTLY_AI_FORM", base = QueryDescription.class)
 @EqualsAndHashCode(callSuper = true)
