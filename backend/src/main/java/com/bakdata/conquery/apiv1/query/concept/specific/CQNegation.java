@@ -74,9 +74,7 @@ public class CQNegation extends CQElement {
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		final RequiredEntities requiredEntities = getChild().collectRequiredEntities(context);
-
 		final RequiredEntities.Some all = new RequiredEntities.Some(context.getBucketManager().getEntities().keySet());
-		return all.drop(requiredEntities);
+		return all; // TODO creates some funky interactions I'm not interested in right now
 	}
 }
