@@ -182,54 +182,56 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 			startSynthetization();
 		}
 		catch (Exception e) {
-			log.trace("Could not start synthetization job", e);
+			log.warn("Could not start synthetization job", e);
 			setError(ConqueryError.asConqueryError(e));
 			super.finish(getStorage(), ExecutionState.FAILED);
 		}
 
 	}
 
-	private void startSynthetization() {
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	private void startSynthetization() throws IOException {
+		try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
 
-		try (OutputStreamWriter writer = new OutputStreamWriter(baos, Charsets.UTF_8)) {
-			CsvRenderer renderer = new CsvRenderer(csvConfig.createWriter(writer), printSettings);
+			try (OutputStreamWriter writer = new OutputStreamWriter(baos, Charsets.UTF_8)) {
+				CsvRenderer renderer = new CsvRenderer(csvConfig.createWriter(writer), printSettings);
 
-			final Stream<EntityResult> resultStream = subQueries.values().iterator().next().stream().flatMap(ManagedQuery::streamResults);
+				final Stream<EntityResult> resultStream = subQueries.values().iterator().next().stream().flatMap(ManagedQuery::streamResults);
 
-			renderer.toCSV(idResultInfos, ((MostlyAiForm) getSubmittedForm()).getQueryGroup().getResultInfos(), resultStream);
-		}
-		catch (Exception e) {
-			log.trace("Could not write csv", e);
-			setError(ConqueryError.asConqueryError(e));
-			super.finish(getStorage(), ExecutionState.FAILED);
-			return;
-		}
+				renderer.toCSV(idResultInfos, ((MostlyAiForm) getSubmittedForm()).getQueryGroup().getResultInfos(), resultStream);
+			}
+			catch (Exception e) {
+				log.debug("Could not write csv", e);
+				setError(ConqueryError.asConqueryError(e));
+				super.finish(getStorage(), ExecutionState.FAILED);
+				return;
+			}
 
-		log.trace("Uploading table data");
-		final UUID
-				catalogId =
-				api.uploadTable(new ByteArrayInputStream(baos.toByteArray()), ((MostlyAiForm) getSubmittedForm()).getQueryGroup()
-																												 .getLabelWithoutAutoLabelSuffix() + ".csv");
+			log.debug("Uploading table data");
+			final UUID
+					catalogId =
+					api.uploadTable(new ByteArrayInputStream(baos.toByteArray()), ((MostlyAiForm) getSubmittedForm()).getQueryGroup()
+																													 .getLabelWithoutAutoLabelSuffix()
+																				  + ".csv");
 
-		log.trace("Fetching table details");
-		final List<MostlyAiApi.TableDetails> tableDetails = api.getTableDetails(catalogId);
+			log.debug("Fetching table details");
+			final List<MostlyAiApi.TableDetails> tableDetails = api.getTableDetails(catalogId);
 
-		log.trace("Dsiabling identifying columns");
-		UniqueNamer uniqNamer = new UniqueNamer(printSettings);
-		final List<String> identifyingColumns = idResultInfos.stream().map(uniqNamer::getUniqueName).toList();
-		for (MostlyAiApi.TableDetails tableDetail : tableDetails) {
-			for (MostlyAiApi.ColumnDetail columnDetail : tableDetail.columns()) {
-				if (identifyingColumns.contains(columnDetail.name())) {
-					api.disableColumn(catalogId, tableDetail.id(), columnDetail.id());
+			log.debug("Disabling identifying columns");
+			UniqueNamer uniqNamer = new UniqueNamer(printSettings);
+			final List<String> identifyingColumns = idResultInfos.stream().map(uniqNamer::getUniqueName).toList();
+			for (MostlyAiApi.TableDetails tableDetail : tableDetails) {
+				for (MostlyAiApi.ColumnDetail columnDetail : tableDetail.columns()) {
+					if (identifyingColumns.contains(columnDetail.name())) {
+						api.disableColumn(catalogId, tableDetail.id(), columnDetail.id());
+					}
 				}
 			}
+
+			log.debug("Starting job");
+			jobId = api.startJob("conquery_" + getId(), catalogId, tableDetails.stream().map(MostlyAiApi.TableDetails::id).collect(Collectors.toSet())).jobId();
+
+			log.debug("Started job with id '{}'", jobId);
 		}
-
-		log.trace("Starting job");
-		jobId = api.startJob("conquery_" + getId(), catalogId, tableDetails.stream().map(MostlyAiApi.TableDetails::id).collect(Collectors.toSet())).jobId();
-
-		log.trace("Started job with id '{}'", jobId);
 	}
 
 
@@ -251,6 +253,7 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 
 		return Pair.of(
 				output -> resultStreamProvider.accept(jobId, (in) -> {
+					log.debug("BEGIN downloading data for {}", jobId);
 					final long bytesTransferred;
 					try {
 						bytesTransferred = in.transferTo(output);
@@ -258,7 +261,7 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 					catch (IOException e) {
 						throw new RuntimeException(e);
 					}
-					log.trace("FINISHED downloading result from Mostly AI. Bytes transferred {}", FileUtils.byteCountToDisplaySize(bytesTransferred));
+					log.debug("FINISHED downloading result from Mostly AI. Bytes transferred {}", FileUtils.byteCountToDisplaySize(bytesTransferred));
 				}),
 				new MediaType("application", "zip")
 		);

@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.forms.mostlyai;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -35,7 +34,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 
 /**
@@ -64,20 +62,28 @@ public class MostlyAiApi {
 		this.apiKey = apiKey;
 
 		client.register(MultiPartFeature.class);
+
 		WebTarget base = client.target(baseUrl);
-		uploadTableTarget = base.path("/api/jobs/adhoc/upload");
-		tableDetailsTarget = base.path("/api/catalogs/{" + CATALOG_ID + "}/table-details");
-		columnIncludeTarget = base.path("/api/catalogs/{" + CATALOG_ID + "}/tables/{" + TABLE_ID + "}/column/include");
-		startJobTarget = base.path("/api/jobs/catalog/{" + CATALOG_ID + "}");
-		jobStatusTarget = base.path("/api/jobs/{" + JOB_ID + "}/progress");
-		downloadTokenTarget = base.path("/api/jobs/{" + JOB_ID + "}/download/SYNTHETIC_DATA/token");
-		downloadDataTarget =
-				base.path("/api/jobs/{" + JOB_ID + "}/assets/synthetic-data.zip").queryParam("token", "{" + TOKEN + "}").queryParam("user-id", "dummy-user-id");
+		final WebTarget jobTarget = base.path("/jobs");
+		final WebTarget catalogsTarget = base.path("/catalogs");
+
+		tableDetailsTarget = catalogsTarget.path("/catalogs/{" + CATALOG_ID + "}/table-details");
+		columnIncludeTarget = catalogsTarget.path("/catalogs/{" + CATALOG_ID + "}/tables/{" + TABLE_ID + "}/column/include");
+
+		uploadTableTarget = jobTarget.path("/adhoc/upload");
+		startJobTarget = jobTarget.path("/catalog/{" + CATALOG_ID + "}");
+		jobStatusTarget = jobTarget.path("/{" + JOB_ID + "}/progress");
+		downloadTokenTarget = jobTarget.path("/{" + JOB_ID + "}/download/SYNTHETIC_DATA/token");
+		downloadDataTarget = jobTarget.path("/{" + JOB_ID + "}/assets/synthetic-data.zip")
+									  .queryParam("token", "{" + TOKEN + "}")
+									  .queryParam("user-id", "dummy-user-id");
+
 		objectMapper = Jackson.MAPPER.copy();
 	}
 
 
 	public UUID uploadTable(InputStream csvStream, String fileName) {
+		log.debug("BEGIN to upload {} to {}", fileName, uploadTableTarget.toString());
 		// Mostly seems to require a propper supported file suffix (allows csv or parquet format)
 		Preconditions.checkArgument(fileName.endsWith(".csv"), "The file name needs to end on '.csv'");
 
@@ -86,37 +92,36 @@ public class MostlyAiApi {
 
 		// Prepare MultiPart Upload Request Definition
 		final UploadRequest uploadRequest = new UploadRequest(fileName, List.of(new TableSourceDefinition(fileName, FILES_0)));
-		final ByteArrayOutputStream buf = new ByteArrayOutputStream();
+		try (final ByteArrayOutputStream buf = new ByteArrayOutputStream()) {
 
-		try {
+
 			objectMapper.writer().writeValue(buf, uploadRequest);
-		}
-		catch (IOException e) {
-			throw new RuntimeException(e);
-		}
 
-		final StreamDataBodyPart
-				uploadDescriptionPart =
-				new StreamDataBodyPart("file-upload-request", new ByteArrayInputStream(buf.toByteArray()), "upload-request.json", MediaType.APPLICATION_JSON_TYPE);
+			final StreamDataBodyPart
+					uploadDescriptionPart =
+					new StreamDataBodyPart("file-upload-request", new ByteArrayInputStream(buf.toByteArray()), "upload-request.json", MediaType.APPLICATION_JSON_TYPE);
 
-		// Combine MultiParts
-		try (final FormDataMultiPart formDataMultiPart = new FormDataMultiPart()) {
-			formDataMultiPart
-					.bodyPart(csvPart)
-					.bodyPart(uploadDescriptionPart);
+			// Combine MultiParts
+			try (final FormDataMultiPart formDataMultiPart = new FormDataMultiPart()) {
+				formDataMultiPart
+						.bodyPart(csvPart)
+						.bodyPart(uploadDescriptionPart);
 
-			// Send Request
-			try (final Response response = uploadTableTarget.request(MediaType.APPLICATION_JSON)
-															.header(HEADER_API_KEY, apiKey)
-															.post(Entity.entity(formDataMultiPart, formDataMultiPart.getMediaType()))) {
+				// Send Request
+				try (final Response response = uploadTableTarget.request(MediaType.APPLICATION_JSON)
+																.header(HEADER_API_KEY, apiKey)
+																.post(Entity.entity(formDataMultiPart, formDataMultiPart.getMediaType()))) {
 
-				if (!response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
-					throw new RuntimeException("Table upload failed. Status: " + response.getStatusInfo().getStatusCode());
+					if (!response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+
+						throw new RuntimeException(
+								"Table upload failed. Status: " + response.getStatusInfo().getStatusCode());
+					}
+
+					final TableUploadResponse tableUploadResponse = response.readEntity(TableUploadResponse.class);
+					log.debug("FINISHED uploading table '{}' and retrieved catalog id '{}'", fileName, tableUploadResponse.id);
+					return tableUploadResponse.id;
 				}
-
-				final TableUploadResponse tableUploadResponse = response.readEntity(TableUploadResponse.class);
-				log.trace("Uploaded table '{}' and retrieved catalog id '{}'", fileName, tableUploadResponse.id);
-				return tableUploadResponse.id;
 			}
 		}
 		catch (IOException e) {
@@ -126,6 +131,9 @@ public class MostlyAiApi {
 	}
 
 	public List<TableDetails> getTableDetails(UUID catalogId) {
+
+		log.debug("BEGIN fetching table details for catalog id '{}'", catalogId);
+
 		try (final Response response = tableDetailsTarget.resolveTemplate(CATALOG_ID, catalogId)
 														 .request(MediaType.APPLICATION_JSON)
 														 .header(HEADER_API_KEY, apiKey)
@@ -136,12 +144,15 @@ public class MostlyAiApi {
 
 			final List<TableDetails> tableDetails = response.readEntity(new GenericType<List<TableDetails>>() {
 			});
-			log.trace("Fetched table details for catalog id '{}'", catalogId);
+			log.debug("FINISHED fetching table details for catalog id '{}'", catalogId);
 			return tableDetails;
 		}
 	}
 
 	public void disableColumn(UUID catalogId, UUID tableId, UUID columnId) {
+
+		log.debug("BEGIN disabling column in catalog_id/table_id/column_id '{}/{}/{}'", catalogId, tableId, columnId);
+
 		final ColumnDetail columnDetail = new ColumnDetail(columnId, null, false);
 		final Invocation.Builder requestBuilder = columnIncludeTarget.resolveTemplate(CATALOG_ID, catalogId).resolveTemplate(TABLE_ID, tableId)
 																	 .request(MediaType.APPLICATION_JSON)
@@ -152,11 +163,12 @@ public class MostlyAiApi {
 				throw new RuntimeException("Fetching table details failed. Status: " + response.getStatusInfo().getStatusCode());
 			}
 
-			log.trace("Disabled column in catalog_id/table_id/column_id '{}/{}/{}'", catalogId, tableId, columnId);
+			log.debug("FINISHED disabled column in catalog_id/table_id/column_id '{}/{}/{}'", catalogId, tableId, columnId);
 		}
 	}
 
 	public JobStatusResponse startJob(String jobName, UUID catalogId, Set<UUID> tableIds) {
+		log.debug("BEGIN job '{}' with on catalog '{}' and tables '{}'", jobName, catalogId, tableIds);
 
 		// For now: default settings for all tables
 		final Map<UUID, DataCatalogTableGeneralSettings>
@@ -176,12 +188,13 @@ public class MostlyAiApi {
 
 			final JobStatusResponse jobStatusResponse = response.readEntity(JobStatusResponse.class);
 
-			log.trace("Started job with id {}", jobStatusResponse.jobId);
+			log.debug("FINISHED starting job with id {}", jobStatusResponse.jobId);
 			return jobStatusResponse;
 		}
 	}
 
 	public JobStatusResponse getJobStatus(UUID jobId) {
+		log.debug("BEGIN getting job status for {}", jobId);
 		final Invocation.Builder builder = jobStatusTarget.resolveTemplate(JOB_ID, jobId)
 														  .request(MediaType.APPLICATION_JSON)
 														  .header(HEADER_API_KEY, apiKey);
@@ -193,12 +206,14 @@ public class MostlyAiApi {
 
 			final JobStatusResponse jobStatusResponse = response.readEntity(JobStatusResponse.class);
 
-			log.trace("Got job progress for {}", jobStatusResponse.jobId);
+			log.debug("FINISHED getting job status for {}", jobId);
+			log.trace("Job {} status: {} ", jobId, jobStatusResponse);
 			return jobStatusResponse;
 		}
 	}
 
 	public void downloadSyntheticData(UUID jobId, Consumer<InputStream> inputStreamConsumer) {
+		log.debug("BEGIN downloading synthetic data for job '{}'", jobId);
 		final Invocation.Builder builder = downloadTokenTarget.resolveTemplate(JOB_ID, jobId)
 															  .request(MediaType.APPLICATION_JSON)
 															  .header(HEADER_API_KEY, apiKey);
@@ -206,12 +221,15 @@ public class MostlyAiApi {
 		// Get download token
 		DownloadToken downloadToken;
 		try (Response response = builder.get()) {
+			log.debug("Requesting download token for result of job '{}'", jobId);
 
 			if (!response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
 				throw new RuntimeException("Download token retrieval failed for job '" + jobId + "'. Status: " + response.getStatusInfo().getStatusCode());
 			}
 
 			downloadToken = response.readEntity(DownloadToken.class);
+			log.debug("Received download token for result of job '{}'", jobId);
+			log.trace("Download token for job '{}': {}", jobId, downloadToken);
 		}
 
 		final Invocation.Builder
@@ -219,6 +237,7 @@ public class MostlyAiApi {
 											.request(new MediaType("application", "zip"));
 
 
+		log.debug("Starting download for job '{}'", jobId);
 		try (Response response = request.get()) {
 
 			if (!response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
@@ -228,6 +247,7 @@ public class MostlyAiApi {
 			final InputStream inputStream = response.readEntity(InputStream.class);
 
 			inputStreamConsumer.accept(inputStream);
+			log.debug("FINISHED download for job '{}'", jobId);
 		}
 	}
 
