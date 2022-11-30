@@ -20,8 +20,9 @@ import QueryNodeActions from "./QueryNodeActions";
 import QueryNodeContent from "./QueryNodeContent";
 import { getRootNodeLabel } from "./helper";
 import { StandardQueryNodeT } from "./types";
+import { FlexHoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 
-const Root = styled("div")<{
+const Root = styled("div") <{
   active?: boolean;
 }>`
   position: relative;
@@ -127,48 +128,50 @@ const QueryNode = ({
 
     ...(nodeIsConceptQueryNode(node)
       ? {
-          ids: node.ids,
-          type: node.type,
-          description: node.description,
-          tree: node.tree,
-          tables: node.tables,
-          selects: node.selects,
+        ids: node.ids,
+        type: node.type,
+        description: node.description,
+        tree: node.tree,
+        tables: node.tables,
+        selects: node.selects,
 
-          additionalInfos: node.additionalInfos,
-          matchingEntries: node.matchingEntries,
-          matchingEntities: node.matchingEntities,
-          dateRange: node.dateRange,
-        }
+        additionalInfos: node.additionalInfos,
+        matchingEntries: node.matchingEntries,
+        matchingEntities: node.matchingEntities,
+        dateRange: node.dateRange,
+      }
       : {
-          id: node.id,
-          type: node.type,
-          query: node.query,
-          tags: node.tags,
-        }),
+        id: node.id,
+        type: node.type,
+        query: node.query,
+        tags: node.tags,
+      }),
   };
   const [, drag] = useDrag<StandardQueryNodeT, void, {}>({
     type: item.type,
     item: () =>
-      ({
-        ...item,
-        dragContext: {
-          ...item.dragContext,
-          ...getWidthAndHeight(ref),
-        },
-      } as StandardQueryNodeT),
+    ({
+      ...item,
+      dragContext: {
+        ...item.dragContext,
+        ...getWidthAndHeight(ref),
+      },
+    } as StandardQueryNodeT),
   });
 
   const tooltipText = hasNonDefaultSettings
     ? t("queryEditor.hasNonDefaultSettings")
     : hasFilterValues
-    ? t("queryEditor.hasDefaultSettings")
-    : undefined;
+      ? t("queryEditor.hasDefaultSettings")
+      : undefined;
 
   const expandClick = useCallback(() => {
     if (nodeIsConceptQueryNode(node) || !node.query) return;
 
     onExpandClick(node.query);
   }, [onExpandClick, node]);
+
+  const onClick = !!node.error ? () => { } : () => onEditClick(andIdx, orIdx);
 
   const QueryNodeRoot = (
     <Root
@@ -177,36 +180,39 @@ const QueryNode = ({
         drag(instance);
       }}
       active={hasNonDefaultSettings || hasFilterValues}
-      onClick={!!node.error ? () => {} : () => onEditClick(andIdx, orIdx)}
+      onClick={onClick}
     >
-      <QueryNodeContent
-        error={node.error}
-        isConceptQueryNode={nodeIsConceptQueryNode(node)}
-        tooltipText={tooltipText}
-        label={
-          nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
-        }
-        description={
-          nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
-            ? node.description
-            : undefined
-        }
-        rootNodeLabel={rootNodeLabel}
-      />
-      <QueryNodeActions
-        andIdx={andIdx}
-        orIdx={orIdx}
-        excludeTimestamps={node.excludeTimestamps}
-        isExpandable={isQueryExpandable(node)}
-        hasActiveSecondaryId={hasActiveSecondaryId}
-        excludeFromSecondaryId={node.excludeFromSecondaryId}
-        onDeleteNode={onDeleteNode}
-        onToggleTimestamps={onToggleTimestamps}
-        onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
-        onExpandClick={expandClick}
-        previousQueryLoading={node.loading}
-        error={node.error}
-      />
+      <FlexHoverNavigatable triggerNavigate={onClick}
+      >
+        <QueryNodeContent
+          error={node.error}
+          isConceptQueryNode={nodeIsConceptQueryNode(node)}
+          tooltipText={tooltipText}
+          label={
+            nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
+          }
+          description={
+            nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
+              ? node.description
+              : undefined
+          }
+          rootNodeLabel={rootNodeLabel}
+        />
+        <QueryNodeActions
+          andIdx={andIdx}
+          orIdx={orIdx}
+          excludeTimestamps={node.excludeTimestamps}
+          isExpandable={isQueryExpandable(node)}
+          hasActiveSecondaryId={hasActiveSecondaryId}
+          excludeFromSecondaryId={node.excludeFromSecondaryId}
+          onDeleteNode={onDeleteNode}
+          onToggleTimestamps={onToggleTimestamps}
+          onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
+          onExpandClick={expandClick}
+          previousQueryLoading={node.loading}
+          error={node.error}
+        />
+      </FlexHoverNavigatable>
     </Root>
   );
 

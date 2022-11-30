@@ -18,7 +18,7 @@ const StyledFaIcon = styled(FaIcon)`
 `;
 
 const StyledIconButton = styled(IconButton)`
-  padding: 0px 6px 4px;
+  padding: 3.5px 6px 0px;
 `;
 
 const RelativeContainer = styled.div`

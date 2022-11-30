@@ -26,7 +26,7 @@ const SmallTabNavigation: FC<PropsT> = ({
   onSelectTab,
 }) => {
   return (
-    <div className={className} style={{"display": "flex"}}>
+    <div className={className}>
       {options.map((option) => {
         const selected = option.value === selectedTab;
 
