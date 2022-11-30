@@ -6,11 +6,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
@@ -21,11 +24,14 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.jobs.CalculateCBlocksJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.worker.Worker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -319,6 +325,30 @@ public class BucketManager {
 
 		return tableToBuckets.getOrDefault(table, Int2ObjectMaps.emptyMap())
 							 .getOrDefault(bucketId, Collections.emptyList());
+	}
+
+	public IntSet getEntitiesWithConcepts(Set<Connector> connectors, Collection<ConceptElement<?>> concepts, CDateSet restriction) {
+		final long requiredBits = ConceptNode.calculateBitMask(concepts);
+
+		final IntSet out = new IntOpenHashSet();
+
+		for (Connector connector : connectors) {
+			if(!connectorToCblocks.containsKey(connector))
+				continue;
+			connectorToCblocks.get(connector).values()
+							  .stream()
+							  .map(Map::values)
+							  .flatMap(Collection::stream)
+							  .flatMapToInt(cblock -> {
+								  return cblock.getBucket().entities().stream()
+											   .mapToInt(i -> i)
+											   .filter(entity -> cblock.isConceptIncluded(entity, requiredBits))
+											   .filter(entity -> restriction.intersects(cblock.getEntityDateRange(entity)));
+							  })
+							  .forEach(out::add);
+		}
+
+		return out;
 	}
 
 	public Map<Bucket, CBlock> getEntityCBlocksForConnector(Entity entity, Connector connector) {

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -48,7 +49,7 @@ public class ConceptNode extends QPChainNode {
 	 * Calculate the bitmask for the supplied {@link ConceptElement}s which is eventually compared with the
 	 * the bitmasks of each entity. (See {@link CBlock#getIncludedConceptElementsPerEntity()})
 	 */
-	public static long calculateBitMask(List<ConceptElement<?>> concepts) {
+	public static long calculateBitMask(Collection<ConceptElement<?>> concepts) {
 		long mask = 0;
 		for (ConceptElement<?> concept : concepts) {
 			final int[] prefix = concept.getPrefix();

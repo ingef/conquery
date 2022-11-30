@@ -24,15 +24,19 @@ import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(id="NEGATION", base= CQElement.class)
+@CPSType(id = "NEGATION", base = CQElement.class)
 @Setter
 @Getter
 public class CQNegation extends CQElement {
 
-	@Valid @NotNull @Getter @Setter
+	@Valid
+	@NotNull
+	@Getter
+	@Setter
 	private CQElement child;
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	@JsonView(View.InternalCommunication.class)
 	private DateAggregationAction dateAction;
 
@@ -61,7 +65,7 @@ public class CQNegation extends CQElement {
 	public List<ResultInfo> getResultInfos() {
 		return child.getResultInfos();
 	}
-	
+
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		super.visit(visitor);
@@ -70,6 +74,9 @@ public class CQNegation extends CQElement {
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		return getChild().collectRequiredEntities(context);
+		final RequiredEntities requiredEntities = getChild().collectRequiredEntities(context);
+
+		final RequiredEntities.Some all = new RequiredEntities.Some(context.getBucketManager().getEntities().keySet());
+		return all.drop(requiredEntities);
 	}
 }

@@ -29,8 +29,10 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.NamespacedIdentifiableHolding;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -323,5 +325,10 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		return cqConcept;
 	}
 
+	@Override
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		final Set<Connector> connectors = getTables().stream().map(CQTable::getConnector).collect(Collectors.toSet());
 
+		return new RequiredEntities.Some(context.getBucketManager().getEntitiesWithConcepts(connectors, getElements(), context.getDateRestriction()));
+	}
 }
