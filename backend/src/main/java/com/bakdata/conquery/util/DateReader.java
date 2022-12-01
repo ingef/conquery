@@ -112,7 +112,7 @@ public class DateReader {
 		}
 
 		if (value.endsWith(sep)) {
-			return CDateRange.atMost(parseToLocalDate(value.substring(0, value.length() - sep.length())));
+			return CDateRange.atLeast(parseToLocalDate(value.substring(0, value.length() - sep.length())));
 		}
 
 
