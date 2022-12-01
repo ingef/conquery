@@ -317,7 +317,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				final int index = bucket.getEntityIndex(entity);
 				final int end = bucket.getEntityEnd(entity);
 
-				// We unroll spanClosed for the whole bucket/entity, this avoids costly reallocation in a loop
+				// We unroll span for the whole bucket/entity, this avoids costly reallocation in a loop
 				// First we initialize the values to illegal values, making Min/Max easier
 				int max = Integer.MIN_VALUE;
 				int min = Integer.MAX_VALUE;
