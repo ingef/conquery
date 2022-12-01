@@ -11,22 +11,21 @@ FROM maven:3.8-openjdk-17-slim AS builder
 
 WORKDIR /app
 
-# Get the version from previous step
-COPY --from=version-extractor /app/git_describe.txt .
-
 # Fetch dependencies first
 COPY ./pom.xml .
 COPY ./backend/pom.xml ./backend/
 COPY ./executable/pom.xml ./executable/
 COPY ./autodoc/pom.xml ./autodoc/
 
-RUN mvn dependency:resolve -Dsilent=true -DexcludeGroupIds="com.bakdata.conquery" -DexcludeArtifactIds="backend:jar" -pl backend -am
+RUN mvn dependency:go-offline -Dsilent=true -DexcludeGroupIds="com.bakdata.conquery" -pl backend -am
 
-
-# Then copy the rest and build
-
+# Then copy the rest
 COPY . .
 
+# Get the version from previous step
+COPY --from=version-extractor /app/git_describe.txt .
+
+# Build
 RUN ./scripts/build_backend_version.sh `cat git_describe.txt`
 
 
