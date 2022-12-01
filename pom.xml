@@ -119,7 +119,6 @@
 								<!-- do not only use annotated tags -->
 								<tags>true</tags>
 							</gitDescribe>
-							<useNativeGit>true</useNativeGit>
 							<offline>true</offline>
 							<includeOnlyProperties>
 								<includeOnlyProperty>^git.commit.id.describe</includeOnlyProperty>
