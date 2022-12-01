@@ -119,14 +119,14 @@ public class CQExternal extends CQElement {
 											 .filter(Objects::nonNull)
 											 .toArray(String[]::new);
 
-		if (!onlySingles) {
+		if (onlySingles) {
 			return createExternalNodeOnlySingle(context, plan, extraHeaders);
 		}
+		return createExternalNodeForList(context, plan, extraHeaders);
 
-		return createExternalNode(context, plan, extraHeaders);
 	}
 
-	private ExternalNode<String> createExternalNode(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
+	private ExternalNode<String> createExternalNodeOnlySingle(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
 		// Remove zero element Lists and substitute one element Lists by containing String
 		final Map<Integer, Map<String, String>> extraFlat = extra.entrySet().stream()
 																 .collect(Collectors.toMap(
@@ -144,20 +144,23 @@ public class CQExternal extends CQElement {
 		final Map<String, ConstantValueAggregator<String>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
 			// Just allocating, the result type is irrelevant here
-			extraAggregators.put(extraHeader, new ConstantValueAggregator<>(null, null));
+			final ConstantValueAggregator<String> aggregator = new ConstantValueAggregator<>(null, null);
+			extraAggregators.put(extraHeader, aggregator);
+			plan.registerAggregator(aggregator);
+
 		}
-		extraAggregators.values().forEach(plan::registerAggregator);
 
 		return new ExternalNode<>(context.getStorage().getDataset().getAllIdsTable(), valuesResolved, extraFlat, extraHeaders, extraAggregators);
 	}
 
-	private ExternalNode<List<String>> createExternalNodeOnlySingle(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
+	private ExternalNode<List<String>> createExternalNodeForList(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
 		final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
 			// Just allocating, the result type is irrelevant here
-			extraAggregators.put(extraHeader, new ConstantValueAggregator<>(null, null));
+			final ConstantValueAggregator<List<String>> aggregator = new ConstantValueAggregator<>(null, null);
+			extraAggregators.put(extraHeader, aggregator);
+			plan.registerAggregator(aggregator);
 		}
-		extraAggregators.values().forEach(plan::registerAggregator);
 
 		return new ExternalNode<>(
 				context.getStorage().getDataset().getAllIdsTable(),

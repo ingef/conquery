@@ -21,17 +21,18 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 public class EventDurationSumAggregator extends Aggregator<Long> {
 
-	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 	private final CDateSet set = CDateSet.create();
-
+	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 	@CheckForNull
 	private CDateSet dateRestriction;
 	@CheckForNull
 	private Column validityDateColumn;
+	private int realUpperBound;
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		set.clear();
+		realUpperBound = context.getToday();
 	}
 
 	@Override
@@ -53,12 +54,8 @@ public class EventDurationSumAggregator extends Aggregator<Long> {
 
 		final CDateRange value = bucket.getAsDateRange(event, validityDateColumn);
 
-		if (value.isOpen()) {
-			return;
-		}
 
-
-		set.maskedAdd(value, dateRestriction);
+		set.maskedAdd(value, dateRestriction, realUpperBound);
 	}
 
 	@Override

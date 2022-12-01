@@ -43,16 +43,12 @@ import lombok.extern.slf4j.Slf4j;
 public class SecondaryIdQuery extends Query {
 
 	@NotNull
+	protected DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
+	@NotNull
 	private CQElement root;
-
 	@NsIdRef
 	@NotNull
 	private SecondaryIdDescription secondaryId;
-
-	@NotNull
-	protected DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
-
-
 	/**
 	 * @apiNote not using {@link ConceptQuery} directly in the API-spec simplifies the API.
 	 */
@@ -148,7 +144,16 @@ public class SecondaryIdQuery extends Query {
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		List<ResultInfo> resultInfos = new ArrayList<>();
-		resultInfos.add(new SimpleResultInfo(secondaryId.getName(), ResultType.StringT.INSTANCE, secondaryId.getDescription(), Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))));
+
+		resultInfos.add(
+				new SimpleResultInfo(
+						secondaryId.getLabel(),
+						ResultType.StringT.INSTANCE,
+						secondaryId.getDescription(),
+						Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))
+				)
+		);
+
 		resultInfos.addAll(query.getResultInfos());
 
 		return resultInfos;

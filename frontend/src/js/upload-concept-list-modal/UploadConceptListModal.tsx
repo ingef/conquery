@@ -78,7 +78,8 @@ const SxPrimaryButton = styled(PrimaryButton)`
   flex-shrink: 0;
 `;
 const SxInputSelect = styled(InputSelect)`
-  width: 650px;
+  width: 60vw;
+  max-width: 900px;
 `;
 
 const useUnresolvedItemsCount = (
@@ -468,6 +469,51 @@ const UploadConceptListModal = ({
     ],
   );
 
+  // Pretty custom sorting logic, tested with many combinations of
+  // filters and concepts to "work well".
+  // Tries to
+  // - keep concept and its filters together (in asc order of the filterIdx)
+  // - tries to prioritize concepts that are matched exactly by search query
+  // But less "set in stone" than it looks
+  const sortOptions = useCallback(
+    (a: SelectOptionT, b: SelectOptionT, query: string) => {
+      const aDetails = selectOptionsDetails[a.value as string];
+      const bDetails = selectOptionsDetails[b.value as string];
+
+      if (aDetails.type === "concept" && bDetails.type === "concept") {
+        return a.label.localeCompare(b.label);
+      }
+
+      if (aDetails.type === "filter" && bDetails.type === "filter") {
+        const sameConcept = aDetails.conceptId === bDetails.conceptId;
+
+        if (sameConcept) {
+          return aDetails.filterIdx - bDetails.filterIdx;
+        }
+      }
+
+      if (aDetails.concept.label === bDetails.concept.label) {
+        return aDetails.type === "concept" ? -1 : 1;
+      }
+
+      const aConceptLabel = aDetails.concept.label.toLowerCase();
+      const bConceptLabel = bDetails.concept.label.toLowerCase();
+      const queryLower = query.toLowerCase();
+
+      const aConceptLabelEqual = aConceptLabel === queryLower;
+      const bConceptLabelEqual = bConceptLabel === queryLower;
+
+      if (aConceptLabelEqual) {
+        return -1;
+      } else if (bConceptLabelEqual) {
+        return 1;
+      }
+
+      return aDetails.concept.label.localeCompare(bDetails.concept.label);
+    },
+    [selectOptionsDetails],
+  );
+
   return (
     <Modal
       closeIcon
@@ -482,6 +528,7 @@ const UploadConceptListModal = ({
           }
           onChange={onChange}
           options={selectOptions}
+          sortOptions={sortOptions}
         />
         {(!!resolvedFilters || !!resolvedConcepts) &&
           !hasResolvedItems &&

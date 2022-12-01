@@ -24,26 +24,13 @@ import org.apache.commons.lang3.StringUtils;
 
 /**
  * Utility class for parsing multiple date-formats.
- *
+ * <p>
  * We cache successfully parsed dates, hoping to achieve a speedup that way.
- *
+ * <p>
  * We also assume that date-formats do not change over the course of parsing and use the last successfully parsed format as candidate for parsing other values.
- *
  */
 @Slf4j
 public class DateReader {
-
-	/**
-	 * All available formats for parsing.
-	 */
-	@JsonIgnore
-	private List<DateTimeFormatter> dateFormats;
-
-	@JsonIgnore
-	private List<String> rangeStartEndSeperators;
-
-	@JsonIgnore
-	private List<LocaleConfig.ListFormat> dateSetLayouts;
 
 	/**
 	 * Index of the last successfully parsed date format in dateFormats.
@@ -55,16 +42,18 @@ public class DateReader {
 	 */
 	@JsonIgnore
 	private final ThreadLocal<Integer> lastRangeFormatIndex = ThreadLocal.withInitial(() -> 0);
-
 	/**
 	 * Index of the last successfully parsed dateset format in dateSetLayouts
 	 */
 	@JsonIgnore
 	private final ThreadLocal<Integer> lastDateSetLayoutIndex = ThreadLocal.withInitial(() -> 0);
-
 	@JsonIgnore
 	private final LocalDate ERROR_DATE = LocalDate.MIN;
-
+	/**
+	 * All available formats for parsing.
+	 */
+	@JsonIgnore
+	private List<DateTimeFormatter> dateFormats;
 	/**
 	 * Parsed values cache.
 	 */
@@ -73,29 +62,16 @@ public class DateReader {
 																		   .weakValues()
 																		   .concurrencyLevel(10)
 																		   .build(CacheLoader.from(this::tryParseDate));
+	@JsonIgnore
+	private List<String> rangeStartEndSeperators;
+	@JsonIgnore
+	private List<LocaleConfig.ListFormat> dateSetLayouts;
 
 	@JsonCreator
 	public DateReader(Set<String> dateParsingFormats, List<String> rangeStartEndSeperators, List<LocaleConfig.ListFormat> dateSetLayouts) {
 		this.dateFormats = dateParsingFormats.stream().map(DateTimeFormatter::ofPattern).collect(Collectors.toList());
 		this.rangeStartEndSeperators = rangeStartEndSeperators;
 		this.dateSetLayouts = dateSetLayouts;
-	}
-
-	/**
-	 * Try parsing the String value to a LocalDate.
-	 */
-	public LocalDate parseToLocalDate(String value) throws ParsingException {
-		if (Strings.isNullOrEmpty(value)) {
-			return null;
-		}
-
-		final LocalDate out = DATE_CACHE.getUnchecked(value);
-
-		if (out.equals(ERROR_DATE)) {
-			throw new ParsingException(String.format("Failed to parse `%s` as LocalDate.", value));
-		}
-
-		return out;
 	}
 
 	/**
@@ -130,7 +106,18 @@ public class DateReader {
 	 */
 	private CDateRange parseToCDateRange(String value, String sep) {
 
+		// Shorthand formats for open ranges without resorting to two-column formats
+		if (value.startsWith(sep)) {
+			return CDateRange.atMost(parseToLocalDate(value.substring(sep.length())));
+		}
+
+		if (value.endsWith(sep)) {
+			return CDateRange.atMost(parseToLocalDate(value.substring(0, value.length() - sep.length())));
+		}
+
+
 		String[] parts = StringUtils.split(value, sep);
+
 
 		if (parts.length == 1) {
 			// If it looks like a single date, try to parse it at one
@@ -145,6 +132,23 @@ public class DateReader {
 		}
 
 		throw ParsingException.of(value, String.format("DateRange: Unexpected length of Parts (%d) for `%s` using sep=`%s`", parts.length, value, sep));
+	}
+
+	/**
+	 * Try parsing the String value to a LocalDate.
+	 */
+	public LocalDate parseToLocalDate(String value) throws ParsingException {
+		if (Strings.isNullOrEmpty(value)) {
+			return null;
+		}
+
+		final LocalDate out = DATE_CACHE.getUnchecked(value);
+
+		if (out.equals(ERROR_DATE)) {
+			throw new ParsingException(String.format("Failed to parse `%s` as LocalDate.", value));
+		}
+
+		return out;
 	}
 
 	/**

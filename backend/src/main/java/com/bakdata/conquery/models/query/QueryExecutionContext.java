@@ -1,9 +1,11 @@
 package com.bakdata.conquery.models.query;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -46,6 +48,8 @@ public class QueryExecutionContext {
 	 * Only set when in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the selected {@link SecondaryIdDescriptionId}.
 	 */
 	private SecondaryIdDescription activeSecondaryId = null;
+
+	private final int today = CDate.ofLocalDate(LocalDate.now());
 
 	public List<Bucket> getEntityBucketsForTable(Entity entity, Table table) {
 		return bucketManager.getEntityBucketsForTable(entity, table);
