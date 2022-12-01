@@ -7,6 +7,9 @@ then
 	then
 		version=${git_descibe#v}
 		echo "Found version $version"
+	else
+		echo "Could not determine a version"
+		exit 1
 	fi
 else
 	version=$1
