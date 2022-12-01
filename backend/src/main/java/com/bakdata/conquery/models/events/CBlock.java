@@ -330,14 +330,14 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 					final CDateRange range = bucket.getAsDateRange(event, column);
 
-					if (range.hasLowerBound()) {
+					{
 						final int minValue = range.getMinValue();
 
 						max = Math.max(max, minValue);
 						min = Math.min(min, minValue);
 					}
 
-					if (range.hasUpperBound()) {
+					{
 						final int maxValue = range.getMaxValue();
 
 						max = Math.max(max, maxValue);
