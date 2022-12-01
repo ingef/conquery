@@ -2,6 +2,6 @@
 
 set -x
 
-mvn clean
+git_descibe=`git describe --tags`
 
-mvn -T 1C package -Dmaven.test.skip=true -DskipTests -Drevision=2.0.0-`git describe --tags` -pl executable -am
+mvn -T 1C clean package -Dmaven.test.skip=true -DskipTests -Drevision=${git_descibe#v} -pl executable -am
