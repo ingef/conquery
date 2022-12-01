@@ -45,7 +45,7 @@
       "name": "dateRange",
       "type": "DATE_RANGE",
       "label": {
-        "de": "Ausgabezeitraum"
+        "de": "Beobachtungszeitraum"
       },
       "validations": [
         "NOT_EMPTY"
