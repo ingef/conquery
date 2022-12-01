@@ -1,5 +1,7 @@
 #!/bin/bash
 
-mvn clean initialize -P setVersion
+set -x
 
-mvn -T 1C package -Dmaven.test.skip=true -DskipTests -pl executable -am
+mvn clean
+
+mvn -T 1C package -Dmaven.test.skip=true -DskipTests -Drevision=2.0.0-`git describe --tags` -pl executable -am
