@@ -157,7 +157,7 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 				current = next;
 			}
 			else {
-				current = current.and(next);
+				current = current.intersect(next);
 			}
 		}
 

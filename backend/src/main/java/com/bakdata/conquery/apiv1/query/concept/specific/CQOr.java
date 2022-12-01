@@ -162,7 +162,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 				current = next;
 			}
 			else {
-				current = current.or(next);
+				current = current.union(next);
 			}
 		}
 

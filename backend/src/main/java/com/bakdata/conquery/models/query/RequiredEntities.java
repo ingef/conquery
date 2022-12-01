@@ -13,6 +13,9 @@ import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.NonNull;
 import lombok.ToString;
 
+/**
+ * Helper class for {@link com.bakdata.conquery.apiv1.query.Query#collectRequiredEntities(QueryExecutionContext)}, encapsulating logic.
+ */
 @ToString(onlyExplicitlyIncluded = true)
 public final class RequiredEntities {
 
@@ -26,14 +29,14 @@ public final class RequiredEntities {
 		this.entities = new IntOpenHashSet(entities);
 	}
 
-	public RequiredEntities and(@NonNull RequiredEntities other) {
+	public RequiredEntities intersect(@NonNull RequiredEntities other) {
 		final IntOpenHashSet out = new IntOpenHashSet(entities);
 		out.retainAll(other.entities);
 
 		return new RequiredEntities(out);
 	}
 
-	public RequiredEntities or(@NonNull RequiredEntities other) {
+	public RequiredEntities union(@NonNull RequiredEntities other) {
 		final IntOpenHashSet out = new IntOpenHashSet(entities);
 		out.addAll(other.entities);
 

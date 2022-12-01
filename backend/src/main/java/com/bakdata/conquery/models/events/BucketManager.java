@@ -327,7 +327,10 @@ public class BucketManager {
 							 .getOrDefault(bucketId, Collections.emptyList());
 	}
 
-	public IntSet getEntitiesWithConcepts(Set<Connector> connectors, Collection<ConceptElement<?>> concepts, CDateSet restriction) {
+	/**
+	 * Collects all Entites, that have any of the concepts on the connectors in a specific time.
+	 */
+	public IntSet getEntitiesWithConcepts(Collection<ConceptElement<?>> concepts, Set<Connector> connectors, CDateSet restriction) {
 		final long requiredBits = ConceptNode.calculateBitMask(concepts);
 
 		final IntSet out = new IntOpenHashSet();
