@@ -345,7 +345,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 					}
 				}
 
-				spans[index] = calculateSpan(max, min, spans[index]);
+				final CDateRange span = calculateSpan(max, min, spans[index]);
+				spans[index] = span;
 			}
 		}
 
