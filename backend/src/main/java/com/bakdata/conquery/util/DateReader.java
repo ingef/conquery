@@ -115,10 +115,6 @@ public class DateReader {
 			return CDateRange.atLeast(parseToLocalDate(value.substring(0, value.length() - sep.length())));
 		}
 
-		if(!value.contains(sep)){
-			throw ParsingException.of(value, String.format("DateRange: Did not contain sep `%s`", sep));
-		}
-
 		final String[] parts = StringUtils.split(value, sep);
 
 
