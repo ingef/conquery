@@ -74,7 +74,12 @@ public class CQNegation extends CQElement {
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		final RequiredEntities.Some all = new RequiredEntities.Some(context.getBucketManager().getEntities().keySet());
-		return all; // TODO creates some funky interactions I'm not interested in right now
+		/*
+		 * We cannot realistically handle negation as that would require translating most if not all query logic into collectRequiredTables. Specifically CQConcept/Filters.
+		 *
+		 * Additionally, it would require collectRequiredEntities to be perfect, instead of being good enough,
+		 * since excluding entities that _might_ not be included would exclude them from evaluation.
+		 */
+		return new RequiredEntities(context.getBucketManager().getEntities().keySet());
 	}
 }

@@ -41,7 +41,6 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.Streams;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
@@ -408,7 +407,7 @@ public class CQExternal extends CQElement {
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		return new RequiredEntities.Some(new IntOpenHashSet(valuesResolved.keySet()));
+		return new RequiredEntities(valuesResolved.keySet());
 	}
 
 	@Override

@@ -305,8 +305,6 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	private static CDateRange[] calculateEntityDateIndices(Bucket bucket, int bucketSize) {
 		final CDateRange[] spans = new CDateRange[bucketSize];
 
-		Arrays.fill(spans, CDateRange.all());
-
 		final Table table = bucket.getTable();
 
 
@@ -347,9 +345,16 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 					}
 				}
 
-
 				spans[index] = calculateSpan(max, min, spans[index]);
 			}
+		}
+
+		for (int index = 0; index < spans.length; index++) {
+			if (spans[index] != null) {
+				continue;
+			}
+
+			spans[index] = CDateRange.all();
 		}
 
 		return spans;
@@ -359,18 +364,27 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * Helper method for calculateEntityDateIndices, swapping {@link Integer#MIN_VALUE}/{@link Integer#MAX_VALUE} for higher performance.
 	 */
 	private static CDateRange calculateSpan(int max, int min, CDateRange in) {
+
 		if (max == Integer.MIN_VALUE && min == Integer.MAX_VALUE) {
 			return in;
 		}
 
+		final CDateRange span;
+
 		if (max == Integer.MIN_VALUE) {
-			return in.span(CDateRange.atLeast(min));
+			span =  CDateRange.atLeast(min);
+		}
+		else if (min == Integer.MAX_VALUE) {
+			span = CDateRange.atMost(max);
+		}
+		else {
+			span = CDateRange.of(min, max);
 		}
 
-		if (min == Integer.MAX_VALUE) {
-			return in.span(CDateRange.atMost(max));
+		if (in == null){
+			return span;
 		}
 
-		return in.span(CDateRange.of(min, max));
+		return in.span(span);
 	}
 }

@@ -85,6 +85,6 @@ public abstract class CQElement implements Visitable {
 	}
 
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		return new RequiredEntities.Some(context.getBucketManager().getEntities().keySet());
+		return new RequiredEntities(context.getBucketManager().getEntities().keySet());
 	}
 }

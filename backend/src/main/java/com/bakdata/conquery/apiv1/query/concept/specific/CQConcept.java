@@ -329,6 +329,6 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
 		final Set<Connector> connectors = getTables().stream().map(CQTable::getConnector).collect(Collectors.toSet());
 
-		return new RequiredEntities.Some(context.getBucketManager().getEntitiesWithConcepts(connectors, getElements(), context.getDateRestriction()));
+		return new RequiredEntities(context.getBucketManager().getEntitiesWithConcepts(connectors, getElements(), context.getDateRestriction()));
 	}
 }

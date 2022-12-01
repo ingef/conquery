@@ -341,15 +341,9 @@ public class BucketManager {
 				for (CBlock cblock : bucketCBlockMap.values()) {
 					for (int entity : cblock.getBucket().entities()) {
 
-						if (!cblock.isConceptIncluded(entity, requiredBits)) {
-							continue;
+						if (cblock.isConceptIncluded(entity, requiredBits) && restriction.intersects(cblock.getEntityDateRange(entity))) {
+							out.add(entity);
 						}
-
-						if (!restriction.intersects(cblock.getEntityDateRange(entity))) {
-							continue;
-						}
-
-						out.add(entity);
 					}
 				}
 			}
