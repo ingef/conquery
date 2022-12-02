@@ -1,5 +1,6 @@
 # maven
 *.xml.versionsBackup
+.flattened-pom.xml
 
 # vscode
 launch.json
