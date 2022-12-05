@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.hierarchies;
 import java.security.Principal;
 
 import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
@@ -20,8 +19,6 @@ public abstract class HAuthorized {
 	protected Subject subject;
 	@Context
 	protected ContainerRequest request;
-	@Context
-	protected HttpServletRequest servletRequest;
 
 	@PostConstruct
 	public void init() {

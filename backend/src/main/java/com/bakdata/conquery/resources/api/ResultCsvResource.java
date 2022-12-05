@@ -49,7 +49,13 @@ public class ResultCsvResource {
 	@GET
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getAsCsv(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> execution, @HeaderParam(HttpHeaders.USER_AGENT) String userAgent, @QueryParam("charset") String queryCharset, @QueryParam("pretty") Optional<Boolean> pretty) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response getAsCsv(
+			@Auth Subject subject,
+			@PathParam(QUERY) ManagedExecution<?> execution,
+			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
+			@QueryParam("charset") String queryCharset,
+			@QueryParam("pretty") Optional<Boolean> pretty) {
+
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset().getId(), subject.getId(), subject.getName());
 
