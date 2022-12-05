@@ -453,7 +453,7 @@ public class AdminDatasetProcessor {
 																		  .filter(Objects::nonNull)
 																		  .anyMatch(searchIndex::equals)
 															)
-															.collect(Collectors.toList());
+															.toList();
 
 		if (force || dependentConcepts.isEmpty()) {
 			for (Concept<?> concept : dependentConcepts) {

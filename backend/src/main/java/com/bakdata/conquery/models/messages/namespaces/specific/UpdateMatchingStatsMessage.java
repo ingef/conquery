@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.base.Functions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @CPSType(id = "UPDATE_MATCHING_STATS", base = NamespacedMessage.class)
 @Slf4j
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class UpdateMatchingStatsMessage extends WorkerMessage {
 
 	@NsIdRefCollection

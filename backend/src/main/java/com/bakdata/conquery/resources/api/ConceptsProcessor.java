@@ -67,8 +67,7 @@ public class ConceptsProcessor {
 	private final DatasetRegistry namespaces;
 	private final Validator validator;
 
-	private final LoadingCache<Concept<?>, FEList>
-			nodeCache =
+	private final LoadingCache<Concept<?>, FEList> nodeCache =
 			CacheBuilder.newBuilder().softValues().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
 				@Override
 				public FEList load(Concept<?> concept) {
