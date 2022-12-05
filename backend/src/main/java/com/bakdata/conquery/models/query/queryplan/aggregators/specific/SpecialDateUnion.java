@@ -37,21 +37,20 @@ public class SpecialDateUnion extends Aggregator<CDateSet> {
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if (currentColumn != null && bucket.has(event, currentColumn)) {
-			set.maskedAdd(bucket.getAsDateRange(event, currentColumn), dateRestriction);
+		if (currentColumn == null || !bucket.has(event, currentColumn)) {
+			set.addAll(dateRestriction);
 			return;
 		}
 
-		if(!dateRestriction.isEmpty()) {
-			set.addAll(dateRestriction);
-		}
+		set.maskedAdd(bucket.getAsDateRange(event, currentColumn), dateRestriction);
 	}
 
 	/**
 	 * Helper method to insert dates from outside.
+	 *
 	 * @param other CDateSet to be included.
 	 */
-	public void merge(CDateSet other){
+	public void merge(CDateSet other) {
 		set.addAll(other);
 	}
 

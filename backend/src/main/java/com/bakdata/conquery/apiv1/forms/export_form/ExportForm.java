@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.forms.util.ResolutionShortNames;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -55,11 +56,12 @@ public class ExportForm extends Form {
 
 	@NotNull @Valid @JsonManagedReference
 	private Mode timeMode;
-	
-	@NotNull @NotEmpty
-	private List<Resolution> resolution = List.of(Resolution.COMPLETE);
-	
-	private boolean alsoCreateCoarserSubdivisions = true;
+
+	@NotNull
+	@NotEmpty
+	private List<ResolutionShortNames> resolution = List.of(ResolutionShortNames.COMPLETE);
+
+	private boolean alsoCreateCoarserSubdivisions = false;
 
 	@JsonIgnore
 	private Query prerequisite;
@@ -94,15 +96,20 @@ public class ExportForm extends Form {
 		timeMode.resolve(context);
 		prerequisite = queryGroup.getQuery();
 
+		List<Resolution> resolutionsFlat = resolution.stream()
+													 .flatMap(ResolutionShortNames::correspondingResolutions)
+													 .distinct()
+													 .toList();
 
-		if(isAlsoCreateCoarserSubdivisions()) {
-			if(getResolution().size() != 1) {
+
+		if (isAlsoCreateCoarserSubdivisions()) {
+			if (resolutionsFlat.size() != 1) {
 				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
 			}
-			resolvedResolutions = getResolution().get(0).getThisAndCoarserSubdivisions();
+			resolvedResolutions = resolutionsFlat.get(0).getThisAndCoarserSubdivisions();
 		}
 		else {
-			resolvedResolutions = getResolution();
+			resolvedResolutions = resolutionsFlat;
 		}
 	}
 

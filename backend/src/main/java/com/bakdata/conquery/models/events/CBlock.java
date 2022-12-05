@@ -356,7 +356,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	}
 
 	/**
-	 * Helper method for calculateEntityDateIndices, swapping {@link Integer#MIN_VALUE}/{@link Integer#MAX_VALUE} for higher performance.
+	 * Helper method for calculateEntityDateIndices, swapping {@link Integer#MIN_VALUE}/{@link Integer#MAX_VALUE} for performance.
 	 */
 	private static CDateRange calculateSpan(int max, int min, CDateRange in) {
 		if (max == Integer.MIN_VALUE && min == Integer.MAX_VALUE) {
