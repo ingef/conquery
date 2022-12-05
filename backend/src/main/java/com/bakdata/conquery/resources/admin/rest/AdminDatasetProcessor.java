@@ -346,7 +346,12 @@ public class AdminDatasetProcessor {
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
 
-					ns.sendToAll(new UpdateMatchingStatsMessage(ns.getStorage().getAllConcepts()));
+					final Collection<Concept<?>> concepts = ns.getStorage().getAllConcepts()
+															  .stream()
+															  .filter(concept -> concept.getMatchingStats() == null)
+															  .collect(Collectors.toSet());
+
+					ns.sendToAll(new UpdateMatchingStatsMessage(concepts));
 					ns.getFilterSearch().updateSearch();
 					ns.updateInternToExternMappings();
 				}
