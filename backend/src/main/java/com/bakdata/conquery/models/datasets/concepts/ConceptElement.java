@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 public abstract class ConceptElement<ID extends ConceptElementId<? extends ConceptElement<? extends ID>>> extends Labeled<ID> implements NamespacedIdentifiable<ID> {
 
@@ -33,6 +32,8 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	@JsonIgnore
 	@CheckForNull
 	private MatchingStats matchingStats;
+
+	public abstract void clearMatchingStats();
 
 	public ConceptTreeChild getChildById(ConceptTreeChildId conceptTreeChildId) {
 		throw new UnsupportedOperationException("The concept "+this+" has no children. Was looking for "+conceptTreeChildId);
