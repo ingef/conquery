@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,6 +11,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
@@ -33,17 +35,22 @@ import lombok.extern.slf4j.Slf4j;
  */
 @CPSType(id = "UPDATE_MATCHING_STATS", base = NamespacedMessage.class)
 @Slf4j
+@RequiredArgsConstructor
 public class UpdateMatchingStatsMessage extends WorkerMessage {
+
+	@NsIdRefCollection
+	private final Collection<Concept<?>> concepts;
 
 
 	@Override
 	public void react(Worker worker) throws Exception {
-		worker.getJobManager().addSlowJob(new UpdateMatchingStatsJob(worker));
+		worker.getJobManager().addSlowJob(new UpdateMatchingStatsJob(worker, concepts));
 	}
 
 	@RequiredArgsConstructor
 	private static class UpdateMatchingStatsJob extends Job {
 		private final Worker worker;
+		private final Collection<Concept<?>> concepts;
 
 		@Override
 		public String getLabel() {
@@ -58,18 +65,17 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 			}
 
 			final ProgressReporter progressReporter = getProgressReporter();
-			progressReporter.setMax(worker.getStorage().getAllConcepts().size());
+			progressReporter.setMax(concepts.size());
 
-			log.info("BEGIN update Matching stats for {} Concepts", worker.getStorage().getAllConcepts().size());
+			log.info("BEGIN update Matching stats for {} Concepts", concepts.size());
 
 			// SubJobs collect into this Map.
-			final ConcurrentMap<ConceptElement<?>, MatchingStats.Entry> messages =
-					new ConcurrentHashMap<>(worker.getStorage().getAllConcepts().size()
-											* 5_000); // Just a guess-timate so we don't grow that often, this memory is very short lived so we can over commit.
+			// Just a guess-timate so we don't grow that often, this memory is very short lived so we can over commit.
+			final ConcurrentMap<ConceptElement<?>, MatchingStats.Entry> messages = new ConcurrentHashMap<>(concepts.size() * 5_000);
 
 
-			Map<? extends Concept<?>, CompletableFuture<?>> subJobs =
-					worker.getStorage().getAllConcepts()
+			final Map<? extends Concept<?>, CompletableFuture<?>> subJobs =
+					concepts
 						  .stream()
 						  .collect(Collectors.toMap(
 								  Functions.identity(),
@@ -122,7 +128,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 		}
 
 
-		private void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker) {
+		private static void calculateConceptMatches(Concept<?> concept, Map<ConceptElement<?>, MatchingStats.Entry> results, Worker worker) {
 			log.debug("BEGIN calculating for `{}`", concept.getId());
 
 			for (CBlock cBlock : worker.getStorage().getAllCBlocks()) {
@@ -132,8 +138,8 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 				}
 
 				try {
-					Bucket bucket = cBlock.getBucket();
-					Table table = bucket.getTable();
+					final Bucket bucket = cBlock.getBucket();
+					final Table table = bucket.getTable();
 
 					for (int entity : bucket.entities()) {
 
