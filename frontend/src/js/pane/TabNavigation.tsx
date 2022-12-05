@@ -63,14 +63,18 @@ interface PropsT {
   dataTestId: string;
 }
 
-const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab, dataTestId }) => {
-
-  function createClickHandler(key: string){
+const TabNavigation: FC<PropsT> = ({
+  tabs,
+  activeTab,
+  onClickTab,
+  dataTestId,
+}) => {
+  function createClickHandler(key: string) {
     return () => {
-      if(key !== activeTab){
+      if (key !== activeTab) {
         onClickTab(key);
       }
-    }
+    };
   }
 
   return (
@@ -78,7 +82,7 @@ const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab, dataTestId }) 
       {tabs.map(({ key, label, tooltip, loading }) => {
         return (
           <SxWithTooltip text={tooltip} lazy key={key}>
-            <HoverNavigatable triggerNavigate={createClickHandler(key)} >
+            <HoverNavigatable triggerNavigate={createClickHandler(key)}>
               <Headline
                 active={activeTab === key}
                 onClick={createClickHandler(key)}

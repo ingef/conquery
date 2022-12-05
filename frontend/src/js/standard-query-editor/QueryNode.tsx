@@ -14,15 +14,15 @@ import {
   nodeIsConceptQueryNode,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
+import { FlexHoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 import QueryNodeActions from "./QueryNodeActions";
 import QueryNodeContent from "./QueryNodeContent";
 import { getRootNodeLabel } from "./helper";
 import { StandardQueryNodeT } from "./types";
-import { FlexHoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 
-const Root = styled("div") <{
+const Root = styled("div")<{
   active?: boolean;
 }>`
   position: relative;
@@ -128,42 +128,42 @@ const QueryNode = ({
 
     ...(nodeIsConceptQueryNode(node)
       ? {
-        ids: node.ids,
-        type: node.type,
-        description: node.description,
-        tree: node.tree,
-        tables: node.tables,
-        selects: node.selects,
+          ids: node.ids,
+          type: node.type,
+          description: node.description,
+          tree: node.tree,
+          tables: node.tables,
+          selects: node.selects,
 
-        additionalInfos: node.additionalInfos,
-        matchingEntries: node.matchingEntries,
-        matchingEntities: node.matchingEntities,
-        dateRange: node.dateRange,
-      }
+          additionalInfos: node.additionalInfos,
+          matchingEntries: node.matchingEntries,
+          matchingEntities: node.matchingEntities,
+          dateRange: node.dateRange,
+        }
       : {
-        id: node.id,
-        type: node.type,
-        query: node.query,
-        tags: node.tags,
-      }),
+          id: node.id,
+          type: node.type,
+          query: node.query,
+          tags: node.tags,
+        }),
   };
   const [, drag] = useDrag<StandardQueryNodeT, void, {}>({
     type: item.type,
     item: () =>
-    ({
-      ...item,
-      dragContext: {
-        ...item.dragContext,
-        ...getWidthAndHeight(ref),
-      },
-    } as StandardQueryNodeT),
+      ({
+        ...item,
+        dragContext: {
+          ...item.dragContext,
+          ...getWidthAndHeight(ref),
+        },
+      } as StandardQueryNodeT),
   });
 
   const tooltipText = hasNonDefaultSettings
     ? t("queryEditor.hasNonDefaultSettings")
     : hasFilterValues
-      ? t("queryEditor.hasDefaultSettings")
-      : undefined;
+    ? t("queryEditor.hasDefaultSettings")
+    : undefined;
 
   const expandClick = useCallback(() => {
     if (nodeIsConceptQueryNode(node) || !node.query) return;
@@ -171,8 +171,7 @@ const QueryNode = ({
     onExpandClick(node.query);
   }, [onExpandClick, node]);
 
-
-  const onClick = !!node.error ? () => { } : () => onEditClick(andIdx, orIdx);
+  const onClick = !!node.error ? () => {} : () => onEditClick(andIdx, orIdx);
 
   const label = nodeIsConceptQueryNode(node)
     ? node.label
@@ -190,11 +189,9 @@ const QueryNode = ({
         drag(instance);
       }}
       active={hasNonDefaultSettings || hasFilterValues}
-
       onClick={node.error ? undefined : () => onEditClick(andIdx, orIdx)}
     >
-      <FlexHoverNavigatable triggerNavigate={onClick}
-      >
+      <FlexHoverNavigatable triggerNavigate={onClick}>
         <QueryNodeContent
           error={node.error}
           isConceptQueryNode={nodeIsConceptQueryNode(node)}

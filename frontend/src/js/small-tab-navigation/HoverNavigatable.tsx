@@ -13,10 +13,7 @@ const Root = styled("div")<{
   isOver?: boolean;
 }>`
   border: ${({ theme, isOver }) =>
-    isOver
-      ? `1px solid ${theme.col.grayMediumLight}`
-      : "none"
-    };
+    isOver ? `1px solid ${theme.col.grayMediumLight}` : "none"};
   position: relative;
   display: inline-flex;
   color: ${({ theme, isOver }) =>
