@@ -1,11 +1,32 @@
+# Version Extractor
+FROM bitnami/git:2.38.1 AS version-extractor
+
+WORKDIR /app
+COPY .git .
+
+RUN git describe --tags |  sed 's/^v//' > git_describe.txt
+
 # Builder
 FROM maven:3.8-openjdk-17-slim AS builder
 
-COPY . /app
-
-
 WORKDIR /app
-RUN ./scripts/build_backend_version.sh
+
+# Fetch dependencies first
+COPY ./pom.xml .
+COPY ./backend/pom.xml ./backend/
+COPY ./executable/pom.xml ./executable/
+COPY ./autodoc/pom.xml ./autodoc/
+
+RUN mvn dependency:go-offline -Dsilent=true -DexcludeGroupIds="com.bakdata.conquery" -pl backend -am
+
+# Then copy the rest
+COPY . .
+
+# Get the version from previous step
+COPY --from=version-extractor /app/git_describe.txt .
+
+# Build
+RUN ./scripts/build_backend_version.sh `cat git_describe.txt`
 
 
 # Runner

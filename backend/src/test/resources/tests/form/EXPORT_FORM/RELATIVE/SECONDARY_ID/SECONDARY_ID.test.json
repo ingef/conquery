@@ -8,12 +8,13 @@
         "type": "EXPORT_FORM",
         "queryGroup": "00000000-0000-0000-0000-000000000001",
         "resolution": "QUARTERS",
+        "alsoCreateCoarserSubdivisions": true,
         "timeMode": {
             "value": "RELATIVE",
             "indexSelector": "EARLIEST",
-            "timeUnit" : "QUARTERS",
-            "indexPlacement" : "BEFORE",
-            "timeCountBefore" : 4,
+            "timeUnit": "QUARTERS",
+            "indexPlacement": "BEFORE",
+            "timeCountBefore": 4,
             "features": [
                 {
                     "ids": [

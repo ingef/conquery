@@ -32,6 +32,7 @@ import ScrollableList from "../scrollable-list/ScrollableList";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
+import { DropdownOption } from "./DropdownOption";
 import { UploadConceptListModalStateT } from "./reducer";
 
 const Root = styled("div")`
@@ -44,6 +45,10 @@ const Section = styled("div")`
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
   display: grid;
   grid-gap: 20px;
+`;
+const Row = styled("div")`
+  display: flex;
+  align-items: center;
 `;
 
 const Msg = styled("p")`
@@ -72,47 +77,38 @@ const SxPrimaryButton = styled(PrimaryButton)`
   flex-shrink: 0;
 `;
 const SxInputSelect = styled(InputSelect)`
-  width: 500px;
+  width: 60vw;
+  max-width: 900px;
 `;
 
 const useUnresolvedItemsCount = (
   resolvedConcepts: PostConceptResolveResponseT | null,
   resolvedFilters: PostFilterResolveResponseT | null,
 ) => {
-  const conceptsCount = useMemo(
-    () => resolvedConcepts?.unknownCodes?.length || 0,
-    [resolvedConcepts],
-  );
+  return useMemo(() => {
+    const concepts = resolvedConcepts?.unknownCodes?.length || 0;
+    const filters = resolvedFilters?.unknownCodes?.length || 0;
 
-  const filtersCount = useMemo(
-    () => resolvedFilters?.unknownCodes?.length || 0,
-    [resolvedFilters],
-  );
-
-  return conceptsCount + filtersCount;
+    return concepts + filters;
+  }, [resolvedConcepts, resolvedFilters]);
 };
 
 const useResolvedItemsCount = (
   resolvedConcepts: PostConceptResolveResponseT | null,
   resolvedFilters: PostFilterResolveResponseT | null,
 ) => {
-  const conceptsCount = useMemo(
-    () => resolvedConcepts?.resolvedConcepts?.length || 0,
-    [resolvedConcepts],
-  );
+  return useMemo(() => {
+    const concepts = resolvedConcepts?.resolvedConcepts?.length || 0;
+    const filters = resolvedFilters?.resolvedFilter?.value?.length || 0;
 
-  const filtersCount = useMemo(
-    () => resolvedFilters?.resolvedFilter?.value?.length || 0,
-    [resolvedFilters],
-  );
-
-  return conceptsCount + filtersCount;
+    return concepts + filters;
+  }, [resolvedConcepts, resolvedFilters]);
 };
 
 const getCombinedLabel = (concept: ConceptT, filter: FilterT) => {
   if (concept.label === filter.label) return concept.label;
 
-  return `${concept.label} – ${filter.label}`;
+  return `${concept.label} | ${filter.label.trim()}`;
 };
 
 const useDropdownOptions = () => {
@@ -139,11 +135,12 @@ const useDropdownOptions = () => {
         ([conceptId, concept]) =>
           concept.tables?.flatMap((table) =>
             table.filters
+              .map((filter, idx) => ({ filter, idx }))
               .filter(
-                (filter) =>
+                ({ filter }) =>
                   filter.type === "BIG_MULTI_SELECT" && filter.allowDropFile,
               )
-              .map((filter) => {
+              .map(({ filter, idx }) => {
                 return {
                   id: filter.id,
                   type: "filter" as const,
@@ -151,6 +148,7 @@ const useDropdownOptions = () => {
                   concept,
                   tableId: table.id,
                   filter,
+                  filterIdx: idx + 1,
                 };
               }),
           ) || [],
@@ -172,18 +170,34 @@ const useDropdownOptions = () => {
       allOptions
         .map((opt) => {
           if (opt.type === "concept") {
-            return { value: opt.id, label: opt.concept.label };
-          } else {
             return {
               value: opt.id,
-              label: getCombinedLabel(opt.concept, opt.filter),
+              label: opt.concept.label,
+              displayLabel: <DropdownOption conceptLabel={opt.concept.label} />,
+            };
+          } else {
+            const label = getCombinedLabel(opt.concept, opt.filter);
+            const details = selectOptionsDetails[opt.id];
+            const filterIdx =
+              details.type === "filter" ? details.filterIdx : undefined;
+
+            return {
+              value: opt.id,
+              label,
+              displayLabel: (
+                <DropdownOption
+                  conceptLabel={opt.concept.label}
+                  filterLabel={opt.filter.label}
+                  filterIdx={filterIdx}
+                />
+              ),
             };
           }
         })
         .sort((a, b) =>
           a.label.toLowerCase().localeCompare(b.label.toLowerCase()),
         ),
-    [allOptions],
+    [allOptions, selectOptionsDetails],
   );
 
   return {
@@ -426,6 +440,51 @@ const UploadConceptListModal = ({
     ],
   );
 
+  // Pretty custom sorting logic, tested with many combinations of
+  // filters and concepts to "work well".
+  // Tries to
+  // - keep concept and its filters together (in asc order of the filterIdx)
+  // - tries to prioritize concepts that are matched exactly by search query
+  // But less "set in stone" than it looks
+  const sortOptions = useCallback(
+    (a: SelectOptionT, b: SelectOptionT, query: string) => {
+      const aDetails = selectOptionsDetails[a.value as string];
+      const bDetails = selectOptionsDetails[b.value as string];
+
+      if (aDetails.type === "concept" && bDetails.type === "concept") {
+        return a.label.localeCompare(b.label);
+      }
+
+      if (aDetails.type === "filter" && bDetails.type === "filter") {
+        const sameConcept = aDetails.conceptId === bDetails.conceptId;
+
+        if (sameConcept) {
+          return aDetails.filterIdx - bDetails.filterIdx;
+        }
+      }
+
+      if (aDetails.concept.label === bDetails.concept.label) {
+        return aDetails.type === "concept" ? -1 : 1;
+      }
+
+      const aConceptLabel = aDetails.concept.label.toLowerCase();
+      const bConceptLabel = bDetails.concept.label.toLowerCase();
+      const queryLower = query.toLowerCase();
+
+      const aConceptLabelEqual = aConceptLabel === queryLower;
+      const bConceptLabelEqual = bConceptLabel === queryLower;
+
+      if (aConceptLabelEqual) {
+        return -1;
+      } else if (bConceptLabelEqual) {
+        return 1;
+      }
+
+      return aDetails.concept.label.localeCompare(bDetails.concept.label);
+    },
+    [selectOptionsDetails],
+  );
+
   return (
     <Modal
       closeIcon
@@ -440,6 +499,7 @@ const UploadConceptListModal = ({
           }
           onChange={onChange}
           options={selectOptions}
+          sortOptions={sortOptions}
         />
         {(!!resolvedFilters || !!resolvedConcepts) &&
           !hasResolvedItems &&
@@ -454,10 +514,10 @@ const UploadConceptListModal = ({
             (hasResolvedItems || hasUnresolvedItems))) && (
           <Section>
             {error && (
-              <p>
+              <Row>
                 <ErrorIcon icon="exclamation-circle" />
                 {t("uploadConceptListModal.error")}
-              </p>
+              </Row>
             )}
             {loading && <CenteredIcon icon="spinner" />}
             {(!!resolvedConcepts || !!resolvedFilters) && (

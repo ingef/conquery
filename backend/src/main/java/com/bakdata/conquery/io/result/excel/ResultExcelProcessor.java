@@ -40,12 +40,13 @@ public class ResultExcelProcessor {
 
 		final Dataset dataset = exec.getDataset();
 
-		final Namespace namespace = datasetRegistry.get(dataset.getId());
+		log.info("Downloading results for {} on dataset {}", exec, dataset);
 
-		subject.authorize(dataset, Ability.READ);
+		ResultUtil.authorizeExecutable(subject, exec, dataset);
+		ResultUtil.checkSingleTableResult(exec);
 		subject.authorize(dataset, Ability.DOWNLOAD);
-		subject.authorize(exec, Ability.READ);
 
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		final IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
 
 		final Locale locale = I18n.LOCALE.get();
