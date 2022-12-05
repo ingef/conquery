@@ -171,7 +171,17 @@ const QueryNode = ({
     onExpandClick(node.query);
   }, [onExpandClick, node]);
 
+
   const onClick = !!node.error ? () => { } : () => onEditClick(andIdx, orIdx);
+
+  const label = nodeIsConceptQueryNode(node)
+    ? node.label
+    : node.label || node.id;
+
+  const description =
+    nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
+      ? node.description
+      : undefined;
 
   const QueryNodeRoot = (
     <Root
@@ -180,7 +190,8 @@ const QueryNode = ({
         drag(instance);
       }}
       active={hasNonDefaultSettings || hasFilterValues}
-      onClick={onClick}
+
+      onClick={node.error ? undefined : () => onEditClick(andIdx, orIdx)}
     >
       <FlexHoverNavigatable triggerNavigate={onClick}
       >
@@ -188,14 +199,8 @@ const QueryNode = ({
           error={node.error}
           isConceptQueryNode={nodeIsConceptQueryNode(node)}
           tooltipText={tooltipText}
-          label={
-            nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
-          }
-          description={
-            nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
-              ? node.description
-              : undefined
-          }
+          label={label}
+          description={description}
           rootNodeLabel={rootNodeLabel}
         />
         <QueryNodeActions

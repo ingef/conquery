@@ -22,7 +22,7 @@ public class CDateRangeStarting extends CDateRange {
 
 	@Override
 	public int getMaxValue() {
-		return Integer.MAX_VALUE;
+		return CDateRange.POSITIVE_INFINITY;
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.google.common.io.CountingOutputStream;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.UtilityClass;
 import org.apache.parquet.hadoop.ParquetWriter;
 import org.apache.parquet.io.OutputFile;
 import org.apache.parquet.io.PositionOutputStream;
@@ -20,6 +21,7 @@ import org.apache.parquet.io.PositionOutputStream;
 /**
  * Result renderer for the parquet file format.
  */
+@UtilityClass
 public class ParquetRenderer {
 
 	@RequiredArgsConstructor
