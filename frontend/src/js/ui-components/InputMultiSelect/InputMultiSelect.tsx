@@ -265,14 +265,16 @@ const InputMultiSelect = ({
       ? filteredOptions.length - 1
       : filteredOptions.length;
 
-  // scroll option list into view if neccessary
   useEffect(
     function scrollIntoView() {
       if (isOpen) {
-        menuRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        menuRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
       }
     },
-    [isOpen, menuRef]
+    [isOpen],
   );
 
   const Select = (
