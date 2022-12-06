@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 
+import { formatStdDate } from "../common/helpers/dateHelper";
 import { EntityId } from "../entity-history/reducer";
 import { apiUrl } from "../environment";
 import type { FormConfigT } from "../previous-queries/list/reducer";
@@ -398,7 +399,7 @@ export const useGetEntityHistory = () => {
         max: string; // Format like "2020-12-31"
       } = {
         min: "2015-01-01",
-        max: "2021-12-31",
+        max: formatStdDate(new Date()),
       },
     ) =>
       api({
