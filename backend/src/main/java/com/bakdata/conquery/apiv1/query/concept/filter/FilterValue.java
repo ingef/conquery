@@ -17,7 +17,9 @@ import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.GroupFilter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.QueryContextResolvable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
@@ -56,6 +58,10 @@ public abstract class FilterValue<VALUE> {
 
 	public FilterNode<?> createNode() {
 		return getFilter().createFilterNode(getValue());
+	}
+
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context){
+		return filter.collectRequiredEntities(context, value);
 	}
 
 

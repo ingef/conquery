@@ -8,8 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -325,6 +330,85 @@ public class BucketManager {
 
 		return tableToBuckets.getOrDefault(table, Int2ObjectMaps.emptyMap())
 							 .getOrDefault(bucketId, Collections.emptyList());
+	}
+
+
+
+	public Object indexStringColumn(Bucket bucket, int event, Column column, Object current) {
+
+		final int value = bucket.getString(event, column);
+
+		if(current == null) {
+			current = new IntOpenHashSet();
+		}
+
+		((IntSet) current).add(value);
+
+		return current;
+	}
+
+	public Range<Long> indexIntegerColumn(Bucket bucket, int event, Column column, Object current) {
+
+		final long value = bucket.getInteger(event, column);
+
+		final Range<Long> exactly = Range.LongRange.exactly(value);
+
+		if(current == null){
+			return exactly;
+		}
+
+		return ((Range<Long>) current).span(exactly);
+	}
+
+	public CDateRange indexDateColumn(Bucket bucket, int event, Column column, Object current) {
+		final int value = bucket.getDate(event, column);
+
+		final CDateRange exactly = CDateRange.exactly(value);
+
+		if (current == null) {
+			return exactly;
+		}
+
+		return ((CDateRange) current).span(exactly);
+	}
+
+	public Object indexColumn(Bucket bucket, int event, Column column, @Nullable Object current) {
+		return switch (column.getType()) {
+			case STRING -> indexStringColumn(bucket, event, column, current);
+			case INTEGER -> indexIntegerColumn(bucket, event, column, current);
+			case DATE -> indexDateColumn(bucket, event, column, current);
+			default -> null;
+		};
+	}
+
+	private Map<Column, Int2ObjectMap<?>> columnIndices = new HashMap<>();
+
+	public <T> Int2ObjectMap<T> getColumnIndex(Column column){
+		return (Int2ObjectMap<T>) columnIndices.get(column);
+	}
+
+	public Int2ObjectMap<?> createColumnIndex(Column column) {
+		final Int2ObjectMap<Object> index = new Int2ObjectAVLTreeMap<>();
+
+		tableToBuckets.get(column).values().stream().flatMap(Collection::stream)
+					  .forEach(
+							  bucket -> {
+								  for (int entity : bucket.entities()) {
+									  final int entityEnd = bucket.getEntityEnd(entity);
+									  Object entityIndex = index.get(entity);
+
+									  for (int event = bucket.getEntityStart(entity); event < entityEnd; event++) {
+										  if (bucket.has(event, column)){
+											entityIndex = indexColumn(bucket, event, column, entityIndex);
+										  }
+									  }
+
+									  index.put(entity, entityIndex);
+								  }
+							  }
+					  );
+
+		return index;
 	}
 
 	/**

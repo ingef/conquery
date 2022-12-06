@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
 
@@ -8,13 +9,19 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FEFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -46,5 +53,21 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 	@Override
 	public FilterNode createFilterNode(Range.LongRange value) {
 		return new DateDistanceFilterNode(getColumn(), timeUnit, value);
+	}
+
+	@Override
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context, Range.LongRange longRange) {
+		final Int2ObjectMap<CDateRange> entityDateRanges = context.getBucketManager().getColumnIndex(getColumn());
+
+		final IntOpenHashSet out = new IntOpenHashSet();
+		final LocalDate referenceDate = CDate.toLocalDate(context.getDateRestriction().getMaxValue());
+
+		entityDateRanges.int2ObjectEntrySet().stream()
+						.filter(kv -> entityDateRanges.containsKey(kv.getIntKey()))
+						.filter(kv -> longRange.contains(timeUnit.between(entityDateRanges.get(kv.getIntKey()).getMax(), referenceDate)))
+						.mapToInt(Int2ObjectMap.Entry::getIntKey)
+						.forEach(out::add);
+
+		return new RequiredEntities(out);
 	}
 }

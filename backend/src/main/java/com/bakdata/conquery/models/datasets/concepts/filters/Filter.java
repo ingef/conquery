@@ -11,6 +11,8 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -91,5 +93,9 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 		}
 
 		return valid;
+	}
+
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context, FILTER_VALUE value) {
+		return new RequiredEntities(context.getBucketManager().getEntities().keySet());
 	}
 }
