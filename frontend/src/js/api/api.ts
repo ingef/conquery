@@ -396,7 +396,7 @@ export const useGetEntityHistory = () => {
       sources: HistorySources,
       time: {
         min?: string; // Format like "2020-01-01"
-        max: string; // Format like "2020-12-31"
+        max?: string; // Format like "2020-12-31"
       } = {
         max: formatStdDate(new Date()),
       },
