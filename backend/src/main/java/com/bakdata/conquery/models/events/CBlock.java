@@ -330,23 +330,30 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 					final CDateRange range = bucket.getAsDateRange(event, column);
 
-					{
-						final int minValue = range.getMinValue();
+					final int minValue = range.getMinValue();
 
-						max = Math.max(max, minValue);
-						min = Math.min(min, minValue);
-					}
+					min = Math.min(min, minValue);
 
-					{
-						final int maxValue = range.getMaxValue();
+					final int maxValue = range.getMaxValue();
 
-						max = Math.max(max, maxValue);
-						min = Math.min(min, maxValue);
-					}
+					max = Math.max(max, maxValue);
 				}
 
-				final CDateRange span = calculateSpan(max, min, spans[index]);
-				spans[index] = span;
+
+				if (max == Integer.MIN_VALUE && min == Integer.MAX_VALUE) {
+					// No values were encountered
+					continue;
+				}
+
+				final CDateRange span = CDateRange.of(min, max);
+
+				if (spans[index] == null) {
+					spans[index] = span;
+				}
+				else {
+					spans[index] = spans[index].span(span);
+				}
+
 			}
 		}
 
@@ -361,31 +368,4 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		return spans;
 	}
 
-	/**
-	 * Helper method for calculateEntityDateIndices, swapping {@link Integer#MIN_VALUE}/{@link Integer#MAX_VALUE} for performance.
-	 */
-	private static CDateRange calculateSpan(int max, int min, CDateRange in) {
-
-		if (max == Integer.MIN_VALUE && min == Integer.MAX_VALUE) {
-			return in;
-		}
-
-		final CDateRange span;
-
-		if (max == Integer.MIN_VALUE) {
-			span =  CDateRange.atLeast(min);
-		}
-		else if (min == Integer.MAX_VALUE) {
-			span = CDateRange.atMost(max);
-		}
-		else {
-			span = CDateRange.of(min, max);
-		}
-
-		if (in == null){
-			return span;
-		}
-
-		return in.span(span);
-	}
 }
