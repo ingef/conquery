@@ -73,6 +73,7 @@ const InputSelect = ({
   const previousValue = usePrevious(value);
   const previousOptions = usePrevious(options);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   const [filteredOptions, setFilteredOptions] = useState(() => {
     if (!value) return options;
@@ -224,6 +225,18 @@ const InputSelect = ({
     [inputValue, previousInputValue, options, selectedItem, sortOptions],
   );
 
+  useEffect(
+    function scrollIntoView() {
+      if (isOpen) {
+        menuRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    },
+    [isOpen],
+  );
+
   const Select = (
     <SelectContainer
       className={exists(label) ? undefined : className}
@@ -294,6 +307,7 @@ const InputSelect = ({
             e.stopPropagation();
           }}
           ref={(instance) => {
+            menuRef.current = instance;
             menuPropsRef(instance);
           }}
         >
