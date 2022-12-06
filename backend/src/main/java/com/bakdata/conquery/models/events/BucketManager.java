@@ -388,6 +388,9 @@ public class BucketManager {
 	}
 
 	public Int2ObjectMap<?> createColumnIndex(Column column) {
+		//TODO Move to CBlock so we can use columnIndices on Strings
+
+
 		final Int2ObjectMap<Object> index = new Int2ObjectAVLTreeMap<>();
 
 		tableToBuckets.get(column).values().stream().flatMap(Collection::stream)
