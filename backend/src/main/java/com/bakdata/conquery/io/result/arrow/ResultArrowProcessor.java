@@ -93,10 +93,9 @@ public class ResultArrowProcessor {
 			MediaType mediaType,
 			ConqueryConfig config) {
 
-		final Namespace namespace = datasetRegistry.get(dataset.getId());
-
 		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {} on dataset {}", exec, dataset);
+
 		ResultUtil.authorizeExecutable(subject, exec, dataset);
 
 		if (!(exec instanceof ManagedQuery || (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1))) {
@@ -106,6 +105,7 @@ public class ResultArrowProcessor {
 		// Get the locale extracted by the LocaleFilter
 
 
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
 		final Locale locale = I18n.LOCALE.get();
 		PrintSettings settings = new PrintSettings(

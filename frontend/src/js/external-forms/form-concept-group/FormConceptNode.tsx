@@ -80,8 +80,6 @@ interface PropsT {
   };
 }
 
-// TODO: Refactor, add a TooltipButton in conquery and use that.
-
 // generalized node to handle concepts queried in forms
 const FormConceptNode: FC<PropsT> = ({
   valueIdx,

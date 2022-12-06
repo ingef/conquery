@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
@@ -38,6 +39,8 @@ import lombok.NonNull;
  */
 @CPSType(id = "ENTITY_PREVIEW_EXECUTION", base = ManagedExecution.class)
 public class EntityPreviewExecution extends ManagedForm implements SingleTableResult {
+
+	private PreviewConfig previewConfig;
 
 	@Override
 	public boolean isSystem() {
@@ -55,7 +58,6 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	 */
 	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, DatasetRegistry datasetRegistry, ConqueryConfig config) {
 
-		final PreviewConfig previewConfig = datasetRegistry.get(getDataset().getId()).getPreviewConfig();
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
 		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
@@ -82,6 +84,12 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		return extraInfos;
 	}
 
+	@Override
+	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
+		super.doInitExecutable(datasetRegistry, config);
+		previewConfig = datasetRegistry.get(getDataset().getId()).getPreviewConfig();
+	}
+
 	/**
 	 * Collects status of {@link EntityPreviewForm#getValuesQuery()} and {@link EntityPreviewForm#getInfoCardQuery()}.
 	 * <p>
@@ -103,7 +111,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 	@Override
 	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		status.setColumnDescriptions(getValuesQuery().generateColumnDescriptions(datasetRegistry));
+		status.setColumnDescriptions(generateColumnDescriptions(datasetRegistry));
 	}
 
 	@JsonIgnore
@@ -125,7 +133,24 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 	@Override
 	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
-		return getValuesQuery().generateColumnDescriptions(datasetRegistry);
+		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(datasetRegistry);
+
+		for (ColumnDescriptor descriptor : descriptors) {
+			if (descriptor.getSemantics()
+						  .stream()
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc && previewConfig.isGroupingColumn(desc.getSecondaryId()))) {
+				descriptor.getSemantics().add(new SemanticType.GroupT());
+			}
+
+			if (descriptor.getSemantics()
+						  .stream()
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.ColumnT desc && previewConfig.isHidden(desc.getColumn()))) {
+				descriptor.getSemantics().add(new SemanticType.HiddenT());
+			}
+		}
+
+
+		return descriptors;
 	}
 
 	@Override
@@ -136,5 +161,10 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	@Override
 	public Stream<EntityResult> streamResults() {
 		return getValuesQuery().streamResults();
+	}
+
+	@Override
+	public long resultRowCount() {
+		return getValuesQuery().resultRowCount();
 	}
 }

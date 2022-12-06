@@ -1,15 +1,36 @@
-# Builder
-FROM maven:3.8-openjdk-11-slim AS builder
-
-COPY . /app
-
+# Version Extractor
+FROM bitnami/git:2.38.1 AS version-extractor
 
 WORKDIR /app
-RUN ./scripts/build_backend_version.sh
+COPY .git .
+
+RUN git describe --tags |  sed 's/^v//' > git_describe.txt
+
+# Builder
+FROM maven:3.8-openjdk-17-slim AS builder
+
+WORKDIR /app
+
+# Fetch dependencies first
+COPY ./pom.xml .
+COPY ./backend/pom.xml ./backend/
+COPY ./executable/pom.xml ./executable/
+COPY ./autodoc/pom.xml ./autodoc/
+
+RUN mvn dependency:go-offline -Dsilent=true -DexcludeGroupIds="com.bakdata.conquery" -pl backend -am
+
+# Then copy the rest
+COPY . .
+
+# Get the version from previous step
+COPY --from=version-extractor /app/git_describe.txt .
+
+# Build
+RUN ./scripts/build_backend_version.sh `cat git_describe.txt`
 
 
 # Runner
-FROM eclipse-temurin:11.0.15_10-jre-alpine AS runner
+FROM eclipse-temurin:17-jre-alpine AS runner
 
 ## Apache POI needs some extra libs to auto-size columns
 RUN apk add --no-cache fontconfig ttf-dejavu

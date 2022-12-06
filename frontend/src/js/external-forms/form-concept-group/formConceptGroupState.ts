@@ -3,7 +3,7 @@ import type {
   PostFilterSuggestionsResponseT,
 } from "../../api/types";
 import { DNDType } from "../../common/constants/dndTypes";
-import { includes, compose } from "../../common/helpers";
+import { compose } from "../../common/helpers/commonHelper";
 import { exists } from "../../common/helpers/exists";
 import {
   getConceptById,
@@ -220,7 +220,7 @@ export const onToggleIncludeSubnodes = (
       ]
     : value.filter((val) =>
         val.concepts.filter(exists).some((cpt) => {
-          return childIds.every((childId) => !includes(cpt.ids, childId));
+          return childIds.every((childId) => !cpt.ids.includes(childId));
         }),
       );
 
@@ -273,6 +273,12 @@ export const addConceptsFromFile = (
 
   valueIdx: number,
   conceptIdx?: number,
+
+  resolvedFilter?: {
+    tableId: string;
+    filterId: string;
+    value: SelectOptionT[];
+  },
 ) => {
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
@@ -285,6 +291,15 @@ export const addConceptsFromFile = (
   const concept = initializeConcept(queryElement, defaults);
 
   if (!concept || (!!isValidConcept && !isValidConcept(concept))) return value;
+
+  if (resolvedFilter) {
+    const table = concept.tables.find((t) => t.id === resolvedFilter.tableId);
+    const filter = table?.filters.find((f) => f.id === resolvedFilter.filterId);
+
+    if (table && filter) {
+      filter.value = resolvedFilter.value;
+    }
+  }
 
   if (exists(conceptIdx)) {
     return setConcept(value, valueIdx, conceptIdx, concept);

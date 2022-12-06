@@ -17,7 +17,6 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -95,17 +94,11 @@ public class CQAnd extends CQElement implements ExportForm.DefaultSelectSettable
 	}
 
 	private DateAggregationAction determineDateAction(QueryResolveContext context) {
-		switch(context.getDateAggregationMode()) {
-			case NONE:
-				return DateAggregationAction.BLOCK;
-			case MERGE:
-				return DateAggregationAction.MERGE;
-			case LOGICAL:
-			case INTERSECT:
-				return DateAggregationAction.INTERSECT;
-			default:
-				throw new IllegalStateException("Cannot handle mode " + context.getDateAggregationMode());
-		}
+		return switch (context.getDateAggregationMode()) {
+			case NONE -> DateAggregationAction.BLOCK;
+			case MERGE -> DateAggregationAction.MERGE;
+			case LOGICAL, INTERSECT -> DateAggregationAction.INTERSECT;
+		};
 	}
 
 	@Override

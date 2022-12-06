@@ -23,8 +23,9 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v2
         with:
-          distribution: adopt-hotspot
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '17'
+          overwrite-settings: false
       - name: Build Backend
         run: mvn -T 1C install -pl backend -DskipTests -am
       - name: Unit Test

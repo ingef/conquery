@@ -1,5 +1,4 @@
 import type { ConceptT, ConceptIdT, GetConceptResponseT } from "../api/types";
-import { includes } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
 import { nodeIsElement, NodeResetConfig } from "../model/node";
 import { resetSelects } from "../model/select";
@@ -89,14 +88,7 @@ const findParentConcepts = (
   ]);
 };
 
-interface ConceptsByIds {
-  concepts: ConceptT[];
-  root: ConceptIdT;
-  tables: TableWithFilterValueT[];
-  selects?: SelectedSelectorT[];
-}
-
-const findRootConceptFromNodeIds = (
+const findRootConceptIdFromConceptIds = (
   rootConcepts: TreesT,
   conceptIds: ConceptIdT[],
 ) => {
@@ -106,7 +98,7 @@ const findRootConceptFromNodeIds = (
     concept: ConceptT;
     id: ConceptIdT;
   }[] = conceptIds
-    .map((id) => ({ concept: getConceptById(id), id }))
+    .map((id) => ({ id, concept: getConceptById(id) }))
     .filter((d): d is { concept: ConceptT; id: string } => !!d.concept);
 
   if (conceptsWithIds.length !== conceptIds.length) return null;
@@ -116,16 +108,26 @@ const findRootConceptFromNodeIds = (
   );
 
   return Object.keys(rootConcepts).find(
-    (id) => includes(parentConceptIds, id) && nodeIsElement(rootConcepts[id]),
+    (id) => parentConceptIds.includes(id) && nodeIsElement(rootConcepts[id]),
   );
 };
+
+interface ConceptsByIds {
+  concepts: ConceptT[];
+  root: ConceptIdT;
+  tables: TableWithFilterValueT[];
+  selects?: SelectedSelectorT[];
+}
 
 export const getConceptsByIdsWithTablesAndSelects = (
   rootConcepts: TreesT,
   conceptIds: ConceptIdT[],
   resetConfig: NodeResetConfig,
 ): ConceptsByIds | null => {
-  const rootConceptId = findRootConceptFromNodeIds(rootConcepts, conceptIds);
+  const rootConceptId = findRootConceptIdFromConceptIds(
+    rootConcepts,
+    conceptIds,
+  );
 
   // There should only be one exact root node that has table information
   // If it's more or less than one, something went wrong

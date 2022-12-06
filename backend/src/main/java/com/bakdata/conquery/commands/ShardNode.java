@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
@@ -183,12 +182,12 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			return;
 		}
 
-		MessageToShardNode srm = (MessageToShardNode) message;
+		MessageToShardNode toShardNode = (MessageToShardNode) message;
 		log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
-		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>(srm, context);
+		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>(toShardNode, context);
 
-		if (((Message) message).isSlowMessage()) {
-			((SlowMessage) message).setProgressReporter(job.getProgressReporter());
+		if (message instanceof SlowMessage slowMessage) {
+			slowMessage.setProgressReporter(job.getProgressReporter());
 			jobManager.addSlowJob(job);
 		}
 		else {
@@ -199,7 +198,7 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
 		setLocation(session);
-		log.error("cought exception", cause);
+		log.error("Exception caught", cause);
 	}
 
 	@Override
@@ -207,8 +206,8 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(networkSession, workers, config, validator);
-		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
+		context = new NetworkMessageContext.ShardNodeNetworkContext(this, networkSession, workers, config, validator);
+		log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode
 		context.send(new AddShardNode());

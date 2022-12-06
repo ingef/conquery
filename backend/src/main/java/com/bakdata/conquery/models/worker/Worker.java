@@ -98,7 +98,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			ObjectMapper persistenceMapper,
 			ObjectMapper communicationMapper) {
 
-		WorkerStorage workerStorage = new WorkerStorage(config, validator, "worker_" + directory);
+		WorkerStorage workerStorage = new WorkerStorage(config, validator, directory);
 
 		// On the worker side we don't have to set the object writer vor ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();

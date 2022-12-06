@@ -17,7 +17,11 @@ import type {
   PostQueriesResponseT,
   QueryIdT,
 } from "../api/types";
-import { ErrorObject, errorPayload, successPayload } from "../common/actions";
+import {
+  ErrorObject,
+  errorPayload,
+  successPayload,
+} from "../common/actions/genericActions";
 import { getExternalSupportedErrorMessage } from "../environment";
 import {
   useLoadFormConfigs,

@@ -60,7 +60,7 @@ public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 		query.init(ctxt, entity);
 		featurePlan.init(ctxt, entity);
 
-		indexSelector = indexSelectorFactory.sampler();
+		indexSelector = indexSelectorFactory.sampler(ctxt.getToday());
 
 		featureSubquery = null;
 		outcomeSubquery = null;

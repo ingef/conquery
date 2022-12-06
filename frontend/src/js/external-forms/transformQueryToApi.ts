@@ -1,6 +1,6 @@
 import { transformElementsToApi } from "../api/apiHelper";
 import type { SelectOptionT } from "../api/types";
-import type { DateStringMinMax } from "../common/helpers";
+import type { DateStringMinMax } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import type { DragItemQuery } from "../standard-query-editor/types";
 

@@ -1,4 +1,4 @@
-import { isEmpty, isEmptyObject } from "../../js/common/helpers";
+import { isEmpty, isEmptyObject } from "../../js/common/helpers/commonHelper";
 
 describe("helpers", () => {
   describe("commonHelper", () => {

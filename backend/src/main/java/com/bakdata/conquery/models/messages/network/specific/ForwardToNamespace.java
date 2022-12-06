@@ -31,11 +31,6 @@ public class ForwardToNamespace extends MessageToManagerNode implements SlowMess
 	}
 
 	@Override
-	public boolean isSlowMessage() {
-		return message.isSlowMessage();
-	}
-
-	@Override
 	public ProgressReporter getProgressReporter() {
 		return ((SlowMessage) message).getProgressReporter();
 	}

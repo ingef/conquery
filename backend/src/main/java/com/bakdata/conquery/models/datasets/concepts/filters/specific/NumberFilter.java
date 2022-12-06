@@ -30,38 +30,26 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 
 	@Override
 	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
-		switch (getColumn().getType()) {
-			case MONEY:
-				f.setType(FEFilterType.Fields.MONEY_RANGE);
-				return;
-			case INTEGER:
-				f.setType(FEFilterType.Fields.INTEGER_RANGE);
-				return;
-			case DECIMAL:
-			case REAL:
-				f.setType(FEFilterType.Fields.REAL_RANGE);
-				return;
-			default:
-				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + getColumn().getType());
-		}
+		final String type = switch (getColumn().getType()) {
+			case MONEY -> FEFilterType.Fields.MONEY_RANGE;
+			case INTEGER -> FEFilterType.Fields.INTEGER_RANGE;
+			case DECIMAL, REAL -> FEFilterType.Fields.REAL_RANGE;
+			default -> throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + getColumn().getType());
+		};
+
+		f.setType(type);
 	}
 
 
 	@Override
 	public FilterNode<?> createFilterNode(RANGE value) {
+		return switch (getColumn().getType()) {
+			case MONEY -> new MoneyFilterNode(getColumn(), (Range.LongRange) value);
+			case INTEGER -> new IntegerFilterNode(getColumn(), (Range.LongRange) value);
+			case DECIMAL -> new DecimalFilterNode(getColumn(), ((Range<BigDecimal>) value));
+			case REAL -> new RealFilterNode(getColumn(), Range.DoubleRange.fromNumberRange(value));
 
-		switch (getColumn().getType()) {
-			case MONEY:
-				return new MoneyFilterNode(getColumn(), (Range.LongRange) value);
-			case INTEGER:
-				return new IntegerFilterNode(getColumn(), (Range.LongRange) value
-				);
-			case DECIMAL:
-				return new DecimalFilterNode(getColumn(), ((Range<BigDecimal>) value));
-			case REAL:
-				return new RealFilterNode(getColumn(), Range.DoubleRange.fromNumberRange(value));
-			default:
-				throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
-		}
+			default -> throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
+		};
 	}
 }

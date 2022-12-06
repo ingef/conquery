@@ -129,11 +129,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		query.nextTable(ctx, bucket.getTable());
 		query.nextBlock(bucket);
 
-		if (!query.isOfInterest(bucket)) {
-			return false;
-		}
-
-		return true;
+		return query.isOfInterest(bucket);
 	}
 
 	/**

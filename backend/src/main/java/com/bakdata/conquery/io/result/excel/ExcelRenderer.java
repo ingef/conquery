@@ -44,7 +44,8 @@ public class ExcelRenderer {
 			ResultType.DateT.class, ExcelRenderer::writeDateCell,
 			ResultType.IntegerT.class, ExcelRenderer::writeIntegerCell,
 			ResultType.MoneyT.class, ExcelRenderer::writeMoneyCell,
-			ResultType.NumericT.class, ExcelRenderer::writeNumericCell
+			ResultType.NumericT.class, ExcelRenderer::writeNumericCell,
+			ResultType.BooleanT.class, ExcelRenderer::writeBooleanCell
 	);
 	public static final int CHARACTER_WIDTH_DIVISOR = 256;
 	public static final int AUTOFILTER_SPACE_WIDTH = 3;
@@ -301,12 +302,13 @@ public class ExcelRenderer {
 	}
 
 	/**
-	 * Is not used at the moment because at least the german Excel does not seem to understand its own boolean format.
+	 * This writer is only used on Columns with the result type {@link ResultType.BooleanT}, not on complex types such as `LIST[BOOLEAN]`,
+	 * because MS Excel can only represent those as strings
 	 */
 	private static void writeBooleanCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		if (value instanceof Boolean) {
-			Boolean aBoolean = (Boolean) value;
+		if (value instanceof Boolean aBoolean) {
 			cell.setCellValue(aBoolean);
+			return;
 		}
 		cell.setCellValue(info.getType().printNullable(settings, value));
 	}

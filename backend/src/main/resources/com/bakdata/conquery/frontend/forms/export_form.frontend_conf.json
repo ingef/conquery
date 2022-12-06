@@ -49,6 +49,30 @@
                         "de": "Quartale"
                     },
                     "value": "QUARTERS"
+                },
+                {
+                    "label": {
+                        "de": "Jahre und Quartale"
+                    },
+                    "value": "YEARS_QUARTERS"
+                },
+                {
+                    "label": {
+                        "de": "Gesamter Zeitraum und Jahre"
+                    },
+                    "value": "COMPLETE_YEARS"
+                },
+                {
+                    "label": {
+                        "de": "Gesamter Zeitraum und Quartale"
+                    },
+                    "value": "COMPLETE_QUARTERS"
+                },
+                {
+                    "label": {
+                        "de": "Gesamter Zeitraum, Jahre und Quartale"
+                    },
+                    "value": "COMPLETE_YEARS_QUARTERS"
                 }
             ],
             "validations": [

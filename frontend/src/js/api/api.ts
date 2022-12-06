@@ -2,10 +2,7 @@ import { useCallback } from "react";
 
 import { EntityId } from "../entity-history/reducer";
 import { apiUrl } from "../environment";
-import type {
-  BaseFormConfigT,
-  FormConfigT,
-} from "../previous-queries/list/reducer";
+import type { FormConfigT } from "../previous-queries/list/reducer";
 import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker";
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
@@ -26,7 +23,6 @@ import type {
   GetFormQueriesResponseT,
   GetMeResponseT,
   PostLoginResponseT,
-  PostFormConfigsResponseT,
   GetFormConfigsResponseT,
   GetFormConfigResponseT,
   GetDatasetsResponseT,
@@ -311,23 +307,6 @@ export const usePostLogin = () => {
           user,
           password,
         },
-      }),
-    [api],
-  );
-};
-
-// This endpoint exists, but it's not used anymore,
-// since form configs are auto-saved when starting a form query.
-// TODO: remove if not needed after a while
-export const usePostFormConfig = () => {
-  const api = useApi<PostFormConfigsResponseT>();
-
-  return useCallback(
-    (datasetId: DatasetT["id"], data: BaseFormConfigT) =>
-      api({
-        url: getProtectedUrl(`/datasets/${datasetId}/form-configs`),
-        method: "POST",
-        data,
       }),
     [api],
   );

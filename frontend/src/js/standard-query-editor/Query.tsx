@@ -5,14 +5,14 @@ import { useDispatch, useSelector } from "react-redux";
 
 import type { QueryT } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { getUniqueFileRows } from "../common/helpers";
 import { exists } from "../common/helpers/exists";
+import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import { TreesT } from "../concept-trees/reducer";
 import { useDatasetId } from "../dataset/selectors";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import { PreviousQueryT } from "../previous-queries/list/reducer";
 import QueryGroupModal from "../query-group-modal/QueryGroupModal";
-import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
+import QueryUploadConceptListModal from "../query-upload-concept-list-modal/QueryUploadConceptListModal";
 import { initUploadConceptListModal } from "../upload-concept-list-modal/actions";
 
 import ExpandPreviousQueryModal from "./ExpandPreviousQueryModal";
@@ -33,6 +33,39 @@ import {
 } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
 import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
+
+const useDropFileModal = () => {
+  const dispatch = useDispatch();
+  const [dropFileModalOpen, setDropFileModalOpen] = useState(false);
+  const [dropFileModalAndIdx, setFileDropModalAndIdx] = useState<
+    number | undefined
+  >();
+
+  const onDropFile = useCallback(
+    async (file: File, andIdx?: number) => {
+      // Wait until file is processed before opening modal
+      const rows = await getUniqueFileRows(file);
+
+      dispatch(initUploadConceptListModal({ rows, filename: file.name }));
+
+      setDropFileModalOpen(true);
+      setFileDropModalAndIdx(andIdx);
+    },
+    [dispatch],
+  );
+
+  const onCloseDropFileModal = useCallback(() => {
+    setDropFileModalOpen(false);
+    setFileDropModalAndIdx(undefined);
+  }, []);
+
+  return {
+    dropFileModalOpen,
+    dropFileModalAndIdx,
+    onCloseDropFileModal,
+    onDropFile,
+  };
+};
 
 const Container = styled("div")`
   height: 100%;
@@ -80,21 +113,16 @@ const Query = ({
   const { loadQuery } = useLoadQuery();
   const expandPreviousQuery = useExpandPreviousQuery();
 
+  const {
+    dropFileModalOpen,
+    dropFileModalAndIdx,
+    onCloseDropFileModal,
+    onDropFile,
+  } = useDropFileModal();
+
   const onDropAndNode = useCallback(
     (item: DragItemQuery | DragItemConceptTreeNode) =>
       dispatch(dropAndNode({ item })),
-    [dispatch],
-  );
-  const onDropConceptListFile = useCallback(
-    async (file: File, andIdx: number | null) => {
-      // Need to wait until file is processed.
-      // Because if file is empty, modal would close automatically
-      const rows = await getUniqueFileRows(file);
-
-      dispatch(initUploadConceptListModal({ rows, filename: file.name }));
-
-      return dispatch(openQueryUploadConceptListModal({ andIdx }));
-    },
     [dispatch],
   );
   const onDropOrNode = useCallback(
@@ -161,6 +189,12 @@ const Query = ({
 
   return (
     <Container>
+      {dropFileModalOpen && (
+        <QueryUploadConceptListModal
+          andIdx={dropFileModalAndIdx}
+          onClose={onCloseDropFileModal}
+        />
+      )}
       {exists(queryGroupModalAndIx) && (
         <QueryGroupModal
           andIdx={queryGroupModalAndIx}
@@ -180,7 +214,7 @@ const Query = ({
         <QueryEditorDropzone
           isInitial
           onDropNode={onDropAndNode}
-          onDropFile={(file) => onDropConceptListFile(file, null)}
+          onDropFile={(file) => onDropFile(file)}
           onLoadPreviousQuery={onLoadQuery}
         />
       ) : (
@@ -194,7 +228,7 @@ const Query = ({
                   group={group}
                   andIdx={andIdx}
                   onDropOrNode={onDropOrNode}
-                  onDropConceptListFile={onDropConceptListFile}
+                  onDropConceptListFile={onDropFile}
                   onDeleteGroup={onDeleteGroup}
                   onExcludeClick={onToggleExcludeGroup}
                   onDateClick={setQueryGroupModalAndIdx}
@@ -213,7 +247,7 @@ const Query = ({
             <QueryAndDropzone
               onLoadQuery={onLoadQuery}
               onDropAndNode={onDropAndNode}
-              onDropConceptListFile={onDropConceptListFile}
+              onDropConceptListFile={onDropFile}
             />
           </Groups>
           <SecondaryIdSelector />

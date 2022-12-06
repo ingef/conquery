@@ -3,7 +3,7 @@ import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
 import type { ColumnDescription } from "../api/types";
 import { StateT } from "../app/reducers";
-import { ErrorObject, errorPayload } from "../common/actions";
+import { ErrorObject, errorPayload } from "../common/actions/genericActions";
 import { loadCSV } from "../file/csv";
 
 import { PreviewStateT } from "./reducer";

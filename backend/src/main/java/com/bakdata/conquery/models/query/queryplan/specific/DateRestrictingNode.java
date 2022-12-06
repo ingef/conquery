@@ -23,7 +23,7 @@ public class DateRestrictingNode extends QPChainNode {
 
 	protected final CDateSet restriction;
 	protected Column validityDateColumn;
-	protected Map<Bucket, CBlock> preCurrentRow = null;
+	protected Map<Bucket, CBlock> preCurrentRow;
 
 	public DateRestrictingNode(CDateSet restriction, QPNode child) {
 		super(child);
@@ -37,7 +37,7 @@ public class DateRestrictingNode extends QPChainNode {
 			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
 		}
 		else {
-			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
+			final CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
 			dateRestriction.retainAll(restriction);
 			ctx = ctx.withDateRestriction(dateRestriction);
 		}
@@ -54,14 +54,14 @@ public class DateRestrictingNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket));
+		final CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket));
 
 		if (validityDateColumn == null) {
 			// If there is no validity date set for a concept there is nothing to restrict
 			return super.isOfInterest(bucket);
 		}
 
-		CDateRange range = cBlock.getEntityDateRange(entity.getId());
+		final CDateRange range = cBlock.getEntityDateRange(entity.getId());
 
 		return restriction.intersects(range) && super.isOfInterest(bucket);
 	}

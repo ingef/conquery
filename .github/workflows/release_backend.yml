@@ -16,10 +16,14 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
+          # This should be deep enough to fetch at least one light weight tag
+          fetch-depth: 500 
       - name: Set up JDK
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v2
         with:
-          java-version: 11
+          distribution: 'temurin'
+          java-version: '17'
+          overwrite-settings: false
       - name: Cache local Maven repository
         uses: actions/cache@v2
         with:
