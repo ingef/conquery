@@ -62,20 +62,6 @@
                             "validations": [
                                 "NOT_EMPTY"
                             ]
-                        },
-                        {
-                            "name": "features",
-                            "type": "CONCEPT_LIST",
-                            "label": {
-                                "de": "Konzepte"
-                            },
-                            "isTwoDimensional": true,
-                            "conceptDropzoneLabel": {
-                                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
-                            },
-                            "validations": [
-                                "NOT_EMPTY"
-                            ]
                         }
                     ],
                     "tooltip": {
@@ -223,26 +209,35 @@
                             "tooltip": {
                                 "de": "Angabe für welchen Zeitraum das Quartal mit dem Indexdatum gewertet wird."
                             }
-                        },
-                        {
-                            "name": "features",
-                            "type": "CONCEPT_LIST",
-                            "label": {
-                                "de": "Konzepte"
-                            },
-                            "isTwoDimensional": true,
-                            "conceptDropzoneLabel": {
-                                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
-                            },
-                            "validations": [
-                                "NOT_EMPTY"
-                            ]
                         }
                     ],
                     "tooltip": {
                         "de": "Die Ausgaben beziehen sich auf einen Vor- und Nachbeobachtungszeitraum, abhängig von dem Indexdatum jeder Person in der Versichertengruppe."
                     }
                 }
+            ]
+        },
+        {
+            "label": {
+                "de": "Datengrundlage und Konzepte"
+             },
+            "style": {
+                "size": "h1"
+             },
+            "type": "HEADLINE"
+        },
+        {
+            "name": "features",
+            "type": "CONCEPT_LIST",
+            "label": {
+                "de": "Konzepte"
+            },
+            "isTwoDimensional": true,
+            "conceptDropzoneLabel": {
+                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
+            },
+            "validations": [
+                "NOT_EMPTY"
             ]
         },
         {
