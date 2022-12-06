@@ -52,6 +52,8 @@ public class QueryExecutor implements Closeable {
 
 	public boolean execute(Query query, QueryExecutionContext executionContext, ShardResult result, Set<Entity> entities) {
 
+		log.info("BEGIN Executing `{}` for {} entities", result.getQueryId(), entities.size());
+
 		final ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(worker)));
 
 		if (entities.isEmpty()) {
@@ -68,7 +70,7 @@ public class QueryExecutor implements Closeable {
 					entities.stream()
 							.map(entity -> new QueryJob(executionContext, plan, entity))
 							.map(job -> CompletableFuture.supplyAsync(job, executor))
-							.collect(Collectors.toList());
+							.toList();
 
 			final CompletableFuture<Void> allDone = CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
 

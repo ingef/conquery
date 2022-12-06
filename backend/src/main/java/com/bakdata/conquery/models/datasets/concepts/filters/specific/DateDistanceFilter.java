@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
+import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -57,16 +58,26 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context, Range.LongRange longRange) {
-		final Int2ObjectMap<CDateRange> entityDateRanges = context.getBucketManager().getColumnIndex(getColumn());
-
 		final IntOpenHashSet out = new IntOpenHashSet();
 		final LocalDate referenceDate = CDate.toLocalDate(context.getDateRestriction().getMaxValue());
 
-		entityDateRanges.int2ObjectEntrySet().stream()
-						.filter(kv -> entityDateRanges.containsKey(kv.getIntKey()))
-						.filter(kv -> longRange.contains(timeUnit.between(entityDateRanges.get(kv.getIntKey()).getMax(), referenceDate)))
-						.mapToInt(Int2ObjectMap.Entry::getIntKey)
-						.forEach(out::add);
+		for (CBlock cBlock : context.getBucketManager().getCBlocksForConnector(getConnector())) {
+
+			final Int2ObjectMap<CDateRange> entityDateRanges = cBlock.getColumnIndex(getColumn());
+
+			if(entityDateRanges == null) {
+				continue;
+			}
+
+			entityDateRanges.int2ObjectEntrySet().stream()
+							.filter(kv -> {
+								final LocalDate date = kv.getValue().getMax();
+								final long between = timeUnit.between(date, referenceDate);
+								return longRange.contains(between);
+							})
+							.mapToInt(Int2ObjectMap.Entry::getIntKey)
+							.forEach(out::add);
+		}
 
 		return new RequiredEntities(out);
 	}

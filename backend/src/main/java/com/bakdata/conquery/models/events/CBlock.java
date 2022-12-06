@@ -1,13 +1,17 @@
 package com.bakdata.conquery.models.events;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.CBlockDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefKeys;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -29,6 +33,10 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -97,6 +105,10 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 */
 	private final int[][] mostSpecificChildren;
 
+	@NsIdRefKeys //TODO deserializer for Int2ObjectMap and IntSet
+	private final Map<Column, Int2ObjectMap<?>> columnIndices;
+
+
 	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize) {
 		final int root = bucket.getBucket() * bucketSize;
 
@@ -104,7 +116,15 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		final long[] includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
 		final CDateRange[] entitySpans = calculateEntityDateIndices(bucket, bucketSize);
 
-		return new CBlock(bucket, connector, root, includedConcepts, entitySpans, mostSpecificChildren);
+		Map<Column, Int2ObjectMap<?>> indices = new HashMap<>();
+
+		for (Column column : bucket.getTable().getColumns()) {
+			Int2ObjectMap<?> columnIndex = createColumnIndex(column, bucket);
+
+			indices.put(column, columnIndex);
+		}
+
+		return new CBlock(bucket, connector, root, includedConcepts, entitySpans, mostSpecificChildren, indices);
 	}
 
 
@@ -387,5 +407,79 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		}
 
 		return in.span(span);
+	}
+
+
+	public <T> Int2ObjectMap<T> getColumnIndex(Column column){
+		return (Int2ObjectMap<T>) columnIndices.get(column);
+	}
+
+	public static Int2ObjectMap<?> createColumnIndex(Column column, Bucket bucket) {
+
+		final Int2ObjectMap<Object> index = new Int2ObjectAVLTreeMap<>();
+
+		for (int entity : bucket.entities()) {
+			final int entityEnd = bucket.getEntityEnd(entity);
+			Object entityIndex = index.get(entity);
+
+			for (int event = bucket.getEntityStart(entity); event < entityEnd; event++) {
+				if (bucket.has(event, column)){
+					entityIndex = indexColumn(bucket, event, column, entityIndex);
+				}
+			}
+
+			if (entityIndex != null) {
+				index.put(entity, entityIndex);
+			}
+		}
+
+		return index;
+	}
+
+	private static Object indexStringColumn(Bucket bucket, int event, Column column, Object current) {
+
+		final int value = bucket.getString(event, column);
+
+		if(current == null) {
+			current = new IntOpenHashSet();
+		}
+
+		((IntSet) current).add(value);
+
+		return current;
+	}
+
+	private static Range<Long> indexIntegerColumn(Bucket bucket, int event, Column column, Object current) {
+
+		final long value = bucket.getInteger(event, column);
+
+		final Range<Long> exactly = Range.LongRange.exactly(value);
+
+		if(current == null){
+			return exactly;
+		}
+
+		return ((Range<Long>) current).span(exactly);
+	}
+
+	private static CDateRange indexDateColumn(Bucket bucket, int event, Column column, Object current) {
+		final int value = bucket.getDate(event, column);
+
+		final CDateRange exactly = CDateRange.exactly(value);
+
+		if (current == null) {
+			return exactly;
+		}
+
+		return ((CDateRange) current).span(exactly);
+	}
+
+	private static Object indexColumn(Bucket bucket, int event, Column column, @Nullable Object current) {
+		return switch (column.getType()) {
+			case STRING -> indexStringColumn(bucket, event, column, current);
+			case INTEGER -> indexIntegerColumn(bucket, event, column, current);
+			case DATE -> indexDateColumn(bucket, event, column, current);
+			default -> null;
+		};
 	}
 }
