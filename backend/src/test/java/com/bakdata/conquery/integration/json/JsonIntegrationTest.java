@@ -47,7 +47,9 @@ public class JsonIntegrationTest extends IntegrationTest.Simple {
 		testSpec.importRequiredData(conquery);
 
 		//ensure the metadata is collected
-		conquery.getNamespace().sendToAll(new UpdateMatchingStatsMessage());
+
+
+		conquery.getNamespace().sendToAll(new UpdateMatchingStatsMessage(conquery.getNamespace().getStorage().getAllConcepts()));
 
 		conquery.waitUntilWorkDone();
 
