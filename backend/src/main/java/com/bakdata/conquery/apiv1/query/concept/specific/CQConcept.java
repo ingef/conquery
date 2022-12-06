@@ -329,6 +329,32 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
 		final Set<Connector> connectors = getTables().stream().map(CQTable::getConnector).collect(Collectors.toSet());
 
-		return new RequiredEntities(context.getBucketManager().getEntitiesWithConcepts(getElements(), connectors, context.getDateRestriction()));
+		RequiredEntities forConcept =
+				new RequiredEntities(context.getBucketManager().getEntitiesWithConcepts(getElements(), connectors, context.getDateRestriction()));
+
+
+		RequiredEntities forTables = null;
+
+		// Tables are OR-ed, filters per table are AND-ed
+		for (CQTable cqTable : tables) {
+			RequiredEntities forTable = forConcept;
+
+			for (FilterValue<?> filter : cqTable.getFilters()) {
+				forTable = forTable.intersect(filter.collectRequiredEntities(context));
+			}
+
+			if(forTables == null){
+				forTables = forTable;
+			}
+			else {
+				forTables = forTables.union(forTable);
+			}
+		}
+
+		if(forTables != null){
+			forConcept = forConcept.intersect(forTables);
+		}
+
+		return forConcept;
 	}
 }
