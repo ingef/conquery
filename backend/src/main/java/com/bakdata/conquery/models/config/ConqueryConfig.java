@@ -12,6 +12,8 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.Int2ObjectMapDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.Int2ObjectMapSerializer;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -25,6 +27,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -137,6 +140,9 @@ public class ConqueryConfig extends Configuration {
 
 			addDeserializer(CDateSet.class, new CDateSetDeserializer(dateReader));
 			addSerializer(CDateSet.class, new CDateSetSerializer());
+
+			addDeserializer(Int2ObjectMap.class, new Int2ObjectMapDeserializer());
+			addSerializer(Int2ObjectMap.class, new Int2ObjectMapSerializer());
 		}
 	}
 

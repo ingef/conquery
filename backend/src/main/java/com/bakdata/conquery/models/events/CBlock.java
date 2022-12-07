@@ -106,7 +106,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	private final int[][] mostSpecificChildren;
 
 	@NsIdRefKeys //TODO deserializer for Int2ObjectMap and IntSet
-	private final Map<Column, Int2ObjectMap<?>> columnIndices;
+	@NotNull
+	private final Map<Column,  Int2ObjectMap<?>> columnIndices;
 
 
 	public static CBlock createCBlock(ConceptTreeConnector connector, Bucket bucket, int bucketSize) {
