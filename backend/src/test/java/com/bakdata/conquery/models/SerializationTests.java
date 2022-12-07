@@ -18,6 +18,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
+import com.bakdata.conquery.apiv1.forms.MostlyAiForm;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
@@ -64,6 +65,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
+import com.bakdata.conquery.models.forms.mostlyai.MostlyAiExecution;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -82,6 +84,7 @@ import com.bakdata.conquery.util.dict.SuccinctTrieTest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.github.powerlibraries.io.In;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -713,6 +716,30 @@ public class SerializationTests extends AbstractSerializationTest {
 				})
 				.objectMappers(getApiMapper(), getManagerInternalMapper(), getShardInternalMapper())
 				.test(range);
+	}
+
+	@Test
+	public void mostlyExecution() throws JSONException, IOException {
+		final MostlyAiForm mostlyAiForm = new MostlyAiForm();
+
+		mostlyAiForm.setValues(new TextNode("test"));
+
+
+		Dataset dataset = new Dataset();
+		dataset.setName("dataset");
+		User user = new User("user", "user", getMetaStorage());
+
+		// UUT
+		final MostlyAiExecution managedExecution = mostlyAiForm.toManagedExecution(user, dataset);
+
+		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
+		registry.register(dataset);
+		registry.register(user);
+
+		SerializationTestUtil.forType(ManagedExecution.class)
+							 .registry(registry)
+							 .objectMappers(getManagerInternalMapper())
+							 .test(managedExecution);
 	}
 
 }

@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -27,6 +28,7 @@ import lombok.Setter;
 /**
  * API representation of a form query.
  */
+@EqualsAndHashCode
 public abstract class Form implements QueryDescription {
 
 	/**

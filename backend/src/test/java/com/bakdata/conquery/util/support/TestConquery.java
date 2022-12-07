@@ -139,15 +139,13 @@ public class TestConquery {
 			log.info("Reusing existing folder {} for Support", localTmpDir.getPath());
 		}
 
-		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()), IntegrationTests.MAPPER);
-
 
 		StandaloneSupport support = new StandaloneSupport(
 				this,
 				ns,
 				ns.getStorage().getDataset(),
 				localTmpDir,
-				localCfg,
+				config,
 				standaloneCommand.getManager().getAdmin().getAdminProcessor(),
 				standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor(),
 				// Getting the User from AuthorizationConfig

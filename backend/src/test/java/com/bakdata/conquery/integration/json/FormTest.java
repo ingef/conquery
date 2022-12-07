@@ -127,7 +127,7 @@ public class FormTest extends ConqueryTestSpec {
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {
 			if (managedForm.getState() == ExecutionState.FAILED) {
-				fail(getLabel() + " Query failed");
+				fail(getLabel() + " Query failed: " + managedForm.getError().getMessage());
 			}
 			else {
 				fail(getLabel() + " not finished after 10 min");
