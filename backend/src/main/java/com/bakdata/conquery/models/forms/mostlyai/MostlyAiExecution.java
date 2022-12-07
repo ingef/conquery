@@ -55,6 +55,19 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
+/**
+ * An execution that submits the internal results to the Mostly-AI API and provides the
+ * synthesized result as a download zip-archive.
+ * <br/>
+ * The internal result is intercepted in the {@link MostlyAiExecution#finish(MetaStorage, ExecutionState)}-Hook and
+ * forwarded to the service.
+ * <p>
+ * The progress of the synthesis is tracked on every status request through a call of {@link MostlyAiExecution#setStatusBase(Subject, ExecutionStatus)}.
+ * When the service signals successful completion, the execution is finalized by registering a download origin.
+ * The payload of that origin is transferred to a {@link StreamingOutput} for a user to download in {@link MostlyAiExecution#getExternalResult(ExternalResultProcessor.ResultFileReference)}.
+ * <p>
+ * If the synthesis fails this execution is marked as failed.
+ */
 @CPSType(id = "MOSTLY_AI_EXECUTION", base = ManagedExecution.class)
 @Slf4j
 @EqualsAndHashCode(callSuper = true)

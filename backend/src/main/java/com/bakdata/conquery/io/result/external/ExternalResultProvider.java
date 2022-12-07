@@ -21,6 +21,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 /**
  * Provider for results that are externally generated and are proxied through the backend.
+ * A {@link javax.ws.rs.core.StreamingOutput} is provided by the {@link ManagedExecution} through the implementation of {@link ExternalResult#getExternalResult(ExternalResultProcessor.ResultFileReference)}. The execution takes care, that the StreamingOutput is properly connected to the external origin.
  */
 @Getter
 @CPSType(base = ResultRendererProvider.class, id = "EXTERNAL")

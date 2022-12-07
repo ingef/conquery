@@ -28,7 +28,7 @@ import lombok.Setter;
 
 /**
  * Form that forwards the results of the referenced {@link ManagedQuery} to the
- * synthetization service of Mostly-AI.
+ * synthetization service of Mostly-AI. (see {@link MostlyAiExecution})
  * <p>
  * The result of this form is the synthesized data provided in a
  * zipped folder as it is provided by the service.
