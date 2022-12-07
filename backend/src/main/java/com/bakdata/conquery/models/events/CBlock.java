@@ -107,6 +107,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 	@NsIdRefKeys //TODO deserializer for Int2ObjectMap and IntSet
 	@NotNull
+	@JsonIgnore
 	private final Map<Column,  Int2ObjectMap<?>> columnIndices;
 
 
