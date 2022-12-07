@@ -112,11 +112,10 @@ public class DateReader {
 		}
 
 		if (value.endsWith(sep)) {
-			return CDateRange.atMost(parseToLocalDate(value.substring(0, value.length() - sep.length())));
+			return CDateRange.atLeast(parseToLocalDate(value.substring(0, value.length() - sep.length())));
 		}
 
-
-		String[] parts = StringUtils.split(value, sep);
+		final String[] parts = StringUtils.split(value, sep);
 
 
 		if (parts.length == 1) {
