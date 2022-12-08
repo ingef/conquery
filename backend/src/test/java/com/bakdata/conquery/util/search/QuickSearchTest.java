@@ -98,4 +98,20 @@ class QuickSearchTest {
 		assertThat(search.suffixes("aacd"))
 				.containsExactly("aacd!", "acd");
 	}
+
+	@Test
+	public void testNoSuffix() {
+		final TrieSearch<String> search = new TrieSearch<>(Integer.MAX_VALUE, null);
+
+		assertThat(search.suffixes("baaacd"))
+				.containsExactly(
+						"baaacd!"
+				);
+
+		assertThat(search.suffixes("acd"))
+				.containsExactly("acd!");
+
+		assertThat(search.suffixes("aacd"))
+				.containsExactly("aacd!");
+	}
 }
