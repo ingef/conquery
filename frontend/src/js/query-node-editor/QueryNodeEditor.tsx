@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -11,6 +11,7 @@ import type {
   SelectorResultType,
 } from "../api/types";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
+import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import {
   nodeHasEmptySettings,
   nodeIsConceptQueryNode,
@@ -123,6 +124,7 @@ export interface QueryNodeEditorPropsT {
 const COMPACT_WIDTH = 600;
 const RIGHT_SIDE_WIDTH = 400;
 const RIGHT_SIDE_WIDTH_COMPACT = 150;
+const MAX_AUTOLABEL_LENGTH = 30;
 
 const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const [selectedTableIdx, setSelectedTableIdx] = useState<number | null>(null);
@@ -159,6 +161,37 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
       ? RIGHT_SIDE_WIDTH_COMPACT
       : RIGHT_SIDE_WIDTH);
 
+  // Automatic node label generation
+  const formatConceptLabels = (labels: string[]) =>
+    labels
+      .map((label) =>
+        label
+          .split("")
+          .filter((c) => c.match(/[a-zA-Z0-9]/))
+          .join(""),
+      )
+      .join("_")
+      .substring(0, MAX_AUTOLABEL_LENGTH);
+  const autoLabel = useMemo(() => {
+    return nodeIsConceptQueryNode(node)
+      ? formatConceptLabels(
+          node.ids.map((id) => getConceptById(id)?.label ?? ""),
+        )
+      : undefined;
+  }, [node]);
+  const [autoLabelEnabled, setAutoLabelEnabled] = useState(
+    nodeIsConceptQueryNode(node) &&
+      formatConceptLabels(node.label.split("_")) === autoLabel,
+  );
+
+  // save auto generated node label
+  const { onUpdateLabel } = props;
+  useEffect(() => {
+    if (autoLabelEnabled && autoLabel && node.label !== autoLabel) {
+      onUpdateLabel(autoLabel);
+    }
+  }, [autoLabel, autoLabelEnabled, node.label, onUpdateLabel]);
+
   return (
     <Root
       ref={(instance) => {
@@ -174,9 +207,16 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             maxWidth={nodeNameMaxWidth}
             allowEditing={nodeIsConceptQueryNode(node)}
             label={
-              nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
+              autoLabelEnabled && autoLabel
+                ? autoLabel
+                : nodeIsConceptQueryNode(node)
+                ? node.label
+                : node.label || node.id
             }
-            onUpdateLabel={props.onUpdateLabel}
+            onUpdateLabel={(label) => {
+              setAutoLabelEnabled(false);
+              props.onUpdateLabel(label);
+            }}
           />
           <ResetAndClose
             isCompact={isCompact}
