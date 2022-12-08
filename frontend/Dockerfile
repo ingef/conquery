@@ -1,5 +1,14 @@
 FROM mhart/alpine-node:16 AS builder
 
+ARG PROXY
+
+# Set up proxy if necessary because yarn does not recognize the corresponding env variables
+RUN if [[ -z $PROXY ]]; then echo "Skip setting up proxy" ; else ( \
+            yarn config set proxy $PROXY ; \
+            yarn config set https-proxy $PROXY \
+    ) fi
+
+
 WORKDIR /app
 COPY ./package.json ./yarn.lock ./
 
