@@ -10,17 +10,23 @@ EOF
 `
 
 # Check for one or two arguments or exit 
-if [[ ( $# < 1 || $# > 2 )]]
+if  [ \( "$#" -lt 1 \) -o \( "$#" -gt 2 \) ] 
 then
     echo "$usage"
     exit 1
 fi
 
 # Check if env file is provided and readable
-if [[ $# == 2 && -r $2 ]]
+if [ "$#" -eq 2 ]
 then
-    # if so, we asume it is an env-file and we source it
-    . $2
+    if [ -r "$2" ]
+    then
+	    echo "Sourcing '$2'"
+	    . "$2"
+    else
+	    echo "Cannot source '$2'"
+	    exit 1
+    fi
 fi
 
 # Build the env string
