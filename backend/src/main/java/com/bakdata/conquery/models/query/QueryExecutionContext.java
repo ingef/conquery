@@ -23,20 +23,23 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
-@Getter @AllArgsConstructor @RequiredArgsConstructor
+@Getter
+@AllArgsConstructor
+@RequiredArgsConstructor
 @With
 public class QueryExecutionContext {
 
 	private final ManagedExecutionId executionId;
 
 	private final QueryExecutor executor;
+	private final ModificationShieldedWorkerStorage storage;
+	private final BucketManager bucketManager;
+
 
 	private Column validityDateColumn;
 	@NonNull
 	private CDateSet dateRestriction = CDateSet.createFull();
 	private Connector connector;
-	private final ModificationShieldedWorkerStorage storage;
-	private final BucketManager bucketManager;
 	@NonNull
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 

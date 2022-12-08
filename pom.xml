@@ -5,7 +5,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bakdata.conquery</groupId>
 	<artifactId>parent</artifactId>
-	<version>0.0.0-SNAPSHOT</version>
+	<version>${revision}</version>
 
 	<packaging>pom</packaging>
 	<name>Conquery Parent</name>
@@ -25,6 +25,7 @@
 		<maven-dependency-plugin.version>3.3.0</maven-dependency-plugin.version>
 		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
 		<build.time>${maven.build.timestamp}</build.time>
+		<revision>0.0.0-SNAPSHOT</revision>
 	</properties>
 
 	<modules>
@@ -57,7 +58,8 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<trimStackTrace>false</trimStackTrace>
-					<argLine>-Xmx4G
+					<argLine>
+						-Xmx4G
 						<!-- TODO this should be refined. We only need this for arrow as of now. -->
 						--add-opens java.base/java.lang=ALL-UNNAMED
 						--add-opens java.base/java.util=ALL-UNNAMED
@@ -89,106 +91,31 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<version>1.3.0</version>
+				<configuration>
+					<updatePomFile>true</updatePomFile>
+					<flattenMode>resolveCiFriendliesOnly</flattenMode>
+				</configuration>
+				<executions>
+					<execution>
+						<id>flatten</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>flatten</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>flatten.clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>setVersion</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>pl.project13.maven</groupId>
-						<artifactId>git-commit-id-plugin</artifactId>
-						<version>4.9.10</version>
-						<inherited>false</inherited>
-						<executions>
-							<execution>
-								<id>get-the-git-infos</id>
-								<goals>
-									<goal>revision</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
-							<dateFormat>${maven.build.timestamp.format}</dateFormat>
-							<skipPoms>false</skipPoms>
-							<gitDescribe>
-								<skip>false</skip>
-								<!-- do not only use annotated tags -->
-								<tags>true</tags>
-							</gitDescribe>
-							<useNativeGit>true</useNativeGit>
-							<offline>true</offline>
-							<includeOnlyProperties>
-								<includeOnlyProperty>^git.commit.id.describe</includeOnlyProperty>
-							</includeOnlyProperties>
-						</configuration>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>build-helper-maven-plugin</artifactId>
-						<version>3.3.0</version>
-						<inherited>false</inherited>
-						<executions>
-							<execution>
-								<id>regex-property-snapshot</id>
-								<goals>
-									<goal>regex-property</goal>
-								</goals>
-								<phase>initialize</phase>
-								<configuration>
-									<name>newVersion</name>
-									<value>${git.commit.id.describe}</value>
-									<regex>^v(\d\.\d\.\d-[\w\d]+-)(.*)</regex>
-									<replacement>$1$2-SNAPSHOT</replacement>
-									<failIfNoMatch>false</failIfNoMatch>
-								</configuration>
-							</execution>
-							<execution>
-								<id>regex-property</id>
-								<goals>
-									<goal>regex-property</goal>
-								</goals>
-								<phase>initialize</phase>
-								<configuration>
-									<name>newVersion</name>
-									<value>${newVersion}</value>
-									<regex>^v(\d\.\d\.\d-[\w\d]+$)</regex>
-									<replacement>$1</replacement>
-									<failIfNoMatch>false</failIfNoMatch>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>versions-maven-plugin</artifactId>
-						<version>2.8.1</version>
-						<inherited>false</inherited>
-						<executions>
-							<execution>
-								<id>set</id>
-								<phase>initialize</phase>
-								<goals>
-									<goal>set</goal>
-								</goals>
-								<configuration>
-									<newVersion>${newVersion}</newVersion>
-								</configuration>
-							</execution>
-							<execution>
-								<id>commit</id>
-								<phase>initialize</phase>
-								<goals>
-									<goal>commit</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>

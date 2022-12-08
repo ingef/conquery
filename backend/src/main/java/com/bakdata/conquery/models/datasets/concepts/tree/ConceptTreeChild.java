@@ -50,6 +50,11 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	private TreeChildPrefixIndex childIndex;
 
 	@Override
+	public void clearMatchingStats() {
+		setMatchingStats(null);
+	}
+
+	@Override
 	@JsonIgnore
 	public int[] getPrefix() {
 		if (prefix == null) {
@@ -72,6 +77,17 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	}
 
 	@Override
+	public boolean matchesPrefix(int[] conceptPrefix) {
+		return conceptPrefix.length > depth && conceptPrefix[depth] == localId;
+	}
+
+	@JsonIgnore
+	@Override
+	public Dataset getDataset() {
+		return getConcept().getDataset();
+	}
+
+	@Override
 	@JsonIgnore
 	public TreeConcept getConcept() {
 		ConceptTreeNode<?> n = this;
@@ -82,16 +98,5 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 			n = n.getParent();
 		}
 		throw new IllegalStateException("The node " + this + " seems to have no root");
-	}
-
-	@Override
-	public boolean matchesPrefix(int[] conceptPrefix) {
-		return conceptPrefix.length > depth && conceptPrefix[depth] == localId;
-	}
-
-	@JsonIgnore
-	@Override
-	public Dataset getDataset() {
-		return getConcept().getDataset();
 	}
 }

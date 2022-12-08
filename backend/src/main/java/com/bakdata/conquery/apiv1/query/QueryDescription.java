@@ -18,7 +18,9 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -111,4 +113,7 @@ public interface QueryDescription extends Visitable {
 		}
 	}
 
+	default RequiredEntities collectRequiredEntities(QueryExecutionContext context){
+		return new RequiredEntities(context.getBucketManager().getEntities().keySet());
+	}
 }
