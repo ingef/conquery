@@ -1,43 +1,45 @@
 {
-    "type": "FORM_TEST",
-    "label": "ADD DEFAULT SELECT Test",
-    "expectedCsv": {
-        "results": "tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/expected.csv"
-    },
-    "form": {
-        "type": "EXPORT_FORM",
-        "queryGroup": "00000000-0000-0000-0000-000000000001",
-        "resolution": "QUARTERS",
-        "alsoCreateCoarserSubdivisions": true,
-        "timeMode": {
-            "value": "ENTITY_DATE",
-            "features": [
-                {
-                    "ids": [
-                        "alter"
-                    ],
-                    "type": "CONCEPT",
-                    "tables": [
-                        {
-                            "id": "alter.alter",
-                            "filters": []
-                        }
-                    ]
-                }
-            ],
-            "dateRange": {
-                "min": "2012-03-01",
-                "max": "2020-12-17"
-            }
-        }
-    },
-    "concepts": [
-        "/tests/form/shared/alter.concept.json"
-    ],
-    "content": {
-        "tables": [
-            "/tests/form/shared/vers_stamm.table.json"
-        ],
-        "previousQueryResults": ["tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/query_results_1.csv"]
-    }
+	"type": "FORM_TEST",
+	"label": "ADD DEFAULT SELECT Test",
+	"expectedCsv": {
+		"results": "tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/expected.csv"
+	},
+	"form": {
+		"type": "EXPORT_FORM",
+		"queryGroup": "00000000-0000-0000-0000-000000000001",
+		"resolution": "QUARTERS",
+		"alsoCreateCoarserSubdivisions": true,
+		"features": [
+			{
+				"ids": [
+					"alter"
+				],
+				"type": "CONCEPT",
+				"tables": [
+					{
+						"id": "alter.alter",
+						"filters": []
+					}
+				]
+			}
+		],
+		"timeMode": {
+			"value": "ENTITY_DATE",
+			"dateRange": {
+				"min": "2012-03-01",
+				"max": "2020-12-17"
+			}
+		}
+	},
+	"concepts": [
+		"/tests/form/shared/alter.concept.json"
+	],
+	"content": {
+		"tables": [
+			"/tests/form/shared/vers_stamm.table.json"
+		],
+		"previousQueryResults": [
+			"tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/query_results_1.csv"
+		]
+	}
 }
