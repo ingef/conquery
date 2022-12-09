@@ -1,79 +1,79 @@
 {
-    "type": "FORM_TEST",
-    "label": "ADD DEFAULT SELECT Test",
-    "expectedCsv": {
-        "results": "tests/form/EXPORT_FORM/ENTITY_DATE/LOGICAL_WITH_EXCLUDE/expected.csv"
-    },
-    "form": {
-        "type": "EXPORT_FORM",
-        "queryGroup": "00000000-0000-0000-0000-000000000001",
-        "resolution": "QUARTERS",
-        "alsoCreateCoarserSubdivisions": true,
-        "timeMode": {
-            "value": "ENTITY_DATE",
-            "dateAggregationMode": "LOGICAL",
-            "features": [
-                {
-                    "ids": [
-                        "alter"
-                    ],
-                    "type": "CONCEPT",
-                    "tables": [
-                        {
-                            "id": "alter.alter",
-                            "filters": []
-                        }
-                    ]
-                }
-            ],
-            "dateRange": {
-                "min": "2012-03-01",
-                "max": "2020-12-17"
-            }
-        }
-    },
-    "concepts": [
-        "/tests/form/shared/alter.concept.json",
-        "/tests/form/shared/abc.concept.json"
-    ],
-    "content": {
-        "secondaryIds": [
-            "/tests/form/shared/secondary.sid.json"
-        ],
-        "tables": [
-            "/tests/form/shared/vers_stamm.table.json",
-            "/tests/form/shared/abc.table.json"
-        ],
-        "previousQueries": {
-            "type": "CONCEPT_QUERY",
-            "root": {
-              "type": "AND",
-              "children": [
-                {
-                  "type": "CONCEPT",
-                  "ids": [
-                    "abc-concept.a"
-                  ],
-                  "tables": [
-                    {
-                      "id": "abc-concept.connector"
-                    }
-                  ]
-                },
-                {
-                  "type": "CONCEPT",
-                  "excludeFromTimeAggregation": true,
-                  "ids": [
-                    "abc-concept.b"
-                  ],
-                  "tables": [
-                    {
-                      "id": "abc-concept.connector"
-                    }
-                  ]
-                }
-              ]
-            }
-          }
-    }
+	"type": "FORM_TEST",
+	"label": "ADD DEFAULT SELECT Test",
+	"expectedCsv": {
+		"results": "tests/form/EXPORT_FORM/ENTITY_DATE/LOGICAL_WITH_EXCLUDE/expected.csv"
+	},
+	"form": {
+		"type": "EXPORT_FORM",
+		"queryGroup": "00000000-0000-0000-0000-000000000001",
+		"resolution": "QUARTERS",
+		"alsoCreateCoarserSubdivisions": true,
+		"features": [
+			{
+				"ids": [
+					"alter"
+				],
+				"type": "CONCEPT",
+				"tables": [
+					{
+						"id": "alter.alter",
+						"filters": []
+					}
+				]
+			}
+		],
+		"timeMode": {
+			"value": "ENTITY_DATE",
+			"dateAggregationMode": "LOGICAL",
+			"dateRange": {
+				"min": "2012-03-01",
+				"max": "2020-12-17"
+			}
+		}
+	},
+	"concepts": [
+		"/tests/form/shared/alter.concept.json",
+		"/tests/form/shared/abc.concept.json"
+	],
+	"content": {
+		"secondaryIds": [
+			"/tests/form/shared/secondary.sid.json"
+		],
+		"tables": [
+			"/tests/form/shared/vers_stamm.table.json",
+			"/tests/form/shared/abc.table.json"
+		],
+		"previousQueries": {
+			"type": "CONCEPT_QUERY",
+			"root": {
+				"type": "AND",
+				"children": [
+					{
+						"type": "CONCEPT",
+						"ids": [
+							"abc-concept.a"
+						],
+						"tables": [
+							{
+								"id": "abc-concept.connector"
+							}
+						]
+					},
+					{
+						"type": "CONCEPT",
+						"excludeFromTimeAggregation": true,
+						"ids": [
+							"abc-concept.b"
+						],
+						"tables": [
+							{
+								"id": "abc-concept.connector"
+							}
+						]
+					}
+				]
+			}
+		}
+	}
 }
