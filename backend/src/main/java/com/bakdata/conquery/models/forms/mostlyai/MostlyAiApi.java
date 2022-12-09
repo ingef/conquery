@@ -67,8 +67,8 @@ public class MostlyAiApi {
 		final WebTarget jobTarget = base.path("/jobs");
 		final WebTarget catalogsTarget = base.path("/catalogs");
 
-		tableDetailsTarget = catalogsTarget.path("/catalogs/{" + CATALOG_ID + "}/table-details");
-		columnIncludeTarget = catalogsTarget.path("/catalogs/{" + CATALOG_ID + "}/tables/{" + TABLE_ID + "}/column/include");
+		tableDetailsTarget = catalogsTarget.path("/{" + CATALOG_ID + "}/table-details");
+		columnIncludeTarget = catalogsTarget.path("/{" + CATALOG_ID + "}/tables/{" + TABLE_ID + "}/column/include");
 
 		uploadTableTarget = jobTarget.path("/adhoc/upload");
 		startJobTarget = jobTarget.path("/catalog/{" + CATALOG_ID + "}");
@@ -132,12 +132,15 @@ public class MostlyAiApi {
 
 	public List<TableDetails> getTableDetails(UUID catalogId) {
 
-		log.debug("BEGIN fetching table details for catalog id '{}'", catalogId);
+		final WebTarget webTarget = tableDetailsTarget.resolveTemplate(CATALOG_ID, catalogId);
 
-		try (final Response response = tableDetailsTarget.resolveTemplate(CATALOG_ID, catalogId)
-														 .request(MediaType.APPLICATION_JSON)
-														 .header(HEADER_API_KEY, apiKey)
-														 .get()) {
+		log.debug("BEGIN fetching table details for catalog id '{}' from {}", catalogId, webTarget);
+
+		final Invocation invocation = webTarget.request(MediaType.APPLICATION_JSON)
+											   .header(HEADER_API_KEY, apiKey)
+											   .buildGet();
+
+		try (final Response response = invocation.invoke()) {
 			if (!response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
 				throw new RuntimeException("Fetching table details failed. Status: " + response.getStatusInfo().getStatusCode());
 			}
@@ -151,12 +154,15 @@ public class MostlyAiApi {
 
 	public void disableColumn(UUID catalogId, UUID tableId, UUID columnId) {
 
-		log.debug("BEGIN disabling column in catalog_id/table_id/column_id '{}/{}/{}'", catalogId, tableId, columnId);
+		final WebTarget webTarget = columnIncludeTarget.resolveTemplate(CATALOG_ID, catalogId).resolveTemplate(TABLE_ID, tableId);
+		log.debug("BEGIN disabling column in catalog_id/table_id/column_id '{}/{}/{}' on {}", catalogId, tableId, columnId, webTarget);
+
+		final Invocation.Builder requestBuilder = webTarget
+				.request(MediaType.APPLICATION_JSON)
+				.header(HEADER_API_KEY, apiKey);
 
 		final ColumnDetail columnDetail = new ColumnDetail(columnId, null, false);
-		final Invocation.Builder requestBuilder = columnIncludeTarget.resolveTemplate(CATALOG_ID, catalogId).resolveTemplate(TABLE_ID, tableId)
-																	 .request(MediaType.APPLICATION_JSON)
-																	 .header(HEADER_API_KEY, apiKey);
+
 		try (final Response response = requestBuilder.put(Entity.entity(columnDetail, MediaType.APPLICATION_JSON_TYPE))) {
 
 			if (!response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
@@ -168,7 +174,6 @@ public class MostlyAiApi {
 	}
 
 	public JobStatusResponse startJob(String jobName, UUID catalogId, Set<UUID> tableIds) {
-		log.debug("BEGIN job '{}' with on catalog '{}' and tables '{}'", jobName, catalogId, tableIds);
 
 		// For now: default settings for all tables
 		final Map<UUID, DataCatalogTableGeneralSettings>
@@ -177,9 +182,13 @@ public class MostlyAiApi {
 
 		final JobDescription jobDescription = new JobDescription(jobName, tableSettings);
 
-		final Invocation.Builder builder = startJobTarget.resolveTemplate(CATALOG_ID, catalogId)
-														 .request(MediaType.APPLICATION_JSON)
-														 .header(HEADER_API_KEY, apiKey);
+		final WebTarget webTarget = startJobTarget.resolveTemplate(CATALOG_ID, catalogId);
+
+		log.debug("BEGIN job '{}' with catalog '{}' and tables '{}' on {}", jobName, catalogId, tableIds, webTarget);
+
+		final Invocation.Builder builder = webTarget
+				.request(MediaType.APPLICATION_JSON)
+				.header(HEADER_API_KEY, apiKey);
 		try (Response response = builder.post(Entity.entity(jobDescription, MediaType.APPLICATION_JSON_TYPE))) {
 
 			if (!response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
@@ -194,10 +203,13 @@ public class MostlyAiApi {
 	}
 
 	public JobStatusResponse getJobStatus(UUID jobId) {
-		log.debug("BEGIN getting job status for {}", jobId);
-		final Invocation.Builder builder = jobStatusTarget.resolveTemplate(JOB_ID, jobId)
-														  .request(MediaType.APPLICATION_JSON)
-														  .header(HEADER_API_KEY, apiKey);
+		final WebTarget webTarget = jobStatusTarget.resolveTemplate(JOB_ID, jobId);
+
+		log.debug("BEGIN getting job status for {} from {}", jobId, webTarget);
+
+		final Invocation.Builder builder = webTarget
+				.request(MediaType.APPLICATION_JSON)
+				.header(HEADER_API_KEY, apiKey);
 		try (Response response = builder.get()) {
 
 			if (!response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
@@ -213,15 +225,19 @@ public class MostlyAiApi {
 	}
 
 	public void downloadSyntheticData(UUID jobId, Consumer<InputStream> inputStreamConsumer) {
+
 		log.debug("BEGIN downloading synthetic data for job '{}'", jobId);
-		final Invocation.Builder builder = downloadTokenTarget.resolveTemplate(JOB_ID, jobId)
-															  .request(MediaType.APPLICATION_JSON)
-															  .header(HEADER_API_KEY, apiKey);
+
+		final WebTarget webTarget = downloadTokenTarget.resolveTemplate(JOB_ID, jobId);
+		log.trace("Requesting download token from {}", webTarget);
+
+		final Invocation.Builder builder = webTarget
+				.request(MediaType.APPLICATION_JSON)
+				.header(HEADER_API_KEY, apiKey);
 
 		// Get download token
 		DownloadToken downloadToken;
 		try (Response response = builder.get()) {
-			log.debug("Requesting download token for result of job '{}'", jobId);
 
 			if (!response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
 				throw new RuntimeException("Download token retrieval failed for job '" + jobId + "'. Status: " + response.getStatusInfo().getStatusCode());
@@ -232,9 +248,12 @@ public class MostlyAiApi {
 			log.trace("Download token for job '{}': {}", jobId, downloadToken);
 		}
 
+		final WebTarget webTargetDownload = downloadDataTarget.resolveTemplate(JOB_ID, jobId)
+															  .resolveTemplate(TOKEN, downloadToken.token);
+		log.trace("Requesting download from {}", webTargetDownload);
 		final Invocation.Builder
-				request = downloadDataTarget.resolveTemplate(JOB_ID, jobId).resolveTemplate(TOKEN, downloadToken.token)
-											.request(new MediaType("application", "zip"));
+				request = webTargetDownload
+				.request(new MediaType("application", "zip"));
 
 
 		log.debug("Starting download for job '{}'", jobId);
