@@ -140,6 +140,7 @@ const FormConceptGroup = (props: Props) => {
     onDropFile,
     onAcceptConceptsOrFilter: onAcceptUploadModalConceptsOrFilter,
     onClose: onCloseUploadConceptListModal,
+    onImportLines,
   } = useUploadConceptListModal({
     value: props.value,
     newValue,
@@ -193,6 +194,9 @@ const FormConceptGroup = (props: Props) => {
         onDelete={(i) => props.onChange(removeValue(props.value, i))}
         onDropFile={(file) =>
           onDropFile(file, { valueIdx: props.value.length })
+        }
+        onImportLines={(lines) =>
+          onImportLines(lines, { valueIdx: props.value.length })
         }
         onDrop={(item: DragItemFile | DragItemConceptTreeNode) => {
           setScrollToDropzone(true);
@@ -304,8 +308,8 @@ const FormConceptGroup = (props: Props) => {
                 ) : (
                   <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <DragItemConceptTreeNode> */
                     acceptedDropTypes={DROP_TYPES}
-                    onSelectFile={(file) =>
-                      onDropFile(file, { valueIdx: i, conceptIdx: j })
+                    onImportLines={(lines) =>
+                      onImportLines(lines, { valueIdx: i, conceptIdx: j })
                     }
                     onDrop={(item: DragItemConceptTreeNode | DragItemFile) => {
                       if (item.type === "__NATIVE_FILE__") {

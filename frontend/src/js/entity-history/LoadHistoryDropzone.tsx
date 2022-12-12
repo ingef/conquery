@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -5,10 +6,15 @@ import { useDispatch } from "react-redux";
 import type { SelectOptionT } from "../api/types";
 import { parseCSV } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
-import Dropzone from "../ui-components/Dropzone";
-import { DragItemFile } from "../ui-components/DropzoneWithFileInput";
+import DropzoneWithFileInput, {
+  DragItemFile,
+} from "../ui-components/DropzoneWithFileInput";
 
 import type { EntityIdsStatus } from "./History";
+
+const ImportButtonSpacer = styled("div")`
+  height: 30px;
+`;
 
 const acceptedDropTypes = [NativeTypes.FILE];
 
@@ -33,15 +39,13 @@ export const LoadHistoryDropzone = ({
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const onDrop = async ({ files }: DragItemFile) => {
-    const file = files[0];
-    const { data } = await parseCSV(file, ";");
-
-    if (data.length === 0) {
-      dispatch(setMessage({ message: t("history.load.error") }));
-      return;
-    }
-
+  const loadHistory = ({
+    label,
+    data,
+  }: {
+    label: string;
+    data: string[][];
+  }) => {
     const loadedEntityIds = [];
     const loadedEntityStatus: EntityIdsStatus = {};
     const loadedEntityStatusOptionsRaw: string[] = [];
@@ -71,20 +75,46 @@ export const LoadHistoryDropzone = ({
     }
 
     onLoadFromFile({
-      label: file.name,
+      label,
       loadedEntityIds,
       loadedEntityStatus,
       loadedEntityStatusOptions,
     });
   };
 
+  const onDrop = async ({ files }: DragItemFile) => {
+    const file = files[0];
+    const { data } = await parseCSV(file, ";");
+
+    if (data.length === 0) {
+      dispatch(setMessage({ message: t("history.load.error") }));
+      return;
+    }
+
+    loadHistory({ label: file.name, data });
+  };
+
+  const onImportLines = (lines: string[]) => {
+    const data = lines.map((line) => line.split(";"));
+
+    loadHistory({ label: t("importModal.pasted"), data });
+  };
+
   return (
-    <Dropzone<DragItemFile>
+    <DropzoneWithFileInput
       className={className}
       acceptedDropTypes={acceptedDropTypes}
       onDrop={onDrop}
+      disableClick
+      showImportButton
+      onImportLines={onImportLines}
     >
-      {() => children}
-    </Dropzone>
+      {() => (
+        <>
+          <ImportButtonSpacer />
+          {children}
+        </>
+      )}
+    </DropzoneWithFileInput>
   );
 };
