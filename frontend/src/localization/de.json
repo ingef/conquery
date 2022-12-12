@@ -166,7 +166,8 @@
     "std": "Std.",
     "logout": "Ausloggen",
     "dateInvalid": "Ungültiges Datum",
-    "missingLabel": "Unbenannt"
+    "missingLabel": "Unbenannt",
+    "import": "Importieren"
   },
   "tooltip": {
     "headline": "Info",
@@ -205,7 +206,6 @@
   },
   "inputMultiSelect": {
     "dndPlaceholder": "Auswählen oder Datei hochladen ...",
-    "openFileDialog": "Datei auswählen",
     "insertAll": "Alle einfügen",
     "options_one": "1 Wert",
     "options_other": "{{count}} Werte",
@@ -488,5 +488,12 @@
     "load": {
       "error": "Konnte Historie für diese Datei nicht laden."
     }
+  },
+  "importModal": {
+    "headline": "Zeilenweise Importieren",
+    "subtitle": "Alternativ zu Drag & Drop können zeilenweise Werte importiert werden, zum Beispiel aus der Zwischenablage.",
+    "paste": "Aus Zwischenablage einfügen",
+    "submit": "Übernehmen",
+    "pasted": "Importiert"
   }
 }

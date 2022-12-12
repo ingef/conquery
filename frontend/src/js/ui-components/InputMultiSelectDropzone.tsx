@@ -66,7 +66,7 @@ const InputMultiSelectDropzone: FC<PropsT> = ({
       </SxDropzone>
       <SxSelectFileButton bare disabled={disabled} onClick={onOpenFileDialog}>
         <SxFaIcon icon="file" regular gray />
-        {t("inputMultiSelect.openFileDialog")}
+        {t("common.import")}
         <FileInput
           ref={fileInputRef}
           type="file"

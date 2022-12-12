@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { SelectOptionT } from "../../api/types";
@@ -35,6 +36,7 @@ export const useUploadConceptListModal = ({
   defaults: ConceptListDefaultsType;
   isValidConcept?: (concept: DragItemConceptTreeNode) => boolean;
 }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const rootConcepts = useSelector<StateT, TreesT>(
     (state) => state.conceptTrees.trees,
@@ -65,6 +67,21 @@ export const useUploadConceptListModal = ({
     // Wait for file processing before opening the modal
     // => See QueryUploadConceptListModal actions
     await initModal(file);
+
+    setIsOpen(true); // For the Modal "container"
+  };
+
+  const onImportLines = (
+    lines: string[],
+    { valueIdx, conceptIdx }: UploadConceptListModalContext,
+  ) => {
+    setModalContext({ valueIdx, conceptIdx });
+    dispatch(
+      initUploadConceptListModal({
+        rows: lines,
+        filename: t("importModal.pasted"),
+      }),
+    );
 
     setIsOpen(true); // For the Modal "container"
   };
@@ -107,6 +124,7 @@ export const useUploadConceptListModal = ({
     isOpen,
     onClose,
     onDropFile,
+    onImportLines,
     onAcceptConceptsOrFilter,
   };
 };
