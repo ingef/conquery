@@ -7,26 +7,24 @@ import { DNDType } from "../common/constants/dndTypes";
 interface PropsT {
   triggerNavigate: () => void;
   children: ReactNode;
+  className?: string;
 }
 
 const Root = styled("div")<{
   isOver?: boolean;
 }>`
-  border: ${({ theme, isOver }) =>
-    isOver ? `1px solid ${theme.col.grayMediumLight}` : "none"};
+  background-color: ${({ theme, isOver }) =>
+    isOver ? `${theme.col.grayVeryLight}` : "inherit"};
   position: relative;
   display: inline-flex;
-  color: ${({ theme, isOver }) =>
-    isOver ? theme.col.red : isOver ? theme.col.black : theme.col.gray};
 `;
 
 // default time until the hover triggers navigation
-// 600 ms is the default time for a tooltip to appear
+// 600 ms is the time for the action to be triggered
 // feels very responsive
-// can be overriden by passing a timeUntilNavigateOverride prop
 const TIME_UNTIL_NAVIGATE = 600;
 
-export const HoverNavigatable = ({ triggerNavigate, children }: PropsT) => {
+export const HoverNavigatable = ({ triggerNavigate, children, className }: PropsT) => {
   // Type Number is in Browser, however local typescript does not recognize it
   let [timeout, setTimeoutVariable] = useState<null | NodeJS.Timeout>(null);
   const [{ isOver }, drop] = useDrop({
@@ -53,13 +51,8 @@ export const HoverNavigatable = ({ triggerNavigate, children }: PropsT) => {
     }),
   });
   return (
-    <Root ref={drop} isOver={isOver}>
+    <Root ref={drop} isOver={isOver} className={className}>
       {children}
     </Root>
   );
 };
-
-export const FlexHoverNavigatable = styled(HoverNavigatable)`
-  flex: flex;
-  display: flex;
-`;

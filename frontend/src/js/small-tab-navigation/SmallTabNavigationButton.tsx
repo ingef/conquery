@@ -11,7 +11,7 @@ const bottomBorderBase = css`
   height: 3px;
   bottom: 0px;
 `;
-const Button = styled("button") <{
+const Button = styled("button")<{
   selected?: boolean;
   highlightColor: string;
   size?: "M" | "L";
@@ -77,8 +77,7 @@ const SmallTabNavigationButton = forwardRef<HTMLButtonElement, PropsT>(
     const highlightColor = valueToColor(theme, value);
 
     return (
-      <HoverNavigatable triggerNavigate={onClick}
-      >
+      <HoverNavigatable triggerNavigate={onClick}>
         <Button
           ref={ref}
           highlightColor={highlightColor}

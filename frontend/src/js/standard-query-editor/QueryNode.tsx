@@ -14,7 +14,7 @@ import {
   nodeIsConceptQueryNode,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
-import { FlexHoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
+import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 import QueryNodeActions from "./QueryNodeActions";
@@ -22,13 +22,18 @@ import QueryNodeContent from "./QueryNodeContent";
 import { getRootNodeLabel } from "./helper";
 import { StandardQueryNodeT } from "./types";
 
+const FlexHoverNavigatable = styled(HoverNavigatable)`
+  display: flex;
+  width: 100%;
+`;
+
+
 const Root = styled("div")<{
   active?: boolean;
 }>`
   position: relative;
   width: 100%;
   margin: 0 auto;
-  background-color: white;
   display: grid;
   grid-template-columns: 1fr auto;
 
@@ -128,42 +133,42 @@ const QueryNode = ({
 
     ...(nodeIsConceptQueryNode(node)
       ? {
-          ids: node.ids,
-          type: node.type,
-          description: node.description,
-          tree: node.tree,
-          tables: node.tables,
-          selects: node.selects,
+        ids: node.ids,
+        type: node.type,
+        description: node.description,
+        tree: node.tree,
+        tables: node.tables,
+        selects: node.selects,
 
-          additionalInfos: node.additionalInfos,
-          matchingEntries: node.matchingEntries,
-          matchingEntities: node.matchingEntities,
-          dateRange: node.dateRange,
-        }
+        additionalInfos: node.additionalInfos,
+        matchingEntries: node.matchingEntries,
+        matchingEntities: node.matchingEntities,
+        dateRange: node.dateRange,
+      }
       : {
-          id: node.id,
-          type: node.type,
-          query: node.query,
-          tags: node.tags,
-        }),
+        id: node.id,
+        type: node.type,
+        query: node.query,
+        tags: node.tags,
+      }),
   };
   const [, drag] = useDrag<StandardQueryNodeT, void, {}>({
     type: item.type,
     item: () =>
-      ({
-        ...item,
-        dragContext: {
-          ...item.dragContext,
-          ...getWidthAndHeight(ref),
-        },
-      } as StandardQueryNodeT),
+    ({
+      ...item,
+      dragContext: {
+        ...item.dragContext,
+        ...getWidthAndHeight(ref),
+      },
+    } as StandardQueryNodeT),
   });
 
   const tooltipText = hasNonDefaultSettings
     ? t("queryEditor.hasNonDefaultSettings")
     : hasFilterValues
-    ? t("queryEditor.hasDefaultSettings")
-    : undefined;
+      ? t("queryEditor.hasDefaultSettings")
+      : undefined;
 
   const expandClick = useCallback(() => {
     if (nodeIsConceptQueryNode(node) || !node.query) return;
@@ -171,7 +176,7 @@ const QueryNode = ({
     onExpandClick(node.query);
   }, [onExpandClick, node]);
 
-  const onClick = !!node.error ? () => {} : () => onEditClick(andIdx, orIdx);
+  const onClick = !!node.error ? () => { } : () => onEditClick(andIdx, orIdx);
 
   const label = nodeIsConceptQueryNode(node)
     ? node.label
@@ -183,15 +188,15 @@ const QueryNode = ({
       : undefined;
 
   const QueryNodeRoot = (
-    <Root
-      ref={(instance) => {
-        ref.current = instance;
-        drag(instance);
-      }}
-      active={hasNonDefaultSettings || hasFilterValues}
-      onClick={node.error ? undefined : () => onEditClick(andIdx, orIdx)}
-    >
-      <FlexHoverNavigatable triggerNavigate={onClick}>
+    <FlexHoverNavigatable triggerNavigate={onClick}>
+      <Root
+        ref={(instance) => {
+          ref.current = instance;
+          drag(instance);
+        }}
+        active={hasNonDefaultSettings || hasFilterValues}
+        onClick={node.error ? undefined : () => onEditClick(andIdx, orIdx)}
+      >
         <QueryNodeContent
           error={node.error}
           isConceptQueryNode={nodeIsConceptQueryNode(node)}
@@ -214,8 +219,8 @@ const QueryNode = ({
           previousQueryLoading={node.loading}
           error={node.error}
         />
-      </FlexHoverNavigatable>
-    </Root>
+      </Root>
+    </FlexHoverNavigatable>
   );
 
   if (nodeIsConceptQueryNode(node)) {
