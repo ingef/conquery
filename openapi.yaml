@@ -71,7 +71,6 @@ components:
             type: string
         resolvedFilter:
           $ref: "#/components/schemas/resolved-filter-result"
-      
     mail:
       type: string
       format: mail
@@ -195,7 +194,7 @@ security:
   - Bearer: []
 
 servers:
-  - url: http://lyo-peva02:8080/api
+  - url: http://localhost:8080/api
 paths:
   /frontend/config:
     get:
@@ -259,7 +258,3 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/resolved-concepts-result"
-                
-
- 
-            
