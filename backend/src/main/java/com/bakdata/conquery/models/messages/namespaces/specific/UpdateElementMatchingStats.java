@@ -18,8 +18,10 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@CPSType(id="UPDATE_METADATA", base=NamespacedMessage.class)
-@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @ToString
+@CPSType(id = "UPDATE_METADATA", base = NamespacedMessage.class)
+@AllArgsConstructor(onConstructor_ = @JsonCreator)
+@Getter
+@ToString
 public class UpdateElementMatchingStats extends NamespaceMessage {
 	private final WorkerId source;
 
@@ -29,22 +31,22 @@ public class UpdateElementMatchingStats extends NamespaceMessage {
 
 	@Override
 	public void react(Namespace context) throws Exception {
-		for(Entry<ConceptElement<?>, MatchingStats.Entry> entry : values.entrySet()) {
+		for (Entry<ConceptElement<?>, MatchingStats.Entry> entry : values.entrySet()) {
 			try {
-				ConceptElement<?> target = entry.getKey();
-				MatchingStats.Entry value = entry.getValue();
+				final ConceptElement<?> target = entry.getKey();
+				final MatchingStats.Entry value = entry.getValue();
 
-				 MatchingStats matchingStats = target.getMatchingStats();
+				MatchingStats matchingStats = target.getMatchingStats();
 				if (matchingStats == null) {
 					matchingStats = new MatchingStats();
 					target.setMatchingStats(matchingStats);
 				}
 				matchingStats.putEntry(source, value);
 			}
-			catch(Exception e) {
+			catch (Exception e) {
 				log.error("Failed to set matching stats for '{}'", entry.getKey());
 			}
 		}
 	}
-	
+
 }

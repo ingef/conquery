@@ -66,7 +66,7 @@ public class AdminDatasetResource {
 
 	@PostConstruct
 	public void init() {
-		this.namespace = processor.getDatasetRegistry().get(dataset.getId());
+		namespace = processor.getDatasetRegistry().get(dataset.getId());
 	}
 
 	@GET
@@ -86,7 +86,7 @@ public class AdminDatasetResource {
 	@POST
 	@Path("label")
 	public void setLabel(String label) {
-		Dataset ds = namespace.getDataset();
+		final Dataset ds = namespace.getDataset();
 		ds.setLabel(label);
 		namespace.getStorage().updateDataset(ds);
 	}
@@ -94,7 +94,7 @@ public class AdminDatasetResource {
 	@POST
 	@Path("weight")
 	public void setWeight(@Min(0) int weight) {
-		Dataset ds = namespace.getDataset();
+		final Dataset ds = namespace.getDataset();
 		ds.setWeight(weight);
 		namespace.getStorage().updateDataset(ds);
 	}

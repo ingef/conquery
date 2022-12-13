@@ -24,8 +24,7 @@ export const Headline = styled("h3")<{ size?: "h1" | "h2" | "h3" }>`
       : theme.font.md};
   color: ${({ theme }) => theme.col.black};
   margin-top: ${({ size }) =>
-    size === "h3" ? "14px" : size === "h2" ? "16px" : "20px"};
+    size === "h3" ? "12px" : size === "h2" ? "14px" : "18px"};
   margin-bottom: 5px;
   font-weight: 700;
-  text-transform: ${({ size }) => (size === "h3" ? "uppercase" : "none")};
 `;

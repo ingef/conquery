@@ -271,6 +271,8 @@ public class AdminDatasetProcessor {
 
 		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, false);
 		namespace.getJobManager().addSlowJob(job);
+
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), job.getTable());
 	}
 
 	/**
@@ -280,7 +282,10 @@ public class AdminDatasetProcessor {
 	public void updateImport(Namespace namespace, InputStream inputStream) throws IOException {
 
 		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, true);
+
 		namespace.getJobManager().addSlowJob(job);
+
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), job.getTable());
 	}
 
 	/**
@@ -289,11 +294,26 @@ public class AdminDatasetProcessor {
 	public synchronized void deleteImport(Import imp) {
 		final Namespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
 
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), imp.getTable());
+
+
 		namespace.getStorage().removeImport(imp.getId());
 		namespace.sendToAll(new RemoveImportJob(imp));
 
 		// Remove bucket assignments for consistency report
 		namespace.removeBucketAssignmentsForImportFormWorkers(imp);
+	}
+
+	private void clearDependentConcepts(Collection<Concept<?>> allConcepts, Table table) {
+		for (Concept<?> c : allConcepts) {
+			for (Connector con : c.getConnectors()) {
+				if (!con.getTable().equals(table)) {
+					continue;
+				}
+
+				con.getConcept().clearMatchingStats();
+			}
+		}
 	}
 
 	/**
@@ -346,7 +366,12 @@ public class AdminDatasetProcessor {
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
 
-					ns.sendToAll(new UpdateMatchingStatsMessage());
+					final Collection<Concept<?>> concepts = ns.getStorage().getAllConcepts()
+															  .stream()
+															  .filter(concept -> concept.getMatchingStats() == null)
+															  .collect(Collectors.toSet());
+
+					ns.sendToAll(new UpdateMatchingStatsMessage(concepts));
 					ns.getFilterSearch().updateSearch();
 					ns.updateInternToExternMappings();
 				}
@@ -375,8 +400,8 @@ public class AdminDatasetProcessor {
 	public List<ConceptId> deleteInternToExternMapping(InternToExternMapper internToExternMapper, boolean force) {
 		final Namespace namespace = datasetRegistry.get(internToExternMapper.getDataset().getId());
 
-		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
-															.filter(
+		final Set<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
+														   .filter(
 																	c -> c.getSelects().stream()
 																		  .filter(MappableSingleColumnSelect.class::isInstance)
 
@@ -384,7 +409,7 @@ public class AdminDatasetProcessor {
 																		  .map(MappableSingleColumnSelect::getMapping)
 																		  .anyMatch(internToExternMapper::equals)
 															)
-															.collect(Collectors.toList());
+														   .collect(Collectors.toSet());
 
 		if (force || dependentConcepts.isEmpty()) {
 			for (Concept<?> concept : dependentConcepts) {
@@ -428,7 +453,7 @@ public class AdminDatasetProcessor {
 																		  .filter(Objects::nonNull)
 																		  .anyMatch(searchIndex::equals)
 															)
-															.collect(Collectors.toList());
+															.toList();
 
 		if (force || dependentConcepts.isEmpty()) {
 			for (Concept<?> concept : dependentConcepts) {

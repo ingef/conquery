@@ -32,7 +32,7 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 		test.importRequiredData(conquery);
 		
 		//ensure the metadata is collected
-		conquery.getNamespace().sendToAll(new UpdateMatchingStatsMessage());
+		conquery.getNamespace().sendToAll(new UpdateMatchingStatsMessage(conquery.getNamespace().getStorage().getAllConcepts()));
 
 		conquery.waitUntilWorkDone();
 		
