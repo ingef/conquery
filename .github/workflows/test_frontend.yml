@@ -24,6 +24,12 @@ jobs:
       - name: setup env variables
         working-directory: ./frontend
         run: cp .env.example .env
+      - name: lint
+        working-directory: ./frontend
+        run: yarn lint
+      - name: lint
+        working-directory: ./frontend
+        run: yarn checkformat
       - name: test
         working-directory: ./frontend
         run: yarn test

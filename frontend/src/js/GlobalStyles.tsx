@@ -1,5 +1,6 @@
 import type { Theme } from "@emotion/react";
 import { css, Global, useTheme } from "@emotion/react";
+
 import { tippyjsReactOverrides } from "./tooltip/WithTooltip";
 
 const globalStyles = (theme: Theme) => css`
