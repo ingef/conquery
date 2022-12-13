@@ -5,83 +5,83 @@
     "clazz": "ConfigResource"
   },
   {
-      "method": "GET",
-      "path": "/me",
-      "clazz": "MeResource"
+    "method": "GET",
+    "path": "/me",
+    "clazz": "MeResource"
   },
-    {
-        "method": "POST",
-        "path": "/datasets/{dataset}/queries",
-        "clazz": "QueryResource"
-    },
-    {
-        "method": "GET",
-        "path": "/datasets/{dataset}/entity-preview",
-        "clazz": "DatasetResource"
-    },
-    {
-        "method": "POST",
-        "path": "/datasets/{dataset}/queries/entity",
-        "clazz": "QueryResource"
-    },
-    {
-        "method": "POST",
-        "path": "/datasets/{dataset}/queries/upload",
-        "clazz": "QueryResource"
-    },
-    {
-        "method": "GET",
-        "path": "/datasets/{dataset}/queries/{query}",
-        "clazz": "QueryResource"
-    },
-    {
+  {
     "method": "POST",
-    "path": "/datasets/{dataset}/queries/{query}/cancel",
+    "path": "/datasets/{dataset}/queries",
+    "clazz": "DatasetQueryResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/entity-preview",
+    "clazz": "DatasetResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/queries/entity",
+    "clazz": "DatasetQueryResource"
+  },
+  {
+    "method": "POST",
+    "path": "/datasets/{dataset}/queries/upload",
+    "clazz": "DatasetQueryResource"
+  },
+  {
+    "method": "GET",
+    "path": "/queries/{query}",
     "clazz": "QueryResource"
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/queries/{query}/reexecute",
+    "path": "/queries/{query}/cancel",
+    "clazz": "QueryResource"
+  },
+  {
+    "method": "POST",
+    "path": "/queries/{query}/reexecute",
     "clazz": "QueryResource"
   },
   {
     "method": "GET",
-    "path": "/datasets/{dataset}/result/{query}.csv",
+    "path": "/result/{query}.csv",
     "clazz": "ResultCsvResource"
   },
   {
     "method": "GET",
-    "path": "/datasets/{dataset}/result/{query}.xlsx",
+    "path": "/result/{query}.xlsx",
     "clazz": "ResultExcelResource"
   },
   {
     "method": "GET",
-    "path": "/datasets/{dataset}/result/{query}.arrs",
+    "path": "/result/{query}.arrs",
     "clazz": "ResultArrowResource"
   },
   {
     "method": "GET",
-    "path": "/datasets/{dataset}/result/{query}.arrf",
+    "path": "/result/{query}.arrf",
     "clazz": "ResultArrowResource"
   },
   {
     "method": "GET",
-    "path": "/datasets/{dataset}/result/{query}.parquet",
+    "path": "/result/{query}.parquet",
     "clazz": "ResultParquetResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}/queries",
-    "clazz": "QueryResource"
+    "clazz": "DatasetQueryResource"
   },
   {
     "method": "PATCH",
-    "path": "/datasets/{dataset}/queries/{query}",
+    "path": "/queries/{query}",
     "clazz": "QueryResource"
   },
   {
     "method": "DELETE",
-    "path": "/datasets/{dataset}/queries/{query}",
+    "path": "/queries/{query}",
     "clazz": "QueryResource"
   },
   {
@@ -91,12 +91,12 @@
   },
   {
     "method": "GET",
-    "path": "/datasets/{dataset}/concepts/{concept}",
+    "path": "/concepts/{concept}",
     "clazz": "ConceptResource"
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/concepts/{concept}/resolve",
+    "path": "/concepts/{concept}/resolve",
     "clazz": "ConceptResource"
   },
   {
@@ -106,42 +106,42 @@
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/concepts/{concept}/tables/{table}/filters/{filter}/resolve",
+    "path": "/filters/{filter}/resolve",
     "clazz": "FilterResource"
   },
   {
     "method": "POST",
-    "path": "/datasets/{dataset}/concepts/{concept}/tables/{table}/filters/{filter}/autocomplete",
+    "path": "/filters/{filter}/autocomplete",
     "clazz": "FilterResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}/form-queries",
-    "clazz": "FormResource"
+    "clazz": "DatasetFormResource"
   },
   {
     "method": "POST",
     "path": "/datasets/{dataset}/form-configs",
-    "clazz": "FormConfigResource"
+    "clazz": "DatasetFormConfigResource"
   },
   {
     "method": "GET",
     "path": "/datasets/{dataset}/form-configs",
-    "clazz": "FormConfigResource"
+    "clazz": "DatasetFormConfigResource"
   },
   {
     "method": "GET",
-    "path": "/datasets/{dataset}/form-configs/{form-config}",
+    "path": "/form-configs/{form-config}",
     "clazz": "FormConfigResource"
   },
   {
     "method": "DELETE",
-    "path": "/datasets/{dataset}/form-configs/{form-config}",
+    "path": "/form-configs/{form-config}",
     "clazz": "FormConfigResource"
   },
   {
     "method": "PATCH",
-    "path": "/datasets/{dataset}/form-configs/{form-config}",
+    "path": "/form-configs/{form-config}",
     "clazz": "FormConfigResource"
   }
 ]

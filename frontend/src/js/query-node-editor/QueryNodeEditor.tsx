@@ -5,7 +5,6 @@ import { useHotkeys } from "react-hotkeys-hook";
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
   ConceptIdT,
-  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
@@ -88,7 +87,6 @@ export interface QueryNodeEditorPropsT {
   name: string;
   node: StandardQueryNodeT;
   showTables: boolean;
-  datasetId: DatasetT["id"];
   allowlistedTables?: string[];
   blocklistedTables?: string[];
   allowlistedSelects?: SelectorResultType[];
@@ -208,7 +206,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             />
             <ContentColumn
               node={node}
-              datasetId={props.datasetId}
               selectedTableIdx={selectedTableIdx}
               allowlistedSelects={props.allowlistedSelects}
               blocklistedSelects={props.blocklistedSelects}
