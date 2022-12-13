@@ -40,8 +40,6 @@ components:
       $ref: "#/components/schemas/id"
     filterId:
       $ref: "#/components/schemas/id"
-    datasetId:
-      $ref: "#/components/schemas/id"
     selectId:
       $ref: "#/components/schemas/id"
     conceptId:
