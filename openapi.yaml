@@ -1,12 +1,11 @@
-openapi: 3.1.0
+openapi: 3.0.0
 info:
   version: 1.0.0
   title: Conquery API
   description: Conquery API
   license:
-    identifier: TODO
     name: TODO
-    url: http://TODO/
+    url: http://TODO/  
 components:
 
   securitySchemes:
@@ -24,6 +23,18 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/datasetId"
+    query:
+      in: path
+      name: query
+      required: true
+      schema:
+        $ref: "#/components/schemas/executionId"
+    concept:
+      in: path
+      name: concept
+      required: true
+      schema:
+        $ref: "#/components/schemas/conceptId"
   responses:
     unauthorized:
       content:
@@ -56,7 +67,7 @@ components:
       $ref: "#/components/schemas/id"
     dateTime: #TODO
       type: string
-      format: date-time
+      # format: date-time TODO not compatible: Value does not conform to the required ISO-8601 datetime format. Invalid value '2022-12-13T13:33:32.455901838Z' for type datetime at
     date: #TODO
       type: string
       format: date
@@ -67,7 +78,10 @@ components:
         - RUNNING
         - FAILED
         - DONE
-
+    fe-dataset-ids:
+      type: array
+      items:
+        $ref: "#/components/schemas/fe-dataset-id"
     fe-dataset-id:
       type: object
       properties:
@@ -75,7 +89,6 @@ components:
           $ref: "#/components/schemas/datasetId"
         label:
           type: string
-
 
     feValue:
       type: object
@@ -89,7 +102,7 @@ components:
       required:
         - "value"
     resolved-filter-result:
-      type: [object, null]
+      type: object
       properties:
         tableId:
           $ref: "#/components/schemas/tableId"
@@ -246,12 +259,12 @@ components:
           uniqueItems: true
         createdAt:
           $ref: "#/components/schemas/dateTime"
-        lastUsed::
-          $ref: "#/components/schemas/dateTime"
+        lastUsed:
+          oneOf:
+            - $ref: "#/components/schemas/dateTime"
+            - type: 'null'
         owner:
           $ref: "#/components/schemas/userId"
-
-
         ownerName:
           type: string
         shared:
@@ -267,15 +280,21 @@ components:
         numberOfResults:
           type: integer
         requiredTime:
-          type: integer
+          oneOf:
+            - type: integer
+            - type: 'null'
         startTime:
-          $ref: "#/components/schemas/dateTime"
+          oneOf:
+            - $ref: "#/components/schemas/dateTime"
+            - type: 'null'
         finishTime:
           $ref: "#/components/schemas/dateTime"
         queryType:
           type: string # TODO use discriminator from Query
         secondaryId:
-          $ref: "#/components/schemas/secondaryIdId"
+          oneOf:
+            - $ref: "#/components/schemas/secondaryIdId"
+            - type: 'null'
         resultUrls:
           type: array
           items:
@@ -303,91 +322,115 @@ components:
             - STRING
             - INTEGER
             - BOOLEAN
-            - REAL
-            - DECIMAL
+            - NUMERIC
             - MONEY
             - DATE
             - DATE_RANGE
         - type: string
-          format: "LIST[.*]"
+          pattern: "LIST\\[.*\\]"
 
     semantic-event-date: #TODO descriptions for all
-      type: object
-    semantic-sources:
-      type: object
-    semantic-categorical:
-      type: object
-    semantic-group:
-      type: object
-    semantic-hidden:
-      type: object
-    semantic-select:
-      type: object
       properties:
-        select:
-          $ref: "#/components/schemas/selectId"
-    semantic-concept-column:
-      type: object
-      properties:
-        concept:
-          $ref: "#/components/schemas/conceptId"
-    semantic-column:
-      type: object
-      properties:
-        concept:
-          $ref: "#/components/schemas/columnId"
-
-    semantic-id:
-      type: object
-      properties:
-        kind:
-          type: string
-
-    semantic-secondaryId:
-      type: object
-      properties:
-        secondaryId:
-          $ref: "#/components/schemas/secondaryIdId"
-
-    semantics:
-      type: object
-      discriminator:
-        propertyName: type
-        mapping:
-          EVENT_DATE: "#/components/schemas/semantic-event-date"
-          SOURCES: "#/components/schemas/semantic-sources"
-          CATEGORICAL: "#/components/schemas/semantic-categorical"
-          GROUP: "#/components/schemas/semantic-group"
-          HIDDEN: "#/components/schemas/semantic-hidden"
-          SELECT: "#/components/schemas/semantic-select"
-          CONCEPT_COLUMN: "#/components/schemas/semantic-concept-column"
-          COLUMN: "#/components/schemas/semantic-column"
-      allOf:
-        - type: object
-          properties:
             type:
               type: string
+      required:
+        - "type"
+    semantic-sources:
+      properties:
+        type:
+          type: string
+      required:
+        - "type"
+    semantic-categorical:
+      properties:
+        type:
+          type: string
+      required:
+        - "type"
+    semantic-group:
+      properties:
+          type:
+            type: string
+      required:
+          - "type"
+    semantic-hidden:
+      properties:
+          type:
+            type: string
+      required:
+        - "type"
+    semantic-select:
+      properties:
+          type:
+            type: string
+          select:
+            $ref: "#/components/schemas/selectId"
+      required:
+        - "type"
+    semantic-concept-column:
+      properties:
+          type:
+            type: string
+          concept:
+            $ref: "#/components/schemas/conceptId"
+      required:
+        - "type"
+    semantic-column:
+      properties:
+        type:
+          type: string
+        column:
+          $ref: "#/components/schemas/columnId"
+      required:
+        - "type"
+            
+    semantic-id:
+      properties:
+        type:
+          type: string
+        kind:
+          type: string
+      required:
+        - "type"
+            
+    
+    semantic-secondaryId:
+      properties:
+        type:
+          type: string
+        secondaryId:
+          $ref: "#/components/schemas/secondaryIdId"
+      required:
+        - "type"
+    semantics:
+      # NOTE: Documentation asks us to provide both mapping and oneOf, that does seem to be wrong and cannot be deserialized.
+      discriminator:
+        propertyName: "type"
+        mapping:
+          "CATEGORICAL": "#/components/schemas/semantic-categorical"
+          "COLUMN": "#/components/schemas/semantic-column"
+          "CONCEPT_COLUMN": "#/components/schemas/semantic-concept-column"
+          "EVENT_DATE": "#/components/schemas/semantic-event-date"
+          "GROUP": "#/components/schemas/semantic-group"
+          "HIDDEN": "#/components/schemas/semantic-hidden"
+          "ID": "#/components/schemas/semantic-id"
+          "SELECT": "#/components/schemas/semantic-select"
+          "SOURCES": "#/components/schemas/semantic-sources"
+      
+
+    nullable-string:
       oneOf:
-        - $ref: "#/components/schemas/semantic-event-date"
-        - $ref: "#/components/schemas/semantic-sources"
-        - $ref: "#/components/schemas/semantic-categorical"
-        - $ref: "#/components/schemas/semantic-group"
-        - $ref: "#/components/schemas/semantic-hidden"
-        - $ref: "#/components/schemas/semantic-select"
-        - $ref: "#/components/schemas/semantic-concept-column"
-        - $ref: "#/components/schemas/semantic-column"
-
-
-
+        - type: 'null'
+        - type: string
     column-description:
       type: object
       properties:
         label:
           type: string
         description:
-          type: string
+          $ref: "#/components/schemas/nullable-string"
         defaultLabel:
-          type: string
+          $ref: "#/components/schemas/nullable-string"
         type:
           $ref: "#/components/schemas/column-type"
         semantics:
@@ -404,6 +447,7 @@ components:
           $ref: "#/components/schemas/date"
     query:
       type: object
+      additionalProperties: true
       #TODO but in separate file
     error-info:
       readOnly: true
@@ -440,7 +484,21 @@ components:
                 type: string
               label:
                 type: string
-
+    entity-history-execution-status-info:
+      type: object
+      properties:
+        label:
+          type: string
+        description:
+          type: string
+        typeInfo:
+          type: string
+        value:
+          type: string
+        semantics:
+          type: array
+          items:
+            $ref: "#/components/schemas/semantics"
     entity-history-execution-status:
       allOf:
         - $ref: "#/components/schemas/full-execution-status"
@@ -449,31 +507,18 @@ components:
             infos:
               type: array
               items:
-                type: object
-                properties:
-                  label:
-                    type: string
-                  description:
-                    type: string
-                  typeInfo:
-                    type: string
-                  value:
-                    type: string
-                  semantics:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/semantics"
-
-
+                $ref: "#/components/schemas/entity-history-execution-status-info"
     full-execution-status:
       allOf:
         - $ref: "#/components/schemas/query-status"
         - type: object
           properties:
             progress:
-              type: number
-              minimum: 0
-              maximum: 1
+              oneOf:
+                - type: number
+                  minimum: 0
+                  maximum: 1
+                - type: 'null'
             columnDescriptions:
               type: array
               items:
@@ -483,15 +528,13 @@ components:
             query:
               $ref: "#/components/schemas/query" #TODO
             error:
-              $ref: "#/components/schemas/error-info"
+              oneOf:
+                - $ref: "#/components/schemas/error-info"
+                - type: 'null'
             availableSecondaryIds:
               type: array
               items:
-                $ref: "#/components/schemas/secondaryId"
-security:
-  - BasicAuth: []
-  - Bearer: []
-
+                $ref: "#/components/schemas/secondaryIdId"
 servers:
   - url: http://localhost:8080/api
 paths:
@@ -545,18 +588,10 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/fe-dataset-id"
-  /datasets/{dataset}/concepts/{concept}/resolve/:
-    parameters:
-        - $ref: "#/components/parameters/dataset"
-        - in: path
-          name: concept
-          required: true
-          schema:
-            $ref: "#/components/schemas/conceptId"
-
+                $ref: "#/components/schemas/fe-dataset-ids"
+                
+                  
+  /concepts/{concept}/resolve/:
     post:
       parameters:
         - in: path
@@ -595,10 +630,10 @@ paths:
     parameters:
       - $ref: "#/components/parameters/dataset"
     get:
-      operationId: get-query-status
+      operationId: list-queries
       summary: Get Status and metadata of Queries
       responses:
-        '400':
+        '200':
           description: The Status and Metadata.
           content:
             application/json:
@@ -615,16 +650,15 @@ paths:
             schema:
               $ref: "#/components/schemas/query"
       responses:
-        '400':
+        '200':
           description: Status of the submitted query.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/full-execution-status"
 
-  /datasets/{dataset}/queries/{query}:
+  /queries/{query}:
     parameters:
-      - $ref: "#/components/parameters/dataset"
       - in: path
         name: query
         required: true
@@ -635,10 +669,10 @@ paths:
       operationId: get-query-status
       summary: Get Status and metadata of Query
       responses:
-        '400':
+        '200':
           description: The Status and Metadata.
           content:
-            application/json:
+            application/json;charset=utf-8:
               schema:
                 $ref: "#/components/schemas/full-execution-status"
     patch:
@@ -662,13 +696,8 @@ paths:
       responses:
         '200':
           description: Query was deleted.
-  /datasets/{dataset}/queries/{query}/cancel:
+  /queries/{query}/cancel:
     parameters:
-      - in: path
-        name: dataset
-        required: true
-        schema:
-          $ref: "#/components/schemas/datasetId"
       - in: path
         name: query
         required: true
@@ -679,9 +708,8 @@ paths:
       responses:
         '200':
           description: Query was cancelled.
-  /datasets/{dataset}/queries/{query}/reexecute:
+  /queries/{query}/reexecute:
     parameters:
-      - $ref: "#/components/parameters/dataset"
       - in: path
         name: query
         required: true
