@@ -49,7 +49,7 @@ const Root = styled("div")<{
 interface PropsT {
   node: StandardQueryNodeT;
   andIdx: number;
-    orIdx: number;
+  orIdx: number;
   onDeleteNode: (andIdx: number, orIdx: number) => void;
   onEditClick: (andIdx: number, orIdx: number) => void;
   onExpandClick: (q: QueryT) => void;
