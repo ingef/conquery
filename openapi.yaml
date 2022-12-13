@@ -7,6 +7,7 @@ info:
     name: TODO
     url: http://TODO/
 components:
+
   securitySchemes:
     BasicAuth:
       type: http
@@ -14,7 +15,13 @@ components:
     Ingef:
       type: http
       scheme: bearer
-      
+  parameters:
+    dataset:
+      in: path
+      name: dataset
+      required: true
+      schema:
+        $ref: "#/components/schemas/datasetId"
   responses:
     unauthorized:
       content:
@@ -29,10 +36,44 @@ components:
       $ref: "#/components/schemas/id"
     filterId:
       $ref: "#/components/schemas/id"
+    datasetId:
+      $ref: "#/components/schemas/id"
+    selectId:
+      $ref: "#/components/schemas/id"
     conceptId:
+      $ref: "#/components/schemas/id"
+    connectorId:
+      $ref: "#/components/schemas/id"
+    secondaryIdId:
+      $ref: "#/components/schemas/id"
+    columnId:
       $ref: "#/components/schemas/id"
     executionId:
       $ref: "#/components/schemas/id"
+    userId:
+      $ref: "#/components/schemas/id"
+    dateTime: #TODO
+      type: string
+      format: date-time
+    date: #TODO
+      type: string
+      format: date
+    query-state:
+      type: string
+      enum:
+        - NEW
+        - RUNNING
+        - FAILED
+        - DONE
+
+    fe-dataset-id:
+      type: object
+      properties:
+        id: 
+          $ref: "#/components/schemas/datasetId"
+        label:
+          type: string
+        
     
     feValue:
       type: object
@@ -190,12 +231,265 @@ components:
           items:
             $ref: "#/components/schemas/id-label"
 
+    query-status:
+      type: object
+      properties:
+        label:
+          type: string
+        isPristineLabel:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        createdAt:
+          $ref: "#/components/schemas/dateTime"
+        lastUsed::
+          $ref: "#/components/schemas/dateTime"
+        owner:
+          $ref: "#/components/schemas/userId"
+        
+
+        ownerName:
+          type: string
+        shared:
+          type: boolean
+        own:
+          type: boolean
+        system:
+          type: boolean
+        id:
+          $ref: "#/components/schemas/executionId"
+        status:
+          $ref: "#/components/schemas/query-state"
+        numberOfResults:
+          type: integer
+        requiredTime:
+          type: integer
+        startTime:
+          $ref: "#/components/schemas/dateTime"
+        finishTime:
+          $ref: "#/components/schemas/dateTime"
+        queryType:
+          type: string # TODO use discriminator from Query
+        secondaryId:
+          $ref: "#/components/schemas/secondaryIdId"
+        resultUrls:
+          type: array
+          items:
+            type: string #TODO url?
+
+    labeled:
+      type: object
+      properties:
+        name: 
+          type: string
+        label: 
+          type: string
+
+    secondaryId:
+      allOf:
+        - $ref: "#/components/schemas/labeled"
+        - type: object
+          properties:
+            description: 
+              type: string
+    column-type:
+      oneOf:
+        - type: string
+          enum:
+            - STRING
+            - INTEGER
+            - BOOLEAN
+            - REAL
+            - DECIMAL
+            - MONEY
+            - DATE
+            - DATE_RANGE
+        - type: string
+          format: "LIST[.*]"
+
+    semantic-event-date: #TODO descriptions for all
+      type: object
+    semantic-sources:
+      type: object
+    semantic-categorical:
+      type: object
+    semantic-group:
+      type: object
+    semantic-hidden:
+      type: object
+    semantic-select:
+      type: object
+      properties:
+        select:
+          $ref: "#/components/schemas/selectId"
+    semantic-concept-column:
+      type: object
+      properties:
+        concept:
+          $ref: "#/components/schemas/conceptId"
+    semantic-column:
+      type: object
+      properties:
+        concept:
+          $ref: "#/components/schemas/columnId"
+    
+    semantic-id:
+      type: object
+      properties:
+        kind: 
+          type: string
+
+    semantic-secondaryId:
+      type: object
+      properties:
+        secondaryId:
+          $ref: "#/components/schemas/secondaryIdId"
+      
+    semantics:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          EVENT_DATE: "#/components/schemas/semantic-event-date"
+          SOURCES: "#/components/schemas/semantic-sources"
+          CATEGORICAL: "#/components/schemas/semantic-categorical"
+          GROUP: "#/components/schemas/semantic-group"
+          HIDDEN: "#/components/schemas/semantic-hidden"
+          SELECT: "#/components/schemas/semantic-select"
+          CONCEPT_COLUMN: "#/components/schemas/semantic-concept-column"
+          COLUMN: "#/components/schemas/semantic-column"
+      allOf:
+        - type: object
+          properties:
+            type:
+              type: string
+      oneOf:
+        - $ref: "#/components/schemas/semantic-event-date"
+        - $ref: "#/components/schemas/semantic-sources"
+        - $ref: "#/components/schemas/semantic-categorical"
+        - $ref: "#/components/schemas/semantic-group"
+        - $ref: "#/components/schemas/semantic-hidden"
+        - $ref: "#/components/schemas/semantic-select"
+        - $ref: "#/components/schemas/semantic-concept-column"
+        - $ref: "#/components/schemas/semantic-column"
+
+        
+
+    column-description:
+      type: object
+      properties:
+        label:
+          type: string
+        description:
+          type: string
+        defaultLabel:
+          type: string
+        type:
+          $ref: "#/components/schemas/column-type"
+        semantics:
+          type: array
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/semantics"
+    date-range:
+      type: object
+      properties:
+        min:
+          $ref: "#/components/schemas/date"
+        max:
+          $ref: "#/components/schemas/date"
+    query:
+      type: object
+      #TODO but in separate file
+    error-info:
+      readOnly: true
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        message:
+          type: string
+        context:
+          type: object
+          additionalProperties: true
+        
+    entity-priview-config:
+      readOnly: true
+      type: object
+      properties:
+        all:
+          type: array
+          items:
+            properties:
+              name:
+                type: string
+              label:
+                type: string
+        default:
+          type: array
+          items:
+            properties:
+              name:
+                type: string
+              label:
+                type: string
+            
+    entity-history-execution-status:
+      allOf:
+        - $ref: "#/components/schemas/full-execution-status"
+        - type: object
+          properties:
+            infos:
+              type: array
+              items:
+                type: object
+                properties:
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  typeInfo:
+                    type: string
+                  value:
+                    type: string
+                  semantics:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/semantics"
+                  
+
+    full-execution-status:
+      allOf:
+        - $ref: "#/components/schemas/query-status"
+        - type: object
+          properties:
+            progress:
+              type: number
+              minimum: 0
+              maximum: 1
+            columnDescriptions:
+              type: array
+              items:
+                $ref: "#/components/schemas/column-description"
+            canExpand:
+              type: boolean
+            query:
+              $ref: "#/components/schemas/query" #TODO
+            error:
+              $ref: "#/components/schemas/error-info"
+            availableSecondaryIds:
+              type: array
+              items:
+                $ref: "#/components/schemas/secondaryId"
 security:
   - BasicAuth: []
   - Bearer: []
-
-servers:
-  - url: http://lyo-peva02:8080/api
 paths:
   /frontend/config:
     get:
@@ -210,6 +504,19 @@ paths:
                 $ref: "#/components/schemas/frontend-config"
         "401":
           $ref: "#/components/responses/unauthorized"
+  /datasets/{dataset}/entity-preview:
+    parameters:
+      - $ref: "#/components/parameters/dataset"
+    get:
+      operationId: get-entity-preview-config
+      description: Gets entity-preview config and defaults for frontend.
+      responses:
+        '200':
+          description: The config.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/entity-priview-config"
 
   /me:
     get:
@@ -224,8 +531,28 @@ paths:
           description: Description of the user
         "401":
           $ref: "#/components/responses/unauthorized"
-
+  /datasets:
+    get:
+      operationId: list-datasets
+      description: Lists all datasets available to the User.
+      responses:
+        '200':
+          description: The available datasets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/fe-dataset-id"
   /datasets/{dataset}/concepts/{concept}/resolve/:
+    parameters:
+        - $ref: "#/components/parameters/dataset"
+        - in: path
+          name: concept
+          required: true
+          schema:
+            $ref: "#/components/schemas/conceptId"
+        
     post:
       operationId: resolve-concepts
       summary: Resolve values to concept-ids
@@ -245,5 +572,144 @@ paths:
               schema:
                 $ref: "#/components/schemas/resolved-concepts-result"
 
- 
-            
+  /datasets/{dataset}/queries:
+    parameters:
+      - $ref: "#/components/parameters/dataset"
+    get:
+      operationId: get-query-status
+      summary: Get Status and metadata of Queries
+      responses:
+        '400':
+          description: The Status and Metadata.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/query-status"
+    post:
+      operationId: post-query
+      description: Submit a query for execution in the dataset.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/query"
+      responses:
+        '400':
+          description: Status of the submitted query.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/full-execution-status"
+        
+  /datasets/{dataset}/queries/{query}:
+    parameters:
+      - $ref: "#/components/parameters/dataset"
+      - in: path
+        name: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/executionId"
+        
+    get:
+      operationId: get-query-status
+      summary: Get Status and metadata of Query 
+      responses:
+        '400':
+          description: The Status and Metadata.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/full-execution-status"
+    patch:
+      description: update a query.
+      operationId: patch-query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/query"
+      responses:
+        '200':
+          description: Desription of the updated execution
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/full-execution-status"
+    delete:
+      operationId: delete-query
+      description: delete the query.
+      responses:
+        '200': 
+          description: Query was deleted.
+  /datasets/{dataset}/queries/{query}/cancel:
+    parameters:
+      - in: path
+        name: dataset
+        required: true
+        schema:
+          $ref: "#/components/schemas/datasetId"
+      - in: path
+        name: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/executionId"
+    post:
+      operationId: cancel-query
+      responses:
+        '200':
+          description: Query was cancelled.
+  /datasets/{dataset}/queries/{query}/reexecute:
+    parameters:
+      - $ref: "#/components/parameters/dataset"
+      - in: path
+        name: query
+        required: true
+        schema:
+          $ref: "#/components/schemas/executionId"
+    post:
+      operationId: reexecute-query
+      responses:
+        '200':
+          description: Description of restarted Query.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/query"
+
+  /datasets/{dataset}/queries/entity:
+    parameters:
+      - $ref: "#/components/parameters/dataset"
+    post:
+      operationId: get-entity-preview
+      description: Fetch a history of a single entity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                idKind:
+                  type: string
+                entityId:
+                  type: string
+                time:
+                  $ref: "#/components/schemas/date-range"
+                sources:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/connectorId"
+      responses:
+        '200':
+          description: description of the history of the entity.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/full-execution-status"
+
+
+
+    
+
+  
