@@ -168,7 +168,8 @@
     "logout": "Logout",
     "dateInvalid": "Invalid date",
     "missingLabel": "Unknown",
-    "import": "Import"
+    "import": "Import",
+    "openFileDialog": "Select file"
   },
   "tooltip": {
     "headline": "Info",

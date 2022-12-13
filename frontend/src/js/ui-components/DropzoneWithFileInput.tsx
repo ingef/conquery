@@ -139,7 +139,7 @@ const DropzoneWithFileInput = <
           )}
           {showImportButton && onImportLines && (
             <SxSelectFileButton onClick={() => setImportModalOpen(true)}>
-              <SxFaIcon icon="file" regular gray />
+              <SxFaIcon icon="file-import" gray />
               {t("common.import")}
             </SxSelectFileButton>
           )}
