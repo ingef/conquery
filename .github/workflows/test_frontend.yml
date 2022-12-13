@@ -27,7 +27,7 @@ jobs:
       - name: lint
         working-directory: ./frontend
         run: yarn lint
-      - name: format
+      - name: check format
         working-directory: ./frontend
         run: yarn checkformat
       - name: test
