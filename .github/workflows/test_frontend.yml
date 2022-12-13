@@ -6,7 +6,7 @@ on:
       - "frontend/**"
 
 jobs:
-  unit-tests:
+  format-lint-unittest:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     strategy:
@@ -27,7 +27,7 @@ jobs:
       - name: lint
         working-directory: ./frontend
         run: yarn lint
-      - name: lint
+      - name: format
         working-directory: ./frontend
         run: yarn checkformat
       - name: test
