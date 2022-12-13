@@ -69,12 +69,12 @@ components:
     fe-dataset-id:
       type: object
       properties:
-        id: 
+        id:
           $ref: "#/components/schemas/datasetId"
         label:
           type: string
-        
-    
+
+
     feValue:
       type: object
       properties:
@@ -249,7 +249,7 @@ components:
           $ref: "#/components/schemas/dateTime"
         owner:
           $ref: "#/components/schemas/userId"
-        
+
 
         ownerName:
           type: string
@@ -283,9 +283,9 @@ components:
     labeled:
       type: object
       properties:
-        name: 
+        name:
           type: string
-        label: 
+        label:
           type: string
 
     secondaryId:
@@ -293,7 +293,7 @@ components:
         - $ref: "#/components/schemas/labeled"
         - type: object
           properties:
-            description: 
+            description:
               type: string
     column-type:
       oneOf:
@@ -335,11 +335,11 @@ components:
       properties:
         concept:
           $ref: "#/components/schemas/columnId"
-    
+
     semantic-id:
       type: object
       properties:
-        kind: 
+        kind:
           type: string
 
     semantic-secondaryId:
@@ -347,7 +347,7 @@ components:
       properties:
         secondaryId:
           $ref: "#/components/schemas/secondaryIdId"
-      
+
     semantics:
       type: object
       discriminator:
@@ -376,7 +376,7 @@ components:
         - $ref: "#/components/schemas/semantic-concept-column"
         - $ref: "#/components/schemas/semantic-column"
 
-        
+
 
     column-description:
       type: object
@@ -418,7 +418,7 @@ components:
         context:
           type: object
           additionalProperties: true
-        
+
     entity-priview-config:
       readOnly: true
       type: object
@@ -439,7 +439,7 @@ components:
                 type: string
               label:
                 type: string
-            
+
     entity-history-execution-status:
       allOf:
         - $ref: "#/components/schemas/full-execution-status"
@@ -462,7 +462,7 @@ components:
                     type: array
                     items:
                       $ref: "#/components/schemas/semantics"
-                  
+
 
     full-execution-status:
       allOf:
@@ -490,6 +490,9 @@ components:
 security:
   - BasicAuth: []
   - Bearer: []
+
+servers:
+  - url: http://localhost:8080/api
 paths:
   /frontend/config:
     get:
@@ -552,7 +555,7 @@ paths:
           required: true
           schema:
             $ref: "#/components/schemas/conceptId"
-        
+
     post:
       operationId: resolve-concepts
       summary: Resolve values to concept-ids
@@ -602,7 +605,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/full-execution-status"
-        
+
   /datasets/{dataset}/queries/{query}:
     parameters:
       - $ref: "#/components/parameters/dataset"
@@ -611,10 +614,10 @@ paths:
         required: true
         schema:
           $ref: "#/components/schemas/executionId"
-        
+
     get:
       operationId: get-query-status
-      summary: Get Status and metadata of Query 
+      summary: Get Status and metadata of Query
       responses:
         '400':
           description: The Status and Metadata.
@@ -641,7 +644,7 @@ paths:
       operationId: delete-query
       description: delete the query.
       responses:
-        '200': 
+        '200':
           description: Query was deleted.
   /datasets/{dataset}/queries/{query}/cancel:
     parameters:
@@ -710,6 +713,5 @@ paths:
 
 
 
-    
 
-  
+
