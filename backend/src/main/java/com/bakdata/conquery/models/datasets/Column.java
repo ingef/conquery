@@ -151,7 +151,9 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@Override
 	public List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
 
-		TrieSearch<FEValue> search = new TrieSearch<>(config.getSuffixLength(), config.getSplit());
+		final int suffixLength = isGenerateSuffixes() ? config.getSuffixLength() : Integer.MAX_VALUE;
+
+		final TrieSearch<FEValue> search = new TrieSearch<>(suffixLength, config.getSplit());
 
 		storage.getAllImports().stream()
 			   .filter(imp -> imp.getTable().equals(getTable()))

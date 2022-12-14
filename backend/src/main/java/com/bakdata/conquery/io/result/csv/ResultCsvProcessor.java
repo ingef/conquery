@@ -38,7 +38,9 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 	private final DatasetRegistry datasetRegistry;
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty, Charset charset) {
+	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, Charset charset) {
+
+		final Dataset dataset = exec.getDataset();
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
@@ -50,22 +52,15 @@ public class ResultCsvProcessor {
 		// Check if subject is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(subject, exec);
 
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
-
+		final IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
 
 		// Get the locale extracted by the LocaleFilter
 		final Locale locale = I18n.LOCALE.get();
-		PrintSettings settings = new PrintSettings(
-				pretty,
-				locale,
-				datasetRegistry,
-				config,
-				idPrinter::createId
-		);
+		final PrintSettings settings = new PrintSettings(pretty, locale, datasetRegistry, config, idPrinter::createId);
 
-		StreamingOutput out = os -> {
+		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
-				CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
+				final CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
 				renderer.toCSV(config.getFrontend().getQueryUpload().getIdResultInfos(), exec.getResultInfos(), exec.streamResults());
 			}
 			catch (EofException e) {

@@ -305,8 +305,6 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	private static CDateRange[] calculateEntityDateIndices(Bucket bucket, int bucketSize) {
 		final CDateRange[] spans = new CDateRange[bucketSize];
 
-		Arrays.fill(spans, CDateRange.all());
-
 		final Table table = bucket.getTable();
 
 
@@ -319,7 +317,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				final int index = bucket.getEntityIndex(entity);
 				final int end = bucket.getEntityEnd(entity);
 
-				// We unroll spanClosed for the whole bucket/entity, this avoids costly reallocation in a loop
+				// We unroll span for the whole bucket/entity, this avoids costly reallocation in a loop
 				// First we initialize the values to illegal values, making Min/Max easier
 				int max = Integer.MIN_VALUE;
 				int min = Integer.MAX_VALUE;
@@ -332,45 +330,42 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 
 					final CDateRange range = bucket.getAsDateRange(event, column);
 
-					if (range.hasLowerBound()) {
-						final int minValue = range.getMinValue();
+					final int minValue = range.getMinValue();
 
-						max = Math.max(max, minValue);
-						min = Math.min(min, minValue);
-					}
+					min = Math.min(min, minValue);
 
-					if (range.hasUpperBound()) {
-						final int maxValue = range.getMaxValue();
+					final int maxValue = range.getMaxValue();
 
-						max = Math.max(max, maxValue);
-						min = Math.min(min, maxValue);
-					}
+					max = Math.max(max, maxValue);
 				}
 
 
-				spans[index] = calculateSpan(max, min, spans[index]);
+				if (max == Integer.MIN_VALUE && min == Integer.MAX_VALUE) {
+					// No values were encountered
+					continue;
+				}
+
+				final CDateRange span = CDateRange.of(min, max);
+
+				if (spans[index] == null) {
+					spans[index] = span;
+				}
+				else {
+					spans[index] = spans[index].span(span);
+				}
+
 			}
+		}
+
+		for (int index = 0; index < spans.length; index++) {
+			if (spans[index] != null) {
+				continue;
+			}
+
+			spans[index] = CDateRange.all();
 		}
 
 		return spans;
 	}
 
-	/**
-	 * Helper method for calculateEntityDateIndices, swapping {@link Integer#MIN_VALUE}/{@link Integer#MAX_VALUE} for performance.
-	 */
-	private static CDateRange calculateSpan(int max, int min, CDateRange in) {
-		if (max == Integer.MIN_VALUE && min == Integer.MAX_VALUE) {
-			return in;
-		}
-
-		if (max == Integer.MIN_VALUE) {
-			return in.span(CDateRange.atLeast(min));
-		}
-
-		if (min == Integer.MAX_VALUE) {
-			return in.span(CDateRange.atMost(max));
-		}
-
-		return in.span(CDateRange.of(min, max));
-	}
 }

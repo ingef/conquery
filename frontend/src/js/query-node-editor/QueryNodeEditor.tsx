@@ -5,7 +5,6 @@ import { useHotkeys } from "react-hotkeys-hook";
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
   ConceptIdT,
-  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
@@ -26,6 +25,7 @@ import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";
 import NodeName from "./NodeName";
 import ResetAndClose from "./ResetAndClose";
+import { useAutoLabel } from "./useAutoLabel";
 
 const Root = styled("div")`
   padding: 10px;
@@ -88,7 +88,6 @@ export interface QueryNodeEditorPropsT {
   name: string;
   node: StandardQueryNodeT;
   showTables: boolean;
-  datasetId: DatasetT["id"];
   allowlistedTables?: string[];
   blocklistedTables?: string[];
   allowlistedSelects?: SelectorResultType[];
@@ -159,6 +158,11 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
       ? RIGHT_SIDE_WIDTH_COMPACT
       : RIGHT_SIDE_WIDTH);
 
+  const { autoLabel, autoLabelEnabled, setAutoLabelEnabled } = useAutoLabel({
+    node,
+    onUpdateLabel: props.onUpdateLabel,
+  });
+
   return (
     <Root
       ref={(instance) => {
@@ -174,9 +178,16 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             maxWidth={nodeNameMaxWidth}
             allowEditing={nodeIsConceptQueryNode(node)}
             label={
-              nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
+              autoLabelEnabled && autoLabel
+                ? autoLabel
+                : nodeIsConceptQueryNode(node)
+                ? node.label
+                : node.label || node.id
             }
-            onUpdateLabel={props.onUpdateLabel}
+            onUpdateLabel={(label) => {
+              setAutoLabelEnabled(false);
+              props.onUpdateLabel(label);
+            }}
           />
           <ResetAndClose
             isCompact={isCompact}
@@ -208,7 +219,6 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             />
             <ContentColumn
               node={node}
-              datasetId={props.datasetId}
               selectedTableIdx={selectedTableIdx}
               allowlistedSelects={props.allowlistedSelects}
               blocklistedSelects={props.blocklistedSelects}

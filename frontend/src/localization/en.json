@@ -167,7 +167,9 @@
     "std": "SD",
     "logout": "Logout",
     "dateInvalid": "Invalid date",
-    "missingLabel": "Unknown"
+    "missingLabel": "Unknown",
+    "import": "Import",
+    "openFileDialog": "Select file"
   },
   "tooltip": {
     "headline": "Info",
@@ -206,7 +208,6 @@
   },
   "inputMultiSelect": {
     "dndPlaceholder": "Choose or drop file ...",
-    "openFileDialog": "Select file",
     "insertAll": "Insert all",
     "options_one": "1 Option",
     "options_other": "{{count}} Options",
@@ -489,5 +490,12 @@
     "load": {
       "error": "Couldn't load history for this file."
     }
+  },
+  "importModal": {
+    "headline": "Import codes",
+    "subtitle": "Please paste the data into the text area below, one code per line.",
+    "paste": "Paste from clipboard",
+    "submit": "Submit",
+    "pasted": "Imported"
   }
 }

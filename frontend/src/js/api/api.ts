@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 
+import { formatStdDate } from "../common/helpers/dateHelper";
 import { EntityId } from "../entity-history/reducer";
 import { apiUrl } from "../environment";
 import type { FormConfigT } from "../previous-queries/list/reducer";
@@ -77,7 +78,7 @@ export const useGetConcept = () => {
     (datasetId: DatasetT["id"], conceptId: ConceptIdT) =>
       api(
         {
-          url: getProtectedUrl(`/datasets/${datasetId}/concepts/${conceptId}`),
+          url: getProtectedUrl(`/concepts/${conceptId}`),
         },
         {
           etagCacheKey: `${datasetId}-${conceptId}`,
@@ -130,9 +131,9 @@ export const useGetQuery = () => {
   const api = useApi<GetQueryResponseT>();
 
   return useCallback(
-    (datasetId: DatasetT["id"], queryId: QueryIdT) =>
+    (queryId: QueryIdT) =>
       api({
-        url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
+        url: getProtectedUrl(`/queries/${queryId}`),
       }),
     [api],
   );
@@ -142,11 +143,9 @@ export const usePostQueryCancel = () => {
   const api = useApi<null>();
 
   return useCallback(
-    (datasetId: DatasetT["id"], queryId: QueryIdT) =>
+    (queryId: QueryIdT) =>
       api({
-        url: getProtectedUrl(
-          `/datasets/${datasetId}/queries/${queryId}/cancel`,
-        ),
+        url: getProtectedUrl(`/queries/${queryId}/cancel`),
         method: "POST",
       }),
     [api],
@@ -171,9 +170,9 @@ export const useDeleteQuery = () => {
   const api = useApi<null>();
 
   return useCallback(
-    (datasetId: DatasetT["id"], queryId: QueryIdT) =>
+    (queryId: QueryIdT) =>
       api({
-        url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
+        url: getProtectedUrl(`/queries/${queryId}`),
         method: "DELETE",
       }),
     [api],
@@ -208,9 +207,9 @@ export const usePatchQuery = () => {
   const api = useApi<null>();
 
   return useCallback(
-    (datasetId: DatasetT["id"], queryId: QueryIdT, attributes: Object) =>
+    (queryId: QueryIdT, attributes: Object) =>
       api({
-        url: getProtectedUrl(`/datasets/${datasetId}/queries/${queryId}`),
+        url: getProtectedUrl(`/queries/${queryId}`),
         method: "PATCH",
         data: attributes,
       }),
@@ -219,9 +218,6 @@ export const usePatchQuery = () => {
 };
 
 export interface PostPrefixForSuggestionsParams {
-  datasetId: DatasetT["id"];
-  conceptId: string;
-  tableId: string;
   filterId: string;
   prefix: string;
   page: number;
@@ -231,19 +227,9 @@ export const usePostPrefixForSuggestions = () => {
   const api = useApi<PostFilterSuggestionsResponseT>();
 
   return useCallback(
-    ({
-      datasetId,
-      conceptId,
-      tableId,
-      filterId,
-      prefix,
-      page,
-      pageSize,
-    }: PostPrefixForSuggestionsParams) =>
+    ({ filterId, prefix, page, pageSize }: PostPrefixForSuggestionsParams) =>
       api({
-        url: getProtectedUrl(
-          `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/autocomplete`,
-        ),
+        url: getProtectedUrl(`/filters/${filterId}/autocomplete`),
         method: "POST",
         data: { text: prefix, page, pageSize },
       }),
@@ -255,11 +241,9 @@ export const usePostConceptsListToResolve = () => {
   const api = useApi<PostConceptResolveResponseT>();
 
   return useCallback(
-    (datasetId: DatasetT["id"], conceptId: string, concepts: string[]) =>
+    (conceptId: string, concepts: string[]) =>
       api({
-        url: getProtectedUrl(
-          `/datasets/${datasetId}/concepts/${conceptId}/resolve`,
-        ),
+        url: getProtectedUrl(`/concepts/${conceptId}/resolve`),
         method: "POST",
         data: { concepts },
       }),
@@ -271,17 +255,9 @@ export const usePostFilterValuesResolve = () => {
   const api = useApi<PostFilterResolveResponseT>();
 
   return useCallback(
-    (
-      datasetId: DatasetT["id"],
-      conceptId: string,
-      tableId: string,
-      filterId: string,
-      values: string[],
-    ) =>
+    (filterId: string, values: string[]) =>
       api({
-        url: getProtectedUrl(
-          `/datasets/${datasetId}/concepts/${conceptId}/tables/${tableId}/filters/${filterId}/resolve`,
-        ),
+        url: getProtectedUrl(`/filters/${filterId}/resolve`),
         method: "POST",
         data: { values },
       }),
@@ -316,11 +292,9 @@ export const useGetFormConfig = () => {
   const api = useApi<GetFormConfigResponseT>();
 
   return useCallback(
-    (datasetId: DatasetT["id"], formConfigId: string) =>
+    (formConfigId: string) =>
       api({
-        url: getProtectedUrl(
-          `/datasets/${datasetId}/form-configs/${formConfigId}`,
-        ),
+        url: getProtectedUrl(`/form-configs/${formConfigId}`),
       }),
     [api],
   );
@@ -330,15 +304,9 @@ export const usePatchFormConfig = () => {
   const api = useApi<GetFormConfigResponseT>();
 
   return useCallback(
-    (
-      datasetId: DatasetT["id"],
-      formConfigId: string,
-      data: Partial<FormConfigT>,
-    ) =>
+    (formConfigId: string, data: Partial<FormConfigT>) =>
       api({
-        url: getProtectedUrl(
-          `/datasets/${datasetId}/form-configs/${formConfigId}`,
-        ),
+        url: getProtectedUrl(`/form-configs/${formConfigId}`),
         method: "PATCH",
         data,
       }),
@@ -362,11 +330,9 @@ export const useDeleteFormConfig = () => {
   const api = useApi<null>();
 
   return useCallback(
-    (datasetId: DatasetT["id"], formConfigId: string) =>
+    (formConfigId: string) =>
       api({
-        url: getProtectedUrl(
-          `/datasets/${datasetId}/form-configs/${formConfigId}`,
-        ),
+        url: getProtectedUrl(`/form-configs/${formConfigId}`),
         method: "DELETE",
       }),
     [api],
@@ -394,11 +360,10 @@ export const useGetEntityHistory = () => {
       entityId: EntityId,
       sources: HistorySources,
       time: {
-        min: string; // Format like "2020-01-01"
-        max: string; // Format like "2020-12-31"
+        min?: string; // Format like "2020-01-01"
+        max?: string; // Format like "2020-12-31"
       } = {
-        min: "2015-01-01",
-        max: "2021-12-31",
+        max: formatStdDate(new Date()),
       },
     ) =>
       api({

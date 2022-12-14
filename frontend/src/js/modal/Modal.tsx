@@ -50,6 +50,7 @@ const Headline = styled("h3")`
 
 const Subtitle = styled(`p`)`
   margin: -15px 0 20px;
+  max-width: 600px;
 `;
 
 const ModalContent: FC<{ onClose: () => void; scrollable?: boolean }> = ({

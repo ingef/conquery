@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
+import java.util.Set;
+
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -11,6 +13,7 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
 import lombok.AllArgsConstructor;
@@ -33,13 +36,6 @@ public class ExecuteQuery extends WorkerMessage {
 	private final ManagedExecutionId id;
 
 	private final Query query;
-
-
-	private ShardResult createShardResult(Worker worker) {
-		final ShardResult result = new ShardResult(id, worker.getInfo().getId());
-
-		return result;
-	}
 
 	@Override
 	public void react(Worker worker) throws Exception {
@@ -65,10 +61,19 @@ public class ExecuteQuery extends WorkerMessage {
 			return;
 		}
 
-		final QueryExecutionContext executionContext =
-				new QueryExecutionContext(executionId, queryExecutor, worker.getStorage(), worker.getBucketManager());
+		final QueryExecutionContext executionContext = new QueryExecutionContext(executionId, queryExecutor, worker.getStorage(), worker.getBucketManager());
 
-		queryExecutor.execute(query, executionContext, result);
+
+		final Set<Entity> entities = query.collectRequiredEntities(executionContext).resolve(worker.getBucketManager());
+
+
+		queryExecutor.execute(query, executionContext, result, entities);
+	}
+
+	private ShardResult createShardResult(Worker worker) {
+		final ShardResult result = new ShardResult(id, worker.getInfo().getId());
+
+		return result;
 	}
 
 }
