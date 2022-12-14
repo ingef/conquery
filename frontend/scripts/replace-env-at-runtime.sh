@@ -2,31 +2,17 @@
 
 usage=`cat <<-EOF
 Replace the /*@preserve __ENV_INJECT_MARK__*/ marker in an conquery index.html with environment variables.
-If an optional .env-file is supplied it will be read before subsitution. 
 
 Usage:
-$0 <index.html> [.env-file]
+$0 <index.html>
 EOF
 `
 
 # Check for one or two arguments or exit 
-if  [ \( "$#" -lt 1 \) -o \( "$#" -gt 2 \) ] 
+if  [ \( "$#" -ne 1 \) ] 
 then
     echo "$usage"
     exit 1
-fi
-
-# Check if env file is provided and readable
-if [ "$#" -eq 2 ]
-then
-    if [ -r "$2" ]
-    then
-	    echo "Sourcing '$2'"
-	    . "$2"
-    else
-	    echo "Cannot source '$2'"
-	    exit 1
-    fi
 fi
 
 # Build the env string
