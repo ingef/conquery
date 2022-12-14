@@ -1,6 +1,7 @@
 import { useTheme, Theme, css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { forwardRef } from "react";
+
 import { HoverNavigatable } from "./HoverNavigatable";
 
 const bottomBorderBase = css`

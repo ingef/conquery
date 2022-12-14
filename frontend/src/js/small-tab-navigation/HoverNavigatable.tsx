@@ -24,7 +24,11 @@ const Root = styled("div")<{
 // feels very responsive
 const TIME_UNTIL_NAVIGATE = 600;
 
-export const HoverNavigatable = ({ triggerNavigate, children, className }: PropsT) => {
+export const HoverNavigatable = ({
+  triggerNavigate,
+  children,
+  className,
+}: PropsT) => {
   // Type Number is in Browser, however local typescript does not recognize it
   let [timeout, setTimeoutVariable] = useState<null | NodeJS.Timeout>(null);
   const [{ isOver }, drop] = useDrop({

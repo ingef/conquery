@@ -59,7 +59,6 @@ interface PropsT<DroppableObject> {
   disallowMultipleColumns?: boolean;
 }
 
-
 const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
   props: WithFileProps<DroppableObject> | WithoutFileProps<DroppableObject>,
   ref: Ref<HTMLDivElement>,
@@ -92,31 +91,34 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
           ))}
         </div>
       )}
-        <div ref={ref} >
-          {showDropzone &&
-            (props.onDropFile ? (
-              <DropzoneWithFileInput
-                acceptedDropTypes={props.acceptedDropTypes}
-                onDrop={props.onDrop}
-                onSelectFile={props.onDropFile}
-              >
-                {props.dropzoneChildren}
-              </DropzoneWithFileInput>
-            ) : (
-              <Dropzone
-                acceptedDropTypes={props.acceptedDropTypes}
-                onDrop={props.onDrop}
-              >
-                {props.dropzoneChildren}
-              </Dropzone>
-            ))}
-        </div>
+      <div ref={ref}>
+        {showDropzone &&
+          (props.onDropFile ? (
+            <DropzoneWithFileInput
+              acceptedDropTypes={props.acceptedDropTypes}
+              onDrop={props.onDrop}
+              onSelectFile={props.onDropFile}
+            >
+              {props.dropzoneChildren}
+            </DropzoneWithFileInput>
+          ) : (
+            <Dropzone
+              acceptedDropTypes={props.acceptedDropTypes}
+              onDrop={props.onDrop}
+            >
+              {props.dropzoneChildren}
+            </Dropzone>
+          ))}
       </div>
-    );
-}; 
+    </div>
+  );
+};
 
 export default forwardRef(DropzoneList) as <
   DroppableObject extends PossibleDroppableObject = DragItemFile,
 >(
-  props: (WithFileProps<DroppableObject> | WithoutFileProps<DroppableObject>) & { ref?: ForwardedRef<HTMLDivElement> },
+  props: (
+    | WithFileProps<DroppableObject>
+    | WithoutFileProps<DroppableObject>
+  ) & { ref?: ForwardedRef<HTMLDivElement> },
 ) => ReactElement;

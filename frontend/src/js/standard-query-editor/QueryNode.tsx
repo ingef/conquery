@@ -27,7 +27,6 @@ const FlexHoverNavigatable = styled(HoverNavigatable)`
   width: 100%;
 `;
 
-
 const Root = styled("div")<{
   active?: boolean;
 }>`
@@ -133,42 +132,42 @@ const QueryNode = ({
 
     ...(nodeIsConceptQueryNode(node)
       ? {
-        ids: node.ids,
-        type: node.type,
-        description: node.description,
-        tree: node.tree,
-        tables: node.tables,
-        selects: node.selects,
+          ids: node.ids,
+          type: node.type,
+          description: node.description,
+          tree: node.tree,
+          tables: node.tables,
+          selects: node.selects,
 
-        additionalInfos: node.additionalInfos,
-        matchingEntries: node.matchingEntries,
-        matchingEntities: node.matchingEntities,
-        dateRange: node.dateRange,
-      }
+          additionalInfos: node.additionalInfos,
+          matchingEntries: node.matchingEntries,
+          matchingEntities: node.matchingEntities,
+          dateRange: node.dateRange,
+        }
       : {
-        id: node.id,
-        type: node.type,
-        query: node.query,
-        tags: node.tags,
-      }),
+          id: node.id,
+          type: node.type,
+          query: node.query,
+          tags: node.tags,
+        }),
   };
   const [, drag] = useDrag<StandardQueryNodeT, void, {}>({
     type: item.type,
     item: () =>
-    ({
-      ...item,
-      dragContext: {
-        ...item.dragContext,
-        ...getWidthAndHeight(ref),
-      },
-    } as StandardQueryNodeT),
+      ({
+        ...item,
+        dragContext: {
+          ...item.dragContext,
+          ...getWidthAndHeight(ref),
+        },
+      } as StandardQueryNodeT),
   });
 
   const tooltipText = hasNonDefaultSettings
     ? t("queryEditor.hasNonDefaultSettings")
     : hasFilterValues
-      ? t("queryEditor.hasDefaultSettings")
-      : undefined;
+    ? t("queryEditor.hasDefaultSettings")
+    : undefined;
 
   const expandClick = useCallback(() => {
     if (nodeIsConceptQueryNode(node) || !node.query) return;
@@ -176,7 +175,7 @@ const QueryNode = ({
     onExpandClick(node.query);
   }, [onExpandClick, node]);
 
-  const onClick = !!node.error ? () => { } : () => onEditClick(andIdx, orIdx);
+  const onClick = !!node.error ? () => {} : () => onEditClick(andIdx, orIdx);
 
   const label = nodeIsConceptQueryNode(node)
     ? node.label
