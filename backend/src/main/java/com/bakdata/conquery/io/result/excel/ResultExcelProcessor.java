@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.util.io.IdColumnUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,7 +51,7 @@ public class ResultExcelProcessor {
 		subject.authorize(dataset, Ability.DOWNLOAD);
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		final IdPrinter idPrinter = conqueryConfig.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
+		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, conqueryConfig.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
 		final PrintSettings settings = new PrintSettings(pretty, locale, datasetRegistry, conqueryConfig, idPrinter::createId);
@@ -58,7 +59,7 @@ public class ResultExcelProcessor {
 		final ExcelRenderer excelRenderer = new ExcelRenderer(excelConfig, settings);
 
 		final StreamingOutput out = output -> {
-			excelRenderer.renderToStream(conqueryConfig.getFrontend().getQueryUpload().getIdResultInfos(), exec, output);
+			excelRenderer.renderToStream(conqueryConfig.getIdColumns().getIdResultInfos(), exec, output);
 			log.trace("FINISHED downloading {}", exec.getId());
 		};
 

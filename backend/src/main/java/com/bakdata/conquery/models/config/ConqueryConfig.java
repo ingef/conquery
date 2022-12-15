@@ -77,6 +77,9 @@ public class ConqueryConfig extends Configuration {
 	@Valid
 	@NotNull
 	private FrontendConfig frontend = new FrontendConfig();
+	@Valid
+	@NotNull
+	private IdColumnConfig idColumns = new IdColumnConfig();
 
 	@NotNull
 	@Valid

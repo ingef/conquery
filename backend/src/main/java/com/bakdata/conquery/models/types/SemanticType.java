@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.types;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -56,7 +57,7 @@ public abstract class SemanticType {
 	/**
 	 * Column contains an Entity's Id of a kind.
 	 * <p>
-	 * See {@link com.bakdata.conquery.models.config.ColumnConfig} / {@link com.bakdata.conquery.models.config.FrontendConfig.UploadConfig}for the source of this.
+	 * See {@link com.bakdata.conquery.models.config.ColumnConfig} / {@link IdColumnConfig}for the source of this.
 	 */
 	@CPSType(id = "ID", base = SemanticType.class)
 	@Data

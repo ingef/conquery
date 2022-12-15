@@ -177,7 +177,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		UniqueNamer uniqNamer = new UniqueNamer(settings);
 
 		// First add the id columns to the descriptor list. The are the first columns
-		for (ResultInfo header : config.getFrontend().getQueryUpload().getIdResultInfos()) {
+		for (ResultInfo header : config.getIdColumns().getIdResultInfos()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(uniqNamer.getUniqueName(header))
 												   .type(header.getType().typeInfo())
