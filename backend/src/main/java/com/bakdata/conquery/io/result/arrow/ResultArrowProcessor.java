@@ -18,6 +18,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -49,7 +50,9 @@ public class ResultArrowProcessor {
 	public static final MediaType STREAM_MEDIA_TYPE = new MediaType("application", "vnd.apache.arrow.stream");
 
 	private final DatasetRegistry datasetRegistry;
-	private final ConqueryConfig config;
+	private final ConqueryConfig conqueryConfig;
+
+	private final ArrowConfig arrowConfig;
 
 
 	public Response createResultFile(Subject subject, ManagedExecution<?> exec, boolean pretty) {
@@ -61,7 +64,8 @@ public class ResultArrowProcessor {
 				pretty,
 				FILE_EXTENTION_ARROW_FILE,
 				FILE_MEDIA_TYPE,
-				config
+				conqueryConfig,
+				arrowConfig
 		);
 	}
 
@@ -74,7 +78,8 @@ public class ResultArrowProcessor {
 				pretty,
 				FILE_EXTENTION_ARROW_STREAM,
 				STREAM_MEDIA_TYPE,
-				config
+				conqueryConfig,
+				arrowConfig
 		);
 	}
 
@@ -86,7 +91,8 @@ public class ResultArrowProcessor {
 			boolean pretty,
 			String fileExtension,
 			MediaType mediaType,
-			ConqueryConfig config) {
+			ConqueryConfig config,
+			ArrowConfig arrowConfig) {
 
 		ConqueryMDC.setLocation(subject.getName());
 
@@ -124,7 +130,7 @@ public class ResultArrowProcessor {
 				renderToStream(
 						writerProducer.apply(output),
 						settings,
-						config.getArrow().getBatchSize(),
+						arrowConfig,
 						resultInfosId,
 						resultInfosExec,
 						exec.streamResults()

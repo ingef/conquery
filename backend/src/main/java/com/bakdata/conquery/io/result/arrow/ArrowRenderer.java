@@ -9,6 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -37,12 +38,12 @@ import org.apache.arrow.vector.util.Text;
 public class ArrowRenderer {
 
     public static void renderToStream(
-            Function<VectorSchemaRoot, ArrowWriter> writerProducer,
-            PrintSettings printSettings,
-            int batchSize,
-            List<ResultInfo> idHeaders,
-            List<ResultInfo> resultInfo,
-            Stream<EntityResult> results) throws IOException {
+			Function<VectorSchemaRoot, ArrowWriter> writerProducer,
+			PrintSettings printSettings,
+			ArrowConfig arrowConfig,
+			List<ResultInfo> idHeaders,
+			List<ResultInfo> resultInfo,
+			Stream<EntityResult> results) throws IOException {
 
 		List<Field> fields = ArrowUtil.generateFields(idHeaders, resultInfo, new UniqueNamer(printSettings));
 		VectorSchemaRoot root = VectorSchemaRoot.create(new Schema(fields, null), ROOT_ALLOCATOR);
@@ -53,7 +54,7 @@ public class ArrowRenderer {
 
 		// Write the data
 		try (ArrowWriter writer = writerProducer.apply(root)) {
-			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), results, batchSize);
+			write(writer, root, idWriters, valueWriter, printSettings.getIdMapper(), results, arrowConfig.getBatchSize());
 		}
 
     }

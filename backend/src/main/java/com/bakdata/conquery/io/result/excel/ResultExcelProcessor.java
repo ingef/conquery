@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -32,7 +33,9 @@ public class ResultExcelProcessor {
 	// Media type according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 	private final DatasetRegistry datasetRegistry;
-	private final ConqueryConfig config;
+	private final ConqueryConfig conqueryConfig;
+
+	private final ExcelConfig excelConfig;
 
 
 	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty) {
@@ -47,15 +50,15 @@ public class ResultExcelProcessor {
 		subject.authorize(dataset, Ability.DOWNLOAD);
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
-		final IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
+		final IdPrinter idPrinter = conqueryConfig.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
 
 		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, datasetRegistry, config, idPrinter::createId);
+		final PrintSettings settings = new PrintSettings(pretty, locale, datasetRegistry, conqueryConfig, idPrinter::createId);
 
-		final ExcelRenderer excelRenderer = new ExcelRenderer(config.getExcel(), settings);
+		final ExcelRenderer excelRenderer = new ExcelRenderer(excelConfig, settings);
 
 		final StreamingOutput out = output -> {
-			excelRenderer.renderToStream(config.getFrontend().getQueryUpload().getIdResultInfos(), exec, output);
+			excelRenderer.renderToStream(conqueryConfig.getFrontend().getQueryUpload().getIdResultInfos(), exec, output);
 			log.trace("FINISHED downloading {}", exec.getId());
 		};
 
