@@ -71,7 +71,7 @@ public class ColumnConfig {
 	 * Map of Localized description.
 	 */
 	@Builder.Default
-	private Map<String, String> description = Collections.emptyMap();
+	private Map<Locale, String> description = Collections.emptyMap();
 
 	/**
 	 * Name of column in csv for {@link AdminDatasetProcessor#setIdMapping(java.io.InputStream, com.bakdata.conquery.models.worker.Namespace)}.
@@ -116,11 +116,4 @@ public class ColumnConfig {
 	public boolean isLabelKeysLocale() {
 		return getLabel().keySet().stream().map(Locale::forLanguageTag).noneMatch(Objects::isNull);
 	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Keys must be valid Locales.")
-	public boolean isDescriptionKeysLocale() {
-		return getDescription().keySet().stream().map(Locale::forLanguageTag).noneMatch(Objects::isNull);
-	}
-
 }
