@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.ManagerNode;
@@ -18,12 +20,16 @@ import com.bakdata.conquery.resources.api.ResultArrowResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import lombok.Data;
 import lombok.SneakyThrows;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 @Data
 @CPSType(base = ResultRendererProvider.class, id = "ARROW")
 public class ArrowResultProvider implements ResultRendererProvider {
 	private boolean hidden = true;
+
+	@Valid
+	@NotNull
+	private ArrowConfig config = new ArrowConfig();
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)
@@ -50,6 +56,7 @@ public class ArrowResultProvider implements ResultRendererProvider {
 		jersey.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
+				bind(config).to(ArrowConfig.class);
 				bindAsContract(ResultArrowProcessor.class);
 			}
 		});
