@@ -51,6 +51,7 @@ public class IdColumnConfig {
 			ColumnConfig.builder()
 						.name("ID")
 						.field("result")
+						.label(Map.of("", "result")) // "" ~= Locale.ROOT
 						.resolvable(true)
 						.fillAnon(true)
 						.print(true)
