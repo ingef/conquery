@@ -330,80 +330,109 @@ components:
           pattern: "LIST\\[.*\\]"
 
     semantic-event-date: #TODO descriptions for all
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
       properties:
-            type:
-              type: string
-      required:
-        - "type"
+        type:
+          type: string
+          enum:
+              - "EVENT_DATE"
     semantic-sources:
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
       properties:
         type:
           type: string
-      required:
-        - "type"
+          enum:
+              - "SOURCES"
     semantic-categorical:
+      allOf:
+      - $ref: "#/components/schemas/semantic-base"
       properties:
         type:
           type: string
-      required:
-        - "type"
+          enum:
+              - "CATEGORICAL"
     semantic-group:
+      allOf:
+      - $ref: "#/components/schemas/semantic-base"
       properties:
-          type:
-            type: string
-      required:
-          - "type"
+        type:
+          type: string
+          enum:
+              - "GROUP"
     semantic-hidden:
+      allOf:
+      - $ref: "#/components/schemas/semantic-base"
       properties:
-          type:
-            type: string
-      required:
-        - "type"
+        type:
+          type: string
+          enum:
+              - "HIDDEN"
     semantic-select:
       properties:
-          type:
-            type: string
+        type:
+          type: string
+          enum:
+              - "SELECT"
+      allOf:
+      - $ref: "#/components/schemas/semantic-base"
+      - type: object
+        properties:
           select:
             $ref: "#/components/schemas/selectId"
-      required:
-        - "type"
     semantic-concept-column:
-      properties:
-          type:
-            type: string
-          concept:
-            $ref: "#/components/schemas/conceptId"
-      required:
-        - "type"
-    semantic-column:
       properties:
         type:
           type: string
-        column:
-          $ref: "#/components/schemas/columnId"
-      required:
-        - "type"
-            
+          enum:
+              - "CONCEPT_COLUMN"
+      allOf:
+      - $ref: "#/components/schemas/semantic-base"
+      - type: object
+        properties:
+          concept:
+            $ref: "#/components/schemas/conceptId"
+    semantic-column:
+      properties:
+          type:
+            type: string
+            enum:
+              - "COLUMN"
+      allOf:
+      - $ref: "#/components/schemas/semantic-base"
+      - type: object
+        properties:
+          column:
+            $ref: "#/components/schemas/columnId"
+          
     semantic-id:
       properties:
         type:
           type: string
-        kind:
-          type: string
-      required:
-        - "type"
-            
-    
+          enum:
+              - "ID"
+      allOf:
+      - $ref: "#/components/schemas/semantic-base"
+      - type: object
+        properties:
+          kind:
+            type: string
     semantic-secondaryId:
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
+        - type: object
+          properties:
+            secondaryId:
+              $ref: "#/components/schemas/secondaryIdId"
+    semantic-base:
+      type: object
       properties:
         type:
           type: string
-        secondaryId:
-          $ref: "#/components/schemas/secondaryIdId"
       required:
         - "type"
     semantics:
-      # NOTE: Documentation asks us to provide both mapping and oneOf, that does seem to be wrong and cannot be deserialized.
       discriminator:
         propertyName: "type"
         mapping:
@@ -416,21 +445,31 @@ components:
           "ID": "#/components/schemas/semantic-id"
           "SELECT": "#/components/schemas/semantic-select"
           "SOURCES": "#/components/schemas/semantic-sources"
-      
-
-    nullable-string:
       oneOf:
-        - type: 'null'
-        - type: string
+        - $ref: "#/components/schemas/semantic-categorical"
+        - $ref: "#/components/schemas/semantic-column"
+        - $ref: "#/components/schemas/semantic-concept-column"
+        - $ref: "#/components/schemas/semantic-event-date"
+        - $ref: "#/components/schemas/semantic-group"
+        - $ref: "#/components/schemas/semantic-hidden"
+        - $ref: "#/components/schemas/semantic-id"
+        - $ref: "#/components/schemas/semantic-select"
+        - $ref: "#/components/schemas/semantic-sources"
+
+
     column-description:
       type: object
       properties:
         label:
           type: string
         description:
-          $ref: "#/components/schemas/nullable-string"
+          oneOf:
+            - type: 'null'
+            - type: string
         defaultLabel:
-          $ref: "#/components/schemas/nullable-string"
+          oneOf:
+            - type: 'null'
+            - type: string
         type:
           $ref: "#/components/schemas/column-type"
         semantics:
