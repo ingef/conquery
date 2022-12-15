@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
-import com.bakdata.conquery.apiv1.frontend.FETable;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendTable;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -46,12 +46,12 @@ public class FilterSearchItemTest {
 		connector.setColumn(column);
 		connector.setConcept(concept);
 		connector.setValidityDates(validityDates);
-		FETable feTable = FrontEndConceptBuilder.createTable(connector);
+		FrontendTable feTable = FrontEndConceptBuilder.createTable(connector);
 		
 		assertThat(feTable.getDateColumn().getOptions()).containsExactly(
-				new FEValue(val0.getId().toString(), "val0"),
-				new FEValue(val1.getId().toString(), "val1"),
-				new FEValue(val2.getId().toString(), "val2")
-			);
+				new FrontendValue(val0.getId().toString(), "val0"),
+				new FrontendValue(val1.getId().toString(), "val1"),
+				new FrontendValue(val2.getId().toString(), "val2")
+		);
 	}
 }

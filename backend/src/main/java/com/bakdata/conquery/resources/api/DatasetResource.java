@@ -8,7 +8,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
-import com.bakdata.conquery.apiv1.frontend.FERoot;
+import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.resources.hierarchies.HDatasets;
@@ -26,7 +26,7 @@ public class DatasetResource extends HDatasets {
 
 	@GET
 	@Path("concepts")
-	public FERoot getRoot() {
+	public FrontendRoot getRoot() {
 		return processor.getRoot(getNamespace().getStorage(), subject);
 	}
 

@@ -15,15 +15,15 @@ import org.apache.commons.lang3.tuple.Pair;
  */
 @Getter
 @SuperBuilder
-public class FEPermissionOwnerContent<OWNER extends PermissionOwner<?>> {
+public class FrontendPermissionOwnerContent<OWNER extends PermissionOwner<?>> {
 	private OWNER owner;
 
 	/**
-	 *  Holds the owned permission objects and its JSON representation.
+	 * Holds the owned permission objects and its JSON representation.
 	 */
-	private Set<FEPermission> permissions;
-	
-	
+	private Set<FrontendPermission> permissions;
+
+
 	/**
 	 *  Holds possible permission types, their abilities and targets that can be used for the creation of a permission.
 	 */

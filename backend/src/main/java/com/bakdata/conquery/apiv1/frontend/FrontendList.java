@@ -6,24 +6,22 @@ import java.util.List;
 
 import javax.ws.rs.core.EntityTag;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-
 import lombok.Getter;
+import org.apache.commons.lang3.tuple.Pair;
 
-public class FEList implements JsonSerializable {
+public class FrontendList implements JsonSerializable {
 
-	private final List<Pair<ConceptElementId<?>, FENode>> content = new ArrayList<>();
+	private final List<Pair<ConceptElementId<?>, FrontendNode>> content = new ArrayList<>();
 	@Getter(lazy = true)
 	private final EntityTag cacheId = new EntityTag(Integer.toString(content.hashCode()));
-	
 
-	public void add(ConceptElementId<?> id, FENode node) {
+
+	public void add(ConceptElementId<?> id, FrontendNode node) {
 		content.add(Pair.of(id, node));
 	}
 
@@ -31,7 +29,7 @@ public class FEList implements JsonSerializable {
 	@Override
 	public void serialize(JsonGenerator gen, SerializerProvider serializers) throws IOException {
 		gen.writeStartObject();
-		for(Pair<ConceptElementId<?>, FENode> e: content) {
+		for (Pair<ConceptElementId<?>, FrontendNode> e : content) {
 			gen.writeFieldName(e.getKey().toString());
 			serializers.defaultSerializeValue(e.getValue(), gen);
 		}

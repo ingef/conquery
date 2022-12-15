@@ -11,13 +11,13 @@ import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
 @Getter
-public class FEAuthOverview {
+public class FrontendAuthOverview {
 
 	private Collection<OverviewRow> overview;
 
 	@Builder
 	@Getter
-	public static class OverviewRow implements Comparable<OverviewRow>{
+	public static class OverviewRow implements Comparable<OverviewRow> {
 
 		private User user;
 		private Collection<Group> groups;

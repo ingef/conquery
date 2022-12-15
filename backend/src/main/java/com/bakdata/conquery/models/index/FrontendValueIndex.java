@@ -2,14 +2,14 @@ package com.bakdata.conquery.models.index;
 
 import java.util.Map;
 
-import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterTemplate;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class FEValueIndex extends TrieSearch<FEValue> implements Index<FEValueIndexKey> {
+public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Index<FrontendValueIndexKey> {
 
 
 	/**
@@ -23,7 +23,7 @@ public class FEValueIndex extends TrieSearch<FEValue> implements Index<FEValueIn
 	 */
 	private final String optionValueTemplate;
 
-	public FEValueIndex(int suffixCutoff, String split, String valueTemplate, String optionValueTemplate) {
+	public FrontendValueIndex(int suffixCutoff, String split, String valueTemplate, String optionValueTemplate) {
 		super(suffixCutoff, split);
 		this.valueTemplate = valueTemplate;
 		this.optionValueTemplate = optionValueTemplate;
@@ -31,7 +31,7 @@ public class FEValueIndex extends TrieSearch<FEValue> implements Index<FEValueIn
 
 	@Override
 	public void put(String internalValue, Map<String, String> templateToConcrete) {
-		FEValue feValue = new FEValue(
+		FrontendValue feValue = new FrontendValue(
 				internalValue,
 				templateToConcrete.get(valueTemplate),
 				templateToConcrete.get(optionValueTemplate)

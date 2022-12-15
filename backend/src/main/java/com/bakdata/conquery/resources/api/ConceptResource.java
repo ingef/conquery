@@ -19,7 +19,7 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
-import com.bakdata.conquery.apiv1.frontend.FEList;
+import com.bakdata.conquery.apiv1.frontend.FrontendList;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -45,7 +45,7 @@ public class ConceptResource extends HAuthorized {
 		subject.authorize(concept.getDataset(), Ability.READ);
 		subject.authorize(concept, Ability.READ);
 
-		final FEList result = processor.getNode(concept);
+		final FrontendList result = processor.getNode(concept);
 
 		// check if browser still has this version cached
 		if (request.getHeaderString(HttpHeaders.IF_NONE_MATCH) != null && result.getCacheId()

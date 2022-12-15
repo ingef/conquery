@@ -14,9 +14,9 @@ import org.jetbrains.annotations.NotNull;
  */
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class FEValue implements Comparable<FEValue> {
-	private static final Comparator<FEValue> COMPARATOR = Comparator.comparing(FEValue::getValue)
-																	.thenComparing(FEValue::getLabel);
+public class FrontendValue implements Comparable<FrontendValue> {
+	private static final Comparator<FrontendValue> COMPARATOR = Comparator.comparing(FrontendValue::getValue)
+																		  .thenComparing(FrontendValue::getLabel);
 
 	/**
 	 * Value is the only relevant data-point for hashing/equality and searching from the service perspective.
@@ -31,18 +31,18 @@ public class FEValue implements Comparable<FEValue> {
 	private final String optionValue;
 
 	@JsonCreator
-	public FEValue(@NonNull String value, @NonNull String label, String optionValue) {
+	public FrontendValue(@NonNull String value, @NonNull String label, String optionValue) {
 		this.value = value;
 		this.label = Objects.requireNonNullElse(label, value);
 		this.optionValue = optionValue;
 	}
 
-	public FEValue(String value, String label) {
+	public FrontendValue(String value, String label) {
 		this(value, label, null);
 	}
 
 	@Override
-	public int compareTo(@NotNull FEValue o) {
+	public int compareTo(@NotNull FrontendValue o) {
 		return COMPARATOR.compare(this, o);
 	}
 }

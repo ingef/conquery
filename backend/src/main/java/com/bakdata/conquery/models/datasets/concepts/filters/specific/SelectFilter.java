@@ -7,8 +7,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
-import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -56,7 +56,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@Override
-	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
+	public void configureFrontend(FrontendFilterConfiguration.Top f) throws ConceptConfigurationException {
 		f.setTemplate(getTemplate());
 		f.setType(getFilterType());
 
@@ -67,9 +67,9 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@NotNull
-	protected List<FEValue> collectLabels() {
+	protected List<FrontendValue> collectLabels() {
 		return labels.entrySet().stream()
-					 .map(entry -> new FEValue(entry.getKey(), entry.getValue()))
+					 .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
 					 .collect(Collectors.toList());
 	}
 
@@ -126,11 +126,13 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@Override
-	public List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
+	public List<TrieSearch<FrontendValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
 
-		TrieSearch<FEValue> search = new TrieSearch<>(config.getSuffixLength(), config.getSplit());
-		labels.entrySet().stream()
-			  .map(entry -> new FEValue(entry.getKey(), entry.getValue())).forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
+		TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSuffixLength(), config.getSplit());
+		labels.entrySet()
+			  .stream()
+			  .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
+			  .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 		search.shrinkToFit();
 
 		return List.of(search);

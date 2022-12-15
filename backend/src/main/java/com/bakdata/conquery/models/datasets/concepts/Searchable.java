@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.validation.constraints.Min;
 
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.SearchConfig;
 import com.bakdata.conquery.models.query.FilterSearch;
@@ -18,9 +18,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public interface Searchable {
 	/**
-	 * All available {@link FEValue}s for searching in a {@link TrieSearch}.
+	 * All available {@link FrontendValue}s for searching in a {@link TrieSearch}.
 	 */
-	List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage);
+	List<TrieSearch<FrontendValue>> getSearches(SearchConfig config, NamespaceStorage storage);
 
 	/**
 	 * The actual Searchables to use, if there is potential for deduplication/pooling.

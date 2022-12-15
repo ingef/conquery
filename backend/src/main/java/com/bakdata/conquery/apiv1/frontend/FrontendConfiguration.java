@@ -10,5 +10,5 @@ import com.bakdata.conquery.models.config.IdColumnConfig;
  * @param currency    currency representation
  * @param queryUpload identifier specific column configuration for the query upload
  */
-public record FEConfig(String version, FrontendConfig.CurrencyConfig currency, IdColumnConfig queryUpload) {
+public record FrontendConfiguration(String version, FrontendConfig.CurrencyConfig currency, IdColumnConfig queryUpload) {
 }

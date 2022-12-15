@@ -5,7 +5,6 @@ import java.util.Collection;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
-
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -14,10 +13,11 @@ import lombok.experimental.SuperBuilder;
  */
 @Getter
 @SuperBuilder
-public class FEUserContent extends FEPermissionOwnerContent<User> implements FERoleOwner {
+public class FrontendGroupContent extends FrontendPermissionOwnerContent<Group> implements FrontendRoleOwner {
+
+	public final Collection<User> members;
+	public final Collection<User> availableMembers;
 
 	public final Collection<Role> roles;
 	public final Collection<Role> availableRoles;
-	public final Collection<Group> groups;
-	public final Collection<Group> availableGroups;
 }

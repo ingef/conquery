@@ -10,7 +10,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.bakdata.conquery.apiv1.frontend.FESecondaryId;
+import com.bakdata.conquery.apiv1.frontend.FrontendSecondaryId;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -52,12 +52,12 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 
 		{
-			final Set<FESecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery);
+			final Set<FrontendSecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery);
 
 			log.info("{}", secondaryIds);
 			description.setDataset(conquery.getDataset());
 			assertThat(secondaryIds)
-					.extracting(FESecondaryId::getId)
+					.extracting(FrontendSecondaryId::getId)
 					.containsExactly(description.getId().toString());
 
 
@@ -98,7 +98,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 			assertThat(deleteDescription(conquery, id))
 					.returns(Response.Status.Family.SUCCESSFUL, response -> response.getStatusInfo().getFamily());
 
-			final Set<FESecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery);
+			final Set<FrontendSecondaryId> secondaryIds = fetchSecondaryIdDescriptions(conquery);
 
 			log.info("{}", secondaryIds);
 
@@ -119,7 +119,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 	}
 
-	private static Set<FESecondaryId> fetchSecondaryIdDescriptions(StandaloneSupport conquery) throws java.io.IOException {
+	private static Set<FrontendSecondaryId> fetchSecondaryIdDescriptions(StandaloneSupport conquery) throws java.io.IOException {
 		final URI uri = HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetResource.class, "getRoot")
 									   .buildFromMap(Map.of(
 											   "dataset", conquery.getDataset().getName()
@@ -138,7 +138,7 @@ public class SecondaryIdEndpointTest extends IntegrationTest.Simple implements P
 
 		return objectNode.get("secondaryIds")
 						 .traverse(mapper.getFactory().getCodec())
-						 .readValueAs(new TypeReference<Set<FESecondaryId>>() {
+						 .readValueAs(new TypeReference<Set<FrontendSecondaryId>>() {
 						 });
 	}
 

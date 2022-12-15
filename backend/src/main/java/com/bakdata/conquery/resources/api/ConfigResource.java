@@ -6,7 +6,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.apiv1.frontend.FEConfig;
+import com.bakdata.conquery.apiv1.frontend.FrontendConfiguration;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
@@ -22,7 +22,7 @@ public class ConfigResource {
 
 	@GET
 	@Path("frontend")
-	public FEConfig getFrontendConfig() {
+	public FrontendConfiguration getFrontendConfig() {
 		// Filter Ids that are not resolvable
 		final IdColumnConfig idColumns = config.getIdColumns().withIds(config.getIdColumns()
 																			 .getIds()
@@ -30,7 +30,7 @@ public class ConfigResource {
 																			 .filter(ColumnConfig::isResolvable)
 																			 .toList());
 
-		return new FEConfig(VersionInfo.INSTANCE.getProjectVersion(), config.getFrontend().getCurrency(), idColumns);
+		return new FrontendConfiguration(VersionInfo.INSTANCE.getProjectVersion(), config.getFrontend().getCurrency(), idColumns);
 	}
 
 }

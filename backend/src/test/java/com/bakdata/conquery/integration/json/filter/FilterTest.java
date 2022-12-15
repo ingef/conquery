@@ -10,7 +10,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -41,7 +41,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.w3c.dom.stylesheets.LinkStyle;
 
 
 @Slf4j
@@ -66,7 +65,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@JsonProperty("content")
 	private ObjectNode rawContent;
 
-	private FEFilterConfiguration.Top expectedFrontendConfig;
+	private FrontendFilterConfiguration.Top expectedFrontendConfig;
 
 	@JsonIgnore
 	private RequiredData content;
@@ -172,7 +171,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		try {
-			final FEFilterConfiguration.Top actual = connector.getFilters().iterator().next().createFrontendConfig();
+			final FrontendFilterConfiguration.Top actual = connector.getFilters().iterator().next().createFrontendConfig();
 
 			if (expectedFrontendConfig != null) {
 				log.info("Checking actual FrontendConfig: {}", actual);

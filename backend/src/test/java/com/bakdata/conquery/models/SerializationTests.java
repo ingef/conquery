@@ -472,15 +472,15 @@ public class SerializationTests extends AbstractSerializationTest {
 	public void meInformation() throws IOException, JSONException {
 		User user = new User("name", "labe", getMetaStorage());
 
-		MeProcessor.FEMeInformation info = MeProcessor.FEMeInformation.builder()
-																	  .userName(user.getLabel())
-																	  .hideLogoutButton(false)
-																	  .groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
-																	  .datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FEDatasetAbility(true)))
-																	  .build();
+		MeProcessor.FrontendMeInformation info = MeProcessor.FrontendMeInformation.builder()
+																				  .userName(user.getLabel())
+																				  .hideLogoutButton(false)
+																				  .groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
+																				  .datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FrontendDatasetAbility(true)))
+																				  .build();
 
 		SerializationTestUtil
-				.forType(MeProcessor.FEMeInformation.class)
+				.forType(MeProcessor.FrontendMeInformation.class)
 				.objectMappers(getManagerInternalMapper(), getApiMapper())
 				.test(info);
 	}
