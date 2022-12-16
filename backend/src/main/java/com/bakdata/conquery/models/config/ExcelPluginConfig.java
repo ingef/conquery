@@ -1,9 +1,19 @@
 package com.bakdata.conquery.models.config;
 
+import java.util.Collections;
+import java.util.Map;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.models.service.AbstractResultProviderConfig;
 import com.google.common.collect.ImmutableMap;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.With;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -12,18 +22,11 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFDataFormat;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.Collections;
-import java.util.Map;
 
 @Data
-public class ExcelConfig {
+@EqualsAndHashCode(callSuper = true)
+@CPSType(base = PluginConfig.class, id = "XLSX")
+public class ExcelPluginConfig extends AbstractResultProviderConfig {
 
 	public static String DATE_STYLE = "date";
 	public static String CURRENCY_STYLE_PREFIX = "currency_";
@@ -63,8 +66,12 @@ public class ExcelConfig {
 	@Min(1)
 	private int lastRowToAutosize = 30;
 
+	public ExcelPluginConfig() {
+		super(false, -2);
+	}
 
-	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook, PrintSettings settings){
+
+	public ImmutableMap<String, CellStyle> generateStyles(SXSSFWorkbook workbook, PrintSettings settings) {
 		ImmutableMap.Builder<String, CellStyle> styles = ImmutableMap.builder();
 
 		// Add localized DateCell style
@@ -78,7 +85,7 @@ public class ExcelConfig {
 
 		// Add missing basic styles
 		for (String s : FALLBACK_STYLES.keySet()) {
-			if(this.styles.containsKey(s)){
+			if (this.styles.containsKey(s)) {
 				continue;
 			}
 			styles.put(s, FALLBACK_STYLES.get(s).generateStyle(workbook));
@@ -107,14 +114,14 @@ public class ExcelConfig {
 		private CellStyle generateStyle(SXSSFWorkbook workbook) {
 			DataFormat dataFormat = workbook.createDataFormat();
 			CellStyle style = workbook.createCellStyle();
-			if (fillPattern != null){
+			if (fillPattern != null) {
 				style.setFillPattern(fillPattern);
 			}
 			if (foregroundColors != null) {
 				style.setFillForegroundColor(foregroundColors);
 			}
 
-			if (dataFormatString != null){
+			if (dataFormatString != null) {
 				style.setDataFormat(dataFormat.getFormat(dataFormatString));
 			}
 

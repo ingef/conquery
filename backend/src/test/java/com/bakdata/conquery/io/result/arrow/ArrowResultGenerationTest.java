@@ -1,9 +1,9 @@
 package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultTestUtil.*;
-import static com.bakdata.conquery.io.result.arrow.ArrowUtil.generateFields;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
 import static com.bakdata.conquery.io.result.arrow.ArrowUtil.ROOT_ALLOCATOR;
+import static com.bakdata.conquery.io.result.arrow.ArrowUtil.generateFields;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.config.ArrowConfig;
+import com.bakdata.conquery.models.config.ArrowServiceConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
@@ -132,7 +132,7 @@ public class ArrowResultGenerationTest {
 		renderToStream(
 				(root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				printSettings,
-				new ArrowConfig(BATCH_SIZE),
+				new ArrowServiceConfig(true, 0, BATCH_SIZE),
 				ResultTestUtil.ID_FIELDS,
 				mquery.getResultInfos(),
 				mquery.streamResults()

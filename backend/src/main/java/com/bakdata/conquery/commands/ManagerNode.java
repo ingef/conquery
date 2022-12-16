@@ -40,6 +40,7 @@ import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownShard;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.service.Plugins;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
@@ -102,6 +103,8 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	// For registering form providers
 	private FormScanner formScanner;
 
+	private Plugins plugins = new Plugins();
+
 	public ManagerNode() {
 		this(DEFAULT_NAME);
 	}
@@ -134,7 +137,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 
 		this.config = config;
-		config.initialize(this);
+
+		plugins.registerPlugins(config);
+		plugins.initializePlugins(this);
 
 
 		// Initialization of internationalization
@@ -202,11 +207,13 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
 
+
 	private void configureApiServlet(ConqueryConfig config, DropwizardResourceConfig jerseyConfig) {
 		RESTServer.configure(config, jerseyConfig);
 		jerseyConfig.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
+				bind(plugins).to(Plugins.class);
 				bind(storage).to(MetaStorage.class);
 				bind(datasetRegistry).to(DatasetRegistry.class);
 			}

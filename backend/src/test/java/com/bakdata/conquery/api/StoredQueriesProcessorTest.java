@@ -30,11 +30,7 @@ import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
-import com.bakdata.conquery.models.config.ArrowResultProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.CsvResultProvider;
-import com.bakdata.conquery.models.config.ExcelResultProvider;
-import com.bakdata.conquery.models.config.ParquetResultProvider;
 import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -47,11 +43,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.service.ArrowResultService;
+import com.bakdata.conquery.models.service.CsvResultService;
+import com.bakdata.conquery.models.service.ExcelResultService;
+import com.bakdata.conquery.models.service.ParquetResultService;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.resources.api.ResultArrowResource;
-import com.bakdata.conquery.resources.api.ResultCsvResource;
-import com.bakdata.conquery.resources.api.ResultExcelResource;
-import com.bakdata.conquery.resources.api.ResultParquetResource;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
@@ -63,7 +59,6 @@ public class StoredQueriesProcessorTest {
 	public static final AuthorizationController AUTHORIZATION_CONTROLLER = new AuthorizationController(STORAGE, new DevelopmentAuthorizationConfig());
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private static final QueryProcessor processor = new QueryProcessor(new DatasetRegistry(0, CONFIG, null), STORAGE, CONFIG);
 
 	private static final Dataset DATASET_0 = new Dataset() {{
 		setName("dataset0");
@@ -85,10 +80,14 @@ public class StoredQueriesProcessorTest {
 	private static final ManagedExecutionId QUERY_ID_10 = createExecutionId(DATASET_0, "10");
 	public static final UriBuilder URI_BUILDER = UriBuilder.fromPath("http://localhost");
 
-	private static final ExcelResultProvider EXCEL_RESULT_PROVIDER = new ExcelResultProvider();
-	private static final CsvResultProvider CSV_RESULT_PROVIDER = new CsvResultProvider();
-	private static final ArrowResultProvider ARROW_RESULT_PROVIDER = new ArrowResultProvider();
-	private static final ParquetResultProvider PARQUET_RESULT_PROVIDER = new ParquetResultProvider();
+	private static final ExcelResultService EXCEL_RESULT_PROVIDER = new ExcelResultService();
+	private static final CsvResultService CSV_RESULT_PROVIDER = new CsvResultService();
+	private static final ArrowResultService ARROW_RESULT_PROVIDER = new ArrowResultService();
+	private static final ParquetResultService PARQUET_RESULT_PROVIDER = new ParquetResultService();
+
+	private static final QueryProcessor
+			processor =
+			new QueryProcessor(new DatasetRegistry(0, CONFIG, null), STORAGE, CONFIG, null, List.of(EXCEL_RESULT_PROVIDER, CSV_RESULT_PROVIDER, ARROW_RESULT_PROVIDER, PARQUET_RESULT_PROVIDER));
 
 	private static ManagedExecutionId createExecutionId(Dataset dataset0, String s) {
 		StringBuilder idBuilder = new StringBuilder("00000000-0000-0000-0000-000000000000");

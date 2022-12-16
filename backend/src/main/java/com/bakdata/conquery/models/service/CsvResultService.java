@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.config;
+package com.bakdata.conquery.models.service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,25 +9,24 @@ import java.util.List;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.csv.ResultCsvProcessor;
+import com.bakdata.conquery.models.config.CsvServiceConfig;
+import com.bakdata.conquery.models.config.PluginConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
-import io.dropwizard.jersey.DropwizardResourceConfig;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import com.google.auto.service.AutoService;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 @Slf4j
-@NoArgsConstructor
-@AllArgsConstructor
-@CPSType(base = ResultRendererProvider.class, id = "CSV")
-public class CsvResultProvider implements ResultRendererProvider {
-	private boolean hidden = false;
+@AutoService(Plugin.class)
+public class CsvResultService implements Plugin, ResultRendererProvider {
+
+	private CsvServiceConfig config = new CsvServiceConfig();
 
 	@SneakyThrows(MalformedURLException.class)
 	public Collection<URL> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
@@ -35,7 +34,7 @@ public class CsvResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		if (hidden && !allProviders) {
+		if (config.isHidden() && !allProviders) {
 			return Collections.emptyList();
 		}
 
@@ -43,14 +42,41 @@ public class CsvResultProvider implements ResultRendererProvider {
 	}
 
 	@Override
-	public void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager) {
+	public int getPriority() {
+		return config.getPriority();
+	}
 
-		environment.register(new AbstractBinder() {
+	@Override
+	public boolean isDefault() {
+		return true;
+	}
+
+	@Override
+	public Class<? extends PluginConfig> getPluginConfigClass() {
+		return CsvServiceConfig.class;
+	}
+
+	@Override
+	public void setConfig(PluginConfig config) {
+
+		if (config instanceof CsvServiceConfig csvConfig) {
+			this.config = csvConfig;
+			return;
+		}
+		throw new IllegalStateException("Incompatible config provided: " + config);
+	}
+
+	@Override
+	public void initialize(ManagerNode manager) {
+
+		final JerseyEnvironment jersey = manager.getEnvironment().jersey();
+
+		jersey.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
 				bindAsContract(ResultCsvProcessor.class);
 			}
 		});
-		environment.register(ResultCsvResource.class);
+		jersey.register(ResultCsvResource.class);
 	}
 }

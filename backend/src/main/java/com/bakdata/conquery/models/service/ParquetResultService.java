@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.config;
+package com.bakdata.conquery.models.service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,24 +9,22 @@ import java.util.List;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
-import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
 import com.bakdata.conquery.io.result.parquet.ResultParquetProcessor;
+import com.bakdata.conquery.models.config.ParquetServiceConfig;
+import com.bakdata.conquery.models.config.PluginConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.resources.api.ResultArrowResource;
 import com.bakdata.conquery.resources.api.ResultParquetResource;
-import io.dropwizard.jersey.DropwizardResourceConfig;
-import lombok.Data;
+import com.google.auto.service.AutoService;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import lombok.SneakyThrows;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
-@Data
-@CPSType(base = ResultRendererProvider.class, id = "PARQUET")
-public class ParquetResultProvider implements ResultRendererProvider {
+@AutoService(Plugin.class)
+public class ParquetResultService implements Plugin, ResultRendererProvider {
 
-	private boolean hidden = true;
+	private ParquetServiceConfig config = new ParquetServiceConfig();
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)
@@ -35,7 +33,7 @@ public class ParquetResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		if (hidden && !allProviders) {
+		if (config.isHidden() && !allProviders) {
 			return Collections.emptyList();
 		}
 
@@ -45,7 +43,33 @@ public class ParquetResultProvider implements ResultRendererProvider {
 	}
 
 	@Override
-	public void registerResultResource(DropwizardResourceConfig jersey, ManagerNode manager) {
+	public int getPriority() {
+		return config.getPriority();
+	}
+
+	@Override
+	public boolean isDefault() {
+		return true;
+	}
+
+	@Override
+	public Class<? extends PluginConfig> getPluginConfigClass() {
+		return ParquetServiceConfig.class;
+	}
+
+	@Override
+	public void setConfig(PluginConfig config) {
+		if (config instanceof ParquetServiceConfig parquetServiceConfig) {
+			this.config = parquetServiceConfig;
+			return;
+		}
+		throw new IllegalStateException("Incompatible config provided: " + config);
+	}
+
+	@Override
+	public void initialize(ManagerNode manager) {
+
+		final JerseyEnvironment jersey = manager.getEnvironment().jersey();
 		//inject required services
 		jersey.register(new AbstractBinder() {
 			@Override

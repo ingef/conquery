@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.config;
+package com.bakdata.conquery.models.service;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -12,33 +12,32 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
+import com.bakdata.conquery.models.config.ExcelPluginConfig;
+import com.bakdata.conquery.models.config.PluginConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.dropwizard.jersey.DropwizardResourceConfig;
-import lombok.Data;
+import com.google.auto.service.AutoService;
+import io.dropwizard.jersey.setup.JerseyEnvironment;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
-@Data
-@CPSType(base = ResultRendererProvider.class, id = "XLSX")
 @Slf4j
-public class ExcelResultProvider implements ResultRendererProvider {
+@AutoService(Plugin.class)
+public class ExcelResultService implements ResultRendererProvider, Plugin {
 
 	// Media type according to https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
-	private boolean hidden = false;
 
 	@Valid
 	@NotNull
-	private ExcelConfig config = new ExcelConfig();
+	private ExcelPluginConfig config = new ExcelPluginConfig();
 
 	@JsonIgnore
 	private int idColumnsCount = 0;
@@ -54,7 +53,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		}
 
 		// Check if the url should be hidden by default
-		if (hidden && !allProviders) {
+		if (config.isHidden() && !allProviders) {
 			log.trace("XLSX result urls are hidden");
 
 			return Collections.emptyList();
@@ -86,20 +85,44 @@ public class ExcelResultProvider implements ResultRendererProvider {
 	}
 
 	@Override
-	public void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager) {
+	public int getPriority() {
+		return config.getPriority();
+	}
 
+	@Override
+	public void initialize(ManagerNode managerNode) {
 		// Save id column count to later check if xlsx dimensions are feasible
-		idColumnsCount = manager.getConfig().getIdColumns().getIdResultInfos().size();
+		idColumnsCount = managerNode.getConfig().getIdColumns().getIdResultInfos().size();
+
+		final JerseyEnvironment jersey = managerNode.getEnvironment().jersey();
 
 		// inject required services
-		environment.register(new AbstractBinder() {
+		jersey.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
-				bind(config).to(ExcelConfig.class);
+				bind(config).to(ExcelPluginConfig.class);
 				bindAsContract(ResultExcelProcessor.class);
 			}
 		});
-		environment.register(ResultExcelResource.class);
+		jersey.register(ResultExcelResource.class);
 	}
 
+	@Override
+	public boolean isDefault() {
+		return true;
+	}
+
+	@Override
+	public Class<ExcelPluginConfig> getPluginConfigClass() {
+		return ExcelPluginConfig.class;
+	}
+
+	@Override
+	public void setConfig(PluginConfig config) {
+		if (config instanceof ExcelPluginConfig excelConfig) {
+			this.config = excelConfig;
+			return;
+		}
+		throw new IllegalStateException("Incompatible config provided: " + config);
+	}
 }

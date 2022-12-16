@@ -18,7 +18,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.config.ArrowConfig;
+import com.bakdata.conquery.models.config.ArrowServiceConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -53,7 +53,7 @@ public class ResultArrowProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig conqueryConfig;
 
-	private final ArrowConfig arrowConfig;
+	private final ArrowServiceConfig arrowConfig;
 
 
 	public Response createResultFile(Subject subject, ManagedExecution<?> exec, boolean pretty) {
@@ -93,7 +93,7 @@ public class ResultArrowProcessor {
 			String fileExtension,
 			MediaType mediaType,
 			ConqueryConfig config,
-			ArrowConfig arrowConfig) {
+			ArrowServiceConfig arrowConfig) {
 
 		ConqueryMDC.setLocation(subject.getName());
 
