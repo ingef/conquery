@@ -3,6 +3,9 @@ package com.bakdata.conquery.models.service;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.models.config.PluginConfig;
 
+/**
+ * TODO Doku
+ */
 public interface Plugin {
 
 	/**
@@ -19,10 +22,8 @@ public interface Plugin {
 	 */
 	void setConfig(PluginConfig config);
 
-	public default void initialize(ManagerNode managerNode) {
+	default void initialize(ManagerNode managerNode) {
 	}
-
-	;
 
 
 }

@@ -14,6 +14,9 @@ import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * TODO Doku
+ */
 @Slf4j
 public class Plugins {
 
@@ -58,6 +61,13 @@ public class Plugins {
 		return plugins.stream().filter(clazz::isInstance).map(clazz::cast).collect(MoreCollectors.toOptional());
 	}
 
+	/**
+	 * Might cache these
+	 *
+	 * @param clazz
+	 * @param <T>
+	 * @return
+	 */
 	public <T> Stream<T> getPlugins(Class<T> clazz) {
 		return plugins.stream().filter(clazz::isInstance).map(clazz::cast);
 	}
