@@ -16,7 +16,6 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -27,6 +26,7 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.util.io.IdColumnUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jetty.io.EofException;
@@ -52,7 +52,7 @@ public class ResultCsvProcessor {
 		// Check if subject is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(subject, exec);
 
-		final IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
+		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 
 		// Get the locale extracted by the LocaleFilter
 		final Locale locale = I18n.LOCALE.get();
@@ -61,7 +61,7 @@ public class ResultCsvProcessor {
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
 				final CsvRenderer renderer = new CsvRenderer(config.getCsv().createWriter(writer), settings);
-				renderer.toCSV(config.getFrontend().getQueryUpload().getIdResultInfos(), exec.getResultInfos(), exec.streamResults());
+				renderer.toCSV(config.getIdColumns().getIdResultInfos(), exec.getResultInfos(), exec.streamResults());
 			}
 			catch (EofException e) {
 				log.trace("User canceled download");

@@ -18,9 +18,9 @@ import javax.inject.Inject;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
-import com.bakdata.conquery.apiv1.frontend.FEList;
-import com.bakdata.conquery.apiv1.frontend.FERoot;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendList;
+import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -67,10 +67,10 @@ public class ConceptsProcessor {
 	private final DatasetRegistry namespaces;
 	private final Validator validator;
 
-	private final LoadingCache<Concept<?>, FEList> nodeCache =
+	private final LoadingCache<Concept<?>, FrontendList> nodeCache =
 			CacheBuilder.newBuilder().softValues().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
 				@Override
-				public FEList load(Concept<?> concept) {
+				public FrontendList load(Concept<?> concept) {
 					return FrontEndConceptBuilder.createTreeMap(concept);
 				}
 			});
@@ -78,17 +78,19 @@ public class ConceptsProcessor {
 	/**
 	 * Cache of all search results on SelectFilters.
 	 */
-	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FEValue>> searchResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
+	private final LoadingCache<Pair<SelectFilter<?>, String>, List<FrontendValue>>
+			searchResults =
+			CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
 
-		@Override
-		public List<FEValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
-			String searchTerm = filterAndSearch.getValue();
-			SelectFilter<?> filter = filterAndSearch.getKey();
+				@Override
+				public List<FrontendValue> load(Pair<SelectFilter<?>, String> filterAndSearch) {
+					String searchTerm = filterAndSearch.getValue();
+					SelectFilter<?> filter = filterAndSearch.getKey();
 
-			log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
+					log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
 
-			return autocompleteTextFilter(filter, searchTerm);
-		}
+					return autocompleteTextFilter(filter, searchTerm);
+				}
 
 	});
 
@@ -98,7 +100,7 @@ public class ConceptsProcessor {
 	 */
 	@Value
 	private static class CursorAndLength {
-		private final Cursor<FEValue> values;
+		private final Cursor<FrontendValue> values;
 		private final long size;
 	}
 
@@ -116,9 +118,9 @@ public class ConceptsProcessor {
 	});
 
 
-	public FERoot getRoot(NamespaceStorage storage, Subject subject) {
+	public FrontendRoot getRoot(NamespaceStorage storage, Subject subject) {
 
-		final FERoot root = FrontEndConceptBuilder.createRoot(storage, subject);
+		final FrontendRoot root = FrontEndConceptBuilder.createRoot(storage, subject);
 
 		// Report Violation
 		ValidatorHelper.createViolationsString(validator.validate(root), log.isTraceEnabled()).ifPresent(log::warn);
@@ -126,7 +128,7 @@ public class ConceptsProcessor {
 		return root;
 	}
 
-	public FEList getNode(Concept<?> concept) {
+	public FrontendList getNode(Concept<?> concept) {
 		try {
 			return nodeCache.get(concept);
 		}
@@ -188,13 +190,13 @@ public class ConceptsProcessor {
 
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
-		final List<FEValue> out = new ArrayList<>();
+		final List<FrontendValue> out = new ArrayList<>();
 
-		for (TrieSearch<FEValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
+		for (TrieSearch<FrontendValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
 			for (Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 
 				final String searchTerm = iterator.next();
-				final List<FEValue> results = search.findExact(List.of(searchTerm), Integer.MAX_VALUE);
+				final List<FrontendValue> results = search.findExact(List.of(searchTerm), Integer.MAX_VALUE);
 
 				if (results.isEmpty()) {
 					continue;
@@ -211,7 +213,7 @@ public class ConceptsProcessor {
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class AutoCompleteResult {
-		private final List<FEValue> values;
+		private final List<FrontendValue> values;
 		private final long total;
 	}
 
@@ -232,12 +234,12 @@ public class ConceptsProcessor {
 			// If we have none or a blank query string we list all values.
 			if (maybeText.isEmpty() || maybeText.get().isBlank()) {
 				final CursorAndLength cursorAndLength = listResults.get(filter);
-				final Cursor<FEValue> cursor = cursorAndLength.getValues();
+				final Cursor<FrontendValue> cursor = cursorAndLength.getValues();
 
 				return new AutoCompleteResult(cursor.get(startIncl, endExcl), cursorAndLength.getSize());
 			}
 
-			final List<FEValue> fullResult = searchResults.get(Pair.of(filter, maybeText.get()));
+			final List<FrontendValue> fullResult = searchResults.get(Pair.of(filter, maybeText.get()));
 
 			if (startIncl >= fullResult.size()) {
 				return new AutoCompleteResult(Collections.emptyList(), fullResult.size());
@@ -252,7 +254,7 @@ public class ConceptsProcessor {
 	}
 
 
-	private Cursor<FEValue> listAllValues(SelectFilter<?> filter) {
+	private Cursor<FrontendValue> listAllValues(SelectFilter<?> filter) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 		/*
 		Don't worry, I am as confused as you are!
@@ -262,12 +264,12 @@ public class ConceptsProcessor {
 		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
 		 */
 
-		final Iterator<FEValue>
+		final Iterator<FrontendValue>
 				iterators =
 				Iterators.concat(Iterators.transform(namespace.getFilterSearch().getSearchesFor(filter).iterator(), TrieSearch::iterator));
 
 		// Use Set to accomplish distinct values
-		final Set<FEValue> seen = new HashSet<>();
+		final Set<FrontendValue> seen = new HashSet<>();
 
 		return new Cursor<>(Iterators.filter(iterators, seen::add));
 	}
@@ -283,7 +285,7 @@ public class ConceptsProcessor {
 	 * Autocompletion for search terms. For values of {@link SelectFilter <?>}.
 	 * Is used by the serach cache to load missing items
 	 */
-	private List<FEValue> autocompleteTextFilter(SelectFilter<?> filter, String text) {
+	private List<FrontendValue> autocompleteTextFilter(SelectFilter<?> filter, String text) {
 		final Namespace namespace = namespaces.get(filter.getDataset().getId());
 
 		// Note that FEValues is equals/hashcode only on value:
@@ -305,13 +307,13 @@ public class ConceptsProcessor {
 	/**
 	 * Do a search with the supplied values.
 	 */
-	private static List<FEValue> createSourceSearchResult(TrieSearch<FEValue> search, Collection<String> values, OptionalInt numberOfTopItems) {
+	private static List<FrontendValue> createSourceSearchResult(TrieSearch<FrontendValue> search, Collection<String> values, OptionalInt numberOfTopItems) {
 		if (search == null) {
 			return Collections.emptyList();
 		}
 
 		// Quicksearch can split and also schedule for us.
-		List<FEValue> result = search.findItems(values, numberOfTopItems.orElse(Integer.MAX_VALUE));
+		List<FrontendValue> result = search.findItems(values, numberOfTopItems.orElse(Integer.MAX_VALUE));
 
 		if (numberOfTopItems.isEmpty() && result.size() == Integer.MAX_VALUE) {
 			//TODO This looks odd, do we really expect QuickSearch to allocate that huge of a list for us?
@@ -351,7 +353,7 @@ public class ConceptsProcessor {
 	public static class ResolvedFilterResult {
 		private ConnectorId tableId;
 		private FilterId filterId;
-		private Collection<FEValue> value;
+		private Collection<FrontendValue> value;
 	}
 
 	@Getter

@@ -26,7 +26,7 @@ import lombok.experimental.SuperBuilder;
 @Setter
 @ToString
 @NoArgsConstructor
-public abstract class FEFilterConfiguration {
+public abstract class FrontendFilterConfiguration {
 
 	/**
 	 * User readable name of the Filter.
@@ -49,7 +49,7 @@ public abstract class FEFilterConfiguration {
 	private String tooltip;
 
 	@Builder.Default
-	private List<FEValue> options = Collections.emptyList();
+	private List<FrontendValue> options = Collections.emptyList();
 
 	/**
 	 * min value for range filters.
@@ -94,7 +94,7 @@ public abstract class FEFilterConfiguration {
 	@Setter
 	@ToString(callSuper = true)
 	@NoArgsConstructor
-	public static class Nested extends FEFilterConfiguration {
+	public static class Nested extends FrontendFilterConfiguration {
 
 	}
 
@@ -108,7 +108,7 @@ public abstract class FEFilterConfiguration {
 	@Setter
 	@ToString(callSuper = true)
 	@NoArgsConstructor
-	public static class Top extends FEFilterConfiguration {
+	public static class Top extends FrontendFilterConfiguration {
 
 		@NotNull
 		private FilterId id;

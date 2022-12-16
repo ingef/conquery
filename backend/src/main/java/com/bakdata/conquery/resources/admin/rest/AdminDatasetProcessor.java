@@ -244,7 +244,7 @@ public class AdminDatasetProcessor {
 
 			parser.beginParsing(data);
 
-			EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getFrontend().getQueryUpload().getIds());
+			EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getIdColumns().getIds());
 			namespace.getStorage().updateIdMapping(mapping);
 
 		}

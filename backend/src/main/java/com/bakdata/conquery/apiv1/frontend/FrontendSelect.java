@@ -9,8 +9,9 @@ import lombok.Data;
 /**
  * This class represents a concept filter as it is presented to the front end.
  */
-@Data @Builder
-public class FESelect {
+@Data
+@Builder
+public class FrontendSelect {
 	private SelectId id;
 	private String label;
 	private String description;

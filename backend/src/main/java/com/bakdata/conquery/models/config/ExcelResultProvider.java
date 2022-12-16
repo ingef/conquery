@@ -89,7 +89,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 	public void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager) {
 
 		// Save id column count to later check if xlsx dimensions are feasible
-		idColumnsCount = manager.getConfig().getFrontend().getQueryUpload().getIdResultInfos().size();
+		idColumnsCount = manager.getConfig().getIdColumns().getIdResultInfos().size();
 
 		// inject required services
 		environment.register(new AbstractBinder() {

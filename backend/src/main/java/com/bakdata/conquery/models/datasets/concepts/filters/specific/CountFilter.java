@@ -6,8 +6,8 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
@@ -36,8 +36,8 @@ public class CountFilter extends Filter<Range.LongRange> {
 	private boolean distinct;
 
 	@Override
-	public void configureFrontend(FEFilterConfiguration.Top f) {
-		f.setType(FEFilterType.Fields.INTEGER_RANGE);
+	public void configureFrontend(FrontendFilterConfiguration.Top f) {
+		f.setType(FrontendFilterType.Fields.INTEGER_RANGE);
 		f.setMin(1);
 	}
 

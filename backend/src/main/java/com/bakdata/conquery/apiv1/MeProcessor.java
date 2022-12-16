@@ -42,11 +42,11 @@ public class MeProcessor {
 	 * @param user The user object to gather informations about
 	 * @return The information about the user
 	 */
-	public FEMeInformation getUserInformation(@NonNull User user) {
+	public FrontendMeInformation getUserInformation(@NonNull User user) {
 		// Compute dataset ablilities
-		Map<DatasetId, FEDatasetAbility> datasetAblilites = new HashMap<>();
+		Map<DatasetId, FrontendDatasetAbility> datasetAblilites = new HashMap<>();
 		for (Dataset dataset : datasetRegistry.getAllDatasets()) {
-			if(!user.isPermitted(dataset,Ability.READ)) {
+			if (!user.isPermitted(dataset, Ability.READ)) {
 				// User is not allowed to use dataset
 				continue;
 			}
@@ -54,21 +54,21 @@ public class MeProcessor {
 			// User can use the dataset and can possibly upload ids for resolving
 			datasetAblilites.put(
 					dataset.getId(),
-					new FEDatasetAbility(user.isPermitted( dataset, Ability.PRESERVE_ID))
+					new FrontendDatasetAbility(user.isPermitted(dataset, Ability.PRESERVE_ID))
 			);
 		}
 
 		// Build user information
-		return FEMeInformation.builder()
-				.userName(user.getLabel())
-				.hideLogoutButton(!user.isDisplayLogout())
-				.groups(
-						AuthorizationHelper.getGroupsOf(user, storage)
-								.stream()
-								.map(g -> new IdLabel<GroupId>(g.getId(),g.getLabel()))
-								.collect(Collectors.toList()))
-				.datasetAbilities(datasetAblilites)
-				.build();
+		return FrontendMeInformation.builder()
+									.userName(user.getLabel())
+									.hideLogoutButton(!user.isDisplayLogout())
+									.groups(
+											AuthorizationHelper.getGroupsOf(user, storage)
+															   .stream()
+															   .map(g -> new IdLabel<GroupId>(g.getId(), g.getLabel()))
+															   .collect(Collectors.toList()))
+									.datasetAbilities(datasetAblilites)
+									.build();
 	}
 
 	/**
@@ -76,10 +76,10 @@ public class MeProcessor {
 	 */
 	@Data
 	@Builder
-	public static class FEMeInformation {
+	public static class FrontendMeInformation {
 		String userName;
 		boolean hideLogoutButton;
-		Map<DatasetId, FEDatasetAbility> datasetAbilities;
+		Map<DatasetId, FrontendDatasetAbility> datasetAbilities;
 		List<IdLabel<GroupId>> groups;
 	}
 
@@ -90,7 +90,7 @@ public class MeProcessor {
 	@Data
 	@AllArgsConstructor
 	@NoArgsConstructor
-	public static class FEDatasetAbility {
+	public static class FrontendDatasetAbility {
 		private boolean canUpload;
 	}
 

@@ -9,18 +9,18 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 
-class FEValueTest {
+class FrontendValueTest {
 	/**
-	 * This taste ensures that changes to FEValue maintain, that equals/hashcode respect {@link FEValue#getValue()} only.
+	 * This taste ensures that changes to FEValue maintain, that equals/hashcode respect {@link FrontendValue#getValue()} only.
 	 */
 	@Test
 	public void testDistinctByNameOnly() {
-		final FEValue firstA = new FEValue("a", "Label A", "Label A");
-		final FEValue secondA = new FEValue("a", "Label A2", "Label A");
+		final FrontendValue firstA = new FrontendValue("a", "Label A", "Label A");
+		final FrontendValue secondA = new FrontendValue("a", "Label A2", "Label A");
 
-		final FEValue similarA = new FEValue("b", "Label A", "Label A");
+		final FrontendValue similarA = new FrontendValue("b", "Label A", "Label A");
 
-		final Set<FEValue> filter = new HashSet<>();
+		final Set<FrontendValue> filter = new HashSet<>();
 
 		filter.add(firstA);
 

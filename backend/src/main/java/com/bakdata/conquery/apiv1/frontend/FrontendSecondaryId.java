@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
  */
 @Data
 @RequiredArgsConstructor
-public class FESecondaryId {
+public class FrontendSecondaryId {
 	public final String id;
 	public final String label;
 	public final String description;

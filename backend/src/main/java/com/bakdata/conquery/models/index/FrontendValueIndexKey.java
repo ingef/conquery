@@ -9,7 +9,7 @@ import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString
-public class FEValueIndexKey extends AbstractIndexKey<FEValueIndex> {
+public class FrontendValueIndexKey extends AbstractIndexKey<FrontendValueIndex> {
 
 
 	private final int suffixCutoff;
@@ -28,7 +28,7 @@ public class FEValueIndexKey extends AbstractIndexKey<FEValueIndex> {
 	 */
 	private final String optionValueTemplate;
 
-	public FEValueIndexKey(URL csv, String internalColumn, String valueTemplate, String optionValueTemplate, int suffixCutoff, String splitPattern) {
+	public FrontendValueIndexKey(URL csv, String internalColumn, String valueTemplate, String optionValueTemplate, int suffixCutoff, String splitPattern) {
 		super(csv, internalColumn);
 		this.suffixCutoff = suffixCutoff;
 		this.splitPattern = splitPattern;
@@ -43,7 +43,7 @@ public class FEValueIndexKey extends AbstractIndexKey<FEValueIndex> {
 	}
 
 	@Override
-	public FEValueIndex createIndex() {
-		return new FEValueIndex(suffixCutoff, splitPattern, valueTemplate, optionValueTemplate);
+	public FrontendValueIndex createIndex() {
+		return new FrontendValueIndex(suffixCutoff, splitPattern, valueTemplate, optionValueTemplate);
 	}
 }

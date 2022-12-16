@@ -19,7 +19,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class FETable {
+public class FrontendTable {
 	@NotNull
 	private TableId id;
 
@@ -28,12 +28,12 @@ public class FETable {
 	@NotEmpty
 	private String label;
 
-	private FEValidityDate dateColumn;
+	private FrontendValidityDate dateColumn;
 
 	//TODO MT: This is a weird syntax but hey: https://youtrack.jetbrains.com/issue/IDEA-241656/Provide-a-fix-for-static-member-qualifying-type-may-not-be-annotated#focus=Comments-27-4158847.0-0
-	private List<FEFilterConfiguration.@Valid Top> filters;
+	private List<FrontendFilterConfiguration.@Valid Top> filters;
 
-	private List<@Valid FESelect> selects;
+	private List<@Valid FrontendSelect> selects;
 
 	@JsonProperty("default")
 	private Boolean isDefault;

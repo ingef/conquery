@@ -75,8 +75,8 @@ public class ColumnConfig {
 
 	/**
 	 * Name of column in csv for {@link AdminDatasetProcessor#setIdMapping(java.io.InputStream, com.bakdata.conquery.models.worker.Namespace)}.
-	 *
-	 * Also Name of output column for {@link FrontendConfig.UploadConfig#getIdResultInfos()}, ergo output csv-Columns.
+	 * <p>
+	 * Also Name of output column for {@link IdColumnConfig#getIdResultInfos()}, ergo output csv-Columns.
 	 */
 	private String field;
 

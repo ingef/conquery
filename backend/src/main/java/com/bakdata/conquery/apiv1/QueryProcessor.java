@@ -354,9 +354,8 @@ public class QueryProcessor {
 				statistic =
 				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(), datasetRegistry.get(dataset.getId())
 																								  .getStorage()
-																								  .getIdMapping(), config.getFrontend()
-																														 .getQueryUpload(), config.getLocale()
-																																				  .getDateReader(), upload.isOneRowPerEntity()
+																								  .getIdMapping(), config.getIdColumns(), config.getLocale()
+																																				.getDateReader(), upload.isOneRowPerEntity()
 
 				);
 

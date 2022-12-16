@@ -12,7 +12,7 @@ import lombok.experimental.FieldNameConstants;
  */
 @FieldNameConstants
 @NoArgsConstructor(access = AccessLevel.NONE)
-public final class FEFilterType {
+public final class FrontendFilterType {
 	private Void SELECT;
 	private Void MULTI_SELECT;
 	private Void BIG_MULTI_SELECT;

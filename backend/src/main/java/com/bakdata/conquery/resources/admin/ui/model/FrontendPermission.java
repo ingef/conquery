@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class FEPermission implements Comparable<FEPermission>{
+public class FrontendPermission implements Comparable<FrontendPermission> {
 	private static final ZoneId TIMEZONE = TimeZone.getDefault().toZoneId();
 
 	private final Set<String> domains;
@@ -24,18 +24,19 @@ public class FEPermission implements Comparable<FEPermission>{
 	private final Set<String> targets;
 	private final String creationTime;
 	private final String rawPermission;
-	
-	public static FEPermission from(ConqueryPermission cPermission) {
-		return new FEPermission(
-			cPermission.getDomains(),
-			cPermission.getAbilities(),
-			cPermission.getInstances(),
-			LocalDateTime.ofInstant(cPermission.getCreationTime(), TIMEZONE).format(DateTimeFormatter.ISO_DATE_TIME),
-			cPermission.toString());
+
+	public static FrontendPermission from(ConqueryPermission cPermission) {
+		return new FrontendPermission(
+				cPermission.getDomains(),
+				cPermission.getAbilities(),
+				cPermission.getInstances(),
+				LocalDateTime.ofInstant(cPermission.getCreationTime(), TIMEZONE).format(DateTimeFormatter.ISO_DATE_TIME),
+				cPermission.toString()
+		);
 	}
 
 	@Override
-	public int compareTo(FEPermission o) {
+	public int compareTo(FrontendPermission o) {
 		return rawPermission.compareTo(o.rawPermission);
 	}
 
