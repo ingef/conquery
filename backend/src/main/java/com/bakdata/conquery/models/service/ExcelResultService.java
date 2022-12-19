@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -113,8 +114,8 @@ public class ExcelResultService implements ResultRendererProvider, Plugin {
 	}
 
 	@Override
-	public Class<ExcelPluginConfig> getPluginConfigClass() {
-		return ExcelPluginConfig.class;
+	public Optional<Class<? extends PluginConfig>> getPluginConfigClass() {
+		return Optional.of(ExcelPluginConfig.class);
 	}
 
 	@Override

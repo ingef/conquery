@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -52,8 +53,8 @@ public class CsvResultService implements Plugin, ResultRendererProvider {
 	}
 
 	@Override
-	public Class<? extends PluginConfig> getPluginConfigClass() {
-		return CsvServiceConfig.class;
+	public Optional<Class<? extends PluginConfig>> getPluginConfigClass() {
+		return Optional.of(CsvServiceConfig.class);
 	}
 
 	@Override

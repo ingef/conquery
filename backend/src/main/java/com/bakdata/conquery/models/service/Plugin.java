@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.service;
 
+import java.util.Optional;
+
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.models.config.PluginConfig;
 
@@ -15,7 +17,7 @@ public interface Plugin {
 	 */
 	boolean isDefault();
 
-	Class<? extends PluginConfig> getPluginConfigClass();
+	Optional<Class<? extends PluginConfig>> getPluginConfigClass();
 
 	/**
 	 * Is called before {@link Plugin#initialize(ManagerNode)}

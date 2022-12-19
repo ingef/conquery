@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -58,8 +59,8 @@ public class ArrowResultService implements Plugin, ResultRendererProvider {
 	}
 
 	@Override
-	public Class<? extends PluginConfig> getPluginConfigClass() {
-		return ArrowServiceConfig.class;
+	public Optional<Class<? extends PluginConfig>> getPluginConfigClass() {
+		return Optional.of(ArrowServiceConfig.class);
 	}
 
 	@Override

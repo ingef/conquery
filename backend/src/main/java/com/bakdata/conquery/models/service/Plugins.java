@@ -29,9 +29,9 @@ public class Plugins {
 
 		ServiceLoader<Plugin> pluginServiceLoader = ServiceLoader.load(Plugin.class);
 		for (Plugin plugin : pluginServiceLoader) {
-			final Class<? extends PluginConfig> pluginConfigClass = plugin.getPluginConfigClass();
+			final Optional<Class<? extends PluginConfig>> pluginConfigClass = plugin.getPluginConfigClass();
 
-			final Optional<? extends PluginConfig> pluginConfig = config.getPluginConfig(pluginConfigClass);
+			final Optional<? extends PluginConfig> pluginConfig = pluginConfigClass.flatMap(config::getPluginConfig);
 			if (pluginConfig.isEmpty()) {
 				log.trace("Discovered plugin '{}' has no configuration provided", plugin);
 				if (!plugin.isDefault()) {
