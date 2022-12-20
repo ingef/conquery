@@ -630,14 +630,9 @@ paths:
                 $ref: "#/components/schemas/fe-dataset-ids"
                 
                   
-  /concepts/{concept}/resolve/:
+  /concepts/{concept}/resolve:
     post:
       parameters:
-        - in: path
-          name: dataset
-          required: true
-          schema:
-            $ref: "#/components/schemas/datasetId"
         - in: path
           name: concept
           required: true
