@@ -120,7 +120,7 @@ components:
           uniqueItems: true
           items:
             type: string
-        unkownCodes:
+        unknownCodes:
           type: array
           uniqueItems: true
           items:
@@ -503,7 +503,7 @@ components:
           type: object
           additionalProperties: true
 
-    entity-priview-config:
+    entity-preview-config:
       readOnly: true
       type: object
       properties:
