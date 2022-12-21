@@ -72,6 +72,7 @@ public class Jackson {
 				//.setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
 				.setInjectableValues(new MutableInjectableValues())
 				.addMixIn(Permission.class, ConqueryPermission.class);
+
 		return objectMapper;
 	}
 
