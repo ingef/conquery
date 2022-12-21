@@ -73,7 +73,6 @@ public class Jackson {
 				.setInjectableValues(new MutableInjectableValues())
 				.addMixIn(Permission.class, ConqueryPermission.class);
 
-		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(Object.class));
 		return objectMapper;
 	}
 
