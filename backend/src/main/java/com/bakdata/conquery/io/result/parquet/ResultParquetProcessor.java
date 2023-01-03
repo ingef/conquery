@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.api.ResultParquetResource;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.util.io.IdColumnUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,9 +35,12 @@ public class ResultParquetProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
 
-	public Response createResultFile(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
+	public Response createResultFile(Subject subject, ManagedExecution<?> exec, boolean pretty) {
 
 		ConqueryMDC.setLocation(subject.getName());
+
+		final Dataset dataset = exec.getDataset();
+
 		log.info("Downloading results for {} on dataset {}", exec, dataset);
 
 		ResultUtil.authorizeExecutable(subject, exec, dataset);
@@ -45,7 +49,7 @@ public class ResultParquetProcessor {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
+		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
 		PrintSettings settings = new PrintSettings(
@@ -61,7 +65,7 @@ public class ResultParquetProcessor {
 			final SingleTableResult singleTableResult = (SingleTableResult) exec;
 			ParquetRenderer.writeToStream(
 					output,
-					config.getFrontend().getQueryUpload().getIdResultInfos(),
+					config.getIdColumns().getIdResultInfos(),
 					singleTableResult.getResultInfos(),
 					settings,
 					singleTableResult.streamResults()

@@ -34,7 +34,8 @@ import {
 import type { StandardQueryStateT } from "./queryReducer";
 import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
 
-const useDropFileModal = () => {
+const useImport = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [dropFileModalOpen, setDropFileModalOpen] = useState(false);
   const [dropFileModalAndIdx, setFileDropModalAndIdx] = useState<
@@ -59,11 +60,27 @@ const useDropFileModal = () => {
     setFileDropModalAndIdx(undefined);
   }, []);
 
+  const onImportLines = useCallback(
+    (lines: string[], andIdx?: number) => {
+      dispatch(
+        initUploadConceptListModal({
+          rows: lines,
+          filename: t("importModal.pasted"),
+        }),
+      );
+
+      setDropFileModalOpen(true);
+      setFileDropModalAndIdx(andIdx);
+    },
+    [t, dispatch],
+  );
+
   return {
     dropFileModalOpen,
     dropFileModalAndIdx,
     onCloseDropFileModal,
     onDropFile,
+    onImportLines,
   };
 };
 
@@ -118,7 +135,8 @@ const Query = ({
     dropFileModalAndIdx,
     onCloseDropFileModal,
     onDropFile,
-  } = useDropFileModal();
+    onImportLines,
+  } = useImport();
 
   const onDropAndNode = useCallback(
     (item: DragItemQuery | DragItemConceptTreeNode) =>
@@ -214,8 +232,9 @@ const Query = ({
         <QueryEditorDropzone
           isInitial
           onDropNode={onDropAndNode}
-          onDropFile={(file) => onDropFile(file)}
+          onDropFile={onDropFile}
           onLoadPreviousQuery={onLoadQuery}
+          onImportLines={onImportLines}
         />
       ) : (
         <>
@@ -228,7 +247,8 @@ const Query = ({
                   group={group}
                   andIdx={andIdx}
                   onDropOrNode={onDropOrNode}
-                  onDropConceptListFile={onDropFile}
+                  onDropFile={onDropFile}
+                  onImportLines={onImportLines}
                   onDeleteGroup={onDeleteGroup}
                   onExcludeClick={onToggleExcludeGroup}
                   onDateClick={setQueryGroupModalAndIdx}
@@ -247,7 +267,8 @@ const Query = ({
             <QueryAndDropzone
               onLoadQuery={onLoadQuery}
               onDropAndNode={onDropAndNode}
-              onDropConceptListFile={onDropFile}
+              onDropFile={onDropFile}
+              onImportLines={onImportLines}
             />
           </Groups>
           <SecondaryIdSelector />

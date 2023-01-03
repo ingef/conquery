@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.SearchConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
@@ -34,7 +34,7 @@ public class UpdateFilterSearchJob extends Job {
 	private final NamespaceStorage storage;
 
 	@NonNull
-	private final Map<Searchable, TrieSearch<FEValue>> searchCache;
+	private final Map<Searchable, TrieSearch<FrontendValue>> searchCache;
 
 	@NonNull
 	private final SearchConfig searchConfig;
@@ -71,7 +71,7 @@ public class UpdateFilterSearchJob extends Job {
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		final ExecutorService service = Executors.newCachedThreadPool();
 
-		final Map<Searchable, TrieSearch<FEValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
+		final Map<Searchable, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
 
 		log.debug("Found {} searchable Objects.", collectedSearchables.size());
 
@@ -85,9 +85,9 @@ public class UpdateFilterSearchJob extends Job {
 				log.info("BEGIN collecting entries for `{}`", searchable);
 
 				try {
-					final List<TrieSearch<FEValue>> values = searchable.getSearches(searchConfig, storage);
+					final List<TrieSearch<FrontendValue>> values = searchable.getSearches(searchConfig, storage);
 
-					for (TrieSearch<FEValue> search : values) {
+					for (TrieSearch<FrontendValue> search : values) {
 						synchronizedResult.put(searchable, search);
 					}
 
@@ -128,7 +128,7 @@ public class UpdateFilterSearchJob extends Job {
 														.map(searchCache::get)
 														.filter(Objects::nonNull) // Failed or disabled searches are null
 														.flatMap(TrieSearch::stream)
-														.mapToInt(FEValue::hashCode)
+														.mapToInt(FrontendValue::hashCode)
 														.distinct()
 														.count()
 								))

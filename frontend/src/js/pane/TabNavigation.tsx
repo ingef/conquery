@@ -62,7 +62,12 @@ interface PropsT {
   dataTestId: string;
 }
 
-const TabNavigation: FC<PropsT> = ({ tabs, activeTab, onClickTab, dataTestId }) => {
+const TabNavigation: FC<PropsT> = ({
+  tabs,
+  activeTab,
+  onClickTab,
+  dataTestId,
+}) => {
   return (
     <Root data-test-id={dataTestId}>
       {tabs.map(({ key, label, tooltip, loading }) => {

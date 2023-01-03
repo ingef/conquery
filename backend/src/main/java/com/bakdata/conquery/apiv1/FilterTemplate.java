@@ -6,7 +6,7 @@ import java.util.List;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -15,8 +15,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
-import com.bakdata.conquery.models.index.FEValueIndex;
-import com.bakdata.conquery.models.index.FEValueIndexKey;
+import com.bakdata.conquery.models.index.FrontendValueIndex;
+import com.bakdata.conquery.models.index.FrontendValueIndexKey;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.util.search.TrieSearch;
@@ -90,9 +90,9 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 		return false;
 	}
 
-	public List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
+	public List<TrieSearch<FrontendValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
 
-		FEValueIndex search = indexService.getIndex(new FEValueIndexKey(
+		FrontendValueIndex search = indexService.getIndex(new FrontendValueIndexKey(
 				filePath,
 				columnValue,
 				value,

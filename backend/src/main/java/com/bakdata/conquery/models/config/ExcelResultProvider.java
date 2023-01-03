@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
@@ -14,7 +16,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,7 +24,7 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.SpreadsheetVersion;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 @Data
 @CPSType(base = ResultRendererProvider.class, id = "XLSX")
@@ -34,6 +35,10 @@ public class ExcelResultProvider implements ResultRendererProvider {
 	public static final MediaType MEDIA_TYPE = new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 
 	private boolean hidden = false;
+
+	@Valid
+	@NotNull
+	private ExcelConfig config = new ExcelConfig();
 
 	@JsonIgnore
 	private int idColumnsCount = 0;
@@ -84,12 +89,13 @@ public class ExcelResultProvider implements ResultRendererProvider {
 	public void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager) {
 
 		// Save id column count to later check if xlsx dimensions are feasible
-		idColumnsCount = manager.getConfig().getFrontend().getQueryUpload().getIdResultInfos().size();
+		idColumnsCount = manager.getConfig().getIdColumns().getIdResultInfos().size();
 
 		// inject required services
 		environment.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
+				bind(config).to(ExcelConfig.class);
 				bindAsContract(ResultExcelProcessor.class);
 			}
 		});

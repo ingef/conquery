@@ -7,8 +7,8 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
@@ -57,11 +57,11 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	private List<Column> distinctByColumn = Collections.emptyList();
 
 	@Override
-	public void configureFrontend(FEFilterConfiguration.Top f) throws ConceptConfigurationException {
+	public void configureFrontend(FrontendFilterConfiguration.Top f) throws ConceptConfigurationException {
 		final String type = switch (getColumn().getType()) {
-			case MONEY -> FEFilterType.Fields.MONEY_RANGE;
-			case INTEGER -> FEFilterType.Fields.INTEGER_RANGE;
-			case DECIMAL, REAL -> FEFilterType.Fields.REAL_RANGE;
+			case MONEY -> FrontendFilterType.Fields.MONEY_RANGE;
+			case INTEGER -> FrontendFilterType.Fields.INTEGER_RANGE;
+			case DECIMAL, REAL -> FrontendFilterType.Fields.REAL_RANGE;
 			default -> throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + getColumn().getType());
 		};
 

@@ -130,7 +130,7 @@ const findGroupsWithinQuarter =
 
     const eventGroupBuckets: Record<string, EntityEvent[]> = {};
 
-    for (let i = 0; i < events.length - 1; i++) {
+    for (let i = 0; i < events.length; i++) {
       const evt = events[i];
       const prevEvt = events[i - 1];
       const isDuplicateEvent =

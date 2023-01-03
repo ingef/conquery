@@ -6,7 +6,7 @@ on:
       - "frontend/**"
 
 jobs:
-  unit-tests:
+  format-lint-unittest:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     strategy:
@@ -24,6 +24,12 @@ jobs:
       - name: setup env variables
         working-directory: ./frontend
         run: cp .env.example .env
+      - name: lint
+        working-directory: ./frontend
+        run: yarn lint
+      - name: check format
+        working-directory: ./frontend
+        run: yarn checkformat
       - name: test
         working-directory: ./frontend
         run: yarn test

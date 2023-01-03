@@ -10,7 +10,6 @@ import type {
 import { exists } from "../common/helpers/exists";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
-import type { FiltersContextT } from "./TableFilter";
 import UploadFilterListModal from "./UploadFilterListModal";
 import { filterSuggestionToSelectOption } from "./suggestionsHelper";
 
@@ -38,12 +37,8 @@ const getPageToLoad = (
     : prevPageLoaded + 1;
 };
 
-interface FilterContextT extends FiltersContextT {
-  filterId: FilterT["id"];
-}
-
 interface PropsT {
-  context: FilterContextT;
+  filterId: FilterT["id"];
 
   label: string;
   indexPrefix?: number;
@@ -66,7 +61,7 @@ interface PropsT {
 }
 
 const FilterListMultiSelect: FC<PropsT> = ({
-  context,
+  filterId,
   value,
   onChange,
   label,
@@ -134,13 +129,7 @@ const FilterListMultiSelect: FC<PropsT> = ({
     setLoading(true);
 
     try {
-      const r = await postFilterValuesResolve(
-        context.datasetId,
-        context.treeId,
-        context.tableId,
-        context.filterId,
-        rows,
-      );
+      const r = await postFilterValuesResolve(filterId, rows);
 
       setResolved(r);
       setIsModalOpen(!!r.unknownCodes && r.unknownCodes.length > 0);

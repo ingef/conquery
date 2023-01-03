@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -14,8 +13,8 @@ import com.bakdata.conquery.apiv1.FormConfigPatch;
 import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
@@ -25,9 +24,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigFullRepresentation;
 import com.bakdata.conquery.models.forms.configs.FormConfig.FormConfigOverviewRepresentation;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -39,7 +36,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.TestOnly;
 
@@ -51,6 +47,10 @@ import org.jetbrains.annotations.TestOnly;
 @AllArgsConstructor
 public class FormConfigProcessor {
 
+	@Getter(onMethod = @__({@TestOnly}))
+	private static final ObjectMapper
+			MAPPER =
+			Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);
 	@Inject
 	private Validator validator;
 	@Inject
@@ -58,17 +58,11 @@ public class FormConfigProcessor {
 	@Inject
 	private DatasetRegistry datasetRegistry;
 
-	@Getter(onMethod = @__({@TestOnly}))
-	private final static ObjectMapper
-			MAPPER =
-			Jackson.MAPPER.copy().disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, SerializationFeature.WRITE_NULL_MAP_VALUES);
-	;
-
-
 	/**
 	 * Return an overview of all form config available to the subject. The selection can be reduced by setting a specific formType.
 	 * The provided overview does not contain the configured values for the form, just the meta data.
-	 * @param subject The subject vor which the overview is created.
+	 *
+	 * @param subject           The subject vor which the overview is created.
 	 * @param dataset
 	 * @param requestedFormType Optional form type to filter the overview to that specific type.
 	 **/
@@ -107,7 +101,7 @@ public class FormConfigProcessor {
 	 */
 	public FormConfigFullRepresentation getConfig(Subject subject, FormConfig form) {
 
-		subject.authorize(form,Ability.READ);
+		subject.authorize(form, Ability.READ);
 		return form.fullRepresentation(storage, subject);
 	}
 
@@ -134,10 +128,10 @@ public class FormConfigProcessor {
 	 * Adds a formular configuration under a specific dataset to the storage and grants the user the rights to manage/patch it.
 	 */
 	private FormConfigId addConfigToDataset(FormConfig internalConfig) {
-		
+
 		ValidatorHelper.failOnError(log, validator.validate(internalConfig));
 		storage.addFormConfig(internalConfig);
-				
+
 		return internalConfig.getId();
 	}
 
@@ -147,9 +141,9 @@ public class FormConfigProcessor {
 	public FormConfigFullRepresentation patchConfig(Subject subject, FormConfig config, FormConfigPatch patch) {
 
 		patch.applyTo(config, storage, subject);
-		
+
 		storage.updateFormConfig(config);
-		
+
 		return config.fullRepresentation(storage, subject);
 	}
 
@@ -158,21 +152,22 @@ public class FormConfigProcessor {
 	 */
 	public void deleteConfig(Subject subject, FormConfig config) {
 		User user = storage.getUser(subject.getId());
-		user.authorize( config, Ability.DELETE);
+
+		user.authorize(config, Ability.DELETE);
 		storage.removeFormConfig(config.getId());
 		// Delete corresponding permissions (Maybe better to put it into a slow job)
-		for(ConqueryPermission permission : user.getPermissions()) {
+		for (ConqueryPermission permission : user.getPermissions()) {
 
 			WildcardPermission wpermission = (WildcardPermission) permission;
 
-			if(!wpermission.getDomains().contains(FormConfigPermission.DOMAIN.toLowerCase())) {
+			if (!wpermission.getDomains().contains(FormConfigPermission.DOMAIN.toLowerCase())) {
 				continue;
 			}
-			if(!wpermission.getInstances().contains(config.getId().toString().toLowerCase())) {
+			if (!wpermission.getInstances().contains(config.getId().toString().toLowerCase())) {
 				continue;
 			}
-			
-			if(!wpermission.getInstances().isEmpty()) {
+
+			if (!wpermission.getInstances().isEmpty()) {
 				// Create new permission if it was a composite permission
 				Set<String> instancesCleared = new HashSet<>(wpermission.getInstances());
 				instancesCleared.remove(config.getId().toString());
@@ -180,7 +175,7 @@ public class FormConfigProcessor {
 						new WildcardPermission(List.of(wpermission.getDomains(), wpermission.getAbilities(), instancesCleared), Instant.now());
 				user.addPermission(clearedPermission);
 			}
-			
+
 			user.removePermission(wpermission);
 		}
 	}
