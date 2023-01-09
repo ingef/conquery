@@ -15,6 +15,9 @@ import org.apache.commons.lang3.StringUtils;
  * Fails if the provided token is not a string token or the tag cannot be matched to a locale.
  */
 public class LocaleDeserializer extends JsonDeserializer<Locale> {
+
+	public static final String ROOT_LOCALE_TAG = Locale.ROOT.toLanguageTag();
+
 	@Override
 	public Locale deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		final JsonToken jsonToken = p.currentToken();
@@ -25,7 +28,7 @@ public class LocaleDeserializer extends JsonDeserializer<Locale> {
 		final String languageTag = p.getText();
 		final Locale locale = Locale.forLanguageTag(languageTag);
 
-		if (StringUtils.isNotBlank(languageTag) && !languageTag.equals(Locale.ROOT.toLanguageTag()) && locale == Locale.ROOT) {
+		if (StringUtils.isNotBlank(languageTag) && !languageTag.equals(ROOT_LOCALE_TAG) && locale == Locale.ROOT) {
 			// When Locale#forLanguageTag does not recognize the tag it defaults to Locale.ROOT
 			// This should only be intended if the tag was blank or "und" (undefined ~= Locale.ROOT.toLanguageTag())
 			throw MismatchedInputException.from(p, Locale.class, "Unable to map language tag '" + languageTag + "' to locale");
