@@ -41,10 +41,16 @@ const EntityStatus = styled("div")`
 const TheEntityId = styled("div")<{ active?: boolean }>`
   font-weight: 700;
 `;
+
 const Number = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme }) => theme.col.gray};
   flex-shrink: 0;
+`;
+
+const Gray = styled("span")`
+  font-weight: 300;
+  color: ${({ theme }) => theme.col.gray};
 `;
 
 interface Props {
@@ -77,7 +83,9 @@ export const EntityIdsList = ({
         onClick={() => updateHistorySession({ entityId, years: [] })}
       >
         <Number style={{ width: numberWidth }}>#{index + 1}</Number>
-        <TheEntityId>{entityId.id}</TheEntityId>
+        <TheEntityId>
+          {entityId.id} <Gray>({entityId.kind})</Gray>
+        </TheEntityId>
         <Statuses>
           {entityIdsStatus[entityId.id] &&
             entityIdsStatus[entityId.id].map((val) => (
