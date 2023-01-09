@@ -16,6 +16,7 @@
     "format": "prettier --eslint-config-path ./.eslintrc.js --write '**/*.{js,jsx,ts,tsx,json,css}'",
     "heroku-postbuild": "yarn run build",
     "lint": "eslint --ext .ts --ext .tsx src/",
+    "checkformat": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css}\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "server": "nodemon --watch mock-api* --exec \"ts-node mock-api/server\"",
     "storybook": "start-storybook -p 6006 -s public",

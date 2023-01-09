@@ -34,9 +34,12 @@ public class ResultParquetProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig config;
 
-	public Response createResultFile(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
+	public Response createResultFile(Subject subject, ManagedExecution<?> exec, boolean pretty) {
 
 		ConqueryMDC.setLocation(subject.getName());
+
+		final Dataset dataset = exec.getDataset();
+
 		log.info("Downloading results for {} on dataset {}", exec, dataset);
 
 		ResultUtil.authorizeExecutable(subject, exec, dataset);

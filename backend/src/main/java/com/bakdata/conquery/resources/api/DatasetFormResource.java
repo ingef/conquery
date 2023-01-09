@@ -4,7 +4,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import java.util.Collection;
 
-import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -25,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Produces(AdditionalMediaTypes.JSON)
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
-public class FormResource {
+public class DatasetFormResource {
 
 	private final FormProcessor processor;
 

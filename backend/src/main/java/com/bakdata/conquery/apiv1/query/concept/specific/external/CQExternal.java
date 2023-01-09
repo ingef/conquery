@@ -24,8 +24,10 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
@@ -405,6 +407,11 @@ public class CQExternal extends CQElement {
 		return extrasByRow;
 	}
 
+
+	@Override
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		return new RequiredEntities(valuesResolved.keySet());
+	}
 
 	@Override
 	public List<ResultInfo> getResultInfos() {

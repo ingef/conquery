@@ -363,7 +363,6 @@ public class SerializationTests extends AbstractSerializationTest {
 		AbsoluteMode mode = new AbsoluteMode();
 		form.setTimeMode(mode);
 		mode.setForm(form);
-		mode.setFeatures(List.of(new CQConcept()));
 
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
@@ -663,9 +662,9 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil.forType(Double.class)
 							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.POSITIVE_INFINITY, null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(new Double(Double.MAX_VALUE));
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MAX_VALUE);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(new Double(Double.MIN_VALUE));
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MIN_VALUE);
 		SerializationTestUtil
 				.forType(EntityResult.class)
 				.objectMappers(getApiMapper(), getManagerInternalMapper())

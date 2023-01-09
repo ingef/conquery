@@ -137,7 +137,6 @@ public class FormConfigTest {
 		form.setTimeMode(mode);
 		form.setQueryGroupId(managedQuery.getId());
 		mode.setForm(form);
-		mode.setFeatures(List.of(new CQConcept()));
 
 
 		user = new User("test", "test", storage);
@@ -247,7 +246,7 @@ public class FormConfigTest {
 		RelativeMode mode3 = new RelativeMode();
 		form2.setTimeMode(mode3);
 		mode3.setForm(form);
-		mode3.setFeatures(List.of(new CQConcept()));
+		form.setFeatures(List.of(new CQConcept()));
 
 		TestForm form3 = new TestForm.Abs();
 

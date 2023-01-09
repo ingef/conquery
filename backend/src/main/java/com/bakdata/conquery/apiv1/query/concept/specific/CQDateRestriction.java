@@ -15,8 +15,10 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -82,5 +84,13 @@ public class CQDateRestriction extends CQElement {
 	public void visit(Consumer<Visitable> visitor) {
 		super.visit(visitor);
 		child.visit(visitor);
+	}
+
+	@Override
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		final CDateSet restriction = CDateSet.create();
+		restriction.maskedAdd(CDateRange.of(dateRange), context.getDateRestriction());
+
+		return getChild().collectRequiredEntities(context.withDateRestriction(restriction));
 	}
 }

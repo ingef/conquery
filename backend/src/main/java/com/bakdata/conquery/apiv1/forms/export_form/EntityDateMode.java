@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
@@ -37,41 +38,37 @@ public class EntityDateMode extends Mode {
     @Valid
     private Range<LocalDate> dateRange;
 
-    @NotEmpty
-    private List<CQElement> features = ImmutableList.of();
-
     @NotNull
-    private DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
+	private DateAggregationMode dateAggregationMode = DateAggregationMode.MERGE;
+
+
+	@Override
+	public void visit(Consumer<Visitable> visitor) {
+	}
+
+	@NotNull
+	private Alignment alignmentHint = Alignment.QUARTER;
+
 
 	@JsonView(View.InternalCommunication.class)
-    private ArrayConceptQuery resolvedFeatures;
+	private ArrayConceptQuery resolvedFeatures;
 
-    @Override
-    public void visit(Consumer<Visitable> visitor) {
-        features.forEach(e -> visitor.accept(e));
-    }
+	@Override
+	public void resolve(QueryResolveContext context) {
+		resolvedFeatures = ArrayConceptQuery.createFromFeatures(getForm().getFeatures());
+		resolvedFeatures.resolve(context);
+	}
 
-    @NotNull
-    private Alignment alignmentHint = Alignment.QUARTER;
-
-    @Override
-    public void resolve(QueryResolveContext context) {
-    	// Apply defaults to user concept
-        ExportForm.DefaultSelectSettable.enable(features);
-		resolvedFeatures = ArrayConceptQuery.createFromFeatures(features);
-        resolvedFeatures.resolve(context);
-    }
-
-    @Override
-    public Query createSpecializedQuery(DatasetRegistry datasets, User user, Dataset submittedDataset) {
-        CDateRange dateRestriction = dateRange == null ? CDateRange.all() : CDateRange.of(dateRange);
+	@Override
+	public Query createSpecializedQuery(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+		CDateRange dateRestriction = dateRange == null ? CDateRange.all() : CDateRange.of(dateRange);
 
         return new EntityDateQuery(
-                getForm().getPrerequisite(),
-                resolvedFeatures,
-                ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
-                dateRestriction,
-                dateAggregationMode
-        );
+				getForm().getPrerequisite(),
+				resolvedFeatures,
+				ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
+				dateRestriction,
+				dateAggregationMode
+		);
     }
 }

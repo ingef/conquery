@@ -264,6 +264,9 @@ const InputSelect = ({
             spellCheck={false}
             disabled={disabled}
             placeholder={placeholder || t("inputSelect.placeholder")}
+            onFocus={(e) => {
+              e.target.select();
+            }}
             onClick={(e) => {
               if (inputProps.onClick) {
                 inputProps.onClick(e);
