@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ComponentProps, memo } from "react";
+import { ComponentProps, createRef, memo } from "react";
 
 import { exists } from "../common/helpers/exists";
 
@@ -13,16 +13,17 @@ const Root = styled("div")`
   -webkit-overflow-scrolling: touch;
 `;
 
-type Props = Omit<ComponentProps<typeof Form>, "config"> & {
+type Props = Omit<Omit<ComponentProps<typeof Form>, "config">, "containerRef"> & {
   config: FormType | null;
 };
 
 const FormContainer = ({ config, ...props }: Props) => {
+  let ref = createRef<HTMLDivElement>();
   return (
-    <Root id="form-container">
+    <Root ref={ref}>
       {exists(config) && (
         <FormConfigLoader datasetOptions={props.datasetOptions}>
-          {() => <Form config={config} {...props} />}
+          {() => <Form config={config} containerRef={ref} {...props} />}
         </FormConfigLoader>
       )}
     </Root>

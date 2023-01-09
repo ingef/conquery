@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { memo } from "react";
+import { memo, RefObject } from "react";
 import { UseFormReturn } from "react-hook-form";
 
 import type { SelectOptionT } from "../../api/types";
@@ -22,13 +22,14 @@ interface Props {
   config: FormType;
   datasetOptions: SelectOptionT[];
   methods: UseFormReturn<DynamicFormValues>;
+  containerRef: RefObject<HTMLDivElement>;
 }
 
 export interface DynamicFormValues {
   [fieldname: string]: unknown;
 }
 
-const Form = memo(({ config, datasetOptions, methods }: Props) => {
+const Form = memo(({ config, datasetOptions, methods, containerRef }: Props) => {
   const activeLang = useActiveLang();
 
   return (
@@ -54,6 +55,7 @@ const Form = memo(({ config, datasetOptions, methods }: Props) => {
             availableDatasets={datasetOptions}
             locale={activeLang}
             optional={optional}
+            containerRef={containerRef}
           />
         );
       })}

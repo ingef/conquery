@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { memo, ReactNode } from "react";
+import { memo, ReactNode, RefObject } from "react";
 import {
   Control,
   ControllerRenderProps,
@@ -139,6 +139,7 @@ interface PropsT {
   register: UseFormRegister<DynamicFormValues>;
   setValue: UseFormSetValue<DynamicFormValues>;
   control: Control<DynamicFormValues>;
+  containerRef: RefObject<HTMLDivElement>;
 }
 
 const setValueConfig = {
@@ -147,7 +148,7 @@ const setValueConfig = {
   shouldTouch: true,
 };
 
-const Field = ({ field, ...commonProps }: PropsT) => {
+const Field = ({ field, containerRef, ...commonProps }: PropsT) => {
   const { formType, optional, locale, availableDatasets, setValue, control } =
     commonProps;
   const { t } = useTranslation();
@@ -354,6 +355,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
 
               return (
                 <Field
+                  containerRef={containerRef}
                   key={key}
                   field={f}
                   {...commonProps}
@@ -398,6 +400,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
 
                       return (
                         <Field
+                          containerRef={containerRef}
                           key={key}
                           field={f}
                           {...commonProps}
@@ -424,6 +427,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           {({ ref, ...fieldProps }) => (
             <FormConceptGroup
               fieldName={field.name}
+              containerRef={containerRef}
               value={fieldProps.value as FormConceptGroupT[]}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
               label={field.label[locale] || ""}

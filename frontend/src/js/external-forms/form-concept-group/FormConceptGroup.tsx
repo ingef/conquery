@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useEffect, useState, useRef } from "react";
+import { ReactNode, useEffect, useState, useRef, RefObject } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -82,6 +82,7 @@ interface Props {
     row: FormConceptGroupT;
     i: number;
   }) => ReactNode;
+  containerRef: RefObject<HTMLDivElement>;
 }
 
 const DropzoneListItem = styled("div")``;
@@ -125,7 +126,7 @@ const FormConceptGroup = (props: Props) => {
       // From Padding and margin
       height += 15;
       
-      document.getElementById("form-container")?.scrollBy({
+      props.containerRef.current?.scrollBy({
         top: height,
         behavior: 'smooth'
       })
