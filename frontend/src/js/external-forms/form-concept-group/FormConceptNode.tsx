@@ -122,7 +122,7 @@ const FormConceptNode: FC<PropsT> = ({
     : undefined;
 
   return (
-    <HoverNavigatable triggerNavigate={onFilterClick}>
+    <HoverNavigatable triggerNavigate={onClick}>
       <Root
         ref={(instance) => {
           ref.current = instance;
