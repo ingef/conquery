@@ -19,9 +19,7 @@ const Root = styled("div")<{
   display: inline-flex;
 `;
 
-// default time until the hover triggers navigation
-// 600 ms is the time for the action to be triggered
-// feels very responsive
+// estimated to feel responsive, but not too quick
 const TIME_UNTIL_NAVIGATE = 600;
 
 export const HoverNavigatable = ({
