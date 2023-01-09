@@ -120,7 +120,6 @@ const FormConceptGroup = (props: Props) => {
   const formRefList = useRef<(HTMLDivElement|null)[]>([]);
   useEffect(() => {
     if (scrollToDropzone) {
-      setScrollToDropzone(false);
       let length = formRefList.current.length;
       let height = formRefList.current[length-1]?.clientHeight || 0;
       // From Padding and margin
@@ -130,6 +129,7 @@ const FormConceptGroup = (props: Props) => {
         top: height,
         behavior: 'smooth'
       })
+      setScrollToDropzone(false);
     }
   }, [scrollToDropzone]);
 
@@ -207,7 +207,6 @@ const FormConceptGroup = (props: Props) => {
           onImportLines(lines, { valueIdx: props.value.length })
         }
         onDrop={(item: DragItemFile | DragItemConceptTreeNode) => {
-          console.log("onDrop");
           setScrollToDropzone(true);
           if (item.type === "__NATIVE_FILE__") {
             onDropFile(item.files[0], { valueIdx: props.value.length });
