@@ -15,6 +15,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -55,6 +56,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
 import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
+import com.bakdata.conquery.models.service.Plugins;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
@@ -76,6 +78,17 @@ public class QueryProcessor {
 	private MetaStorage storage;
 	@Inject
 	private ConqueryConfig config;
+	@Inject
+	private Plugins plugins;
+
+	private List<ResultRendererProvider> resultRendererProviders;
+
+	@PostConstruct
+	public void postConstruct() {
+		resultRendererProviders = plugins.getPlugins(ResultRendererProvider.class)
+										 .sorted()
+										 .toList();
+	}
 
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
@@ -212,7 +225,7 @@ public class QueryProcessor {
 						 .map(mq -> {
 							 OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
 							 if (mq.isReadyToDownload(datasetAbilities)) {
-								 status.setResultUrls(getDownloadUrls(config.getResultProviders(), mq, uriBuilder, allProviders));
+								 status.setResultUrls(getDownloadUrls(resultRendererProviders, mq, uriBuilder, allProviders));
 							 }
 							 return status;
 						 });
@@ -220,10 +233,10 @@ public class QueryProcessor {
 
 
 	/**
-	 * Sets the result urls for the given result renderer. Result urls are only rendered for providers that match the
+	 * Sets the result urls for the given result resultRendererProviders. Result urls are only rendered for providers that match the
 	 * result type of the execution.
 	 *
-	 * @param renderer     The renderer that are requested for a result url generation.
+	 * @param renderer     The resultRendererProviders that are requested for a result url generation.
 	 * @param exec         The execution that is used for generating the url
 	 * @param uriBuilder   The Uribuilder with the base configuration to generate the urls
 	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
@@ -340,7 +353,7 @@ public class QueryProcessor {
 		final FullExecutionStatus status = query.buildStatusFull(storage, subject, datasetRegistry, config);
 
 		if (query.isReadyToDownload(datasetAbilities)) {
-			status.setResultUrls(getDownloadUrls(config.getResultProviders(), query, url, allProviders));
+			status.setResultUrls(getDownloadUrls(resultRendererProviders, query, url, allProviders));
 		}
 		return status;
 	}
@@ -411,7 +424,7 @@ public class QueryProcessor {
 
 
 		FullExecutionStatus status = execution.buildStatusFull(storage, subject, datasetRegistry, config);
-		status.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, false));
+		status.setResultUrls(getDownloadUrls(resultRendererProviders, execution, uriBuilder, false));
 		return status;
 	}
 

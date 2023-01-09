@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ExcelConfig;
+import com.bakdata.conquery.models.config.ExcelPluginConfig;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -81,7 +81,7 @@ public class ExcelResultRenderTest {
 		// First we write to the buffer, than we read from it and parse it as TSV
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-		ExcelRenderer renderer = new ExcelRenderer(new ExcelConfig(),printSettings);
+		ExcelRenderer renderer = new ExcelRenderer(new ExcelPluginConfig(), printSettings);
 
 		renderer.renderToStream(
 				ResultTestUtil.ID_FIELDS,

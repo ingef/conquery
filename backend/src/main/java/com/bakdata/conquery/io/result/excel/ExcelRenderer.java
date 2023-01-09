@@ -12,7 +12,7 @@ import c10n.C10N;
 import com.bakdata.conquery.internationalization.ExcelSheetNameC10n;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.config.ExcelConfig;
+import com.bakdata.conquery.models.config.ExcelPluginConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -51,12 +51,12 @@ public class ExcelRenderer {
 	public static final int AUTOFILTER_SPACE_WIDTH = 3;
 
 	private final SXSSFWorkbook workbook;
-	private final ExcelConfig config;
+	private final ExcelPluginConfig config;
 	private final PrintSettings cfg;
 	private final ImmutableMap<String, CellStyle> styles;
 
 
-	public ExcelRenderer(ExcelConfig config, PrintSettings cfg) {
+	public ExcelRenderer(ExcelPluginConfig config, PrintSettings cfg) {
 		workbook = new SXSSFWorkbook();
 		this.config = config;
 		styles = config.generateStyles(workbook, cfg);
@@ -321,21 +321,21 @@ public class ExcelRenderer {
 			));
 		}
 		cell.setCellValue(CDate.toLocalDate(((Number) value).intValue()));
-		cell.setCellStyle(styles.get(ExcelConfig.DATE_STYLE));
+		cell.setCellStyle(styles.get(ExcelPluginConfig.DATE_STYLE));
 	}
 
 	public static void writeIntegerCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
 		cell.setCellValue(((Number) value).longValue());
-		cell.setCellStyle(styles.get(ExcelConfig.INTEGER_STYLE));
+		cell.setCellStyle(styles.get(ExcelPluginConfig.INTEGER_STYLE));
 	}
 
 	public static void writeNumericCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
 		cell.setCellValue(((Number) value).doubleValue());
-		cell.setCellStyle(styles.get(ExcelConfig.NUMERIC_STYLE));
+		cell.setCellStyle(styles.get(ExcelPluginConfig.NUMERIC_STYLE));
 	}
 
 	public static void writeMoneyCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles) {
-		CellStyle currencyStyle = styles.get(ExcelConfig.CURRENCY_STYLE_PREFIX + settings.getCurrency().getCurrencyCode());
+		CellStyle currencyStyle = styles.get(ExcelPluginConfig.CURRENCY_STYLE_PREFIX + settings.getCurrency().getCurrencyCode());
 		if (currencyStyle == null) {
 			// Print as cents or what ever the minor currency unit is
 			cell.setCellValue(value.toString());

@@ -6,7 +6,6 @@ import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
-import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormProcessor;
@@ -75,10 +74,5 @@ public class ApiV1 implements ResourcesProvider {
 		jersey.register(DatasetResource.class);
 		jersey.register(FilterResource.class);
 		jersey.register(MeResource.class);
-
-		for (ResultRendererProvider resultProvider : manager.getConfig().getResultProviders()) {
-			resultProvider.registerResultResource(jersey.getResourceConfig(), manager);
-		}
-
 	}
 }

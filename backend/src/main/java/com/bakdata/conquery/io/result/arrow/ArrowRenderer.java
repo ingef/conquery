@@ -9,7 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.config.ArrowConfig;
+import com.bakdata.conquery.models.config.ArrowServiceConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -40,7 +40,7 @@ public class ArrowRenderer {
     public static void renderToStream(
 			Function<VectorSchemaRoot, ArrowWriter> writerProducer,
 			PrintSettings printSettings,
-			ArrowConfig arrowConfig,
+			ArrowServiceConfig arrowConfig,
 			List<ResultInfo> idHeaders,
 			List<ResultInfo> resultInfo,
 			Stream<EntityResult> results) throws IOException {

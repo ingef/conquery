@@ -8,11 +8,9 @@ import java.util.Optional;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
-import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
@@ -47,18 +45,6 @@ public class ConqueryConfig extends Configuration {
 	@Valid
 	@NotNull
 	private CSVConfig csv = new CSVConfig();
-
-	/**
-	 * The order of this lists determines the ordner of the generated result urls in a query status.
-	 */
-	@Valid
-	@NotNull
-	private List<ResultRendererProvider> resultProviders = List.of(
-			new ExcelResultProvider(),
-			new CsvResultProvider(),
-			new ArrowResultProvider(),
-			new ParquetResultProvider()
-	);
 	@Valid
 	@NotNull
 	private LocaleConfig locale = new LocaleConfig();
@@ -112,10 +98,6 @@ public class ConqueryConfig extends Configuration {
 	private Boolean debugMode = null;
 
 	private boolean failOnError = false;
-
-	public void initialize(ManagerNode node) {
-		plugins.forEach(config -> config.initialize((node)));
-	}
 
 	public <T extends PluginConfig> Optional<T> getPluginConfig(Class<T> type) {
 		return plugins.stream()

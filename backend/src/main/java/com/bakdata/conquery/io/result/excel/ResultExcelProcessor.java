@@ -13,7 +13,7 @@ import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ExcelConfig;
+import com.bakdata.conquery.models.config.ExcelPluginConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -36,7 +36,7 @@ public class ResultExcelProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final ConqueryConfig conqueryConfig;
 
-	private final ExcelConfig excelConfig;
+	private final ExcelPluginConfig excelConfig;
 
 
 	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty) {
