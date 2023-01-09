@@ -40,6 +40,7 @@ const EntityStatus = styled("div")`
 `;
 const TheEntityId = styled("div")<{ active?: boolean }>`
   font-weight: 700;
+  flex-shrink: 0;
 `;
 
 const Number = styled("div")`
