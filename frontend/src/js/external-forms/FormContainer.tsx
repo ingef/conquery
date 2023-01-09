@@ -13,7 +13,7 @@ const Root = styled("div")`
   -webkit-overflow-scrolling: touch;
 `;
 
-type Props = Omit<Omit<ComponentProps<typeof Form>, "config">, "containerRef"> & {
+type Props = Omit<ComponentProps<typeof Form>, "config" | "containerRef"> & {
   config: FormType | null;
 };
 
