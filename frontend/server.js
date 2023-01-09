@@ -12,7 +12,7 @@ const rateLimit = require('express-rate-limit');
 
 const PORT = process.env.PORT || 8000;
 // Maximum requests per minute
-const requestsPerMinute = process.env.REQUESTS_PER_MINUTE || 50;
+const requestsPerMinute = process.env.REQUESTS_PER_MINUTE || 1000;
 
 app.use(
   helmet({
@@ -23,7 +23,7 @@ app.disable("x-powered-by");
 app.use(compression());
 app.use(cors());
 
-// set up rate limiter: maximum of fifty requests per minute
+// set up rate limiter: default maximum of 1000 requests per minute
 app.use(
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
