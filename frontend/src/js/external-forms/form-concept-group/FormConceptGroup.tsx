@@ -29,7 +29,6 @@ import {
   useVisibleConceptListFields,
 } from "../stateSelectors";
 
-
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import FormConceptNode from "./FormConceptNode";
 import {
@@ -117,18 +116,18 @@ const FormConceptGroup = (props: Props) => {
   // indicator if it should be scrolled down back to the dropZone
   const [scrollToDropzone, setScrollToDropzone] = useState<boolean>(false);
   const dropzoneRef = useRef<HTMLDivElement>(null);
-  const formRefList = useRef<(HTMLDivElement|null)[]>([]);
+  const formRefList = useRef<(HTMLDivElement | null)[]>([]);
   useEffect(() => {
     if (scrollToDropzone) {
       let length = formRefList.current.length;
-      let height = formRefList.current[length-1]?.clientHeight || 0;
+      let height = formRefList.current[length - 1]?.clientHeight || 0;
       // From Padding and margin
       height += 15;
-      
+
       props.containerRef.current?.scrollBy({
         top: height,
-        behavior: 'smooth'
-      })
+        behavior: "smooth",
+      });
       setScrollToDropzone(false);
     }
   }, [scrollToDropzone]);

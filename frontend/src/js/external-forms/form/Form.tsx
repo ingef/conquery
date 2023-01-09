@@ -29,38 +29,40 @@ export interface DynamicFormValues {
   [fieldname: string]: unknown;
 }
 
-const Form = memo(({ config, datasetOptions, methods, containerRef }: Props) => {
-  const activeLang = useActiveLang();
+const Form = memo(
+  ({ config, datasetOptions, methods, containerRef }: Props) => {
+    const activeLang = useActiveLang();
 
-  return (
-    <FormContent>
-      {config.description && config.description[activeLang] && (
-        <SxFormHeader
-          description={config.description[activeLang]!}
-          manualUrl={config.manualUrl}
-        />
-      )}
-      {config.fields.map((field, i) => {
-        const key = getFieldKey(config.type, field, i);
-        const optional = isOptionalField(field);
-
-        return (
-          <Field
-            key={key}
-            formType={config.type}
-            register={methods.register}
-            control={methods.control}
-            field={field}
-            setValue={methods.setValue}
-            availableDatasets={datasetOptions}
-            locale={activeLang}
-            optional={optional}
-            containerRef={containerRef}
+    return (
+      <FormContent>
+        {config.description && config.description[activeLang] && (
+          <SxFormHeader
+            description={config.description[activeLang]!}
+            manualUrl={config.manualUrl}
           />
-        );
-      })}
-    </FormContent>
-  );
-});
+        )}
+        {config.fields.map((field, i) => {
+          const key = getFieldKey(config.type, field, i);
+          const optional = isOptionalField(field);
+
+          return (
+            <Field
+              key={key}
+              formType={config.type}
+              register={methods.register}
+              control={methods.control}
+              field={field}
+              setValue={methods.setValue}
+              availableDatasets={datasetOptions}
+              locale={activeLang}
+              optional={optional}
+              containerRef={containerRef}
+            />
+          );
+        })}
+      </FormContent>
+    );
+  },
+);
 
 export default Form;
