@@ -19,7 +19,7 @@ type Props = Omit<ComponentProps<typeof Form>, "config"> & {
 
 const FormContainer = ({ config, ...props }: Props) => {
   return (
-    <Root>
+    <Root id="form-container">
       {exists(config) && (
         <FormConfigLoader datasetOptions={props.datasetOptions}>
           {() => <Form config={config} {...props} />}

@@ -28,6 +28,7 @@ import {
   useAllowExtendedCopying,
   useVisibleConceptListFields,
 } from "../stateSelectors";
+import { animateScroll as scroll} from 'react-scroll'
 
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import FormConceptNode from "./FormConceptNode";
@@ -115,13 +116,22 @@ const FormConceptGroup = (props: Props) => {
   // indicator if it should be scrolled down back to the dropZone
   const [scrollToDropzone, setScrollToDropzone] = useState<boolean>(false);
   const dropzoneRef = useRef<HTMLDivElement>(null);
+  const formRefList = useRef<(HTMLDivElement|null)[]>([]);
   useEffect(() => {
     if (scrollToDropzone) {
-      dropzoneRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
       setScrollToDropzone(false);
+      let length = formRefList.current.length;
+      let height = formRefList.current[length-1]?.clientHeight || 0;
+      // From Padding and margin
+      height += 15;
+      console.log(height);
+      console.log(formRefList.current);
+      scroll.scrollMore(height, {
+        duration: 100, // ms
+        delay: 0, // ms
+        smooth: 'easeInOutQuart',
+        containerId: "form-container",
+      });
     }
   }, [scrollToDropzone]);
 
@@ -199,6 +209,7 @@ const FormConceptGroup = (props: Props) => {
           onImportLines(lines, { valueIdx: props.value.length })
         }
         onDrop={(item: DragItemFile | DragItemConceptTreeNode) => {
+          console.log("onDrop");
           setScrollToDropzone(true);
           if (item.type === "__NATIVE_FILE__") {
             onDropFile(item.files[0], { valueIdx: props.value.length });
@@ -227,7 +238,9 @@ const FormConceptGroup = (props: Props) => {
           );
         }}
         items={props.value.map((row, i) => (
-          <DropzoneListItem>
+          <DropzoneListItem
+            ref={(element) => formRefList.current.push(element)}
+          >
             {props.renderRowPrefix
               ? props.renderRowPrefix({
                   value: props.value,
