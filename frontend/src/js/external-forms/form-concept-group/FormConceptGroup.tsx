@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useEffect, useState, useRef } from "react";
+import { ReactNode, useEffect, useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -111,6 +111,10 @@ const FormConceptGroup = (props: Props) => {
   const { t } = useTranslation();
   const newValue = props.newValue;
   const defaults = props.defaults || {};
+  const tableConfig = {
+    allowlistedTables: props.allowlistedTables,
+    blocklistedTables: props.blocklistedTables,
+  };
 
   // indicator if it should be scrolled down back to the dropZone
   const [scrollToDropzone, setScrollToDropzone] = useState<boolean>(false);
@@ -146,6 +150,7 @@ const FormConceptGroup = (props: Props) => {
     newValue,
     onChange: props.onChange,
     defaults,
+    tableConfig,
     isValidConcept: props.isValidConcept,
   });
 
@@ -159,11 +164,13 @@ const FormConceptGroup = (props: Props) => {
     newValue,
   });
 
-  const editedNode = exists(editedFormQueryNodePosition)
-    ? props.value[editedFormQueryNodePosition.valueIdx].concepts[
-        editedFormQueryNodePosition.conceptIdx
-      ]
-    : null;
+  const editedNode = useMemo(() => {
+    return exists(editedFormQueryNodePosition)
+      ? props.value[editedFormQueryNodePosition.valueIdx].concepts[
+          editedFormQueryNodePosition.conceptIdx
+        ]
+      : null;
+  }, [editedFormQueryNodePosition, props.value]);
 
   return (
     <div>
@@ -222,7 +229,7 @@ const FormConceptGroup = (props: Props) => {
             addConcept(
               addValue(props.value, newValue),
               props.value.length, // Assuming the last index has increased after addValue
-              initializeConcept(item, defaults),
+              initializeConcept(item, defaults, tableConfig),
             ),
           );
         }}
@@ -283,7 +290,7 @@ const FormConceptGroup = (props: Props) => {
                       nodeHasNonDefaultSettings(concept)
                     }
                     hasFilterValues={nodeHasFilterValues(concept)}
-                    onFilterClick={() =>
+                    onClick={() =>
                       setEditedFormQueryNodePosition({
                         valueIdx: i,
                         conceptIdx: j,
@@ -335,7 +342,7 @@ const FormConceptGroup = (props: Props) => {
                           props.value,
                           i,
                           j,
-                          initializeConcept(item, defaults),
+                          initializeConcept(item, defaults, tableConfig),
                         ),
                       );
                     }}
