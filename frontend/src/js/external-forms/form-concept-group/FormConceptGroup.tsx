@@ -28,7 +28,7 @@ import {
   useAllowExtendedCopying,
   useVisibleConceptListFields,
 } from "../stateSelectors";
-import { animateScroll as scroll} from 'react-scroll'
+
 
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import FormConceptNode from "./FormConceptNode";
@@ -124,14 +124,11 @@ const FormConceptGroup = (props: Props) => {
       let height = formRefList.current[length-1]?.clientHeight || 0;
       // From Padding and margin
       height += 15;
-      console.log(height);
-      console.log(formRefList.current);
-      scroll.scrollMore(height, {
-        duration: 100, // ms
-        delay: 0, // ms
-        smooth: 'easeInOutQuart',
-        containerId: "form-container",
-      });
+      
+      document.getElementById("form-container")?.scrollBy({
+        top: height,
+        behavior: 'smooth'
+      })
     }
   }, [scrollToDropzone]);
 
