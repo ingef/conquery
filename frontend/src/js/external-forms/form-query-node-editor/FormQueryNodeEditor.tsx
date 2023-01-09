@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-
 import type { PostPrefixForSuggestionsParams } from "../../api/api";
 import {
   ConceptIdT,
@@ -8,14 +6,12 @@ import {
   SelectorResultType,
 } from "../../api/types";
 import { toUpperCaseUnderscore } from "../../common/helpers/commonHelper";
-import { usePrevious } from "../../common/helpers/usePrevious";
 import type { NodeResetConfig } from "../../model/node";
 import { tableIsEditable } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
 import type { EditedFormQueryNodePosition } from "../form-concept-group/FormConceptGroup";
-import { initTables } from "../transformers";
 
 interface PropsT {
   formType: string;
@@ -58,43 +54,13 @@ interface PropsT {
 }
 
 const FormQueryNodeEditor = (props: PropsT) => {
-  const [editedNode, setEditedNode] = useState(props.node);
-
-  const previousNodePosition = usePrevious(props.nodePosition);
-  useEffect(
-    function () {
-      if (previousNodePosition !== props.nodePosition) {
-        setEditedNode(
-          initTables({
-            blocklistedTables: props.blocklistedTables,
-            allowlistedTables: props.allowlistedTables,
-          })(props.node),
-        );
-      }
-    },
-    [
-      previousNodePosition,
-      props.nodePosition,
-      props.node,
-      props.blocklistedTables,
-      props.allowlistedTables,
-    ],
-  );
-
-  useEffect(
-    function syncWithNodeFromOutside() {
-      setEditedNode(props.node);
-    },
-    [props.node],
-  );
-
   const showTables =
-    !!editedNode &&
-    editedNode.tables &&
-    editedNode.tables.length > 1 &&
-    editedNode.tables.some((table) => tableIsEditable(table));
+    !!props.node &&
+    props.node.tables &&
+    props.node.tables.length > 1 &&
+    props.node.tables.some((table) => tableIsEditable(table));
 
-  if (!editedNode) {
+  if (!props.node) {
     return null;
   }
 
@@ -102,7 +68,7 @@ const FormQueryNodeEditor = (props: PropsT) => {
     <QueryNodeEditor
       name={`${props.formType}_${toUpperCaseUnderscore(props.fieldName)}`}
       onLoadFilterSuggestions={props.onLoadFilterSuggestions}
-      node={editedNode}
+      node={props.node}
       showTables={showTables}
       blocklistedTables={props.blocklistedTables}
       allowlistedTables={props.allowlistedTables}
