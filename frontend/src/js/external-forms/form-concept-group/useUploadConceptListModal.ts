@@ -16,6 +16,7 @@ import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-t
 import {
   addConceptsFromFile,
   FormConceptGroupT,
+  TableConfig,
 } from "./formConceptGroupState";
 
 interface UploadConceptListModalContext {
@@ -28,12 +29,14 @@ export const useUploadConceptListModal = ({
   onChange,
   newValue,
   defaults,
+  tableConfig,
   isValidConcept,
 }: {
   value: FormConceptGroupT[];
   onChange: (value: FormConceptGroupT[]) => void;
   newValue: FormConceptGroupT;
   defaults: ConceptListDefaultsType;
+  tableConfig: TableConfig;
   isValidConcept?: (concept: DragItemConceptTreeNode) => boolean;
 }) => {
   const { t } = useTranslation();
@@ -104,6 +107,7 @@ export const useUploadConceptListModal = ({
         rootConcepts,
         resolvedConcepts,
 
+        tableConfig,
         defaults,
         isValidConcept,
 

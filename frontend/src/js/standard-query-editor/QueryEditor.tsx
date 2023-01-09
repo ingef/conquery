@@ -20,12 +20,11 @@ export const QueryEditor = () => {
   } | null>(null);
 
   const datasetId = useDatasetId();
+  const onClose = useCallback(() => setEditedNode(null), []);
 
   useEffect(() => {
-    setEditedNode(null);
-  }, [datasetId]);
-
-  const onClose = useCallback(() => setEditedNode(null), []);
+    onClose();
+  }, [datasetId, onClose]);
 
   return (
     <Root>

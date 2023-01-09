@@ -25,6 +25,7 @@ import type { ModeT } from "../../ui-components/InputRange";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import {
   initSelectsWithDefaults,
+  initTables,
   initTablesWithDefaults,
 } from "../transformers";
 
@@ -34,6 +35,11 @@ export type FormConceptNodeT = DragItemConceptTreeNode & {
 export interface FormConceptGroupT {
   concepts: (FormConceptNodeT | null)[];
   connector: string;
+}
+
+export interface TableConfig {
+  allowlistedTables?: string[];
+  blocklistedTables?: string[];
 }
 
 export const addValue = (
@@ -265,6 +271,7 @@ export const addConceptsFromFile = (
   rootConcepts: TreesT,
   resolvedConcepts: string[],
 
+  tableConfig: TableConfig,
   defaults: ConceptListDefaultsType,
   isValidConcept: ((item: FormConceptNodeT) => boolean) | undefined,
 
@@ -288,7 +295,7 @@ export const addConceptsFromFile = (
 
   if (!queryElement) return value;
 
-  const concept = initializeConcept(queryElement, defaults);
+  const concept = initializeConcept(queryElement, defaults, tableConfig);
 
   if (!concept || (!!isValidConcept && !isValidConcept(concept))) return value;
 
@@ -311,12 +318,14 @@ export const addConceptsFromFile = (
 export const initializeConcept = (
   item: FormConceptNodeT,
   defaults: ConceptListDefaultsType,
+  tableConfig: TableConfig,
 ) => {
   if (!item) return item;
 
   return compose(
     initSelectsWithDefaults(defaults.selects),
     initTablesWithDefaults(defaults.connectors),
+    initTables(tableConfig),
   )({
     ...item,
     excludeFromSecondaryId: false,

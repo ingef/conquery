@@ -70,7 +70,7 @@ interface PropsT {
   conceptIdx: number;
   conceptNode: DragItemConceptTreeNode;
   name: string;
-  onFilterClick: () => void;
+  onClick: () => void;
   hasNonDefaultSettings: boolean;
   hasFilterValues: boolean;
   expand?: {
@@ -85,7 +85,7 @@ const FormConceptNode: FC<PropsT> = ({
   valueIdx,
   conceptIdx,
   conceptNode,
-  onFilterClick,
+  onClick,
   hasNonDefaultSettings,
   hasFilterValues,
   expand,
@@ -127,7 +127,7 @@ const FormConceptNode: FC<PropsT> = ({
         drag(instance);
       }}
       active={hasNonDefaultSettings || hasFilterValues}
-      onClick={onFilterClick}
+      onClick={onClick}
     >
       <div>
         <WithTooltip text={tooltipText}>
