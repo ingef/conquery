@@ -487,7 +487,7 @@
       "selectStatusTooltip": "Hier werden die möglichen Status-Werte festgelegt, die danach an die einzelnen Entitäten vergeben werden können."
     },
     "load": {
-      "importDescription": "Bitte CSV-format mit folgenden Spalten verwenden<br /><code><strong>ID-Art</strong>;<strong>ID</strong> (+ optional: ;<strong>Status 1</strong>;<strong>Status 2</strong>;...)</code>",
+      "importDescription": "Bitte CSV-Format mit folgenden Spalten verwenden:<br /><code><strong>ID-Art</strong>;<strong>ID</strong> (+ optional: ;<strong>Status 1</strong>;<strong>Status 2</strong>;...)</code>",
       "importPlaceholder": "{{idkind}};A0123456788;auffällig;\n{{idkind}};A0123456789;;unauffällig",
       "error": "Konnte Historie für diese Datei nicht laden."
     }
