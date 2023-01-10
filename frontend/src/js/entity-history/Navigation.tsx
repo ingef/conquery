@@ -104,17 +104,22 @@ export const Navigation = memo(
     }, [entityIds, currentEntityIndex, updateHistorySession]);
 
     const onDownload = useCallback(() => {
-      const idToRow = (entityId: EntityId) => [
-        entityId.id,
-        entityIdsStatus[entityId.id]
-          ? entityIdsStatus[entityId.id].map((o) => o.value)
-          : "",
-      ];
+      const usedStatuses = Object.values(entityIdsStatus).reduce(
+        (longest, el) => (longest.length > el.length ? longest : el),
+        [],
+      );
+      const idToRow = (entityId: EntityId) =>
+        [
+          entityId.kind,
+          entityId.id,
+          usedStatuses
+            .map((opt) =>
+              entityIdsStatus[entityId.id]?.includes(opt) ? opt.value : "",
+            )
+            .join(";"),
+        ].join(";");
 
-      const csvString = entityIds
-        .map(idToRow)
-        .map((row) => row.join(";"))
-        .join("\n");
+      const csvString = entityIds.map(idToRow).join("\n");
 
       const blob = new Blob([csvString], {
         type: "application/csv",

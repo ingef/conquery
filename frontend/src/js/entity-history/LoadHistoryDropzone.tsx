@@ -11,6 +11,7 @@ import DropzoneWithFileInput, {
 } from "../ui-components/DropzoneWithFileInput";
 
 import type { EntityIdsStatus } from "./History";
+import { EntityId } from "./reducer";
 
 const ImportButtonSpacer = styled("div")`
   height: 30px;
@@ -20,7 +21,7 @@ const acceptedDropTypes = [NativeTypes.FILE];
 
 export interface LoadingPayload {
   label: string;
-  loadedEntityIds: string[];
+  loadedEntityIds: EntityId[];
   loadedEntityStatus: EntityIdsStatus;
   loadedEntityStatusOptions: SelectOptionT[];
 }
@@ -46,22 +47,26 @@ export const LoadHistoryDropzone = ({
     label: string;
     data: string[][];
   }) => {
-    const loadedEntityIds = [];
+    const loadedEntityIds: EntityId[] = [];
     const loadedEntityStatus: EntityIdsStatus = {};
     const loadedEntityStatusOptionsRaw: string[] = [];
 
     for (const row of data) {
-      if (row.length !== 2) {
+      if (row.length < 2) {
         continue;
       }
 
-      loadedEntityIds.push(row[0]);
-      if (row[1]) {
-        loadedEntityStatus[row[0]] = row[1].split(",").map((s) => {
-          const opt = s.trim();
-          loadedEntityStatusOptionsRaw.push(s);
-          return { label: opt, value: opt };
-        });
+      loadedEntityIds.push({ kind: row[0], id: row[1] });
+
+      if (row.length > 2) {
+        loadedEntityStatus[row[1]] = row
+          .slice(2)
+          .filter((str) => str.length > 0)
+          .map((s) => {
+            const opt = s.trim();
+            loadedEntityStatusOptionsRaw.push(opt);
+            return { label: opt, value: opt };
+          });
       }
     }
 
