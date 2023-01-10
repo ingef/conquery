@@ -57,10 +57,13 @@ interface PropsT<DroppableObject> {
   acceptedDropTypes?: string[];
   accept?: string;
   disableClick?: boolean;
-  showImportButton?: boolean;
   isInitial?: boolean;
   className?: string;
+
+  showImportButton?: boolean;
   onImportLines?: (lines: string[]) => void;
+  importPlaceholder?: string;
+  importDescription?: string;
 }
 
 /*
@@ -77,6 +80,8 @@ const DropzoneWithFileInput = <
   {
     onSelectFile,
     onImportLines,
+    importPlaceholder,
+    importDescription,
     acceptedDropTypes,
     disableClick,
     showImportButton,
@@ -135,6 +140,8 @@ const DropzoneWithFileInput = <
             <ImportModal
               onClose={() => setImportModalOpen(false)}
               onSubmit={onSubmitImport}
+              placeholder={importPlaceholder}
+              description={importDescription}
             />
           )}
           {showImportButton && onImportLines && (

@@ -11,6 +11,7 @@ import DropzoneWithFileInput, {
 } from "../ui-components/DropzoneWithFileInput";
 
 import type { EntityIdsStatus } from "./History";
+import { DEFAULT_ID_KIND } from "./actions";
 import { EntityId } from "./reducer";
 
 const ImportButtonSpacer = styled("div")`
@@ -113,6 +114,10 @@ export const LoadHistoryDropzone = ({
       disableClick
       showImportButton
       onImportLines={onImportLines}
+      importPlaceholder={t("history.load.importPlaceholder", {
+        idkind: DEFAULT_ID_KIND,
+      })}
+      importDescription={t("history.load.importDescription")}
     >
       {() => (
         <>

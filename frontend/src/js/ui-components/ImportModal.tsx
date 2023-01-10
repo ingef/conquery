@@ -32,6 +32,11 @@ const HiddenFileInput = styled("input")`
   display: none;
 `;
 
+const Subtitle = styled(`p`)`
+  margin: 0;
+  max-width: 600px;
+`;
+
 const acceptedDropTypes = [NativeTypes.FILE];
 
 const useCanReadClipboard = () => {
@@ -54,9 +59,13 @@ const useCanReadClipboard = () => {
 };
 
 export const ImportModal = ({
+  placeholder,
+  description,
   onClose,
   onSubmit,
 }: {
+  description?: string;
+  placeholder?: string;
   onClose: () => void;
   onSubmit: (lines: string[]) => void;
 }) => {
@@ -138,13 +147,23 @@ export const ImportModal = ({
       onClose={onClose}
     >
       <Content>
+        {description && (
+          <Subtitle dangerouslySetInnerHTML={{ __html: description }} />
+        )}
         <DropzoneWithFileInput
           onDrop={onDrop}
           acceptedDropTypes={acceptedDropTypes}
           disableClick
           accept="text/plain,text/csv"
         >
-          {() => <Textarea rows={15} value={textInput} onChange={onChange} />}
+          {() => (
+            <Textarea
+              rows={15}
+              value={textInput}
+              onChange={onChange}
+              placeholder={placeholder}
+            />
+          )}
         </DropzoneWithFileInput>
         <Row>
           <IconButton icon="file" onClick={onOpenFileDialog}>
