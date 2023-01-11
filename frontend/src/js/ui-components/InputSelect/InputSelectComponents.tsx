@@ -37,14 +37,19 @@ export const ItemsInputContainer = styled("div")`
   width: 100%;
 `;
 
-export const Menu = styled("div")`
+export const MenuContainer = styled("div")`
   position: absolute;
+  width: 100%;
+  z-index: 3;
+  margin-top: 3px;
+  padding-bottom: 5px;
+`;
+
+export const Menu = styled("div")`
   width: 100%;
   border-radius: 4px;
   box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 10%), 0 4px 11px hsl(0deg 0% 0% / 10%);
   background-color: ${({ theme }) => theme.col.bg};
-  z-index: 3;
-  margin-top: 3px;
 `;
 
 export const List = styled("div")<{ small?: boolean }>`
