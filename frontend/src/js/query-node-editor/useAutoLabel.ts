@@ -11,13 +11,10 @@ interface AutoLabelProps {
 
 export function useAutoLabel({ node, onUpdateLabel }: AutoLabelProps) {
   const MAX_AUTOLABEL_LENGTH = 30;
-  const DELIMITER = ' ';
+  const DELIMITER = " ";
 
   const formatConceptLabels = (labels: string[]) =>
-    labels
-      .sort()
-      .join(DELIMITER)
-      .substring(0, MAX_AUTOLABEL_LENGTH);
+    labels.sort().join(DELIMITER).substring(0, MAX_AUTOLABEL_LENGTH);
 
   const autoLabel = useMemo(() => {
     return nodeIsConceptQueryNode(node)
@@ -28,8 +25,7 @@ export function useAutoLabel({ node, onUpdateLabel }: AutoLabelProps) {
   }, [node]);
 
   const [autoLabelEnabled, setAutoLabelEnabled] = useState(
-    nodeIsConceptQueryNode(node) &&
-      formatConceptLabels(node.label.split(DELIMITER)) === autoLabel,
+    nodeIsConceptQueryNode(node) && node.label === autoLabel,
   );
 
   const onUpdateLabelRef = useRef(onUpdateLabel);

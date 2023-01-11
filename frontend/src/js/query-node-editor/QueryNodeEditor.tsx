@@ -25,7 +25,6 @@ import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";
 import NodeName from "./NodeName";
 import ResetAndClose from "./ResetAndClose";
-
 import { useAutoLabel } from "./useAutoLabel";
 
 const Root = styled("div")`
