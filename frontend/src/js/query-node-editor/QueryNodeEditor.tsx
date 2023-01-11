@@ -26,8 +26,7 @@ import MenuColumn from "./MenuColumn";
 import NodeName from "./NodeName";
 import ResetAndClose from "./ResetAndClose";
 
-// TEMPORARILY DISABLED UNTIL FEATURE IS COMPLETE
-// import { useAutoLabel } from "./useAutoLabel";
+import { useAutoLabel } from "./useAutoLabel";
 
 const Root = styled("div")`
   padding: 10px;
@@ -160,20 +159,16 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
       ? RIGHT_SIDE_WIDTH_COMPACT
       : RIGHT_SIDE_WIDTH);
 
-  // TEMPORARILY DISABLED UNTIL FEATURE IS COMPLETE
-  // const { autoLabel, autoLabelEnabled, setAutoLabelEnabled } = useAutoLabel({
-  //   node,
-  //   onUpdateLabel: props.onUpdateLabel,
-  // });
-  // const nodeLabel =
-  //   autoLabelEnabled && autoLabel
-  //     ? autoLabel
-  //     : nodeIsConceptQueryNode(node)
-  //     ? node.label
-  //     : node.label || node.id;
-  const nodeLabel = nodeIsConceptQueryNode(node)
-    ? node.label
-    : node.label || node.id;
+  const { autoLabel, autoLabelEnabled, setAutoLabelEnabled } = useAutoLabel({
+    node,
+    onUpdateLabel: props.onUpdateLabel,
+  });
+  const nodeLabel =
+    autoLabelEnabled && autoLabel
+      ? autoLabel
+      : nodeIsConceptQueryNode(node)
+      ? node.label
+      : node.label || node.id;
 
   return (
     <Root
@@ -191,8 +186,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             allowEditing={nodeIsConceptQueryNode(node)}
             label={nodeLabel}
             onUpdateLabel={(label) => {
-              // TEMPORARILY DISABLED UNTIL FEATURE IS COMPLETE
-              // setAutoLabelEnabled(false);
+              setAutoLabelEnabled(false);
               props.onUpdateLabel(label);
             }}
           />
