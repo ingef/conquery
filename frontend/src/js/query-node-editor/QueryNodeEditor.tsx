@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -162,12 +162,15 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
     node,
     onUpdateLabel: props.onUpdateLabel,
   });
-  const nodeLabel =
-    autoLabelEnabled && autoLabel
-      ? autoLabel
-      : nodeIsConceptQueryNode(node)
-      ? node.label
-      : node.label || node.id;
+  const nodeLabel = useMemo(
+    () =>
+      !nodeIsConceptQueryNode(node)
+        ? node.label || node.id
+        : autoLabelEnabled && autoLabel && node.ids.length > 1
+        ? autoLabel
+        : node.label,
+    [autoLabel, autoLabelEnabled, node],
+  );
 
   return (
     <Root
