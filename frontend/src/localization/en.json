@@ -82,10 +82,10 @@
     "aConceptList": "a concept list"
   },
   "datasetSelector": {
-    "label": "Data sets",
-    "pleaseChoose": "Choose a data set",
-    "error": "Could not load data sets",
-    "disabled": "Can't change the data set at the moment."
+    "label": "Datasets",
+    "pleaseChoose": "Choose a dataset",
+    "error": "Could not load datasets",
+    "disabled": "Can't change the dataset at the moment."
   },
   "queryNodeEditor": {
     "conceptTree": "Concept Tree",
@@ -442,7 +442,7 @@
     "tabQueryEditor": "In the Editor, a query may be built and sent.",
     "tabTimebasedEditor": "In the Timebased Editor, a time-based query may be built and sent. That means, previous queries may be combined using time based relations, such as 'before' and 'after'.",
     "tabFormEditor": "The Form Editor allows for further analysis and statistics of previous queries.",
-    "datasetSelector": "Select the data set – concept trees, previous queries and forms will be loaded.",
+    "datasetSelector": "Select the dataset – concept trees, previous queries and forms will be loaded.",
     "excludeTimestamps": "If selected, will avoid using the date values from this concept within a query.",
     "excludeFromSecondaryId": "If selected, will avoid using this concept in the analysis layer, should an analysis layer be selected.",
     "editConceptName": "Edit concept name",
