@@ -57,7 +57,12 @@ export const useLoadDatasets = () => {
 
       return loadTrees(defaultId);
     } catch (e) {
-      dispatch(setMessage({ message: t("datasetSelector.error") }));
+      dispatch(
+        setMessage({
+          message: t("datasetSelector.error"),
+          notificationType: "error",
+        }),
+      );
       dispatch(loadDatasets.failure(e as Error));
     }
   }, [dispatch, getDatasets, loadDefaultHistoryParams, loadTrees, t]);

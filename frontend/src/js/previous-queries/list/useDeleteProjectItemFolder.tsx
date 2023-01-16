@@ -70,7 +70,12 @@ export const useDeleteProjectItemFolder = () => {
 
       return Promise.all([loadQueries(datasetId), loadFormConfigs(datasetId)]);
     } catch (e) {
-      dispatch(setMessage({ message: t("previousQuery.retagError") }));
+      dispatch(
+        setMessage({
+          message: t("previousQuery.retagError"),
+          notificationType: "error",
+        }),
+      );
       return Promise.reject();
     }
   };

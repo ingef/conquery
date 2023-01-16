@@ -7,13 +7,21 @@ import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
 
 import { setMessage } from "./actions";
+import { SnackMessageStateT, SnackMessageTypeT } from "./reducer";
 
-const Root = styled("div")`
+const colorLookupTable = {
+  error: "rgba(0, 0, 0, 0.75)",
+  success: "rgba(12, 100, 39, 0.75)", // #0C6427
+  default: "rgba(0, 0, 0, 0.75)",
+};
+
+const Root = styled("div")<{ notificationType: SnackMessageTypeT }>`
   position: fixed;
   z-index: 10;
   bottom: 20px;
   right: 20px;
-  background-color: rgba(0, 0, 0, 0.75);
+  background-color: ${({ notificationType }) =>
+    colorLookupTable[notificationType ?? "default"]};
   color: white;
   display: flex;
   flex-direction: row;
@@ -41,11 +49,12 @@ const ClearZone = styled("div")`
 
 const SnackMessage: FC = memo(function SnackMessageComponent() {
   const ref = useRef(null);
-  const message = useSelector<StateT, string | null>(
-    (state) => state.snackMessage.message,
+  const { message, notificationType } = useSelector<StateT, SnackMessageStateT>(
+    (state) => state.snackMessage,
   );
   const dispatch = useDispatch();
-  const resetMessage = () => dispatch(setMessage({ message: null }));
+  const resetMessage = () =>
+    dispatch(setMessage({ message: null, notificationType: null }));
 
   useClickOutside(ref, () => {
     if (message) {
@@ -53,10 +62,11 @@ const SnackMessage: FC = memo(function SnackMessageComponent() {
     }
   });
 
+  console.log("type is: ", notificationType);
   return (
     <div ref={ref}>
       {message && (
-        <Root>
+        <Root notificationType={notificationType}>
           <Relative>
             <div dangerouslySetInnerHTML={{ __html: message }} />
             <ClearZone onClick={resetMessage}>

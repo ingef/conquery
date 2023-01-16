@@ -65,7 +65,10 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
         setUploadResult(e as UploadQueryResponseT);
       } else {
         dispatch(
-          setMessage({ message: t("uploadQueryResultsModal.uploadFailed") }),
+          setMessage({
+            message: t("uploadQueryResultsModal.uploadFailed"),
+            notificationType: "error",
+          }),
         );
       }
     }

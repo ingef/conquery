@@ -147,6 +147,7 @@ const FormConfigLoader: FC<Props> = ({
           message: t("formConfig.loadSuccess", {
             label: formConfigToLoadNext.label,
           }),
+          notificationType: "success",
         }),
       );
     },
@@ -171,7 +172,12 @@ const FormConfigLoader: FC<Props> = ({
 
       setFormConfigToLoadNext(config);
     } catch (e) {
-      dispatch(setMessage({ message: t("formConfig.loadError") }));
+      dispatch(
+        setMessage({
+          message: t("formConfig.loadError"),
+          notificationType: "error",
+        }),
+      );
     }
   }
 

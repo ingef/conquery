@@ -55,7 +55,12 @@ export const useLoadQueries = () => {
 
         dispatch(loadQueriesSuccess({ data }));
       } catch (e) {
-        dispatch(setMessage({ message: t("previousQueries.error") }));
+        dispatch(
+          setMessage({
+            message: t("previousQueries.error"),
+            notificationType: "error",
+          }),
+        );
       }
       setLoading(false);
     },
@@ -88,7 +93,12 @@ export const useLoadQuery = () => {
 
         dispatch(loadQuerySuccess({ id: queryId, data: query }));
       } catch (e) {
-        dispatch(setMessage({ message: t("previousQuery.loadError") }));
+        dispatch(
+          setMessage({
+            message: t("previousQuery.loadError"),
+            notificationType: "error",
+          }),
+        );
       }
       setLoading(false);
     },
@@ -128,7 +138,9 @@ export const useUpdateQuery = () => {
 
       dispatch(patchQuerySuccess({ id, data: attributes }));
     } catch (e) {
-      dispatch(setMessage({ message: errorMessage }));
+      dispatch(
+        setMessage({ message: errorMessage, notificationType: "error" }),
+      );
     }
     setLoading(false);
   };
@@ -153,7 +165,12 @@ export const useRemoveQuery = () => {
 
       dispatch(deleteQuerySuccess({ queryId }));
     } catch (e) {
-      dispatch(setMessage({ message: t("previousQuery.deleteError") }));
+      dispatch(
+        setMessage({
+          message: t("previousQuery.deleteError"),
+          notificationType: "error",
+        }),
+      );
     }
     setLoading(false);
   };
@@ -194,7 +211,12 @@ export const useLoadFormConfigs = () => {
 
         dispatch(loadFormConfigsSuccess({ data }));
       } catch (e) {
-        dispatch(setMessage({ message: t("formConfigs.error") }));
+        dispatch(
+          setMessage({
+            message: t("formConfigs.error"),
+            notificationType: "error",
+          }),
+        );
       }
       setLoading(false);
     },
@@ -228,7 +250,12 @@ export const useLoadFormConfig = () => {
 
         dispatch(patchFormConfigSuccess({ id, data }));
       } catch (e) {
-        dispatch(setMessage({ message: t("formConfig.loadError") }));
+        dispatch(
+          setMessage({
+            message: t("formConfig.loadError"),
+            notificationType: "error",
+          }),
+        );
       }
       setLoading(false);
     },
@@ -263,7 +290,9 @@ export const useUpdateFormConfig = () => {
 
       dispatch(patchFormConfigSuccess({ id: configId, data: attributes }));
     } catch (e) {
-      dispatch(setMessage({ message: errorMessage }));
+      dispatch(
+        setMessage({ message: errorMessage, notificationType: "error" }),
+      );
     }
     setLoading(false);
   };
@@ -289,7 +318,12 @@ export const useRemoveFormConfig = () => {
 
       dispatch(deleteFormConfigSuccess({ configId }));
     } catch (e) {
-      dispatch(setMessage({ message: t("formConfig.deleteError") }));
+      dispatch(
+        setMessage({
+          message: t("formConfig.deleteError"),
+          notificationType: "error",
+        }),
+      );
     }
     setLoading(false);
   };
