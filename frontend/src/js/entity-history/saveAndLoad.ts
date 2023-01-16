@@ -87,7 +87,12 @@ export const useLoadHistory = ({
       ].map((item) => ({ label: item, value: item }));
 
       if (loadedEntityIds.length === 0) {
-        dispatch(setMessage({ message: t("history.load.error") }));
+        dispatch(
+          setMessage({
+            message: t("history.load.error"),
+            notificationType: "error",
+          }),
+        );
         return;
       }
 

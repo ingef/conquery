@@ -62,7 +62,6 @@ const SnackMessage: FC = memo(function SnackMessageComponent() {
     }
   });
 
-  console.log("type is: ", notificationType);
   return (
     <div ref={ref}>
       {message && (

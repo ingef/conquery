@@ -48,8 +48,7 @@ export const LoadHistoryDropzone = ({
     const { data } = await parseCSV(file, ";");
 
     if (data.length === 0) {
-      
-      (
+      dispatch(
         setMessage({
           message: t("history.load.error"),
           notificationType: "error",
