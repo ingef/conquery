@@ -63,7 +63,7 @@ public class ResultExcelProcessor {
 			log.trace("FINISHED downloading {}", exec.getId());
 		};
 
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), "xlsx", MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out), exec.getLabelWithoutAutoLabelSuffix(), "xlsx", MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 
