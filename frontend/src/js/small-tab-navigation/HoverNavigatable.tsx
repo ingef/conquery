@@ -27,8 +27,8 @@ export const HoverNavigatable = ({
   children,
   className,
 }: PropsT) => {
-  // Type Number is in Browser, however local typescript does not recognize it
-  let [timeout, setTimeoutVariable] = useState<null | NodeJS.Timeout>(null);
+  const [timeoutVar, setTimeoutVar] = useState<null | NodeJS.Timeout>(null);
+
   const [{ isOver }, drop] = useDrop({
     accept: [
       DNDType.FORM_CONFIG,
@@ -37,10 +37,10 @@ export const HoverNavigatable = ({
       DNDType.PREVIOUS_SECONDARY_ID_QUERY,
     ],
     hover: (_, monitor) => {
-      if (timeout == null) {
-        setTimeoutVariable(
+      if (timeoutVar == null) {
+        setTimeoutVar(
           setTimeout(() => {
-            setTimeoutVariable(null);
+            setTimeoutVar(null);
             if (monitor.isOver()) {
               triggerNavigate();
             }
@@ -52,6 +52,7 @@ export const HoverNavigatable = ({
       isOver: monitor.isOver(),
     }),
   });
+
   return (
     <Root ref={drop} isOver={isOver} className={className}>
       {children}

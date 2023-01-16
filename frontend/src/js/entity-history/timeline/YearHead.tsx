@@ -46,7 +46,7 @@ const YearHead = ({
         <div>
           <SmallHeading>{year}</SmallHeading>
           <div>
-            {totalEvents} {t("history.events", { count: totalEvents })}
+            {totalEvents}&nbsp;{t("history.events", { count: totalEvents })}
           </div>
         </div>
       </StickyWrap>
