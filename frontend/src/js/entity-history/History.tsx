@@ -19,7 +19,7 @@ import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import SourcesControl from "./SourcesControl";
 import Timeline from "./Timeline";
-import { DEFAULT_ID_KIND, useUpdateHistorySession } from "./actions";
+import { useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
 
 const FullScreen = styled("div")`
@@ -145,10 +145,8 @@ export const History = () => {
     }: LoadingPayload) => {
       updateHistorySession({
         label,
-        // Here, we're assuming that ids from the uploaded file have a default id kind
-        // TODO: possibly allow users to specifiy the id kind from the file they're uploading
-        entityIds: loadedEntityIds.map((id) => ({ id, kind: DEFAULT_ID_KIND })),
-        entityId: { id: loadedEntityIds[0], kind: DEFAULT_ID_KIND },
+        entityIds: loadedEntityIds,
+        entityId: loadedEntityIds[0],
       });
       setEntityIdsStatus(loadedEntityStatus);
       setEntityStatusOptions(loadedEntityStatusOptions);

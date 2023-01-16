@@ -11,6 +11,9 @@ import DropzoneWithFileInput, {
 } from "../ui-components/DropzoneWithFileInput";
 
 import type { EntityIdsStatus } from "./History";
+import { DEFAULT_ID_KIND } from "./actions";
+import { EntityId } from "./reducer";
+import { useLoadHistory } from "./saveAndLoad";
 
 const ImportButtonSpacer = styled("div")`
   height: 30px;
@@ -20,7 +23,7 @@ const acceptedDropTypes = [NativeTypes.FILE];
 
 export interface LoadingPayload {
   label: string;
-  loadedEntityIds: string[];
+  loadedEntityIds: EntityId[];
   loadedEntityStatus: EntityIdsStatus;
   loadedEntityStatusOptions: SelectOptionT[];
 }
@@ -38,61 +41,15 @@ export const LoadHistoryDropzone = ({
 }: Props) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-
-  const loadHistory = ({
-    label,
-    data,
-  }: {
-    label: string;
-    data: string[][];
-  }) => {
-    const loadedEntityIds = [];
-    const loadedEntityStatus: EntityIdsStatus = {};
-    const loadedEntityStatusOptionsRaw: string[] = [];
-
-    for (const row of data) {
-      if (row.length !== 2) {
-        continue;
-      }
-
-      loadedEntityIds.push(row[0]);
-      if (row[1]) {
-        loadedEntityStatus[row[0]] = row[1].split(",").map((s) => {
-          const opt = s.trim();
-          loadedEntityStatusOptionsRaw.push(s);
-          return { label: opt, value: opt };
-        });
-      }
-    }
-
-    const loadedEntityStatusOptions = [
-      ...new Set(loadedEntityStatusOptionsRaw),
-    ].map((item) => ({ label: item, value: item }));
-
-    if (loadedEntityIds.length === 0) {
-      dispatch(
-        setMessage({
-          message: t("history.load.error"),
-          notificationType: "error",
-        }),
-      );
-      return;
-    }
-
-    onLoadFromFile({
-      label,
-      loadedEntityIds,
-      loadedEntityStatus,
-      loadedEntityStatusOptions,
-    });
-  };
+  const loadHistory = useLoadHistory({ onLoadFromFile });
 
   const onDrop = async ({ files }: DragItemFile) => {
     const file = files[0];
     const { data } = await parseCSV(file, ";");
 
     if (data.length === 0) {
-      dispatch(
+      
+      (
         setMessage({
           message: t("history.load.error"),
           notificationType: "error",
@@ -118,6 +75,10 @@ export const LoadHistoryDropzone = ({
       disableClick
       showImportButton
       onImportLines={onImportLines}
+      importPlaceholder={t("history.load.importPlaceholder", {
+        idkind: DEFAULT_ID_KIND,
+      })}
+      importDescription={t("history.load.importDescription")}
     >
       {() => (
         <>
