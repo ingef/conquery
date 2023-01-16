@@ -494,7 +494,7 @@
   },
   "importModal": {
     "headline": "Zeilenweise Importieren",
-    "subtitle": "Neben Drag & Drop können Werte zeilenweise importiert werden, zum Beispiel aus der Zwischenablage (Kopieren und Einfügen STRG+C / STRG+V).",
+    "subtitle": "Importiere Werte zeilenweise, zum Beispiel aus der Zwischenablage: Kopieren (STRG+C) und Einfügen (STRG+V). Wähle alternativ eine Datei im Textformat (TXT) aus, oder lege sie direkt im Textfeld ab.",
     "paste": "Aus Zwischenablage einfügen",
     "submit": "Übernehmen",
     "pasted": "Importiert"

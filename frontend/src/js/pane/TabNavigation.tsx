@@ -81,8 +81,8 @@ const TabNavigation: FC<PropsT> = ({
     <Root data-test-id={dataTestId}>
       {tabs.map(({ key, label, tooltip, loading }) => {
         return (
-          <SxWithTooltip text={tooltip} lazy key={key}>
-            <HoverNavigatable triggerNavigate={createClickHandler(key)}>
+          <HoverNavigatable triggerNavigate={createClickHandler(key)}>
+            <SxWithTooltip text={tooltip} lazy key={key}>
               <Headline
                 active={activeTab === key}
                 onClick={createClickHandler(key)}
@@ -90,8 +90,8 @@ const TabNavigation: FC<PropsT> = ({
                 {label}
                 {loading && <SxFaIcon icon="spinner" />}
               </Headline>
-            </HoverNavigatable>
-          </SxWithTooltip>
+            </SxWithTooltip>
+          </HoverNavigatable>
         );
       })}
     </Root>
