@@ -13,6 +13,7 @@ import DropzoneWithFileInput, {
 import type { EntityIdsStatus } from "./History";
 import { DEFAULT_ID_KIND } from "./actions";
 import { EntityId } from "./reducer";
+import { useLoadHistory } from "./saveAndLoad";
 
 const ImportButtonSpacer = styled("div")`
   height: 30px;
@@ -41,52 +42,7 @@ export const LoadHistoryDropzone = ({
   const { t } = useTranslation();
   const dispatch = useDispatch();
 
-  const loadHistory = ({
-    label,
-    data,
-  }: {
-    label: string;
-    data: string[][];
-  }) => {
-    const loadedEntityIds: EntityId[] = [];
-    const loadedEntityStatus: EntityIdsStatus = {};
-    const loadedEntityStatusOptionsRaw: string[] = [];
-
-    for (const row of data) {
-      if (row.length < 2) {
-        continue;
-      }
-
-      loadedEntityIds.push({ kind: row[0], id: row[1] });
-
-      if (row.length > 2) {
-        loadedEntityStatus[row[1]] = row
-          .slice(2)
-          .filter((str) => str.length > 0)
-          .map((s) => {
-            const opt = s.trim();
-            loadedEntityStatusOptionsRaw.push(opt);
-            return { label: opt, value: opt };
-          });
-      }
-    }
-
-    const loadedEntityStatusOptions = [
-      ...new Set(loadedEntityStatusOptionsRaw),
-    ].map((item) => ({ label: item, value: item }));
-
-    if (loadedEntityIds.length === 0) {
-      dispatch(setMessage({ message: t("history.load.error") }));
-      return;
-    }
-
-    onLoadFromFile({
-      label,
-      loadedEntityIds,
-      loadedEntityStatus,
-      loadedEntityStatusOptions,
-    });
-  };
+  const loadHistory = useLoadHistory({ onLoadFromFile });
 
   const onDrop = async ({ files }: DragItemFile) => {
     const file = files[0];

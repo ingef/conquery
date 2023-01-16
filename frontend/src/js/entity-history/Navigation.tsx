@@ -6,7 +6,6 @@ import { useDispatch } from "react-redux";
 
 import { SelectOptionT } from "../api/types";
 import IconButton from "../button/IconButton";
-import { downloadBlob } from "../common/helpers/downloadBlob";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import { EntityIdsList } from "./EntityIdsList";
@@ -15,6 +14,7 @@ import { LoadHistoryDropzone, LoadingPayload } from "./LoadHistoryDropzone";
 import { NavigationHeader } from "./NavigationHeader";
 import { closeHistory, useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
+import { saveHistory } from "./saveAndLoad";
 
 const Root = styled("div")`
   display: grid;
@@ -104,28 +104,7 @@ export const Navigation = memo(
     }, [entityIds, currentEntityIndex, updateHistorySession]);
 
     const onDownload = useCallback(() => {
-      const usedStatuses = Object.values(entityIdsStatus).reduce(
-        (longest, el) => (longest.length > el.length ? longest : el),
-        [],
-      );
-      const idToRow = (entityId: EntityId) =>
-        [
-          entityId.kind,
-          entityId.id,
-          usedStatuses
-            .map((opt) =>
-              entityIdsStatus[entityId.id]?.includes(opt) ? opt.value : "",
-            )
-            .join(";"),
-        ].join(";");
-
-      const csvString = entityIds.map(idToRow).join("\n");
-
-      const blob = new Blob([csvString], {
-        type: "application/csv",
-      });
-
-      downloadBlob(blob, "list.csv");
+      saveHistory({ entityIds, entityIdsStatus });
     }, [entityIds, entityIdsStatus]);
 
     useHotkeys("shift+up", goToPrev, [goToPrev]);
