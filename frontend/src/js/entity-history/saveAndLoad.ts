@@ -98,6 +98,6 @@ export const useLoadHistory = ({
         loadedEntityStatusOptions,
       });
     },
-    [dispatch],
+    [dispatch, t, onLoadFromFile],
   );
 };
