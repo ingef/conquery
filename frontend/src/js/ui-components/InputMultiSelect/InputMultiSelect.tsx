@@ -8,7 +8,7 @@ import { exists } from "../../common/helpers/exists";
 import { useDebounce } from "../../common/helpers/useDebounce";
 import FaIcon from "../../icon/FaIcon";
 import InfoTooltip from "../../tooltip/InfoTooltip";
-import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
+import DropzoneWithFileInput from "../DropzoneWithFileInput";
 import {
   Control,
   DropdownToggleButton,
@@ -45,10 +45,6 @@ const getSentinelInsertIndex = (optionsLength: number) => {
 
   return optionsLength - SENTINEL_INSERT_INDEX_FROM_BOTTOM;
 };
-
-const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
-  display: block;
-`;
 
 const SxFaIcon = styled(FaIcon)`
   margin: 3px 6px;
@@ -93,7 +89,7 @@ const InputMultiSelect = ({
   onLoadMore,
   onLoadAndInsertAll,
 }: Props) => {
-  const { onDropFile } = useResolvableSelect({
+  useResolvableSelect({
     defaultValue,
     onResolve,
   });
@@ -433,10 +429,17 @@ const InputMultiSelect = ({
         <TooManyValues count={value.length} onClear={() => onChange([])} />
       )}
       {!hasTooManyValues && !onResolve && Select}
-      {!hasTooManyValues && !!onResolve && onDropFile && (
-        <SxInputMultiSelectDropzone disabled={disabled} onDropFile={onDropFile}>
+      {!hasTooManyValues && !!onResolve && (
+        <DropzoneWithFileInput
+          onDrop={() => {}}
+          disableClick
+          tight
+          importButtonOutside
+          showImportButton={!disabled}
+          onImportLines={onResolve}
+        >
           {() => Select}
-        </SxInputMultiSelectDropzone>
+        </DropzoneWithFileInput>
       )}
     </>
   );

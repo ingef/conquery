@@ -1,3 +1,4 @@
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import {
   useRef,
@@ -26,20 +27,25 @@ const FileInput = styled("input")`
   display: none;
 `;
 
-const SxDropzone = styled(Dropzone)<{ isInitial?: boolean }>`
+const SxDropzone = styled(Dropzone)<{ isInitial?: boolean; tight?: boolean }>`
   cursor: ${({ isInitial }) => (isInitial ? "initial" : "pointer")};
   transition: box-shadow ${({ theme }) => theme.transitionTime};
   position: relative;
+  ${({ tight }) =>
+    tight &&
+    css`
+      padding: 5px;
+    `}
 
   &:hover {
     box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
   }
 `;
 
-const SxSelectFileButton = styled(SelectFileButton)`
+const SxSelectFileButton = styled(SelectFileButton)<{ outside?: boolean }>`
   position: absolute;
-  top: 3px;
-  right: 0;
+  top: ${({ outside }) => (outside ? "-26px" : "3px")};
+  right: ${({ outside }) => (outside ? "-12px" : "0")};
 `;
 
 const SxFaIcon = styled(FaIcon)`
@@ -59,8 +65,10 @@ interface PropsT<DroppableObject> {
   disableClick?: boolean;
   isInitial?: boolean;
   className?: string;
+  tight?: boolean;
 
   showImportButton?: boolean;
+  importButtonOutside?: boolean;
   onImportLines?: (lines: string[]) => void;
   importPlaceholder?: string;
   importDescription?: string;
@@ -82,6 +90,7 @@ const DropzoneWithFileInput = <
     onImportLines,
     importPlaceholder,
     importDescription,
+    importButtonOutside,
     acceptedDropTypes,
     disableClick,
     showImportButton,
@@ -90,6 +99,7 @@ const DropzoneWithFileInput = <
     isInitial,
     className,
     accept,
+    tight,
   }: PropsT<DroppableObject>,
   ref: Ref<HTMLDivElement>,
 ) => {
@@ -112,6 +122,7 @@ const DropzoneWithFileInput = <
 
   return (
     <SxDropzone /* <FC<DropzoneProps<DroppableObject | DragItemFile>>> */
+      tight={tight}
       acceptedDropTypes={dropTypes}
       onClick={() => {
         if (disableClick) return;
@@ -145,7 +156,10 @@ const DropzoneWithFileInput = <
             />
           )}
           {showImportButton && onImportLines && (
-            <SxSelectFileButton onClick={() => setImportModalOpen(true)}>
+            <SxSelectFileButton
+              outside={importButtonOutside}
+              onClick={() => setImportModalOpen(true)}
+            >
               <SxFaIcon icon="file-import" gray />
               {t("common.import")}
             </SxSelectFileButton>
