@@ -9,6 +9,7 @@ import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.frontend.FrontendConfiguration;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.util.VersionInfo;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,14 @@ public class ConfigResource {
 																			 .filter(ColumnConfig::isResolvable)
 																			 .toList());
 
-		return new FrontendConfiguration(VersionInfo.INSTANCE.getProjectVersion(), config.getFrontend().getCurrency(), idColumns);
+		final FrontendConfig frontendConfig = config.getFrontend();
+		return new FrontendConfiguration(
+				VersionInfo.INSTANCE.getProjectVersion(),
+				frontendConfig.getCurrency(),
+				idColumns,
+				frontendConfig.getManualUrl(),
+				frontendConfig.getContactEmail()
+		);
 	}
 
 }

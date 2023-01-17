@@ -35,12 +35,21 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
   const Dropdown = useMemo(
     () => (
       <List>
-        <a href={`mailto:${contactEmail}`} rel="noopener noreferrer">
+        <a
+          href={`mailto:${contactEmail}`}
+          rel="noopener noreferrer"
+          data-test-id="help-email"
+        >
           <DropdownItemButton bgHover fixedIconWidth={14} icon="paper-plane">
             {t("common.contact")}
           </DropdownItemButton>
         </a>
-        <a href={manualUrl} target="_blank" rel="noopener noreferrer">
+        <a
+          href={manualUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-test-id="help-manual"
+        >
           <DropdownItemButton bgHover fixedIconWidth={14} icon="book">
             {t("common.manual")}
           </DropdownItemButton>
@@ -57,7 +66,7 @@ export const HelpMenu = ({ contactEmail, manualUrl }: Props) => {
       html={Dropdown}
       offset={dropdownOffset}
     >
-      <SxIconButton icon="question" frame />
+      <SxIconButton icon="question" frame data-test-id="help-menu" />
     </WithTooltip>
   );
 };
