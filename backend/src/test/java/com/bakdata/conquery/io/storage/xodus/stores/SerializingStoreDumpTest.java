@@ -118,7 +118,7 @@ public class SerializingStoreDumpTest {
 		}
 
 		// Test if the correct number of dumpfiles was generated
-		Condition<File> dumpFileCond = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENTION), "dump file");
+		Condition<File> dumpFileCond = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENSION), "dump file");
 		assertThat(tmpDir.listFiles()).areExactly(1, dumpFileCond);
 
 		// Test if the dump is correct
@@ -171,7 +171,7 @@ public class SerializingStoreDumpTest {
 		}
 
 		// Test if the correct number of dumpfiles was generated
-		Condition<File> dumpFileCond = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENTION), "dump file");
+		Condition<File> dumpFileCond = new Condition<>(f -> f.getName().endsWith(SerializingStore.DUMP_FILE_EXTENSION), "dump file");
 		assertThat(tmpDir.listFiles()).areExactly(1, dumpFileCond);
 
 		// Test if the dump is correct
