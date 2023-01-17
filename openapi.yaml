@@ -238,7 +238,7 @@ components:
         hideLogoutButton:
           type: boolean
         datasetAbilities:
-          description: per dataset abilities of the logged in User.
+          description: Per dataset abilities of the logged in User.
           type: object
           additionalProperties:
             $ref: "#/components/schemas/datasetAbility"
