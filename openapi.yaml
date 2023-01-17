@@ -1,11 +1,12 @@
 openapi: 3.0.0
 info:
-  version: 1.0.0
+  version: 0.0.0
   title: Conquery API
   description: Conquery API
   license:
+    #TODO find a fitting license
     name: TODO
-    url: http://TODO/  
+    url: http://TODO/
 components:
 
   securitySchemes:
@@ -13,7 +14,7 @@ components:
       type: http
       scheme: basic
 
-    Ingef:
+    Bearer:
       type: http
       scheme: bearer
   parameters:
@@ -44,6 +45,7 @@ components:
       description: The user is not logged in.
   schemas:
     id:
+      description: Typed identifier of an object. Usually consists of a recursive structure separated by dots, starting with the dataset. The dataset can be omitted, when the url is already in a context with a bound dataset.
       type: string
     tableId:
       $ref: "#/components/schemas/id"
@@ -78,11 +80,11 @@ components:
         - RUNNING
         - FAILED
         - DONE
-    fe-dataset-ids:
+    frontend-dataset-ids:
       type: array
       items:
-        $ref: "#/components/schemas/fe-dataset-id"
-    fe-dataset-id:
+        $ref: "#/components/schemas/frontend-dataset-id"
+    frontend-dataset-id:
       type: object
       properties:
         id:
@@ -90,10 +92,11 @@ components:
         label:
           type: string
 
-    feValue:
+    frontend-value:
+      description: General purpose value container to describe labelled values to the frontend.
       type: object
       properties:
-        value: 
+        value:
           type: string
         label:
           type: string
@@ -111,7 +114,7 @@ components:
         value:
           type: array
           items:
-            $ref: "#/components/schemas/feValue"
+            $ref: "#/components/schemas/frontend-value"
     resolved-concepts-result:
       type: object
       properties:
@@ -215,7 +218,6 @@ components:
           type: array
           items:
             type: string
-        
     id-label:
       type: object
       properties:
@@ -244,7 +246,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/id-label"
-
     query-status:
       type: object
       properties:
@@ -260,9 +261,7 @@ components:
         createdAt:
           $ref: "#/components/schemas/dateTime"
         lastUsed:
-          oneOf:
-            - $ref: "#/components/schemas/dateTime"
-            - type: 'null'
+          $ref: "#/components/schemas/dateTime"
         owner:
           $ref: "#/components/schemas/userId"
         ownerName:
@@ -280,21 +279,16 @@ components:
         numberOfResults:
           type: integer
         requiredTime:
-          oneOf:
-            - type: integer
-            - type: 'null'
+          nullable: true
+          type: integer
         startTime:
-          oneOf:
-            - $ref: "#/components/schemas/dateTime"
-            - type: 'null'
+          $ref: "#/components/schemas/dateTime"
         finishTime:
           $ref: "#/components/schemas/dateTime"
         queryType:
           type: string # TODO use discriminator from Query
         secondaryId:
-          oneOf:
-            - $ref: "#/components/schemas/secondaryIdId"
-            - type: 'null'
+          $ref: "#/components/schemas/secondaryIdId"
         resultUrls:
           type: array
           items:
@@ -329,14 +323,15 @@ components:
         - type: string
           pattern: "LIST\\[.*\\]"
 
-    semantic-event-date: #TODO descriptions for all
+    #TODO descriptions for semantics
+    semantic-event-date:
       allOf:
         - $ref: "#/components/schemas/semantic-base"
       properties:
         type:
           type: string
           enum:
-              - "EVENT_DATE"
+            - "EVENT_DATE"
     semantic-sources:
       allOf:
         - $ref: "#/components/schemas/semantic-base"
@@ -344,80 +339,79 @@ components:
         type:
           type: string
           enum:
-              - "SOURCES"
+            - "SOURCES"
     semantic-categorical:
       allOf:
-      - $ref: "#/components/schemas/semantic-base"
+        - $ref: "#/components/schemas/semantic-base"
       properties:
         type:
           type: string
           enum:
-              - "CATEGORICAL"
+            - "CATEGORICAL"
     semantic-group:
       allOf:
-      - $ref: "#/components/schemas/semantic-base"
+        - $ref: "#/components/schemas/semantic-base"
       properties:
         type:
           type: string
           enum:
-              - "GROUP"
+            - "GROUP"
     semantic-hidden:
       allOf:
-      - $ref: "#/components/schemas/semantic-base"
+        - $ref: "#/components/schemas/semantic-base"
       properties:
         type:
           type: string
           enum:
-              - "HIDDEN"
+            - "HIDDEN"
     semantic-select:
       properties:
         type:
           type: string
           enum:
-              - "SELECT"
+            - "SELECT"
       allOf:
-      - $ref: "#/components/schemas/semantic-base"
-      - type: object
-        properties:
-          select:
-            $ref: "#/components/schemas/selectId"
+        - $ref: "#/components/schemas/semantic-base"
+        - type: object
+          properties:
+            select:
+              $ref: "#/components/schemas/selectId"
     semantic-concept-column:
       properties:
         type:
           type: string
           enum:
-              - "CONCEPT_COLUMN"
+            - "CONCEPT_COLUMN"
       allOf:
-      - $ref: "#/components/schemas/semantic-base"
-      - type: object
-        properties:
-          concept:
-            $ref: "#/components/schemas/conceptId"
+        - $ref: "#/components/schemas/semantic-base"
+        - type: object
+          properties:
+            concept:
+              $ref: "#/components/schemas/conceptId"
     semantic-column:
       properties:
-          type:
-            type: string
-            enum:
-              - "COLUMN"
+        type:
+          type: string
+          enum:
+            - "COLUMN"
       allOf:
-      - $ref: "#/components/schemas/semantic-base"
-      - type: object
-        properties:
-          column:
-            $ref: "#/components/schemas/columnId"
-          
+        - $ref: "#/components/schemas/semantic-base"
+        - type: object
+          properties:
+            column:
+              $ref: "#/components/schemas/columnId"
     semantic-id:
       properties:
         type:
           type: string
           enum:
-              - "ID"
+            - "ID"
       allOf:
-      - $ref: "#/components/schemas/semantic-base"
-      - type: object
-        properties:
-          kind:
-            type: string
+        - $ref: "#/components/schemas/semantic-base"
+        - type: object
+          properties:
+            kind:
+              type: string
     semantic-secondaryId:
       allOf:
         - $ref: "#/components/schemas/semantic-base"
@@ -443,6 +437,7 @@ components:
           "GROUP": "#/components/schemas/semantic-group"
           "HIDDEN": "#/components/schemas/semantic-hidden"
           "ID": "#/components/schemas/semantic-id"
+          "SECONDARY_ID": "#/components/schemas/semantic-secondaryId"
           "SELECT": "#/components/schemas/semantic-select"
           "SOURCES": "#/components/schemas/semantic-sources"
       oneOf:
@@ -453,23 +448,20 @@ components:
         - $ref: "#/components/schemas/semantic-group"
         - $ref: "#/components/schemas/semantic-hidden"
         - $ref: "#/components/schemas/semantic-id"
+        - $ref: "#/components/schemas/semantic-secondaryId"
         - $ref: "#/components/schemas/semantic-select"
         - $ref: "#/components/schemas/semantic-sources"
-
-
     column-description:
       type: object
       properties:
         label:
           type: string
         description:
-          oneOf:
-            - type: 'null'
-            - type: string
+          nullable: true
+          type: string
         defaultLabel:
-          oneOf:
-            - type: 'null'
-            - type: string
+          nullable: true
+          type: string
         type:
           $ref: "#/components/schemas/column-type"
         semantics:
@@ -489,7 +481,6 @@ components:
       additionalProperties: true
       #TODO but in separate file
     error-info:
-      readOnly: true
       type: object
       properties:
         id:
@@ -504,7 +495,6 @@ components:
           additionalProperties: true
 
     entity-preview-config:
-      readOnly: true
       type: object
       properties:
         all:
@@ -553,11 +543,10 @@ components:
         - type: object
           properties:
             progress:
-              oneOf:
-                - type: number
-                  minimum: 0
-                  maximum: 1
-                - type: 'null'
+              nullable: true
+              type: number
+              minimum: 0
+              maximum: 1
             columnDescriptions:
               type: array
               items:
@@ -565,11 +554,9 @@ components:
             canExpand:
               type: boolean
             query:
-              $ref: "#/components/schemas/query" #TODO
+              $ref: "#/components/schemas/query"
             error:
-              oneOf:
-                - $ref: "#/components/schemas/error-info"
-                - type: 'null'
+              $ref: "#/components/schemas/error-info"
             availableSecondaryIds:
               type: array
               items:
@@ -602,7 +589,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/entity-priview-config"
+                $ref: "#/components/schemas/entity-preview-config"
 
   /me:
     get:
@@ -627,17 +614,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/fe-dataset-ids"
-                
-                  
+                $ref: "#/components/schemas/frontend-dataset-ids"
+
+
   /concepts/{concept}/resolve:
     post:
       parameters:
-        - in: path
-          name: concept
-          required: true
-          schema:
-            $ref: "#/components/schemas/conceptId"
+        - $ref: "#/components/parameters/concept"
       operationId: resolve-concepts
       summary: Resolve values to concept-ids
       requestBody:
@@ -693,12 +676,7 @@ paths:
 
   /queries/{query}:
     parameters:
-      - in: path
-        name: query
-        required: true
-        schema:
-          $ref: "#/components/schemas/executionId"
-
+      - $ref: "#/components/parameters/query"
     get:
       operationId: get-query-status
       summary: Get Status and metadata of Query
@@ -732,11 +710,7 @@ paths:
           description: Query was deleted.
   /queries/{query}/cancel:
     parameters:
-      - in: path
-        name: query
-        required: true
-        schema:
-          $ref: "#/components/schemas/executionId"
+      - $ref: "#/components/parameters/query"
     post:
       operationId: cancel-query
       responses:
@@ -744,11 +718,7 @@ paths:
           description: Query was cancelled.
   /queries/{query}/reexecute:
     parameters:
-      - in: path
-        name: query
-        required: true
-        schema:
-          $ref: "#/components/schemas/executionId"
+      - $ref: "#/components/parameters/query"
     post:
       operationId: reexecute-query
       responses:
