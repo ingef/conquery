@@ -187,6 +187,7 @@ components:
           type: string
         decimalSeparator:
           type: string
+          pattern: "\.|,"
         decimalScale:
           type: string
 
@@ -758,8 +759,3 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/full-execution-status"
-
-
-
-
-
