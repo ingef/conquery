@@ -10,7 +10,7 @@ interface AutoLabelProps {
 }
 
 export function useAutoLabel({ node, onUpdateLabel }: AutoLabelProps) {
-  const MAX_AUTOLABEL_LENGTH = 30;
+  const MAX_AUTOLABEL_LENGTH = 250;
   const DELIMITER = " ";
 
   const formatConceptLabels = (labels: string[]) =>
