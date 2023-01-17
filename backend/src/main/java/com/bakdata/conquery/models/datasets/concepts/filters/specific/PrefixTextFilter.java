@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.EnumSet;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
@@ -20,8 +20,8 @@ public class PrefixTextFilter extends SingleColumnFilter<String> {
 
 
 	@Override
-	public void configureFrontend(FEFilterConfiguration.Top f) {
-		f.setType(FEFilterType.Fields.STRING);
+	public void configureFrontend(FrontendFilterConfiguration.Top f) {
+		f.setType(FrontendFilterType.Fields.STRING);
 	}
 	
 	@Override

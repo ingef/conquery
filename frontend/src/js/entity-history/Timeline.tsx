@@ -29,7 +29,7 @@ const Root = styled("div")`
   -webkit-overflow-scrolling: touch;
   padding: 0 20px 0 10px;
   display: inline-grid;
-  grid-template-columns: 100px auto;
+  grid-template-columns: 125px auto;
   grid-auto-rows: minmax(min-content, max-content);
   gap: 20px 4px;
   width: 100%;
@@ -130,7 +130,7 @@ const findGroupsWithinQuarter =
 
     const eventGroupBuckets: Record<string, EntityEvent[]> = {};
 
-    for (let i = 0; i < events.length - 1; i++) {
+    for (let i = 0; i < events.length; i++) {
       const evt = events[i];
       const prevEvt = events[i - 1];
       const isDuplicateEvent =

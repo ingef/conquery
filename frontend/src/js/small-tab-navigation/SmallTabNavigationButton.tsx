@@ -2,6 +2,8 @@ import { useTheme, Theme, css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { forwardRef } from "react";
 
+import { HoverNavigatable } from "./HoverNavigatable";
+
 const bottomBorderBase = css`
   content: "";
   position: absolute;
@@ -76,16 +78,18 @@ const SmallTabNavigationButton = forwardRef<HTMLButtonElement, PropsT>(
     const highlightColor = valueToColor(theme, value);
 
     return (
-      <Button
-        ref={ref}
-        highlightColor={highlightColor}
-        type="button"
-        size={size}
-        selected={isSelected}
-        onClick={onClick}
-      >
-        {children}
-      </Button>
+      <HoverNavigatable triggerNavigate={onClick}>
+        <Button
+          ref={ref}
+          highlightColor={highlightColor}
+          type="button"
+          size={size}
+          selected={isSelected}
+          onClick={onClick}
+        >
+          {children}
+        </Button>
+      </HoverNavigatable>
     );
   },
 );

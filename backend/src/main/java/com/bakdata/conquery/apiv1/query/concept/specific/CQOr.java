@@ -18,8 +18,10 @@ import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
@@ -51,13 +53,14 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	@Setter
 	private Optional<Boolean> createExists = Optional.empty();
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	@JsonView(View.InternalCommunication.class)
 	private DateAggregationAction dateAction;
 
 	@Override
 	public void setDefaultExists() {
-		if (createExists.isEmpty()){
+		if (createExists.isEmpty()) {
 			createExists = Optional.of(true);
 		}
 	}
@@ -83,6 +86,10 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 		return or;
 	}
 
+	private boolean createExists() {
+		return createExists.orElse(false);
+	}
+
 	@Override
 	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		for (CQElement c : children) {
@@ -94,7 +101,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	public void resolve(QueryResolveContext context) {
 		Preconditions.checkNotNull(context.getDateAggregationMode());
 
-		dateAction =  determineDateAction(context);
+		dateAction = determineDateAction(context);
 
 		children.forEach(c -> c.resolve(context));
 	}
@@ -124,7 +131,7 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 	@Override
 	public String getUserOrDefaultLabel(Locale locale) {
 		// Prefer the user label
-		if (getLabel() != null){
+		if (getLabel() != null) {
 			return getLabel();
 		}
 		return QueryUtils.createDefaultMultiLabel(children, " " + C10N.get(CQElementC10n.class, locale).or() + " ", locale);
@@ -144,7 +151,21 @@ public class CQOr extends CQElement implements ExportForm.DefaultSelectSettable 
 		}
 	}
 
-	private boolean createExists(){
-		return createExists.orElse(false);
+	@Override
+	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
+		RequiredEntities current = null;
+
+		for (int index = 0; index < getChildren().size(); index++) {
+			final RequiredEntities next = getChildren().get(index).collectRequiredEntities(context);
+
+			if (current == null) {
+				current = next;
+			}
+			else {
+				current = current.union(next);
+			}
+		}
+
+		return current;
 	}
 }

@@ -6,7 +6,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.SearchConfig;
@@ -149,9 +149,11 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 
 	@Override
-	public List<TrieSearch<FEValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
+	public List<TrieSearch<FrontendValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
 
-		TrieSearch<FEValue> search = new TrieSearch<>(config.getSuffixLength(), config.getSplit());
+		final int suffixLength = isGenerateSuffixes() ? config.getSuffixLength() : Integer.MAX_VALUE;
+
+		final TrieSearch<FrontendValue> search = new TrieSearch<>(suffixLength, config.getSplit());
 
 		storage.getAllImports().stream()
 			   .filter(imp -> imp.getTable().equals(getTable()))
@@ -160,7 +162,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 				   return ((StringStore) importColumn.getTypeDescription()).iterateValues();
 			   })
-			   .map(value -> new FEValue(value, value))
+			   .map(value -> new FrontendValue(value, value))
 			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
 
 			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));

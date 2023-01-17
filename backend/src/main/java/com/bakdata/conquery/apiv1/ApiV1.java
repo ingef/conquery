@@ -1,7 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import java.time.Duration;
-
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
@@ -12,16 +10,17 @@ import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.metrics.ActiveUsersFilter;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormProcessor;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConfigResource;
+import com.bakdata.conquery.resources.api.DatasetFormConfigResource;
+import com.bakdata.conquery.resources.api.DatasetFormResource;
+import com.bakdata.conquery.resources.api.DatasetQueryResource;
 import com.bakdata.conquery.resources.api.DatasetResource;
 import com.bakdata.conquery.resources.api.DatasetsResource;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.api.FormConfigResource;
-import com.bakdata.conquery.resources.api.FormResource;
 import com.bakdata.conquery.resources.api.MeResource;
 import com.bakdata.conquery.resources.api.QueryResource;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
@@ -62,11 +61,14 @@ public class ApiV1 implements ResourcesProvider {
 		 * point for authentication.
 		 */
 		jersey.register(manager.getAuthController().getAuthenticationFilter());
-		jersey.register(QueryResource.class);
 		jersey.register(IdParamConverter.Provider.INSTANCE);
+
+		jersey.register(QueryResource.class);
+		jersey.register(DatasetQueryResource.class);
+		jersey.register(DatasetFormConfigResource.class);
 		jersey.register(ConfigResource.class);
 		jersey.register(FormConfigResource.class);
-		jersey.register(FormResource.class);
+		jersey.register(DatasetFormResource.class);
 
 		jersey.register(DatasetsResource.class);
 		jersey.register(ConceptResource.class);

@@ -47,9 +47,6 @@ public class ConqueryConfig extends Configuration {
 	@Valid
 	@NotNull
 	private CSVConfig csv = new CSVConfig();
-	@Valid
-	@NotNull
-	private ArrowConfig arrow = new ArrowConfig();
 
 	/**
 	 * The order of this lists determines the ordner of the generated result urls in a query status.
@@ -80,6 +77,9 @@ public class ConqueryConfig extends Configuration {
 	@Valid
 	@NotNull
 	private FrontendConfig frontend = new FrontendConfig();
+	@Valid
+	@NotNull
+	private IdColumnConfig idColumns = new IdColumnConfig();
 
 	@NotNull
 	@Valid
@@ -98,15 +98,13 @@ public class ConqueryConfig extends Configuration {
 	@Valid
 	@NotNull
 	private AuthorizationConfig authorizationRealms = new DevelopmentAuthorizationConfig();
-	@Valid
-	@NotNull
-	private ExcelConfig excel = new ExcelConfig();
 
 	@Valid
 	@NotNull
 	private JerseyClientConfiguration jerseyClient = new JerseyClientConfiguration();
 
 	@Valid
+	@NotNull
 	private List<PluginConfig> plugins = new ArrayList<>();
 	/**
 	 * null means here that we try to deduce from an attached agent

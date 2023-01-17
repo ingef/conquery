@@ -23,8 +23,8 @@ import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.KeyValue;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.OverviewExecutionStatus;
-import com.bakdata.conquery.apiv1.frontend.FERoot;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -161,8 +161,8 @@ public class Constants {
 				 .otherClass(OverviewExecutionStatus.class)
 				 .otherClass(IdLabel.class)
 				 .otherClass(FrontendConfig.class)
-				 .otherClass(FERoot.class)
-				 .otherClass(FEValue.class)
+				 .otherClass(FrontendRoot.class)
+				 .otherClass(FrontendValue.class)
 				 .otherClass(FilterResource.FilterValues.class)
 				 .otherClass(MetaDataPatch.class)
 				 .otherClass(FrontendConfig.CurrencyConfig.class)

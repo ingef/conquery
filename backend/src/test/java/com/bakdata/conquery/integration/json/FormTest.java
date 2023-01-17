@@ -36,6 +36,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -142,7 +143,12 @@ public class FormTest extends ConqueryTestSpec {
 	private void checkResults(StandaloneSupport standaloneSupport, ManagedForm managedForm, User user) throws IOException {
 		Map<String, List<ManagedQuery>> managedMapping = managedForm.getSubQueries();
 
-		IdPrinter idPrinter = standaloneSupport.getConfig().getFrontend().getQueryUpload().getIdPrinter(user, managedForm, standaloneSupport.getNamespace());
+		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(
+				user,
+				managedForm,
+				standaloneSupport.getNamespace(),
+				standaloneSupport.getConfig().getIdColumns().getIds()
+		);
 
 		final ConqueryConfig config = standaloneSupport.getConfig();
 		PrintSettings
@@ -182,7 +188,7 @@ public class FormTest extends ConqueryTestSpec {
 					new CsvRenderer(writer, printSettings);
 
 			renderer.toCSV(
-					config.getFrontend().getQueryUpload().getIdResultInfos(),
+					config.getIdColumns().getIdResultInfos(),
 					resultInfos,
 					managed.getValue()
 						   .stream()
@@ -217,7 +223,7 @@ public class FormTest extends ConqueryTestSpec {
 					new CsvRenderer(writer, printSettings);
 
 			renderer.toCSV(
-					config.getFrontend().getQueryUpload().getIdResultInfos(),
+					config.getIdColumns().getIdResultInfos(),
 					managedForm.getResultInfos(),
 					managedForm.streamResults()
 			);

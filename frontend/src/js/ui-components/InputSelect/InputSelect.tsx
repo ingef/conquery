@@ -17,6 +17,7 @@ import {
   ItemsInputContainer,
   List,
   Menu,
+  MenuContainer,
   ResetButton,
   SelectContainer,
   SxSelectListOption,
@@ -24,21 +25,18 @@ import {
 } from "./InputSelectComponents";
 import { optionMatchesQuery } from "./optionMatchesQuery";
 
-interface Props {
-  label?: string;
-  disabled?: boolean;
-  options: SelectOptionT[];
-  tooltip?: string;
-  indexPrefix?: number;
-  placeholder?: string;
-  loading?: boolean;
-  clearable?: boolean;
-  smallMenu?: boolean;
-  className?: string;
-  dataTestId?: string;
-  value: SelectOptionT | null;
-  optional?: boolean;
-  onChange: (value: SelectOptionT | null) => void;
+function filterOptions(
+  options: SelectOptionT[],
+  query: string,
+  sortOptions?: (a: SelectOptionT, b: SelectOptionT, query: string) => number,
+) {
+  const filtered = options.filter((option) =>
+    optionMatchesQuery(option, query),
+  );
+
+  return sortOptions
+    ? filtered.sort((a, b) => sortOptions(a, b, query))
+    : filtered;
 }
 
 const InputSelect = ({
@@ -55,11 +53,28 @@ const InputSelect = ({
   optional,
   smallMenu,
   onChange,
-}: Props) => {
+  sortOptions,
+}: {
+  label?: string;
+  disabled?: boolean;
+  options: SelectOptionT[];
+  tooltip?: string;
+  indexPrefix?: number;
+  placeholder?: string;
+  clearable?: boolean;
+  smallMenu?: boolean;
+  className?: string;
+  dataTestId?: string;
+  value: SelectOptionT | null;
+  optional?: boolean;
+  onChange: (value: SelectOptionT | null) => void;
+  sortOptions?: (a: SelectOptionT, b: SelectOptionT, query: string) => number;
+}) => {
   const { t } = useTranslation();
   const previousValue = usePrevious(value);
   const previousOptions = usePrevious(options);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const menuContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [filteredOptions, setFilteredOptions] = useState(() => {
     if (!value) return options;
@@ -87,7 +102,9 @@ const InputSelect = ({
     setInputValue,
   } = useCombobox({
     itemToString: (item) => {
-      return item?.label || "";
+      if (!item) return "";
+
+      return item.selectedLabel || item.label || String(item.value);
     },
     defaultSelectedItem: value,
     items: filteredOptions,
@@ -189,28 +206,36 @@ const InputSelect = ({
         if (inputValue === value?.label) {
           setFilteredOptions(options);
         } else {
-          setFilteredOptions(
-            options.filter((option) => optionMatchesQuery(option, inputValue)),
-          );
+          setFilteredOptions(filterOptions(options, inputValue, sortOptions));
         }
       }
     },
-    [inputValue, value, options, previousOptions],
+    [inputValue, value, options, previousOptions, sortOptions],
   );
 
   useEffect(
     function filterOptionsOnChangingInput() {
       if (exists(inputValue) && inputValue !== previousInputValue) {
         if (inputValue !== selectedItem?.label) {
-          setFilteredOptions(
-            options.filter((option) => optionMatchesQuery(option, inputValue)),
-          );
+          setFilteredOptions(filterOptions(options, inputValue, sortOptions));
         } else {
           setFilteredOptions(options);
         }
       }
     },
-    [inputValue, previousInputValue, options, selectedItem],
+    [inputValue, previousInputValue, options, selectedItem, sortOptions],
+  );
+
+  useEffect(
+    function scrollIntoView() {
+      if (isOpen) {
+        menuContainerRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    },
+    [isOpen],
   );
 
   const Select = (
@@ -240,6 +265,9 @@ const InputSelect = ({
             spellCheck={false}
             disabled={disabled}
             placeholder={placeholder || t("inputSelect.placeholder")}
+            onFocus={(e) => {
+              e.target.select();
+            }}
             onClick={(e) => {
               if (inputProps.onClick) {
                 inputProps.onClick(e);
@@ -274,43 +302,43 @@ const InputSelect = ({
         />
       </Control>
       {isOpen ? (
-        <Menu
-          {...menuProps}
-          onMouseDown={(e) => {
-            // To prevent causing input blur too soon, when selecting an option
-            // otherwise, input blur resets the search, which resets the filtered options list
-            // leading to a wrong click behavior when filtered
-            e.stopPropagation();
-          }}
-          ref={(instance) => {
-            menuPropsRef(instance);
-          }}
-        >
-          <List small={smallMenu}>
-            {filteredOptions.length === 0 && <SelectEmptyPlaceholder />}
-            {filteredOptions.map((option, index) => {
-              const { ref: itemPropsRef, ...itemProps } = getItemProps({
-                index,
-                item: filteredOptions[index],
-              });
+        <MenuContainer ref={menuContainerRef}>
+          <Menu
+            {...menuProps}
+            onMouseDown={(e) => {
+              // To prevent causing input blur too soon, when selecting an option
+              // otherwise, input blur resets the search, which resets the filtered options list
+              // leading to a wrong click behavior when filtered
+              e.stopPropagation();
+            }}
+            ref={(instance) => menuPropsRef(instance)}
+          >
+            <List small={smallMenu}>
+              {filteredOptions.length === 0 && <SelectEmptyPlaceholder />}
+              {filteredOptions.map((option, index) => {
+                const { ref: itemPropsRef, ...itemProps } = getItemProps({
+                  index,
+                  item: filteredOptions[index],
+                });
 
-              return (
-                <SxSelectListOption
-                  key={`${option.value}`}
-                  active={
-                    highlightedIndex === index ||
-                    selectedItem?.value === option.value
-                  }
-                  option={option}
-                  {...itemProps}
-                  ref={(instance) => {
-                    itemPropsRef(instance);
-                  }}
-                />
-              );
-            })}
-          </List>
-        </Menu>
+                return (
+                  <SxSelectListOption
+                    key={`${option.value}`}
+                    option={option}
+                    active={
+                      highlightedIndex === index ||
+                      selectedItem?.value === option.value
+                    }
+                    {...itemProps}
+                    ref={(instance) => {
+                      itemPropsRef(instance);
+                    }}
+                  />
+                );
+              })}
+            </List>
+          </Menu>
+        </MenuContainer>
       ) : (
         <span ref={menuPropsRef} /> // To avoid a warning / error by downshift that ref is not applied
       )}

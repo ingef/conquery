@@ -2,7 +2,6 @@ package com.bakdata.conquery.io.result.arrow;
 
 import static com.bakdata.conquery.io.result.ResultUtil.makeResponseWithFileName;
 import static com.bakdata.conquery.io.result.arrow.ArrowRenderer.renderToStream;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_FILE;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_ARROW_STREAM;
 
@@ -19,7 +18,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -33,6 +32,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.util.io.IdColumnUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -51,34 +51,36 @@ public class ResultArrowProcessor {
 	public static final MediaType STREAM_MEDIA_TYPE = new MediaType("application", "vnd.apache.arrow.stream");
 
 	private final DatasetRegistry datasetRegistry;
-	private final ConqueryConfig config;
+	private final ConqueryConfig conqueryConfig;
+
+	private final ArrowConfig arrowConfig;
 
 
-	public Response createResultFile(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
+	public Response createResultFile(Subject subject, ManagedExecution<?> exec, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
 				(ManagedExecution<?> & SingleTableResult) exec,
-				dataset,
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_FILE,
 				FILE_MEDIA_TYPE,
-				config
+				conqueryConfig,
+				arrowConfig
 		);
 	}
 
-	public Response createResultStream(Subject subject, ManagedExecution<?> exec, Dataset dataset, boolean pretty) {
+	public Response createResultStream(Subject subject, ManagedExecution<?> exec, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				subject,
 				((ManagedExecution<?> & SingleTableResult) exec),
-				dataset, // TODO pull dataset up
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_STREAM,
 				STREAM_MEDIA_TYPE,
-				config
+				conqueryConfig,
+				arrowConfig
 		);
 	}
 
@@ -86,17 +88,19 @@ public class ResultArrowProcessor {
 			Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
 			Subject subject,
 			E exec,
-			Dataset dataset,
 			DatasetRegistry datasetRegistry,
 			boolean pretty,
 			String fileExtension,
 			MediaType mediaType,
-			ConqueryConfig config) {
-
-		final Namespace namespace = datasetRegistry.get(dataset.getId());
+			ConqueryConfig config,
+			ArrowConfig arrowConfig) {
 
 		ConqueryMDC.setLocation(subject.getName());
+
+		final Dataset dataset = exec.getDataset();
+
 		log.info("Downloading results for {} on dataset {}", exec, dataset);
+
 		ResultUtil.authorizeExecutable(subject, exec, dataset);
 
 		if (!(exec instanceof ManagedQuery || (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1))) {
@@ -106,7 +110,8 @@ public class ResultArrowProcessor {
 		// Get the locale extracted by the LocaleFilter
 
 
-		IdPrinter idPrinter = config.getFrontend().getQueryUpload().getIdPrinter(subject, exec, namespace);
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
+		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, config.getIdColumns().getIds());
 		final Locale locale = I18n.LOCALE.get();
 		PrintSettings settings = new PrintSettings(
 				pretty,
@@ -118,7 +123,7 @@ public class ResultArrowProcessor {
 
 
 		// Collect ResultInfos for id columns and result columns
-		final List<ResultInfo> resultInfosId = config.getFrontend().getQueryUpload().getIdResultInfos();
+		final List<ResultInfo> resultInfosId = config.getIdColumns().getIdResultInfos();
 		final List<ResultInfo> resultInfosExec = exec.getResultInfos();
 
 		StreamingOutput out = output -> {
@@ -126,7 +131,7 @@ public class ResultArrowProcessor {
 				renderToStream(
 						writerProducer.apply(output),
 						settings,
-						config.getArrow().getBatchSize(),
+						arrowConfig,
 						resultInfosId,
 						resultInfosExec,
 						exec.streamResults()
@@ -137,7 +142,7 @@ public class ResultArrowProcessor {
 			}
 		};
 
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out), exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 

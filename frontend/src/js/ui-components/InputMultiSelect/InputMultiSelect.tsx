@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useCombobox, useMultipleSelection } from "downshift";
-import { Fragment, memo, useRef, useState } from "react";
+import { Fragment, memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
@@ -16,6 +16,7 @@ import {
   ItemsInputContainer,
   List,
   Menu,
+  MenuContainer,
   ResetButton,
   SelectContainer,
   VerticalSeparator,
@@ -98,6 +99,7 @@ const InputMultiSelect = ({
     onResolve,
   });
 
+  const menuContainerRef = useRef<HTMLDivElement | null>(null);
   const [inputValue, setInputValue] = useState("");
   const { t } = useTranslation();
 
@@ -264,6 +266,18 @@ const InputMultiSelect = ({
       ? filteredOptions.length - 1
       : filteredOptions.length;
 
+  useEffect(
+    function scrollIntoView() {
+      if (isOpen) {
+        menuContainerRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    },
+    [isOpen],
+  );
+
   const Select = (
     <SelectContainer
       onBlur={clearStaleSearch}
@@ -352,59 +366,58 @@ const InputMultiSelect = ({
         />
       </Control>
       {isOpen ? (
-        <Menu
-          {...menuProps}
-          ref={(instance) => {
-            menuPropsRef(instance);
-          }}
-        >
-          <MenuActionBar
-            total={total}
-            optionsCount={filterOptionsCount}
-            onInsertAllClick={() => {
-              const moreInsertableThanCurrentlyLoaded =
-                exists(total) && total > filterOptionsCount;
+        <MenuContainer ref={menuContainerRef}>
+          <Menu {...menuProps} ref={(instance) => menuPropsRef(instance)}>
+            <MenuActionBar
+              total={total}
+              optionsCount={filterOptionsCount}
+              onInsertAllClick={() => {
+                const moreInsertableThanCurrentlyLoaded =
+                  exists(total) && total > filterOptionsCount;
 
-              if (!!onLoadAndInsertAll && moreInsertableThanCurrentlyLoaded) {
-                onLoadAndInsertAll(inputValue);
-              } else {
-                const optionsWithoutCreatable =
-                  creatable && inputValue.length > 0
-                    ? filteredOptions.slice(1)
-                    : filteredOptions;
+                if (!!onLoadAndInsertAll && moreInsertableThanCurrentlyLoaded) {
+                  onLoadAndInsertAll(inputValue);
+                } else {
+                  const optionsWithoutCreatable =
+                    creatable && inputValue.length > 0
+                      ? filteredOptions.slice(1)
+                      : filteredOptions;
 
-                setSelectedItems([
-                  ...selectedItems,
-                  ...optionsWithoutCreatable,
-                ]);
-                setInputValue("");
-              }
-            }}
-          />
-          <List>
-            {!creatable && filteredOptions.length === 0 && <EmptyPlaceholder />}
-            {filteredOptions.map((option, index) => (
-              <Fragment key={`${index}${option.value}${option.label}`}>
-                <ListItem
-                  index={index}
-                  highlightedIndex={highlightedIndex}
-                  item={filteredOptions[index]}
-                  getItemProps={getItemProps}
-                />
-                {index === getSentinelInsertIndex(filteredOptions.length) &&
-                  exists(onLoadMore) && (
-                    <LoadMoreSentinel
-                      onLoadMore={() => {
-                        if (!loading) {
-                          onLoadMore(inputValue);
-                        }
-                      }}
-                    />
-                  )}
-              </Fragment>
-            ))}
-          </List>
-        </Menu>
+                  setSelectedItems([
+                    ...selectedItems,
+                    ...optionsWithoutCreatable,
+                  ]);
+                  setInputValue("");
+                }
+              }}
+            />
+            <List>
+              {!creatable && filteredOptions.length === 0 && (
+                <EmptyPlaceholder />
+              )}
+              {filteredOptions.map((option, index) => (
+                <Fragment key={`${index}${option.value}${option.label}`}>
+                  <ListItem
+                    index={index}
+                    highlightedIndex={highlightedIndex}
+                    item={filteredOptions[index]}
+                    getItemProps={getItemProps}
+                  />
+                  {index === getSentinelInsertIndex(filteredOptions.length) &&
+                    exists(onLoadMore) && (
+                      <LoadMoreSentinel
+                        onLoadMore={() => {
+                          if (!loading) {
+                            onLoadMore(inputValue);
+                          }
+                        }}
+                      />
+                    )}
+                </Fragment>
+              ))}
+            </List>
+          </Menu>
+        </MenuContainer>
       ) : (
         <span ref={menuPropsRef} /> // To avoid a warning / error by downshift that ref is not applied
       )}

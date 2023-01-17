@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.result.ResultTestUtil;
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
@@ -128,12 +129,14 @@ public class ArrowResultGenerationTest {
         // First we write to the buffer, than we read from it and parse it as TSV
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-        renderToStream((root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
-                printSettings,
-                BATCH_SIZE,
-                ResultTestUtil.ID_FIELDS,
-                mquery.getResultInfos(),
-                mquery.streamResults());
+		renderToStream(
+				(root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
+				printSettings,
+				new ArrowConfig(BATCH_SIZE),
+				ResultTestUtil.ID_FIELDS,
+				mquery.getResultInfos(),
+				mquery.streamResults()
+		);
 
         InputStream inputStream = new ByteArrayInputStream(output.toByteArray());
 

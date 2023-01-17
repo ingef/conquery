@@ -80,7 +80,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 
-
 	public ManagedQuery(Query query, User owner, Dataset submittedDataset) {
 		super(owner, submittedDataset);
 		this.query = query;
@@ -93,6 +92,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		namespace = namespaces.get(getDataset().getId());
 
 		query.resolve(new QueryResolveContext(getDataset(), namespaces, config, null));
+
 	}
 
 	@Override
@@ -115,6 +115,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		}
 	}
 
+	@Override
+	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
+		lastResultCount = query.countResults(streamResults());
+
+		super.finish(storage, executionState);
+	}
+
 	public Stream<EntityResult> streamResults() {
 		return getExecutionManager().streamQueryResults(this);
 	}
@@ -125,13 +132,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 			throw new IllegalStateException("Result row count is unknown, because the query has not yet finished.");
 		}
 		return lastResultCount;
-	}
-
-	@Override
-	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
-		lastResultCount = query.countResults(streamResults());
-
-		super.finish(storage, executionState);
 	}
 
 	@Override
@@ -177,7 +177,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		UniqueNamer uniqNamer = new UniqueNamer(settings);
 
 		// First add the id columns to the descriptor list. The are the first columns
-		for (ResultInfo header : config.getFrontend().getQueryUpload().getIdResultInfos()) {
+		for (ResultInfo header : config.getIdColumns().getIdResultInfos()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(uniqNamer.getUniqueName(header))
 												   .type(header.getType().typeInfo())
@@ -289,11 +289,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		return sb.toString();
 	}
 
-	@Override
-	public WorkerMessage createExecutionMessage() {
-		return new ExecuteQuery(getId(), getQuery());
-	}
-
 	private static String makeLabelWithRootAndChild(CQConcept cqConcept, PrintSettings cfg) {
 		String label = cqConcept.getUserOrDefaultLabel(cfg.getLocale());
 		if (label == null) {
@@ -302,6 +297,11 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 
 		// Concat everything with dashes
 		return label.replace(" ", "-");
+	}
+
+	@Override
+	public WorkerMessage createExecutionMessage() {
+		return new ExecuteQuery(getId(), getQuery());
 	}
 
 	@Override

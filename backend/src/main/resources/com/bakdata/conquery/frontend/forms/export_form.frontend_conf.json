@@ -9,10 +9,19 @@
     "type": "EXPORT_FORM",
     "fields": [
         {
+            "label": {
+                "de": "Versichertengruppe"
+             },
+            "style": {
+                "size": "h1"
+             },
+            "type": "HEADLINE"
+        },
+        {
             "name": "queryGroup",
             "type": "RESULT_GROUP",
             "label": {
-                "de": "Versichertengruppe"
+                "de": "Versichertengruppe (Anfrage)"
             },
             "dropzoneLabel": {
                 "de": "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu"
@@ -25,35 +34,13 @@
             }
         },
         {
-            "name": "resolution",
-            "type": "SELECT",
             "label": {
-                "de": "Stratifizierung Beobachtungszeitraum"
-            },
-            "defaultValue": "COMPLETE",
-            "options": [
-                {
-                    "label": {
-                        "de": "Gesamter Zeitraum"
-                    },
-                    "value": "COMPLETE"
-                },
-                {
-                    "label": {
-                        "de": "Jahre"
-                    },
-                    "value": "YEARS"
-                },
-                {
-                    "label": {
-                        "de": "Quartale"
-                    },
-                    "value": "QUARTERS"
-                }
-            ],
-            "validations": [
-                "NOT_EMPTY"
-            ]
+                "de": "Zeitlicher Bezug"
+             },
+            "style": {
+                "size": "h1"
+             },
+            "type": "HEADLINE"
         },
         {
             "name": "timeMode",
@@ -71,20 +58,6 @@
                             "type": "DATE_RANGE",
                             "label": {
                                 "de": "Beobachtungszeitraum"
-                            },
-                            "validations": [
-                                "NOT_EMPTY"
-                            ]
-                        },
-                        {
-                            "name": "features",
-                            "type": "CONCEPT_LIST",
-                            "label": {
-                                "de": "Konzepte"
-                            },
-                            "isTwoDimensional": true,
-                            "conceptDropzoneLabel": {
-                                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
                             },
                             "validations": [
                                 "NOT_EMPTY"
@@ -236,29 +209,99 @@
                             "tooltip": {
                                 "de": "Angabe für welchen Zeitraum das Quartal mit dem Indexdatum gewertet wird."
                             }
-                        },
-                        {
-                            "name": "features",
-                            "type": "CONCEPT_LIST",
-                            "label": {
-                                "de": "Konzepte im Vorbeobachtungs-/Nachbetrachtungszeitraum"
-                            },
-                            "isTwoDimensional": true,
-                            "conceptDropzoneLabel": {
-                                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
-                            },
-                            "conceptColumnDropzoneLabel": {
-                                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
-                            },
-                            "validations": [
-                                "NOT_EMPTY"
-                            ]
                         }
                     ],
                     "tooltip": {
                         "de": "Die Ausgaben beziehen sich auf einen Vor- und Nachbeobachtungszeitraum, abhängig von dem Indexdatum jeder Person in der Versichertengruppe."
                     }
                 }
+            ]
+        },
+        {
+            "label": {
+                "de": "Datengrundlage und Konzepte"
+             },
+            "style": {
+                "size": "h1"
+             },
+            "type": "HEADLINE"
+        },
+        {
+            "name": "features",
+            "type": "CONCEPT_LIST",
+            "label": {
+                "de": "Konzepte"
+            },
+            "isTwoDimensional": true,
+            "conceptDropzoneLabel": {
+                "de": "Füge ein Konzept oder eine Konzeptliste hinzu"
+            },
+            "validations": [
+                "NOT_EMPTY"
+            ]
+        },
+        {
+            "label": {
+                "de": "Analyse und Ausgabe"
+             },
+            "style": {
+                "size": "h1"
+             },
+            "type": "HEADLINE"
+        },
+        {
+            "name": "resolution",
+            "type": "SELECT",
+            "label": {
+                "de": "Stratifizierung Beobachtungszeitraum"
+            },
+            "defaultValue": "COMPLETE",
+            "options": [
+                {
+                    "label": {
+                        "de": "Gesamter Zeitraum"
+                    },
+                    "value": "COMPLETE"
+                },
+                {
+                    "label": {
+                        "de": "Jahre"
+                    },
+                    "value": "YEARS"
+                },
+                {
+                    "label": {
+                        "de": "Quartale"
+                    },
+                    "value": "QUARTERS"
+                },
+                {
+                    "label": {
+                        "de": "Jahre und Quartale"
+                    },
+                    "value": "YEARS_QUARTERS"
+                },
+                {
+                    "label": {
+                        "de": "Gesamter Zeitraum und Jahre"
+                    },
+                    "value": "COMPLETE_YEARS"
+                },
+                {
+                    "label": {
+                        "de": "Gesamter Zeitraum und Quartale"
+                    },
+                    "value": "COMPLETE_QUARTERS"
+                },
+                {
+                    "label": {
+                        "de": "Gesamter Zeitraum, Jahre und Quartale"
+                    },
+                    "value": "COMPLETE_YEARS_QUARTERS"
+                }
+            ],
+            "validations": [
+                "NOT_EMPTY"
             ]
         }
     ]

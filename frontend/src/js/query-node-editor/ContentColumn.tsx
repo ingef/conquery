@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
 import type {
-  DatasetT,
   PostFilterSuggestionsResponseT,
   SelectOptionT,
   SelectorResultType,
@@ -46,7 +45,6 @@ const ContentCellGroup = styled(ContentCell)`
 
 interface PropsT {
   node: StandardQueryNodeT;
-  datasetId: DatasetT["id"];
   selectedTableIdx: number | null;
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
@@ -71,7 +69,6 @@ interface PropsT {
 
 const ContentColumn: FC<PropsT> = ({
   node,
-  datasetId,
   selectedTableIdx,
   blocklistedSelects,
   allowlistedSelects,
@@ -138,7 +135,6 @@ const ContentColumn: FC<PropsT> = ({
               node={
                 node as ConceptQueryNodeType /* otherwise there won't be tables */
               }
-              datasetId={datasetId}
               tableIdx={idx}
               allowlistedSelects={allowlistedSelects}
               blocklistedSelects={blocklistedSelects}

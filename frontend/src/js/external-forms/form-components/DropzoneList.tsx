@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
-import { ReactNode } from "react";
+import { ReactNode, forwardRef, Ref, ReactElement, ForwardedRef } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";
 import InfoTooltip from "../../tooltip/InfoTooltip";
-import Dropzone, {
+import {
   ChildArgs,
   PossibleDroppableObject,
 } from "../../ui-components/Dropzone";
@@ -34,19 +34,6 @@ const Row = styled("div")`
   align-items: center;
 `;
 
-interface WithFileProps<DroppableObject> extends PropsT<DroppableObject> {
-  onDrop: (
-    props: DroppableObject | DragItemFile,
-    monitor: DropTargetMonitor,
-  ) => void;
-  onDropFile: (file: File) => void;
-}
-
-interface WithoutFileProps<DroppableObject> extends PropsT<DroppableObject> {
-  onDrop: (props: DroppableObject, monitor: DropTargetMonitor) => void;
-  onDropFile: undefined;
-}
-
 interface PropsT<DroppableObject> {
   className?: string;
   label?: ReactNode;
@@ -57,58 +44,72 @@ interface PropsT<DroppableObject> {
   acceptedDropTypes: string[];
   onDelete: (idx: number) => void;
   disallowMultipleColumns?: boolean;
+  onDrop: (
+    props: DroppableObject | DragItemFile,
+    monitor: DropTargetMonitor,
+  ) => void;
+  onDropFile: (file: File) => void;
+  onImportLines: (lines: string[]) => void;
 }
 
 const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
-  props: WithFileProps<DroppableObject> | WithoutFileProps<DroppableObject>,
+  {
+    className,
+    label,
+    tooltip,
+    optional,
+    dropzoneChildren,
+    items,
+    acceptedDropTypes,
+    onDelete,
+    disallowMultipleColumns,
+    onDrop,
+    onImportLines,
+  }: PropsT<DroppableObject>,
+  ref: Ref<HTMLDivElement>,
 ) => {
   // allow at least one column
   const showDropzone =
-    (props.items && props.items.length === 0) || !props.disallowMultipleColumns;
+    (items && items.length === 0) || !disallowMultipleColumns;
 
   return (
-    <div className={props.className}>
+    <div className={className}>
       <Row>
-        {props.label && (
+        {label && (
           <Label>
-            {props.optional && <Optional />}
-            {props.label}
+            {optional && <Optional />}
+            {label}
           </Label>
         )}
-        {props.tooltip && <InfoTooltip text={props.tooltip} />}
+        {tooltip && <InfoTooltip text={tooltip} />}
       </Row>
-      {props.items && props.items.length > 0 && (
+      {items && items.length > 0 && (
         <div>
-          {props.items.map((item, i) => (
+          {items.map((item, i) => (
             <ListItem key={i}>
-              <StyledIconButton
-                icon="times"
-                onClick={() => props.onDelete(i)}
-              />
+              <StyledIconButton icon="times" onClick={() => onDelete(i)} />
               {item}
             </ListItem>
           ))}
         </div>
       )}
-      {showDropzone &&
-        (props.onDropFile ? (
+      <div ref={ref}>
+        {showDropzone && onImportLines && (
           <DropzoneWithFileInput
-            acceptedDropTypes={props.acceptedDropTypes}
-            onDrop={props.onDrop}
-            onSelectFile={props.onDropFile}
+            acceptedDropTypes={acceptedDropTypes}
+            onDrop={onDrop}
+            onImportLines={onImportLines}
           >
-            {props.dropzoneChildren}
+            {dropzoneChildren}
           </DropzoneWithFileInput>
-        ) : (
-          <Dropzone
-            acceptedDropTypes={props.acceptedDropTypes}
-            onDrop={props.onDrop}
-          >
-            {props.dropzoneChildren}
-          </Dropzone>
-        ))}
+        )}
+      </div>
     </div>
   );
 };
 
-export default DropzoneList;
+export default forwardRef(DropzoneList) as <
+  DroppableObject extends PossibleDroppableObject = DragItemFile,
+>(
+  props: PropsT<DroppableObject> & { ref?: ForwardedRef<HTMLDivElement> },
+) => ReactElement;

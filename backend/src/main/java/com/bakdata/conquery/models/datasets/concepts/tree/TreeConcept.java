@@ -84,6 +84,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	}
 
 	@Override
+	public void clearMatchingStats() {
+		setMatchingStats(null);
+		getAllChildren().forEach(ConceptTreeChild::clearMatchingStats);
+	}
+
+	@Override
 	public boolean matchesPrefix(int[] conceptPrefix) {
 		return conceptPrefix != null && conceptPrefix[0] == 0;
 	}

@@ -16,7 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -121,7 +121,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 													 ), MediaType.APPLICATION_JSON_TYPE));
 
 			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
-			assertThat(resolvedFromCsv.getValues().stream().map(FEValue::getValue)).containsExactly("a", "aaa", "aab", "baaa");
+			assertThat(resolvedFromCsv.getValues().stream().map(FrontendValue::getValue)).containsExactly("a", "aaa", "aab", "baaa");
 		}
 
 
@@ -138,7 +138,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 			final ConceptsProcessor.AutoCompleteResult resolvedFromValues = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 
 			//check the resolved values
-			assertThat(resolvedFromValues.getValues().stream().map(FEValue::getValue))
+			assertThat(resolvedFromValues.getValues().stream().map(FrontendValue::getValue))
 					.containsExactly("f", "fm");
 		}
 	}

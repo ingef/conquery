@@ -9,13 +9,7 @@ import { ProjectItemT } from "./ProjectItem";
 import { useRemoveQuery, useRemoveFormConfig } from "./actions";
 import { isFormConfig } from "./helpers";
 
-export const DeleteProjectItemButton = ({
-  item,
-  mayDeleteRightAway,
-}: {
-  item: ProjectItemT;
-  mayDeleteRightAway: boolean;
-}) => {
+export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
   const { t } = useTranslation();
   const { removeQuery } = useRemoveQuery();
   const { removeFormConfig } = useRemoveFormConfig();
@@ -36,16 +30,7 @@ export const DeleteProjectItemButton = ({
     [item, t],
   );
 
-  return mayDeleteRightAway ? (
-    <WithTooltip text={t("common.delete")}>
-      <IconButton
-        icon="times"
-        bare
-        data-test-id="project-item-delete-button"
-        onClick={onDelete}
-      />
-    </WithTooltip>
-  ) : (
+  return (
     <ConfirmableTooltip
       red
       onConfirm={onDelete}

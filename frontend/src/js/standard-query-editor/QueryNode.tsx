@@ -14,6 +14,7 @@ import {
   nodeIsConceptQueryNode,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
+import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 import QueryNodeActions from "./QueryNodeActions";
@@ -21,13 +22,17 @@ import QueryNodeContent from "./QueryNodeContent";
 import { getRootNodeLabel } from "./helper";
 import { StandardQueryNodeT } from "./types";
 
+const FlexHoverNavigatable = styled(HoverNavigatable)`
+  display: flex;
+  width: 100%;
+`;
+
 const Root = styled("div")<{
   active?: boolean;
 }>`
   position: relative;
   width: 100%;
   margin: 0 auto;
-  background-color: white;
   display: grid;
   grid-template-columns: 1fr auto;
 
@@ -170,44 +175,51 @@ const QueryNode = ({
     onExpandClick(node.query);
   }, [onExpandClick, node]);
 
+  const onClick = !!node.error ? () => {} : () => onEditClick(andIdx, orIdx);
+
+  const label = nodeIsConceptQueryNode(node)
+    ? node.label
+    : node.label || node.id;
+
+  const description =
+    nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
+      ? node.description
+      : undefined;
+
   const QueryNodeRoot = (
-    <Root
-      ref={(instance) => {
-        ref.current = instance;
-        drag(instance);
-      }}
-      active={hasNonDefaultSettings || hasFilterValues}
-      onClick={!!node.error ? () => {} : () => onEditClick(andIdx, orIdx)}
-    >
-      <QueryNodeContent
-        error={node.error}
-        isConceptQueryNode={nodeIsConceptQueryNode(node)}
-        tooltipText={tooltipText}
-        label={
-          nodeIsConceptQueryNode(node) ? node.label : node.label || node.id
-        }
-        description={
-          nodeIsConceptQueryNode(node) && (!node.ids || node.ids.length === 1)
-            ? node.description
-            : undefined
-        }
-        rootNodeLabel={rootNodeLabel}
-      />
-      <QueryNodeActions
-        andIdx={andIdx}
-        orIdx={orIdx}
-        excludeTimestamps={node.excludeTimestamps}
-        isExpandable={isQueryExpandable(node)}
-        hasActiveSecondaryId={hasActiveSecondaryId}
-        excludeFromSecondaryId={node.excludeFromSecondaryId}
-        onDeleteNode={onDeleteNode}
-        onToggleTimestamps={onToggleTimestamps}
-        onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
-        onExpandClick={expandClick}
-        previousQueryLoading={node.loading}
-        error={node.error}
-      />
-    </Root>
+    <FlexHoverNavigatable triggerNavigate={onClick}>
+      <Root
+        ref={(instance) => {
+          ref.current = instance;
+          drag(instance);
+        }}
+        active={hasNonDefaultSettings || hasFilterValues}
+        onClick={node.error ? undefined : () => onEditClick(andIdx, orIdx)}
+      >
+        <QueryNodeContent
+          error={node.error}
+          isConceptQueryNode={nodeIsConceptQueryNode(node)}
+          tooltipText={tooltipText}
+          label={label}
+          description={description}
+          rootNodeLabel={rootNodeLabel}
+        />
+        <QueryNodeActions
+          andIdx={andIdx}
+          orIdx={orIdx}
+          excludeTimestamps={node.excludeTimestamps}
+          isExpandable={isQueryExpandable(node)}
+          hasActiveSecondaryId={hasActiveSecondaryId}
+          excludeFromSecondaryId={node.excludeFromSecondaryId}
+          onDeleteNode={onDeleteNode}
+          onToggleTimestamps={onToggleTimestamps}
+          onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
+          onExpandClick={expandClick}
+          previousQueryLoading={node.loading}
+          error={node.error}
+        />
+      </Root>
+    </FlexHoverNavigatable>
   );
 
   if (nodeIsConceptQueryNode(node)) {
