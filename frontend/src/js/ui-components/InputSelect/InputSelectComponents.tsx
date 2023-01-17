@@ -42,7 +42,7 @@ export const MenuContainer = styled("div")`
   width: 100%;
   z-index: 3;
   margin-top: 3px;
-  padding-bottom: 5px;
+  padding-bottom: 10px;
 `;
 
 export const Menu = styled("div")`
