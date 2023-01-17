@@ -482,6 +482,8 @@
     },
     "settings": {
       "headline": "Historie-Einstellungen",
+      "reset": "Historie zurücksetzen",
+      "resetConfirm": "Jetzt zurücksetzen",
       "selectStatusHeadline": "Möglicher Status pro Eintrag",
       "selectStatusPlaceholder": "Optionen ...",
       "selectStatusTooltip": "Hier werden die möglichen Status-Werte festgelegt, die danach an die einzelnen Entitäten vergeben werden können."

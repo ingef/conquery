@@ -61,6 +61,7 @@ const SidebarBottom = styled("div")`
 
 const Header = styled("div")`
   display: flex;
+  flex-direction: row-reverse;
   gap: 15px;
   justify-content: space-between;
 `;
@@ -177,6 +178,13 @@ export const History = () => {
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Main>
             <Header>
+              <Controls>
+                <SxSourcesControl
+                  options={options}
+                  sourcesFilter={sourcesFilter}
+                  setSourcesFilter={setSourcesFilter}
+                />
+              </Controls>
               {currentEntityId && (
                 <EntityHeader
                   currentEntityIndex={currentEntityIndex}
@@ -187,13 +195,6 @@ export const History = () => {
                   entityStatusOptions={entityStatusOptions}
                 />
               )}
-              <Controls>
-                <SxSourcesControl
-                  options={options}
-                  sourcesFilter={sourcesFilter}
-                  setSourcesFilter={setSourcesFilter}
-                />
-              </Controls>
             </Header>
             <Flex>
               <Sidebar>

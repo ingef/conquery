@@ -12,7 +12,7 @@ import { EntityIdsList } from "./EntityIdsList";
 import type { EntityIdsStatus } from "./History";
 import { LoadHistoryDropzone, LoadingPayload } from "./LoadHistoryDropzone";
 import { NavigationHeader } from "./NavigationHeader";
-import { closeHistory, useUpdateHistorySession } from "./actions";
+import { closeHistory, resetHistory, useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
 import { saveHistory } from "./saveAndLoad";
 
@@ -107,6 +107,10 @@ export const Navigation = memo(
       saveHistory({ entityIds, entityIdsStatus });
     }, [entityIds, entityIdsStatus]);
 
+    const onReset = useCallback(() => {
+      dispatch(resetHistory());
+    }, [dispatch]);
+
     useHotkeys("shift+up", goToPrev, [goToPrev]);
     useHotkeys("shift+down", goToNext, [goToNext]);
 
@@ -130,6 +134,7 @@ export const Navigation = memo(
           idsCount={entityIds.length}
           entityStatusOptions={entityStatusOptions}
           setEntityStatusOptions={setEntityStatusOptions}
+          onReset={onReset}
         />
         <EntityIdNav>
           <TopActions>

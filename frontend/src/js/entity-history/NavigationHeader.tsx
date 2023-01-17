@@ -8,6 +8,7 @@ import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import ProgressBar from "../common/components/ProgressBar";
 import { Heading3 } from "../headings/Headings";
+import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import { SettingsModal } from "./SettingsModal";
@@ -26,6 +27,11 @@ const BaseInfo = styled("div")`
   gap: 15px;
   justify-content: space-between;
   overflow: hidden;
+`;
+
+const Row = styled("div")`
+  display: flex;
+  align-items: center;
 `;
 
 const SxHeading3 = styled(Heading3)`
@@ -66,6 +72,7 @@ interface Props {
   markedCount: number;
   entityStatusOptions: SelectOptionT[];
   setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
+  onReset: () => void;
 }
 export const NavigationHeader = memo(
   ({
@@ -74,6 +81,7 @@ export const NavigationHeader = memo(
     markedCount,
     setEntityStatusOptions,
     entityStatusOptions,
+    onReset,
   }: Props) => {
     const { t } = useTranslation();
     const label = useSelector<StateT, string>(
@@ -96,12 +104,22 @@ export const NavigationHeader = memo(
             <SxHeading3 title={label}>{label}</SxHeading3>
             <SpecialText>{t("history.history")}</SpecialText>
           </div>
-          <WithTooltip text={t("history.settings.headline")}>
-            <IconButton
-              icon="sliders"
-              onClick={() => setSettingsModalOpen(true)}
-            />
-          </WithTooltip>
+          <Row>
+            <ConfirmableTooltip
+              onConfirm={onReset}
+              confirmationText={t("history.settings.reset")}
+            >
+              <WithTooltip text={t("history.settings.reset")}>
+                <IconButton icon="trash" />
+              </WithTooltip>
+            </ConfirmableTooltip>
+            <WithTooltip text={t("history.settings.headline")}>
+              <IconButton
+                icon="sliders"
+                onClick={() => setSettingsModalOpen(true)}
+              />
+            </WithTooltip>
+          </Row>
         </BaseInfo>
         <StatsGrid>
           <Count>{idsCount}</Count>

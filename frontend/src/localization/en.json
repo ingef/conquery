@@ -483,6 +483,8 @@
     },
     "settings": {
       "headline": "History session settings",
+      "reset": "Reset history",
+      "resetConfirm": "Reset now",
       "selectStatusHeadline": "Possible status values",
       "selectStatusPlaceholder": "Options ...",
       "selectStatusTooltip": "Set possible status values, that may be assigned to individual entites during the history session."
