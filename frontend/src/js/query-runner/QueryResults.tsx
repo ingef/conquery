@@ -3,8 +3,8 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ColumnDescription } from "../api/types";
-import HistoryButton from "../button/HistoryButton";
 import PreviewButton from "../button/PreviewButton";
+import { QueryResultHistoryButton } from "../button/QueryResultHistoryButton";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
@@ -69,7 +69,7 @@ const QueryResults: FC<PropsT> = ({
       {!!csvUrl && exists(resultColumns) && (
         <>
           <PreviewButton columns={resultColumns} url={csvUrl} />
-          <HistoryButton
+          <QueryResultHistoryButton
             columns={resultColumns}
             url={csvUrl}
             label={resultLabel}

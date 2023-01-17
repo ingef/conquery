@@ -20,7 +20,7 @@ interface PropsT {
   url: string;
 }
 
-const HistoryButton = ({ url, label, columns, ...restProps }: PropsT) => {
+export const QueryResultHistoryButton = ({ url, label, columns }: PropsT) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const isLoading = useSelector<StateT, boolean>(
@@ -38,11 +38,8 @@ const HistoryButton = ({ url, label, columns, ...restProps }: PropsT) => {
         await newHistorySession(getAuthorizedUrl(url), columns, label);
         dispatch(openHistory());
       }}
-      {...restProps}
     >
       {t("history.history")}
     </SxIconButton>
   );
 };
-
-export default HistoryButton;
