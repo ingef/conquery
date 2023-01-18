@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -51,7 +52,7 @@ public class IdColumnConfig {
 			ColumnConfig.builder()
 						.name("ID")
 						.field("result")
-						.label(Map.of("", "result")) // "" ~= Locale.ROOT
+						.label(Map.of(Locale.ROOT, "result"))
 						.resolvable(true)
 						.fillAnon(true)
 						.print(true)
