@@ -80,10 +80,6 @@ components:
         - RUNNING
         - FAILED
         - DONE
-    frontend-dataset-ids:
-      type: array
-      items:
-        $ref: "#/components/schemas/frontend-dataset-id"
     frontend-dataset-id:
       type: object
       properties:
@@ -93,7 +89,7 @@ components:
           type: string
 
     frontend-value:
-      description: General purpose value container to describe labelled values to the frontend.
+      description: General purpose value container to describe labelled values to the frontend for drop downs and multi selects..
       type: object
       properties:
         value:
@@ -161,12 +157,6 @@ components:
         resolvable:
           description: True, if the Column should be printed to output. This can be used to have resolvable but not printable fields in mapping.
           type: boolean
-        print:
-          description: True, if the Column should be printed to output. This can be used to have resolvable but not printable fields in mapping.
-          type: boolean
-        fillAnon:
-          description: True, if the field will be used to fill with anonymized ids, when the user is not allowed seeing real ids.
-          type: boolean
 
     upload-config:
       description: Describes the format of ids for EXTERNAL and entity-preview id kinds. Also describes the output format for ids in the result files.
@@ -187,7 +177,7 @@ components:
           type: string
         decimalSeparator:
           type: string
-          pattern: "\.|,"
+          pattern: "[.,]"
         decimalScale:
           type: string
 
@@ -615,7 +605,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/frontend-dataset-ids"
+                type: array
+                items:
+                  $ref: "#/components/schemas/frontend-dataset-id"
 
 
   /concepts/{concept}/resolve:
