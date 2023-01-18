@@ -13,8 +13,10 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
@@ -49,13 +51,36 @@ public class PreviewConfig {
 	@Valid
 	private List<InfoCardSelect> infoCardSelects = List.of();
 
+	/**
+	 * Columns that should not be displayed to users in entity preview.
+	 */
 	private Set<ColumnId> hidden = Collections.emptySet();
 
+	/**
+	 * SecondaryIds where the columns should be grouped together.
+	 */
 	private Set<SecondaryIdDescriptionId> grouping = Collections.emptySet();
 
+	/**
+	 * All Connectors that may be used by users in the EntityPreview.
+	 *
+	 * @implNote This is purely for the frontend, the backend can theoretically be queried for all Connectors.
+	 */
 	private Set<ConnectorId> allConnectors = Collections.emptySet();
 
+	/**
+	 * Connectors that shall be selected by default by the frontend.
+	 */
 	private Set<ConnectorId> defaultConnectors = Collections.emptySet();
+
+	/**
+	 * Link to a concept providing search capabilities for entities.
+	 *
+	 * This looks weird at first, but allows reuse of available components instead of introducing duplicate behaviour.
+	 *
+	 * The Frontend will use the concepts filters to render a search for entity preview.
+	 */
+	private ConceptId searchConcept;
 
 	public boolean isGroupingColumn(SecondaryIdDescription desc) {
 		return getGrouping().contains(desc.getId());
@@ -131,6 +156,17 @@ public class PreviewConfig {
 								   .map(id -> datasetRegistry.findRegistry(id.getDataset()).getOptional(id))
 								   .flatMap(Optional::stream)
 								   .collect(Collectors.toList());
+	}
 
+	@JsonIgnore
+	public Concept<?> getSearchConcept() {
+		if(searchConcept == null){
+			return null;
+		}
+
+		return datasetRegistry.findRegistry(searchConcept.getDataset())
+							  .getOptional(searchConcept)
+							  // Since this entire object is intentionally non-dependent (ie not using NsIdRef), this might be null. But in practice rarely should.
+							  .orElse(null);
 	}
 }

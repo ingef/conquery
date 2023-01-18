@@ -21,6 +21,7 @@ import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
 import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -157,6 +158,9 @@ public class ConceptsProcessor {
 		private final Collection<Labelled> all;
 		@JsonProperty("default")
 		private final Collection<Labelled> defaultConnectors;
+
+		@NsIdRef
+		private final Concept<?> searchConcept;
 	}
 
 
@@ -175,7 +179,8 @@ public class ConceptsProcessor {
 				previewConfig.getDefaultConnectors()
 							 .stream()
 							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
-							 .collect(Collectors.toSet())
+							 .collect(Collectors.toSet()),
+				previewConfig.getSearchConcept()
 		);
 	}
 
