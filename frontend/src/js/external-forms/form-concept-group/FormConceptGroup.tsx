@@ -119,12 +119,33 @@ const FormConceptGroup = (props: Props) => {
   // indicator if it should be scrolled down back to the dropZone
   const [scrollToDropzone, setScrollToDropzone] = useState<boolean>(false);
   const dropzoneRef = useRef<HTMLDivElement>(null);
+
+  function getScrollParent(node: HTMLElement | null): HTMLElement | null {
+    if (node == null) {
+      return null;
+    }
+
+    if (node.scrollHeight > node.clientHeight) {
+      return node;
+    } else {
+      return node.parentElement ? getScrollParent(node.parentElement) : null;
+    }
+  }
+
   useEffect(() => {
-    if (scrollToDropzone) {
+    if (scrollToDropzone && !props.isSingle) {
       dropzoneRef.current?.scrollIntoView({
-        behavior: "smooth",
+        behavior: "auto",
         block: "nearest",
       });
+      const parent = dropzoneRef.current?.parentElement;
+      if (parent != null) {
+        getScrollParent(parent)?.scrollBy({
+          top: 20,
+          left: 0,
+          behavior: "smooth",
+        });
+      }
       setScrollToDropzone(false);
     }
   }, [scrollToDropzone]);
