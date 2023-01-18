@@ -374,6 +374,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
 		}
 
+		//TODO FK: dump in a separate thread so we are not blocking the reader thread.
+
 		// Write json
 		try {
 			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
