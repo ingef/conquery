@@ -17,6 +17,7 @@ import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -125,12 +126,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		unreadableValuesDumpDir = unreadableDataDumpDirectory;
 
 		if (shouldDumpUnreadables()) {
-			if(unreadableValuesDumpDir.exists() && !unreadableValuesDumpDir.isDirectory()){
-				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir.getAbsolutePath()));
-			}
-
-			if (!unreadableValuesDumpDir.mkdirs()) {
+			if(!unreadableValuesDumpDir.exists() && !unreadableValuesDumpDir.mkdirs()) {
 				throw new IllegalStateException("Could not create dump directory: " + unreadableValuesDumpDir);
+			}
+			else if (!unreadableValuesDumpDir.isDirectory()) {
+				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir.getAbsolutePath()));
 			}
 		}
 	}
@@ -360,7 +360,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
 	 * @param storeName         The name of the store which is also used in the dump file name.
 	 */
-	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, Exception reason, @NonNull File unreadableDumpDir, @NonNull String storeName, ObjectMapper objectMapper) {
+	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, Exception reason, @NonNull File unreadableDumpDir, String storeName, ObjectMapper objectMapper) {
 		// Create dump filehandle
 		final File dumpfile = makeDumpFileName(keyOfDump, unreadableDumpDir, storeName);
 		final File exceptionFileName = makeExceptionFileName(keyOfDump, unreadableDumpDir, storeName);
@@ -401,13 +401,17 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.json`
 	 */
 	@NotNull
-	private static File makeDumpFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
+	public static File makeDumpFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
 		return unreadableDumpDir.toPath()
 								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
 								.resolve(storeName)
-								.resolve(keyOfDump + "." + DUMP_FILE_EXTENSION)
+								.resolve(sanitiseFileName(keyOfDump) + "." + DUMP_FILE_EXTENSION)
 								.toFile();
 
+	}
+
+	private static String sanitiseFileName(@NotNull String name) {
+		return FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(name).replaceAll("_");
 	}
 
 	/**
@@ -417,11 +421,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.exception`
 	 */
 	@NotNull
-	private static File makeExceptionFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
+	public static File makeExceptionFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
 		return unreadableDumpDir.toPath()
 								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
 								.resolve(storeName)
-								.resolve(keyOfDump + "." + EXCEPTION_FILE_EXTENSION)
+								.resolve(sanitiseFileName(keyOfDump) + "." + EXCEPTION_FILE_EXTENSION)
 								.toFile();
 
 	}
