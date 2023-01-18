@@ -21,6 +21,7 @@ import {
 } from "../../api/types";
 import { useDatasetId } from "../../dataset/selectors";
 import { setMessage } from "../../snack-message/actions";
+import { SnackMessageTypeT } from "../../snack-message/reducer";
 
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
@@ -58,7 +59,7 @@ export const useLoadQueries = () => {
         dispatch(
           setMessage({
             message: t("previousQueries.error"),
-            notificationType: "error",
+            notificationType: SnackMessageTypeT.ERROR,
           }),
         );
       }
@@ -96,7 +97,7 @@ export const useLoadQuery = () => {
         dispatch(
           setMessage({
             message: t("previousQuery.loadError"),
-            notificationType: "error",
+            notificationType: SnackMessageTypeT.ERROR,
           }),
         );
       }
@@ -139,7 +140,10 @@ export const useUpdateQuery = () => {
       dispatch(patchQuerySuccess({ id, data: attributes }));
     } catch (e) {
       dispatch(
-        setMessage({ message: errorMessage, notificationType: "error" }),
+        setMessage({
+          message: errorMessage,
+          notificationType: SnackMessageTypeT.ERROR,
+        }),
       );
     }
     setLoading(false);
@@ -168,7 +172,7 @@ export const useRemoveQuery = () => {
       dispatch(
         setMessage({
           message: t("previousQuery.deleteError"),
-          notificationType: "error",
+          notificationType: SnackMessageTypeT.ERROR,
         }),
       );
     }
@@ -214,7 +218,7 @@ export const useLoadFormConfigs = () => {
         dispatch(
           setMessage({
             message: t("formConfigs.error"),
-            notificationType: "error",
+            notificationType: SnackMessageTypeT.ERROR,
           }),
         );
       }
@@ -253,7 +257,7 @@ export const useLoadFormConfig = () => {
         dispatch(
           setMessage({
             message: t("formConfig.loadError"),
-            notificationType: "error",
+            notificationType: SnackMessageTypeT.ERROR,
           }),
         );
       }
@@ -291,7 +295,10 @@ export const useUpdateFormConfig = () => {
       dispatch(patchFormConfigSuccess({ id: configId, data: attributes }));
     } catch (e) {
       dispatch(
-        setMessage({ message: errorMessage, notificationType: "error" }),
+        setMessage({
+          message: errorMessage,
+          notificationType: SnackMessageTypeT.ERROR,
+        }),
       );
     }
     setLoading(false);
@@ -321,7 +328,7 @@ export const useRemoveFormConfig = () => {
       dispatch(
         setMessage({
           message: t("formConfig.deleteError"),
-          notificationType: "error",
+          notificationType: SnackMessageTypeT.ERROR,
         }),
       );
     }

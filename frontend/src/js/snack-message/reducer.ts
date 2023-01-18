@@ -4,7 +4,11 @@ import { Action } from "../app/actions";
 
 import { resetMessage, setMessage } from "./actions";
 
-export type SnackMessageTypeT = "success" | "error" | null;
+export enum SnackMessageTypeT {
+  ERROR = "error",
+  SUCCESS = "success",
+  DEFAULT = "default",
+}
 export interface SnackMessageStateT {
   message: string | null;
   notificationType: SnackMessageTypeT;
@@ -12,7 +16,7 @@ export interface SnackMessageStateT {
 
 const initialState: SnackMessageStateT = {
   message: null,
-  notificationType: null,
+  notificationType: SnackMessageTypeT.DEFAULT,
 };
 
 function reducer(

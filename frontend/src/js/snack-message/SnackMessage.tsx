@@ -9,19 +9,18 @@ import FaIcon from "../icon/FaIcon";
 import { setMessage } from "./actions";
 import { SnackMessageStateT, SnackMessageTypeT } from "./reducer";
 
-const colorLookupTable = {
-  error: "rgba(0, 0, 0, 0.75)",
-  success: "rgba(12, 100, 39, 0.75)", // #0C6427
-  default: "rgba(0, 0, 0, 0.75)",
+const colorLookupTable: { [key in SnackMessageTypeT]: string } = {
+  [SnackMessageTypeT.ERROR]: "rgba(0, 0, 0, 0.75)",
+  [SnackMessageTypeT.SUCCESS]: "rgba(12, 100, 39, 0.75)", // #0C6427
+  [SnackMessageTypeT.DEFAULT]: "rgba(0, 0, 0, 0.75)",
 };
-
 const Root = styled("div")<{ notificationType: SnackMessageTypeT }>`
   position: fixed;
   z-index: 10;
   bottom: 20px;
   right: 20px;
   background-color: ${({ notificationType }) =>
-    colorLookupTable[notificationType ?? "default"]};
+    colorLookupTable[notificationType ?? SnackMessageTypeT.DEFAULT]};
   color: white;
   display: flex;
   flex-direction: row;
@@ -54,7 +53,12 @@ const SnackMessage: FC = memo(function SnackMessageComponent() {
   );
   const dispatch = useDispatch();
   const resetMessage = () =>
-    dispatch(setMessage({ message: null, notificationType: null }));
+    dispatch(
+      setMessage({
+        message: null,
+        notificationType: SnackMessageTypeT.DEFAULT,
+      }),
+    );
 
   useClickOutside(ref, () => {
     if (message) {

@@ -11,6 +11,7 @@ import { DNDType } from "../common/constants/dndTypes";
 import { Language, useActiveLang } from "../localization/useActiveLang";
 import type { FormConfigT } from "../previous-queries/list/reducer";
 import { setMessage } from "../snack-message/actions";
+import { SnackMessageTypeT } from "../snack-message/reducer";
 import Dropzone from "../ui-components/Dropzone";
 
 import { setExternalForm } from "./actions";
@@ -147,7 +148,7 @@ const FormConfigLoader: FC<Props> = ({
           message: t("formConfig.loadSuccess", {
             label: formConfigToLoadNext.label,
           }),
-          notificationType: "success",
+          notificationType: SnackMessageTypeT.SUCCESS,
         }),
       );
     },
@@ -175,7 +176,7 @@ const FormConfigLoader: FC<Props> = ({
       dispatch(
         setMessage({
           message: t("formConfig.loadError"),
-          notificationType: "error",
+          notificationType: SnackMessageTypeT.ERROR,
         }),
       );
     }
