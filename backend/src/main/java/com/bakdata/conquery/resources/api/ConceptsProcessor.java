@@ -19,6 +19,7 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
+import com.bakdata.conquery.apiv1.frontend.FrontendPreviewConfig;
 import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;

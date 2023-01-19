@@ -1,4 +1,4 @@
-package com.bakdata.conquery.resources.api;
+package com.bakdata.conquery.apiv1.frontend;
 
 import java.util.Collection;
 
