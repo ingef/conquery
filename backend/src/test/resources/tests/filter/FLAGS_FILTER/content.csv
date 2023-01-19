@@ -1,0 +1,6 @@
+id,a,b,c
+1,J,N,N
+2,N,J,N
+3,N,N,J
+4,1,1,0
+5,false,false,true
