@@ -21,7 +21,6 @@ import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
 import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -44,7 +43,6 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.search.Cursor;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -145,22 +143,6 @@ public class ConceptsProcessor {
 						 .sorted(Comparator.comparing(Dataset::getWeight).thenComparing(Dataset::getLabel))
 						 .map(d -> new IdLabel<>(d.getId(), d.getLabel()))
 						 .collect(Collectors.toList());
-	}
-
-	@Data
-	public static class FrontendPreviewConfig {
-		@Data
-		public static class Labelled {
-			private final String name;
-			private final String label;
-		}
-
-		private final Collection<Labelled> all;
-		@JsonProperty("default")
-		private final Collection<Labelled> defaultConnectors;
-
-		@NsIdRef
-		private final Concept<?> searchConcept;
 	}
 
 

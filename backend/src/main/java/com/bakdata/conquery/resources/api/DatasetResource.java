@@ -35,7 +35,7 @@ public class DatasetResource extends HDatasets {
 	 */
 	@GET
 	@Path("entity-preview")
-	public ConceptsProcessor.FrontendPreviewConfig getEntityPreviewDefaultConnectors() {
+	public FrontendPreviewConfig getEntityPreviewDefaultConnectors() {
 		return processor.getEntityPreviewFrontendConfig(getDataset());
 	}
 }
