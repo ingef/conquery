@@ -8,7 +8,6 @@ import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import ProgressBar from "../common/components/ProgressBar";
 import { Heading3 } from "../headings/Headings";
-import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import { SettingsModal } from "./SettingsModal";
@@ -27,11 +26,6 @@ const BaseInfo = styled("div")`
   gap: 15px;
   justify-content: space-between;
   overflow: hidden;
-`;
-
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
 `;
 
 const SxHeading3 = styled(Heading3)`
@@ -102,14 +96,12 @@ export const NavigationHeader = memo(
             <SxHeading3 title={label}>{label}</SxHeading3>
             <SpecialText>{t("history.history")}</SpecialText>
           </div>
-          <Row>
-            <WithTooltip text={t("history.settings.headline")}>
-              <IconButton
-                icon="sliders"
-                onClick={() => setSettingsModalOpen(true)}
-              />
-            </WithTooltip>
-          </Row>
+          <WithTooltip text={t("history.settings.headline")}>
+            <IconButton
+              icon="sliders"
+              onClick={() => setSettingsModalOpen(true)}
+            />
+          </WithTooltip>
         </BaseInfo>
         <StatsGrid>
           <Count>{idsCount}</Count>
