@@ -72,7 +72,6 @@ interface Props {
   markedCount: number;
   entityStatusOptions: SelectOptionT[];
   setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
-  onReset: () => void;
 }
 export const NavigationHeader = memo(
   ({
@@ -81,7 +80,6 @@ export const NavigationHeader = memo(
     markedCount,
     setEntityStatusOptions,
     entityStatusOptions,
-    onReset,
   }: Props) => {
     const { t } = useTranslation();
     const label = useSelector<StateT, string>(
@@ -105,14 +103,6 @@ export const NavigationHeader = memo(
             <SpecialText>{t("history.history")}</SpecialText>
           </div>
           <Row>
-            <ConfirmableTooltip
-              onConfirm={onReset}
-              confirmationText={t("history.settings.reset")}
-            >
-              <WithTooltip text={t("history.settings.reset")}>
-                <IconButton icon="trash" />
-              </WithTooltip>
-            </ConfirmableTooltip>
             <WithTooltip text={t("history.settings.headline")}>
               <IconButton
                 icon="sliders"

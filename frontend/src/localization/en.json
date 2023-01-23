@@ -454,7 +454,9 @@
   },
   "history": {
     "emptyTimeline": {
-      "headline": "Empty!",
+      "headline": "History",
+      "description": "Exploring individual events chronologically.",
+      "descriptionWithoutIds": "To get started, import IDs into the empty list on the left side.",
       "descriptionWithoutId": "Select an ID from the list on the left side",
       "descriptionWithId": "Couldn't find any data for this ID."
     },
