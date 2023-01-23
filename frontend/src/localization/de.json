@@ -452,6 +452,11 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "emptyTimeline": {
+      "headline": "Leer!",
+      "descriptionWithoutId": "Wähle links eine ID aus der Liste",
+      "descriptionWithId": "Für diese ID konnten keine Daten gefunden werden."
+    },
     "backButtonWarning": "Achtung: Wenn Du zurück gehst, werden Änderungen an der Liste verworfen. Lade die Liste vorher herunter, um sie zu speichern.",
     "history": "Historie",
     "marked": "mit Status",
