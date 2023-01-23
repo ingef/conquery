@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
 import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
@@ -12,6 +14,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.FlagColumnsFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -42,20 +45,25 @@ public class FlagFilter extends Filter<String[]> {
 	}
 
 	@Override
-	public FilterNode<?> createFilterNode(String[] strings) {
-		final Column[] columns = new Column[strings.length];
+	public FilterNode<?> createFilterNode(String[] labels) {
+		final Column[] columns = new Column[labels.length];
 
-		for (int index = 0; index < strings.length; index++) {
-			final String string = strings[index];
-			final Column column = flags.get(string);
+		final Set<String> misssing = new HashSet<>(labels.length);
+
+		for (int index = 0; index < labels.length; index++) {
+			final String label = labels[index];
+			final Column column = flags.get(label);
 
 			// Column is not defined with us.
 			if (column == null) {
-				//TODO message
-				throw new ConqueryError.ExecutionCreationPlanError();
+				misssing.add(label);
 			}
 
 			columns[index] = column;
+		}
+
+		if(!misssing.isEmpty()){
+			throw new ConqueryError.ExecutionCreationPlanMissingFlagsError(misssing);
 		}
 
 		return new FlagColumnsFilterNode(columns);
@@ -65,5 +73,11 @@ public class FlagFilter extends Filter<String[]> {
 	@ValidationMethod(message = "Columns must be unique.")
 	public boolean isAllColumnsOfSameTable() {
 		return flags.values().stream().distinct().count() == flags.size();
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Columns must be BOOLEAN.")
+	public boolean isAllColumnsBoolean() {
+		return flags.values().stream().map(Column::getType).allMatch(MajorTypeId.BOOLEAN::equals);
 	}
 }
