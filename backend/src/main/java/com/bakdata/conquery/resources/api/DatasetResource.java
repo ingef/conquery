@@ -8,6 +8,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
+import com.bakdata.conquery.apiv1.frontend.FrontendPreviewConfig;
 import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -35,7 +36,7 @@ public class DatasetResource extends HDatasets {
 	 */
 	@GET
 	@Path("entity-preview")
-	public ConceptsProcessor.FrontendPreviewConfig getEntityPreviewDefaultConnectors() {
+	public FrontendPreviewConfig getEntityPreviewDefaultConnectors() {
 		return processor.getEntityPreviewFrontendConfig(getDataset());
 	}
 }
