@@ -54,7 +54,7 @@ public class FlagFilter extends Filter<String[]> {
 	public FilterNode<?> createFilterNode(String[] labels) {
 		final Column[] columns = new Column[labels.length];
 
-		final Set<String> misssing = new HashSet<>(labels.length);
+		final Set<String> missing = new HashSet<>(labels.length);
 
 		for (int index = 0; index < labels.length; index++) {
 			final String label = labels[index];
@@ -62,14 +62,14 @@ public class FlagFilter extends Filter<String[]> {
 
 			// Column is not defined with us.
 			if (column == null) {
-				misssing.add(label);
+				missing.add(label);
 			}
 
 			columns[index] = column;
 		}
 
-		if(!misssing.isEmpty()){
-			throw new ConqueryError.ExecutionCreationPlanMissingFlagsError(misssing);
+		if(!missing.isEmpty()){
+			throw new ConqueryError.ExecutionCreationPlanMissingFlagsError(missing);
 		}
 
 		return new FlagColumnsFilterNode(columns);
