@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { downloadBlob } from "../common/helpers/downloadBlob";
 import { toCSV } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
-import { SnackMessageTypeT } from "../snack-message/reducer";
+import { SnackMessageType } from "../snack-message/reducer";
 
 import { EntityIdsStatus } from "./History";
 import { LoadingPayload } from "./LoadHistoryDropzone";
@@ -91,7 +91,7 @@ export const useLoadHistory = ({
         dispatch(
           setMessage({
             message: t("history.load.error"),
-            notificationType: SnackMessageTypeT.ERROR,
+            type: SnackMessageType.ERROR,
           }),
         );
         return;

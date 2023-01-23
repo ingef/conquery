@@ -21,7 +21,7 @@ import {
 } from "../../api/types";
 import { useDatasetId } from "../../dataset/selectors";
 import { setMessage } from "../../snack-message/actions";
-import { SnackMessageTypeT } from "../../snack-message/reducer";
+import { SnackMessageType } from "../../snack-message/reducer";
 
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 
@@ -59,7 +59,7 @@ export const useLoadQueries = () => {
         dispatch(
           setMessage({
             message: t("previousQueries.error"),
-            notificationType: SnackMessageTypeT.ERROR,
+            type: SnackMessageType.ERROR,
           }),
         );
       }
@@ -97,7 +97,7 @@ export const useLoadQuery = () => {
         dispatch(
           setMessage({
             message: t("previousQuery.loadError"),
-            notificationType: SnackMessageTypeT.ERROR,
+            type: SnackMessageType.ERROR,
           }),
         );
       }
@@ -142,7 +142,7 @@ export const useUpdateQuery = () => {
       dispatch(
         setMessage({
           message: errorMessage,
-          notificationType: SnackMessageTypeT.ERROR,
+          type: SnackMessageType.ERROR,
         }),
       );
     }
@@ -172,7 +172,7 @@ export const useRemoveQuery = () => {
       dispatch(
         setMessage({
           message: t("previousQuery.deleteError"),
-          notificationType: SnackMessageTypeT.ERROR,
+          type: SnackMessageType.ERROR,
         }),
       );
     }
@@ -218,7 +218,7 @@ export const useLoadFormConfigs = () => {
         dispatch(
           setMessage({
             message: t("formConfigs.error"),
-            notificationType: SnackMessageTypeT.ERROR,
+            type: SnackMessageType.ERROR,
           }),
         );
       }
@@ -257,7 +257,7 @@ export const useLoadFormConfig = () => {
         dispatch(
           setMessage({
             message: t("formConfig.loadError"),
-            notificationType: SnackMessageTypeT.ERROR,
+            type: SnackMessageType.ERROR,
           }),
         );
       }
@@ -297,7 +297,7 @@ export const useUpdateFormConfig = () => {
       dispatch(
         setMessage({
           message: errorMessage,
-          notificationType: SnackMessageTypeT.ERROR,
+          type: SnackMessageType.ERROR,
         }),
       );
     }
@@ -328,7 +328,7 @@ export const useRemoveFormConfig = () => {
       dispatch(
         setMessage({
           message: t("formConfig.deleteError"),
-          notificationType: SnackMessageTypeT.ERROR,
+          type: SnackMessageType.ERROR,
         }),
       );
     }

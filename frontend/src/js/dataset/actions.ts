@@ -12,7 +12,7 @@ import { useLoadTrees } from "../concept-trees/actions";
 import { useLoadDefaultHistoryParams } from "../entity-history/actions";
 import { useLoadQueries } from "../previous-queries/list/actions";
 import { setMessage } from "../snack-message/actions";
-import { SnackMessageTypeT } from "../snack-message/reducer";
+import { SnackMessageType } from "../snack-message/reducer";
 import { clearQuery, loadSavedQuery } from "../standard-query-editor/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
@@ -61,7 +61,7 @@ export const useLoadDatasets = () => {
       dispatch(
         setMessage({
           message: t("datasetSelector.error"),
-          notificationType: SnackMessageTypeT.ERROR,
+          type: SnackMessageType.ERROR,
         }),
       );
       dispatch(loadDatasets.failure(e as Error));

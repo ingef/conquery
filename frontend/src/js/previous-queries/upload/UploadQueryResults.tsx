@@ -12,7 +12,7 @@ import type {
 import type { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import { setMessage } from "../../snack-message/actions";
-import { SnackMessageTypeT } from "../../snack-message/reducer";
+import { SnackMessageType } from "../../snack-message/reducer";
 import WithTooltip from "../../tooltip/WithTooltip";
 import { useLoadQueries } from "../list/actions";
 
@@ -68,7 +68,7 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
         dispatch(
           setMessage({
             message: t("uploadQueryResultsModal.uploadFailed"),
-            notificationType: SnackMessageTypeT.ERROR,
+            type: SnackMessageType.ERROR,
           }),
         );
       }

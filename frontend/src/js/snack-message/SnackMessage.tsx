@@ -6,21 +6,22 @@ import type { StateT } from "../app/reducers";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
 
-import { setMessage } from "./actions";
-import { SnackMessageStateT, SnackMessageTypeT } from "./reducer";
+import { resetMessage as resetMessageAction } from "./actions";
+import { SnackMessageStateT, SnackMessageType } from "./reducer";
 
-const colorLookupTable: { [key in SnackMessageTypeT]: string } = {
-  [SnackMessageTypeT.ERROR]: "rgba(0, 0, 0, 0.75)",
-  [SnackMessageTypeT.SUCCESS]: "rgba(12, 100, 39, 0.75)", // #0C6427
-  [SnackMessageTypeT.DEFAULT]: "rgba(0, 0, 0, 0.75)",
+const snackMessageTypeToColor: Record<SnackMessageType, string> = {
+  [SnackMessageType.ERROR]: "rgba(0, 0, 0, 0.75)",
+  [SnackMessageType.SUCCESS]: "rgba(12, 100, 39, 0.9)", // #0C6427
+  [SnackMessageType.DEFAULT]: "rgba(0, 0, 0, 0.75)",
 };
-const Root = styled("div")<{ notificationType: SnackMessageTypeT }>`
+
+const Root = styled("div")<{ type: SnackMessageType }>`
   position: fixed;
   z-index: 10;
   bottom: 20px;
   right: 20px;
-  background-color: ${({ notificationType }) =>
-    colorLookupTable[notificationType ?? SnackMessageTypeT.DEFAULT]};
+  background-color: ${({ type }) =>
+    snackMessageTypeToColor[type ?? SnackMessageType.DEFAULT]};
   color: white;
   display: flex;
   flex-direction: row;
@@ -48,17 +49,11 @@ const ClearZone = styled("div")`
 
 const SnackMessage: FC = memo(function SnackMessageComponent() {
   const ref = useRef(null);
-  const { message, notificationType } = useSelector<StateT, SnackMessageStateT>(
+  const { message, type } = useSelector<StateT, SnackMessageStateT>(
     (state) => state.snackMessage,
   );
   const dispatch = useDispatch();
-  const resetMessage = () =>
-    dispatch(
-      setMessage({
-        message: null,
-        notificationType: SnackMessageTypeT.DEFAULT,
-      }),
-    );
+  const resetMessage = () => dispatch(resetMessageAction());
 
   useClickOutside(ref, () => {
     if (message) {
@@ -69,7 +64,7 @@ const SnackMessage: FC = memo(function SnackMessageComponent() {
   return (
     <div ref={ref}>
       {message && (
-        <Root notificationType={notificationType}>
+        <Root type={type}>
           <Relative>
             <div dangerouslySetInnerHTML={{ __html: message }} />
             <ClearZone onClick={resetMessage}>
