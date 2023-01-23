@@ -24,6 +24,12 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+/**
+ * Implements a MultiSelect type filter, where an event can meet multiple criteria (as opposed to {@link MultiSelectFilter} which is restricted to one value per event).
+ * This is achieved by using multiple {@link com.bakdata.conquery.models.types.ResultType.BooleanT} columns, each defining if one property is met or not.
+ *
+ * The selected flags are logically or-ed.
+ */
 @CPSType(base = Filter.class, id = "FLAGS")
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @ToString
