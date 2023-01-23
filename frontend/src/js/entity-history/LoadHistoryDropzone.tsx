@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import type { SelectOptionT } from "../api/types";
 import { parseCSV } from "../file/csv";
 import { setMessage } from "../snack-message/actions";
+import { SnackMessageType } from "../snack-message/reducer";
 import DropzoneWithFileInput, {
   DragItemFile,
 } from "../ui-components/DropzoneWithFileInput";
@@ -41,7 +42,6 @@ export const LoadHistoryDropzone = ({
 }: Props) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-
   const loadHistory = useLoadHistory({ onLoadFromFile });
 
   const onDrop = async ({ files }: DragItemFile) => {
@@ -49,7 +49,12 @@ export const LoadHistoryDropzone = ({
     const { data } = await parseCSV(file, ";");
 
     if (data.length === 0) {
-      dispatch(setMessage({ message: t("history.load.error") }));
+      dispatch(
+        setMessage({
+          message: t("history.load.error"),
+          type: SnackMessageType.ERROR,
+        }),
+      );
       return;
     }
 

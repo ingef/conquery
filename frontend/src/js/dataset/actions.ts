@@ -12,6 +12,7 @@ import { useLoadTrees } from "../concept-trees/actions";
 import { useLoadDefaultHistoryParams } from "../entity-history/actions";
 import { useLoadQueries } from "../previous-queries/list/actions";
 import { setMessage } from "../snack-message/actions";
+import { SnackMessageType } from "../snack-message/reducer";
 import { clearQuery, loadSavedQuery } from "../standard-query-editor/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
@@ -57,7 +58,12 @@ export const useLoadDatasets = () => {
 
       return loadTrees(defaultId);
     } catch (e) {
-      dispatch(setMessage({ message: t("datasetSelector.error") }));
+      dispatch(
+        setMessage({
+          message: t("datasetSelector.error"),
+          type: SnackMessageType.ERROR,
+        }),
+      );
       dispatch(loadDatasets.failure(e as Error));
     }
   }, [dispatch, getDatasets, loadDefaultHistoryParams, loadTrees, t]);
