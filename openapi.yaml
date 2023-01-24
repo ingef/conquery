@@ -594,7 +594,7 @@ servers:
 paths:
   /frontend/config:
     get:
-      description: An Endpoint describing configuration for the frontend.
+      summary: An Endpoint describing configuration for the frontend.
       tags:
         - frontend
       operationId: get-frontend-config
@@ -615,7 +615,7 @@ paths:
         - frontend
         - entity-preview
       operationId: get-entity-preview-config
-      description: Retrieve entity-preview config and defaults for frontend.
+      summary: Retrieve config and defaults for entity-preview for the frontend.
       responses:
         '200':
           description: The config.
@@ -645,7 +645,7 @@ paths:
       tags:
         - frontend
       operationId: list-datasets
-      description: Fetch all datasets available to the User.
+      summary: Fetch all datasets available to the User.
       responses:
         '200':
           description: The available datasets.
@@ -713,7 +713,7 @@ paths:
         - query
         - dataset
       operationId: post-query
-      description: Submit a query for execution in the dataset.
+      summary: Submit a query for execution in the dataset.
       requestBody:
         content:
           application/json:
@@ -745,7 +745,7 @@ paths:
     patch:
       tags:
         - query
-      description: update a query.
+      summary: Update a query.
       operationId: patch-query
       requestBody:
         content:
@@ -760,6 +760,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/full-execution-status"
     delete:
+      summary: Delete a query.
       tags:
         - query
       operationId: delete-query
@@ -771,6 +772,7 @@ paths:
     parameters:
       - $ref: "#/components/parameters/query"
     post:
+      summary: Cancel a running query.
       tags:
         - query
       operationId: cancel-query
@@ -781,6 +783,7 @@ paths:
     parameters:
       - $ref: "#/components/parameters/query"
     post:
+      summary: Restart a query again. Useful for when it is empty after a restart, or the underlying data has changed.
       tags:
         - query
       operationId: reexecute-query
@@ -799,7 +802,7 @@ paths:
       tags:
         - entity-preview
       operationId: get-entity-preview
-      description: Submit a query for the history of a single entity
+      summary: Submit a query for the history of a single entity
       requestBody:
         content:
           application/json:
