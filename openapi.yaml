@@ -49,7 +49,7 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/error"
-      description: The user is not logged in.
+      description: The user is not logged in or misses permissions to access the resource.
   schemas:
     id:
       description: Typed identifier of an object. Usually consists of a recursive structure separated by dots, starting with the dataset. The dataset can be omitted, when the url is already in a context with a bound dataset.
@@ -617,12 +617,14 @@ paths:
       operationId: get-entity-preview-config
       summary: Retrieve config and defaults for entity-preview for the frontend.
       responses:
-        '200':
+        "200":
           description: The config.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/entity-preview-config"
+        "401":
+          $ref: "#/components/responses/unauthorized"
 
   /me:
     get:
@@ -647,7 +649,7 @@ paths:
       operationId: list-datasets
       summary: Fetch all datasets available to the User.
       responses:
-        '200':
+        "200":
           description: The available datasets.
           content:
             application/json:
@@ -655,8 +657,6 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/frontend-dataset-id"
-
-
   /concepts/{concept}/resolve:
     post:
       tags:
@@ -683,12 +683,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/error"
-        '200':
+        "200":
           description: Resolved Concepts
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/resolved-concepts-result"
+        "401":
+          $ref: "#/components/responses/unauthorized"
 
   /datasets/{dataset}/queries:
     parameters:
@@ -700,7 +702,7 @@ paths:
       operationId: list-queries
       summary: Fetch Status and metadata of all queries visible to the user.
       responses:
-        '200':
+        "200":
           description: The Status and Metadata.
           content:
             application/json:
@@ -708,6 +710,8 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/query-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"
     post:
       tags:
         - query
@@ -720,12 +724,14 @@ paths:
             schema:
               $ref: "#/components/schemas/query"
       responses:
-        '200':
+        "200":
           description: Status of the submitted query.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/full-execution-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"
 
   /queries/{query}:
     parameters:
@@ -736,12 +742,14 @@ paths:
       operationId: get-query-status
       summary: Get Status and metadata of Query
       responses:
-        '200':
+        "200":
           description: The Status and Metadata.
           content:
             application/json;charset=utf-8:
               schema:
                 $ref: "#/components/schemas/full-execution-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"
     patch:
       tags:
         - query
@@ -753,20 +761,24 @@ paths:
             schema:
               $ref: "#/components/schemas/query"
       responses:
-        '200':
+        "200":
           description: Description of the updated execution
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/full-execution-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"
     delete:
       summary: Delete the query.
       tags:
         - query
       operationId: delete-query
       responses:
-        '200':
+        "200":
           description: Query was deleted.
+        "401":
+          $ref: "#/components/responses/unauthorized"
   /queries/{query}/cancel:
     parameters:
       - $ref: "#/components/parameters/query"
@@ -776,8 +788,10 @@ paths:
         - query
       operationId: cancel-query
       responses:
-        '200':
+        "200":
           description: Query was cancelled.
+        "401":
+          $ref: "#/components/responses/unauthorized"
   /queries/{query}/reexecute:
     parameters:
       - $ref: "#/components/parameters/query"
@@ -787,12 +801,14 @@ paths:
         - query
       operationId: reexecute-query
       responses:
-        '200':
+        "200":
           description: Description of restarted Query.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/full-execution-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"
 
   /datasets/{dataset}/queries/entity:
     parameters:
@@ -822,9 +838,11 @@ paths:
                   items:
                     $ref: "#/components/schemas/connectorId"
       responses:
-        '200':
+        "200":
           description: Description of the history of the entity.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/entity-history-execution-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"
