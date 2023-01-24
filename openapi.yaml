@@ -764,7 +764,7 @@ paths:
       tags:
         - query
       operationId: delete-query
-      description: delete the query.
+      description: Delete the query.
       responses:
         '200':
           description: Query was deleted.
