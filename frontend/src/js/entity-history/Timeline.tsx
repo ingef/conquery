@@ -14,6 +14,7 @@ import { useDatasetId } from "../dataset/selectors";
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
+import { TimelineEmptyPlaceholder } from "./timeline/TimelineEmptyPlaceholder";
 import Year from "./timeline/Year";
 import {
   isConceptColumn,
@@ -71,6 +72,10 @@ const Timeline = ({
   });
 
   if (!datasetId) return null;
+
+  if (eventsByQuarterWithGroups.length === 0) {
+    return <TimelineEmptyPlaceholder />;
+  }
 
   return (
     <Root className={className}>

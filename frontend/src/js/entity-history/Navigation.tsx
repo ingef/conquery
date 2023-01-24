@@ -2,23 +2,24 @@ import styled from "@emotion/styled";
 import { Dispatch, memo, SetStateAction, useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { SelectOptionT } from "../api/types";
+import { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
+import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import { EntityIdsList } from "./EntityIdsList";
 import type { EntityIdsStatus } from "./History";
 import { LoadHistoryDropzone, LoadingPayload } from "./LoadHistoryDropzone";
 import { NavigationHeader } from "./NavigationHeader";
-import { closeHistory, useUpdateHistorySession } from "./actions";
+import { closeHistory, resetHistory, useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
 import { saveHistory } from "./saveAndLoad";
 
 const Root = styled("div")`
   display: grid;
-  grid-template-rows: auto auto 1fr;
   gap: 10px;
   overflow: hidden;
   background-color: ${({ theme }) => theme.col.bg};
@@ -49,7 +50,7 @@ const BottomActions = styled("div")`
   display: flex;
 `;
 
-const BackButton = styled(IconButton)`
+const ContainedIconButton = styled(IconButton)`
   margin: 0 10px 0 20px;
   justify-content: center;
 `;
@@ -92,6 +93,10 @@ export const Navigation = memo(
       dispatch(closeHistory());
     }, [dispatch]);
 
+    const ids = useSelector<StateT, unknown[]>(
+      (state) => state.entityHistory.entityIds,
+    );
+
     const goToPrev = useCallback(() => {
       const prevIdx = Math.max(0, currentEntityIndex - 1);
 
@@ -107,6 +112,10 @@ export const Navigation = memo(
       saveHistory({ entityIds, entityIdsStatus });
     }, [entityIds, entityIdsStatus]);
 
+    const onReset = useCallback(() => {
+      dispatch(resetHistory());
+    }, [dispatch]);
+
     useHotkeys("shift+up", goToPrev, [goToPrev]);
     useHotkeys("shift+down", goToNext, [goToNext]);
 
@@ -118,13 +127,36 @@ export const Navigation = memo(
     const backButtonWarning =
       markedCount > 0 ? t("history.backButtonWarning") : "";
 
+    const showResetButton = ids.length > 0;
+
     return (
-      <Root className={className}>
+      <Root
+        className={className}
+        style={{
+          gridTemplateRows: showResetButton
+            ? "auto auto auto 1fr"
+            : "auto auto 1fr",
+        }}
+      >
         <WithTooltip text={backButtonWarning}>
-          <BackButton frame icon="chevron-left" onClick={onCloseHistory}>
+          <ContainedIconButton
+            frame
+            icon="chevron-left"
+            onClick={onCloseHistory}
+          >
             {t("common.back")}
-          </BackButton>
+          </ContainedIconButton>
         </WithTooltip>
+        {ids.length > 0 && (
+          <ConfirmableTooltip
+            onConfirm={onReset}
+            confirmationText={t("history.settings.resetConfirm")}
+          >
+            <ContainedIconButton frame icon="trash">
+              {t("history.settings.reset")}
+            </ContainedIconButton>
+          </ConfirmableTooltip>
+        )}
         <SxNavigationHeader
           markedCount={markedCount}
           idsCount={entityIds.length}

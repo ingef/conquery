@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
+import { HistoryButton } from "../button/HistoryButton";
 import DatasetSelector from "../dataset/DatasetSelector";
 import { useHideLogoutButton } from "../user/selectors";
 
@@ -117,6 +118,7 @@ const Header: FC = () => {
       </OverflowHidden>
       <Right>
         <DatasetSelector />
+        <HistoryButton />
         {(manualUrl || contactEmail) && (
           <HelpMenu manualUrl={manualUrl} contactEmail={contactEmail} />
         )}

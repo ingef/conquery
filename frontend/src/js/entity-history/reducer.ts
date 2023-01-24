@@ -14,6 +14,7 @@ import {
   loadDefaultHistoryParamsSuccess,
   openHistory,
   resetCurrentEntity,
+  resetHistory,
 } from "./actions";
 
 // TODO: This is quite inaccurate
@@ -91,6 +92,20 @@ export default function reducer(
     case getType(resetCurrentEntity):
       return {
         ...state,
+        currentEntityId: null,
+        currentEntityData: [],
+        currentEntityCsvUrl: "",
+        currentEntityInfos: [],
+      };
+    case getType(resetHistory):
+      return {
+        ...state,
+        label: "",
+        columns: {},
+        columnDescriptions: [],
+        resultUrls: [],
+        entityIds: [],
+        currentEntityUniqueSources: [],
         currentEntityId: null,
         currentEntityData: [],
         currentEntityCsvUrl: "",

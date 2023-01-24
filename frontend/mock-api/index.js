@@ -51,7 +51,7 @@ module.exports = function (app, port) {
   );
 
   app.post(
-    "/api/datasets/:datasetId/queries/:id/cancel",
+    "/api/queries/:id/cancel",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -99,7 +99,7 @@ module.exports = function (app, port) {
   );
 
   app.delete(
-    "/api/datasets/:datasetId/queries/:id",
+    "/api/queries/:id",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -109,68 +109,64 @@ module.exports = function (app, port) {
     },
   );
 
-  app.get(
-    "/api/datasets/:datasetId/queries/:id",
-    mockAuthMiddleware,
-    function response(req, res) {
-      if (req.params.id !== 1) {
-        setTimeout(() => {
-          res.sendFile(path.join(__dirname, "./stored-queries/25.json"));
-        }, LONG_DELAY);
-      } else {
-        setTimeout(() => {
-          res.setHeader("Content-Type", "application/json");
+  app.get("/api/queries/:id", mockAuthMiddleware, function response(req, res) {
+    if (req.params.id !== 1) {
+      setTimeout(() => {
+        res.sendFile(path.join(__dirname, "./stored-queries/25.json"));
+      }, LONG_DELAY);
+    } else {
+      setTimeout(() => {
+        res.setHeader("Content-Type", "application/json");
 
-          const dice = Math.random();
+        const dice = Math.random();
 
-          if (dice <= 0.1) {
-            res.status(422);
-            res.send(ERROR);
-          } else if (dice > 0.1 && dice <= 0.7) {
-            res.send(
-              JSON.stringify({
-                id: 1,
-                status: "RUNNING",
-                progress: Math.floor(Math.random() * 10) / 10,
-              }),
-            );
-          } else if (dice > 0.7 && dice <= 0.75) {
-            res.send(
-              JSON.stringify({
-                id: 1,
-                status: "FAILED",
-                error: {
-                  code: "EXAMPLE_ERROR_INTERPOLATED",
-                  context: {
-                    adjective: "easy",
-                  },
+        if (dice <= 0.1) {
+          res.status(422);
+          res.send(ERROR);
+        } else if (dice > 0.1 && dice <= 0.7) {
+          res.send(
+            JSON.stringify({
+              id: 1,
+              status: "RUNNING",
+              progress: Math.floor(Math.random() * 10) / 10,
+            }),
+          );
+        } else if (dice > 0.7 && dice <= 0.75) {
+          res.send(
+            JSON.stringify({
+              id: 1,
+              status: "FAILED",
+              error: {
+                code: "EXAMPLE_ERROR_INTERPOLATED",
+                context: {
+                  adjective: "easy",
                 },
-              }),
-            );
-          } else {
-            res.send(
-              JSON.stringify({
-                id: 1,
-                status: "DONE",
-                numberOfResults: 5,
-                resultUrls: [
-                  `/api/results/results.xlsx`,
-                  `/api/results/results.csv`,
-                ],
-                columnDescriptions: [
-                  {
-                    label: "Money Range",
-                    selectId: null,
-                    type: "MONEY",
-                  },
-                ],
-              }),
-            );
-          }
-        }, LONG_DELAY);
-      }
-    },
-  );
+              },
+            }),
+          );
+        } else {
+          res.send(
+            JSON.stringify({
+              id: 1,
+              status: "DONE",
+              numberOfResults: 5,
+              resultUrls: [
+                `/api/results/results.xlsx`,
+                `/api/results/results.csv`,
+              ],
+              columnDescriptions: [
+                {
+                  label: "Money Range",
+                  selectId: null,
+                  type: "MONEY",
+                },
+              ],
+            }),
+          );
+        }
+      }, LONG_DELAY);
+    }
+  });
 
   /*
     DATASETS
@@ -212,13 +208,9 @@ module.exports = function (app, port) {
     },
   );
 
-  app.get(
-    "/api/datasets/:datasetId/concepts/:id",
-    mockAuthMiddleware,
-    function response(req, res) {
-      res.sendFile(path.join(__dirname, `./concepts/${req.params.id}.json`));
-    },
-  );
+  app.get("/api/concepts/:id", mockAuthMiddleware, function response(req, res) {
+    res.sendFile(path.join(__dirname, `./concepts/${req.params.id}.json`));
+  });
 
   /*
     STORED QUERIES
@@ -283,7 +275,7 @@ module.exports = function (app, port) {
   );
 
   app.patch(
-    "/api/datasets/:datasetId/queries/:id",
+    "/api/queries/:id",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -293,7 +285,7 @@ module.exports = function (app, port) {
   );
 
   app.delete(
-    "/api/datasets/:datasetId/queries/:id",
+    "/api/queries/:id",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -332,7 +324,7 @@ module.exports = function (app, port) {
   );
 
   app.post(
-    "/api/datasets/:datasetId/concepts/:conceptId/tables/:tableId/filters/:filterId/autocomplete",
+    "/api/filters/:filterId/autocomplete",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -373,7 +365,7 @@ module.exports = function (app, port) {
   );
 
   app.post(
-    "/api/datasets/:datasetId/concepts/:conceptId/resolve",
+    "/api/concepts/:conceptId/resolve",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -405,7 +397,7 @@ module.exports = function (app, port) {
     For DND File see ./app/api/dnd
   */
   app.post(
-    "/api/datasets/:datasetId/concepts/:conceptId/tables/:tableId/filters/:filterId/resolve",
+    "/api/filters/:filterId/resolve",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -548,7 +540,7 @@ module.exports = function (app, port) {
   );
 
   app.get(
-    "/api/datasets/:datasetId/form-configs/:id",
+    "/api/form-configs/:id",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -558,7 +550,7 @@ module.exports = function (app, port) {
   );
 
   app.patch(
-    "/api/datasets/:datasetId/form-configs/:id",
+    "/api/form-configs/:id",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {
@@ -569,7 +561,7 @@ module.exports = function (app, port) {
   );
 
   app.delete(
-    "/api/datasets/:datasetId/form-configs/:id",
+    "/api/form-configs/:id",
     mockAuthMiddleware,
     function response(req, res) {
       setTimeout(() => {

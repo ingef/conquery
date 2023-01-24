@@ -81,8 +81,8 @@ const TabNavigation: FC<PropsT> = ({
     <Root data-test-id={dataTestId}>
       {tabs.map(({ key, label, tooltip, loading }) => {
         return (
-          <HoverNavigatable triggerNavigate={createClickHandler(key)}>
-            <SxWithTooltip text={tooltip} lazy key={key}>
+          <HoverNavigatable key={key} triggerNavigate={createClickHandler(key)}>
+            <SxWithTooltip text={tooltip} lazy>
               <Headline
                 active={activeTab === key}
                 onClick={createClickHandler(key)}
