@@ -36,11 +36,17 @@ import org.deidentifier.arx.aggregates.HierarchyBuilderIntervalBased.Range;
  * we convert from the internal conquery result format to the ARX {@link org.deidentifier.arx.Data} format.
  */
 public interface AttributeTypeBuilder {
+	org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AttributeTypeBuilder.class);
 
 	/**
 	 * Fixed bucket sized for interval based hierarchies
 	 */
 	long BUCKET_SIZE = 5;
+
+	/**
+	 * Maximum number of buckets at the lowest level in the hierarchy for interval based hierarchies.
+	 */
+	int MAX_BUCKETS_LOWEST_LEVEL = 1 << 10;
 
 	/**
 	 * Number of groups within a bucket for interval based hierarchies
@@ -169,39 +175,47 @@ public interface AttributeTypeBuilder {
 		 */
 		@Override
 		public AttributeType.Hierarchy build() {
+			final long extendedMax = max + 1;
 			final HierarchyBuilderIntervalBased<Long> builder = HierarchyBuilderIntervalBased.create(
 					DataType.INTEGER,
 					new Range<>(min, min, min),
-					new Range<>(max + 1, max + 1, max + 1)
+					new Range<>(extendedMax, extendedMax, extendedMax)
 			);
 
 			// Convert data for builder#prepare
 			final String[] data = values.toArray(String[]::new);
 
+			log.debug("Creating a hierarchy for values in interval [{},{}]", min, max);
+
+			builder.setAggregateFunction(DataType.INTEGER.createAggregate().createIntervalFunction(true, false));
+
 			// Test if BUCKET_SIZE is suitable for data
 			final long difference = max - min;
 			if (difference < BUCKET_SIZE) {
 				// If the difference is smaller than BUCKET_SIZE, we fall back to a flat hierarchy
-				builder.addInterval(min, max);
+				builder.addInterval(min, extendedMax);
 				builder.prepare(data);
 				return builder.build();
 			}
 
-			builder.setAggregateFunction(DataType.INTEGER.createAggregate().createIntervalFunction(true, false));
+			// Calculate how many buckets are necessary with the default bucket size
+			final int countDefaultSizeLeafBuckets = Math.toIntExact((long) Math.ceil((float) difference / BUCKET_SIZE));
 
-			// Define the interval for the first bucket on the lowest level
-			builder.addInterval(min, min + BUCKET_SIZE);
+			// Calculate actual bucket size to stay within maximum number of buckets
+			long bucketSize = countDefaultSizeLeafBuckets > MAX_BUCKETS_LOWEST_LEVEL ?
+							  Math.toIntExact((long) Math.ceil((float) (difference / MAX_BUCKETS_LOWEST_LEVEL))) :
+							  BUCKET_SIZE;
 
-			// Intervals of all other buckets are derived through the number of levels and groups in a level
-			final int countLevels = Math.toIntExact(difference / BUCKET_SIZE);
-			log.debug("Creating {} levels.", countLevels);
-			for (int i = 0; i < countLevels; i++) {
-				builder.getLevel(i).addGroup(GROUPS_PER_LEVEL);
-			}
-			// Add a final group that allows to differentiate between a present value ([min; max[) and NULL
-			builder.getLevel(countLevels - 1).addGroup(1);
 
-			// Preparation, so only hierarchy paths are created that are actually needed
+			final int countLeafBuckets = Math.min(countDefaultSizeLeafBuckets, MAX_BUCKETS_LOWEST_LEVEL);
+
+			builder.addInterval(min, min + bucketSize);
+
+			log.info("Creating hierarchy with bucket size: {}", bucketSize);
+
+			prepareBuckets(builder, countLeafBuckets);
+
+
 			builder.prepare(data);
 
 			return builder.build();
@@ -211,6 +225,10 @@ public interface AttributeTypeBuilder {
 
 	@Slf4j
 	class DecimalInterval implements AttributeTypeBuilder {
+		/**
+		 * We add a small epsilon to the max-limit, so that the actual max is included in the interval.
+		 */
+		public static final double EPSILON = 10e-4;
 		private double min = Double.MAX_VALUE;
 		private double max = Double.MIN_VALUE;
 
@@ -229,8 +247,8 @@ public interface AttributeTypeBuilder {
 			}
 
 			final double l = ((Number) value).doubleValue();
-			min = Math.min(min, l);
-			max = Math.max(max, l);
+			min = Math.min(Math.floor(min), l);
+			max = Math.max(Math.ceil(max), l);
 
 			final String returnVal = Double.toString(l);
 			values.add(returnVal);
@@ -240,30 +258,44 @@ public interface AttributeTypeBuilder {
 		@Override
 		public AttributeType.Hierarchy build() {
 
+			final double extendedMax = max + EPSILON;
 			final HierarchyBuilderIntervalBased<Double> builder = HierarchyBuilderIntervalBased.create(
 					DataType.DECIMAL,
 					new Range<>(min, min, min),
-					new Range<>(max + 1, max + 1, max + 1)
+					new Range<>(max, extendedMax, extendedMax)
 			);
 
 			final String[] data = values.toArray(String[]::new);
 
+			log.debug("Creating a hierarchy for values in interval [{},{}]", min, max);
+
 			final double difference = max - min;
+
+			builder.setAggregateFunction(DataType.DECIMAL.createAggregate().createIntervalFunction(true, false));
+
 			if (difference < BUCKET_SIZE) {
 				builder.addInterval(min, max);
 				builder.prepare(data);
 				return builder.build();
 			}
 
-			builder.setAggregateFunction(DataType.DECIMAL.createAggregate().createIntervalFunction(true, false));
-			builder.addInterval(min, min + BUCKET_SIZE);
 
-			final int countLevels = Math.toIntExact((long) (difference / BUCKET_SIZE));
-			log.debug("Creating {} levels.", countLevels);
-			for (int i = 0; i < countLevels; i++) {
-				builder.getLevel(i).addGroup(GROUPS_PER_LEVEL);
-			}
-			builder.getLevel(countLevels - 1).addGroup(1);
+			// Calculate how many buckets are necessary with the default bucket size
+			final int countDefaultSizeLeafBuckets = Math.toIntExact((long) Math.ceil(difference / BUCKET_SIZE));
+
+			// Calculate actual bucket size to stay within maximum number of buckets
+			double bucketSize = countDefaultSizeLeafBuckets > MAX_BUCKETS_LOWEST_LEVEL ?
+								(difference / MAX_BUCKETS_LOWEST_LEVEL) :
+								BUCKET_SIZE;
+
+
+			final int countLeafBuckets = Math.min(countDefaultSizeLeafBuckets, MAX_BUCKETS_LOWEST_LEVEL);
+
+			builder.addInterval(min, min + bucketSize);
+
+			log.info("Creating hierarchy with bucket size: {}", bucketSize);
+
+			prepareBuckets(builder, countLeafBuckets);
 
 			builder.prepare(data);
 
@@ -394,8 +426,6 @@ public interface AttributeTypeBuilder {
 	}
   
 	/**
-	 * Can be used in conjunction with {@link com.bakdata.conquery.models.types.SemanticType.IdentificationT}
-	 *
 	 * @implNote this might be only of use internal, because serialization might produce random objects.
 	 * This can be useful for certain columns that are programmatically generated and then flagged with
 	 * {@link AttributeType#INSENSITIVE_ATTRIBUTE} or {@link AttributeType#IDENTIFYING_ATTRIBUTE}.
@@ -419,5 +449,55 @@ public interface AttributeTypeBuilder {
 		public AttributeType build() {
 			return attributeType;
 		}
+	}
+
+	/**
+	 * Calculates the minimal number of levels for a binary-tree given assuming that
+	 * all leaf nodes are on the same level and there is at maximum one path (root -...-> leaf)
+	 * through the tree, where parent nodes only have one child.
+	 * <br/>
+	 * <p>
+	 * Example:
+	 * Given a leaf level with 200 nodes, this will be the nodes per level from leaf to root:
+	 * <ul>
+	 * <li>200 -> leaf level</li>
+	 * <li>100</li>
+	 * <li>50</li>
+	 * <li>25</li>
+	 * <li>13</li>
+	 * <li>7</li>
+	 * <li>4</li>
+	 * <li>2</li>
+	 * <li>1 -> root level</li>
+	 * </ul>
+	 * Which results in 9 levels.
+	 * <p>
+	 * The formula is then: ceil(log<sub>2</sub>(x)) + 1
+	 * </p>
+	 *
+	 * @param countLeafNodes
+	 * @return
+	 */
+	static int countLevelsFromLeafNodes(int countLeafNodes) {
+		if (countLeafNodes <= 0) {
+			throw new IllegalArgumentException();
+		}
+		return 32 - Integer.numberOfLeadingZeros(countLeafNodes - 1) + 1;
+	}
+
+
+	/**
+	 * Adds buckets to the hierarchy. At most two buckets merge into a parent node forming a binary tree.
+	 * The binary tree property relies on {@link AttributeTypeBuilder#countLevelsFromLeafNodes} and {@link AttributeTypeBuilder#GROUPS_PER_LEVEL} being set 2.
+	 */
+	static <T> void prepareBuckets(HierarchyBuilderIntervalBased<T> builder, int countLeafBuckets) {
+		// We subtract one level, because the top-level-bucket (min,max) is already defined
+		final int countLevels = countLevelsFromLeafNodes(countLeafBuckets) - 1;
+		log.info("Creating {} levels.", countLevels);
+		for (int i = 0; i < countLevels; i++) {
+			builder.getLevel(i).addGroup(GROUPS_PER_LEVEL);
+		}
+
+		builder.getLevel(countLevels - 1).addGroup(1);
 	}
 }
