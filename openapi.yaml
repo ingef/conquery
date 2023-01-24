@@ -9,12 +9,12 @@ info:
     url: http://TODO/
 tags:
   - name: dataset
-  - name: config
-  - name: query
-  - name: entity-preview
   - name: concept
-  - name: frontend
+  - name: query
   - name: user
+  - name: entity-preview
+  - name: config
+  - name: frontend
 components:
   securitySchemes:
     BasicAuth:
@@ -594,7 +594,7 @@ servers:
 paths:
   /frontend/config:
     get:
-      summary: An Endpoint describing configuration for the frontend.
+      summary: An Endpoint describing the configuration for the frontend.
       tags:
         - frontend
       operationId: get-frontend-config
@@ -760,11 +760,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/full-execution-status"
     delete:
-      summary: Delete a query.
+      summary: Delete the query.
       tags:
         - query
       operationId: delete-query
-      description: Delete the query.
       responses:
         '200':
           description: Query was deleted.
@@ -783,7 +782,7 @@ paths:
     parameters:
       - $ref: "#/components/parameters/query"
     post:
-      summary: Restart a query again. Useful for when it is empty after a restart, or the underlying data has changed.
+      summary: Restart a query. Useful for when it is empty after a restart, or the underlying data has changed.
       tags:
         - query
       operationId: reexecute-query
@@ -793,7 +792,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/query"
+                $ref: "#/components/schemas/full-execution-status"
 
   /datasets/{dataset}/queries/entity:
     parameters:
@@ -810,7 +809,7 @@ paths:
               type: object
               properties:
                 idKind:
-                  description: The kind of the entity. Options are made available through `column-config#name`
+                  description: The kind of the entity id. Options are made available through `column-config#name`
                   type: string
                 entityId:
                   description: The id of the entity.
@@ -818,14 +817,14 @@ paths:
                 time:
                   $ref: "#/components/schemas/date-range"
                 sources:
-                  description: List of connectorIds to export their backng tables.
+                  description: List of connectorIds to export their backing tables.
                   type: array
                   items:
                     $ref: "#/components/schemas/connectorId"
       responses:
         '200':
-          description: description of the history of the entity.
+          description: Description of the history of the entity.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/full-execution-status"
+                $ref: "#/components/schemas/entity-history-execution-status"
