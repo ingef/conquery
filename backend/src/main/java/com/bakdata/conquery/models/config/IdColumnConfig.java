@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Functions;
+import com.google.common.collect.MoreCollectors;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -124,7 +125,7 @@ public class IdColumnConfig {
 									  locale,
 									  // fall backs
 									  label.size() == 1 ?
-									  label.values().stream().findFirst().get() :
+									  label.values().stream().collect(MoreCollectors.onlyElement()) :
 									  col.getField()
 							  );
 						  },
