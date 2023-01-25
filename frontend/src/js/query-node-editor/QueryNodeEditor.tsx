@@ -190,8 +190,10 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             allowEditing={nodeIsConceptQueryNode(node)}
             label={nodeLabel}
             onUpdateLabel={(label) => {
-              setAutoLabelEnabled(false);
-              props.onUpdateLabel(label);
+              if (label !== node.label) {
+                setAutoLabelEnabled(false);
+                props.onUpdateLabel(label);
+              }
             }}
           />
           <ResetAndClose
