@@ -46,7 +46,7 @@ public interface AttributeTypeBuilder {
 	/**
 	 * Maximum number of buckets at the lowest level in the hierarchy for interval based hierarchies.
 	 */
-	int MAX_BUCKETS_LOWEST_LEVEL = 1 << 10;
+	int MAX_BUCKETS_LOWEST_LEVEL = 1024;
 
 	/**
 	 * Number of groups within a bucket for interval based hierarchies
