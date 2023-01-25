@@ -42,18 +42,18 @@
   ],
   "content": {
     "tables": {
-      "name" : "table",
-      "csv": "tests/aggregator/FlAGS_AGGREGATOR/content.csv",
-      "primaryColumn": {
-        "name": "id",
-        "type": "STRING"
-      },
-      "columns": [
-        {
-          "name": "a",
-          "type": "BOOLEAN"
-        },
-        {
+		"name": "table",
+		"csv": "tests/aggregator/FLAGS_AGGREGATOR/content.csv",
+		"primaryColumn": {
+			"name": "id",
+			"type": "STRING"
+		},
+		"columns": [
+			{
+				"name": "a",
+				"type": "BOOLEAN"
+			},
+			{
           "name": "b",
           "type": "BOOLEAN"
         },
