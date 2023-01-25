@@ -305,15 +305,6 @@ components:
           type: string
         label:
           type: string
-
-    secondaryId:
-      description: May be used in queries to execute queries grouped by an additional id.
-      allOf:
-        - $ref: "#/components/schemas/labeled"
-        - type: object
-          properties:
-            description:
-              type: string
     column-type:
       description: Available types for input and output of conquery. Additionally list, which is a nested type of column-type.
       oneOf:
