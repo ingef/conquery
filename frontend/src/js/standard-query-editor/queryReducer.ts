@@ -28,6 +28,7 @@ import {
   deleteNode,
   toggleTable,
   updateNodeLabel,
+  updateNodeDescription,
   setFilterValue,
   toggleExcludeGroup,
   loadSavedQuery,
@@ -677,6 +678,19 @@ const onUpdateNodeLabel = (
   });
 };
 
+const onUpdateNodeDescription = (
+  state: StandardQueryStateT,
+  {
+    andIdx,
+    orIdx,
+    description,
+  }: ActionType<typeof updateNodeDescription>["payload"],
+) => {
+  return setElementProperties(state, andIdx, orIdx, {
+    description,
+  });
+};
+
 const onAddConceptToNode = (
   state: StandardQueryStateT,
   { andIdx, orIdx, concept }: ActionType<typeof addConceptToNode>["payload"],
@@ -761,6 +775,8 @@ const query = (
       return action.payload.query;
     case getType(updateNodeLabel):
       return onUpdateNodeLabel(state, action.payload);
+    case getType(updateNodeDescription):
+      return onUpdateNodeDescription(state, action.payload);
     case getType(addConceptToNode):
       return onAddConceptToNode(state, action.payload);
     case getType(removeConceptFromNode):

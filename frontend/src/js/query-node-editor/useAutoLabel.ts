@@ -7,11 +7,19 @@ import { StandardQueryNodeT } from "../standard-query-editor/types";
 interface AutoLabelProps {
   node: StandardQueryNodeT;
   onUpdateLabel: (label: string) => void;
+  onUpdateDescription: (label: string) => void;
 }
 
-export function useAutoLabel({ node, onUpdateLabel }: AutoLabelProps) {
+export function useAutoLabel({
+  node,
+  onUpdateLabel,
+  onUpdateDescription,
+}: AutoLabelProps) {
   const MAX_AUTOLABEL_LENGTH = 250;
   const DELIMITER = " ";
+  const previousNodeIdsLength = useRef(
+    nodeIsConceptQueryNode(node) ? node.ids.length : -1,
+  );
 
   const formatConceptLabels = (labels: string[]) =>
     labels.sort().join(DELIMITER).substring(0, MAX_AUTOLABEL_LENGTH);
@@ -37,6 +45,24 @@ export function useAutoLabel({ node, onUpdateLabel }: AutoLabelProps) {
       }
     },
     [autoLabel, autoLabelEnabled, node.label],
+  );
+
+  const onUpdateDescriptionRef = useRef(onUpdateDescription);
+  onUpdateDescriptionRef.current = onUpdateDescription;
+  useEffect(
+    function updateDescription() {
+      if (!nodeIsConceptQueryNode(node)) return;
+      if (node.ids.length !== previousNodeIdsLength.current) {
+        previousNodeIdsLength.current = node.ids.length;
+        if (node.ids.length === 1) {
+          const description = getConceptById(node.ids[0])?.description;
+          if (description) {
+            onUpdateDescriptionRef.current(description);
+          }
+        }
+      }
+    },
+    [node, onUpdateDescription],
   );
 
   return { autoLabel, autoLabelEnabled, setAutoLabelEnabled };

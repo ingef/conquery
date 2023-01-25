@@ -391,6 +391,14 @@ const FormConceptGroup = (props: Props) => {
               }),
             );
           }}
+          onUpdateDescription={(description) => {
+            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            props.onChange(
+              setConceptProperties(props.value, valueIdx, conceptIdx, {
+                description,
+              }),
+            );
+          }}
           onDropConcept={(concept) => {
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(

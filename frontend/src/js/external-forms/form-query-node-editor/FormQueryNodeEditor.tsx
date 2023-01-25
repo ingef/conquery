@@ -24,6 +24,7 @@ interface PropsT {
   blocklistedSelects?: SelectorResultType[];
   onCloseModal: () => void;
   onUpdateLabel: (label: string) => void;
+  onUpdateDescription: (label: string) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
   onDropConcept: (concept: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
@@ -76,6 +77,7 @@ const FormQueryNodeEditor = (props: PropsT) => {
       allowlistedSelects={props.allowlistedSelects}
       onCloseModal={props.onCloseModal}
       onUpdateLabel={props.onUpdateLabel}
+      onUpdateDescription={props.onUpdateDescription}
       onDropConcept={props.onDropConcept}
       onRemoveConcept={props.onRemoveConcept}
       onToggleTable={props.onToggleTable}

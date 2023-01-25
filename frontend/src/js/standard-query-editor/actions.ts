@@ -35,6 +35,7 @@ export type StandardQueryEditorActions = ActionType<
   | typeof deleteNode
   | typeof deleteGroup
   | typeof updateNodeLabel
+  | typeof updateNodeDescription
   | typeof toggleTable
   | typeof setFilterValue
   | typeof toggleExcludeGroup
@@ -228,6 +229,14 @@ export const updateNodeLabel = createAction("query-editor/UPDATE_NODE_LABEL")<{
   andIdx: number;
   orIdx: number;
   label: string;
+}>();
+
+export const updateNodeDescription = createAction(
+  "query-editor/UPDATE_NODE_DESCRIPTION",
+)<{
+  andIdx: number;
+  orIdx: number;
+  description: string;
 }>();
 
 export const addConceptToNode = createAction(

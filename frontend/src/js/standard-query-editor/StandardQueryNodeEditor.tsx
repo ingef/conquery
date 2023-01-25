@@ -22,6 +22,7 @@ import {
   setDateColumn,
   toggleSecondaryIdExclude,
   useLoadFilterSuggestions,
+  updateNodeDescription,
 } from "./actions";
 import { StandardQueryNodeT } from "./types";
 
@@ -53,6 +54,12 @@ const StandardQueryNodeEditor = ({ editedNode, onClose }: Props) => {
 
   const onUpdateLabel = useCallback(
     (label: string) => dispatch(updateNodeLabel({ andIdx, orIdx, label })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onUpdateDescription = useCallback(
+    (description: string) =>
+      dispatch(updateNodeDescription({ andIdx, orIdx, description })),
     [dispatch, andIdx, orIdx],
   );
 
@@ -137,6 +144,7 @@ const StandardQueryNodeEditor = ({ editedNode, onClose }: Props) => {
       onLoadFilterSuggestions={onLoadFilterSuggestions}
       onCloseModal={onClose}
       onUpdateLabel={onUpdateLabel}
+      onUpdateDescription={onUpdateDescription}
       onDropConcept={onDropConcept}
       onRemoveConcept={onRemoveConcept}
       onToggleTable={onToggleTable}

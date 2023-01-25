@@ -95,6 +95,7 @@ export interface QueryNodeEditorPropsT {
 
   onCloseModal: () => void;
   onUpdateLabel: (label: string) => void;
+  onUpdateDescription: (label: string) => void;
   onDropConcept: (node: DragItemConceptTreeNode) => void;
   onRemoveConcept: (conceptId: ConceptIdT) => void;
   onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
@@ -161,6 +162,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
   const { autoLabel, autoLabelEnabled, setAutoLabelEnabled } = useAutoLabel({
     node,
     onUpdateLabel: props.onUpdateLabel,
+    onUpdateDescription: props.onUpdateDescription,
   });
   const nodeLabel = useMemo(
     () =>
