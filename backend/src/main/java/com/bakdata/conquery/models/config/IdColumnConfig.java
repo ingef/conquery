@@ -115,7 +115,19 @@ public class IdColumnConfig {
 		return ids.stream()
 				  .filter(ColumnConfig::isPrint)
 				  .map(col -> new LocalizedDefaultResultInfo(
-						  locale -> col.getLabel().getOrDefault(locale.getLanguage(), col.getField()),
+						  locale -> {
+							  final Map<Locale, String> label = col.getLabel();
+							  // Get the label for the locale,
+							  // fall back to any label if there is exactly one defined,
+							  // then fall back to the field name.
+							  return label.getOrDefault(
+									  locale,
+									  // fall backs
+									  label.size() == 1 ?
+									  label.values().stream().findFirst().get() :
+									  col.getField()
+							  );
+						  },
 						  locale -> col.getField(),
 						  ResultType.StringT.getINSTANCE(),
 						  Set.of(new SemanticType.IdT(col.getName()))
