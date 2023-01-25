@@ -27,8 +27,8 @@ export function useAutoLabel({
   const autoLabel = useMemo(() => {
     return nodeIsConceptQueryNode(node)
       ? formatConceptLabels(
-          node.ids.map((id) => getConceptById(id)?.label ?? ""),
-        )
+        node.ids.map((id) => getConceptById(id)?.label ?? ""),
+      )
       : undefined;
   }, [node]);
 
