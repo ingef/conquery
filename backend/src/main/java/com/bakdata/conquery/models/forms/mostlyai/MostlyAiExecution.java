@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.BiConsumer;
@@ -36,7 +37,6 @@ import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
-import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
@@ -126,7 +126,8 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 		final String[] idSubstitution = new String[idResultInfos.size()];
 		Arrays.fill(idSubstitution, "");
 		final EntityPrintId entityPrintId = EntityPrintId.from(idSubstitution);
-		printSettings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, (er) -> entityPrintId);
+		// Use US locale so numeric data is presented as stated in https://mostly.ai/synthetic-data-generator-docs/resources/csv-file-requirements/
+		printSettings = new PrintSettings(true, Locale.US, datasetRegistry, config, (er) -> entityPrintId);
 	}
 
 	@Override
