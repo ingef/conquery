@@ -19,10 +19,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ManagedExecution;

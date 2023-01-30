@@ -2,7 +2,6 @@ package com.bakdata.conquery.apiv1;
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
 
-import java.net.URL;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,6 +22,10 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
@@ -200,7 +203,7 @@ public class QueryProcessor {
 	}
 
 
-	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
+	public Stream<com.bakdata.conquery.apiv1.execution.ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
 		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
 		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
@@ -221,7 +224,7 @@ public class QueryProcessor {
 						 .map(mq -> {
 							 OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
 							 if (mq.isReadyToDownload(datasetAbilities)) {
-								 status.setResultUrls(getDownloadUrls(config.getResultProviders(), mq, uriBuilder, allProviders));
+								 status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
 							 return status;
 						 });
@@ -238,7 +241,7 @@ public class QueryProcessor {
 	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
 	 * @return The modified status
 	 */
-	public static List<URL> getDownloadUrls(List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public static List<ResultAsset> getResultAssets(List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		return renderer.stream()
 					   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
@@ -341,15 +344,15 @@ public class QueryProcessor {
 		storage.removeExecution(execution.getId());
 	}
 
-	public FullExecutionStatus getQueryFullStatus(ManagedExecution<?> query, Subject subject, UriBuilder url, Boolean allProviders) {
+	public com.bakdata.conquery.apiv1.execution.FullExecutionStatus getQueryFullStatus(ManagedExecution<?> query, Subject subject, UriBuilder url, Boolean allProviders) {
 
 		query.initExecutable(datasetRegistry, config);
 
 		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(subject, datasetRegistry);
-		final FullExecutionStatus status = query.buildStatusFull(storage, subject, datasetRegistry, config);
+		final com.bakdata.conquery.apiv1.execution.FullExecutionStatus status = query.buildStatusFull(storage, subject, datasetRegistry, config);
 
 		if (query.isReadyToDownload(datasetAbilities)) {
-			status.setResultUrls(getDownloadUrls(config.getResultProviders(), query, url, allProviders));
+			status.setResultUrls(getResultAssets(config.getResultProviders(), query, url, allProviders));
 		}
 		return status;
 	}
@@ -398,7 +401,7 @@ public class QueryProcessor {
 	/**
 	 * Create and submit {@link EntityPreviewForm} for subject on to extract sources for entity, and extract some additional infos to be used as infocard.
 	 */
-	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
+	public com.bakdata.conquery.apiv1.execution.FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
 		EntityPreviewForm form =
 				EntityPreviewForm.create(entity, idKind, dateRange, sources, datasetRegistry.get(dataset.getId()).getPreviewConfig().getSelects());
@@ -420,7 +423,7 @@ public class QueryProcessor {
 
 
 		FullExecutionStatus status = execution.buildStatusFull(storage, subject, datasetRegistry, config);
-		status.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, false));
+		status.setResultUrls(getResultAssets(config.getResultProviders(), execution, uriBuilder, false));
 		return status;
 	}
 

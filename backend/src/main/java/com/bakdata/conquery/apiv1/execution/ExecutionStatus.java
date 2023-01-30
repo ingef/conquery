@@ -1,4 +1,9 @@
-package com.bakdata.conquery.apiv1;
+package com.bakdata.conquery.apiv1.execution;
+
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
 
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -9,12 +14,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
-
-import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.util.Collections;
-import java.util.List;
 
 @NoArgsConstructor
 @ToString
@@ -49,7 +48,7 @@ public abstract class ExecutionStatus {
 	/**
 	 * The urls under from which the result of the execution can be downloaded as soon as it finished successfully.
 	 */
-	private List<URL> resultUrls = Collections.emptyList();
+	private List<ResultAsset> resultUrls = Collections.emptyList();
 
 
 }
