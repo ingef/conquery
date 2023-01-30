@@ -210,6 +210,7 @@ public class TableExportQuery extends Query {
 		infos[0] = ConqueryConstants.DATES_INFO_HISTORY;
 		infos[1] = ConqueryConstants.SOURCE_INFO;
 
+
 		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
 			final SecondaryIdDescription desc = e.getKey();
 			final Integer pos = e.getValue();
@@ -242,13 +243,15 @@ public class TableExportQuery extends Query {
 
 		for (Map.Entry<Column, Integer> entry : positions.entrySet()) {
 
-			// 0 Position is date, already covered
 			final int position = entry.getValue();
 
 			final Column column = entry.getKey();
 
+			// 0 Position is date, already covered
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
 			if (position == 0 || column.getSecondaryId() != null) {
+				infos[secondaryIdPositions.get(column.getSecondaryId())].getSemantics()
+																		.add(new SemanticType.ColumnT(column));
 				continue;
 			}
 
