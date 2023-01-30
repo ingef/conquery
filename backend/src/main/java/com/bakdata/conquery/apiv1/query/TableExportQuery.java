@@ -247,9 +247,12 @@ public class TableExportQuery extends Query {
 
 			final Column column = entry.getKey();
 
-			// 0 Position is date, already covered
+			if(position == 0) {
+				continue;
+			}
+
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
-			if (position == 0 || column.getSecondaryId() != null) {
+			if (column.getSecondaryId() != null) {
 				infos[secondaryIdPositions.get(column.getSecondaryId())].getSemantics()
 																		.add(new SemanticType.ColumnT(column));
 				continue;
