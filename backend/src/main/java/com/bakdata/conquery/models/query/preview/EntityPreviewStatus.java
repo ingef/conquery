@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.preview;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.Data;
