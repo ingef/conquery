@@ -39,7 +39,7 @@ public interface AttributeTypeBuilder {
 	org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AttributeTypeBuilder.class);
 
 	/**
-	 * Fixed bucket sized for interval based hierarchies
+	 * Default minimal bucket sized for interval based hierarchies
 	 */
 	long BUCKET_SIZE = 5;
 
@@ -201,17 +201,16 @@ public interface AttributeTypeBuilder {
 			// Calculate how many buckets are necessary with the default bucket size
 			final int countDefaultSizeLeafBuckets = Math.toIntExact((long) Math.ceil((float) difference / BUCKET_SIZE));
 
-			// Calculate actual bucket size to stay within maximum number of buckets
-			long bucketSize = countDefaultSizeLeafBuckets > MAX_BUCKETS_LOWEST_LEVEL ?
-							  Math.toIntExact((long) Math.ceil((float) (difference / MAX_BUCKETS_LOWEST_LEVEL))) :
-							  BUCKET_SIZE;
-
-
+			// Determine bucket number to stay below maximum bucket count
 			final int countLeafBuckets = Math.min(countDefaultSizeLeafBuckets, MAX_BUCKETS_LOWEST_LEVEL);
+
+			// Calculate actual bucket size to stay within maximum number of buckets
+			long bucketSize = Math.max(Math.toIntExact((long) Math.ceil((float) (difference / countLeafBuckets))), BUCKET_SIZE);
+
 
 			builder.addInterval(min, min + bucketSize);
 
-			log.info("Creating hierarchy with bucket size: {}", bucketSize);
+			log.info("Creating hierarchy with bucket size: {}. And buckets on lowest level: {}", bucketSize, countLeafBuckets);
 
 			prepareBuckets(builder, countLeafBuckets);
 
@@ -283,17 +282,16 @@ public interface AttributeTypeBuilder {
 			// Calculate how many buckets are necessary with the default bucket size
 			final int countDefaultSizeLeafBuckets = Math.toIntExact((long) Math.ceil(difference / BUCKET_SIZE));
 
-			// Calculate actual bucket size to stay within maximum number of buckets
-			double bucketSize = countDefaultSizeLeafBuckets > MAX_BUCKETS_LOWEST_LEVEL ?
-								(difference / MAX_BUCKETS_LOWEST_LEVEL) :
-								BUCKET_SIZE;
-
-
+			// Determine bucket number to stay below maximum bucket count
 			final int countLeafBuckets = Math.min(countDefaultSizeLeafBuckets, MAX_BUCKETS_LOWEST_LEVEL);
+
+			// Calculate actual bucket size to respect minimum bucket size
+			double bucketSize = Math.max(difference / countLeafBuckets, BUCKET_SIZE);
+
 
 			builder.addInterval(min, min + bucketSize);
 
-			log.info("Creating hierarchy with bucket size: {}", bucketSize);
+			log.info("Creating hierarchy with bucket size: {}. And buckets on lowest level: {}", bucketSize, countLeafBuckets);
 
 			prepareBuckets(builder, countLeafBuckets);
 
