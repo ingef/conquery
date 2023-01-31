@@ -152,6 +152,23 @@ public class TableExportQuery extends Query {
 		resultInfos = createResultInfos(secondaryIdPositions);
 	}
 
+	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
+		Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
+
+		// SecondaryIds are pulled to the front and grouped over all tables
+		tables.stream()
+			  .flatMap(con -> con.getTables().stream())
+			  .flatMap(table -> Arrays.stream(table.getConnector().getTable().getColumns()))
+			  .map(Column::getSecondaryId)
+			  .filter(Objects::nonNull)
+			  .distinct()
+			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
+			  // Using for each and not a collector allows us to guarantee sorted insertion.
+			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
+
+		return secondaryIdPositions;
+	}
+
 	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
 		final Map<Column, Integer> positions = new HashMap<>();
 
@@ -182,23 +199,6 @@ public class TableExportQuery extends Query {
 		}
 
 		return positions;
-	}
-
-	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
-		Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
-
-		// SecondaryIds are pulled to the front and grouped over all tables
-		tables.stream()
-			  .flatMap(con -> con.getTables().stream())
-			  .flatMap(table -> Arrays.stream(table.getConnector().getTable().getColumns()))
-			  .map(Column::getSecondaryId)
-			  .filter(Objects::nonNull)
-			  .distinct()
-			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
-			  // Using for each and not a collector allows us to guarantee sorted insertion.
-			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
-
-		return secondaryIdPositions;
 	}
 
 	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
