@@ -45,9 +45,9 @@ public class ResultCsvProcessor {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
 		ConqueryMDC.setLocation(subject.getName());
-		log.info("Downloading results for {} on dataset {}", exec, dataset);
+		log.info("Downloading results for {}", exec.getId());
 
-		ResultUtil.authorizeExecutable(subject, exec, dataset);
+		ResultUtil.authorizeExecutable(subject, exec);
 
 		// Check if subject is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(subject, exec);

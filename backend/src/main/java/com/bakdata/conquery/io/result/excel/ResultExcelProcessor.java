@@ -44,9 +44,9 @@ public class ResultExcelProcessor {
 
 		final Dataset dataset = exec.getDataset();
 
-		log.info("Downloading results for {} on dataset {}", exec, dataset);
+		log.info("Downloading results for {}", exec.getId());
 
-		ResultUtil.authorizeExecutable(subject, exec, dataset);
+		ResultUtil.authorizeExecutable(subject, exec);
 		ResultUtil.checkSingleTableResult(exec);
 		subject.authorize(dataset, Ability.DOWNLOAD);
 

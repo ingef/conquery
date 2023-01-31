@@ -99,9 +99,9 @@ public class ResultArrowProcessor {
 
 		final Dataset dataset = exec.getDataset();
 
-		log.info("Downloading results for {} on dataset {}", exec, dataset);
+		log.info("Downloading results for {}", exec.getId());
 
-		ResultUtil.authorizeExecutable(subject, exec, dataset);
+		ResultUtil.authorizeExecutable(subject, exec);
 
 		if (!(exec instanceof ManagedQuery || (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1))) {
 			return Response.status(HttpStatus.SC_UNPROCESSABLE_ENTITY, "Execution result is not a single Table").build();
