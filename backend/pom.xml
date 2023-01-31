@@ -11,7 +11,7 @@
     <artifactId>backend</artifactId>
 
     <properties>
-        <mock-server.version>5.11.1</mock-server.version>
+        <mock-server.version>5.15.0</mock-server.version>
         <apache-poi.version>5.2.2</apache-poi.version>
 		<apache-arrow.version>10.0.1</apache-arrow.version>
         <apache-parquet.version>1.12.3</apache-parquet.version>
