@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Path("result/")
+@Path("result/xlsx")
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultExcelResource {
 
