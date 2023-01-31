@@ -77,7 +77,8 @@ public class ResultUtil {
 	}
 
 
-	public static void authorizeExecutable(Subject subject, ManagedExecution<?> exec, Dataset dataset) {
+	public static void authorizeExecutable(Subject subject, ManagedExecution<?> exec) {
+		final Dataset dataset = exec.getDataset();
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.DOWNLOAD);
 
