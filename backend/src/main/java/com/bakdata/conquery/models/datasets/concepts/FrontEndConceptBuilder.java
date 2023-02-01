@@ -83,6 +83,7 @@ public class FrontEndConceptBuilder {
 		root.getSecondaryIds()
 			.addAll(
 					storage.getSecondaryIds().stream()
+						   .filter(sid -> !sid.isHidden())
 						   .map(sid -> new FrontendSecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
 						   .collect(Collectors.toSet())
 			);
