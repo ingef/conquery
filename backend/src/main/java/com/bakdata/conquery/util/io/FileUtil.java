@@ -26,8 +26,8 @@ public class FileUtil {
 	public static final Pattern SAVE_FILENAME_REPLACEMENT_MATCHER = Pattern.compile("[^a-zA-Z0-9äÄöÖüÜß .\\-]");
 
 
-    public static String makeSafeFileName(String label, String fileExtension) {
-        return SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(label + "." + fileExtension).replaceAll("_");
+    public static String makeSafeFileName(String label) {
+        return SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(label).replaceAll("_");
     }
 
     public void deleteRecursive(Path path) throws IOException {
