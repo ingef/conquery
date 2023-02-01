@@ -142,7 +142,7 @@ public class ResultArrowProcessor {
 			}
 		};
 
-		return makeResponseWithFileName(Response.ok(out), exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), fileExtension), mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 
