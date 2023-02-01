@@ -295,9 +295,19 @@ components:
           description: Available result urls of the query.
           type: array
           items:
-            type: string #TODO url?
-            format: url
-
+            $ref: "#/components/schemas/result-asset"
+    result-asset:
+      type: object
+      properties:
+        label:
+          type: string
+          minLength: 1
+        url:
+          type: string
+          format: url
+      required:
+        - label
+        - url
     labeled:
       type: object
       properties:
