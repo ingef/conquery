@@ -7,6 +7,7 @@ import com.bakdata.conquery.io.jetty.CachingFilter;
 import com.bakdata.conquery.io.jetty.ConqueryErrorExecptionMapper;
 import com.bakdata.conquery.io.jetty.ConqueryJsonExceptionMapper;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
+import com.bakdata.conquery.io.jetty.NoSuchElementExceptionMapper;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.auth.web.AuthorizationExceptionMapper;
@@ -32,6 +33,7 @@ public class RESTServer {
 		jersey.register(new AuthenticationExceptionMapper());
 		jersey.register(new AuthorizationExceptionMapper());
 		jersey.register(JsonValidationExceptionMapper.class);
+		jersey.register(NoSuchElementExceptionMapper.class);
 		// default Dropwizard's exception mappers
 		jersey.register(new ConqueryErrorExecptionMapper());
 		jersey.register(ConqueryJsonExceptionMapper.class);
