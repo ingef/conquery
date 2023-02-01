@@ -1,6 +1,7 @@
 import { css, Theme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { memo, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import NumberFormat from "react-number-format";
 
 import {
@@ -29,8 +30,6 @@ const Grid = styled("div")`
 
 const ExtraArea = styled("div")`
   padding: 8px 15px 12px 49px;
-  background-color: ${({ theme }) => theme.col.bg};
-  border-top: 1px solid ${({ theme }) => theme.col.grayVeryLight};
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 `;
@@ -73,6 +72,7 @@ const GroupedContent = ({
   rootConceptIdsByColumn,
   contentFilter,
 }: Props) => {
+  const { t } = useTranslation();
   const differencesKeys = useMemo(
     () =>
       groupedRowsKeysWithDifferentValues
@@ -107,7 +107,7 @@ const GroupedContent = ({
       >
         {differencesKeys.map((key) => (
           <TinyLabel key={key}>
-            {key === "dates" ? "Datumswerte" : columns[key].defaultLabel}
+            {key === "dates" ? t("history.dates") : columns[key].defaultLabel}
           </TinyLabel>
         ))}
         {groupedRows.map((groupedRow) =>
