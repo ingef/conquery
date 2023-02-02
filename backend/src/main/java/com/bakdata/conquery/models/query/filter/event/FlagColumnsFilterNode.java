@@ -19,7 +19,7 @@ public class FlagColumnsFilterNode extends EventFilterNode<Column[]> {
 	@Override
 	public boolean checkEvent(Bucket bucket, int event) {
 		for (Column column : getFilterValue()) {
-			if (bucket.getBoolean(event, column)) {
+			if (bucket.has(event, column) && bucket.getBoolean(event, column)) {
 				return true;
 			}
 		}

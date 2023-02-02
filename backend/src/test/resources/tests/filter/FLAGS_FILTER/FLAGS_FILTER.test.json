@@ -28,15 +28,18 @@
   "connector": {
     "filters": {
       "type": "FLAGS",
-      "flags" : {
-        "A" : "table.a",
-        "B" : "table.b",
-        "C" : "table.c"
+      "flags": {
+        "A": "table.a",
+        "B": "table.b",
+        "C": "table.c"
       }
     }
   },
   "filterValue": {
     "type": "MULTI_SELECT",
-    "value": ["B", "C"]
+    "value": [
+      "B",
+      "C"
+    ]
   }
 }
