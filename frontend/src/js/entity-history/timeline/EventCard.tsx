@@ -113,8 +113,11 @@ const EventCard = ({
 }: Props) => {
   const { t } = useTranslation();
 
-  const applicableGroupableIds = columnBuckets.groupableIds.filter((column) =>
-    exists(row[column.label]),
+  const applicableGroupableIds = columnBuckets.groupableIds.filter(
+    (column) =>
+      exists(row[column.label]) &&
+      column.label !== "dates" && // Because they're already displayed somewhere else
+      column.label !== "source", // Because they're already displayed somewhere else
   );
   const groupableIdsTooltip = t("history.content.fingerprint");
 
