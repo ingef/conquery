@@ -470,6 +470,7 @@
     "downloadEntityData": "Einzelhistorie herunterladen",
     "differencesTooltip": "Unterschiede aus den einzelnen Datenpunkten",
     "closeAll": "Alle schließen",
+    "openAll": "Alle aufklappen",
     "dates": "Datumswerte",
     "options": {
       "check": "auffällig",

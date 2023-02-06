@@ -471,6 +471,7 @@
     "downloadEntityData": "Download entity history",
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
+    "openAll": "Open all",
     "dates": "Dates",
     "options": {
       "check": "interesting",
