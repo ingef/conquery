@@ -124,7 +124,7 @@ type TextareaField = CommonField & {
   placeholder?: TranslatableString;
   defaultValue?: string; // Default: ""
   style?: {
-    rows?: number; // Default: 10
+    rows?: number;
   };
   validations?: TextareaFieldValidation[];
 };
