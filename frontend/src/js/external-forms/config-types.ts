@@ -62,6 +62,7 @@ type GREATER_THAN_ZERO_VALIDATION = "GREATER_THAN_ZERO";
 export type Field =
   | CheckboxField
   | StringField
+  | TextareaField
   | NumberField
   | SelectField
   | DatasetSelectField
@@ -113,6 +114,19 @@ type StringField = CommonField & {
   };
   pattern?: string; // Regex to validate, using double backslashes, e.g.: "^(?!-)\\\\d*$"
   validations?: StringFieldValidation[];
+};
+
+/* ------------------------------ */
+
+type TextareaFieldValidation = NOT_EMPTY_VALIDATION;
+type TextareaField = CommonField & {
+  type: "TEXTAREA";
+  placeholder?: TranslatableString;
+  defaultValue?: string; // Default: ""
+  style?: {
+    rows?: number; // Default: 10
+  };
+  validations?: TextareaFieldValidation[];
 };
 
 /* ------------------------------ */
