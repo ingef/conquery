@@ -16,8 +16,13 @@ import lombok.RequiredArgsConstructor;
 @JsonDeserialize(using = IdDeserializer.class)
 public abstract class Id<TYPE> {
 
+	/**
+	 * Holds the cached escaped value.
+	 *
+	 * @implNote needs to be initialized. Otherwise SerializationTests fail, because assertj checks ignored types.
+	 */
 	@JsonIgnore
-	private WeakReference<String> escapedId;
+	private WeakReference<String> escapedId = new WeakReference<>(null);
 
 	@Override
 	public abstract boolean equals(Object obj);
@@ -28,8 +33,8 @@ public abstract class Id<TYPE> {
 	@Override
 	@JsonValue
 	public final String toString() {
-		final String escaped;
-		if (escapedId != null && (escaped = escapedId.get()) != null) {
+		final String escaped = escapedId.get();
+		if (escaped != null) {
 			return escaped;
 		}
 
