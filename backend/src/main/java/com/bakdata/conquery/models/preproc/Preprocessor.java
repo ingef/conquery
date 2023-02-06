@@ -111,8 +111,10 @@ public class Preprocessor {
 								   .withSkipHeader(false)
 								   .createCsvParserSettings();
 
-				// Only read what we need.
-				parserSettings.selectFields(input.getRequiredHeaders().toArray(new String[0]));
+				if(Strings.isNullOrEmpty(input.getFilter())) {
+					// Only read what we need; if a filter-script is used, we cannot reason about the used fields and process everything.
+					parserSettings.selectFields(input.getRequiredHeaders().toArray(new String[0]));
+				}
 
 				parserSettings.setProcessor(processor);
 
