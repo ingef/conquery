@@ -42,8 +42,8 @@ public class ConqueryEscape {
 	public static String escape(@NonNull String word) {
 		final int unescapedCharSequenceLength =
 				(int) word.chars()
-						  // Check if the character is larger than a byte
-						  .takeWhile(c -> c >= 0x100 || c < 0)
+						  // Check if the character is larger than a byte. Larger chars need to be escaped
+						  .takeWhile(c -> c < 0x100 && c >= 0)
 						  //or if that byte needs encoding
 						  .takeWhile(c -> dontNeedEncoding((byte) (c & 0x00FF)))
 						  .count();
