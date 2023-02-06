@@ -7,6 +7,7 @@ import java.util.Objects;
 
 import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.util.ConqueryEscape;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,8 @@ import lombok.RequiredArgsConstructor;
 @JsonDeserialize(using = IdDeserializer.class)
 public abstract class Id<TYPE> {
 
-	private WeakReference<String> escapedId = new WeakReference<>(this.escapedIdString());
+	@JsonIgnore
+	private WeakReference<String> escapedId;
 
 	@Override
 	public abstract boolean equals(Object obj);
@@ -25,9 +27,9 @@ public abstract class Id<TYPE> {
 
 	@Override
 	@JsonValue
-	public String toString() {
-		final String escaped = escapedId.get();
-		if (escaped != null) {
+	public final String toString() {
+		final String escaped;
+		if (escapedId != null && (escaped = escapedId.get()) != null) {
 			return escaped;
 		}
 
