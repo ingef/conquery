@@ -1,9 +1,12 @@
 export const readFileAsText = (file: File) =>
-  new Promise((resolve, reject) => {
+  new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = evt => resolve(evt.target.result);
-    reader.onerror = err => reject(err);
+    reader.onload = (evt) =>
+      evt.target
+        ? resolve(evt.target.result as string)
+        : reject(new Error("FileReader error"));
+    reader.onerror = (err) => reject(err);
 
     reader.readAsText(file);
   });
@@ -11,8 +14,8 @@ export const readFileAsText = (file: File) =>
 export const cleanFileContent = (fileContent: string) => {
   return fileContent
     .split("\n")
-    .map(row => row.trim())
-    .filter(row => row.length > 0);
+    .map((row) => row.trim())
+    .filter((row) => row.length > 0);
 };
 
 export const stripFilename = (fileName: string) => {
@@ -31,9 +34,9 @@ export async function getFileRows(file: File) {
   return rows;
 }
 
-export async function getUniqueFileRows(file: File) {
+export async function getUniqueFileRows(file: File): Promise<string[]> {
   const rows = await getFileRows(file);
 
   // Take care of duplicate rows
-  return [...new Set(rows)];
+  return Array.from(new Set(rows));
 }

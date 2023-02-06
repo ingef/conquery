@@ -1,99 +1,120 @@
 import type { TableT } from "../api/types";
-import type { TableWithFilterValueType } from "../standard-query-editor/types";
+import { compose } from "../common/helpers/commonHelper";
+import { exists } from "../common/helpers/exists";
+import type { TableWithFilterValueT } from "../standard-query-editor/types";
 
-import { isEmpty, compose } from "../common/helpers";
+import {
+  resetFilters,
+  filterValueDiffersFromDefault,
+  filterIsEmpty,
+  filtersHaveValues,
+} from "./filter";
+import type { NodeResetConfig } from "./node";
+import { objectHasNonDefaultSelects, resetSelects } from "./select";
 
-import { objectHasSelectedSelects, selectsWithDefaults } from "./select";
-import { filtersWithDefaults } from "./filter";
-
-export const tableIsEditable = (table: TableT) =>
+export const tableIsEditable = (table: TableWithFilterValueT) =>
   (!!table.filters && table.filters.length > 0) ||
   (!!table.selects && table.selects.length > 0) ||
   (!!table.dateColumn && table.dateColumn.options.length > 0);
 
-export const tablesHaveActiveFilter = (tables: TableWithFilterValueType[]) =>
-  tables.some(table => tableHasActiveFilters(table));
+export const tablesHaveEmptySettings = (tables: TableWithFilterValueT[]) =>
+  tables.every(tableHasEmptySettings);
 
-export const tableHasActiveFilters = (table: TableWithFilterValueType) =>
-  objectHasSelectedSelects(table) ||
-  tableHasNonDefaultDateColumn(table) ||
-  (table.filters &&
-    table.filters.some(
-      filter => !isEmpty(filter.value) && filter.value !== filter.defaultValue
-    ));
+export const tablesHaveNonDefaultSettings = (tables: TableWithFilterValueT[]) =>
+  tables.some(tableHasNonDefaultSettings);
 
-const tableHasNonDefaultDateColumn = (table: TableWithFilterValueType) =>
-  !!table.dateColumn &&
-  !!table.dateColumn.options &&
-  table.dateColumn.options.length > 0 &&
-  table.dateColumn.value !== table.dateColumn.options[0].value;
-
-export function tableIsDisabled(
-  table: TableWithFilterValueType,
-  blacklistedTables?: string[],
-  whitelistedTables?: string[]
-) {
+export const tableHasEmptySettings = (table: TableWithFilterValueT) => {
   return (
-    (!!whitelistedTables && !tableIsWhitelisted(table, whitelistedTables)) ||
-    (!!blacklistedTables && tableIsBlacklisted(table, blacklistedTables))
+    (!table.selects || table.selects.every((select) => !select.selected)) &&
+    !tableHasNonDefaultDateColumn(table) &&
+    (!table.filters || table.filters.every(filterIsEmpty))
   );
-}
-
-export function tableIsBlacklisted(
-  table: TableWithFilterValueType,
-  blacklistedTables: string[]
-) {
-  return blacklistedTables.some(
-    tableName => table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
-  );
-}
-
-export function tableIsWhitelisted(
-  table: TableWithFilterValueType,
-  whitelistedTables: string[]
-) {
-  return whitelistedTables.some(
-    tableName => table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
-  );
-}
-
-export const resetAllFiltersInTables = (tables: TableWithFilterValueType[]) => {
-  if (!tables) return [];
-
-  return tablesWithDefaults(tables);
 };
 
-const tableWithDefaultDateColumn = table => {
+export const tableHasFilterValues = (table: TableWithFilterValueT) =>
+  !!table.filters && filtersHaveValues(table.filters);
+
+export const tablesHaveFilterValues = (tables: TableWithFilterValueT[]) =>
+  tables.some(tableHasFilterValues);
+
+export const tableHasNonDefaultSettings = (table: TableWithFilterValueT) => {
+  const activeSelects = objectHasNonDefaultSelects(table);
+  const activeDateColumn = tableHasNonDefaultDateColumn(table);
+  const activeFilters =
+    table.filters && table.filters.some(filterValueDiffersFromDefault);
+
+  return activeSelects || activeDateColumn || activeFilters;
+};
+
+const tableHasNonDefaultDateColumn = (table: TableWithFilterValueT) =>
+  exists(table.dateColumn) &&
+  table.dateColumn.options.length > 0 &&
+  (exists(table.dateColumn.defaultValue)
+    ? table.dateColumn.value !== table.dateColumn.defaultValue
+    : table.dateColumn.value !== table.dateColumn.options[0].value);
+
+export function tableIsIncludedInIds(
+  table: TableWithFilterValueT,
+  tableIds: string[],
+) {
+  return tableIds.some(
+    (id) => table.id.toLowerCase().indexOf(id.toLowerCase()) !== -1,
+  );
+}
+
+export function tableIsDisabled(
+  table: TableWithFilterValueT,
+  blocklistedTables?: string[],
+  allowlistedTables?: string[],
+) {
+  return (
+    (!!allowlistedTables && !tableIsIncludedInIds(table, allowlistedTables)) ||
+    (!!blocklistedTables && tableIsIncludedInIds(table, blocklistedTables))
+  );
+}
+
+const tableWithDefaultDateColumn = (
+  table: TableWithFilterValueT,
+): TableWithFilterValueT => {
   return {
     ...table,
     dateColumn:
-      !!table.dateColumn &&
-      !!table.dateColumn.options &&
-      table.dateColumn.options.length > 0
-        ? { ...table.dateColumn, value: table.dateColumn.options[0].value }
-        : null
+      !!table.dateColumn && table.dateColumn.options.length > 0
+        ? {
+            ...table.dateColumn,
+            value: table.dateColumn.options[0].value as string,
+          }
+        : undefined,
   };
 };
 
-const tableWithDefaultFilters = table => ({
-  ...table,
-  filters: filtersWithDefaults(table.filters)
-});
-
-const tableWithDefaultSelects = table => ({
-  ...table,
-  selects: selectsWithDefaults(table.selects)
-});
-
-const tableWithDefaults = table =>
-  compose(
-    tableWithDefaultDateColumn,
-    tableWithDefaultSelects,
-    tableWithDefaultFilters
-  )({
+const tableWithDefaultFilters =
+  (config: NodeResetConfig) =>
+  (table: TableWithFilterValueT): TableWithFilterValueT => ({
     ...table,
-    exclude: false
+    filters: resetFilters(table.filters, config),
   });
 
-export const tablesWithDefaults = tables =>
-  tables ? tables.map(tableWithDefaults) : null;
+const tableWithDefaultSelects =
+  (config: NodeResetConfig = {}) =>
+  (table: TableWithFilterValueT): TableWithFilterValueT => ({
+    ...table,
+    selects: resetSelects(table.selects, config),
+  });
+
+export const tableWithDefaults =
+  (config: NodeResetConfig) =>
+  (table: TableWithFilterValueT | TableT): TableWithFilterValueT =>
+    compose(
+      tableWithDefaultDateColumn,
+      tableWithDefaultSelects(config),
+      tableWithDefaultFilters(config),
+    )({
+      ...table,
+      exclude: config.useDefaults ? !table.default : table.exclude,
+    } as TableWithFilterValueT);
+
+export const resetTables = (
+  tables: TableT[] | TableWithFilterValueT[],
+  config: NodeResetConfig = {},
+) => tables.map(tableWithDefaults(config));

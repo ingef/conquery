@@ -1,31 +1,50 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
-import { setExternalForm } from "./actions";
+import type { StateT } from "../app/reducers";
+import IconButton from "../button/IconButton";
+import { useActiveLang } from "../localization/useActiveLang";
+import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
+import WithTooltip from "../tooltip/WithTooltip";
+import InputSelect from "../ui-components/InputSelect/InputSelect";
 
-import InputSelect from "../form-components/InputSelect";
-import { T, getLocale } from "../localization";
+import { setExternalForm } from "./actions";
+import type { Form } from "./config-types";
 import { selectActiveFormType, selectAvailableForms } from "./stateSelectors";
-import type { StateT } from "app-types";
-import { Form } from "./config-types";
 
 const Root = styled("div")`
   flex-shrink: 0;
-  margin-bottom: 10px;
-  padding: 0 20px 10px 10px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  padding: 8px 20px 10px 10px;
+  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
+  background-color: ${({ theme }) => theme.col.bg};
+  z-index: 1;
+`;
+
+const Row = styled("div")`
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
+  align-items: flex-end;
 `;
 
 const SxInputSelect = styled(InputSelect)`
   flex-grow: 1;
 `;
 
-const FormsNavigation: FC = () => {
+const SxIconButton = styled(IconButton)`
+  flex-shrink: 0;
+  margin-left: 10px;
+  padding: 7px 10px;
+`;
+
+interface Props {
+  reset: () => void;
+}
+const FormsNavigation = ({ reset }: Props) => {
+  const language = useActiveLang();
+  const { t } = useTranslation();
+
   const availableForms = useSelector<
     StateT,
     {
@@ -34,36 +53,55 @@ const FormsNavigation: FC = () => {
   >((state) => selectAvailableForms(state));
 
   const activeForm = useSelector<StateT, string | null>((state) =>
-    selectActiveFormType(state)
+    selectActiveFormType(state),
   );
 
   const dispatch = useDispatch();
 
-  const onItemClick = (form: string) => dispatch(setExternalForm(form));
+  const onChangeToForm = (form: string) => {
+    dispatch(setExternalForm({ form }));
+  };
 
-  const locale = getLocale();
   const options = Object.values(availableForms)
     .map((formType) => ({
-      label: formType.headline[locale]!,
+      label: formType.title[language]!,
       value: formType.type,
     }))
     .sort((a, b) => (a.label < b.label ? -1 : 1));
 
+  const activeFormType = useSelector<StateT, string | null>((state) =>
+    selectActiveFormType(state),
+  );
+  const onClear = () => {
+    if (activeFormType) {
+      reset();
+    }
+  };
+
   return (
     <Root>
-      <SxInputSelect
-        label={T.translate("externalForms.forms")}
-        options={options}
-        input={{
-          value: activeForm,
-          onChange: (value: string) => onItemClick(value),
-        }}
-        selectProps={{
-          clearable: false,
-          autosize: true,
-          searchable: false,
-        }}
-      />
+      <Row>
+        <SxInputSelect
+          dataTestId="form-select"
+          label={t("externalForms.forms")}
+          options={options}
+          value={options.find((o) => o.value === activeForm) || null}
+          onChange={(value) => {
+            if (value) {
+              reset();
+              onChangeToForm(value.value as string);
+            }
+          }}
+        />
+        <ConfirmableTooltip
+          onConfirm={onClear}
+          confirmationText={t("externalForms.common.clearConfirm")}
+        >
+          <WithTooltip text={t("externalForms.common.clear")}>
+            <SxIconButton frame regular icon="trash-alt" />
+          </WithTooltip>
+        </ConfirmableTooltip>
+      </Row>
     </Root>
   );
 };

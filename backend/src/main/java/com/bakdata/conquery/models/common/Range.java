@@ -5,14 +5,14 @@ import java.util.Optional;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.dropwizard.validation.ValidationMethod;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.With;
 import lombok.experimental.Wither;
 
-@Wither
+@With
 @Getter
 @EqualsAndHashCode
 public class Range<T extends Comparable> implements IRange<T, Range<T>> {
@@ -32,18 +32,18 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 	@Override
 	public String toString() {
 		if (isExactly()) {
-			return String.format("[%s]", getMin());
+			return "[" + getMin() + "]";
 		}
 
 		if (isAtLeast()) {
-			return String.format("[%s, +∞)", getMin());
+			return "[" + getMin() + ", +∞)";
 		}
 
 		if (isAtMost()) {
-			return String.format("(-∞, %s]", getMax());
+			return "(-∞, " + getMax() + "]";
 		}
 
-		return String.format("[%s, %s]", getMin(), getMax());
+		return "[" + getMin() + ", " + getMax() + "]";
 	}
 
 	public static <T extends Comparable<?>> Range<T> exactly(T exactly) {

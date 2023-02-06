@@ -1,26 +1,36 @@
 package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.xodus.MetaStorage;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.messages.network.specific.AddWorker;
+import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -33,9 +43,10 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @RequiredArgsConstructor
+@JsonIgnoreType
 public class DatasetRegistry extends IdResolveContext implements Closeable {
 
-	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
+	private final ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
 	@NotNull
 	@Getter
 	@Setter
@@ -45,14 +56,47 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	private final int entityBucketSize;
 
 	@Getter
-	@JsonIgnore
-	private transient ConcurrentMap<SocketAddress, ShardNodeInformation> shardNodes = new ConcurrentHashMap<>();
-	@Getter @Setter @JsonIgnore
-	private transient MetaStorage metaStorage;
+	private final ConcurrentMap<SocketAddress, ShardNodeInformation> shardNodes = new ConcurrentHashMap<>();
+
+	@Getter
+	private final ConqueryConfig config;
+
+	private final Function<Class<? extends View>, ObjectMapper> internalObjectMapperCreator;
+
+	@Getter
+	@Setter
+	private MetaStorage metaStorage;
+
+
+	public Namespace createNamespace(Dataset dataset, Validator validator) throws IOException {
+		// Prepare empty storage
+		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
+		final ObjectMapper persistenceMapper = internalObjectMapperCreator.apply(View.Persistence.Manager.class);
+		datasetStorage.openStores(persistenceMapper);
+		datasetStorage.loadData();
+		datasetStorage.updateDataset(dataset);
+		datasetStorage.updateIdMapping(new EntityIdMap());
+		datasetStorage.setPreviewConfig(new PreviewConfig());
+		datasetStorage.close();
+
+
+		final Namespace namespace = Namespace.createAndRegister(
+				this,
+				datasetStorage,
+				config,
+				internalObjectMapperCreator
+		);
+
+		// for now we just add one worker to every ShardNode
+		for (ShardNodeInformation node : getShardNodes().values()) {
+			node.send(new AddWorker(dataset));
+		}
+
+		return namespace;
+	}
 
 	public void add(Namespace ns) {
 		datasets.put(ns.getStorage().getDataset().getId(), ns);
-		ns.setNamespaces(this);
 	}
 
 	public Namespace get(DatasetId dataset) {
@@ -63,17 +107,12 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		Namespace removed = datasets.remove(id);
 
 		if(removed != null) {
-			metaStorage.getCentralRegistry().remove(id);
+			metaStorage.getCentralRegistry().remove(removed.getDataset());
+
+			getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(removed.getDataset())));
 
 			workers.keySet().removeIf(w->w.getDataset().equals(id));
-			try {
-				// remove all associated data.
-				removed.getStorage().clear();
-				removed.getStorage().close();
-			}
-			catch(Exception e) {
-				log.error("Failed to delete storage "+removed, e);
-			}
+			removed.remove();
 		}
 	}
 
@@ -113,10 +152,6 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	public List<Dataset> getAllDatasets() {
 		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
 	}
-	
-	public <C extends Collection<Dataset>> C getAllDatasets(Supplier<C> collectionSupplier) {
-		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toCollection(collectionSupplier));
-	}
 
 	public Collection<Namespace> getDatasets() {
 		return datasets.values();
@@ -131,5 +166,12 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 				log.error("Unable to close namespace {}", namespace, e);
 			}
 		}
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		// Make this class also availiable under DatasetRegistry
+		return super.inject(values)
+			 .add(DatasetRegistry.class, this);
 	}
 }

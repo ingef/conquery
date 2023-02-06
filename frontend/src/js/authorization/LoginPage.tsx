@@ -1,14 +1,15 @@
-import React, { useState } from "react";
-import T from "i18n-react";
 import styled from "@emotion/styled";
+import { useContext, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
-import InputText from "../form-components/InputText";
-import PrimaryButton from "../button/PrimaryButton";
-import FaIcon from "../icon/FaIcon";
-import { storeAuthToken } from "./helper";
-import ErrorMessage from "../error-message/ErrorMessage";
 import { usePostLogin } from "../api/api";
-import { useHistory } from "react-router-dom";
+import PrimaryButton from "../button/PrimaryButton";
+import ErrorMessage from "../error-message/ErrorMessage";
+import FaIcon from "../icon/FaIcon";
+import InputPlain from "../ui-components/InputPlain/InputPlain";
+
+import { AuthTokenContext } from "./AuthTokenProvider";
 
 const Root = styled("div")`
   display: flex;
@@ -28,7 +29,7 @@ const Wrap = styled("div")`
 
 const Logo = styled("div")`
   width: ${({ theme }) => theme.img.logoWidth};
-  height: ${({ theme }) => theme.img.logoHeight || "35px"};
+  height: 35px;
   background-image: url(${({ theme }) => theme.img.logo});
   background-repeat: no-repeat;
   background-position-y: 50%;
@@ -52,8 +53,8 @@ const Form = styled("form")`
   justify-content: center;
 `;
 
-const SxInputText = styled(InputText)`
-  padding: 10px 0;
+const SxInputPlain = styled(InputPlain)`
+  padding: 5px 0;
 `;
 
 const SxPrimaryButton = styled(PrimaryButton)`
@@ -77,10 +78,12 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
   const postLogin = usePostLogin();
+  const { t } = useTranslation();
+  const { setAuthToken } = useContext(AuthTokenContext);
 
-  async function onSubmit(e) {
+  async function onSubmit(e: any) {
     e.preventDefault();
 
     setLoading(true);
@@ -89,8 +92,8 @@ const LoginPage = () => {
       const result = await postLogin(user, password);
 
       if (result.access_token) {
-        storeAuthToken(result.access_token);
-        history.push("/");
+        setAuthToken(result.access_token);
+        navigate("/");
 
         return;
       }
@@ -105,36 +108,31 @@ const LoginPage = () => {
     <Root>
       <Wrap>
         <Logo />
-        <Headline>{T.translate("login.headline")}</Headline>
-        {!!error && <SxErrorMessage message={T.translate("login.error")} />}
+        <Headline>{t("login.headline")}</Headline>
+        {!!error && <SxErrorMessage message={t("login.error")} />}
         <Form onSubmit={onSubmit}>
-          <SxInputText
-            inputType="text"
-            label={T.translate("login.username")}
+          <SxInputPlain
+            label={t("login.username")}
             large
-            input={{
-              value: user,
-              onChange: setUser,
-            }}
+            value={user}
+            onChange={(value) => setUser(value as string)}
             inputProps={{
               disabled: loading,
             }}
           />
-          <SxInputText
+          <SxInputPlain
             inputType="password"
-            label={T.translate("login.password")}
+            label={t("login.password")}
             large
-            input={{
-              value: password,
-              onChange: setPassword,
-            }}
+            value={password}
+            onChange={(value) => setPassword(value as string)}
             inputProps={{
               disabled: loading,
             }}
           />
           <SxPrimaryButton disabled={!user || !password} large type="submit">
             <SxFaIcon large white icon={loading ? "spinner" : "check"} />
-            {T.translate("login.submit")}
+            {t("login.submit")}
           </SxPrimaryButton>
         </Form>
       </Wrap>

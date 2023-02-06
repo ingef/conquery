@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.messages.namespaces.specific.RequestConsistency;
@@ -26,11 +26,10 @@ public class RegisterWorker extends MessageToManagerNode {
 		ShardNodeInformation node = getShardNode(context);
 		Wait
 			.builder()
-			.attempts(6)
-			.stepTime(1)
-			.stepUnit(TimeUnit.SECONDS)
+			.stepTime(Duration.ofMillis(5))
+			.total(Duration.ofSeconds(10))
 			.build()
-			.until(()->getShardNode(context));
+			.until(()->getShardNode(context) != null);
 		
 		if(node == null) {
 			throw new IllegalStateException("Could not find the slave "+context.getRemoteAddress()+" to register worker "+info.getId());

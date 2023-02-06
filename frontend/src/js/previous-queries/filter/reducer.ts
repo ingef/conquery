@@ -1,19 +1,23 @@
-import { SET_PREVIOUS_QUERIES_FILTER } from "./actionTypes";
+import { getType } from "typesafe-actions";
 
-export type PreviousQueriesFilterStateT = string;
+import { Action } from "../../app/actions";
 
-const initialState: PreviousQueriesFilterStateT = "all";
+import { setFilter } from "./actions";
 
-const previousQueriesFilter = (
-  state: PreviousQueriesFilterStateT = initialState,
-  action: Object
-): PreviousQueriesFilterStateT => {
+export type ProjectItemsFilterStateT = "all" | "own" | "shared" | "system";
+
+const initialState: ProjectItemsFilterStateT = "own";
+
+const projectItemsFilter = (
+  state: ProjectItemsFilterStateT = initialState,
+  action: Action,
+): ProjectItemsFilterStateT => {
   switch (action.type) {
-    case SET_PREVIOUS_QUERIES_FILTER:
-      return action.payload.filter;
+    case getType(setFilter):
+      return action.payload;
     default:
       return state;
   }
 };
 
-export default previousQueriesFilter;
+export default projectItemsFilter;

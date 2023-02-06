@@ -1,9 +1,9 @@
-import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
-import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
+import type { ConceptIdT, ConceptT } from "../api/types";
 import IconButton from "../button/IconButton";
+import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 const Concept = styled("div")`
   background-color: white;
@@ -39,35 +39,55 @@ const SxIconButton = styled(IconButton)`
   flex-shrink: 0;
 `;
 
-const ConceptEntry = AdditionalInfoHoverable(
-  ({ node, conceptId, canRemoveConcepts, onRemoveConcept }) => {
-    return (
-      <Concept>
-        <ConceptContainer>
-          {!node ? (
-            <NotFound>{T.translate("queryNodeEditor.nodeNotFound")}</NotFound>
-          ) : (
-            <>
-              <ConceptEntryHeadline>{node.label}</ConceptEntryHeadline>
-              {node.description && (
-                <ConceptEntryDescription>
-                  {node.description}
-                </ConceptEntryDescription>
-              )}
-            </>
-          )}
-        </ConceptContainer>
-        {canRemoveConcepts && (
-          <SxIconButton
-            onClick={() => onRemoveConcept(conceptId)}
-            tiny
-            regular
-            icon="trash-alt"
-          />
+interface Props {
+  node: ConceptT | null;
+  conceptId: ConceptIdT;
+  canRemoveConcepts?: boolean;
+  onRemoveConcept: (conceptId: ConceptIdT) => void;
+}
+
+const ConceptEntry = ({
+  node,
+  conceptId,
+  canRemoveConcepts,
+  onRemoveConcept,
+}: Props) => {
+  const { t } = useTranslation();
+
+  const ConceptEntryRoot = (
+    <Concept>
+      <ConceptContainer>
+        {!node ? (
+          <NotFound>{t("queryNodeEditor.nodeNotFound")}</NotFound>
+        ) : (
+          <>
+            <ConceptEntryHeadline>{node.label}</ConceptEntryHeadline>
+            {node.description && (
+              <ConceptEntryDescription>
+                {node.description}
+              </ConceptEntryDescription>
+            )}
+          </>
         )}
-      </Concept>
-    );
-  }
-);
+      </ConceptContainer>
+      {canRemoveConcepts && (
+        <SxIconButton
+          onClick={() => onRemoveConcept(conceptId)}
+          tiny
+          regular
+          icon="trash-alt"
+        />
+      )}
+    </Concept>
+  );
+
+  return node ? (
+    <AdditionalInfoHoverable node={node}>
+      {ConceptEntryRoot}
+    </AdditionalInfoHoverable>
+  ) : (
+    ConceptEntryRoot
+  );
+};
 
 export default ConceptEntry;

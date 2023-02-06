@@ -1,44 +1,74 @@
+import { useDispatch, useSelector } from "react-redux";
+import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
+
+import type { ColumnDescription } from "../api/types";
+import { StateT } from "../app/reducers";
+import { ErrorObject, errorPayload } from "../common/actions/genericActions";
 import { loadCSV } from "../file/csv";
 
-import {
-  OPEN_PREVIEW,
-  CLOSE_PREVIEW,
-  LOAD_CSV_START,
-  LOAD_CSV_ERROR,
-} from "./actionTypes";
+import { PreviewStateT } from "./reducer";
 
-import { defaultError } from "../common/actions";
-import type { ColumnDescription } from "../api/types";
+export type PreviewActions = ActionType<
+  typeof loadCSVForPreview | typeof closePreview | typeof openPreview
+>;
 
-export function closePreview() {
-  return {
-    type: CLOSE_PREVIEW,
-  };
+export const openPreview = createAction("preview/OPENk")();
+export const closePreview = createAction("preview/CLOSE")();
+
+interface PreviewData {
+  csv: string[][];
+  columns: ColumnDescription[];
+  resultUrl: string;
 }
 
-const loadCSVStart = () => ({ type: LOAD_CSV_START });
-const loadCSVError = (err: any) => defaultError(LOAD_CSV_ERROR, err);
-const loadCSVSuccess = (
-  parsed: { result: { data: string[][] } },
-  columns: ColumnDescription[]
-) => ({
-  type: OPEN_PREVIEW,
-  payload: {
-    csv: parsed.result.data,
-    columns,
-  },
-});
+export const loadCSVForPreview = createAsyncAction(
+  "preview/LOAD_CSV_START",
+  "preview/LOAD_CSV_SUCCESS",
+  "preview/LOAD_CSV_ERROR",
+)<void, PreviewData, ErrorObject>();
 
-export function openPreview(url: string, columns: ColumnDescription[]) {
-  return async (dispatch) => {
-    dispatch(loadCSVStart());
+export function useLoadPreviewData() {
+  const dispatch = useDispatch();
+  const { dataLoadedForResultUrl, data } = useSelector<StateT, PreviewStateT>(
+    (state) => state.preview,
+  );
+  const currentPreviewData: PreviewData | null =
+    data.csv && data.resultColumns && dataLoadedForResultUrl
+      ? {
+          csv: data.csv,
+          columns: data.resultColumns,
+          resultUrl: dataLoadedForResultUrl,
+        }
+      : null;
+
+  return async (
+    url: string,
+    columns: ColumnDescription[],
+    { noLoading }: { noLoading: boolean } = { noLoading: false },
+  ): Promise<PreviewData | null> => {
+    if (currentPreviewData && dataLoadedForResultUrl === url) {
+      return currentPreviewData;
+    }
+
+    if (!noLoading) {
+      dispatch(loadCSVForPreview.request());
+    }
 
     try {
-      const parsed = await loadCSV(url);
+      const result = await loadCSV(url);
+      const payload = {
+        csv: result.data,
+        columns,
+        resultUrl: url,
+      };
 
-      dispatch(loadCSVSuccess(parsed, columns));
+      dispatch(loadCSVForPreview.success(payload));
+
+      return payload;
     } catch (e) {
-      dispatch(loadCSVError(e));
+      dispatch(loadCSVForPreview.failure(errorPayload(e as Error, {})));
+
+      return null;
     }
   };
 }

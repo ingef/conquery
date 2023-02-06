@@ -1,38 +1,55 @@
-import React, { ReactNode } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+
+import { DestroyButton } from "../button/DestroyButton";
+import { TransparentButton } from "../button/TransparentButton";
 
 import Modal from "./Modal";
-import PrimaryButton from "../button/PrimaryButton";
-import TransparentButton from "../button/TransparentButton";
 
 const Root = styled("div")`
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+`;
+
+const Content = styled("div")`
+  max-width: 400px;
+`;
+
+const Description = styled("p")`
+  margin: 0 0 20px;
 `;
 
 const Btn = styled(TransparentButton)`
   margin: 0 10px;
 `;
 
-const PrimaryBtn = styled(PrimaryButton)`
-  margin: 0 10px;
-`;
-
 interface PropsType {
   headline: ReactNode;
+  description?: ReactNode;
   onClose: () => void;
-  onDelete: () => void;
+  onDelete: () => Promise<any>;
 }
 
-const DeleteModal = ({ headline, onClose, onDelete }: PropsType) => {
+const DeleteModal = ({
+  headline,
+  description,
+  onClose,
+  onDelete,
+}: PropsType) => {
+  const { t } = useTranslation();
+
   return (
     <Modal onClose={onClose} headline={headline}>
-      <Root>
-        <Btn onClick={onClose}>{T.translate("common.cancel")}</Btn>
-        <PrimaryBtn onClick={onDelete}>
-          {T.translate("common.delete")}
-        </PrimaryBtn>
-      </Root>
+      <Content>
+        {description && <Description>{description}</Description>}
+        <Root>
+          <Btn onClick={onClose}>{t("common.cancel")}</Btn>
+          <DestroyButton onClick={onDelete}>{t("common.delete")}</DestroyButton>
+        </Root>
+      </Content>
     </Modal>
   );
 };

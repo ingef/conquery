@@ -1,0 +1,87 @@
+[
+  {
+    "method": "GET",
+    "path": "/datasets",
+    "clazz": "DatasetsUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}",
+    "clazz": "DatasetsUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/mapping",
+    "clazz": "DatasetsUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/groups",
+    "clazz": "GroupUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/roles",
+    "clazz": "RoleUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/",
+    "clazz": "AdminUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/queries",
+    "clazz": "AdminUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/jobs",
+    "clazz": "AdminUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/script",
+    "clazz": "AdminUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/concepts/{concept}",
+    "clazz": "ConceptsUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/groups/{groupId}",
+    "clazz": "GroupUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/roles/{roleId}",
+    "clazz": "RoleUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/tables/{table}",
+    "clazz": "TablesUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{dataset}/tables/{table}/import/{importId}",
+    "clazz": "TablesUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/users",
+    "clazz": "UserUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/users/{userId}",
+    "clazz": "UserUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/auth-overview",
+    "clazz": "AuthOverviewUIResource"
+  }
+]

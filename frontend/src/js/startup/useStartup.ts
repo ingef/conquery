@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 
-import { useLoadConfig } from "./actions";
-import { resetMessage } from "../snack-message/actions";
 import { useLoadDatasets } from "../dataset/actions";
+import { resetMessage } from "../snack-message/actions";
 import { useLoadMe } from "../user/actions";
 
-export const useStartup = () => {
+import { useLoadConfig } from "./actions";
+
+export const useStartup = ({ ready }: { ready?: boolean }) => {
   const dispatch = useDispatch();
 
   const loadConfig = useLoadConfig();
@@ -15,8 +16,11 @@ export const useStartup = () => {
 
   useEffect(() => {
     dispatch(resetMessage());
-    loadConfig();
-    loadDatasets();
-    loadMe();
-  }, [dispatch]);
+
+    if (ready) {
+      loadConfig();
+      loadDatasets();
+      loadMe();
+    }
+  }, [dispatch, ready, loadConfig, loadDatasets, loadMe]);
 };

@@ -1,18 +1,22 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
+import lombok.ToString;
 
 /**
  * Aggregator counting the occurrence of multiple values.
  */
+@ToString(callSuper = true, of = "selection")
 public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, Integer>> {
 
 	private final String[] selection;
@@ -27,8 +31,13 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	}
 
 	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		Arrays.fill(hits, 0);
+	}
+
+	@Override
 	public void nextBlock(Bucket bucket) {
-		StringType type = (StringType) getColumn().getTypeFor(bucket);
+		StringStore type = (StringStore) bucket.getStore(getColumn());
 
 		for (int index = 0; index < selection.length; index++) {
 			selectedValues[index] = type.getId(selection[index]);
@@ -52,13 +61,13 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	}
 
 	@Override
-	public Map<String, Integer> getAggregationResult() {
+	public Map<String, Integer> createAggregationResult() {
 		Map<String, Integer> out = new HashMap<>();
 
 		for (int i = 0; i < hits.length; i++) {
 			int hit = hits[i];
 			if (hit > 0) {
-				out.merge(selection[i], hit, (a,b)->a+b);
+				out.merge(selection[i], hit, Integer::sum);
 			}
 		}
 
@@ -66,19 +75,14 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	}
 
 	@Override
-	public MultiSelectAggregator doClone(CloneContext ctx) {
-		return new MultiSelectAggregator(getColumn(), selection);
-	}
-	
-	@Override
 	public ResultType getResultType() {
-		return ResultType.STRING;
+		return ResultType.StringT.INSTANCE;
 	}
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (String selected : selection) {
-			if(((StringType) bucket.getStores()[getColumn().getPosition()]).getId(selected) == -1) {
+			if (((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(selected) == -1) {
 				return false;
 			}
 		}

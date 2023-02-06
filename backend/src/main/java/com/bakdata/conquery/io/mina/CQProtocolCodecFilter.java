@@ -170,16 +170,6 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	}
 
 	/**
-	 * Get the encoder instance from a given session.
-	 *
-	 * @param session The associated session we will get the encoder from
-	 * @return The encoder instance, if any
-	 */
-	public ProtocolEncoder getEncoder(IoSession session) {
-		return (ProtocolEncoder) session.getAttribute(ENCODER);
-	}
-
-	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -222,7 +212,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 		IoBuffer in = (IoBuffer) message;
 		ProtocolDecoder decoder = factory.getDecoder(session);
-		ProtocolDecoderOutput decoderOut = getDecoderOut(session, nextFilter);
+		ProtocolDecoderOutput decoderOut = getDecoderOut(session);
 
 		// Loop until we don't have anymore byte in the buffer,
 		// or until the decoder throws an unrecoverable exception or
@@ -274,8 +264,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 			return;
 		}
 
-		if (writeRequest instanceof MessageWriteRequest) {
-			MessageWriteRequest wrappedRequest = (MessageWriteRequest) writeRequest;
+		if (writeRequest instanceof MessageWriteRequest wrappedRequest) {
 			nextFilter.messageSent(session, wrappedRequest.getOriginalRequest());
 		} else {
 			nextFilter.messageSent(session, writeRequest);
@@ -333,7 +322,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	public void sessionClosed(NextFilter nextFilter, IoSession session) throws Exception {
 		// Call finishDecode() first when a connection is closed.
 		ProtocolDecoder decoder = factory.getDecoder(session);
-		ProtocolDecoderOutput decoderOut = getDecoderOut(session, nextFilter);
+		ProtocolDecoderOutput decoderOut = getDecoderOut(session);
 
 		try {
 			decoder.finishDecode(session, decoderOut);
@@ -510,7 +499,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	 * Return a reference to the decoder callback. If it's not already created
 	 * and stored into the session, we create a new instance.
 	 */
-	private ProtocolDecoderOutput getDecoderOut(IoSession session, NextFilter nextFilter) {
+	private ProtocolDecoderOutput getDecoderOut(IoSession session) {
 		ProtocolDecoderOutput out = (ProtocolDecoderOutput) session.getAttribute(DECODER_OUT);
 
 		if (out == null) {

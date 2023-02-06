@@ -1,6 +1,5 @@
-import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
 const Root = styled("div")`
   position: relative;
@@ -38,7 +37,6 @@ const SubMessage = styled("p")`
 const Preview = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
   background-color: ${({ theme }) => theme.col.grayVeryLight};
-  width: ${({ width }) => width}px;
   height: 20px;
   margin: 3px 0;
 `;
@@ -49,30 +47,34 @@ const Container = styled("div")`
   flex-direction: column;
 `;
 
-export default () => (
-  <Root>
-    <MsgContainer>
-      <Msg>
-        <Message>{T.translate("conceptTreeList.noTrees")}</Message>
-        <SubMessage>
-          {T.translate("conceptTreeList.noTreesExplanation")}
-        </SubMessage>
-      </Msg>
-    </MsgContainer>
-    <Preview width={200} />
-    <Preview width={100} />
-    <Container>
-      <Preview width={250} />
-      <Preview width={150} />
-      <Preview width={300} />
+const EmptyConceptTreeList = () => {
+  const { t } = useTranslation();
+
+  return (
+    <Root>
+      <MsgContainer>
+        <Msg>
+          <Message>{t("conceptTreeList.noTrees")}</Message>
+          <SubMessage>{t("conceptTreeList.noTreesExplanation")}</SubMessage>
+        </Msg>
+      </MsgContainer>
+      <Preview style={{ width: `${200}px` }} />
+      <Preview style={{ width: `${100}px` }} />
       <Container>
-        <Preview width={200} />
-        <Preview width={50} />
+        <Preview style={{ width: `${250}px` }} />
+        <Preview style={{ width: `${150}px` }} />
+        <Preview style={{ width: `${300}px` }} />
+        <Container>
+          <Preview style={{ width: `${200}px` }} />
+          <Preview style={{ width: `${50}px` }} />
+        </Container>
       </Container>
-    </Container>
-    <Preview width={350} />
-    <Preview width={200} />
-    <Preview width={300} />
-    <Preview width={250} />
-  </Root>
-);
+      <Preview style={{ width: `${350}px` }} />
+      <Preview style={{ width: `${200}px` }} />
+      <Preview style={{ width: `${300}px` }} />
+      <Preview style={{ width: `${250}px` }} />
+    </Root>
+  );
+};
+
+export default EmptyConceptTreeList;

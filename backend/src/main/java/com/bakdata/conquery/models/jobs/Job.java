@@ -4,11 +4,13 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@RequiredArgsConstructor @Getter
+@RequiredArgsConstructor
+@Getter
 public abstract class Job {
 
 	protected final UUID jobId = UUID.randomUUID();
@@ -16,7 +18,8 @@ public abstract class Job {
 	@Setter
 	private ProgressReporter progressReporter = ProgressReporter.createWaiting();
 
-	private AtomicBoolean cancelledState = new AtomicBoolean(false);
+	@Getter(AccessLevel.PROTECTED)
+	private final AtomicBoolean cancelledState = new AtomicBoolean(false);
 
 	public void cancel() {
 		cancelledState.set(true);

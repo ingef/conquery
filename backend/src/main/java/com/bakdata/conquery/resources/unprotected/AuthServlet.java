@@ -6,7 +6,6 @@ import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
-import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,7 +15,6 @@ import io.dropwizard.jersey.setup.JerseyContainerHolder;
 import io.dropwizard.jetty.setup.ServletEnvironment;
 import io.dropwizard.views.ViewMessageBodyWriter;
 import lombok.experimental.UtilityClass;
-import org.apache.shiro.realm.Realm;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 /**
@@ -31,56 +29,12 @@ import org.glassfish.jersey.servlet.ServletContainer;
 public class AuthServlet {
 
 	/**
-	 * Marker interface for classes that provide authentication functionality for
-	 * the admin servlet.
-	 */
-	public interface AuthAdminUnprotectedResourceProvider {
-
-		void registerAdminUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig);
-
-	}
-
-	/**
-	 * Marker interface for classes that provide authentication functionality for
-	 * the api servlet.
-	 */
-	public interface AuthApiUnprotectedResourceProvider {
-
-		void registerApiUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig);
-
-	}
-
-	public static void registerUnprotectedApiResources(AuthorizationController controller, MetricRegistry metrics, ConqueryConfig config, ServletEnvironment servletEnvironment, ObjectMapper objectMapper) {
-
-		DropwizardResourceConfig jerseyConfig = generalSetup(metrics, config, servletEnvironment, objectMapper);
-
-		// Scan realms if they need to add resources
-		for (Realm realm : controller.getRealms()) {
-			if (realm instanceof AuthApiUnprotectedResourceProvider) {
-				((AuthApiUnprotectedResourceProvider) realm).registerApiUnprotectedAuthenticationResources(jerseyConfig);
-			}
-		}
-	}
-
-	public static void registerUnprotectedAdminResources(AuthorizationController controller, MetricRegistry metrics, ConqueryConfig config, ServletEnvironment servletEnvironment, ObjectMapper objectMapper) {
-
-		DropwizardResourceConfig jerseyConfig = generalSetup(metrics, config, servletEnvironment, objectMapper);
-
-		// Scan realms if they need to add resources
-		for (Realm realm : controller.getRealms()) {
-			if (realm instanceof AuthAdminUnprotectedResourceProvider) {
-				((AuthAdminUnprotectedResourceProvider) realm).registerAdminUnprotectedAuthenticationResources(jerseyConfig);
-			}
-		}
-	}
-
-	/**
 	 * Prepares the general configuration with resources and settings that are valid
 	 * for both, api and admin, endpoints.
 	 * 
 	 * @return
 	 */
-	private static DropwizardResourceConfig generalSetup(MetricRegistry metrics, ConqueryConfig config, ServletEnvironment servletEnvironment, ObjectMapper objectMapper) {
+	public static DropwizardResourceConfig generalSetup(MetricRegistry metrics, ConqueryConfig config, ServletEnvironment servletEnvironment, ObjectMapper objectMapper) {
 		DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(metrics);
 		jerseyConfig.setUrlPattern("/auth");
 

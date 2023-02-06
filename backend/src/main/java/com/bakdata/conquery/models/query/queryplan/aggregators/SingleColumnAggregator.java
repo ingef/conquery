@@ -1,17 +1,13 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators;
 
+import java.util.List;
 import java.util.Set;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-
+import com.bakdata.conquery.models.datasets.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 /**
@@ -20,25 +16,19 @@ import lombok.Setter;
 @AllArgsConstructor
 public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 
-	@Valid
-	@NotNull
 	@Getter
 	@Setter
-	@NsIdRef
+	@NonNull
 	protected Column column;
 
 	@Override
-	public final Column[] getRequiredColumns() {
-		return new Column[] { getColumn() };
+	public final List<Column> getRequiredColumns() {
+		return List.of(getColumn());
 	}
 
 	@Override
-	public final void collectRequiredTables(Set<TableId> out) {
-		out.add(getColumn().getTable().getId());
+	public final void collectRequiredTables(Set<Table> out) {
+		out.add(getColumn().getTable());
 	}
 
-	@Override
-	public SingleColumnAggregator<T> clone(CloneContext ctx) {
-		return ctx.clone(this);
-	}
 }

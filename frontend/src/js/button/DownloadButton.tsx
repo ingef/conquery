@@ -1,52 +1,43 @@
-import React, { ReactNode, FC } from "react";
+import styled from "@emotion/styled";
+import { ReactNode, useContext, forwardRef } from "react";
 
-import { getStoredAuthToken } from "../authorization/helper";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 
-import IconButton from "./IconButton";
+import IconButton, { IconButtonPropsT } from "./IconButton";
 
-interface PropsT {
+const SxIconButton = styled(IconButton)`
+  white-space: nowrap;
+`;
+
+const Link = styled("a")`
+  line-height: 1;
+`;
+
+interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
   url: string;
   className?: string;
   children?: ReactNode;
-  ending: string;
+  onClick?: () => void;
 }
 
-function getIcon(ending: string) {
-  return "download";
+const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
+  ({ url, className, children, onClick, ...restProps }, ref) => {
+    const { authToken } = useContext(AuthTokenContext);
 
-  // TODO: RE-Enable this with better icons (maybe "regular style" when we can afford it)
-  // switch (ending) {
-  //   case "csv":
-  //     return "file-csv";
-  //   case "zip":
-  //     return "file-archive";
-  //   default:
-  //     return "file-alt";
-  // }
-}
+    const href = `${url}?access_token=${encodeURIComponent(
+      authToken,
+    )}&charset=ISO_8859_1`;
 
-const DownloadButton: FC<PropsT> = ({
-  url,
-  className,
-  children,
-  ending,
-  ...restProps
-}) => {
-  const authToken = getStoredAuthToken();
+    const icon = "download";
 
-  const href = `${url}?access_token=${encodeURIComponent(
-    authToken || ""
-  )}&charset=ISO_8859_1`;
-
-  const icon = getIcon(ending);
-
-  return (
-    <a href={href} className={className}>
-      <IconButton icon={icon} {...restProps}>
-        {children}
-      </IconButton>
-    </a>
-  );
-};
+    return (
+      <Link href={href} className={className} ref={ref}>
+        <SxIconButton {...restProps} icon={icon} onClick={onClick}>
+          {children}
+        </SxIconButton>
+      </Link>
+    );
+  },
+);
 
 export default DownloadButton;

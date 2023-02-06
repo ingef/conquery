@@ -1,63 +1,82 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.bakdata.conquery.models.concepts.ConceptElement;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString(of = {"table", "selectedSecondaryId"}, callSuper = true)
 public class ConceptNode extends QPChainNode {
 
-	private final ConceptElement<?>[] concepts;
+	private final List<ConceptElement<?>> concepts;
 	private final long requiredBits;
 	private final CQTable table;
-	private final SecondaryIdDescriptionId selectedSecondaryId;
+	private final SecondaryIdDescription selectedSecondaryId;
 	private boolean tableActive = false;
-	private Map<BucketId, CBlock> preCurrentRow = null;
+	private Map<Bucket, CBlock> preCurrentRow = null;
 	private CBlock currentRow = null;
 
+	public ConceptNode(QPNode child, List<ConceptElement<?>> concepts, CQTable table, SecondaryIdDescription selectedSecondaryId) {
+		this(child, concepts, calculateBitMask(concepts), table, selectedSecondaryId);
+	}
 
-	public ConceptNode(ConceptElement[] concepts, long requiredBits, CQTable table, QPNode child, SecondaryIdDescriptionId selectedSecondaryId) {
+	// For cloning
+	private ConceptNode(QPNode child, List<ConceptElement<?>> concepts, long requiredBits, CQTable table, SecondaryIdDescription selectedSecondaryId) {
 		super(child);
 		this.concepts = concepts;
-		this.requiredBits = requiredBits;
+		this.requiredBits =	requiredBits;
 		this.table = table;
 
 		this.selectedSecondaryId = selectedSecondaryId;
 	}
 
-	@Override
-	public void init(Entity entity, QueryExecutionContext context) {
-		super.init(entity, context);
-		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getId());
+	/**
+	 * Calculate the bitmask for the supplied {@link ConceptElement}s which is eventually compared with the
+	 * the bitmasks of each entity. (See {@link CBlock#getIncludedConceptElementsPerEntity()})
+	 */
+	public static long calculateBitMask(Collection<ConceptElement<?>> concepts) {
+		long mask = 0;
+		for (ConceptElement<?> concept : concepts) {
+			final int[] prefix = concept.getPrefix();
+			mask |= CBlock.calculateBitMask(prefix.length - 1, prefix);
+		}
+		return mask;
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		tableActive = table.getResolvedConnector().getTable().getId().equals(currentTable)
+	public void init(Entity entity, QueryExecutionContext context) {
+		super.init(entity, context);
+		preCurrentRow = context.getBucketManager().getEntityCBlocksForConnector(getEntity(),table.getConnector());
+	}
+
+	@Override
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+		tableActive = table.getConnector().getTable().equals(currentTable)
 					  && ctx.getActiveSecondaryId() == selectedSecondaryId;
 		if(tableActive) {
-			super.nextTable(ctx.withConnector(table.getResolvedConnector()), currentTable);
+			super.nextTable(ctx.withConnector(table.getConnector()), currentTable);
 		}
 	}
 
 	@Override
 	public void nextBlock(Bucket bucket) {
 		if (tableActive) {
-			currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+			currentRow = Objects.requireNonNull(preCurrentRow.get(bucket));
 			super.nextBlock(bucket);
 		}
 	}
@@ -65,7 +84,8 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return context.getBucketManager().hasEntityCBlocksForConnector(entity, table.getId());
+		return context.getBucketManager().hasEntityCBlocksForConnector(entity, table.getConnector())
+			   && getChild().isOfInterest(entity);
 	}
 
 	@Override
@@ -74,11 +94,9 @@ public class ConceptNode extends QPChainNode {
 			return false;
 		}
 
-		CBlock row = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+		CBlock cBlock = Objects.requireNonNull(preCurrentRow.get(bucket));
 
-		long bits = row.getIncludedConcepts().get(entity.getId());
-
-		if((bits & requiredBits) != 0L || requiredBits == 0L) {
+		if(cBlock.isConceptIncluded(entity.getId(), requiredBits)) {
 			return super.isOfInterest(bucket);
 		}
 		return false;
@@ -91,21 +109,22 @@ public class ConceptNode extends QPChainNode {
 		}
 
 		//check concepts
-		int[] mostSpecificChildren;
-		if (currentRow.getMostSpecificChildren() != null
-			&& ((mostSpecificChildren = currentRow.getMostSpecificChildren()[event]) != null)) {
-
-			for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
-				if (ce.matchesPrefix(mostSpecificChildren)) {
-					getChild().acceptEvent(bucket, event);
-				}
-			}
-		}
-		else {
-			for (ConceptElement ce : concepts) { //see #178  we could improve this by building a a prefix tree over concepts.prefix
+		int[] mostSpecificChildren = currentRow.getPathToMostSpecificChild(event);
+		if (mostSpecificChildren == null) {
+			for (ConceptElement<?> ce : concepts) {
+				// having no specific child set maps directly to root.
+				// This means we likely have a VirtualConcept
 				if (ce.getConcept() == ce) {
 					getChild().acceptEvent(bucket, event);
 				}
+			}
+			return;
+		}
+
+		for (ConceptElement<?> ce : concepts) {
+			//see #177  we could improve this by building a prefix tree over concepts.prefix
+			if (ce.matchesPrefix(mostSpecificChildren)) {
+				getChild().acceptEvent(bucket, event);
 			}
 		}
 	}
@@ -116,13 +135,9 @@ public class ConceptNode extends QPChainNode {
 	}
 
 	@Override
-	public QPNode doClone(CloneContext ctx) {
-		return new ConceptNode(concepts, requiredBits, table, ctx.clone(getChild()), selectedSecondaryId);
+	public void collectRequiredTables(Set<Table> requiredTables) {
+		super.collectRequiredTables(requiredTables);
+		requiredTables.add(table.getConnector().getTable());
 	}
 
-	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		super.collectRequiredTables(requiredTables);
-		requiredTables.add(table.getResolvedConnector().getTable().getId());
-	}
 }

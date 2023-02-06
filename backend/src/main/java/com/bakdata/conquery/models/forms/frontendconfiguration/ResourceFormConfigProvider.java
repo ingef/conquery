@@ -5,33 +5,33 @@ import java.io.InputStream;
 import java.util.regex.Pattern;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableCollection;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ResourceList;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Loads form frontend configuration from the bundled resources that are in the class path.
  * In order to be found, the configuration file name must end with {@code *.frontend_conf.json}.
  */
-public class ResourceFormConfigProvider extends FormFrontendConfigProviderBase{
-	
+@Slf4j
+public class ResourceFormConfigProvider{
 
-	public ResourceFormConfigProvider(ObjectReader reader) {
-		super(reader);
-	}
-
-	@Override
-	public void accept(ImmutableCollection.Builder<FormFrontendConfigInformation> formConfigInfos) {
+	public static void accept(ImmutableCollection.Builder<FormFrontendConfigInformation> formConfigInfos) {
 		ResourceList frontendConfigs = CPSTypeIdResolver.SCAN_RESULT
 			.getResourcesMatchingPattern(Pattern.compile(".*\\.frontend_conf\\.json"));
 		
 		for (Resource config : frontendConfigs) {
 			try (config){
-				try(InputStream in = config.open()){			
-					JsonNode configTree = reader.readTree(in);
-					formConfigInfos.add(new FormFrontendConfigInformation("Resource " + config.getPath(), configTree));
+				try(InputStream in = config.open()) {
+					JsonNode configTree = Jackson.MAPPER.reader().readTree(in);
+					if (!configTree.isObject()) {
+						log.warn("Expected '{}' to be an JSON object but was '{}'. Skipping registration.", config.getPath(), configTree.getNodeType());
+					}
+					formConfigInfos.add(new FormFrontendConfigInformation("Resource " + config.getPath(), (ObjectNode) configTree));
 				}
 			}
 			catch (IOException e) {

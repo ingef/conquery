@@ -1,57 +1,129 @@
-import React, { useEffect } from "react";
-import { useStore } from "react-redux";
-import StandardQueryEditorTab from "../standard-query-editor";
-import TimebasedQueryEditorTab from "../timebased-query-editor";
-import type { TabPropsType } from "../pane";
-import { updateReducers } from "../store";
+import { useCallback, useEffect, useMemo } from "react";
+import { FormProvider, useForm } from "react-hook-form";
+import { useDispatch, useSelector, useStore } from "react-redux";
+
 import { useGetForms } from "../api/api";
+import type { DatasetT } from "../api/types";
+import type { StateT } from "../app/reducers";
+import { usePrevious } from "../common/helpers/usePrevious";
+import { useActiveLang } from "../localization/useActiveLang";
 
-import buildExternalFormsReducer from "./reducer";
-
+import FormContainer from "./FormContainer";
 import FormsNavigation from "./FormsNavigation";
-import FormsContainer from "./FormsContainer";
 import FormsQueryRunner from "./FormsQueryRunner";
-import { tabDescription } from ".";
+import { loadFormsSuccess, setExternalForm } from "./actions";
+import type { Field, Form, Tabs } from "./config-types";
+import type { DynamicFormValues } from "./form/Form";
+import { collectAllFormFields, getInitialValue } from "./helper";
+import { selectFormConfig } from "./stateSelectors";
 
-const FormsTab = (props: TabPropsType) => {
+const useLoadForms = ({ datasetId }: { datasetId: DatasetT["id"] | null }) => {
   const store = useStore();
   const getForms = useGetForms();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     async function loadForms() {
-      const configuredForms = await getForms(props.selectedDatasetId);
+      if (!datasetId) {
+        return;
+      }
 
-      const forms = configuredForms.reduce((all, form) => {
-        all[form.type] = form;
+      const forms = await getForms(datasetId);
 
-        return all;
-      }, {});
+      dispatch(loadFormsSuccess({ forms }));
 
-      const externalFormsReducer = buildExternalFormsReducer(forms);
-
-      const tabs = [
-        StandardQueryEditorTab,
-        TimebasedQueryEditorTab,
-        {
-          ...tabDescription,
-          reducer: externalFormsReducer,
-        },
-      ];
-
-      updateReducers(store, tabs);
+      if (forms.length > 0) {
+        dispatch(setExternalForm({ form: forms[0].type }));
+      }
     }
 
-    if (props.selectedDatasetId) {
-      loadForms();
-    }
-  }, [store, props.selectedDatasetId]);
+    loadForms();
+  }, [store, datasetId, getForms, dispatch]);
+};
+
+export const useDatasetOptions = () => {
+  const availableDatasets = useSelector<StateT, DatasetT[]>(
+    (state) => state.datasets.data,
+  );
+
+  return useMemo(
+    () =>
+      availableDatasets.map((dataset) => ({
+        label: dataset.label,
+        value: dataset.id,
+      })),
+    [availableDatasets],
+  );
+};
+
+const useInitializeForm = () => {
+  const activeLang = useActiveLang();
+  const config = useSelector<StateT, Form | null>(selectFormConfig);
+  const allFields: (Field | Tabs)[] = useMemo(() => {
+    return config
+      ? collectAllFormFields(config.fields).filter(
+          (field): field is Field | Tabs => field.type !== "GROUP",
+        )
+      : [];
+  }, [config]);
+
+  const datasetOptions = useDatasetOptions();
+
+  const defaultValues = useMemo(
+    () =>
+      Object.fromEntries(
+        allFields.map((field) => {
+          const initialValue = getInitialValue(field, {
+            availableDatasets: datasetOptions,
+            activeLang,
+          });
+
+          return [field.name, initialValue];
+        }),
+      ),
+    [allFields, datasetOptions, activeLang],
+  );
+
+  const methods = useForm<DynamicFormValues>({
+    defaultValues,
+    mode: "onChange",
+  });
+
+  const onReset = useCallback(() => {
+    methods.reset(defaultValues);
+  }, [methods, defaultValues]);
+
+  return { methods, config, datasetOptions, onReset };
+};
+
+const FormsTab = () => {
+  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
+    (state) => state.datasets.selectedDatasetId,
+  );
+  const previousDatasetId = usePrevious(datasetId);
+  useLoadForms({ datasetId });
+
+  const { methods, config, datasetOptions, onReset } = useInitializeForm();
+
+  useEffect(
+    function resetOnDatasetChange() {
+      if (datasetId && previousDatasetId !== datasetId) {
+        onReset();
+      }
+    },
+    [datasetId, previousDatasetId, onReset],
+  );
 
   return (
-    <>
-      <FormsNavigation />
-      <FormsContainer datasetId={props.selectedDatasetId} />
-      <FormsQueryRunner datasetId={props.selectedDatasetId} />
-    </>
+    <FormProvider {...methods}>
+      <FormsNavigation reset={onReset} />
+      <FormContainer
+        methods={methods}
+        config={config}
+        datasetOptions={datasetOptions}
+      />
+      <FormsQueryRunner />
+    </FormProvider>
   );
 };
 

@@ -1,12 +1,12 @@
-import * as React from "react";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
+import styled from "@emotion/styled";
+import { forwardRef } from "react";
 import Highlighter from "react-highlight-words";
 
 import FaIcon from "../icon/FaIcon";
 
 // Root with transparent background
-const Root = styled("div")`
+const Root = styled("div")<{ depth: number }>`
   position: relative; // Needed to fix a drag & drop issue in Safari
   cursor: pointer;
   padding: 0 15px 0 15px;
@@ -15,12 +15,16 @@ const Root = styled("div")`
   display: flex;
 `;
 
-const Text = styled("p")`
+const Text = styled("p")<{
+  red?: boolean;
+  disabled?: boolean;
+  isOpen?: boolean;
+}>`
   user-select: none;
   border-radius: ${({ theme }) => theme.borderRadius};
   margin: 0;
   padding: 0 10px;
-  line-height: 20px;
+  line-height: 18px;
   color: ${({ theme, red, disabled }) =>
     red ? theme.col.red : disabled ? theme.col.gray : theme.col.black};
   display: inline-flex;
@@ -28,15 +32,15 @@ const Text = styled("p")`
   flex-wrap: nowrap;
   align-items: center;
 
+  border: 1px solid transparent;
   background-color: ${({ theme, isOpen }) =>
-    isOpen ? theme.col.grayVeryLight : "transparent"};
+    isOpen ? theme.col.grayVeryLight : theme.col.bg};
 
-  ${({ theme, isOpen, disabled }) =>
+  ${({ theme, disabled }) =>
     !disabled &&
     css`
       &:hover {
-        background-color: ${theme.col.blueGrayVeryLight};
-        opacity: ${isOpen ? "0.9" : "1"};
+        border-color: ${theme.col.blueGray};
       }
     `};
 `;
@@ -98,7 +102,7 @@ interface PropsT {
   onClick?: () => void;
 }
 
-export default React.forwardRef<HTMLDivElement, PropsT>(
+const ConceptTreeNodeText = forwardRef<HTMLDivElement, PropsT>(
   (
     {
       label,
@@ -116,7 +120,7 @@ export default React.forwardRef<HTMLDivElement, PropsT>(
 
       onClick,
     },
-    ref
+    ref,
   ) => (
     <Root ref={ref} className={className} depth={depth}>
       <Text onClick={onClick} isOpen={isOpen} red={red} disabled={disabled}>
@@ -176,5 +180,7 @@ export default React.forwardRef<HTMLDivElement, PropsT>(
         )}
       </Text>
     </Root>
-  )
+  ),
 );
+
+export default ConceptTreeNodeText;

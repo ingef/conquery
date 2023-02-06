@@ -2,15 +2,18 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
+import lombok.ToString;
 
 
 /**
  * Aggregator counting the number of occurrences of a selected value in a column.
  */
+@ToString(callSuper = true, of = {"selected"})
 public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 	private final String selected;
@@ -23,8 +26,13 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		hits = 0;
+	}
+
+	@Override
 	public void nextBlock(Bucket bucket) {
-		selectedId = ((StringType) getColumn().getTypeFor(bucket)).getId(selected);
+		selectedId = ((StringStore) bucket.getStore(getColumn())).getId(selected);
 	}
 
 	@Override
@@ -45,23 +53,18 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return hits > 0 ? hits : null;
 	}
 
 	@Override
-	public SelectAggregator doClone(CloneContext ctx) {
-		return new SelectAggregator(getColumn(), selected);
-	}
-	
-	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return ResultType.IntegerT.INSTANCE;
 	}
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		return super.isOfInterest(bucket) &&
-			   ((StringType) bucket.getStores()[getColumn().getPosition()]).getId(selected) != -1;
+			   ((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(selected) != -1;
 	}
 }

@@ -1,12 +1,20 @@
-import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { FC, memo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
-import TableFilters from "./TableFilters";
-import TableSelects from "./TableSelects";
+import type { PostPrefixForSuggestionsParams } from "../api/api";
+import type {
+  PostFilterSuggestionsResponseT,
+  SelectOptionT,
+  SelectorResultType,
+} from "../api/types";
+import type { ConceptQueryNodeType } from "../standard-query-editor/types";
+import type { ModeT } from "../ui-components/InputRange";
+
 import ContentCell from "./ContentCell";
 import DateColumnSelect from "./DateColumnSelect";
-import type { PropsType } from "./QueryNodeEditor";
+import TableFilters from "./TableFilters";
+import TableSelects from "./TableSelects";
 
 const Column = styled("div")`
   display: flex;
@@ -16,95 +24,118 @@ const Column = styled("div")`
 
 const MaximizedCell = styled(ContentCell)`
   flex-grow: 1;
-  padding-bottom: 30px;
 `;
 
-const TableView = (props: PropsType) => {
-  const {
-    node,
-    editorState,
-    datasetId,
+interface PropsT {
+  node: ConceptQueryNodeType;
+  tableIdx: number;
+  blocklistedSelects?: SelectorResultType[];
+  allowlistedSelects?: SelectorResultType[];
 
-    onSelectTableSelects,
-    onSetDateColumn,
+  onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
+  onSetDateColumn: (tableIdx: number, dateColumnValue: string) => void;
+  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
+  onSwitchFilterMode: (
+    tableIdx: number,
+    filterIdx: number,
+    mode: ModeT,
+  ) => void;
+  onLoadFilterSuggestions: (
+    params: PostPrefixForSuggestionsParams,
+    tableIdx: number,
+    filterIdx: number,
+    config?: { returnOnly?: boolean },
+  ) => Promise<PostFilterSuggestionsResponseT | null>;
+}
 
-    onSetFilterValue,
-    onSwitchFilterMode,
-    onLoadFilterSuggestions,
-  } = props;
+const TableView: FC<PropsT> = ({
+  node,
+  tableIdx,
+  allowlistedSelects,
+  blocklistedSelects,
 
-  const table = node.tables[editorState.selectedInputTableIdx];
+  onSelectTableSelects,
+  onSetDateColumn,
+
+  onSetFilterValue,
+  onSwitchFilterMode,
+  onLoadFilterSuggestions,
+}) => {
+  const { t } = useTranslation();
+
+  const table = node.tables[tableIdx];
 
   const displaySelects = !!table.selects && table.selects.length > 0;
   const displayDateColumnOptions =
     !!table.dateColumn && table.dateColumn.options.length > 0;
   const displayFilters = !!table.filters && table.filters.length > 0;
 
+  const setFilterValue = useCallback(
+    (filterIdx: number, value: unknown) =>
+      onSetFilterValue(tableIdx, filterIdx, value),
+    [tableIdx, onSetFilterValue],
+  );
+
+  const setFilterMode = useCallback(
+    (filterIdx: number, mode: ModeT) =>
+      onSwitchFilterMode(tableIdx, filterIdx, mode),
+    [tableIdx, onSwitchFilterMode],
+  );
+
+  const loadFilterSuggestions = useCallback(
+    (filterIdx, filterId, prefix, page, pageSize, config) =>
+      onLoadFilterSuggestions(
+        {
+          filterId,
+          prefix,
+          page,
+          pageSize,
+        },
+        tableIdx,
+        filterIdx,
+        config,
+      ),
+
+    [onLoadFilterSuggestions, tableIdx],
+  );
+
+  const selectTableSelects = useCallback(
+    (value) => onSelectTableSelects(tableIdx, value),
+    [onSelectTableSelects, tableIdx],
+  );
+
   return (
     <Column>
       {displaySelects && (
-        <ContentCell headline={T.translate("queryNodeEditor.selects")}>
-          <TableSelects
-            selects={table.selects}
-            onSelectTableSelects={(value) =>
-              onSelectTableSelects(editorState.selectedInputTableIdx, value)
-            }
-          />
+        <ContentCell headline={t("queryNodeEditor.selects")}>
+          {table.selects && table.selects.length > 0 && (
+            <TableSelects
+              selects={table.selects}
+              allowlistedSelects={allowlistedSelects}
+              blocklistedSelects={blocklistedSelects}
+              onSelectTableSelects={selectTableSelects}
+              excludeTable={table.exclude}
+            />
+          )}
         </ContentCell>
       )}
       {displayDateColumnOptions && (
-        <ContentCell
-          headline={T.translate("queryNodeEditor.selectValidityDate")}
-        >
+        <ContentCell headline={t("queryNodeEditor.selectValidityDate")}>
           <DateColumnSelect
-            dateColumn={table.dateColumn}
-            onSelectDateColumn={(value) =>
-              onSetDateColumn(editorState.selectedInputTableIdx, value)
-            }
+            dateColumn={table.dateColumn!}
+            onSelectDateColumn={(value) => onSetDateColumn(tableIdx, value)}
           />
         </ContentCell>
       )}
       {displayFilters && (
-        <MaximizedCell headline={T.translate("queryNodeEditor.filters")}>
+        <MaximizedCell headline={t("queryNodeEditor.filters")}>
           <TableFilters
-            key={editorState.selectedInputTableIdx}
+            key={tableIdx}
             filters={table.filters}
-            context={{
-              datasetId,
-              treeId: node.tree,
-              tableId: table.id,
-            }}
-            onSetFilterValue={(filterIdx: number, value: unknown) =>
-              onSetFilterValue(
-                editorState.selectedInputTableIdx,
-                filterIdx,
-                value
-              )
-            }
-            onSwitchFilterMode={(filterIdx, mode) =>
-              onSwitchFilterMode(
-                editorState.selectedInputTableIdx,
-                filterIdx,
-                mode
-              )
-            }
-            onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
-              onLoadFilterSuggestions(
-                datasetId,
-                node.tree,
-                table.id,
-                filterId,
-                prefix,
-                editorState.selectedInputTableIdx,
-                filterIdx
-              )
-            }
-            suggestions={
-              !!props.suggestions &&
-              props.suggestions[editorState.selectedInputTableIdx]
-            }
-            onShowDescription={editorState.onShowDescription}
-            currencyConfig={props.currencyConfig}
+            excludeTable={table.exclude}
+            onSetFilterValue={setFilterValue}
+            onSwitchFilterMode={setFilterMode}
+            onLoadFilterSuggestions={loadFilterSuggestions}
           />
         </MaximizedCell>
       )}
@@ -112,4 +143,4 @@ const TableView = (props: PropsType) => {
   );
 };
 
-export default TableView;
+export default memo(TableView);

@@ -1,44 +1,15 @@
-import { SET_EXTERNAL_FORM, LOAD_EXTERNAL_FORM_VALUES } from "./actionTypes";
-import createQueryRunnerActions from "../query-runner/actions";
+import { ActionType, createAction } from "typesafe-actions";
 
-export const setExternalForm = (form: string) => ({
-  type: SET_EXTERNAL_FORM,
-  payload: { form },
-});
+import type { Forms } from "./config-types";
 
-export const loadExternalFormValues = (formType: string, values: any) => ({
-  type: LOAD_EXTERNAL_FORM_VALUES,
-  payload: { formType, values },
-});
+export type ExternalFormActions = ActionType<
+  typeof setExternalForm | typeof loadFormsSuccess
+>;
 
-const {
-  startExternalFormsQueryStart,
-  startExternalFormsQueryError,
-  startExternalFormsQuerySuccess,
-  startExternalFormsQuery,
-  stopExternalFormsQueryStart,
-  stopExternalFormsQueryError,
-  stopExternalFormsQuerySuccess,
-  stopExternalFormsQuery,
-  queryExternalFormsResultStart,
-  queryExternalFormsResultStop,
-  queryExternalFormsResultError,
-  queryExternalFormsResultSuccess,
-  queryExternalFormsResult,
-} = createQueryRunnerActions("externalForms", true);
+export const setExternalForm = createAction("forms/SET_EXTERNAL_FORM")<{
+  form: string;
+}>();
 
-export {
-  startExternalFormsQueryStart,
-  startExternalFormsQueryError,
-  startExternalFormsQuerySuccess,
-  startExternalFormsQuery,
-  stopExternalFormsQueryStart,
-  stopExternalFormsQueryError,
-  stopExternalFormsQuerySuccess,
-  stopExternalFormsQuery,
-  queryExternalFormsResultStart,
-  queryExternalFormsResultStop,
-  queryExternalFormsResultError,
-  queryExternalFormsResultSuccess,
-  queryExternalFormsResult,
-};
+export const loadFormsSuccess = createAction("forms/LOAD_FORMS_SUCCESS")<{
+  forms: Forms;
+}>();

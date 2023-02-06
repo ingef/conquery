@@ -1,0 +1,49 @@
+import styled from "@emotion/styled";
+import { memo } from "react";
+import { useTranslation } from "react-i18next";
+
+import type { PreviousQueryT } from "../previous-queries/list/reducer";
+import WithTooltip from "../tooltip/WithTooltip";
+
+import QueryEditorDropzone from "./QueryEditorDropzone";
+import { DragItemConceptTreeNode, DragItemQuery } from "./types";
+
+const PaddedTop = styled("div")`
+  padding-top: 70px;
+`;
+
+const SxWithTooltip = styled(WithTooltip)`
+  display: block !important;
+`;
+
+interface Props {
+  onDropFile: (file: File, andIdx?: number) => Promise<unknown>;
+  onDropAndNode: (node: DragItemQuery | DragItemConceptTreeNode) => void;
+  onLoadQuery: (queryId: PreviousQueryT["id"]) => void;
+  onImportLines: (lines: string[]) => void;
+}
+
+const QueryAndDropzone = ({
+  onDropAndNode,
+  onDropFile,
+  onLoadQuery,
+  onImportLines,
+}: Props) => {
+  const { t } = useTranslation();
+
+  return (
+    <PaddedTop>
+      <SxWithTooltip text={t("help.editorDropzoneAnd")} lazy>
+        <QueryEditorDropzone
+          isAnd
+          onDropNode={onDropAndNode}
+          onDropFile={onDropFile}
+          onImportLines={onImportLines}
+          onLoadPreviousQuery={onLoadQuery}
+        />
+      </SxWithTooltip>
+    </PaddedTop>
+  );
+};
+
+export default memo(QueryAndDropzone);

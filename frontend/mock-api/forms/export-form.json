@@ -1,11 +1,11 @@
 [
   {
     "title": {
-      "de": "Exportformular"
+      "de": "Datenexport"
     },
     "type": "EXPORT_FORM",
-    "headline": {
-      "de": "Exportformular"
+    "description": {
+      "de": "Dieses Formular erlaubt den Export von abhängigen Variablen zu einer bestimmten Ergebnisgruppe. Dabei wird eine CSV-Datei mit den Ergebnissen erzeugt, die dann heruntergeladen werden kann."
     },
     "fields": [
       {
@@ -15,6 +15,9 @@
           "de": "Gruppe"
         },
         "dropzoneLabel": {
+          "de": "Füge eine Gruppe aus einer bestehenden Anfrage hinzu"
+        },
+        "tooltip": {
           "de": "Füge eine Gruppe aus einer bestehenden Anfrage hinzu"
         },
         "validations": ["NOT_EMPTY"]
@@ -29,11 +32,17 @@
             "title": {
               "de": "Absolut"
             },
+            "tooltip": {
+              "de": "Absoluut"
+            },
             "fields": [
               {
                 "name": "dateRange",
                 "type": "DATE_RANGE",
                 "label": {
+                  "de": "Beobachtungszeitraum"
+                },
+                "tooltip": {
                   "de": "Beobachtungszeitraum"
                 }
               },
@@ -41,6 +50,9 @@
                 "name": "features",
                 "type": "CONCEPT_LIST",
                 "label": {
+                  "de": "Konzepte"
+                },
+                "tooltip": {
                   "de": "Konzepte"
                 },
                 "isTwoDimensional": true,
@@ -61,6 +73,9 @@
                 "name": "timeUnit",
                 "type": "SELECT",
                 "label": {
+                  "de": "Zeiteinheit des Vor- und Nachbeobachtungszeitraums"
+                },
+                "tooltip": {
                   "de": "Zeiteinheit des Vor- und Nachbeobachtungszeitraums"
                 },
                 "defaultValue": "QUARTERS",
@@ -93,11 +108,23 @@
                 }
               },
               {
+                "type": "HEADLINE",
+                "label": {
+                  "de": "Jetzt noch eine kleinere Headline"
+                },
+                "style": {
+                  "size": "h2"
+                }
+              },
+              {
                 "name": "timeCountBefore",
                 "type": "NUMBER",
                 "defaultValue": 1,
                 "min": 1,
                 "label": {
+                  "de": "Zeit davor"
+                },
+                "tooltip": {
                   "de": "Zeit davor"
                 },
                 "placeholder": {
@@ -114,6 +141,9 @@
                 "label": {
                   "de": "Zeit danach"
                 },
+                "tooltip": {
+                  "de": "Zeit danach"
+                },
                 "placeholder": {
                   "de": "1"
                 },
@@ -124,6 +154,9 @@
                 "name": "indexSelector",
                 "type": "SELECT",
                 "label": {
+                  "de": "Zeitstempel Indexdatum"
+                },
+                "tooltip": {
                   "de": "Zeitstempel Indexdatum"
                 },
                 "defaultValue": "FIRST",
@@ -155,6 +188,9 @@
                 "label": {
                   "de": "Zugehörigkeit Indexdatum"
                 },
+                "tooltip": {
+                  "de": "Zugehörigkeit Indexdatum"
+                },
                 "defaultValue": "BEFORE",
                 "options": [
                   {
@@ -179,9 +215,173 @@
                 "validations": ["NOT_EMPTY"]
               },
               {
+                "type": "GROUP",
+                "label": { "de": "Hurraaaay" },
+                "description": {
+                  "de": "this might really go somehwere yeahoweifaijaw ofeiaowje f"
+                },
+                "style": { "display": "grid", "gridColumns": 3 },
+                "fields": [
+                  {
+                    "name": "timeCountAfter22",
+                    "type": "NUMBER",
+                    "min": 1,
+                    "defaultValue": 1,
+                    "label": {
+                      "de": "Zeit danach mit viel langem labeltext"
+                    },
+                    "tooltip": {
+                      "de": "Zeit danach"
+                    },
+                    "placeholder": {
+                      "de": "1"
+                    },
+                    "pattern": "^(?!-)\\d*$",
+                    "validations": ["NOT_EMPTY", "GREATER_THAN_ZERO"]
+                  },
+                  {
+                    "name": "timeCountAfter33",
+                    "type": "NUMBER",
+                    "min": 1,
+                    "defaultValue": 1,
+                    "label": {
+                      "de": "Zeit danach"
+                    },
+                    "tooltip": {
+                      "de": "Zeit danach"
+                    },
+                    "placeholder": {
+                      "de": "1"
+                    },
+                    "pattern": "^(?!-)\\d*$",
+                    "validations": ["NOT_EMPTY", "GREATER_THAN_ZERO"]
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check11",
+                    "label": { "de": "YES, try to check me please" }
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check22",
+                    "label": { "de": "Check22" }
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check33",
+                    "label": { "de": "Yeahs, this is another one" }
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check45",
+                    "label": {
+                      "de": "A longer label, let's see what happens here"
+                    }
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check55",
+                    "label": { "de": "And another short one" }
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check66",
+                    "label": { "de": "Supershort" }
+                  }
+                ]
+              },
+              {
+                "type": "GROUP",
+                "style": { "display": "flex" },
+                "label": { "de": "Hurraaaay" },
+                "description": {
+                  "de": "this might really go somehwere yeahoweifaijaw ofeiaowje f"
+                },
+                "fields": [
+                  {
+                    "name": "timeCountAfter2",
+                    "type": "NUMBER",
+                    "min": 1,
+                    "defaultValue": 1,
+                    "label": {
+                      "de": "Zeit danach mit viel langem labeltext"
+                    },
+                    "tooltip": {
+                      "de": "Zeit danach"
+                    },
+                    "placeholder": {
+                      "de": "1"
+                    },
+                    "pattern": "^(?!-)\\d*$",
+                    "validations": ["NOT_EMPTY", "GREATER_THAN_ZERO"]
+                  },
+                  {
+                    "name": "timeCountAfter3",
+                    "type": "NUMBER",
+                    "min": 1,
+                    "defaultValue": 1,
+                    "label": {
+                      "de": "Zeit danach"
+                    },
+                    "tooltip": {
+                      "de": "Zeit danach"
+                    },
+                    "placeholder": {
+                      "de": "1"
+                    },
+                    "pattern": "^(?!-)\\d*$",
+                    "validations": ["NOT_EMPTY", "GREATER_THAN_ZERO"]
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check1",
+                    "label": { "de": "YES, try to check me please" }
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check2",
+                    "label": { "de": "Check22" }
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check3",
+                    "label": { "de": "Yeahs, this is another one" }
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check4",
+                    "label": {
+                      "de": "A longer label, let's see what happens here"
+                    }
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check5",
+                    "label": { "de": "And another short one" }
+                  },
+                  {
+                    "type": "CHECKBOX",
+                    "name": "check6",
+                    "label": { "de": "Supershort" }
+                  }
+                ]
+              },
+              {
+                "type": "HEADLINE",
+                "label": {
+                  "de": "Und das ist noch ne super kleine Headline"
+                },
+                "style": {
+                  "size": "h3"
+                }
+              },
+              {
                 "name": "features",
                 "type": "CONCEPT_LIST",
                 "label": {
+                  "de": "Konzepte im Vorbeobachtungszeitraum (Feature Zeitraum)"
+                },
+                "tooltip": {
                   "de": "Konzepte im Vorbeobachtungszeitraum (Feature Zeitraum)"
                 },
                 "isTwoDimensional": true,

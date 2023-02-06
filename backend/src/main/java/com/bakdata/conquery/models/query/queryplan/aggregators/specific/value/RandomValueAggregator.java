@@ -2,26 +2,38 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
 import java.util.Random;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
+import lombok.ToString;
 
 /**
  * Aggregator, returning a random value of a column.
  *
  * @param <VALUE> Value type of the column/return value
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
-	private final Random random = new Random();
+	private Random random;
 	private int event;
 	private int nValues = 0;
 	private Bucket bucket;
 
 	public RandomValueAggregator(Column column) {
 		super(column);
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		event = -1;
+		nValues = 0;
+		bucket = null;
+		random = new Random(ConqueryConstants.RANDOM_SEED);
 	}
 
 	/**
@@ -51,17 +63,12 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 	}
 
 	@Override
-	public VALUE getAggregationResult() {
+	public VALUE createAggregationResult() {
 		if (bucket == null) {
 			return null;
 		}
 
 		return (VALUE) bucket.createScriptValue(event, getColumn());
-	}
-
-	@Override
-	public RandomValueAggregator doClone(CloneContext ctx) {
-		return new RandomValueAggregator(getColumn());
 	}
 
 	@Override

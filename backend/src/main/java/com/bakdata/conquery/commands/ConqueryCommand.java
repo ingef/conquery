@@ -14,7 +14,6 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 	/**
 	 * Creates a new environment command.
 	 *
-	 * @param application	 the application providing this command
 	 * @param name		the name of the command, used for command line invocation
 	 */
 	protected ConqueryCommand(String name, String description) {
@@ -62,7 +61,7 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 	}
 
 	/**
-	 * Runs the command with the given {@link Environment} and {@link Configuration}.
+	 * Runs the command with the given {@link Environment} and {@link ConqueryConfig}.
 	 *
 	 * @param environment   the configured environment
 	 * @param namespace	 the parsed command line namespace
@@ -70,4 +69,5 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 	 * @throws Exception if something goes wrong
 	 */
 	protected abstract void run(Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception;
+
 }

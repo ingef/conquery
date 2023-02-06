@@ -3,17 +3,13 @@ package com.bakdata.conquery.models.query.filter.event.number;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class RealFilterNode extends NumberFilterNode<Range.DoubleRange> {
 
 	public RealFilterNode(Column column, Range.DoubleRange filterValue) {
 		super(column, filterValue);
-	}
-
-	@Override
-	public RealFilterNode doClone(CloneContext ctx) {
-		return new RealFilterNode(getColumn(), filterValue);
 	}
 
 	@Override

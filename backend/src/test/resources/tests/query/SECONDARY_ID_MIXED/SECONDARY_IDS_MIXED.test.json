@@ -4,42 +4,37 @@
   "expectedCsv": "tests/query/SECONDARY_ID_MIXED/expected.csv",
   "query": {
     "type": "SECONDARY_ID_QUERY",
-    "secondaryId": "${dataset}.secondary",
+    "secondaryId": "secondary",
     "root": {
-      "type": "AND",
-      "children": [
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "excludeFromSecondaryId": false,
+      "tables": [
         {
-          "ids": [
-            "${dataset}.number"
-          ],
-          "type": "CONCEPT",
-          "label": "vs",
-          "tables": [
+          "id": "concept.connector1",
+          "filters": [
             {
-              "id": "${dataset}.number.number_connector",
-              "filters": [
-                {
-                  "filter": "${dataset}.number.number_connector.value",
-                  "type": "REAL_RANGE",
-                  "value": {
-                    "min": 1,
-                    "max": 1
-                  }
-                }
-              ]
-            },
+              "filter": "concept.connector1.filter",
+              "type": "REAL_RANGE",
+              "value": {
+                "min": 1,
+                "max": 1
+              }
+            }
+          ]
+        },
+        {
+          "id": "concept.connector2",
+          "filters": [
             {
-              "id": "${dataset}.number.number_connector2",
-              "filters": [
-                {
-                  "filter": "${dataset}.number.number_connector2.value",
-                  "type": "REAL_RANGE",
-                  "value": {
-                    "min": 1,
-                    "max": 1
-                  }
-                }
-              ]
+              "filter": "concept.connector2.filter",
+              "type": "REAL_RANGE",
+              "value": {
+                "min": 1,
+                "max": 1
+              }
             }
           ]
         }
@@ -48,34 +43,34 @@
   },
   "concepts": [
     {
-      "label": "number",
-      "type": "VIRTUAL",
+      "name": "concept",
+      "type": "TREE",
       "connectors": [
         {
-          "label": "number_connector",
-          "table": "vers_stamm",
+          "label": "connector1",
+          "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "vers_stamm.datum"
+            "column": "table.datum"
           },
-          "filter": {
-            "label": "value",
+          "filters": {
+            "label": "filter",
             "description": "xy",
-            "column": "vers_stamm.value",
+            "column": "table.value",
             "type": "NUMBER"
           }
         },
         {
-          "label": "number_connector2",
-          "table": "vers_stamm2",
+          "label": "connector2",
+          "table": "table2",
           "validityDates": {
             "label": "datum",
-            "column": "vers_stamm2.datum"
+            "column": "table2.datum"
           },
-          "filter": {
-            "label": "value",
+          "filters": {
+            "label": "filter",
             "description": "xy",
-            "column": "vers_stamm2.value",
+            "column": "table2.value",
             "type": "NUMBER"
           }
         }
@@ -85,13 +80,16 @@
   "content": {
     "secondaryIds": [
       {
-        "name" : "secondary"
+        "name": "secondary"
+      },
+      {
+        "name": "ignored"
       }
     ],
     "tables": [
       {
         "csv": "tests/query/SECONDARY_ID_MIXED/content.csv",
-        "name": "vers_stamm",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -109,12 +107,17 @@
           {
             "name": "datum",
             "type": "DATE_RANGE"
+          },
+          {
+            "name": "ignored",
+            "type": "STRING",
+            "secondaryId": "ignored"
           }
         ]
       },
       {
         "csv": "tests/query/SECONDARY_ID_MIXED/content2.csv",
-        "name": "vers_stamm2",
+        "name": "table2",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

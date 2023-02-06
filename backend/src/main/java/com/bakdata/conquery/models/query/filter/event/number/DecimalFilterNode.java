@@ -5,17 +5,13 @@ import java.math.BigDecimal;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import lombok.ToString;
 
+@ToString(callSuper = true)
 public class DecimalFilterNode extends NumberFilterNode<Range<BigDecimal>> {
 
 	public DecimalFilterNode(Column column, Range<BigDecimal> filterValue) {
 		super(column, filterValue);
-	}
-
-	@Override
-	public DecimalFilterNode doClone(CloneContext ctx) {
-		return new DecimalFilterNode(getColumn(), filterValue);
 	}
 
 	@Override

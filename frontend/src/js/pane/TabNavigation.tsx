@@ -1,10 +1,11 @@
-import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
-import type { TabType } from "./reducer";
+import { FC } from "react";
+
+import FaIcon from "../icon/FaIcon";
+import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
+import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
-  margin-bottom: 10px;
   border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
   padding: 0 20px;
   background-color: white;
@@ -15,51 +16,84 @@ const Root = styled("div")`
 const Headline = styled("h2")<{ active: boolean }>`
   font-size: ${({ theme }) => theme.font.sm};
   margin-bottom: 0;
-  margin-top: 5px;
+  margin-top: 6px;
   padding: 0 12px;
   letter-spacing: 1px;
-  line-height: 38px;
+  line-height: 30px;
   text-transform: uppercase;
   flex-shrink: 0;
 
   transition: color ${({ theme }) => theme.transitionTime},
     border-bottom ${({ theme }) => theme.transitionTime};
   cursor: pointer;
-  margin-right: 15px;
+  margin-right: 5px;
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.gray};
-  border-bottom: 3px solid
+  border-bottom: 4px solid
     ${({ theme, active }) => (active ? theme.col.blueGrayDark : "transparent")};
 
   &:hover {
     color: ${({ theme, active }) =>
       active ? theme.col.blueGrayDark : theme.col.black};
-    border-bottom: 3px solid
+    border-bottom: 4px solid
       ${({ theme, active }) =>
         active ? theme.col.blueGrayDark : theme.col.grayLight};
   }
 `;
 
-interface PropsT {
-  onClickTab: (tab: string) => void;
-  activeTab: string;
-  tabs: TabType[];
+const SxWithTooltip = styled(WithTooltip)`
+  flex-shrink: 0;
+`;
+
+const SxFaIcon = styled(FaIcon)`
+  margin-left: 5px;
+`;
+
+export interface TabNavigationTab {
+  key: string;
+  label: string;
+  tooltip?: string;
+  loading?: boolean;
 }
 
-const TabNavigation: React.FC<PropsT> = (props) => {
+interface PropsT {
+  onClickTab: (tab: string) => void;
+  activeTab: string | null;
+  tabs: TabNavigationTab[];
+  dataTestId: string;
+}
+
+const TabNavigation: FC<PropsT> = ({
+  tabs,
+  activeTab,
+  onClickTab,
+  dataTestId,
+}) => {
+  function createClickHandler(key: string) {
+    return () => {
+      if (key !== activeTab) {
+        onClickTab(key);
+      }
+    };
+  }
+
   return (
-    <Root>
-      {Object.values(props.tabs).map(({ label, key }) => (
-        <Headline
-          key={key}
-          active={props.activeTab === key}
-          onClick={() => {
-            if (key !== props.activeTab) props.onClickTab(key);
-          }}
-        >
-          {T.translate(label)}
-        </Headline>
-      ))}
+    <Root data-test-id={dataTestId}>
+      {tabs.map(({ key, label, tooltip, loading }) => {
+        return (
+          <HoverNavigatable key={key} triggerNavigate={createClickHandler(key)}>
+            <SxWithTooltip text={tooltip} lazy>
+              <Headline
+                active={activeTab === key}
+                onClick={createClickHandler(key)}
+              >
+                {label}
+                {loading && <SxFaIcon icon="spinner" />}
+              </Headline>
+            </SxWithTooltip>
+          </HoverNavigatable>
+        );
+      })}
     </Root>
   );
 };

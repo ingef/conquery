@@ -16,19 +16,19 @@
                   {  
                      "type":"CONCEPT",
                      "ids":[  
-                        "${dataset}.alter"
+                        "alter"
                      ],
                      "label":"Alter",
                      "excludeFromTimeAggregation":false,
                      "tables":[  
                         {  
-                           "id":"${dataset}.alter.alterxy",
+                           "id":"alter.alterxy",
                            "selects":[  
 
                            ],
                            "filters":[
                               {  
-                                 "filter":"${dataset}.alter.alterxy.alterseinschrankung",
+                                 "filter":"alter.alterxy.alterseinschrankung",
                                  "type":"INTEGER_RANGE",
                                  "value":{  
                                     "min":"11",
@@ -49,7 +49,7 @@
    "concepts":[  
       {  
          "label":"alter",
-         "type":"VIRTUAL",
+         "type":"TREE",
          "connectors":[  
             {  
                "label":"alterxy",
@@ -58,7 +58,7 @@
                   "label":"letzter",
                   "column":"table1.letzter"
                },
-               "filter":{  
+               "filters":{
                   "label":"alterseinschrankung",
                   "description":"Geburtsdatum",
                   "column":"table1.geburtsdatum",

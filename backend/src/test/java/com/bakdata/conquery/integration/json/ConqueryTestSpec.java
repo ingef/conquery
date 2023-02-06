@@ -5,21 +5,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,12 +37,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j @CPSBase
 public abstract class ConqueryTestSpec {
 	
-	@Getter @Setter @NotNull
+	@Getter
+	@Setter
 	private String label;
+
+	@Setter
+	@Getter
+	@Nullable
+	private ConqueryConfig config;
+
+	public ConqueryConfig overrideConfig(ConqueryConfig config) {
+
+		if (getConfig() != null) {
+			final ConqueryConfig conqueryConfig = getConfig().withStorage(new NonPersistentStoreFactory());
+			conqueryConfig.setLoggingFactory(config.getLoggingFactory());
+			return conqueryConfig;
+		}
+
+		return config.withStorage(new NonPersistentStoreFactory());
+	}
 
 	public abstract void executeTest(StandaloneSupport support) throws Exception;
 
 	public abstract void importRequiredData(StandaloneSupport support) throws Exception;
+
 
 	@Override
 	public String toString() {
@@ -52,11 +80,14 @@ public abstract class ConqueryTestSpec {
 	}
 
 	public static  <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		ObjectMapper mapper = support.getDataset().injectInto(
-			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectInto(
-					Jackson.MAPPER.copy()
-			)
+		final ObjectMapper om = Jackson.MAPPER.copy();
+		ObjectMapper mapper = support.getDataset().injectIntoNew(
+				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
+						.injectIntoNew(
+								om.addHandler(new DatasetPlaceHolderFiller(support))
+						)
 		);
+
 		T result = mapper.readerFor(expectedType).readValue(node);
 
 		if (modifierBeforeValidation != null) {
@@ -68,19 +99,24 @@ public abstract class ConqueryTestSpec {
 	}
 	
 	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+		final ObjectMapper om = Jackson.MAPPER.copy();
 		ObjectMapper mapper = support.getDataset().injectInto(
-			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectInto(
-				Jackson.MAPPER.copy()
-			)
+				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
+						om.addHandler(new DatasetPlaceHolderFiller(support))
+				)
 		);
+		support.getNamespace().getInjectables().forEach(i -> i.injectInto(mapper));
+
+		mapper.setConfig(mapper.getDeserializationConfig().withView(View.Api.class));
+
 		List<T> result = new ArrayList<>(node.size());
-		for(var child : node) {
+		for (var child : node) {
 			T value;
 			try {
 				value = mapper.readerFor(expectedType).readValue(child);
 			}
-			catch(Exception e) {
-				if(child.isValueNode()) {
+			catch (Exception e) {
+				if (child.isValueNode()) {
 					String potentialPath = child.textValue();
 					try {
 						value = mapper.readerFor(expectedType).readValue(IntegrationTest.class.getResource(potentialPath));
@@ -101,5 +137,21 @@ public abstract class ConqueryTestSpec {
 			ValidatorHelper.failOnError(log, support.getValidator().validate(value));
 		}
 		return result;
+	}
+
+
+	/**
+	 * Replaces occurrences of the string "${dataset}" with the id of the current dataset of the {@link StandaloneSupport}.
+	 */
+	@RequiredArgsConstructor
+	private static class DatasetPlaceHolderFiller extends DeserializationProblemHandler {
+
+		private final StandaloneSupport support;
+
+		@Override
+		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) throws IOException {
+			IdUtil.Parser parser = IdUtil.<Id<Identifiable<?>>>createParser((Class) targetType);
+			return parser.parsePrefixed(support.getDataset().getId().toString(), valueToConvert);
+		}
 	}
 }

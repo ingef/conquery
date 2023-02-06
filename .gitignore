@@ -1,5 +1,6 @@
 # maven
 *.xml.versionsBackup
+.flattened-pom.xml
 
 # vscode
 launch.json
@@ -45,12 +46,8 @@ nb-configuration.xml
 hs_err_pid*
 /frontend/node/
 /frontend/cfp-*
-nbactions.xml
 
 **/.settings/
-**/.project
-**/.classpath
-**/.eclipse-pmd
 **/.checkstyle
 **/*.hprof
 **/.idea/
@@ -63,3 +60,14 @@ nbactions.xml
 **/.idea
 /storage/
 *.iml
+
+/workspace.code-workspace
+**/Lib/
+**/Include/
+**/etc/
+**/share/
+**/*-checkpoint.ipynb
+**/pyvenv.cfg
+tutorial/mimic_iii_demo/data/**
+
+/node_modules

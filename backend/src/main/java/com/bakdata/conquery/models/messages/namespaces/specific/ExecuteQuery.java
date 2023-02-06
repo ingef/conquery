@@ -2,25 +2,22 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
 
-import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.error.ConqueryError;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
-import com.google.common.util.concurrent.MoreExecutors;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -29,61 +26,54 @@ import lombok.extern.slf4j.Slf4j;
  * Send message to worker to execute {@code query} on the workers associated entities.
  */
 @Slf4j
-@CPSType(id="EXECUTE_QUERY", base=NamespacedMessage.class)
-@AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(callSuper=true)
+@CPSType(id = "EXECUTE_QUERY", base = NamespacedMessage.class)
+@Getter
+@Setter
+@ToString(callSuper = true)
+@AllArgsConstructor
 public class ExecuteQuery extends WorkerMessage {
 
-	private ManagedExecution<?> execution;
+	private final ManagedExecutionId id;
+
+	private final Query query;
 
 	@Override
-	public void react(Worker context) throws Exception {
-		log.info("Started {} {}", execution.getClass().getSimpleName(), execution.getId());
-		Set<Entry<ManagedExecutionId, QueryPlan>> plans = null;
-		// Generate query plans for this execution. For ManagedQueries this is only one plan.
-		// For ManagedForms there might be multiple plans, which originate from ManagedQueries.
-		// The results are send directly to these ManagesQueries
+	public void react(Worker worker) throws Exception {
+		final ManagedExecutionId executionId = id;
+
+		log.info("Started {} {}", query.getClass().getSimpleName(), executionId);
+
+		// Execution might have been cancelled before so we uncancel it here.
+		final QueryExecutor queryExecutor = worker.getQueryExecutor();
+
+		queryExecutor.unsetQueryCancelled(executionId);
+
+		final ShardResult result = createShardResult(worker);
+
+		// Before we start the query, we create it once to test if it will succeed before creating it multiple times for evaluation per core.
 		try {
-			plans = execution.createQueryPlans(new QueryPlanContext(context)).entrySet();		
-		} catch (Exception e) {
+			query.createQueryPlan(new QueryPlanContext(worker));
+		}
+		catch (Exception e) {
 			ConqueryError err = asConqueryError(e);
-			log.warn("Failed to create query plans for {}.", execution.getId(), err );
-			ShardResult result = execution.getInitializedShardResult(null);
-			sendFailureToManagerNode(result, context, err);
+			log.warn("Failed to create query plans for {}.", executionId, err);
+			queryExecutor.sendFailureToManagerNode(result, err);
 			return;
 		}
-		
-		// Execute all plans.
-		for(Entry<ManagedExecutionId, QueryPlan> entry : plans) {
-			ShardResult result = execution.getInitializedShardResult(entry);
-			result.setWorkerId(context.getInfo().getId());
-			try {
-				context.getQueryExecutor().execute(result, new QueryExecutionContext(context.getStorage(), context.getBucketManager()), entry);
-				// Send result back
-				result.getFuture().addListener(
-						() -> {
-							log.debug("Worker[{}] Finished Query[{}] of Execution[{}] with {} results",
-									  context.getInfo().getId(),
-									  result.getQueryId(),
-									  execution.getId(),
-									  result.getResults().size()
-							);
 
-							result.send(context);
-						},
-						MoreExecutors.directExecutor()
-				);
-			} catch(Exception e) {
-				ConqueryError err = asConqueryError(e);
-				log.warn("Error while executing {} (with subquery: {})", execution.getId(), entry.getKey(), err );
-				sendFailureToManagerNode(result, context,  asConqueryError(err));
-				return;
-			}
-		}
+		final QueryExecutionContext executionContext = new QueryExecutionContext(executionId, queryExecutor, worker.getStorage(), worker.getBucketManager());
+
+
+		final Set<Entity> entities = query.collectRequiredEntities(executionContext).resolve(worker.getBucketManager());
+
+
+		queryExecutor.execute(query, executionContext, result, entities);
 	}
 
-	private static void sendFailureToManagerNode(ShardResult result, Worker context, ConqueryError error) {
-		result.setError(Optional.of(error));
-		result.finish();
-		context.send(new CollectQueryResult(result));
+	private ShardResult createShardResult(Worker worker) {
+		final ShardResult result = new ShardResult(id, worker.getInfo().getId());
+
+		return result;
 	}
+
 }

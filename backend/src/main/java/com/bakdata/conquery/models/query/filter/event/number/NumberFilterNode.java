@@ -6,8 +6,8 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +18,7 @@ import lombok.ToString;
  * There exist type specific implementations.
  * @param <RANGE> Range Type for inclusion test.
  */
-@ToString(of = {"column", "filterValue"})
+@ToString(callSuper = true, of = "column")
 public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends EventFilterNode<RANGE> {
 
 
@@ -44,8 +44,7 @@ public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends Event
 	public abstract boolean contains(Bucket bucket, int event);
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		requiredTables.add(column.getTable().getId());
+	public void collectRequiredTables(Set<Table> requiredTables) {
+		requiredTables.add(column.getTable());
 	}
-
 }

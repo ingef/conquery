@@ -4,36 +4,38 @@
   "expectedCsv": "tests/aggregator/EXISTS_AGGREGATOR_AGGREGATED/expected.csv",
   "query": {
     "type": "ARRAY_CONCEPT_QUERY",
+    "dateAggregationMode": "MERGE",
     "childQueries": [
       {
         "type": "CONCEPT_QUERY",
         "root": {
           "type": "AND",
+          "label": "AND",
           "createExists": true,
           "children": [
             {
               "ids": [
-                "${dataset}.number.1"
+                "concept.1"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "${dataset}.number.number_connector",
-                  "selects": "${dataset}.number.exists"
+                  "id": "concept.connector"
                 }
-              ]
+              ],
+              "selects": "concept.exists"
             },
             {
               "ids": [
-                "${dataset}.number.2"
+                "concept.2"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "${dataset}.number.number_connector",
-                  "selects": "${dataset}.number.exists"
+                  "id": "concept.connector"
                 }
-              ]
+              ],
+              "selects": "concept.exists"
             }
           ]
         }
@@ -42,31 +44,32 @@
         "type": "CONCEPT_QUERY",
         "root": {
           "type": "OR",
+          "label": "OR",
           "createExists": true,
           "children": [
             {
               "ids": [
-                "${dataset}.number.1"
+                "concept.1"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "${dataset}.number.number_connector",
-                  "selects": "${dataset}.number.exists"
+                  "id": "concept.connector"
                 }
-              ]
+              ],
+              "selects": "concept.exists"
             },
             {
               "ids": [
-                "${dataset}.number.2"
+                "concept.2"
               ],
               "type": "CONCEPT",
               "tables": [
                 {
-                  "id": "${dataset}.number.number_connector",
-                  "selects": "${dataset}.number.exists"
+                  "id": "concept.connector"
                 }
-              ]
+              ],
+              "selects": "concept.exists"
             }
           ]
         }
@@ -75,7 +78,7 @@
   },
   "concepts": [
     {
-      "label": "number",
+      "label": "concept",
       "type": "TREE",
       "selects": {
         "type": "EXISTS",
@@ -83,11 +86,11 @@
       },
       "connectors": [
         {
-          "column": "table1.value",
-          "label": "number_connector",
+          "column": "table.value",
+          "label": "connector",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "column": "table.datum"
           }
         }
       ],
@@ -113,7 +116,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/EXISTS_AGGREGATOR_AGGREGATED/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

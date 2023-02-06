@@ -9,18 +9,20 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import lombok.ToString;
 
 /**
  * Count the number of distinct quarters for all events. Implementation is specific for DateRanges
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<Long> {
 
 	private final TemporalAdjuster monthInQuarter = QuarterUtils.firstMonthInQuarterAdjuster();
@@ -34,12 +36,12 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 	}
 
 	@Override
-	public CountQuartersOfDateRangeAggregator doClone(CloneContext ctx) {
-		return new CountQuartersOfDateRangeAggregator(getColumn());
+	public void init(Entity entity, QueryExecutionContext context) {
+		quarters.clear();
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		dateRestriction = ctx.getDateRestriction();
 	}
 
@@ -81,12 +83,12 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return quarters.isEmpty() ? null : (long) quarters.size();
 	}
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return ResultType.IntegerT.INSTANCE;
 	}
 }

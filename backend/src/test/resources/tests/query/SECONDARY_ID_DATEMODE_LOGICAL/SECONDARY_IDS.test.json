@@ -1,0 +1,155 @@
+{
+  "type": "QUERY_TEST",
+  "label": "SECONDARY_ID Test",
+  "expectedCsv": "tests/query/SECONDARY_ID_DATEMODE_LOGICAL/expected.csv",
+  "query": {
+    "type": "SECONDARY_ID_QUERY",
+    "secondaryId": "secondary",
+    "dateAggregationMode": "LOGICAL",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "number"
+          ],
+          "type": "CONCEPT",
+          "excludeFromSecondaryId" : false,
+          "label": "vs",
+          "tables": [
+            {
+              "id": "number.number_connector",
+              "filters": [
+                {
+                  "filter": "number.number_connector.value",
+                  "type": "REAL_RANGE",
+                  "value": {
+                    "min": 1,
+                    "max": 1
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ids": [
+            "number"
+          ],
+          "type": "CONCEPT",
+          "excludeFromSecondaryId" : false,
+          "label": "vs",
+          "tables": [
+            {
+              "id": "number.number_connector2",
+              "filters": [
+                {
+                  "filter": "number.number_connector2.value",
+                  "type": "REAL_RANGE",
+                  "value": {
+                    "min": 1,
+                    "max": 1
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "number",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "number_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          },
+          "filters": {
+            "label": "value",
+            "description": "xy",
+            "column": "table1.value",
+            "type": "NUMBER"
+          }
+        },
+        {
+          "label": "number_connector2",
+          "table": "table12",
+          "validityDates": {
+            "label": "datum",
+            "column": "table12.datum"
+          },
+          "filters": {
+            "label": "value",
+            "description": "xy",
+            "column": "table12.value",
+            "type": "NUMBER"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "secondaryIds": [
+      {
+        "name": "secondary"
+      },
+      {
+        "name": "ignored"
+      }
+    ],
+    "tables": [
+      {
+        "csv": "tests/query/SECONDARY_ID_DATEMODE_LOGICAL/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "sid",
+            "type": "STRING",
+            "secondaryId": "secondary"
+          },
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          }
+        ]
+      },
+      {
+        "csv": "tests/query/SECONDARY_ID_DATEMODE_LOGICAL/content2.csv",
+        "name": "table12",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "sid",
+            "type": "STRING",
+            "secondaryId": "secondary"
+          },
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          }
+        ]
+      }
+    ]
+  }
+}

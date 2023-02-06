@@ -1,19 +1,37 @@
 package com.bakdata.conquery.models.events;
 
+import java.math.BigDecimal;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.stores.root.BooleanStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DateStore;
+import com.bakdata.conquery.models.events.stores.root.DecimalStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.MoneyStore;
+import com.bakdata.conquery.models.events.stores.root.RealStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 
 /**
- * An empty generic store to avoid any allocations. It still has a length, but {@linkplain #has(int)}} is always false.
+ * An empty generic store to avoid any allocations.
+ *
+ * @implNote this class is a singleton.
  */
 @CPSType(base = ColumnStore.class, id = "EMPTY")
-public class EmptyStore<T> extends ColumnStore<T> {
+public enum EmptyStore implements
+		IntegerStore, RealStore, BooleanStore, DecimalStore, StringStore, MoneyStore, DateStore {
+	INSTANCE;
 
-	@JsonCreator
-	public EmptyStore(){
-		super();
-		setLines(0);
+	@Override
+	public String toString() {
+		return "EmptyStore()";
+	}
+
+	@Override
+	public int getLines() {
+		return 0;
 	}
 
 	@Override
@@ -21,19 +39,30 @@ public class EmptyStore<T> extends ColumnStore<T> {
 		return 0;
 	}
 
+
 	@Override
-	public EmptyStore<T> doSelect(int[] starts, int[] length) {
+	public int getDate(int event) {
+		return 0;
+	}
+
+	@Override
+	public void setDate(int event, int value) {
+
+	}
+
+	@Override
+	public Object createScriptValue(int event) {
+		return null;
+	}
+
+	@Override
+	public EmptyStore select(int[] starts, int[] length) {
 		return this;
 	}
 
 	@Override
-	public void set(int event, T value) {
-
-	}
-
-	@Override
-	public T get(int event) {
-		return null;
+	public EmptyStore createDescription() {
+		return this;
 	}
 
 	@Override
@@ -42,7 +71,113 @@ public class EmptyStore<T> extends ColumnStore<T> {
 	}
 
 	@Override
+	public void setNull(int event) {
+
+	}
+
+	@Override
 	public boolean isEmpty() {
 		return true;
 	}
+
+	@Override
+	public boolean getBoolean(int event) {
+		return false;
+	}
+
+	@Override
+	public void setBoolean(int event, boolean value) {
+
+	}
+
+	@Override
+	public BigDecimal getDecimal(int event) {
+		return BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setDecimal(int event, BigDecimal value) {
+
+	}
+
+	@Override
+	public long getInteger(int event) {
+		return 0;
+	}
+
+	@Override
+	public void setInteger(int event, long value) {
+
+	}
+
+	@Override
+	public long getMoney(int event) {
+		return 0;
+	}
+
+	@Override
+	public void setMoney(int event, long money) {
+
+	}
+
+	@Override
+	public double getReal(int event) {
+		return 0;
+	}
+
+	@Override
+	public void setReal(int event, double value) {
+
+	}
+
+	@Override
+	public int getString(int event) {
+		return 0;
+	}
+
+	@Override
+	public void setString(int event, int value) {
+
+	}
+
+	@Override
+	public String getElement(int id) {
+		return null;
+	}
+
+	@Override
+	public int size() {
+		return 0;
+	}
+
+	@Override
+	public Stream<String> iterateValues() {
+		return Stream.empty();
+	}
+
+	@Override
+	public int getId(String value) {
+		return 0;
+	}
+
+	@Override
+	public Dictionary getUnderlyingDictionary() {
+		return null;
+	}
+
+	@Override
+	public void setUnderlyingDictionary(Dictionary dictionary) {
+		// No underlying Dictionary
+	}
+
+	@Override
+	public boolean isDictionaryHolding() {
+		return false;
+	}
+
+	@Override
+	public void setIndexStore(IntegerStore newType) {
+
+	}
+
 }

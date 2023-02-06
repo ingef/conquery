@@ -1,27 +1,33 @@
-import {
-  UPDATE_PREVIOUS_QUERIES_SEARCH,
-  ADD_TAG_TO_PREVIOUS_QUERIES_SEARCH
-} from "./actionTypes";
+import { getType } from "typesafe-actions";
 
-export type PreviousQueriesSearchStateT = string[];
+import { Action } from "../../app/actions";
 
-const initialState: PreviousQueriesSearchStateT = [];
+import { clearSearch, setSearch } from "./actions";
 
-const previousQueriesSearch = (
-  state: PreviousQueriesSearchStateT = initialState,
-  action: Object
-): PreviousQueriesSearchStateT => {
+export interface ProjectItemsSearchStateT {
+  searchTerm: string | null;
+  result: Record<string, number> | null;
+  words: string[];
+}
+
+const initialState: ProjectItemsSearchStateT = {
+  searchTerm: null,
+  result: null,
+  words: [],
+};
+
+const projectItemsSearch = (
+  state: ProjectItemsSearchStateT = initialState,
+  action: Action,
+): ProjectItemsSearchStateT => {
   switch (action.type) {
-    case UPDATE_PREVIOUS_QUERIES_SEARCH:
-      return action.payload.values;
-    case ADD_TAG_TO_PREVIOUS_QUERIES_SEARCH:
-      const { tag } = action.payload;
-
-      // Only add tag if it doesn't exist
-      return state.indexOf(tag) === -1 ? state.concat(tag) : state;
+    case getType(setSearch):
+      return { ...state, ...action.payload };
+    case getType(clearSearch):
+      return initialState;
     default:
       return state;
   }
 };
 
-export default previousQueriesSearch;
+export default projectItemsSearch;

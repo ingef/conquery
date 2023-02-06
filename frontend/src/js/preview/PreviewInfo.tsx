@@ -1,14 +1,15 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 import {
   formatStdDate,
-  formatDateDistance,
+  useFormatDateDistance,
 } from "../common/helpers/dateHelper";
-import type { ColumnDescriptionType } from "./Preview";
+
 import ColumnStats from "./ColumnStats";
+import type { ColumnDescriptionType } from "./Preview";
 import { StatsHeadline } from "./StatsHeadline";
 import StatsSubline from "./StatsSubline";
 
@@ -49,11 +50,16 @@ const Tr = styled("tr")`
   line-height: 1;
 `;
 
+const SxIconButton = styled(IconButton)`
+  background-color: white;
+`;
+
 const StatsContainer = styled("div")`
   display: flex;
   flex-wrap: wrap;
   padding: 10px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+  background-color: white;
 `;
 
 const COLUMN_TYPES_WITH_SUPPORTED_STATS = new Set<ColumnDescriptionType>([
@@ -77,10 +83,13 @@ const PreviewInfo: FC<PropsT> = ({
   minDate,
   maxDate,
 }) => {
+  const { t } = useTranslation();
+  const formatDateDistance = useFormatDateDistance();
+
   if (rawPreviewData.length < 2) return null;
 
   const showStats = columns.some((column) =>
-    COLUMN_TYPES_WITH_SUPPORTED_STATS.has(column)
+    COLUMN_TYPES_WITH_SUPPORTED_STATS.has(column),
   );
 
   return (
@@ -88,11 +97,11 @@ const PreviewInfo: FC<PropsT> = ({
       <TopRow>
         <div>
           <StdRow>
-            <IconButton frame icon="chevron-left" onClick={onClose}>
-              {T.translate("common.back")}
-            </IconButton>
+            <SxIconButton frame icon="chevron-left" onClick={onClose}>
+              {t("common.back")}
+            </SxIconButton>
             <HeadInfo>
-              <Headline>{T.translate("preview.headline")}</Headline>
+              <Headline>{t("preview.headline")}</Headline>
             </HeadInfo>
           </StdRow>
         </div>
@@ -100,13 +109,13 @@ const PreviewInfo: FC<PropsT> = ({
           <tbody>
             <Tr>
               <td>
-                <Stat>{T.translate("preview.total")}:</Stat>
+                <Stat>{t("preview.total")}:</Stat>
               </td>
               <td>
                 <BStat>{rawPreviewData.length - 1}</BStat>
               </td>
               <td>
-                <Stat>{T.translate("preview.min")}:</Stat>
+                <Stat>{t("preview.min")}:</Stat>
               </td>
               <td>
                 <BStat>{minDate ? formatStdDate(minDate) : "-"}</BStat>
@@ -114,7 +123,7 @@ const PreviewInfo: FC<PropsT> = ({
             </Tr>
             <Tr>
               <td>
-                <Stat>{T.translate("preview.span")}:</Stat>
+                <Stat>{t("preview.span")}:</Stat>
               </td>
               <td>
                 <BStat>
@@ -124,7 +133,7 @@ const PreviewInfo: FC<PropsT> = ({
                 </BStat>
               </td>
               <td>
-                <Stat>{T.translate("preview.max")}:</Stat>
+                <Stat>{t("preview.max")}:</Stat>
               </td>
               <td>
                 <BStat>{maxDate ? formatStdDate(maxDate) : "-"}</BStat>
@@ -135,12 +144,8 @@ const PreviewInfo: FC<PropsT> = ({
       </TopRow>
       {showStats && (
         <div>
-          <StatsHeadline>
-            {T.translate("preview.statisticsHeadline")}
-          </StatsHeadline>
-          <StatsSubline>
-            {T.translate("preview.statisticsSubline")}
-          </StatsSubline>
+          <StatsHeadline>{t("preview.statisticsHeadline")}</StatsHeadline>
+          <StatsSubline>{t("preview.statisticsSubline")}</StatsSubline>
           <StatsContainer>
             {rawPreviewData[0].map((col, j) => (
               <ColumnStats

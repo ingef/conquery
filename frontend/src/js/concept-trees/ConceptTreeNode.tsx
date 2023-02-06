@@ -1,18 +1,22 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import { FC } from "react";
 
-import type { ConceptIdT, InfoT, DateRangeT, ConceptT } from "../api/types";
-
-import { selectsWithDefaults } from "../model/select";
-import { tablesWithDefaults } from "../model/table";
-
-import type { DraggedNodeType } from "../standard-query-editor/types";
-import type { SearchT } from "./reducer";
-
-import { getConceptById } from "./globalTreeStoreHelper";
-import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
-import { isNodeInSearchResult } from "./selectors";
+import type {
+  ConceptIdT,
+  InfoT,
+  DateRangeT,
+  ConceptT,
+  ConceptElementT,
+} from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
+import { resetSelects } from "../model/select";
+import { resetTables } from "../model/table";
+import type { ConceptQueryNodeType } from "../standard-query-editor/types";
+
+import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
+import { getConceptById } from "./globalTreeStoreHelper";
+import type { SearchT } from "./reducer";
+import { isNodeInSearchResult } from "./selectors";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -22,38 +26,43 @@ const Root = styled("div")`
 // for the tooltip as well as the id of the corresponding tree
 interface TreeNodeData {
   label: string;
-  description: string;
-  active: boolean;
-  matchingEntries: number;
-  dateRange: DateRangeT;
-  additionalInfos: InfoT[];
-  children: ConceptIdT[];
-
-  tree: ConceptIdT;
+  description?: string;
+  active?: boolean;
+  matchingEntries: number | null;
+  matchingEntities: number | null;
+  dateRange?: DateRangeT;
+  additionalInfos?: InfoT[];
+  children?: ConceptIdT[];
 }
 
 interface PropsT {
-  id: ConceptIdT;
+  rootConceptId: ConceptIdT;
+  conceptId: ConceptIdT;
   data: TreeNodeData;
   depth: number;
   search: SearchT;
 }
 
-const selectTreeNodeData = (concept: ConceptT, tree: ConceptIdT) => ({
+const selectTreeNodeData = (concept: ConceptT) => ({
   label: concept.label,
   description: concept.description,
   active: concept.active,
   matchingEntries: concept.matchingEntries,
+  matchingEntities: concept.matchingEntities,
   dateRange: concept.dateRange,
   additionalInfos: concept.additionalInfos,
   children: concept.children,
-
-  tree,
 });
 
-const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
+const ConceptTreeNode: FC<PropsT> = ({
+  data,
+  rootConceptId,
+  conceptId,
+  depth,
+  search,
+}) => {
   const { open, onToggleOpen } = useOpenableConcept({
-    conceptId: id,
+    conceptId,
   });
 
   function toggleOpen() {
@@ -63,7 +72,7 @@ const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
   }
 
   if (!search.showMismatches) {
-    const shouldRender = isNodeInSearchResult(id, data.children, search);
+    const shouldRender = isNodeInSearchResult(conceptId, search, data.children);
 
     if (!shouldRender) return null;
   }
@@ -74,35 +83,44 @@ const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
     <Root>
       <ConceptTreeNodeTextContainer
         node={{
-          id,
           label: data.label,
           description: data.description,
 
           additionalInfos: data.additionalInfos,
           matchingEntries: data.matchingEntries,
+          matchingEntities: data.matchingEntities,
           dateRange: data.dateRange,
 
           children: data.children,
         }}
-        createQueryElement={(): DraggedNodeType => {
-          const { tables, selects } = getConceptById(data.tree);
+        conceptId={conceptId}
+        createQueryElement={(): ConceptQueryNodeType => {
+          const concept = getConceptById(
+            rootConceptId,
+            rootConceptId, // To optimize lookup
+          ) as ConceptElementT | null;
 
           const description = data.description
             ? { description: data.description }
             : {};
 
           return {
-            ids: [id],
+            ids: [conceptId],
             ...description,
             label: data.label,
-            tables: tablesWithDefaults(tables),
-            selects: selectsWithDefaults(selects),
+            tables: concept?.tables
+              ? resetTables(concept.tables, { useDefaults: true })
+              : [],
+            selects: concept?.selects
+              ? resetSelects(concept.selects, { useDefaults: true })
+              : [],
 
             additionalInfos: data.additionalInfos,
             matchingEntries: data.matchingEntries,
+            matchingEntities: data.matchingEntities,
             dateRange: data.dateRange,
 
-            tree: data.tree,
+            tree: rootConceptId,
           };
         }}
         open={isOpen}
@@ -113,14 +131,15 @@ const ConceptTreeNode: FC<PropsT> = ({ data, id, depth, search }) => {
       />
       {!!data.children && isOpen && (
         <>
-          {data.children.map((childId, i) => {
+          {data.children.map((childId) => {
             const child = getConceptById(childId);
 
             return child ? (
               <ConceptTreeNode
-                key={i}
-                id={childId}
-                data={selectTreeNodeData(child, data.tree)}
+                key={childId}
+                rootConceptId={rootConceptId}
+                conceptId={childId}
+                data={selectTreeNodeData(child)}
                 depth={depth + 1}
                 search={search}
               />

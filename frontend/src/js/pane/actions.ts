@@ -1,6 +1,8 @@
-import { CLICK_PANE_TAB } from "./actionTypes";
+import { createAction, ActionType } from "typesafe-actions";
 
-export const clickPaneTab = (paneType: "left" | "right", tab: string) => ({
-  type: CLICK_PANE_TAB,
-  payload: { paneType, tab }
-});
+export type PaneActions = ActionType<typeof clickPaneTab>;
+
+export const clickPaneTab = createAction("pane/CLICK_PANE_TAB")<{
+  paneType: "left" | "right";
+  tab: string;
+}>();

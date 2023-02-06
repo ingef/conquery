@@ -1,81 +1,156 @@
-import React from "react";
-import { StateT } from "app-types";
+import { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import { createConnectedQueryNodeEditor } from "../query-node-editor/QueryNodeEditor";
-
-import type { PropsType } from "../query-node-editor/QueryNodeEditor";
-
+import type { ConceptIdT } from "../api/types";
+import type { StateT } from "../app/reducers";
+import { nodeIsConceptQueryNode } from "../model/node";
 import { tableIsEditable } from "../model/table";
+import QueryNodeEditor from "../query-node-editor/QueryNodeEditor";
 
 import {
-  deselectNode,
   updateNodeLabel,
   addConceptToNode,
   removeConceptFromNode,
   toggleTable,
   setFilterValue,
   switchFilterMode,
-  resetAllFilters,
+  resetAllSettings,
+  resetTable,
   toggleTimestamps,
-  loadFilterSuggestions,
   setSelects,
   setTableSelects,
   setDateColumn,
   toggleSecondaryIdExclude,
+  useLoadFilterSuggestions,
 } from "./actions";
+import { StandardQueryNodeT } from "./types";
 
-const findNodeBeingEdited = (query) =>
-  query
-    .reduce((acc, group) => [...acc, ...group.elements], [])
-    .find((element) => element.isEditing);
+interface EditedNodePosition {
+  andIdx: number;
+  orIdx: number;
+}
 
-const mapStateToProps = (state: StateT) => {
-  const node = findNodeBeingEdited(state.queryEditor.query);
+interface Props {
+  editedNode: EditedNodePosition;
+  onClose: () => void;
+}
 
+const StandardQueryNodeEditor = ({ editedNode, onClose }: Props) => {
+  const node = useSelector<StateT, StandardQueryNodeT | null>(
+    (state) =>
+      state.queryEditor.query[editedNode.andIdx]?.elements[editedNode.orIdx],
+  );
   const showTables =
-    node &&
+    !!node &&
+    nodeIsConceptQueryNode(node) &&
     !!node.tables &&
+    node.tables.length > 1 &&
     node.tables.some((table) => tableIsEditable(table));
 
-  return {
-    node,
-    editorState: state.queryNodeEditor,
-    showTables,
-    isExcludeTimestampsPossible: true,
-    isExcludeFromSecondaryIdQueryPossible: !!node && !node.isPreviousQuery,
-    currencyConfig: state.startup.config.currency,
-  };
+  const onLoadFilterSuggestions = useLoadFilterSuggestions(editedNode);
+  const dispatch = useDispatch();
+  const { andIdx, orIdx } = editedNode;
+
+  const onUpdateLabel = useCallback(
+    (label: string) => dispatch(updateNodeLabel({ andIdx, orIdx, label })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onDropConcept = useCallback(
+    (concept) => dispatch(addConceptToNode({ andIdx, orIdx, concept })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onRemoveConcept = useCallback(
+    (conceptId: ConceptIdT) =>
+      dispatch(removeConceptFromNode({ andIdx, orIdx, conceptId })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onToggleTable = useCallback(
+    (tableIdx, isExcluded) =>
+      dispatch(toggleTable({ andIdx, orIdx, tableIdx, isExcluded })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onSelectSelects = useCallback(
+    (value) => {
+      dispatch(setSelects({ andIdx, orIdx, value }));
+    },
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onSelectTableSelects = useCallback(
+    (tableIdx, value) =>
+      dispatch(setTableSelects({ andIdx, orIdx, tableIdx, value })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onSetFilterValue = useCallback(
+    (tableIdx, filterIdx, value) =>
+      dispatch(setFilterValue({ andIdx, orIdx, tableIdx, filterIdx, value })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onSwitchFilterMode = useCallback(
+    (tableIdx, filterIdx, mode) =>
+      dispatch(switchFilterMode({ andIdx, orIdx, tableIdx, filterIdx, mode })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onResetAllSettings = useCallback(
+    (config) => dispatch(resetAllSettings({ andIdx, orIdx, config })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onResetTable = useCallback(
+    (tableIdx, config) =>
+      dispatch(resetTable({ andIdx, orIdx, tableIdx, config })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onToggleTimeStamps = useCallback(
+    () => dispatch(toggleTimestamps({ andIdx, orIdx })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onToggleSecondaryIdExclude = useCallback(
+    () => dispatch(toggleSecondaryIdExclude({ andIdx, orIdx })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  const onSetDateColumn = useCallback(
+    (tableIdx, value) =>
+      dispatch(setDateColumn({ andIdx, orIdx, tableIdx, value })),
+    [dispatch, andIdx, orIdx],
+  );
+
+  if (!node) {
+    return null;
+  }
+
+  return (
+    <QueryNodeEditor
+      name="standard"
+      node={node}
+      showTables={showTables}
+      onLoadFilterSuggestions={onLoadFilterSuggestions}
+      onCloseModal={onClose}
+      onUpdateLabel={onUpdateLabel}
+      onDropConcept={onDropConcept}
+      onRemoveConcept={onRemoveConcept}
+      onToggleTable={onToggleTable}
+      onSelectSelects={onSelectSelects}
+      onSelectTableSelects={onSelectTableSelects}
+      onSetFilterValue={onSetFilterValue}
+      onSwitchFilterMode={onSwitchFilterMode}
+      onResetAllSettings={onResetAllSettings}
+      onResetTable={onResetTable}
+      onToggleTimestamps={onToggleTimeStamps}
+      onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
+      onSetDateColumn={onSetDateColumn}
+    />
+  );
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  onCloseModal: () => dispatch(deselectNode()),
-  onUpdateLabel: (label) => dispatch(updateNodeLabel(label)),
-  onDropConcept: (concept) => dispatch(addConceptToNode(concept)),
-  onRemoveConcept: (conceptId) => dispatch(removeConceptFromNode(conceptId)),
-  onToggleTable: (tableIdx, isExcluded) =>
-    dispatch(toggleTable(tableIdx, isExcluded)),
-  onSelectSelects: (value) => dispatch(setSelects(value)),
-  onSelectTableSelects: (tableIdx, value) =>
-    dispatch(setTableSelects(tableIdx, value)),
-  onSetFilterValue: (tableIdx, filterIdx, value) =>
-    dispatch(setFilterValue(tableIdx, filterIdx, value)),
-  onSwitchFilterMode: (tableIdx, filterIdx, mode) =>
-    dispatch(switchFilterMode(tableIdx, filterIdx, mode)),
-  onResetAllFilters: (andIdx, orIdx) =>
-    dispatch(resetAllFilters(andIdx, orIdx)),
-  onToggleTimestamps: () => dispatch(toggleTimestamps()),
-  onToggleSecondaryIdExclude: () => dispatch(toggleSecondaryIdExclude()),
-  onLoadFilterSuggestions: (...params) =>
-    dispatch(loadFilterSuggestions(...params)),
-  onSetDateColumn: (tableIdx, value) =>
-    dispatch(setDateColumn(tableIdx, value)),
-});
-
-const QueryNodeEditor = createConnectedQueryNodeEditor(
-  mapStateToProps,
-  mapDispatchToProps
-);
-
-export default (props: PropsType) => (
-  <QueryNodeEditor name="standard" {...props} />
-);
+export default StandardQueryNodeEditor;

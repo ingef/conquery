@@ -1,17 +1,15 @@
-import "./browserShimsAndPolyfills";
-
-import React from "react";
-import ReactDOM from "react-dom";
 import { ThemeProvider, Theme } from "@emotion/react";
-
-import "./app/actions"; //  To initialize parameterized actions
-import { makeStore } from "./store";
-import AppRoot from "./AppRoot";
-
-import { initializeEnvironment, Environment } from "./environment";
+import { createRoot } from "react-dom/client";
 import { Store } from "redux";
-import { StateT } from "app-types";
+
+import "../fonts.css";
+
+import AppRoot from "./AppRoot";
+import GlobalStyles from "./GlobalStyles";
+import type { StateT } from "./app/reducers";
+import { initializeEnvironment, CustomEnvironment } from "./environment";
 import { TabT } from "./pane/types";
+import { makeStore } from "./store";
 
 // TODO: OG image required?
 // require('../../images/og.png');
@@ -23,25 +21,27 @@ const initialState = {};
 
 // Render the App including Hot Module Replacement
 const renderRoot = (tabs: TabT[], theme: Theme) => {
-  store = store || makeStore(initialState, tabs);
+  store = store || makeStore(initialState);
 
-  ReactDOM.render(
+  const root = createRoot(document.getElementById("root")!);
+
+  return root.render(
     <ThemeProvider theme={theme}>
+      <GlobalStyles />
       <AppRoot store={store} rightTabs={tabs} />
     </ThemeProvider>,
-    document.getElementById("root")
   );
 };
 
 export default function conquery({
-  environment,
-  tabs,
   theme,
+  tabs,
+  customEnvironment,
 }: {
-  environment: Environment;
-  tabs: TabT[];
   theme: Theme; // React-Emotion theme, will at some point completely replace sass
+  tabs: TabT[];
+  customEnvironment: CustomEnvironment;
 }) {
-  initializeEnvironment(environment);
+  initializeEnvironment(customEnvironment);
   renderRoot(tabs, theme);
 }

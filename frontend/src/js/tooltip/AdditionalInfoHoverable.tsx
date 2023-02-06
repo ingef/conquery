@@ -1,64 +1,62 @@
-import { connect } from "react-redux";
+import styled from "@emotion/styled";
+import { FC } from "react";
+import { useDispatch } from "react-redux";
 
-import type { DateRangeT, InfoT } from "../api/types";
+import type { ConceptT } from "../api/types";
+import { isEmpty } from "../common/helpers/commonHelper";
 
-import { isEmpty } from "../common/helpers";
 import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";
-import HoverableBase from "./HoverableBase";
+import { AdditionalInfosType } from "./reducer";
 
-export type AdditionalInfoHoverableNodeType = {
-  label: string,
-  description: string,
-  children?: Array<string>,
-  matchingEntries: number,
-  dateRange: DateRangeT,
-  additionalInfos: InfoT[]
-};
+const Root = styled("div")`
+  cursor: pointer;
+`;
 
-// Whitelist the data we pass (especially: don't pass all children)
-const additionalInfos = (node: AdditionalInfoHoverableNodeType) => ({
+// Allowlist the data we pass (especially: don't pass all children)
+const getAdditionalInfos = (node: ConceptT): AdditionalInfosType => ({
   label: node.label,
   description: node.description,
   isFolder: !!node.children && node.children.length > 0,
   matchingEntries: node.matchingEntries,
+  matchingEntities: node.matchingEntities,
   dateRange: node.dateRange,
-  infos: node.additionalInfos
+  infos: node.additionalInfos,
 });
 
-// Decorates a component with a hoverable node.
-// On mouse enter, additional infos about the component are saved in the state
-// The Tooltip (and potential other components) might then update their view.
-// On mouse leave, the infos are cleared from the state again
-const AdditionalInfoHoverable = (Component: any) => {
-  const mapStateToProps = () => ({});
+interface Props {
+  node: ConceptT;
+  className?: string;
+}
 
-  const mapDispatchToProps = (
-    dispatch: Dispatch,
-    ownProps: { node: AdditionalInfoHoverableNodeType }
-  ) => ({
-    onDisplayAdditionalInfos: () => {
-      const node = ownProps.node;
+const AdditionalInfoHoverable: FC<Props> = ({ node, className, children }) => {
+  const dispatch = useDispatch();
 
-      if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
+  const onDisplayAdditionalInfos = () => {
+    if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
 
-      dispatch(displayAdditionalInfos(additionalInfos(node)));
-    },
-    onToggleAdditionalInfos: () => {
-      const node = ownProps.node;
+    dispatch(
+      displayAdditionalInfos({ additionalInfos: getAdditionalInfos(node) }),
+    );
+  };
 
-      if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
+  const onToggleAdditionalInfos = () => {
+    if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
 
-      dispatch([
-        toggleAdditionalInfos(),
-        displayAdditionalInfos(additionalInfos(node))
-      ]);
-    }
-  });
+    dispatch(toggleAdditionalInfos());
+    dispatch(
+      displayAdditionalInfos({ additionalInfos: getAdditionalInfos(node) }),
+    );
+  };
 
-  return connect(
-    mapStateToProps,
-    mapDispatchToProps
-  )(HoverableBase(Component));
+  return (
+    <Root
+      className={className}
+      onMouseEnter={onDisplayAdditionalInfos}
+      onClick={onToggleAdditionalInfos}
+    >
+      {children}
+    </Root>
+  );
 };
 
 export default AdditionalInfoHoverable;

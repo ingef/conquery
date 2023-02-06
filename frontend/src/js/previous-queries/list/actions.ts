@@ -1,157 +1,339 @@
-import T from "i18n-react";
-import { DatasetIdT } from "../../api/types";
-import api from "../../api";
-
-import { defaultSuccess, defaultError } from "../../common/actions";
-
-import { setMessage } from "../../snack-message/actions";
+import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
+import { ActionType, createAction } from "typesafe-actions";
 
 import {
-  LOAD_PREVIOUS_QUERIES_START,
-  LOAD_PREVIOUS_QUERIES_SUCCESS,
-  LOAD_PREVIOUS_QUERIES_ERROR,
-  LOAD_PREVIOUS_QUERY_START,
-  LOAD_PREVIOUS_QUERY_SUCCESS,
-  LOAD_PREVIOUS_QUERY_ERROR,
-  RENAME_PREVIOUS_QUERY_START,
-  RENAME_PREVIOUS_QUERY_SUCCESS,
-  RENAME_PREVIOUS_QUERY_ERROR,
-  TOGGLE_EDIT_PREVIOUS_QUERY_LABEL,
-  TOGGLE_EDIT_PREVIOUS_QUERY_TAGS,
-  RETAG_PREVIOUS_QUERY_START,
-  RETAG_PREVIOUS_QUERY_SUCCESS,
-  RETAG_PREVIOUS_QUERY_ERROR,
-  TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS,
-  DELETE_PREVIOUS_QUERY_SUCCESS,
-} from "./actionTypes";
-import { PreviousQueryIdT } from "./reducer";
+  useGetQueries,
+  usePatchQuery,
+  useGetQuery,
+  useDeleteQuery,
+  usePatchFormConfig,
+  useDeleteFormConfig,
+  useGetFormConfig,
+  useGetFormConfigs,
+} from "../../api/api";
+import {
+  DatasetT,
+  GetQueriesResponseT,
+  GetQueryResponseT,
+  QueryIdT,
+} from "../../api/types";
+import { useDatasetId } from "../../dataset/selectors";
+import { setMessage } from "../../snack-message/actions";
+import { SnackMessageType } from "../../snack-message/reducer";
 
-export const loadPreviousQueriesStart = () => ({
-  type: LOAD_PREVIOUS_QUERIES_START,
-});
-export const loadPreviousQueriesSuccess = (res) =>
-  defaultSuccess(LOAD_PREVIOUS_QUERIES_SUCCESS, res);
-export const loadPreviousQueriesError = (err) =>
-  defaultError(LOAD_PREVIOUS_QUERIES_ERROR, err);
+import type { FormConfigT, PreviousQueryT } from "./reducer";
 
-export const loadPreviousQueries = (datasetId) => {
-  return async (dispatch) => {
-    dispatch(loadPreviousQueriesStart());
+export type PreviousQueryListActions = ActionType<
+  | typeof loadQueriesSuccess
+  | typeof loadQuerySuccess
+  | typeof patchQuerySuccess
+  | typeof deleteQuerySuccess
+  | typeof addFolder
+  | typeof removeFolder
+  | typeof loadFormConfigsSuccess
+  | typeof patchFormConfigSuccess
+  | typeof deleteFormConfigSuccess
+>;
 
+export const loadQueriesSuccess = createAction("queries/LOAD_QUERIES_SUCCESS")<{
+  data: GetQueriesResponseT;
+}>();
+
+export const useLoadQueries = () => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const getQueries = useGetQueries();
+
+  const [loading, setLoading] = useState(false);
+
+  const loadQueries = useCallback(
+    async (datasetId: DatasetT["id"]) => {
+      setLoading(true);
+      try {
+        const data = await getQueries(datasetId);
+
+        dispatch(loadQueriesSuccess({ data }));
+      } catch (e) {
+        dispatch(
+          setMessage({
+            message: t("previousQueries.error"),
+            type: SnackMessageType.ERROR,
+          }),
+        );
+      }
+      setLoading(false);
+    },
+    [dispatch, getQueries, t],
+  );
+
+  return {
+    loading,
+    loadQueries,
+  };
+};
+
+export const loadQuerySuccess = createAction("queries/LOAD_QUERY_SUCCESS")<{
+  id: QueryIdT;
+  data: GetQueryResponseT;
+}>();
+
+export const useLoadQuery = () => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const getQuery = useGetQuery();
+
+  const [loading, setLoading] = useState(false);
+
+  const loadQuery = useCallback(
+    async (queryId: PreviousQueryT["id"]) => {
+      setLoading(true);
+      try {
+        const query = await getQuery(queryId);
+
+        dispatch(loadQuerySuccess({ id: queryId, data: query }));
+      } catch (e) {
+        dispatch(
+          setMessage({
+            message: t("previousQuery.loadError"),
+            type: SnackMessageType.ERROR,
+          }),
+        );
+      }
+      setLoading(false);
+    },
+    [dispatch, getQuery, t],
+  );
+
+  return {
+    loading,
+    loadQuery,
+  };
+};
+
+export const patchQuerySuccess = createAction("query/UPDATE_SUCCESS")<{
+  id: PreviousQueryT["id"];
+  data: Partial<PreviousQueryT>;
+}>();
+
+export const useUpdateQuery = () => {
+  const dispatch = useDispatch();
+  const patchQuery = usePatchQuery();
+
+  const [loading, setLoading] = useState(false);
+
+  const updateQuery = async (
+    id: QueryIdT,
+    attributes: {
+      shared?: boolean;
+      groups?: string[];
+      label?: string;
+      tags?: string[];
+    },
+    errorMessage: string,
+  ) => {
+    setLoading(true);
     try {
-      const result = await api.getStoredQueries(datasetId);
+      await patchQuery(id, attributes);
 
-      return dispatch(loadPreviousQueriesSuccess(result));
+      dispatch(patchQuerySuccess({ id, data: attributes }));
     } catch (e) {
-      dispatch(setMessage("previousQueries.error"));
-
-      return dispatch(loadPreviousQueriesError(e));
+      dispatch(
+        setMessage({
+          message: errorMessage,
+          type: SnackMessageType.ERROR,
+        }),
+      );
     }
+    setLoading(false);
   };
+
+  return { loading, updateQuery };
 };
 
-export const loadPreviousQueryStart = (queryId) => ({
-  type: LOAD_PREVIOUS_QUERY_START,
-  payload: { queryId },
-});
-export const loadPreviousQuerySuccess = (queryId, res) =>
-  defaultSuccess(LOAD_PREVIOUS_QUERY_SUCCESS, res, { queryId });
-export const loadPreviousQueryError = (queryId, err) =>
-  defaultError(LOAD_PREVIOUS_QUERY_ERROR, err, { queryId });
+export const deleteQuerySuccess = createAction("queries/DELETE_QUERY_SUCCESS")<{
+  queryId: string;
+}>();
 
-export const loadPreviousQuery = (
-  datasetId: DatasetIdT,
-  queryId: PreviousQueryIdT
-) => {
-  return (dispatch) => {
-    dispatch(loadPreviousQueryStart(queryId));
+export const useRemoveQuery = () => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const deleteQuery = useDeleteQuery();
+  const [loading, setLoading] = useState(false);
 
-    return api.getStoredQuery(datasetId, queryId).then(
-      (r) => dispatch(loadPreviousQuerySuccess(queryId, r)),
-      (e) =>
+  const removeQuery = async (queryId: PreviousQueryT["id"]) => {
+    setLoading(true);
+    try {
+      await deleteQuery(queryId);
+
+      dispatch(deleteQuerySuccess({ queryId }));
+    } catch (e) {
+      dispatch(
+        setMessage({
+          message: t("previousQuery.deleteError"),
+          type: SnackMessageType.ERROR,
+        }),
+      );
+    }
+    setLoading(false);
+  };
+
+  return { loading, removeQuery };
+};
+
+// ---------------------
+// Local folders
+// ---------------------
+
+export const addFolder = createAction("queries/ADD_FOLDER")<{
+  folderName: string;
+}>();
+export const removeFolder = createAction("queries/REMOVE_FOLDER")<{
+  folderName: string;
+}>();
+
+// ---------------------
+// FORM CONFIGS
+// ---------------------
+
+export const loadFormConfigsSuccess = createAction(
+  "form-configs/LOAD_SUCCESS",
+)<{ data: FormConfigT[] }>();
+
+export const useLoadFormConfigs = () => {
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState<boolean>(false);
+  const dispatch = useDispatch();
+  const getFormConfigs = useGetFormConfigs();
+
+  const loadFormConfigs = useCallback(
+    async (datasetId: DatasetT["id"]) => {
+      setLoading(true);
+      try {
+        const data = await getFormConfigs(datasetId);
+
+        dispatch(loadFormConfigsSuccess({ data }));
+      } catch (e) {
         dispatch(
-          loadPreviousQueryError(queryId, {
-            message: T.translate("previousQuery.loadError"),
-          })
-        )
-    );
+          setMessage({
+            message: t("formConfigs.error"),
+            type: SnackMessageType.ERROR,
+          }),
+        );
+      }
+      setLoading(false);
+    },
+    [dispatch, getFormConfigs, t],
+  );
+
+  return {
+    loading,
+    loadFormConfigs,
   };
 };
 
-export const toggleEditPreviousQueryLabel = (queryId) => ({
-  type: TOGGLE_EDIT_PREVIOUS_QUERY_LABEL,
-  payload: { queryId },
-});
+export const patchFormConfigSuccess = createAction(
+  "form-config/UPDATE_SUCCESS",
+)<{ id: FormConfigT["id"]; data: Partial<FormConfigT> }>();
 
-export const renamePreviousQueryStart = (queryId) => ({
-  type: RENAME_PREVIOUS_QUERY_START,
-  payload: { queryId },
-});
-export const renamePreviousQuerySuccess = (queryId, label, res) =>
-  defaultSuccess(RENAME_PREVIOUS_QUERY_SUCCESS, res, { queryId, label });
-export const renamePreviousQueryError = (queryId, err) =>
-  defaultError(RENAME_PREVIOUS_QUERY_ERROR, err, { queryId });
+export const useLoadFormConfig = () => {
+  const { t } = useTranslation();
+  const datasetId = useDatasetId();
+  const [loading, setLoading] = useState<boolean>(false);
+  const dispatch = useDispatch();
+  const getFormConfig = useGetFormConfig();
 
-export const renamePreviousQuery = (datasetId, queryId, label) => {
-  return (dispatch) => {
-    dispatch(renamePreviousQueryStart(queryId));
+  const loadFormConfig = useCallback(
+    async (id: string) => {
+      if (!datasetId) return;
 
-    return api.patchStoredQuery(datasetId, queryId, { label }).then(
-      (r) => {
-        dispatch(renamePreviousQuerySuccess(queryId, label, r));
-        dispatch(toggleEditPreviousQueryLabel(queryId));
-      },
-      (e) =>
+      setLoading(true);
+      try {
+        const data = await getFormConfig(id);
+
+        dispatch(patchFormConfigSuccess({ id, data }));
+      } catch (e) {
         dispatch(
-          renamePreviousQueryError(queryId, {
-            message: T.translate("previousQuery.renameError"),
-          })
-        )
-    );
+          setMessage({
+            message: t("formConfig.loadError"),
+            type: SnackMessageType.ERROR,
+          }),
+        );
+      }
+      setLoading(false);
+    },
+    [t, getFormConfig, dispatch, datasetId],
+  );
+
+  return {
+    loading,
+    loadFormConfig,
   };
 };
 
-export const toggleEditPreviousQueryTags = (queryId) => ({
-  type: TOGGLE_EDIT_PREVIOUS_QUERY_TAGS,
-  payload: { queryId },
-});
+export const useUpdateFormConfig = () => {
+  const dispatch = useDispatch();
+  const patchFormConfig = usePatchFormConfig();
 
-export const retagPreviousQueryStart = (queryId) => ({
-  type: RETAG_PREVIOUS_QUERY_START,
-  payload: { queryId },
-});
-export const retagPreviousQuerySuccess = (queryId, tags, res) =>
-  defaultSuccess(RETAG_PREVIOUS_QUERY_SUCCESS, res, { queryId, tags });
-export const retagPreviousQueryError = (queryId, err) =>
-  defaultError(RETAG_PREVIOUS_QUERY_ERROR, err, { queryId });
+  const [loading, setLoading] = useState(false);
 
-export const retagPreviousQuery = (datasetId, queryId, tags) => {
-  return (dispatch) => {
-    dispatch(retagPreviousQueryStart(queryId));
+  const updateFormConfig = async (
+    configId: string,
+    attributes: {
+      shared?: boolean;
+      groups?: string[];
+      label?: string;
+      tags?: string[];
+    },
+    errorMessage: string,
+  ) => {
+    setLoading(true);
+    try {
+      await patchFormConfig(configId, attributes);
 
-    return api.patchStoredQuery(datasetId, queryId, { tags }).then(
-      (r) => {
-        dispatch(retagPreviousQuerySuccess(queryId, tags, r));
-        dispatch(toggleEditPreviousQueryTags(queryId));
-      },
-      (e) =>
-        dispatch(
-          retagPreviousQueryError(queryId, {
-            message: T.translate("previousQuery.retagError"),
-          })
-        )
-    );
+      dispatch(patchFormConfigSuccess({ id: configId, data: attributes }));
+    } catch (e) {
+      dispatch(
+        setMessage({
+          message: errorMessage,
+          type: SnackMessageType.ERROR,
+        }),
+      );
+    }
+    setLoading(false);
   };
+
+  return { loading, updateFormConfig };
 };
 
-export const sharePreviousQuerySuccess = (
-  queryId: string,
-  groups: PreviousQueryIdT[]
-) =>
-  defaultSuccess(TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS, null, {
-    queryId,
-    groups,
-  });
+export const deleteFormConfigSuccess = createAction(
+  "form-config/DELETE_SUCCESS",
+)<{ configId: string }>();
 
-export const deletePreviousQuerySuccess = (queryId: string) =>
-  defaultSuccess(DELETE_PREVIOUS_QUERY_SUCCESS, null, { queryId });
+export const useRemoveFormConfig = () => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const deleteFormConfig = useDeleteFormConfig();
+
+  const [loading, setLoading] = useState(false);
+
+  const removeFormConfig = async (configId: string) => {
+    setLoading(true);
+    try {
+      await deleteFormConfig(configId);
+
+      dispatch(deleteFormConfigSuccess({ configId }));
+    } catch (e) {
+      dispatch(
+        setMessage({
+          message: t("formConfig.deleteError"),
+          type: SnackMessageType.ERROR,
+        }),
+      );
+    }
+    setLoading(false);
+  };
+
+  return { loading, removeFormConfig };
+};

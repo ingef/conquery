@@ -1,22 +1,23 @@
 package com.bakdata.conquery.io.mina;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.github.powerlibraries.io.Out;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.AttributeKey;
 import org.apache.mina.core.session.IoSession;
@@ -29,6 +30,7 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 	private static final AttributeKey MESSAGE_MANAGER = new AttributeKey(BinaryJacksonCoder.class, "messageManager");
 	
 	private final CQCoder<?> coder;
+	private final ObjectMapper mapper;
 	
 	@Override
 	protected boolean doDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out) {
@@ -57,35 +59,15 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 			try {
 				out.write(coder.decode(chunkedMessage));
 			} catch (Exception e) {
-				log.error("Failed while deserializing the message "
-						+ chunkedMessage
-						+ ":'"
-						+ JacksonUtil.toJsonDebug(chunkedMessage)
-						+ "'.\n\tI tried to create a dump as "
-						+ id
-						+ ".json"
-					, e
+				log.error(
+						"Failed while deserializing the message {}: `{}` (Trying to create a dump as {}.json",
+						chunkedMessage,
+						JacksonUtil.toJsonDebug(chunkedMessage),
+						id,
+						e
 				);
-				
-				try (InputStream is = chunkedMessage.createInputStream()) {
-					JsonNode tree = Jackson.BINARY_MAPPER.readTree(is);
-					try(OutputStream os = Out.file("dumps/reading_"+id+"_"+Math.random()+".json").asStream()) {
-						Jackson.MAPPER.copy().enable(SerializationFeature.INDENT_OUTPUT).writeValue(os, tree);
-					}
-				} catch (Exception e1) {
-					log.error("Failed to write the error json dump "+id+".json, trying as bin", e1);
-					if(log.isTraceEnabled()) {
-						try (InputStream is = chunkedMessage.createInputStream()) {
-							File dumps = new File("dumps");
-							dumps.mkdirs();
-							try(OutputStream os = Out.file(dumps, "reading_"+id+"_"+Math.random()+".bin").asStream()) {
-								IOUtils.copy(is, os);
-							}
-						} catch (Exception e2) {
-							log.error("Failed to write the error json dump "+id+".bin", e2);
-						}
-					}
-				}
+
+				dumpFailed(id, chunkedMessage.createInputStream());
 			}
 		}
 		//if not the last part of the message we just store it
@@ -94,6 +76,22 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 		}
 
 		return true;
+	}
+
+	private void dumpFailed(UUID id, InputStream inputStream) {
+		Path dumps = Path.of("dumps");
+		final File dumpFile = dumps.resolve("reading_" + id + "_" + Math.random() + ".json").toFile();
+
+		try (InputStream is = inputStream) {
+			Files.createDirectories(dumps);
+
+			JsonNode tree = mapper.readTree(is);
+			try(OutputStream os = new FileOutputStream(dumpFile)) {
+				mapper.copy().enable(SerializationFeature.INDENT_OUTPUT).writeValue(os, tree);
+			}
+		} catch (Exception exception) {
+			log.error("Failed to write the error json dump {}.json", id, exception);
+		}
 	}
 
 	private MessageManager getMessageManager(IoSession session) {

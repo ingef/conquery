@@ -1,30 +1,40 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.IntStream;
+import java.util.Set;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.serializer.Int2IntArrayMapDeserializer;
-import com.bakdata.conquery.io.jackson.serializer.Int2IntMapSerializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.events.stores.ColumnStore;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.stores.root.BooleanStore;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.DateRangeStore;
+import com.bakdata.conquery.models.events.stores.root.DateStore;
+import com.bakdata.conquery.models.events.stores.root.DecimalStore;
+import com.bakdata.conquery.models.events.stores.root.IntegerStore;
+import com.bakdata.conquery.models.events.stores.root.MoneyStore;
+import com.bakdata.conquery.models.events.stores.root.RealStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import io.dropwizard.validation.ValidationMethod;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -40,29 +50,51 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @ToString(of = {"numberOfEvents", "stores"}, callSuper = true)
-@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-public class Bucket extends IdentifiableImpl<BucketId> {
+@AllArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator}, access = AccessLevel.PROTECTED)
+public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIdentifiable<BucketId> {
 
 	@Min(0)
 	private final int bucket;
+
+	private final int root;
+
 	@Min(0)
 	private final int numberOfEvents;
-	private final ColumnStore<?>[] stores;
+
+
+	@JsonManagedReference
+	@Setter(AccessLevel.PROTECTED)
+	private ColumnStore[] stores;
+
+	//TODO consider usage of SortedSet but that would require custom deserializer, sorted set would have the benefit, that iteration of entities would also conform to layout of data giving some performance gains to CBlocks and Matching Stats
+	private final Set<Integer> entities;
+
 	/**
 	 * start of each Entity in {@code stores}.
 	 */
-	@JsonSerialize(using = Int2IntMapSerializer.class)
-	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
-	private final Int2IntMap start;
+	private final int[] start;
+
 	/**
 	 * Number of events per Entity in {@code stores}.
 	 */
-	@JsonSerialize(using = Int2IntMapSerializer.class)
-	@JsonDeserialize(using = Int2IntArrayMapDeserializer.class)
-	private final Int2IntMap length;
-	private final int bucketSize;
+	private final int[] ends;
+
 	@NsIdRef
 	private final Import imp;
+
+
+	@JsonIgnore
+	@ValidationMethod(message = "Number of events does not match to the number of stores")
+	public boolean isNumberOfEventsEqualsNumberOfStores() {
+		return Arrays.stream(stores).allMatch(columnStore -> columnStore.getLines() == getNumberOfEvents());
+	}
+
+
+	@JsonIgnore
+	public Table getTable() {
+		return imp.getTable();
+	}
 
 	@Override
 	public BucketId createId() {
@@ -73,81 +105,79 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 	 * Iterate entities
 	 */
 	public Collection<Integer> entities() {
-		return start.keySet();
+		return entities;
 	}
 
 	public boolean containsEntity(int entity) {
-		return start.containsKey(entity);
-	}
-
-	public Iterable<BucketEntry> entries() {
-		return () -> start.keySet()
-						  .stream()
-						  .flatMap(entity -> IntStream.range(getEntityStart(entity), getEntityEnd(entity))
-													  .mapToObj(e -> new BucketEntry(entity, e))
-						  )
-						  .iterator();
+		return getEntityStart(entity) != -1;
 	}
 
 	public int getEntityStart(int entityId) {
-		return start.get(entityId);
+		return start[getEntityIndex(entityId)];
+	}
+
+	public int getEntityIndex(int entityId) {
+		return entityId - root;
 	}
 
 	public int getEntityEnd(int entityId) {
-		return start.get(entityId) + length.get(entityId);
+		return ends[getEntityIndex(entityId)];
 	}
 
 	public final boolean has(int event, Column column) {
-		return stores[column.getPosition()].has(event);
+		return getStore(column).has(event);
 	}
 
 	public int getString(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getString(event);
+		return ((StringStore) getStore(column)).getString(event);
+	}
+
+	public ColumnStore getStore(@NotNull Column column) {
+		return stores[column.getPosition()];
 	}
 
 	public long getInteger(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getInteger(event);
+		return ((IntegerStore) getStore(column)).getInteger(event);
 	}
 
 	public boolean getBoolean(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getBoolean(event);
+		return ((BooleanStore) getStore(column)).getBoolean(event);
 	}
 
 	public double getReal(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getReal(event);
+		return ((RealStore) getStore(column)).getReal(event);
 	}
 
 	public BigDecimal getDecimal(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getDecimal(event);
+		return ((DecimalStore) getStore(column)).getDecimal(event);
 	}
 
 	public long getMoney(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getMoney(event);
+		return ((MoneyStore) getStore(column)).getMoney(event);
 	}
 
 	public int getDate(int event, @NotNull Column column) {
-		return stores[column.getPosition()].getDate(event);
-	}
-
-	public CDateRange getAsDateRange(int event, Column currentColumn) {
-		return getDateRange(event, currentColumn);
+		return ((DateStore) getStore(column)).getDate(event);
 	}
 
 	public CDateRange getDateRange(int event, Column column) {
-		return stores[column.getPosition()].getDateRange(event);
-	}
-
-	public Object getAsObject(int event, @NotNull Column column) {
-		return stores[column.getPosition()].get(event);
+		return ((DateRangeStore) getStore(column)).getDateRange(event);
 	}
 
 	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
-		return dateRanges.intersects(stores[column.getPosition()].getDateRange(event));
+		return dateRanges.intersects(getAsDateRange(event, column));
+	}
+
+	public CDateRange getAsDateRange(int event, Column column) {
+		return switch (column.getType()) {
+			case DATE -> CDateRange.exactly(((DateStore) getStore(column)).getDate(event));
+			case DATE_RANGE -> getDateRange(event, column);
+			default -> throw new IllegalStateException("Column is not of DateCompatible type.");
+		};
 	}
 
 	public Object createScriptValue(int event, @NotNull Column column) {
-		final ColumnStore<?> store = stores[column.getPosition()];
-		return ((ColumnStore) store).createScriptValue(store.get(event));
+		return getStore(column).createScriptValue(event);
 	}
 
 	public Map<String, Object> calculateMap(int event) {
@@ -158,18 +188,19 @@ public class Bucket extends IdentifiableImpl<BucketId> {
 			if (!store.has(event)) {
 				continue;
 			}
-			// todo rework this to use table directly
-			out.put(imp.getColumns()[i].getName(), store.createScriptValue(store.get(event)));
+			out.put(getTable().getColumns()[i].getName(), store.createScriptValue(event));
 		}
 
 		return out;
 	}
 
-	public void loadDictionaries(NamespacedStorage storage) {
-		for (ColumnStore<?> store : getStores()) {
-			if (store instanceof StringType) {
-				((StringType) store).loadDictionaries(storage);
-			}
-		}
+	@JsonIgnore
+	@Override
+	public Dataset getDataset() {
+		return getTable().getDataset();
+	}
+
+	public ColumnStore getStore(@NotNull String storeName) {
+		return getStore(getTable().getColumnByName(storeName));
 	}
 }

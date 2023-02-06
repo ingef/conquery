@@ -1,139 +1,93 @@
-import React from "react";
-
-import { createConnectedQueryNodeEditor } from "../../query-node-editor/QueryNodeEditor";
-import { toUpperCaseUnderscore } from "../../common/helpers";
-
+import type { PostPrefixForSuggestionsParams } from "../../api/api";
 import {
-  selectReduxFormState,
-  selectEditedConceptPosition,
-  selectEditedConcept,
-  selectSuggestions,
-  selectFormContextState,
-} from "../stateSelectors";
-import { createFormSuggestionActions } from "../form-suggestions/actions";
+  ConceptIdT,
+  PostFilterSuggestionsResponseT,
+  SelectOptionT,
+  SelectorResultType,
+} from "../../api/types";
+import { toUpperCaseUnderscore } from "../../common/helpers/commonHelper";
+import type { NodeResetConfig } from "../../model/node";
 import { tableIsEditable } from "../../model/table";
+import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
+import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
+import type { ModeT } from "../../ui-components/InputRange";
+import type { EditedFormQueryNodePosition } from "../form-concept-group/FormConceptGroup";
 
-export type PropsType = {
+interface PropsT {
   formType: string;
   fieldName: string;
-  blacklistedTables?: string[];
-  whitelistedTables?: string[];
-  datasetId: number;
-  onCloseModal: Function;
-  onUpdateLabel: Function;
-  onToggleTable: Function;
-  onDropConcept: Function;
-  onSetFilterValue: Function;
-  onSwitchFilterMode: Function;
-  onResetAllFilters: Function;
-};
+  nodePosition: EditedFormQueryNodePosition;
+  node: DragItemConceptTreeNode;
+  blocklistedTables?: string[];
+  allowlistedTables?: string[];
+  allowlistedSelects?: SelectorResultType[];
+  blocklistedSelects?: SelectorResultType[];
+  onCloseModal: () => void;
+  onUpdateLabel: (label: string) => void;
+  onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
+  onDropConcept: (concept: DragItemConceptTreeNode) => void;
+  onRemoveConcept: (conceptId: ConceptIdT) => void;
+  onSetFilterValue: (
+    tableIdx: number,
+    filterIdx: number,
+    filterValue: any,
+  ) => void;
+  onSwitchFilterMode: (
+    tableIdx: number,
+    filterIdx: number,
+    mode: ModeT,
+  ) => void;
+  onResetAllSettings: (config: NodeResetConfig) => void;
+  onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
+  onSelectSelects: (selectedSelects: SelectOptionT[]) => void;
+  onSelectTableSelects: (
+    tableIdx: number,
+    selectedSelects: SelectOptionT[],
+  ) => void;
+  onLoadFilterSuggestions: (
+    params: PostPrefixForSuggestionsParams,
+    tableIdx: number,
+    filterIdx: number,
+    config?: { returnOnly?: boolean },
+  ) => Promise<PostFilterSuggestionsResponseT | null>;
+  onSetDateColumn: (tableIdx: number, dateColumnValue: string) => void;
+}
 
-const mapStateToProps = (state, ownProps) => {
-  const reduxFormState = selectReduxFormState(state);
-  const conceptPosition = selectEditedConceptPosition(
-    reduxFormState,
-    ownProps.formType,
-    ownProps.fieldName
-  );
-
-  const node = conceptPosition
-    ? selectEditedConcept(
-        reduxFormState,
-        ownProps.formType,
-        ownProps.fieldName,
-        conceptPosition,
-        ownProps.blacklistedTables,
-        ownProps.whitelistedTables
-      )
-    : null;
-
-  const { andIdx, orIdx } = conceptPosition || {};
-
+const FormQueryNodeEditor = (props: PropsT) => {
   const showTables =
-    node &&
-    node.tables &&
-    (node.tables.length > 1 ||
-      node.tables.some((table) => tableIsEditable(table)));
+    !!props.node &&
+    props.node.tables &&
+    props.node.tables.length > 1 &&
+    props.node.tables.some((table) => tableIsEditable(table));
 
-  const formState = selectFormContextState(state, ownProps.formType);
-  const suggestions = conceptPosition
-    ? selectSuggestions(formState, ownProps.fieldName, conceptPosition)
-    : null;
+  if (!props.node) {
+    return null;
+  }
 
-  return {
-    node,
-    andIdx,
-    orIdx,
-    editorState: formState[ownProps.fieldName],
-    isExcludeTimestampsPossible: false,
-    isExcludeFromSecondaryIdQueryPossible: false,
-    showTables,
-    blacklistedTables: ownProps.blacklistedTables,
-    whitelistedTables: ownProps.whitelistedTables,
-    suggestions,
-    currencyConfig: state.startup.config.currency,
-
-    onToggleTimestamps: () => {},
-    onCloseModal: () => ownProps.onCloseModal(andIdx, orIdx),
-    onUpdateLabel: (label) => ownProps.onUpdateLabel(andIdx, orIdx, label),
-    onDropConcept: (concept) => ownProps.onDropConcept(andIdx, orIdx, concept),
-    onRemoveConcept: (conceptId) =>
-      ownProps.onRemoveConcept(andIdx, orIdx, conceptId),
-    onToggleTable: (...args) => ownProps.onToggleTable(andIdx, orIdx, ...args),
-    onSelectSelects: (...args) =>
-      ownProps.onSelectSelects(andIdx, orIdx, ...args),
-    onSelectTableSelects: (...args) =>
-      ownProps.onSelectTableSelects(andIdx, orIdx, ...args),
-    onSetFilterValue: (...args) =>
-      ownProps.onSetFilterValue(andIdx, orIdx, ...args),
-    onSwitchFilterMode: (...args) =>
-      ownProps.onSwitchFilterMode(andIdx, orIdx, ...args),
-    onResetAllFilters: () => ownProps.onResetAllFilters(andIdx, orIdx),
-    onSetDateColumn: (...args) =>
-      ownProps.onSetDateColumn(andIdx, orIdx, ...args),
-  };
-};
-
-const mapDispatchToProps = (dispatch, ownProps) => {
-  const { loadFormFilterSuggestions } = createFormSuggestionActions(
-    ownProps.formType,
-    ownProps.fieldName
+  return (
+    <QueryNodeEditor
+      name={`${props.formType}_${toUpperCaseUnderscore(props.fieldName)}`}
+      onLoadFilterSuggestions={props.onLoadFilterSuggestions}
+      node={props.node}
+      showTables={showTables}
+      blocklistedTables={props.blocklistedTables}
+      allowlistedTables={props.allowlistedTables}
+      blocklistedSelects={props.blocklistedSelects}
+      allowlistedSelects={props.allowlistedSelects}
+      onCloseModal={props.onCloseModal}
+      onUpdateLabel={props.onUpdateLabel}
+      onDropConcept={props.onDropConcept}
+      onRemoveConcept={props.onRemoveConcept}
+      onToggleTable={props.onToggleTable}
+      onSelectSelects={props.onSelectSelects}
+      onSelectTableSelects={props.onSelectTableSelects}
+      onSetFilterValue={props.onSetFilterValue}
+      onSwitchFilterMode={props.onSwitchFilterMode}
+      onResetTable={props.onResetTable}
+      onResetAllSettings={props.onResetAllSettings}
+      onSetDateColumn={props.onSetDateColumn}
+    />
   );
-
-  return {
-    onLoadFilterSuggestions: (...params) => {
-      return dispatch(
-        loadFormFilterSuggestions(
-          ownProps.formType,
-          ownProps.fieldName,
-          ...params
-        )
-      );
-    },
-  };
 };
 
-const mergeProps = (stateProps, dispatchProps, ownProps) => ({
-  ...ownProps,
-  ...stateProps,
-  ...dispatchProps,
-  onLoadFilterSuggestions: (...params) =>
-    dispatchProps.onLoadFilterSuggestions(
-      ...params,
-      stateProps.andIdx,
-      stateProps.orIdx
-    ),
-});
-
-const QueryNodeEditor = createConnectedQueryNodeEditor(
-  mapStateToProps,
-  mapDispatchToProps,
-  mergeProps
-);
-
-export const FormQueryNodeEditor = (props: PropsType) => (
-  <QueryNodeEditor
-    name={`${props.formType}_${toUpperCaseUnderscore(props.fieldName)}`}
-    {...props}
-  />
-);
+export default FormQueryNodeEditor;

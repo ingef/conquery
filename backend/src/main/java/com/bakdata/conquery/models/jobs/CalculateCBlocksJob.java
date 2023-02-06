@@ -2,18 +2,20 @@ package com.bakdata.conquery.models.jobs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.BucketEntry;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -32,99 +34,42 @@ public class CalculateCBlocksJob extends Job {
 	private final List<CalculationInformation> infos = new ArrayList<>();
 	private final WorkerStorage storage;
 	private final BucketManager bucketManager;
-	private final Connector connector;
-	private final Table table;
+	private final ExecutorService executorService;
 
 	@Override
 	public String getLabel() {
-		return "Calculate " + infos.size() + " CBlocks for " + connector.getId();
+		return "Calculate CBlocks[" + infos.size() + "]";
 	}
 
-	public void addCBlock(Import imp, Bucket bucket, CBlockId cBlockId) {
-		infos.add(new CalculationInformation(bucket, cBlockId));
+	public void addCBlock(Bucket bucket, ConceptTreeConnector connector) {
+		infos.add(new CalculationInformation(connector, bucket));
 	}
 
 	@Override
 	public void execute() throws Exception {
+		if(infos.isEmpty()){
+			return;
+		}
+
 		getProgressReporter().setMax(infos.size());
 
-		// todo compute in parallel.
-		for (CalculationInformation info : infos) {
-			try {
-				if (bucketManager.hasCBlock(info.getCBlockId())) {
-					log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.");
-					continue;
-				}
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(this.executorService);
 
-				CBlock cBlock = createCBlock(connector, info);
-				cBlock.initIndizes(info.getBucket().getBucketSize());
+		final List<? extends ListenableFuture<?>> futures = infos.stream()
+				.map(this::createInformationProcessor)
+				.map(executorService::submit)
+				.peek(f -> f.addListener(this::incrementProgressReporter, MoreExecutors.directExecutor()))
+				.collect(Collectors.toList());
 
-				connector.calculateCBlock(cBlock, info.getBucket());
-
-				calculateEntityDateIndices(cBlock, info.getBucket());
-				bucketManager.addCalculatedCBlock(cBlock);
-				storage.addCBlock(cBlock);
-			}
-			catch (Exception e) {
-				throw new Exception(
-						String.format(
-								"Exception in CalculateCBlocksJob (CBlock=%s, connector=%s, table=%s)",
-								info.getCBlockId(),
-								connector,
-								table
-						),
-						e
-				);
-			}
-			finally {
-				getProgressReporter().report(1);
-			}
-		}
-		getProgressReporter().done();
+		Futures.allAsList(futures).get();
 	}
 
-	private static CBlock createCBlock(Connector connector, CalculationInformation info) {
-		return new CBlock(info.getBucket().getId(), connector.getId());
+	private CalculationInformationProcessor createInformationProcessor(CalculationInformation info) {
+		return new CalculationInformationProcessor(info, bucketManager, storage);
 	}
 
-	/**
-	 * For every included entity, calculate min and max and store them as statistics in the CBlock.
-	 */
-	private void calculateEntityDateIndices(CBlock cBlock, Bucket bucket) {
-		Table table = storage.getTable(bucket.getImp().getTable());
-		for (Column column : table.getColumns()) {
-			if (!column.getType().isDateCompatible()) {
-				continue;
-			}
-
-			for (BucketEntry entry : bucket.entries()) {
-				if (!bucket.has(entry.getEvent(), column)) {
-					continue;
-				}
-
-				CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
-
-				if (range.hasLowerBound()) {
-					int min = Math.min(
-							cBlock.getMinDate().getOrDefault(entry.getEntity(), Integer.MAX_VALUE),
-							range.getMinValue()
-					);
-
-					cBlock.getMinDate()
-						  .put(entry.getEntity(), min);
-				}
-
-				if (range.hasUpperBound()) {
-					int max = Math.max(
-							cBlock.getMaxDate().getOrDefault(entry.getEntity(), Integer.MIN_VALUE),
-							range.getMaxValue()
-					);
-
-					cBlock.getMaxDate()
-						  .put(entry.getEntity(), max);
-				}
-			}
-		}
+	private void incrementProgressReporter() {
+		getProgressReporter().report(1);
 	}
 
 	public boolean isEmpty() {
@@ -135,8 +80,47 @@ public class CalculateCBlocksJob extends Job {
 	@Getter
 	@Setter
 	private static class CalculationInformation {
-
+		private final ConceptTreeConnector connector;
 		private final Bucket bucket;
-		private final CBlockId cBlockId;
+
+		public CBlockId getCBlockId() {
+			return new CBlockId(getBucket().getId(), getConnector().getId());
+		}
+	}
+
+
+	@RequiredArgsConstructor
+	private static class CalculationInformationProcessor implements Runnable {
+		private final CalculationInformation info;
+		private final BucketManager bucketManager;
+		private final WorkerStorage storage;
+
+		@Override
+		public void run() {
+			try {
+				try(IdMutex.Locked ignored = bucketManager.acquireLock(info.connector)) {
+					if (bucketManager.hasCBlock(info.getCBlockId())) {
+						log.trace("Skipping calculation of CBlock[{}] because its already present in the BucketManager.", info.getCBlockId());
+						return;
+					}
+
+					CBlock cBlock = CBlock.createCBlock(info.getConnector(), info.getBucket(), bucketManager.getEntityBucketSize());
+
+					bucketManager.addCalculatedCBlock(cBlock);
+					storage.addCBlock(cBlock);
+				}
+			}
+			catch (Exception e) {
+				throw new RuntimeException(
+						String.format(
+								"Exception in CalculateCBlocksJob (CBlock=%s, connector=%s)",
+								info.getCBlockId(),
+								info.getConnector()
+						),
+						e
+				);
+			}
+		}
+
 	}
 }

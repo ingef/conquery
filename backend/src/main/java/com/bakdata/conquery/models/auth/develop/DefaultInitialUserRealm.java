@@ -1,21 +1,16 @@
 package com.bakdata.conquery.models.auth.develop;
 
-import java.util.Objects;
-
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.HttpHeaders;
-
-import com.bakdata.conquery.models.auth.AuthorizationConfig;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.realm.AuthenticatingRealm;
 
 /**
  * This realm authenticates requests as if they are effected by the first
@@ -26,13 +21,10 @@ import org.apache.shiro.authc.AuthenticationToken;
  * 
  */
 @Slf4j
-public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
+public class DefaultInitialUserRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
 
-	private static final String UID_QUERY_STRING_PARAMETER = "access_token";
 
-	// Not allowed to be empty to take the first user as default
-	private final User defaultUser = Objects.requireNonNull(ConqueryConfig.getInstance()
-		.getAuthorization().getInitialUsers().get(0).getUser(), "There must be at least one initial user configured.");
+	public final MetaStorage storage;
 
 	/**
 	 * The warning that is displayed, when the realm is instantiated.
@@ -54,55 +46,20 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 	/**
 	 * Standard constructor.
 	 */
-	public DefaultInitialUserRealm() {
+	public DefaultInitialUserRealm(MetaStorage storage) {
 		log.warn(WARNING);
+		this.storage = storage;
 		this.setAuthenticationTokenClass(DevelopmentToken.class);
-		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
+		this.setCredentialsMatcher(SkippingCredentialsMatcher.INSTANCE);
 	}
 
 	@Override
-	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	public ConqueryAuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if (!(token instanceof DevelopmentToken)) {
 			return null;
 		}
 		DevelopmentToken devToken = (DevelopmentToken) token;
-		return new ConqueryAuthenticationInfo(devToken.getPrincipal(), devToken.getCredentials(), this, true);
-	}
-
-	/**
-	 * Tries to extract a plain {@link UserId} from the request to submit it for the authentication process.
-	 */
-	@Override
-	public AuthenticationToken extractToken(ContainerRequestContext requestContext) {
-		// Check if the developer passed a UserId under whose the Request should be
-		// executed
-
-		// Check the Authorization header for a String which can be parsed as a UserId
-		String uid = requestContext.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-
-		if (uid != null) {
-			uid = uid.replaceFirst("^Bearer ", "");
-		}
-		else {
-			// Check also the query parameter "access_token" for a UserId
-			uid = requestContext.getUriInfo().getQueryParameters().getFirst(UID_QUERY_STRING_PARAMETER);
-		}
-
-
-		UserId userId = null;
-
-		if (StringUtils.isNotEmpty(uid)) {
-			uid = uid.replaceFirst("^Bearer ", "");
-      
-			try {
-				userId = UserId.Parser.INSTANCE.parse(uid);		
-				return new DevelopmentToken(userId, uid);		
-			} catch (Exception e) {
-				// do default
-			}
-		}
-		// If nothing was found execute the request as the default user
-		userId = defaultUser.getId();
-		return new DevelopmentToken(userId, uid);
+		final User user = getUserOrThrowUnknownAccount(storage, devToken.getPrincipal());
+		return new ConqueryAuthenticationInfo(user, devToken.getCredentials(), this, true);
 	}
 }

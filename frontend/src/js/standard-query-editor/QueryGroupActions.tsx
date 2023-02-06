@@ -1,8 +1,10 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { memo } from "react";
+import { useTranslation } from "react-i18next";
+
 import IconButton from "../button/IconButton";
 import { Icon } from "../icon/FaIcon";
+import WithTooltip from "../tooltip/WithTooltip";
 
 const Actions = styled("div")`
   margin: 0 0 6px;
@@ -50,40 +52,48 @@ interface PropsT {
   onDateClick: () => void;
 }
 
-const QueryGroupActions: FC<PropsT> = ({
+const QueryGroupActions = ({
   excludeActive,
   dateActive,
   onExcludeClick,
   onDeleteGroup,
   onDateClick,
-}) => {
+}: PropsT) => {
+  const { t } = useTranslation();
+
   return (
     <Actions>
       <div>
-        <RedIconButton
-          red
-          tight
-          active={excludeActive}
-          icon="ban"
-          onClick={onExcludeClick}
-        >
-          {T.translate("queryEditor.exclude")}
-        </RedIconButton>
-        <StyledIconButton
-          active={dateActive}
-          regular
-          tight
-          icon="calendar"
-          onClick={onDateClick}
-        >
-          {T.translate("queryEditor.date")}
-        </StyledIconButton>
+        <WithTooltip text={t("help.queryEditorExclude")} lazy>
+          <RedIconButton
+            red
+            tight
+            active={excludeActive}
+            icon="ban"
+            onClick={onExcludeClick}
+          >
+            {t("queryEditor.exclude")}
+          </RedIconButton>
+        </WithTooltip>
+        <WithTooltip text={t("help.queryEditorDate")} lazy>
+          <StyledIconButton
+            active={dateActive}
+            regular
+            tight
+            icon="calendar"
+            onClick={onDateClick}
+          >
+            {t("queryEditor.date")}
+          </StyledIconButton>
+        </WithTooltip>
       </div>
       <Right>
-        <IconButton tiny icon="times" onClick={onDeleteGroup} />
+        <WithTooltip text={t("queryEditor.removeColumn")}>
+          <IconButton tiny icon="times" onClick={onDeleteGroup} />
+        </WithTooltip>
       </Right>
     </Actions>
   );
 };
 
-export default QueryGroupActions;
+export default memo(QueryGroupActions);

@@ -1,50 +1,80 @@
 package com.bakdata.conquery.models.query.filter.event;
 
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Event is included when the value in column is one of many selected.
  */
+
+@ToString(callSuper = true, of = {"column"})
 public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
-	private final int[] selectedValues;
 
 	@NotNull
 	@Getter
 	@Setter
 	private Column column;
 
+	/**
+	 * Shared between all executing Threads to maximize utilization.
+	 */
+	private ConcurrentMap<Import, int[]> selectedValuesCache;
+	private int[] selectedValues;
+
 	public MultiSelectFilterNode(Column column, String[] filterValue) {
 		super(filterValue);
 		this.column = column;
-		this.selectedValues = new int[filterValue.length];
+		selectedValuesCache = new ConcurrentHashMap<>();
+	}
+
+
+	@Override
+	public void setFilterValue(String[] strings) {
+		selectedValuesCache = new ConcurrentHashMap<>();
+		selectedValues = null;
+		super.setFilterValue(strings);
 	}
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		StringType type = (StringType) getColumn().getTypeFor(bucket);
+		selectedValues = selectedValuesCache.computeIfAbsent(bucket.getImp(),imp -> findIds(bucket, filterValue));
+	}
 
-		for (int index = 0; index < filterValue.length; index++) {
-			String select = filterValue[index];
+	private int[] findIds(Bucket bucket, String[] values) {
+		int[] selectedValues = new int[values.length];
+
+		StringStore type = (StringStore) bucket.getStore(getColumn());
+
+		for (int index = 0; index < values.length; index++) {
+			String select = values[index];
 			int parsed = type.getId(select);
 			selectedValues[index] = parsed;
 		}
+
+		return selectedValues;
 	}
 
 
 	@Override
 	public boolean checkEvent(Bucket bucket, int event) {
+		if(selectedValues == null){
+			throw new IllegalStateException("No selected values  were set.");
+		}
+
 		if (!bucket.has(event, getColumn())) {
 			return false;
 		}
@@ -61,14 +91,9 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	}
 
 	@Override
-	public MultiSelectFilterNode doClone(CloneContext ctx) {
-		return new MultiSelectFilterNode(getColumn(), filterValue);
-	}
-
-	@Override
 	public boolean isOfInterest(Bucket bucket) {
 		for (String selected : getFilterValue()) {
-			if(((StringType) bucket.getStores()[getColumn().getPosition()]).getId(selected) != -1) {
+			if(((StringStore) bucket.getStores()[getColumn().getPosition()]).getId(selected) != -1) {
 				return true;
 			}
 		}
@@ -77,8 +102,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	}
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		requiredTables.add(column.getTable().getId());
+	public void collectRequiredTables(Set<Table> requiredTables) {
+		requiredTables.add(column.getTable());
 	}
-
-}
+	}

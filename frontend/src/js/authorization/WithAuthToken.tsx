@@ -1,31 +1,38 @@
-import React, { FC } from "react";
-import { storeAuthToken, getStoredAuthToken } from "./helper";
-import { isLoginDisabled } from "../environment";
-import { useHistory } from "react-router-dom";
+import { useKeycloak } from "@react-keycloak-fork/web";
+import { FC, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
-interface PropsT {
-  location: {
-    search: Object;
-  };
-}
+import { isLoginDisabled, isIDPEnabled } from "../environment";
 
-const WithAuthToken: FC<PropsT> = ({ location, children }) => {
-  const history = useHistory();
-  const goToLogin = () => history.push("/login");
+import { AuthTokenContext } from "./AuthTokenProvider";
 
-  const { search } = location;
-  const params = new URLSearchParams(search);
-  const accessToken = params.get("access_token");
+const WithAuthToken: FC = ({ children }) => {
+  const { initialized } = useKeycloak();
+  const navigate = useNavigate();
+  const { authToken } = useContext(AuthTokenContext);
 
-  if (accessToken) storeAuthToken(accessToken);
+  const [goToLogin, setGoToLogin] = useState(false);
 
-  if (!isLoginDisabled()) {
-    const authToken = getStoredAuthToken();
+  useEffect(
+    function asyncGoToLogin() {
+      // Has to be async, because navigate as returned from useNavigate()
+      // can't be called on the first component render
+      if (goToLogin) {
+        navigate("/login");
+      }
+    },
+    [goToLogin, navigate],
+  );
 
-    if (!authToken) {
-      goToLogin();
-      return null;
+  if (isIDPEnabled && (!initialized || !authToken)) {
+    return null;
+  }
+
+  if (!isIDPEnabled && !isLoginDisabled && !authToken) {
+    if (!goToLogin) {
+      setGoToLogin(true);
     }
+    return null;
   }
 
   return <>{children}</>;

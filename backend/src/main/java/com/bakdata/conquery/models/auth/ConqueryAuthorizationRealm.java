@@ -1,11 +1,13 @@
 package com.bakdata.conquery.models.auth;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
 import java.util.Set;
 
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +26,7 @@ import org.apache.shiro.subject.PrincipalCollection;
  */
 @RequiredArgsConstructor
 public class ConqueryAuthorizationRealm extends AuthorizingRealm {
-	
+
 	public final MetaStorage storage;
 	
 	@Override
@@ -41,10 +43,10 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		Objects.requireNonNull(principals, "No principal info was provided");
-		UserId userId = (UserId) principals.getPrimaryPrincipal();
+		Subject subject = principals.oneByType(Subject.class);
 		SimpleAuthorizationInfo info = new ConqueryAuthorizationInfo();
-		
-		info.addObjectPermissions(AuthorizationHelper.getEffectiveUserPermissions(userId, storage));
+
+		info.addObjectPermissions(Collections.unmodifiableSet(subject.getUser().getEffectivePermissions()));
 		
 		return info;
 	}
@@ -117,6 +119,19 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 			objectPermissions = Sets.union(objectPermissions, (Set<Permission>)permissions);
 		}
 		
+	}
+
+	// We override this to work only on SetViews and allocate new sets
+	@Override
+	protected Collection<Permission> getPermissions(AuthorizationInfo info) {
+		// The AuthorizationInfo must be a ConqueryAuthorizationInfo and should only hold ObjectPermissions
+		Collection<Permission> perms = info.getObjectPermissions();
+
+		if (perms.isEmpty()) {
+			return Collections.emptySet();
+		} else {
+			return perms;
+		}
 	}
 
 }

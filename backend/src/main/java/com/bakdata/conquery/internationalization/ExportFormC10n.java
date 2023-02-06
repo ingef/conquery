@@ -1,5 +1,6 @@
 package com.bakdata.conquery.internationalization;
 
+import c10n.annotations.De;
 import c10n.annotations.En;
 /**
  * Cosmopolitan (C10n) internationalization provider for the export form.
@@ -7,7 +8,8 @@ import c10n.annotations.En;
  */
 public interface ExportFormC10n {
 	
-	@En("Export")
+	@En("Data Export")
+	@De("Datenexport")
 	String getType();
 
 }

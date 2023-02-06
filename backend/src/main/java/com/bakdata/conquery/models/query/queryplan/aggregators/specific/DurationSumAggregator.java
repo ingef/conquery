@@ -1,29 +1,40 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
+import lombok.ToString;
 
 /**
  * Aggregator, counting the number of days present.
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
+
+	private int realUpperBound;
 
 	public DurationSumAggregator(Column column) {
 		super(column);
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void init(Entity entity, QueryExecutionContext context) {
+		set.clear();
+		realUpperBound = context.getToday();
+	}
+
+	@Override
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		dateRestriction = ctx.getDateRestriction();
 	}
 
@@ -35,26 +46,19 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 
 		final CDateRange value = bucket.getAsDateRange(event, getColumn());
 
-		if (value.isOpen()) {
-			return;
+		set.maskedAdd(value, dateRestriction, realUpperBound);
+	}
+
+	@Override
+	public Long createAggregationResult() {
+		if (set.isEmpty() || CDate.isNegativeInfinity(set.getMinValue())) {
+			return null;
 		}
-
-
-		set.maskedAdd(value, dateRestriction);
-	}
-
-	@Override
-	public DurationSumAggregator doClone(CloneContext ctx) {
-		return new DurationSumAggregator(getColumn());
-	}
-
-	@Override
-	public Long getAggregationResult() {
-		return set.isEmpty() ? null : set.countDays();
+		return set.countDays();
 	}
 
 	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return ResultType.IntegerT.INSTANCE;
 	}
 }

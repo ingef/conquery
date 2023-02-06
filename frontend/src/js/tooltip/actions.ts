@@ -1,15 +1,20 @@
-import {
-  TOGGLE_DISPLAY_TOOLTIP,
-  DISPLAY_ADDITIONAL_INFOS,
-  TOGGLE_ADDITIONAL_INFOS
-} from "./actionTypes";
+import { ActionType, createAction } from "typesafe-actions";
 
-export const displayAdditionalInfos = (additionalInfos: Object) => ({
-  type: DISPLAY_ADDITIONAL_INFOS,
-  payload: {
-    additionalInfos
-  }
-});
+import type { AdditionalInfosType } from "./reducer";
 
-export const toggleAdditionalInfos = () => ({ type: TOGGLE_ADDITIONAL_INFOS });
-export const toggleDisplayTooltip = () => ({ type: TOGGLE_DISPLAY_TOOLTIP });
+export type TooltipActions = ActionType<
+  | typeof displayAdditionalInfos
+  | typeof toggleAdditionalInfos
+  | typeof toggleDisplayTooltip
+>;
+
+export const displayAdditionalInfos = createAction(
+  "tooltip/DISPLAY_ADDITIONAL_INFOS",
+)<{ additionalInfos: AdditionalInfosType }>();
+
+export const toggleAdditionalInfos = createAction(
+  "tooltip/TOGGLE_ADDITIONAL_INFOS",
+)();
+export const toggleDisplayTooltip = createAction(
+  "tooltip/TOGGLE_DISPLAY_TOOLTIP",
+)();

@@ -1,37 +1,49 @@
-import React from "react";
+import { useMemo } from "react";
 
-import type { SelectedSelectorType } from "./types";
-
-import { sortSelects } from "../model/select";
-
-import InputMultiSelect from "../form-components/InputMultiSelect";
+import type { SelectOptionT, SelectorResultType } from "../api/types";
+import { isSelectDisabled, sortSelects } from "../model/select";
+import { SelectedSelectorT } from "../standard-query-editor/types";
+import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
 interface PropsT {
-  selects: SelectedSelectorType[];
-  onSelectTableSelects: () => void;
-  excludeTable: boolean;
+  selects: SelectedSelectorT[];
+  blocklistedSelects?: SelectorResultType[];
+  allowlistedSelects?: SelectorResultType[];
+  onSelectTableSelects: (value: SelectOptionT[]) => void;
+  excludeTable?: boolean;
 }
 
 const TableSelects = ({
   selects,
+  blocklistedSelects,
+  allowlistedSelects,
   onSelectTableSelects,
   excludeTable,
 }: PropsT) => {
-  if (!selects || selects.length === 0) return null;
+  const options = useMemo(() => {
+    return sortSelects(selects).map((select) => ({
+      value: select.id,
+      label: select.label,
+      disabled: isSelectDisabled(
+        select,
+        blocklistedSelects,
+        allowlistedSelects,
+      ),
+    }));
+  }, [selects, allowlistedSelects, blocklistedSelects]);
+
+  const value = useMemo(() => {
+    return selects
+      .filter(({ selected }) => !!selected)
+      .map(({ id, label }) => ({ value: id, label: label }));
+  }, [selects]);
 
   return (
     <div>
       <InputMultiSelect
-        input={{
-          onChange: onSelectTableSelects,
-          value: selects
-            .filter(({ selected }) => !!selected)
-            .map(({ id, label }) => ({ value: id, label: label })),
-        }}
-        options={sortSelects(selects).map((select) => ({
-          value: select.id,
-          label: select.label,
-        }))}
+        onChange={onSelectTableSelects}
+        value={value}
+        options={options}
         disabled={excludeTable}
       />
     </div>

@@ -16,7 +16,11 @@ public interface ResultHeadersC10n {
 	@En("dates")
 	@De("Datumswerte")
 	String dates();
-	
+
+	@En("source")
+	@De("Quelle")
+	String source();
+
 	@En("event_date")
 	@De("Indexdatum")
 	String eventDate();
@@ -24,7 +28,11 @@ public interface ResultHeadersC10n {
 	@En("index")
 	@De("Index Zeiteinheit")
 	String index();
-	
+
+	@En("scope")
+	@De("Bereich")
+	String observationScope();
+
 	@En("feature_date_range")
 	@De("Vorbeobachtungszeitraum")
 	String featureDateRange();

@@ -6,15 +6,14 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "ids": [
-        "${dataset}.select"
+        "concept"
       ],
       "type": "CONCEPT",
-      "label": "select",
       "tables": [
         {
-          "id": "${dataset}.select.connector",
+          "id": "concept.connector",
           "selects": [
-            "${dataset}.select.connector.count_quarters"
+            "concept.connector.select"
           ]
         }
       ]
@@ -23,20 +22,20 @@
   },
   "concepts": [
     {
-      "label": "select",
-      "type": "VIRTUAL",
+      "name": "concept",
+      "type": "TREE",
       "connectors": [
         {
           "label": "connector",
-          "table": "table1",
+          "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "column": "table.datum"
           },
           "selects":         {
-            "name" : "count_quarters",
+            "name" : "select",
             "type": "COUNT_QUARTERS",
-            "column": "table1.behandlungsdatum"
+            "column": "table.behandlungsdatum"
           }
         }
       ]
@@ -46,7 +45,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/COUNT_QUARTERS_AGGREGATOR/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

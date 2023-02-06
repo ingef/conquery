@@ -4,22 +4,22 @@
   "expectedCsv": "tests/query/SECONDARY_ID/expected.csv",
   "query": {
     "type": "SECONDARY_ID_QUERY",
-    "secondaryId": "${dataset}.secondary",
+    "secondaryId": "secondary",
     "root": {
       "type": "AND",
       "children": [
         {
           "ids": [
-            "${dataset}.number"
+            "number"
           ],
           "type": "CONCEPT",
-          "label": "vs",
+          "excludeFromSecondaryId" : false,
           "tables": [
             {
-              "id": "${dataset}.number.number_connector",
+              "id": "number.number_connector",
               "filters": [
                 {
-                  "filter": "${dataset}.number.number_connector.value",
+                  "filter": "number.number_connector.value",
                   "type": "REAL_RANGE",
                   "value": {
                     "min": 1,
@@ -29,10 +29,10 @@
               ]
             },
             {
-              "id": "${dataset}.number.number_connector2",
+              "id": "number.number_connector2",
               "filters": [
                 {
-                  "filter": "${dataset}.number.number_connector2.value",
+                  "filter": "number.number_connector2.value",
                   "type": "REAL_RANGE",
                   "value": {
                     "min": 1,
@@ -48,17 +48,17 @@
   },
   "concepts": [
     {
-      "label": "number",
-      "type": "VIRTUAL",
+      "name": "number",
+      "type": "TREE",
       "connectors": [
         {
-          "label": "number_connector",
+          "name": "number_connector",
           "table": "table1",
           "validityDates": {
             "label": "datum",
             "column": "table1.datum"
           },
-          "filter": {
+          "filters": {
             "label": "value",
             "description": "xy",
             "column": "table1.value",
@@ -66,13 +66,13 @@
           }
         },
         {
-          "label": "number_connector2",
+          "name": "number_connector2",
           "table": "table12",
           "validityDates": {
             "label": "datum",
             "column": "table12.datum"
           },
-          "filter": {
+          "filters": {
             "label": "value",
             "description": "xy",
             "column": "table12.value",
@@ -86,6 +86,9 @@
     "secondaryIds": [
       {
         "name": "secondary"
+      },
+      {
+        "name": "ignored"
       }
     ],
     "tables": [

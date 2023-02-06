@@ -11,8 +11,7 @@
       "width": 376.46875,
       "height": 85,
       "id": 28057,
-      "label": null,
-      "isPreviousQuery": true
+      "label": null
     },
     "timeMode": "ABSOLUTE",
     "dateRange": { "min": "2019-01-01", "max": "2019-12-31" },
@@ -145,6 +144,7 @@
                     "id": "production_country",
                     "label": "Production Country",
                     "type": "BIG_MULTI_SELECT",
+                    "options": [],
                     "value": []
                   },
                   {

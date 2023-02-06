@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 

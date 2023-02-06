@@ -4,8 +4,8 @@ import static com.bakdata.conquery.resources.ResourceConstants.ROLES_PATH_ELEMEN
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 
 import java.util.Collection;
-import java.util.List;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -18,11 +18,15 @@ import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import lombok.RequiredArgsConstructor;
 
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 @Path(ROLES_PATH_ELEMENT)
-public class RoleResource extends HAdmin {
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
+public class RoleResource {
+
+	private final AdminProcessor processor;
 
 	@POST
 	public Response postRole(Role role) throws JSONException {
@@ -30,23 +34,21 @@ public class RoleResource extends HAdmin {
 		return Response.ok().build();
 	}
 
-	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	public Response postRoles(List<Role> roles) {
-		processor.addRoles(roles);
-		return Response.ok().build();
-	}
-
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
 	public Collection<Role> getRoles() {
 		return processor.getAllRoles();
 	}
 
 	@Path("{" + ROLE_ID + "}")
+	@GET
+	public Response getRole(@PathParam(ROLE_ID) Role role) throws JSONException {
+		return Response.ok(role).build();
+	}
+
+	@Path("{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRole(@PathParam(ROLE_ID) RoleId roleId) throws JSONException {
-		processor.deleteRole(roleId);
+	public Response deleteRole(@PathParam(ROLE_ID) Role role) throws JSONException {
+		processor.deleteRole(role);
 		return Response.ok().build();
 	}
 }

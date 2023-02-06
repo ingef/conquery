@@ -8,84 +8,41 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.concept.CQElement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Cloner {
-	
-	public static <T> ConqueryConfig clone(ConqueryConfig config, Map<Class<T> , T > injectables) {
+
+	public static <T> ConqueryConfig clone(ConqueryConfig config, Map<Class<T>, T> injectables, ObjectMapper mapper) {
 		try {
-			ObjectMapper mapper = Jackson.BINARY_MAPPER.copy();
-			MutableInjectableValues injectableHolder = ((MutableInjectableValues)Jackson.BINARY_MAPPER.getInjectableValues());
-			for(Entry<Class<T>, T> injectable : injectables.entrySet()) {
-				
+
+			MutableInjectableValues injectableHolder = ((MutableInjectableValues) mapper.getInjectableValues());
+			for (Entry<Class<T>, T> injectable : injectables.entrySet()) {
+
 				injectableHolder.add(injectable.getKey(), injectable.getValue());
 			}
 			ConqueryConfig clone = mapper.readValue(
-				Jackson.BINARY_MAPPER.writeValueAsBytes(config),
-				ConqueryConfig.class
+					mapper.writeValueAsBytes(config),
+					ConqueryConfig.class
 			);
 			clone.setLoggingFactory(config.getLoggingFactory());
 			return clone;
-		} catch (IOException e) {
-			throw new IllegalStateException("Failed to clone a conquery config "+config, e);
 		}
-	}
-	
-	public static StringType clone(StringType type) {
-		try {
-			StringType clone = Jackson.BINARY_MAPPER.readValue(
-				Jackson.BINARY_MAPPER.writeValueAsBytes(type),
-				StringType.class
-			);
-			return clone;
-		} catch (IOException e) {
-			throw new IllegalStateException("Failed to clone a type "+type, e);
+		catch (IOException e) {
+			throw new IllegalStateException("Failed to clone a conquery config " + config, e);
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T extends IQuery> T clone(T query, Injectable injectable) {
+	public static <T> T clone(T element, Injectable injectable, Class<T> valueType) {
 		try {
-			T clone = (T) injectable
-				.injectInto(Jackson.BINARY_MAPPER)
-				.readValue(
-					Jackson.BINARY_MAPPER.writeValueAsBytes(query),
-					IQuery.class
-				);
-			return clone;
-		} catch (IOException e) {
-			throw new IllegalStateException("Failed to clone a query "+query, e);
+			return injectable
+						   .injectIntoNew(Jackson.BINARY_MAPPER)
+						   .readValue(
+								   Jackson.BINARY_MAPPER.writeValueAsBytes(element),
+								   valueType
+						   );
 		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static <T extends CQElement> T clone(T element) {
-		try {
-			T clone = (T)Jackson.BINARY_MAPPER.readValue(
-				Jackson.BINARY_MAPPER.writeValueAsBytes(element),
-				CQElement.class
-			);
-			return clone;
-		} catch (IOException e) {
-			throw new IllegalStateException("Failed to clone the CQElement "+element, e);
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static <T extends CQElement> T clone(T element, Injectable injectable) {
-		try {
-			T clone = (T)injectable
-				.injectInto(Jackson.BINARY_MAPPER)
-				.readValue(
-					Jackson.BINARY_MAPPER.writeValueAsBytes(element),
-					CQElement.class
-				);
-			return clone;
-		} catch (IOException e) {
-			throw new IllegalStateException("Failed to clone the CQElement "+element, e);
+		catch (IOException e) {
+			throw new IllegalStateException("Failed to clone the CQElement " + element, e);
 		}
 	}
 }

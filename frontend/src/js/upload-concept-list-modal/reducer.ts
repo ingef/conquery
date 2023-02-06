@@ -1,75 +1,38 @@
-import type { PostConceptResolveResponseT } from "../api/types";
+import { getType } from "typesafe-actions";
+
+import { Action } from "../app/actions";
 import { stripFilename } from "../common/helpers/fileHelper";
 
 import {
-  SELECT_CONCEPT_ROOT_NODE,
-  RESOLVE_CONCEPTS_START,
-  RESOLVE_CONCEPTS_SUCCESS,
-  RESOLVE_CONCEPTS_ERROR,
-  INIT,
-  RESET
-} from "./actionTypes";
+  initUploadConceptListModal,
+  resetUploadConceptListModal,
+} from "./actions";
 
 export type UploadConceptListModalStateT = {
   filename: string | null;
-  conceptCodesFromFile: string[];
-  selectedConceptRootNode: string;
-  loading: boolean;
-  resolved: PostConceptResolveResponseT;
-  error: Error | null;
+  fileRows: string[];
 };
 
 const initialState: UploadConceptListModalStateT = {
   filename: null,
-  conceptCodesFromFile: [],
-  selectedConceptRootNode: "",
-  loading: false,
-  resolved: {},
-  error: null
+  fileRows: [],
 };
 
 const uploadConcepts = (
   state: UploadConceptListModalStateT = initialState,
-  action: Object
+  action: Action,
 ) => {
   switch (action.type) {
-    case INIT:
+    case getType(initUploadConceptListModal):
       const { filename, rows } = action.payload;
 
       return {
         ...state,
         filename: stripFilename(filename),
-        conceptCodesFromFile: rows,
-        selectedConceptRootNode: null,
-        resolved: null
-      };
-    case SELECT_CONCEPT_ROOT_NODE:
-      return {
-        ...state,
-        selectedConceptRootNode: action.conceptId,
-        resolved: null
-      };
-    case RESOLVE_CONCEPTS_START:
-      return {
-        ...state,
-        loading: true,
-        error: null
-      };
-    case RESOLVE_CONCEPTS_ERROR:
-      return {
-        ...state,
-        loading: false,
+        fileRows: rows,
         resolved: null,
-        error: action.payload
       };
-    case RESOLVE_CONCEPTS_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        error: null,
-        resolved: action.payload.data
-      };
-    case RESET:
+    case getType(resetUploadConceptListModal):
       return initialState;
     default:
       return state;

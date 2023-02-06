@@ -1,25 +1,59 @@
-import React from "react";
-import { connect } from "react-redux";
+import { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
+import { SelectOptionT } from "../api/types";
+import type { StateT } from "../app/reducers";
+import { TreesT } from "../concept-trees/reducer";
 import UploadConceptListModal from "../upload-concept-list-modal/UploadConceptListModal";
+import { resetUploadConceptListModal } from "../upload-concept-list-modal/actions";
 
-import {
-  acceptQueryUploadConceptListModal,
-  closeQueryUploadConceptListModal
-} from "./actions";
+import { acceptUploadedConceptsOrFilter } from "./actions";
 
-export default connect(
-  state => ({ context: state.queryUploadConceptListModal }),
-  dispatch => ({
-    accept: (...params) =>
-      dispatch(acceptQueryUploadConceptListModal(...params)),
-    onClose: () => dispatch(closeQueryUploadConceptListModal())
-  })
-)(({ accept, context, ...props }) => {
-  if (!context.isOpen) return null;
+const QueryUploadConceptListModal = ({
+  andIdx,
+  onClose,
+}: {
+  andIdx?: number;
+  onClose: () => void;
+}) => {
+  const dispatch = useDispatch();
+  const rootConcepts = useSelector<StateT, TreesT>(
+    (state) => state.conceptTrees.trees,
+  );
 
-  const onAccept = (label, rootConcepts, resolved) =>
-    accept(context.andIdx, label, rootConcepts, resolved);
+  const onCloseModal = useCallback(() => {
+    dispatch(resetUploadConceptListModal());
+    onClose();
+  }, [dispatch, onClose]);
 
-  return <UploadConceptListModal {...props} onAccept={onAccept} />;
-});
+  const onAcceptConceptsOrFilter = useCallback(
+    (
+      label: string,
+      resolvedConcepts: string[],
+      resolvedFilter?: {
+        tableId: string;
+        filterId: string;
+        value: SelectOptionT[];
+      },
+    ) =>
+      dispatch(
+        acceptUploadedConceptsOrFilter({
+          andIdx,
+          label,
+          rootConcepts,
+          resolvedConcepts,
+          resolvedFilter,
+        }),
+      ),
+    [andIdx, dispatch, rootConcepts],
+  );
+
+  return (
+    <UploadConceptListModal
+      onClose={onCloseModal}
+      onAcceptConceptsOrFilter={onAcceptConceptsOrFilter}
+    />
+  );
+};
+
+export default QueryUploadConceptListModal;

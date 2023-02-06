@@ -1,7 +1,7 @@
 /// <reference types="react-scripts" />
-
 import "@emotion/react";
-import { ConceptIdT, ConceptT } from "./js/api/types";
+
+import type { ConceptIdT, ConceptT } from "./js/api/types";
 
 declare namespace NodeJS {
   interface ProcessEnv {
@@ -23,14 +23,14 @@ declare module "@emotion/react" {
       grayMediumLight: string;
       grayLight: string;
       grayVeryLight: string;
-      graySuperLight: string;
-      red: string;
       blueGrayDark: string;
       blueGray: string;
       blueGrayLight: string;
       blueGrayVeryLight: string;
+      red: string;
       green: string;
       orange: string;
+      palette: string[];
     };
     img: {
       logo: string;
@@ -56,5 +56,6 @@ declare global {
   interface Window {
     datasetId: string | null;
     conceptTrees: Record<ConceptIdT, Record<ConceptIdT, ConceptT>>;
+    env: Record<string, string>; // To inject env variables at container runtime
   }
 }

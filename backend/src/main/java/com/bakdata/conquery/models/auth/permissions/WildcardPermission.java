@@ -20,12 +20,13 @@ import lombok.Setter;
 @Setter
 @CPSType(id = "WILDCARD_PERMISSION", base = ConqueryPermission.class)
 public class WildcardPermission extends org.apache.shiro.authz.permission.WildcardPermission implements ConqueryPermission {
-	
+
 	private final Instant creationTime;
-	
+
 	/**
 	 * Constructor used for deserialization.
-	 * @param parts String parts that hold the [domains (, abilities (, instances))].
+	 *
+	 * @param parts        String parts that hold the [domains (, abilities (, instances))].
 	 * @param creationTime The creation time of the permission.
 	 */
 	@JsonCreator
@@ -33,7 +34,7 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 		this.setParts(parts);
 		// Optional for backward compatibility
 		// TODO remove later
-		if(creationTime == null) {
+		if (creationTime == null) {
 			this.creationTime = Instant.now();
 			return;
 		}
@@ -43,9 +44,10 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	/**
 	 * Creates a permission from a String.
 	 * The creation time is set automatically.
+	 *
 	 * @param wildcardString Permission representation as a string in the format of {@link org.apache.shiro.authz.permission.WildcardPermission}.
 	 */
-	public WildcardPermission(String wildcardString){
+	public WildcardPermission(String wildcardString) {
 		super(wildcardString);
 		creationTime = Instant.now();
 	}
@@ -62,10 +64,11 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	public Set<String> getDomains() {
 		return getParts().get(0);
 	}
+
 	@Override
 	@JsonIgnore
 	public Set<String> getAbilities() {
-		if(getParts().size()>1) {
+		if (getParts().size() > 1) {
 			return getParts().get(1);
 		}
 		return Collections.emptySet();
@@ -74,7 +77,7 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	@Override
 	@JsonIgnore
 	public Set<String> getInstances() {
-		if(getParts().size()>2) {
+		if (getParts().size() > 2) {
 			return getParts().get(2);
 		}
 		return Collections.emptySet();

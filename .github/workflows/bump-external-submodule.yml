@@ -1,0 +1,19 @@
+name: "Bump External Submodule"
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  trigger-external-action:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Trigger webhook event
+      
+        env: 
+          URL: ${{ secrets.EXTERNAL_REPO_BUMP_WEBHOOK }}
+          TOKEN: ${{ secrets.EXTERNAL_REPO_BUMP_WEBHOOK_TOKEN }}
+        run: |
+          curl -X POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token $TOKEN" $URL -d '{"ref":"develop"}'

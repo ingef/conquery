@@ -1,15 +1,22 @@
-// flow
+import type { SelectorResultType, SelectorT } from "../api/types";
+import type {
+  ConceptQueryNodeType,
+  SelectedSelectorT,
+  TableWithFilterValueT,
+} from "../standard-query-editor/types";
 
-import type { SelectorT } from "../api/types";
+import type { NodeResetConfig } from "./node";
 
-export function objectHasSelectedSelects(obj) {
+export function objectHasNonDefaultSelects(
+  obj: ConceptQueryNodeType | TableWithFilterValueT,
+) {
   return (
     obj &&
     obj.selects &&
     obj.selects.some(
-      select =>
+      (select) =>
         (select.selected && !select.default) ||
-        (!select.selected && !!select.default)
+        (!select.selected && !!select.default),
     )
   );
 }
@@ -20,10 +27,46 @@ export function sortSelects(selects: SelectorT[]) {
     .sort((a, b) => (a.label < b.label ? -1 : 1));
 }
 
-const withDefaultSelect = select => ({
+const resetSelected = (select: SelectorT, config: NodeResetConfig) => ({
   ...select,
-  selected: !!select.default
+  selected: config.useDefaults ? !!select.default : false,
 });
 
-export const selectsWithDefaults = selects =>
-  selects ? selects.map(withDefaultSelect) : null;
+export const resetSelects = (
+  selects: SelectorT[],
+  config: NodeResetConfig = {},
+): SelectedSelectorT[] =>
+  selects.map((select) => resetSelected(select, config));
+
+function selectTypesMatch(
+  resultType1: SelectorResultType,
+  resultType2: SelectorResultType,
+) {
+  if (
+    resultType1.type === "LIST" &&
+    resultType2.type === "LIST" &&
+    !!resultType1.elementType &&
+    !!resultType2.elementType
+  ) {
+    return resultType1.elementType.type === resultType2.elementType.type;
+  }
+
+  return resultType1.type === resultType2.type;
+}
+
+export function selectIsWithinTypes(
+  select: SelectorT,
+  types: SelectorResultType[],
+) {
+  return types.some((selectType) =>
+    selectTypesMatch(selectType, select.resultType),
+  );
+}
+
+export const isSelectDisabled = (
+  select: SelectorT,
+  blocklistedSelects?: SelectorResultType[],
+  allowlistedSelects?: SelectorResultType[],
+) =>
+  (!!allowlistedSelects && !selectIsWithinTypes(select, allowlistedSelects)) ||
+  (!!blocklistedSelects && selectIsWithinTypes(select, blocklistedSelects));

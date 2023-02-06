@@ -1,32 +1,34 @@
-import React, { useRef, FC } from "react";
-import { useDrag } from "react-dnd";
 import styled from "@emotion/styled";
+import { useRef, FC } from "react";
+import { useDrag } from "react-dnd";
+import { useTranslation } from "react-i18next";
 
-import { T } from "../../localization";
+import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
+import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
+import { getRootNodeLabel } from "../../standard-query-editor/helper";
+import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
 
-import { getRootNodeLabel } from "../../standard-query-editor/helper";
-import { FORM_CONCEPT_NODE } from "../../common/constants/dndTypes";
-import { getWidthAndHeight } from "../../app/DndProvider";
-
-const Root = styled("div")<{ active?: boolean }>`
+const Root = styled("div")<{
+  active?: boolean;
+}>`
   padding: 5px 10px;
   cursor: pointer;
   background-color: white;
   max-width: 200px;
   border-radius: ${({ theme }) => theme.borderRadius};
-  border: ${({ active }) => (active ? "2px" : "1px")} solid
-    ${({ theme, active }) =>
-      active ? theme.col.blueGrayDark : theme.col.grayLight};
-
+  transition: background-color ${({ theme }) => theme.transitionTime};
+  border: ${({ theme, active }) =>
+    active
+      ? `2px solid ${theme.col.blueGrayDark}`
+      : `1px solid ${theme.col.grayMediumLight}`};
   &:hover {
-    border: ${({ active }) => (active ? "2px" : "1px")} solid
-      ${({ theme }) => theme.col.blueGrayDark};
+    background-color: ${({ theme }) => theme.col.bgAlt};
   }
 
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr auto;
 
   font-size: ${({ theme }) => theme.font.sm};
 `;
@@ -37,6 +39,7 @@ const Label = styled("p")`
   line-height: 1.2;
   font-size: ${({ theme }) => theme.font.md};
 `;
+
 const Description = styled("div")`
   margin: 3px 0 0;
   word-break: break-word;
@@ -45,14 +48,12 @@ const Description = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
 `;
 
-const Left = styled("div")`
-  flex-grow: 1;
-  flex-basis: 0;
+const Right = styled("div")`
+  margin-left: 10px;
 `;
 
-const Right = styled("div")`
-  flex-shrink: 0;
-  margin-left: 10px;
+const SxIconButton = styled(IconButton)`
+  padding: 0 6px;
 `;
 
 const RootNode = styled("p")`
@@ -68,76 +69,97 @@ const RootNode = styled("p")`
 interface PropsT {
   valueIdx: number;
   conceptIdx: number;
-  conceptNode: Object;
+  conceptNode: DragItemConceptTreeNode;
   name: string;
-  onFilterClick: Function;
-  hasActiveFilters: boolean;
+  onClick: () => void;
+  hasNonDefaultSettings: boolean;
+  hasFilterValues: boolean;
   expand?: {
-    onClick: Function;
+    onClick: () => void;
     expandable: boolean;
     active: boolean;
   };
 }
 
-// TODO: Refactor, add a TooltipButton in conquery and use that.
-
 // generalized node to handle concepts queried in forms
 const FormConceptNode: FC<PropsT> = ({
+  valueIdx,
+  conceptIdx,
   conceptNode,
-  onFilterClick,
-  hasActiveFilters,
+  onClick,
+  hasNonDefaultSettings,
+  hasFilterValues,
   expand,
 }) => {
+  const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(conceptNode);
   const ref = useRef<HTMLDivElement | null>(null);
 
-  const item = {
-    type: FORM_CONCEPT_NODE,
-    conceptNode,
-  };
-  const [, drag] = useDrag({
-    item,
-    begin: () => {
-      return {
-        ...item,
-        ...getWidthAndHeight(ref),
-      };
+  const item: DragItemConceptTreeNode = {
+    ...conceptNode,
+    dragContext: {
+      movedFromAndIdx: valueIdx,
+      movedFromOrIdx: conceptIdx,
+      width: 0,
+      height: 0,
     },
+  };
+  const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
+    type: item.type,
+    item: () => ({
+      ...item,
+      dragContext: {
+        ...item.dragContext,
+        ...getWidthAndHeight(ref),
+      },
+    }),
   });
 
+  const tooltipText = hasNonDefaultSettings
+    ? t("queryEditor.hasNonDefaultSettings")
+    : hasFilterValues
+    ? t("queryEditor.hasDefaultSettings")
+    : undefined;
+
   return (
-    <Root
-      ref={(instance) => {
-        ref.current = instance;
-        drag(instance);
-      }}
-      active={hasActiveFilters}
-      onClick={onFilterClick}
-    >
-      <Left>
-        {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-        <Label>{conceptNode && conceptNode.label}</Label>
-        {conceptNode && !!conceptNode.description && (
-          <Description>{conceptNode.description}</Description>
-        )}
-      </Left>
-      <Right>
-        {expand && expand.expandable && (
-          <WithTooltip
-            text={T.translate("externalForms.common.concept.expand")}
-          >
-            <IconButton
-              icon={expand.active ? "compress-arrows-alt" : "expand-arrows-alt"}
-              tiny
-              onClick={(e) => {
-                e.stopPropagation();
-                expand.onClick();
-              }}
-            />
+    <HoverNavigatable triggerNavigate={onClick}>
+      <Root
+        ref={(instance) => {
+          ref.current = instance;
+          drag(instance);
+        }}
+        active={hasNonDefaultSettings || hasFilterValues}
+        onClick={onClick}
+      >
+        <div>
+          <WithTooltip text={tooltipText}>
+            <>
+              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
+              <Label>{conceptNode && conceptNode.label}</Label>
+              {conceptNode && !!conceptNode.description && (
+                <Description>{conceptNode.description}</Description>
+              )}
+            </>
           </WithTooltip>
-        )}
-      </Right>
-    </Root>
+        </div>
+        <Right>
+          {expand && expand.expandable && (
+            <WithTooltip text={t("externalForms.common.concept.expand")}>
+              <SxIconButton
+                icon={
+                  expand.active ? "compress-arrows-alt" : "expand-arrows-alt"
+                }
+                tiny
+                onClick={(e) => {
+                  e.stopPropagation();
+                  expand.onClick();
+                }}
+              />
+            </WithTooltip>
+          )}
+        </Right>
+      </Root>
+    </HoverNavigatable>
   );
 };
 

@@ -5,22 +5,22 @@ import static com.bakdata.conquery.models.forms.frontendconfiguration.FormScanne
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map.Entry;
 
-import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.FormPermission;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class FormProcessor {
 
-	public Collection<JsonNode> getFormsForUser(User user) {
+	public Collection<JsonNode> getFormsForUser(Subject subject) {
 		List<JsonNode> allowedForms = new ArrayList<>();
 
-		for (Entry<String, JsonNode> formMapping : FRONTEND_FORM_CONFIGS.entrySet()) {
-			if (user.isPermitted(FormPermission.onInstance(Ability.CREATE, formMapping.getKey()))) {
-				allowedForms.add(formMapping.getValue());
+		for (FormType formMapping : FRONTEND_FORM_CONFIGS.values()) {
+			if (!subject.isPermitted(formMapping, Ability.CREATE)) {
+				continue;
 			}
+
+			allowedForms.add(formMapping.getRawConfig());
 		}
 
 		return allowedForms;

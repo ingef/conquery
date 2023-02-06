@@ -2,8 +2,10 @@ package com.bakdata.conquery.models.auth.basic;
 
 import java.util.Arrays;
 
-import com.bakdata.conquery.io.xodus.stores.XodusStore;
+import com.bakdata.conquery.io.storage.Store;
+import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashedEntry;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.bindings.StringBinding;
 import lombok.experimental.UtilityClass;
@@ -22,7 +24,7 @@ public class CredentialChecker {
 	 * @param passwordStore The store that holds the hashed passwords.
 	 * @return True if the username-password combination is valid.
 	 */
-	public static boolean validUsernamePassword(String username, char[] providedPassword, XodusStore passwordStore) {
+	public static boolean validUsernamePassword(String username, char[] providedPassword, Store<UserId, HashedEntry> passwordStore) {
 		try {			
 			if(username.isEmpty()) {
 				throw new IncorrectCredentialsException("Username was empty");
@@ -30,11 +32,10 @@ public class CredentialChecker {
 			if(providedPassword.length < 1) {
 				throw new IncorrectCredentialsException("Password was empty");			
 			}
-			ByteIterable storedHashedEntry = passwordStore.get(StringBinding.stringToEntry(username));
-			if(storedHashedEntry == null) {
+			HashedEntry hashedEntry = passwordStore.get(new UserId(username));
+			if(hashedEntry == null) {
 				return false;
 			}
-			HashedEntry hashedEntry = HashedEntry.fromByteIterable(storedHashedEntry);
 			return isCredentialValid(providedPassword, hashedEntry);
 		}
 		finally {

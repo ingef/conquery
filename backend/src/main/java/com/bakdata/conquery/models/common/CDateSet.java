@@ -11,27 +11,21 @@ import java.util.NavigableMap;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
-import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.parser.specific.DateRangeParser;
+import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ForwardingCollection;
 import com.google.common.math.IntMath;
 import lombok.EqualsAndHashCode;
 
+/**
+ * (De-)Serializers are are registered programmatically because they depend on {@link DateReader}
+ */
 @EqualsAndHashCode
-@JsonSerialize(using=CDateSetSerializer.class)
-@JsonDeserialize(using=CDateSetDeserializer.class)
 public class CDateSet {
 
-	private static final Pattern PARSE_PATTERN = Pattern.compile("(\\{|,\\s*)((\\d{4}-\\d{2}-\\d{2})?/(\\d{4}-\\d{2}-\\d{2})?)");
 	private final NavigableMap<Integer, CDateRange> rangesByLowerBound;
 	private transient Set<CDateRange> asRanges;
 	private transient Set<CDateRange> asDescendingSetOfRanges;
@@ -39,6 +33,7 @@ public class CDateSet {
 	public static CDateSet create() {
 		return new CDateSet(new TreeMap<>());
 	}
+
 	
 	public static CDateSet createFull() {
 		CDateSet set = new CDateSet(new TreeMap<>());
@@ -73,10 +68,6 @@ public class CDateSet {
 		return (result == null) ? asRanges = new AsRanges(rangesByLowerBound.values()) : result;
 	}
 
-	public Set<CDateRange> asDescendingSetOfRanges() {
-		Set<CDateRange> result = asDescendingSetOfRanges;
-		return (result == null) ? asDescendingSetOfRanges = new AsRanges(rangesByLowerBound.descendingMap().values()) : result;
-	}
 
 	final class AsRanges extends ForwardingCollection<CDateRange> implements Set<CDateRange> {
 
@@ -107,11 +98,10 @@ public class CDateSet {
 			if (this == object) {
 				return true;
 			}
-			if (object instanceof Set) {
-				Set<?> o = (Set<?>) object;
+			if (object instanceof Set<?> other) {
 
 				try {
-					return this.size() == o.size() && this.containsAll(o);
+					return this.size() == other.size() && this.containsAll(other);
 				}
 				catch (NullPointerException | ClassCastException ignored) {
 					return false;
@@ -157,10 +147,7 @@ public class CDateSet {
 	public void clear() {
 		rangesByLowerBound.clear();
 	}
-	
-	public boolean enclosesAll(CDateSet other) {
-		return enclosesAll(other.asRanges());
-	}
+
 	
 	public void addAll(CDateSet other) {
 		addAll(other.asRanges());
@@ -284,7 +271,11 @@ public class CDateSet {
 	}
 
 
-	public void maskedAdd(CDateRange toAdd, CDateSet mask){
+	public void maskedAdd(CDateRange toAdd, CDateSet mask) {
+		maskedAdd(toAdd, mask, CDateRange.POSITIVE_INFINITY);
+	}
+
+	public void maskedAdd(CDateRange toAdd, CDateSet mask, int truncateMax){
 		if(mask.isEmpty()){
 			return;
 		}
@@ -330,22 +321,29 @@ public class CDateSet {
 
 			search = mask.rangesByLowerBound.higherKey(search);
 
-			int min = range.getMinValue();
-			int max = range.getMaxValue();
+			int lowerBound = range.getMinValue();
+			int upperBound = range.getMaxValue();
 
-			if(max < toAdd.getMinValue()){
+			if(upperBound < toAdd.getMinValue()){
 				continue;
 			}
 
-			if(min < toAdd.getMinValue()){
-				min = toAdd.getMinValue();
+			if(lowerBound < toAdd.getMinValue()){
+				lowerBound = toAdd.getMinValue();
 			}
 
-			if(max > toAdd.getMaxValue()){
-				max = toAdd.getMaxValue();
+			if(upperBound > toAdd.getMaxValue()){
+				upperBound = toAdd.getMaxValue();
 			}
 
-			add(CDateRange.of(min, max));
+			upperBound = Math.min(upperBound, truncateMax);
+
+			// value was not contained
+			if(lowerBound > upperBound){
+				continue;
+			}
+
+			add(CDateRange.of(lowerBound, upperBound));
 		}
 	}
 
@@ -392,17 +390,17 @@ public class CDateSet {
 		
 		//remove all before the first range
 		if(!l.get(0).isAtMost()) {
-			this.remove(CDateRange.of(Integer.MIN_VALUE, l.get(0).getMinValue() - 1));
+			this.remove(CDateRange.atMost(l.get(0).getMinValue() - 1));
 		}
 		
 		//remove all between ranges
-		for(int i=0;i<l.size()-1;i++) {
-			this.remove(CDateRange.of(l.get(i).getMaxValue() + 1, l.get(i+1).getMinValue() - 1));
+		for (int i = 0; i < l.size() - 1; i++) {
+			this.remove(CDateRange.of(l.get(i).getMaxValue() + 1, l.get(i + 1).getMinValue() - 1));
 		}
-		
+
 		//remove all after the last Range
-		if(!l.get(l.size()-1).isAtLeast()) {
-			this.remove(CDateRange.of(l.get(l.size()-1).getMaxValue() + 1, Integer.MAX_VALUE));
+		if (!l.get(l.size() - 1).isAtLeast()) {
+			this.remove(CDateRange.atLeast(l.get(l.size() - 1).getMaxValue() + 1));
 		}
 	}
 	
@@ -413,12 +411,12 @@ public class CDateSet {
 
 		//remove all before the range
 		if(!retained.isAtMost()) {
-			this.remove(CDateRange.of(Integer.MIN_VALUE, retained.getMinValue() - 1));
+			this.remove(CDateRange.atMost(retained.getMinValue() - 1));
 		}
 		
 		//remove all after the Range
 		if(!retained.isAtLeast()) {
-			this.remove(CDateRange.of(retained.getMaxValue() + 1, Integer.MAX_VALUE));
+			this.remove(CDateRange.atLeast(retained.getMaxValue() + 1));
 		}
 	}
 
@@ -448,20 +446,5 @@ public class CDateSet {
 	public int getMaxValue() {
 		return rangesByLowerBound.lastEntry().getValue().getMaxValue();
 	}
-	
-	public static CDateSet parse(String value) {
-		List<CDateRange> ranges = PARSE_PATTERN
-			.matcher(value)
-			.results()
-			.map(mr -> {
-				try {
-					return DateRangeParser.parseISORange(mr.group(2));
-				}
-				catch(Exception e) {
-					throw new RuntimeException(e);
-				}
-			})
-			.collect(Collectors.toList());
-		return CDateSet.create(ranges);
-	}
+
 }

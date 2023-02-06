@@ -14,13 +14,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="UPDATE_DATASET", base=NamespacedMessage.class) @Slf4j
 @AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString(callSuper=true)
-public class UpdateDataset extends WorkerMessage.Slow {
+public class UpdateDataset extends WorkerMessage {
 
 	private Dataset dataset;
 
 	@Override
 	public void react(Worker context) throws Exception {
-		log.info("Recieved update of dataset {}", dataset.getId());
+		log.info("Received update of dataset {}", dataset.getId());
 		synchronized (context.getStorage()) {
 			context.updateDataset(dataset);
 		}

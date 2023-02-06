@@ -1,14 +1,17 @@
 package com.bakdata.conquery.models.common;
 
 import java.time.LocalDate;
-import java.time.Month;
-import java.time.Year;
 import java.time.YearMonth;
 
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.google.common.primitives.Ints;
-
 import lombok.experimental.UtilityClass;
 
+/**
+ * Helper class to convert between {@link LocalDate} and {@link LocalDate#toEpochDay()}.
+ *
+ * Internal representation of Conquery is always based on epoch-days, but if the query-engine requires they should use {@link CDate} to resolve the proper value.
+ */
 @UtilityClass
 public final class CDate {
 
@@ -35,11 +38,12 @@ public final class CDate {
 		return date.getDayOfMonth() == YearMonth.from(date).lengthOfMonth();
 	}
 
-	public static Month getMonth(int date) {
-		return Month.from(toLocalDate(date));
+	public boolean isPositiveInfinity(int epochDay) {
+		return epochDay == CDateRange.POSITIVE_INFINITY;
 	}
 
-	public static Year getYear(int date) {
-		return Year.from(toLocalDate(date));
+	public boolean isNegativeInfinity(int epochDay) {
+		return epochDay == CDateRange.NEGATIVE_INFINITY;
 	}
+
 }

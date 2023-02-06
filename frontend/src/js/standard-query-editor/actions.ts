@@ -1,82 +1,86 @@
-import { ThunkDispatch } from "redux-thunk";
+import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
+import { ActionType, createAction } from "typesafe-actions";
 
-import api from "../api";
-import type { DatasetIdT } from "../api/types";
-
-import { defaultSuccess, defaultError } from "../common/actions";
-import { loadPreviousQuery } from "../previous-queries/list/actions";
-
-import type {
-  DraggedNodeType,
-  DraggedQueryType,
-  PreviousQueryQueryNodeType,
-} from "./types";
 import {
-  DROP_AND_NODE,
-  DROP_OR_NODE,
-  DELETE_NODE,
-  DELETE_GROUP,
-  TOGGLE_EXCLUDE_GROUP,
-  LOAD_QUERY,
-  CLEAR_QUERY,
-  EXPAND_PREVIOUS_QUERY,
-  SELECT_NODE_FOR_EDITING,
-  DESELECT_NODE,
-  UPDATE_NODE_LABEL,
-  ADD_CONCEPT_TO_NODE,
-  REMOVE_CONCEPT_FROM_NODE,
-  TOGGLE_TABLE,
-  SET_FILTER_VALUE,
-  SET_SELECTS,
-  SET_TABLE_SELECTS,
-  RESET_ALL_FILTERS,
-  SWITCH_FILTER_MODE,
-  TOGGLE_TIMESTAMPS,
-  LOAD_FILTER_SUGGESTIONS_START,
-  LOAD_FILTER_SUGGESTIONS_SUCCESS,
-  LOAD_FILTER_SUGGESTIONS_ERROR,
-  SET_DATE_COLUMN,
-  SET_SELECTED_SECONDARY_ID,
-  TOGGLE_SECONDARY_ID_EXCLUDE,
-} from "./actionTypes";
-import { TreesT } from "../concept-trees/reducer";
+  PostPrefixForSuggestionsParams,
+  usePostFilterValuesResolve,
+  usePostPrefixForSuggestions,
+} from "../api/api";
+import type {
+  AndQueryT,
+  ConceptIdT,
+  QueryT,
+  QueryNodeT,
+  PostFilterSuggestionsResponseT,
+  SelectOptionT,
+} from "../api/types";
+import { successPayload } from "../common/actions/genericActions";
+import type { TreesT } from "../concept-trees/reducer";
+import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
+import { useLoadQuery } from "../previous-queries/list/actions";
+import type { ModeT } from "../ui-components/InputRange";
 
-export const dropAndNode = (item: DraggedNodeType | DraggedQueryType) => ({
-  type: DROP_AND_NODE,
-  payload: { item },
-});
+import { expandNode } from "./expandNode";
+import { StandardQueryStateT } from "./queryReducer";
+import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
 
-export const dropOrNode = (
-  item: DraggedNodeType | DraggedQueryType,
-  andIdx: number
-) => ({
-  type: DROP_OR_NODE,
-  payload: { item, andIdx },
-});
+export type StandardQueryEditorActions = ActionType<
+  | typeof resetTable
+  | typeof dropAndNode
+  | typeof dropOrNode
+  | typeof loadSavedQuery
+  | typeof clearQuery
+  | typeof deleteNode
+  | typeof deleteGroup
+  | typeof updateNodeLabel
+  | typeof toggleTable
+  | typeof setFilterValue
+  | typeof toggleExcludeGroup
+  | typeof toggleSecondaryIdExclude
+  | typeof toggleTimestamps
+  | typeof resetAllSettings
+  | typeof removeConceptFromNode
+  | typeof addConceptToNode
+  | typeof switchFilterMode
+  | typeof setSelects
+  | typeof setTableSelects
+  | typeof setDateColumn
+  | typeof setSelectedSecondaryId
+  | typeof expandPreviousQuery
+  | typeof loadFilterSuggestionsSuccess
+>;
 
-export const deleteNode = (andIdx: number, orIdx: number) => ({
-  type: DELETE_NODE,
-  payload: { andIdx, orIdx },
-});
+export const dropAndNode = createAction("query-editor/DROP_AND_NODE")<{
+  item: DragItemConceptTreeNode | DragItemQuery;
+}>();
 
-export const deleteGroup = (andIdx: number) => ({
-  type: DELETE_GROUP,
-  payload: { andIdx },
-});
+export const dropOrNode = createAction("query-editor/DROP_OR_NODE")<{
+  item: DragItemConceptTreeNode | DragItemQuery;
+  andIdx: number;
+}>();
 
-export const toggleExcludeGroup = (andIdx: number) => ({
-  type: TOGGLE_EXCLUDE_GROUP,
-  payload: { andIdx },
-});
+export const deleteNode = createAction("query-editor/DELETE_NODE")<{
+  andIdx: number;
+  orIdx: number;
+}>();
 
-export const loadQuery = (query) => ({
-  type: LOAD_QUERY,
-  payload: { query },
-});
+export const deleteGroup = createAction("query-editor/DELETE_GROUP")<{
+  andIdx: number;
+}>();
 
-export const clearQuery = () => ({ type: CLEAR_QUERY });
+export const toggleExcludeGroup = createAction(
+  "query-editor/TOGGLE_EXCLUDE_GROUP",
+)<{ andIdx: number }>();
 
-const findPreviousQueryIds = (node, queries = []) => {
+export const loadSavedQuery = createAction("query-editor/LOAD_SAVED_QUERY")<{
+  query: StandardQueryStateT;
+}>();
+
+export const clearQuery = createAction("query-editor/CLEAR_QUERY")();
+
+const findPreviousQueryIds = (node: QueryNodeT, queries = []): string[] => {
   switch (node.type) {
     case "SAVED_QUERY":
       return [...queries, node.query];
@@ -87,148 +91,270 @@ const findPreviousQueryIds = (node, queries = []) => {
     case "OR":
       return [
         ...queries,
-        ...node.children.flatMap((child) => findPreviousQueryIds(child, [])),
+        ...node.children.flatMap((child: any) =>
+          findPreviousQueryIds(child, []),
+        ),
       ];
     default:
       return queries;
   }
 };
 
+// Completely override all groups in the editor with the previous groups, but
+// a) merge elements with concept data from concept trees (esp. "tables")
+// b) load nested previous queries contained in that query,
+//    so they can also be expanded
+const createExpandedQueryState = ({
+  rootConcepts,
+  query,
+  expandErrorMessage,
+}: {
+  rootConcepts: TreesT;
+  query: AndQueryT;
+  expandErrorMessage: string;
+}): StandardQueryStateT => {
+  return query.root.children.map((child) =>
+    expandNode(rootConcepts, child, expandErrorMessage),
+  );
+};
+
+export const expandPreviousQuery = createAction(
+  "query-editor/EXPAND_PREVIOUS_QUERY",
+)<StandardQueryStateT>();
+
+const useLoadBigMultiSelectValues = () => {
+  const postFilterValuesResolve = usePostFilterValuesResolve();
+
+  return useCallback(
+    // Actually, state is a StandardQueryStateT
+    // where all big multi select filters
+    // don't have value: SelectOptionT[] yet, but string[]
+    // we just don't have an extra type for it.
+    async (state: StandardQueryStateT): Promise<StandardQueryStateT> => {
+      return Promise.all(
+        state.map(async (val) => ({
+          ...val,
+          elements: await Promise.all(
+            val.elements.map(async (el) => {
+              if (!nodeIsConceptQueryNode(el)) return el;
+              return {
+                ...el,
+                tables: await Promise.all(
+                  el.tables.map(async (table) => ({
+                    ...table,
+                    filters: await Promise.all(
+                      table.filters.map(async (filter) => {
+                        if (
+                          filter.type !== "BIG_MULTI_SELECT" ||
+                          !filter.value ||
+                          filter.value.length === 0
+                        ) {
+                          return filter;
+                        }
+
+                        try {
+                          const result = await postFilterValuesResolve(
+                            filter.id,
+                            filter.value as unknown as string[], // See explanation above
+                          );
+                          return {
+                            ...filter,
+                            value: result.resolvedFilter?.value || [],
+                          };
+                        } catch (e) {
+                          console.error(e);
+                          return { ...filter, value: [] };
+                        }
+                      }),
+                    ),
+                  })),
+                ),
+              };
+            }),
+          ),
+        })),
+      );
+    },
+    [postFilterValuesResolve],
+  );
+};
+
+const isAndQuery = (query: QueryT): query is AndQueryT => {
+  return query.root.type === "AND";
+};
 /*
   1) Expands previous query in the editor
   2) Triggers a load for all nested queries
 */
-export const expandPreviousQuery = (
-  datasetId: DatasetIdT,
-  rootConcepts: TreesT,
-  query: PreviousQueryQueryNodeType
-) => {
-  if (!query.root || query.root.type !== "AND") {
-    throw new Error("Cant expand query, because root is not AND");
-  }
+export const useExpandPreviousQuery = () => {
+  const dispatch = useDispatch();
+  const { loadQuery } = useLoadQuery();
+  const { t } = useTranslation();
+  const loadBigMultiSelectValues = useLoadBigMultiSelectValues();
 
-  const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
+  return useCallback(
+    async (rootConcepts: TreesT, query: QueryT) => {
+      if (!isAndQuery(query)) {
+        throw new Error("Cant expand query, because root is not AND");
+      }
 
-  return [
-    {
-      type: EXPAND_PREVIOUS_QUERY,
-      payload: { rootConcepts, query },
-    },
-    ...nestedPreviousQueryIds.map((queryId) =>
-      loadPreviousQuery(datasetId, queryId)
-    ),
-  ];
-};
+      const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
 
-export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
-  type: SELECT_NODE_FOR_EDITING,
-  payload: { andIdx, orIdx },
-});
-
-export const deselectNode = () => ({ type: DESELECT_NODE });
-
-export const updateNodeLabel = (label) => ({
-  type: UPDATE_NODE_LABEL,
-  payload: { label },
-});
-export const addConceptToNode = (concept) => ({
-  type: ADD_CONCEPT_TO_NODE,
-  payload: { concept },
-});
-export const removeConceptFromNode = (conceptId) => ({
-  type: REMOVE_CONCEPT_FROM_NODE,
-  payload: { conceptId },
-});
-
-export const toggleTable = (tableIdx, isExcluded) => ({
-  type: TOGGLE_TABLE,
-  payload: { tableIdx, isExcluded },
-});
-
-export const setFilterValue = (tableIdx, filterIdx, value) => ({
-  type: SET_FILTER_VALUE,
-  payload: { tableIdx, filterIdx, value },
-});
-
-export const setTableSelects = (tableIdx, value) => ({
-  type: SET_TABLE_SELECTS,
-  payload: { tableIdx, value },
-});
-export const setSelects = (value) => ({
-  type: SET_SELECTS,
-  payload: { value },
-});
-
-export const setDateColumn = (tableIdx, value) => ({
-  type: SET_DATE_COLUMN,
-  payload: { tableIdx, value },
-});
-
-export const resetAllFilters = (andIdx: number, orIdx: number) => ({
-  type: RESET_ALL_FILTERS,
-  payload: { andIdx, orIdx },
-});
-
-export const switchFilterMode = (tableIdx, filterIdx, mode) => ({
-  type: SWITCH_FILTER_MODE,
-  payload: { tableIdx, filterIdx, mode },
-});
-
-export const toggleTimestamps = (andIdx?: number, orIdx?: number) => ({
-  type: TOGGLE_TIMESTAMPS,
-  payload: { andIdx, orIdx },
-});
-
-export const toggleSecondaryIdExclude = (andIdx?: number, orIdx?: number) => ({
-  type: TOGGLE_SECONDARY_ID_EXCLUDE,
-  payload: { andIdx, orIdx },
-});
-
-export const loadFilterSuggestionsStart = (
-  tableIdx: number,
-  filterIdx: number
-) => ({
-  type: LOAD_FILTER_SUGGESTIONS_START,
-  payload: { tableIdx, filterIdx },
-});
-
-export const loadFilterSuggestionsSuccess = (
-  suggestions,
-  tableIdx,
-  filterIdx
-) =>
-  defaultSuccess(LOAD_FILTER_SUGGESTIONS_SUCCESS, suggestions, {
-    tableIdx,
-    filterIdx,
-  });
-
-export const loadFilterSuggestionsError = (error, tableIdx, filterIdx) =>
-  defaultError(LOAD_FILTER_SUGGESTIONS_ERROR, error, { tableIdx, filterIdx });
-
-export const loadFilterSuggestions = (
-  datasetId,
-  conceptId,
-  tableId,
-  filterId,
-  prefix,
-  tableIdx,
-  filterIdx
-) => {
-  return (dispatch: ThunkDispatch) => {
-    dispatch(loadFilterSuggestionsStart(tableIdx, filterIdx));
-
-    return api
-      .postPrefixForSuggestions(datasetId, conceptId, tableId, filterId, prefix)
-      .then(
-        (r) => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
-        (e) => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
+      const expandedQueryState = await loadBigMultiSelectValues(
+        createExpandedQueryState({
+          rootConcepts,
+          query,
+          expandErrorMessage: t("queryEditor.couldNotExpandNode"),
+        }),
       );
-  };
+
+      dispatch(expandPreviousQuery(expandedQueryState));
+
+      await Promise.all(
+        nestedPreviousQueryIds.map((queryId) => loadQuery(queryId)),
+      );
+
+      dispatch(
+        setSelectedSecondaryId({
+          secondaryId: query.secondaryId ? query.secondaryId : null,
+        }),
+      );
+    },
+    [dispatch, t, loadQuery, loadBigMultiSelectValues],
+  );
 };
 
-export const setSelectedSecondaryId = (secondaryId: string | null) => {
-  return {
-    type: SET_SELECTED_SECONDARY_ID,
-    payload: { secondaryId },
-  };
+export const updateNodeLabel = createAction("query-editor/UPDATE_NODE_LABEL")<{
+  andIdx: number;
+  orIdx: number;
+  label: string;
+}>();
+
+export const addConceptToNode = createAction(
+  "query-editor/ADD_CONCEPT_TO_NODE",
+)<{
+  andIdx: number;
+  orIdx: number;
+  concept: DragItemConceptTreeNode;
+}>();
+
+export const removeConceptFromNode = createAction(
+  "query-editor/REMOVE_CONCEPT_FROM_NODE",
+)<{ andIdx: number; orIdx: number; conceptId: ConceptIdT }>();
+
+export const toggleTable = createAction("query-editor/TOGGLE_TABLE")<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  isExcluded: boolean;
+}>();
+
+export const setFilterValue = createAction("query-editor/SET_FILTER_VALUE")<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  filterIdx: number;
+  value: any; // Actually: FilterWithValueType["value"] which is overloaded;
+}>();
+
+export const setTableSelects = createAction("query-editor/SET_TABLE_SELECTS")<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  value: SelectOptionT[];
+}>();
+export const setSelects = createAction("query-editor/SET_SELECTS")<{
+  andIdx: number;
+  orIdx: number;
+  value: SelectOptionT[];
+}>();
+export const setDateColumn = createAction("query-editor/SET_DATE_COLUMN")<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  value: string;
+}>();
+
+export const resetAllSettings = createAction(
+  "query-editor/RESET_ALL_SETTINGS",
+)<{
+  andIdx: number;
+  orIdx: number;
+  config: NodeResetConfig;
+}>();
+
+export const resetTable = createAction("query-editor/RESET_TABLE")<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  config: NodeResetConfig;
+}>();
+
+export const switchFilterMode = createAction(
+  "query-editor/SWITCH_FILTER_MODE",
+)<{
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  filterIdx: number;
+  mode: ModeT;
+}>();
+
+export const toggleTimestamps = createAction("query-editor/TOGGLE_TIMESTAMPS")<{
+  andIdx: number;
+  orIdx: number;
+}>();
+
+export const toggleSecondaryIdExclude = createAction(
+  "query-editor/TOGGLE_SECONDARY_ID_EXCLUDE",
+)<{ andIdx: number; orIdx: number }>();
+
+interface FilterContext {
+  andIdx: number;
+  orIdx: number;
+  tableIdx: number;
+  filterIdx: number;
+  page: number;
+}
+export const loadFilterSuggestionsSuccess = createAction(
+  "query-editor/LOAD_FILTER_SUGGESTIONS_SUCCESS",
+)<
+  FilterContext & {
+    data: PostFilterSuggestionsResponseT;
+  }
+>();
+
+export const useLoadFilterSuggestions = (
+  editedNode: { andIdx: number; orIdx: number } | null,
+) => {
+  const dispatch = useDispatch();
+  const postPrefixForSuggestions = usePostPrefixForSuggestions();
+
+  return useCallback(
+    async (
+      params: PostPrefixForSuggestionsParams,
+      tableIdx: number,
+      filterIdx: number,
+      { returnOnly }: { returnOnly?: boolean } = {},
+    ) => {
+      if (!editedNode) return null;
+
+      const context = { ...editedNode, tableIdx, filterIdx, page: params.page };
+
+      const suggestions = await postPrefixForSuggestions(params);
+
+      if (!returnOnly) {
+        dispatch(
+          loadFilterSuggestionsSuccess(successPayload(suggestions, context)),
+        );
+      }
+
+      return suggestions;
+    },
+    [dispatch, editedNode, postPrefixForSuggestions],
+  );
 };
+
+export const setSelectedSecondaryId = createAction(
+  "query-editor/SET_SELECTED_SECONDARY_ID",
+)<{ secondaryId: string | null }>();

@@ -1,17 +1,18 @@
-import { StateT } from "app-types";
 import styled from "@emotion/styled";
-import React, { FC, useEffect } from "react";
+import { FC, memo, useCallback, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
-import { exists } from "../common/helpers/exists";
-import ToggleButton from "../form-components/ToggleButton";
-import { T } from "../localization";
-
-import { ConceptQueryNodeType, StandardQueryType } from "./types";
-import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
-import { setSelectedSecondaryId } from "./actions";
 import { SecondaryId } from "../api/types";
+import type { StateT } from "../app/reducers";
+import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
+import { nodeIsConceptQueryNode } from "../model/node";
+import ToggleButton from "../ui-components/ToggleButton";
+
+import { setSelectedSecondaryId } from "./actions";
+import type { StandardQueryStateT } from "./queryReducer";
+import type { SelectedSecondaryIdStateT } from "./selectedSecondaryIdReducer";
 
 const Headline = styled.h3<{ active?: boolean }>`
   font-size: ${({ theme }) => theme.font.sm};
@@ -29,80 +30,119 @@ const SxFaIcon = styled(FaIcon)<{ active?: boolean }>`
 `;
 
 const SecondaryIdSelector: FC = () => {
-  const query = useSelector<StateT, StandardQueryType>(
-    (state) => state.queryEditor.query
+  const { t } = useTranslation();
+  const query = useSelector<StateT, StandardQueryStateT>(
+    (state) => state.queryEditor.query,
   );
-
   const selectedSecondaryId = useSelector<StateT, SelectedSecondaryIdStateT>(
-    (state) => state.queryEditor.selectedSecondaryId
+    (state) => state.queryEditor.selectedSecondaryId,
   );
   const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
-    (state) => state.conceptTrees.secondaryIds
+    (state) => state.conceptTrees.secondaryIds,
+  );
+  const dispatch = useDispatch();
+
+  const onSetSelectedSecondaryId = useCallback(
+    (id: string | null) => {
+      dispatch(
+        setSelectedSecondaryId({ secondaryId: id === "standard" ? null : id }),
+      );
+    },
+    [dispatch],
   );
 
-  const dispatch = useDispatch();
-  const onSetSelectedSecondaryId = (id: string | null) => {
-    dispatch(setSelectedSecondaryId(id === "standard" ? null : id));
-  };
-
-  const availableSecondaryIds = Array.from(
-    new Set(
-      query.flatMap((group) =>
-        group.elements
-          .filter((el): el is ConceptQueryNodeType => !el.isPreviousQuery)
-          .flatMap((el) =>
-            el.tables
-              .filter((table) => !table.exclude)
-              .flatMap((table) => table.supportedSecondaryIds)
-              .filter(exists)
-          )
+  const availableSecondaryIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          query.flatMap((group) =>
+            group.elements.flatMap((el) => {
+              if (nodeIsConceptQueryNode(el)) {
+                return el.tables
+                  .filter((table) => !table.exclude)
+                  .flatMap((table) => table.supportedSecondaryIds)
+                  .filter(exists);
+              } else {
+                return el.availableSecondaryIds || [];
+              }
+            }),
+          ),
+        ),
       )
-    )
-  )
-    .map((id) => loadedSecondaryIds.find((secId) => secId.id === id))
-    .filter(exists);
+        .map((id) => loadedSecondaryIds.find((secId) => secId.id === id))
+        .filter(exists),
+    [query, loadedSecondaryIds],
+  );
+
+  const availableSecondaryIdsString = JSON.stringify(availableSecondaryIds);
 
   useEffect(() => {
-    if (
+    const activeSecondaryIdNotFound =
       !!selectedSecondaryId &&
       (availableSecondaryIds.length === 0 ||
-        !availableSecondaryIds.map((id) => id.id).includes(selectedSecondaryId))
-    ) {
+        !availableSecondaryIds
+          .map((id) => id.id)
+          .includes(selectedSecondaryId));
+
+    if (activeSecondaryIdNotFound) {
       onSetSelectedSecondaryId(null);
     }
-  }, [JSON.stringify(availableSecondaryIds)]);
+  }, [availableSecondaryIdsString, onSetSelectedSecondaryId]);
 
-  const options = [
-    {
-      value: "standard",
-      label: T.translate("queryEditor.secondaryIdStandard") as string,
-    },
-    ...availableSecondaryIds.map((id) => ({
-      label: id.label,
-      value: id.id,
-      description: id.description,
-    })),
-  ];
+  const options = useMemo(
+    () => [
+      {
+        value: "standard",
+        label: t("queryEditor.secondaryIdStandard") as string,
+      },
+      ...availableSecondaryIds.map((id) => ({
+        label: id.label,
+        value: id.id,
+        description: id.description,
+      })),
+    ],
+    [availableSecondaryIdsString, t],
+  );
 
   if (options.length < 2) {
     return null;
   }
 
   return (
-    <div>
-      <Headline active={!!selectedSecondaryId}>
-        <SxFaIcon active={!!selectedSecondaryId} left icon="microscope" />
-        {T.translate("queryEditor.secondaryId")}
-      </Headline>
-      <ToggleButton
-        input={{
-          value: selectedSecondaryId || "standard",
-          onChange: onSetSelectedSecondaryId,
-        }}
-        options={options}
-      />
-    </div>
+    <SecondaryIdSelectorUI
+      options={options}
+      value={selectedSecondaryId}
+      onChange={onSetSelectedSecondaryId}
+    />
   );
 };
 
-export default SecondaryIdSelector;
+const SecondaryIdSelectorUI = memo(
+  ({
+    options,
+    value,
+    onChange,
+  }: {
+    options: { label: string; value: string }[];
+    value: string | null;
+    onChange: (value: string) => void;
+  }) => {
+    const { t } = useTranslation();
+
+    return (
+      <div>
+        <Headline active={!!value}>
+          <SxFaIcon active={!!value} left icon="microscope" />
+          {t("queryEditor.secondaryId")}
+        </Headline>
+        <ToggleButton
+          value={value || "standard"}
+          onChange={onChange}
+          options={options}
+        />
+      </div>
+    );
+  },
+);
+
+export default memo(SecondaryIdSelector);

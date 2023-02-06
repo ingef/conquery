@@ -1,26 +1,36 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import { FC, ReactElement } from "react";
 
 import FaIcon from "../icon/FaIcon";
 
 import WithTooltip from "./WithTooltip";
 
 interface PropsT {
-  text: string;
+  text?: string;
+  html?: ReactElement;
   className?: string;
-  noIcon?: boolean;
+  wide?: boolean;
 }
 
-const Root = styled(WithTooltip)`
-  display: inline-block;
-  padding: 0 10px;
+const SxFaIcon = styled(FaIcon)`
+  transition: ${({ theme }) => theme.transitionTime};
+  &:hover {
+    color: ${({ theme }) => theme.col.black};
+  }
 `;
 
-const InfoTooltip: FC<PropsT> = ({ className, text, noIcon }) => {
+const SpanContainer = styled("span")`
+  display: inline-block;
+  padding: 0 7px;
+`;
+
+const InfoTooltip: FC<PropsT> = ({ className, text, html, wide }) => {
   return (
-    <Root className={className} text={text}>
-      {!noIcon && <FaIcon regular icon="question-circle" />}
-    </Root>
+    <WithTooltip text={text} html={html} wide={wide}>
+      <SpanContainer className={className}>
+        <SxFaIcon gray regular icon="question-circle" />
+      </SpanContainer>
+    </WithTooltip>
   );
 };
 

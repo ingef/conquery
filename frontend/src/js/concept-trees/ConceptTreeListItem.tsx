@@ -1,38 +1,34 @@
-import * as React from "react";
+import { FC } from "react";
 
-import type { ConceptT, ConceptIdT } from "../api/types";
+import type { ConceptIdT } from "../api/types";
 
 import ConceptTree from "./ConceptTree";
 import ConceptTreeFolder from "./ConceptTreeFolder";
-
 import { getConceptById } from "./globalTreeStoreHelper";
-
-import { isNodeInSearchResult } from "./selectors";
-
 import type { TreesT, SearchT } from "./reducer";
+import { isNodeInSearchResult } from "./selectors";
 
 interface PropsT {
   trees: TreesT;
-  tree: ConceptT;
-  treeId: ConceptIdT;
+  conceptId: ConceptIdT;
   search: SearchT;
   onLoadTree: (id: string) => void;
 }
 
-const ConceptTreeListItem: React.FC<PropsT> = ({
+const ConceptTreeListItem: FC<PropsT> = ({
   trees,
-  treeId,
+  conceptId,
   search,
   onLoadTree,
 }) => {
-  const tree = trees[treeId];
+  const tree = trees[conceptId];
 
-  if (!isNodeInSearchResult(treeId, tree.children, search)) return null;
+  if (!isNodeInSearchResult(conceptId, search, tree.children)) return null;
 
-  const rootConcept = getConceptById(treeId);
+  const rootConcept = getConceptById(conceptId);
 
   const commonProps = {
-    treeId,
+    conceptId,
     search,
     onLoadTree,
     depth: 0,
@@ -40,9 +36,7 @@ const ConceptTreeListItem: React.FC<PropsT> = ({
 
   return tree.detailsAvailable ? (
     <ConceptTree
-      id={treeId}
       label={tree.label}
-      description={tree.description}
       tree={rootConcept}
       loading={!!tree.loading}
       error={tree.error}

@@ -1,8 +1,13 @@
+import { ActionType, getType } from "typesafe-actions";
+
+import type { DateRangeT } from "../api/types";
+import type { Action } from "../app/actions";
+
 import {
-  TOGGLE_DISPLAY_TOOLTIP,
-  DISPLAY_ADDITIONAL_INFOS,
-  TOGGLE_ADDITIONAL_INFOS
-} from "./actionTypes";
+  displayAdditionalInfos,
+  toggleAdditionalInfos,
+  toggleDisplayTooltip,
+} from "./actions";
 
 type InfoType = {
   key: string;
@@ -11,11 +16,12 @@ type InfoType = {
 
 export type AdditionalInfosType = {
   label: string | null;
-  description: string | null;
+  description?: string;
   isFolder: boolean;
   matchingEntries: number | null;
-  dateRange: Object | null;
-  infos: InfoType[] | null;
+  matchingEntities: number | null;
+  dateRange?: DateRangeT;
+  infos?: InfoType[];
 };
 
 export type TooltipStateT = {
@@ -24,54 +30,53 @@ export type TooltipStateT = {
   additionalInfos: AdditionalInfosType;
 };
 
-const initialState = {
-  displayTooltip: true,
-  toggleAdditionalInfos: false,
-  additionalInfos: {
-    label: null,
-    description: null,
-    isFolder: false,
-    matchingEntries: null,
-    dateRange: null,
-    infos: null
-  }
+const additionalInfosInitialState: AdditionalInfosType = {
+  label: null,
+  description: undefined,
+  isFolder: false,
+  matchingEntries: null,
+  matchingEntities: null,
+  dateRange: undefined,
+  infos: undefined,
 };
 
-const setAdditionalInfos = (state, action) => {
+const initialState: TooltipStateT = {
+  displayTooltip: true,
+  toggleAdditionalInfos: false,
+  additionalInfos: additionalInfosInitialState,
+};
+
+const setAdditionalInfos = (
+  state: TooltipStateT,
+  { additionalInfos }: ActionType<typeof displayAdditionalInfos>["payload"],
+) => {
   if (state.toggleAdditionalInfos)
     return {
-      ...state
+      ...state,
     };
 
   return {
     ...state,
-    additionalInfos: (action.payload && action.payload.additionalInfos) || {
-      label: null,
-      description: null,
-      isFolder: false,
-      matchingEntries: null,
-      dateRange: null,
-      infos: null
-    }
+    additionalInfos: additionalInfos || additionalInfosInitialState,
   };
 };
 
 const tooltip = (
   state: TooltipStateT = initialState,
-  action: Object
+  action: Action,
 ): TooltipStateT => {
   switch (action.type) {
-    case DISPLAY_ADDITIONAL_INFOS:
-      return setAdditionalInfos(state, action);
-    case TOGGLE_ADDITIONAL_INFOS:
+    case getType(displayAdditionalInfos):
+      return setAdditionalInfos(state, action.payload);
+    case getType(toggleAdditionalInfos):
       return {
         ...state,
-        toggleAdditionalInfos: !state.toggleAdditionalInfos
+        toggleAdditionalInfos: !state.toggleAdditionalInfos,
       };
-    case TOGGLE_DISPLAY_TOOLTIP:
+    case getType(toggleDisplayTooltip):
       return {
         ...state,
-        displayTooltip: !state.displayTooltip
+        displayTooltip: !state.displayTooltip,
       };
     default:
       return state;

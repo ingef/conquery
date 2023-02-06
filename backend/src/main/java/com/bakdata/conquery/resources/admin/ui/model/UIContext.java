@@ -12,13 +12,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UIContext {
 	
-	private static final TemplateModel STAIC_URI_ELEMENTS = ResourceConstants.getAsTemplateModel();
+	private static final TemplateModel STATIC_URI_ELEMENTS = ResourceConstants.getAsTemplateModel();
 
 	@Getter
 	private final DatasetRegistry namespaces;
 
 	@Getter
-	public final TemplateModel staticUriElem = STAIC_URI_ELEMENTS;
+	public final TemplateModel staticUriElem = STATIC_URI_ELEMENTS;
 
 	public boolean[] getWorkerStatuses() {
 		boolean[] result = new boolean[namespaces.getShardNodes().values().size()];

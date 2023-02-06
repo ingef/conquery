@@ -1,0 +1,61 @@
+{
+  "type": "QUERY_TEST",
+  "label": "QUARTER_AGGREGATOR",
+  "expectedCsv": "tests/aggregator/QUARTER_AGGREGATOR/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.select"
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "validityDates": {
+            "name": "datum",
+            "column": "table.datum"
+          },
+          "selects": {
+            "name": "select",
+            "type": "QUARTER",
+            "sample": "LATEST"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/QUARTER_AGGREGATOR/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

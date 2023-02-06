@@ -28,7 +28,7 @@
       "label": "Datum",
       "column": "table.datum"
     },
-    "filter": {
+    "filters": {
       "description": "Test SELECT_Filter",
       "column": "table.value",
       "type": "SINGLE_SELECT"

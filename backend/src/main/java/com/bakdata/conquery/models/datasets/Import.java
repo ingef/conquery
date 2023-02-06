@@ -5,13 +5,13 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.xodus.NamespacedStorage;
-import com.bakdata.conquery.models.events.stores.specific.string.StringType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -25,14 +25,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @Setter
-public class Import extends NamedImpl<ImportId> {
-
+public class Import extends NamedImpl<ImportId> implements NamespacedIdentifiable<ImportId> {
 
 	@Valid
 	@NotNull
-	private final TableId table; // todo migrate to NsIdRef
+	@NsIdRef
+	private final Table table;
+
+	private long numberOfEntities;
 
 	private long numberOfEntries;
+
 
 	@JsonManagedReference
 	@NotNull
@@ -43,24 +46,20 @@ public class Import extends NamedImpl<ImportId> {
 
 	@Override
 	public ImportId createId() {
-		return new ImportId(table, getName());
-	}
-
-	public void loadExternalInfos(NamespacedStorage storage) {
-		for (ImportColumn col : columns) {
-
-			if(col.getTypeDescription() instanceof StringType) {
-				((StringType) col.getTypeDescription()).loadDictionaries(storage);
-			}
-		}
+		return new ImportId(table.getId(), getName());
 	}
 
 	public long estimateMemoryConsumption() {
 		long mem = 0;
 		for (ImportColumn col : columns) {
-			mem += col.getTypeDescription().estimateMemoryConsumptionBytes();
+			mem += col.getMemorySizeBytes();
 		}
 		return mem;
 	}
 
+	@JsonIgnore
+	@Override
+	public Dataset getDataset() {
+		return getTable().getDataset();
+	}
 }

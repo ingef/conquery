@@ -20,12 +20,8 @@ import org.apache.shiro.subject.Subject;
  * 
  */
 @JsonIgnoreProperties({ "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
-public abstract class FilteredUser<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends PermissionOwner<T> implements Subject {
+public abstract class FilteredUser implements Subject {
 
-
-	public FilteredUser(String name, String label) {
-		super(name, label);
-	}
 
 	@Override
 	public boolean isPermitted(String permission) {

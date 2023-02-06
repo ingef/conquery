@@ -7,11 +7,11 @@
     "root": {
       "type": "CONCEPT",
       "ids": [
-        "${dataset}.test_tree.test_child1"
+        "test_tree.test_child1"
       ],
       "tables": [
         {
-          "id": "${dataset}.test_tree.connector",
+          "id": "test_tree.connector",
           "filters": []
         }
       ]

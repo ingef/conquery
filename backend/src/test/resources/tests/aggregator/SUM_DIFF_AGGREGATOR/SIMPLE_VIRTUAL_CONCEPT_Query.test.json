@@ -6,37 +6,36 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "ids": [
-        "${dataset}.select"
+        "concept"
       ],
       "type": "CONCEPT",
-      "label": "select",
       "tables": [
         {
-          "id": "${dataset}.select.connector"
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.select"
+          ]
         }
-      ],
-      "selects": [
-        "${dataset}.select.connector.select"
       ]
     }
   },
   "concepts": [
     {
-      "label": "select",
-      "type": "VIRTUAL",
+      "name": "concept",
+      "type": "TREE",
       "connectors": [
         {
           "label": "connector",
-          "table": "table1",
+          "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "column": "table.datum"
           },
           "selects": {
             "type": "SUM",
-            "name" : "select",
-            "column": "table1.sum",
-            "subtractColumn": "table1.sub"
+            "name": "select",
+            "column": "table.sum",
+            "subtractColumn": "table.sub"
           }
         }
       ]
@@ -46,7 +45,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/SUM_DIFF_AGGREGATOR/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

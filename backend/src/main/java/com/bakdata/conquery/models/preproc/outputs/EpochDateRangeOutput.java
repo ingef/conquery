@@ -7,13 +7,17 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
-import com.bakdata.conquery.models.events.parser.Parser;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.Parser;
+import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
+import com.bakdata.conquery.util.DateReader;
 import com.google.common.base.Strings;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 import lombok.ToString;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
  * Parse input columns as {@link CDateRange}. Input values must be {@link com.bakdata.conquery.models.common.CDate} based ints.
@@ -22,8 +26,6 @@ import lombok.ToString;
 @ToString(of = {"startColumn", "endColumn"})
 @CPSType(id = "EPOCH_DATE_RANGE", base = OutputDescription.class)
 public class EpochDateRangeOutput extends OutputDescription {
-
-	private static final long serialVersionUID = 1L;
 
 	@NotNull
 	private String startColumn, endColumn;
@@ -39,7 +41,17 @@ public class EpochDateRangeOutput extends OutputDescription {
 	}
 
 	@Override
-	public Output createForHeaders(Object2IntArrayMap<String> headers) {
+	public int hashCode(){
+		return new HashCodeBuilder()
+					   .append(super.hashCode())
+					   .append(startColumn)
+					   .append(endColumn)
+					   .append(allowOpen)
+					   .toHashCode();
+	}
+
+	@Override
+	public Output createForHeaders(Object2IntArrayMap<String> headers, DateReader dateReader, ConqueryConfig config) {
 		assertRequiredHeaders(headers, startColumn, endColumn);
 
 		final int startIndex = headers.getInt(startColumn);
@@ -47,7 +59,7 @@ public class EpochDateRangeOutput extends OutputDescription {
 
 		return new Output() {
 			@Override
-			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+			protected Object parseLine(String[] row, Parser type, long sourceLine) throws ParsingException {
 				final boolean startNull = Strings.isNullOrEmpty(row[startIndex]);
 				final boolean endNull = Strings.isNullOrEmpty(row[endIndex]);
 
@@ -78,5 +90,11 @@ public class EpochDateRangeOutput extends OutputDescription {
 	@Override
 	public MajorTypeId getResultType() {
 		return MajorTypeId.DATE_RANGE;
+	}
+
+	@Override
+	public Parser<?, ?> createParser(ConqueryConfig config) {
+
+		return new DateRangeParser(config);
 	}
 }

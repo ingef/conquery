@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.auth;
 
+import com.bakdata.conquery.models.auth.entities.Subject;
+import com.bakdata.conquery.models.auth.util.SubjectPrincipalCollection;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.experimental.FieldNameConstants;
 import org.apache.shiro.authc.AuthenticationInfo;
-import org.apache.shiro.realm.Realm;
-import org.apache.shiro.subject.SimplePrincipalCollection;
 
 /**
  * Specialization class of the {@link AuthenticationInfo} that enforces the use
@@ -18,7 +18,7 @@ import org.apache.shiro.subject.SimplePrincipalCollection;
 @EqualsAndHashCode
 public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 
-	private final SimplePrincipalCollection principals = new SimplePrincipalCollection();
+	private final SubjectPrincipalCollection principals;
 	
 	/**
 	 * The credential a realm used for authentication.
@@ -31,9 +31,10 @@ public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 	 */
 	private final boolean displayLogout; 
 
-	public ConqueryAuthenticationInfo(UserId userId, Object credentials, Realm realm, boolean displayLogout) {
-		principals.add(userId, realm.getName());
+	public ConqueryAuthenticationInfo(Subject subject, Object credentials, ConqueryAuthenticationRealm realm, boolean displayLogout) {
 		this.credentials = credentials;
 		this.displayLogout = displayLogout;
+		principals = new SubjectPrincipalCollection(subject, realm);
 	}
+
 }

@@ -1,0 +1,350 @@
+{
+    "title": {
+        "en": "Data Export",
+        "de": "Datenexport"
+    },
+    "description": {
+		"de": "Mit diesem Formular werden Konzept- und Ausgabewerte für jeden Versicherten einer Anfrage einzeln auf einen Beobachtungszeitraum aggregiert. Zusätzlich zum gesamten Zeitraum kann dieser nochmal in Jahre oder Quartale unterteilt werden. Die Daten können dabei in einem absoluten Beobachtungszeitraum oder relativ zu einem mit der Anfrage erstellten Indexdatum analysiert werden. Die Ausgabe kann sowohl als Excel, als auch CSV heruntergeladen werden.",
+		"en": "With this form, concept and output values for each insured person of a query are aggregated individually to an observation period. In addition to the entire period, this can be subdivided again into years or quarters. The data can be analyzed in an absolute observation period or relative to an index date created with the query. The output can be downloaded as Excel as well as CSV."
+	},
+    "type": "EXPORT_FORM",
+    "fields": [
+        {
+            "label": {
+				"en": "Cohort",
+				"de": "Versichertengruppe"
+			},
+            "style": {
+                "size": "h1"
+             },
+            "type": "HEADLINE"
+        },
+        {
+            "name": "queryGroup",
+            "type": "RESULT_GROUP",
+            "label": {
+				"de": "Versichertengruppe (Anfrage)",
+				"en": "Cohort (Previous Query)"
+			},
+            "dropzoneLabel": {
+				"de": "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu",
+				"en": "Add a cohort from a previous query"
+			},
+            "validations": [
+                "NOT_EMPTY"
+            ],
+            "tooltip": {
+				"de": "Versichertengruppe (Anfrage) für die Daten ausgegeben werden soll.",
+				"en": "Cohort whose data is exported"
+			}
+        },
+        {
+            "label": {
+				"de": "Zeitlicher Bezug",
+				"en": "Time Reference"
+			},
+            "style": {
+                "size": "h1"
+             },
+            "type": "HEADLINE"
+        },
+        {
+            "name": "timeMode",
+            "type": "TABS",
+            "defaultValue": "ABSOLUTE",
+            "tabs": [
+                {
+                    "name": "ABSOLUTE",
+                    "title": {
+						"de": "Absolut",
+						"en": "Absolute"
+					},
+                    "fields": [
+                        {
+                            "name": "dateRange",
+                            "type": "DATE_RANGE",
+                            "label": {
+								"de": "Beobachtungszeitraum",
+								"en": "Observation Period"
+							},
+                            "validations": [
+                                "NOT_EMPTY"
+                            ]
+                        }
+                    ],
+                    "tooltip": {
+						"de": "Die Ausgaben beziehen sich auf einen festen absoluten Zeitraum.",
+						"en": "The output relates to a fixed absolute period."
+					}
+                },
+                {
+                    "name": "RELATIVE",
+                    "title": {
+						"de": "Relativ",
+						"en": "Relative"
+					},
+                    "fields": [
+                        {
+                            "name": "timeUnit",
+                            "type": "SELECT",
+                            "label": {
+								"de": "Zeiteinheit des Vor- und Nachbeobachtungszeitraums",
+								"en": "Time unit of feature and outcome periods"
+							},
+                            "defaultValue": "QUARTERS",
+                            "options": [
+                                {
+                                    "label": {
+										"de": "Tage",
+										"en": "Days"
+									},
+                                    "value": "DAYS"
+                                },
+                                {
+                                    "label": {
+										"de": "Quartale",
+										"en": "Quarters"
+									},
+                                    "value": "QUARTERS"
+                                }
+                            ],
+                            "validations": [
+                                "NOT_EMPTY"
+                            ],
+                            "tooltip": {
+								"de": "Die Zeiteinheit bezieht sich auf die folgenden Eingabefelder, welche den Zeitraum vor und nach dem Indexdatum bestimmen.",
+								"en": "The time unit refers to the following input fields, which determine the period before and after the index date."
+							}
+                        },
+                        {
+                            "name": "timeCountBefore",
+                            "type": "NUMBER",
+                            "defaultValue": 4,
+                            "min": 1,
+                            "label": {
+								"de": "Zeit davor",
+								"en": "Units before"
+							},
+                            "placeholder": {
+								"de": "4",
+								"en": "4"
+							},
+                            "pattern": "^(?!-)\\d*$",
+                            "validations": [
+                                "NOT_EMPTY",
+                                "GREATER_THAN_ZERO"
+                            ],
+                            "tooltip": {
+								"de": "Anzahl an Zeiteinheiten, die die Größe des Zeitraums vor dem Indexdatum bestimmten.",
+								"en": "Number of time units that determined the size of the period before the index date."
+							}
+                        },
+                        {
+                            "name": "timeCountAfter",
+                            "type": "NUMBER",
+                            "min": 1,
+                            "defaultValue": 4,
+                            "label": {
+								"de": "Zeit danach",
+								"en": "Units after"
+							},
+                            "placeholder": {
+								"de": "4",
+								"en": "4"
+							},
+                            "pattern": "^(?!-)\\d*$",
+                            "validations": [
+                                "NOT_EMPTY",
+                                "GREATER_THAN_ZERO"
+                            ],
+                            "tooltip": {
+								"de": "Anzahl an Zeiteinheiten, die die Größe des Zeitraums nach dem Indexdatum bestimmten.",
+								"en": "Number of time units that determined the size of the period after the index date."
+							}
+                        },
+                        {
+                            "name": "indexSelector",
+                            "type": "SELECT",
+                            "label": {
+								"de": "Zeitstempel Indexdatum",
+								"en": "Index date sampler"
+							},
+                            "defaultValue": "EARLIEST",
+                            "options": [
+                                {
+                                    "label": {
+										"de": "ERSTES",
+										"en": "First"
+									},
+                                    "value": "EARLIEST"
+                                },
+                                {
+                                    "label": {
+										"de": "LETZTES",
+										"en": "Last"
+									},
+                                    "value": "LATEST"
+                                },
+                                {
+                                    "label": {
+										"de": "ZUFÄLLIG",
+										"en": "Random"
+									},
+                                    "value": "RANDOM"
+                                }
+                            ],
+                            "validations": [
+                                "NOT_EMPTY"
+                            ],
+                            "tooltip": {
+								"de": "Wenn mehr als ein Datumswert pro Person vorliegt, kann hier ausgewählt werden welcher als Indexdatum gewertet werden soll.",
+								"en": "If there is more than one date value per person, you can select here which one should be evaluated as index date."
+							}
+                        },
+                        {
+                            "name": "indexPlacement",
+                            "type": "SELECT",
+                            "label": {
+								"de": "Zugehörigkeit Indexdatum",
+								"en": "Index period inclusion"
+							},
+                            "defaultValue": "AFTER",
+                            "options": [
+                                {
+                                    "label": {
+										"de": "VORBEOBACHTUNGSZEITRAUM",
+										"en": "Feature period"
+									},
+                                    "value": "BEFORE"
+                                },
+                                {
+                                    "label": {
+										"de": "NEUTRAL",
+										"en": "Neutral"
+									},
+                                    "value": "NEUTRAL"
+                                },
+                                {
+                                    "label": {
+										"de": "NACHBEOBACHTUNGSZEITRAUM",
+										"en": "Outcome period"
+									},
+                                    "value": "AFTER"
+                                }
+                            ],
+                            "validations": [
+                                "NOT_EMPTY"
+                            ],
+                            "tooltip": {
+								"de": "Angabe für welchen Zeitraum das Quartal mit dem Indexdatum gewertet wird.",
+								"en": "Indication which period includes the index period"
+							}
+                        }
+                    ],
+                    "tooltip": {
+						"de": "Outputs are for a pre- and post-observation period, depending on the index period of each person in the cohort."
+                    }
+                }
+            ]
+        },
+        {
+            "label": {
+				"de": "Datengrundlage und Konzepte",
+				"en": "Attributes"
+			},
+            "style": {
+                "size": "h1"
+             },
+            "type": "HEADLINE"
+        },
+		{
+			"name": "features",
+			"type": "CONCEPT_LIST",
+			"label": {
+				"de": "Konzepte",
+				"en": "Concepts"
+			},
+			"isTwoDimensional": true,
+			"conceptDropzoneLabel": {
+				"de": "Füge ein Konzept oder eine Konzeptliste hinzu",
+				"en": "Add a concept or a concept list"
+			},
+			"validations": [
+				"NOT_EMPTY"
+			]
+		},
+        {
+            "label": {
+				"de": "Analyse und Ausgabe",
+				"en": "Analysis and Output"
+			},
+            "style": {
+                "size": "h1"
+             },
+            "type": "HEADLINE"
+        },
+        {
+            "name": "resolution",
+            "type": "SELECT",
+            "label": {
+				"de": "Stratifizierung Beobachtungszeitraum",
+				"en": "Temporal stratification"
+			},
+            "defaultValue": "COMPLETE",
+            "options": [
+                {
+                    "label": {
+						"de": "Gesamter Zeitraum",
+						"en": "Total"
+					},
+                    "value": "COMPLETE"
+                },
+                {
+                    "label": {
+						"de": "Jahre",
+						"en": "Years"
+					},
+                    "value": "YEARS"
+                },
+                {
+                    "label": {
+						"de": "Quartale",
+						"en": "Quarters"
+					},
+                    "value": "QUARTERS"
+                },
+                {
+                    "label": {
+						"de": "Jahre und Quartale",
+						"en": "Years and Quarters"
+					},
+                    "value": "YEARS_QUARTERS"
+                },
+                {
+                    "label": {
+						"de": "Gesamter Zeitraum und Jahre",
+						"en": "Total and Years"
+					},
+                    "value": "COMPLETE_YEARS"
+                },
+                {
+                    "label": {
+						"de": "Gesamter Zeitraum und Quartale",
+						"en": "Total and Quarters"
+					},
+                    "value": "COMPLETE_QUARTERS"
+                },
+                {
+                    "label": {
+						"de": "Gesamter Zeitraum, Jahre und Quartale",
+						"en": "Total, Years and Quarters"
+					},
+                    "value": "COMPLETE_YEARS_QUARTERS"
+                }
+            ],
+            "validations": [
+                "NOT_EMPTY"
+            ]
+        }
+    ]
+}

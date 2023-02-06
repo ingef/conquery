@@ -1,23 +1,40 @@
-import { SET_MESSAGE, RESET_MESSAGE } from "./actionTypes";
+import { getType } from "typesafe-actions";
 
+import { Action } from "../app/actions";
+
+import { resetMessage, setMessage } from "./actions";
+
+export enum SnackMessageType {
+  ERROR = "error",
+  SUCCESS = "success",
+  DEFAULT = "default",
+}
 export interface SnackMessageStateT {
-  messageKey: string | null;
+  message: string | null;
+  type: SnackMessageType;
 }
 
 const initialState: SnackMessageStateT = {
-  messageKey: null,
+  message: null,
+  type: SnackMessageType.DEFAULT,
 };
 
-export default (
+function reducer(
   state: SnackMessageStateT = initialState,
-  action: Object
-): SnackMessageStateT => {
+  action: Action,
+): SnackMessageStateT {
   switch (action.type) {
-    case SET_MESSAGE:
-      return { ...state, messageKey: action.payload.messageKey };
-    case RESET_MESSAGE:
+    case getType(setMessage):
+      return {
+        ...state,
+        message: action.payload.message,
+        type: action.payload.type,
+      };
+    case getType(resetMessage):
       return initialState;
     default:
       return state;
   }
-};
+}
+
+export default reducer;

@@ -6,10 +6,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.models.config.ParserConfig;
-import com.bakdata.conquery.models.events.parser.specific.string.StringParser;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.parser.specific.StringParser;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -22,12 +22,12 @@ public class StringEncodingTest {
 	@TestFactory
 	public Stream<DynamicTest> testEncodings() {
 
-		StringTypeEncoded.Encoding encoding = StringTypeEncoded.Encoding.Base64;
+		EncodedStringStore.Encoding encoding = EncodedStringStore.Encoding.Base64;
 
 		return Stream.generate(() -> UUID.randomUUID().toString().replace("-", ""))
 					 .map(uuid -> DynamicTest.dynamicTest(uuid, () -> {
-						 byte[] decoded = encoding.decode(uuid);
-						 String encoded = encoding.encode(decoded);
+						 byte[] decoded = encoding.encode(uuid);
+						 String encoded = encoding.decode(decoded);
 
 						 assertThat(encoded).isEqualTo(uuid);
 						 assertThat(decoded.length).isLessThan(uuid.length());
@@ -37,7 +37,7 @@ public class StringEncodingTest {
 
 	@Test
 	public void testHexStreamStringType() {
-		StringParser parser = new StringParser(new ParserConfig());
+		StringParser parser = new StringParser(new ConqueryConfig());
 
 		Stream.generate(() -> UUID.randomUUID().toString().replace("-", ""))
 			  .map(String::toUpperCase)
@@ -53,10 +53,10 @@ public class StringEncodingTest {
 			  .forEach(parser::addLine);
 
 
-		StringTypeEncoded subType = (StringTypeEncoded) parser.findBestType();
+		EncodedStringStore subType = (EncodedStringStore) parser.findBestType();
 
 		assertThat(subType)
-				.isInstanceOf(StringTypeEncoded.class);
-		assertThat(subType.getEncoding()).isEqualByComparingTo(StringTypeEncoded.Encoding.Base16UpperCase);
+				.isInstanceOf(EncodedStringStore.class);
+		assertThat(subType.getEncoding()).isEqualByComparingTo(EncodedStringStore.Encoding.Base16UpperCase);
 	}
 }

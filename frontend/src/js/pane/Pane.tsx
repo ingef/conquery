@@ -1,17 +1,14 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import { FC } from "react";
+
 import PaneTabNavigation from "./PaneTabNavigation";
+import { TabNavigationTab } from "./TabNavigation";
 
-interface PropsT {
-  right?: boolean;
-  left?: boolean;
-}
-
-const Root = styled("div")<{ left?: boolean; right?: boolean }>`
+const Root = styled("div")`
   width: 100%;
   height: 100%;
 
-  padding: ${({ left, right }) => (left || right ? "50px 0 10px" : "0")};
+  padding: 40px 0 0;
 `;
 
 const Container = styled("div")`
@@ -22,14 +19,28 @@ const Container = styled("div")`
   position: relative;
 `;
 
-const Pane: FC<PropsT> = ({ left, right, children }) => {
+interface PropsT {
+  tabs: TabNavigationTab[];
+  right?: boolean;
+  left?: boolean;
+  className?: string;
+  dataTestId: string;
+}
+
+const Pane: FC<PropsT> = ({ tabs, left, children, className, dataTestId }) => {
   const paneType = left ? "left" : "right";
 
   return (
-    <Root left={left} right={right}>
+    <Root className={className}>
       <Container>
-        <PaneTabNavigation paneType={paneType} />
-        <Container>{children}</Container>
+        <PaneTabNavigation
+          tabs={tabs}
+          paneType={paneType}
+          dataTestId={dataTestId}
+        />
+        <Container data-test-id={dataTestId + "-container"}>
+          {children}
+        </Container>
       </Container>
     </Root>
   );

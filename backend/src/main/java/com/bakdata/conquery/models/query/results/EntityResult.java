@@ -1,53 +1,32 @@
 package com.bakdata.conquery.models.query.results;
 
-import java.util.List;
-
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.error.ConqueryError;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import java.util.List;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 public interface EntityResult {
 
-	static SinglelineContainedEntityResult of(int entityId, Object[] values) {
-		return new SinglelineContainedEntityResult(entityId, values);
-	}
+	int getEntityId();
+	/**
+	 * Provides the number of columns this result contains.
+	 */
+	int columnCount();
+	Stream<Object[]> streamValues();
 	
-	static EntityResult of(int id, List<Object[]> values) {
-		if(values.isEmpty()) {
-			return notContained();
-		}
-		if(values.size() == 1) {
-			return of(id, values.get(0));
-		}
-		return multilineOf(id, values);
-	}
+	/**
+	 * Returns a list of the computed result line for this entity on the query.
+	 */
+	List<Object[]> listResultLines();
 	
-	static MultilineContainedEntityResult multilineOf(int entityId, List<Object[]> values) {
-		return new MultilineContainedEntityResult(entityId, values);
-	}
-	
-	static FailedEntityResult failed(int entityId, ConqueryError error) {
-		return new FailedEntityResult(entityId, error);
-	}
-	
-	static NotContainedEntityResult notContained() {
-		return NotContainedEntityResult.INSTANCE;
-	};
-	
-	@JsonIgnore
-	boolean isFailed();
-	
-	@JsonIgnore
-	boolean isContained();
-	
-	default FailedEntityResult asFailed() {
-		throw new IllegalStateException("The EntityResult "+this+" is not failed");
-	}
-	
-	default ContainedEntityResult asContained() {
-		throw new IllegalStateException("The EntityResult "+this+" is not contained");
-	}
+	/**
+	 * Allows to modify the underlying result directly. The return value of the line modifier is the new line.
+	 * So the modifier can change the array without reallocation by return the reference it received. Alternative it can 
+	 * allocate a new result line and return that reference instead. 
+	 * @param lineModifier A modifier(-chain) for a result line.
+	 */
+	void modifyResultLinesInplace(UnaryOperator<Object[]> lineModifier);
 }

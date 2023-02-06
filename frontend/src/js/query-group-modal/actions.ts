@@ -1,25 +1,14 @@
-import {
-  QUERY_GROUP_MODAL_SET_NODE,
-  QUERY_GROUP_MODAL_CLEAR_NODE,
-  QUERY_GROUP_MODAL_SET_DATE,
-  QUERY_GROUP_MODAL_RESET_ALL_DATES
-} from "./actionTypes";
+import { ActionType, createAction } from "typesafe-actions";
 
-export const queryGroupModalSetNode = andIdx => ({
-  type: QUERY_GROUP_MODAL_SET_NODE,
-  payload: { andIdx }
-});
+import type { DateRangeT } from "../api/types";
 
-export const queryGroupModalClearNode = () => ({
-  type: QUERY_GROUP_MODAL_CLEAR_NODE
-});
+export type QueryGroupModalActions = ActionType<
+  typeof queryGroupModalSetDate | typeof queryGroupModalResetAllDates
+>;
 
-export const queryGroupModalSetDate = (andIdx, date) => ({
-  type: QUERY_GROUP_MODAL_SET_DATE,
-  payload: { andIdx, date }
-});
-
-export const queryGroupModalResetAllDates = andIdx => ({
-  type: QUERY_GROUP_MODAL_RESET_ALL_DATES,
-  payload: { andIdx }
-});
+export const queryGroupModalSetDate = createAction(
+  "query-group-modal/SET_DATE",
+)<{ andIdx: number; date: DateRangeT }>();
+export const queryGroupModalResetAllDates = createAction(
+  "query-group-modal/RESET_ALL_DATES",
+)<{ andIdx: number }>();

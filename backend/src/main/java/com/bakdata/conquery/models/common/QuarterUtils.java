@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.common;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.time.YearMonth;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
@@ -24,45 +23,14 @@ public final class QuarterUtils {
 			temporal -> (TemporalAdjusters.firstDayOfMonth().adjustInto(nextQuarterAdjuster().adjustInto(temporal))).minus(1, ChronoUnit.DAYS);
 
 
-	public static boolean isFirstMonthOfQuarter(LocalDate date) {
-		Month month = date.getMonth();
-		return month == month.firstMonthOfQuarter();
-	}
-
-	public static YearMonth getYearQuarter(int year, int quarter) {
-		return YearMonth.from(getFirstDayOfQuarter(year, quarter));
-	}
-
-	public static boolean isBeginOfQuarter(LocalDate date) {
-		return CDate.isFirstDayOfMonth(date) && isFirstMonthOfQuarter(date);
-	}
-
-	public static boolean isEndOfQuarter(LocalDate date) {
-		return isBeginOfQuarter(date.plusDays(1));
-	}
-	
-	/**
-	 * Returns the numerical value of the quarter the date in in.
-	 * @param date
-	 * @return The quarter
-	 */
-	public static int getQuarter(LocalDate date) {
-		return date.get(IsoFields.QUARTER_OF_YEAR);
-	}
-	
 	public static Month getFirstMonthOfQuarter(int quarter) {
-		switch (quarter) {
-			case 1:
-				return Month.JANUARY;
-			case 2:
-				return Month.APRIL;
-			case 3:
-				return Month.JULY;
-			case 4:
-				return Month.OCTOBER;
-			default:
-				throw new IllegalStateException(String.format("Quarter %d exceeds 1-4", quarter));
-		}
+		return switch (quarter) {
+			case 1 -> Month.JANUARY;
+			case 2 -> Month.APRIL;
+			case 3 -> Month.JULY;
+			case 4 -> Month.OCTOBER;
+			default -> throw new IllegalStateException(String.format("Quarter %d exceeds 1-4", quarter));
+		};
 	}
 
 	public static LocalDate getFirstDayOfQuarter(int year, int quarter) {
@@ -120,5 +88,14 @@ public final class QuarterUtils {
 
 	public static TemporalAdjuster lastDayOfQuarterAdjuster() {
 		return LAST_DAY_OF_QUARTER_ADJUSTER;
+	}
+
+	/**
+	 * Returns the numerical value of the quarter the date in in.
+	 * @param date
+	 * @return The quarter
+	 */
+	public static int getQuarter(LocalDate date) {
+		return date.get(IsoFields.QUARTER_OF_YEAR);
 	}
 }

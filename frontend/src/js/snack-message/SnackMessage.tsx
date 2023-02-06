@@ -1,20 +1,27 @@
-import React, { useRef, memo, FC } from "react";
 import styled from "@emotion/styled";
+import { useRef, memo, FC } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import T from "i18n-react";
 
+import type { StateT } from "../app/reducers";
+import { useClickOutside } from "../common/helpers/useClickOutside";
 import FaIcon from "../icon/FaIcon";
 
-import { setMessage } from "./actions";
-import { StateT } from "app-types";
-import { useClickOutside } from "../common/helpers/useClickOutside";
+import { resetMessage as resetMessageAction } from "./actions";
+import { SnackMessageStateT, SnackMessageType } from "./reducer";
 
-const Root = styled("div")`
+const snackMessageTypeToColor: Record<SnackMessageType, string> = {
+  [SnackMessageType.ERROR]: "rgba(0, 0, 0, 0.75)",
+  [SnackMessageType.SUCCESS]: "rgba(12, 100, 39, 0.9)", // #0C6427
+  [SnackMessageType.DEFAULT]: "rgba(0, 0, 0, 0.75)",
+};
+
+const Root = styled("div")<{ type: SnackMessageType }>`
   position: fixed;
   z-index: 10;
   bottom: 20px;
   right: 20px;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: ${({ type }) =>
+    snackMessageTypeToColor[type ?? SnackMessageType.DEFAULT]};
   color: white;
   display: flex;
   flex-direction: row;
@@ -42,24 +49,24 @@ const ClearZone = styled("div")`
 
 const SnackMessage: FC = memo(function SnackMessageComponent() {
   const ref = useRef(null);
-  const messageKey = useSelector<StateT, string | null>(
-    (state) => state.snackMessage.messageKey
+  const { message, type } = useSelector<StateT, SnackMessageStateT>(
+    (state) => state.snackMessage,
   );
   const dispatch = useDispatch();
-  const resetMessage = () => dispatch(setMessage(null));
+  const resetMessage = () => dispatch(resetMessageAction());
 
   useClickOutside(ref, () => {
-    if (messageKey) {
+    if (message) {
       resetMessage();
     }
   });
 
   return (
     <div ref={ref}>
-      {messageKey && (
-        <Root>
+      {message && (
+        <Root type={type}>
           <Relative>
-            {T.translate(messageKey)}
+            <div dangerouslySetInnerHTML={{ __html: message }} />
             <ClearZone onClick={resetMessage}>
               <FaIcon white large icon="times" />
             </ClearZone>

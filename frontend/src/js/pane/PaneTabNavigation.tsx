@@ -1,29 +1,32 @@
-import React from "react";
+import { FC } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
-import { clickPaneTab } from "./actions";
-import type { TabType } from "./reducer";
+import type { StateT } from "../app/reducers";
 
-import TabNavigation from "./TabNavigation";
-import { StateT } from "app-types";
+import TabNavigation, { TabNavigationTab } from "./TabNavigation";
+import { clickPaneTab } from "./actions";
 
 interface PropsT {
   paneType: "left" | "right";
+  tabs: TabNavigationTab[];
+  dataTestId: string;
 }
 
-const PaneTabNavigation: React.FC<PropsT> = ({ paneType }) => {
-  const tabs = useSelector<StateT, TabType[]>(
-    state => state.panes[paneType].tabs
-  );
-  const activeTab = useSelector<StateT, string>(
-    state => state.panes[paneType].activeTab
+const PaneTabNavigation: FC<PropsT> = ({ tabs, paneType, dataTestId }) => {
+  const activeTab = useSelector<StateT, string | null>(
+    (state) => state.panes[paneType].activeTab,
   );
   const dispatch = useDispatch();
 
-  const onClickTab = (tab: string) => dispatch(clickPaneTab(paneType, tab));
+  const onClickTab = (tab: string) => dispatch(clickPaneTab({ paneType, tab }));
 
   return (
-    <TabNavigation onClickTab={onClickTab} activeTab={activeTab} tabs={tabs} />
+    <TabNavigation
+      onClickTab={onClickTab}
+      activeTab={activeTab}
+      tabs={tabs}
+      dataTestId={dataTestId}
+    />
   );
 };
 

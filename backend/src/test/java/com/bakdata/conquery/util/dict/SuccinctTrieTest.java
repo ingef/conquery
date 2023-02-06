@@ -2,25 +2,16 @@ package com.bakdata.conquery.util.dict;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.StringTypeEncoded;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.github.powerlibraries.io.In;
+import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import lombok.extern.slf4j.Slf4j;
@@ -35,26 +26,6 @@ public class SuccinctTrieTest {
 		return new long[]{0L, 7L};
 	}
 
-	@Test
-	public void replicationTest() throws IOException {
-		SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
-		MapDictionary direct = new MapDictionary(new DatasetId("dataset"), "name2");
-
-		data().forEach(entry -> direct.put(entry.getBytes()));
-
-		dict.compress();
-
-		SuccinctTrie replicatedDict = SuccinctTrie.fromSerialized(dict.toSerialized());
-
-		assertThat(IntStream.range(0, dict.size())).allSatisfy(id -> {
-			assertThat(replicatedDict.getElement(id)).isEqualTo(dict.getElement(id));
-		});
-
-	}
-
-	public static Stream<String> data() throws IOException {
-		return In.resource(SuccinctTrieTest.class, "SuccinctTrieTest.data").streamLines();
-	}
 
 	@Test
 	public void assertionTest() {
@@ -67,7 +38,7 @@ public class SuccinctTrieTest {
 		words.add("ha");
 		words.add("hat");
 
-		SuccinctTrie direct = new SuccinctTrie(new DatasetId("dataset"), "name");
+		SuccinctTrie direct = new SuccinctTrie(Dataset.PLACEHOLDER, "name");
 
 
 		int distinctValues = 0;
@@ -80,6 +51,8 @@ public class SuccinctTrieTest {
 
 		direct.compress();
 
+		assertThat(direct.iterator().next()).isEqualTo(new DictionaryEntry(0, "hat".getBytes()));
+
 		assertThat(direct.getElement(0)).isEqualTo("hat".getBytes());
 		assertThat(direct.getElement(1)).isEqualTo("it".getBytes());
 		assertThat(direct.getElement(2)).isEqualTo("is".getBytes());
@@ -89,26 +62,11 @@ public class SuccinctTrieTest {
 		assertThat(direct.getId("h".getBytes())).isEqualTo(-1);
 	}
 
-	@Test
-	public void serializationTest()
-			throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
-
-		SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
-		dict.setDataset(new DatasetId("test"));
-		dict.setName("testDict");
-		data().forEach(value -> dict.put(value.getBytes()));
-
-		dict.compress();
-		SerializationTestUtil
-				.forType(Dictionary.class)
-				.test(dict);
-	}
-
 	@ParameterizedTest(name = "seed: {0}")
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
-		final SuccinctTrie dict = new SuccinctTrie(new DatasetId("dataset"), "name");
-		EncodedDictionary direct = new EncodedDictionary(dict, StringTypeEncoded.Encoding.UTF8);
+		final SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "name");
+		EncodedDictionary direct = new EncodedDictionary(dict, EncodedStringStore.Encoding.UTF8);
 		final BiMap<String, Integer> reference = HashBiMap.create();
 
 		AtomicInteger count = new AtomicInteger(0);

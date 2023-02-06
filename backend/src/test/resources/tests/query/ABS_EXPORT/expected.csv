@@ -1,5 +1,5 @@
-result,resolution,index,date_range,test_tree.exists
-0,complete,,2000-01-01/2002-12-31,t
-0,year,1,2000-01-01/2000-12-31,t
-0,year,2,2001-01-01/2001-12-31,t
-0,year,3,2002-01-01/2002-12-31,f
+result,resolution,index,date_range,test_tree test_child1 exists
+0,complete,,2000-01-01/2002-12-31,1
+0,year,1,2000-01-01/2000-12-31,1
+0,year,2,2001-01-01/2001-12-31,1
+0,year,3,2002-01-01/2002-12-31,0

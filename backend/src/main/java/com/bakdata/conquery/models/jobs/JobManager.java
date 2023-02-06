@@ -3,14 +3,12 @@ package com.bakdata.conquery.models.jobs;
 import java.io.Closeable;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class JobManager implements Closeable{
-
 
 	private final JobExecutor slowExecutor;
 	private final JobExecutor fastExecutor;
@@ -30,7 +28,7 @@ public class JobManager implements Closeable{
 	}
 
 	public void addSlowJob(Job job) {
-		log.debug("Added job {}", job.getLabel());
+		log.trace("Added job {}", job.getLabel());
 		slowExecutor.add(job);
 	}
 	

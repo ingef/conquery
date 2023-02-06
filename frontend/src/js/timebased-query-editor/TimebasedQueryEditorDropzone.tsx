@@ -1,56 +1,57 @@
-import React from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
 
-import { PREVIOUS_QUERY, TIMEBASED_NODE } from "../common/constants/dndTypes";
-import Dropzone from "../form-components/Dropzone";
+import { DNDType } from "../common/constants/dndTypes";
+import { exists } from "../common/helpers/exists";
+import type { DragItemQuery } from "../standard-query-editor/types";
+import Dropzone from "../ui-components/Dropzone";
 
 import { removeTimebasedNode } from "./actions";
+import { TimebasedResultType } from "./reducer";
 
-type PropsType = {
-  onDropNode: () => void;
-  onRemoveTimebasedNode: () => void;
-};
+interface PropsType {
+  onDropNode: (
+    node: TimebasedResultType | DragItemQuery,
+    moved: boolean,
+  ) => void;
+}
 
 const StyledDropzone = styled(Dropzone)`
   width: 150px;
   text-align: center;
-  background-color: ${({ theme }) => theme.col.bg};
 `;
 
-const DROP_TYPES = [PREVIOUS_QUERY, TIMEBASED_NODE];
+const DROP_TYPES = [DNDType.PREVIOUS_QUERY];
 
-const TimebasedQueryEditorDropzone = ({
-  onRemoveTimebasedNode,
-  onDropNode
-}: PropsType) => {
-  const onDrop = (props, monitor) => {
-    const item = monitor.getItem();
+const TimebasedQueryEditorDropzone = ({ onDropNode }: PropsType) => {
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const onRemoveTimebasedNode = (
+    conditionIdx: number,
+    resultIdx: number,
+    moved: boolean,
+  ) => dispatch(removeTimebasedNode({ conditionIdx, resultIdx, moved }));
 
-    const { moved } = item;
+  const onDrop = (item: DragItemQuery) => {
+    const { movedFromAndIdx, movedFromOrIdx } = item.dragContext;
 
-    if (moved) {
-      const { conditionIdx, resultIdx } = item;
-
-      onRemoveTimebasedNode(conditionIdx, resultIdx, moved);
-      onDropNode(item.node, moved);
+    if (exists(movedFromAndIdx) && exists(movedFromOrIdx)) {
+      onRemoveTimebasedNode(movedFromAndIdx, movedFromOrIdx, true);
+      onDropNode(item, true);
     } else {
       onDropNode(item, false);
     }
   };
 
   return (
-    <StyledDropzone acceptedDropTypes={DROP_TYPES} onDrop={onDrop}>
-      {() => T.translate("dropzone.dragQuery")}
+    <StyledDropzone /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<DragItemQuery>>> */
+      acceptedDropTypes={DROP_TYPES}
+      onDrop={(item) => onDrop(item as DragItemQuery)}
+    >
+      {() => t("dropzone.dragQuery")}
     </StyledDropzone>
   );
 };
 
-export default connect(
-  () => ({}),
-  dispatch => ({
-    onRemoveTimebasedNode: (conditionIdx, resultIdx, moved) =>
-      dispatch(removeTimebasedNode(conditionIdx, resultIdx, moved))
-  })
-)(TimebasedQueryEditorDropzone);
+export default TimebasedQueryEditorDropzone;

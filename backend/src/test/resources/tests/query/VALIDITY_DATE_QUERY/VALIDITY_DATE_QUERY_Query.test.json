@@ -1,77 +1,86 @@
 {
-    "type": "QUERY_TEST",
-    "label": "VALIDITY_DATE_QUERY Test",
-    "expectedCsv": "tests/query/VALIDITY_DATE_QUERY/expected.csv",
-    "query": {
-        "type": "CONCEPT_QUERY",
-        "root": {
-            "type": "CONCEPT",
-            "ids": [
-                "${dataset}.test_tree.test_child1"
-            ],
-            "tables": [
-                {
-                    "id": "${dataset}.test_tree.test_column",
-                    "dateColumn": {
-                        "value": "${dataset}.test_tree.test_column.other_date"
-                    }
-                }
-            ]
-        }
-    },
-    "concepts": [
+  "type": "QUERY_TEST",
+  "label": "VALIDITY_DATE_QUERY Test",
+  "expectedCsv": "tests/query/VALIDITY_DATE_QUERY/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "concept.test_child1"
+      ],
+      "tables": [
         {
-            "label": "test_tree",
-            "type":"TREE",
-            "connectors": {
-                "label": "tree_label",
-                "name": "test_column",
-                "column": "test_table.test_column",
-                "validityDates": [
-                    {"label": "datum" ,"column": "test_table.datum"},
-                    {"label": "other_date" ,"column": "test_table.other_date"}
-                ]
-            },
-            "children": [
-                {
-                    "label": "test_child1",
-                    "description": " ",
-                    "condition": {"type": "PREFIX_LIST", "prefixes": "A1"},
-                    "children": []
-                },
-                {
-                    "label": "test_child2",
-                    "description": " ",
-                    "condition": {"type": "PREFIX_LIST", "prefixes": "B2"},
-                    "children": []
-                }
-            ]
+          "id": "concept.connector",
+          "dateColumn": {
+            "value": "concept.connector.other_date"
+          }
         }
-    ],
-    "content": {
-        "tables": [
-			{
-                "csv": "tests/query/VALIDITY_DATE_QUERY/content.csv",
-				"name": "test_table",
-                "primaryColumn" : {
-                    "name": "pid",
-                    "type": "STRING"
-                },
-				"columns": [
-					{
-                        "name": "datum",
-                        "type": "DATE"
-                    },
-                    {
-                        "name": "other_date",
-                        "type": "DATE"
-                    },
-					{
-						"name": "test_column",
-						"type": "STRING"
-					}
-				]
-			}
-		]
+      ]
     }
+  },
+  "concepts": [
+    {
+      "label": "concept",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "column": "table.test_column",
+        "validityDates": [
+          {
+            "name": "datum",
+            "column": "table.datum"
+          },
+          {
+            "name": "other_date",
+            "column": "table.other_date"
+          }
+        ]
+      },
+      "children": [
+        {
+          "name": "test_child1",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "A1"
+          },
+          "children": []
+        },
+        {
+          "name": "test_child2",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "B2"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/VALIDITY_DATE_QUERY/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "other_date",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -1,21 +1,23 @@
-import React, { FC } from "react";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
-import T from "i18n-react";
+import styled from "@emotion/styled";
+import { forwardRef, memo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 
-import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
-import FaIcon from "../icon/FaIcon";
-
-import {
-  CONCEPT_TREE_NODE,
-  QUERY_NODE,
-  PREVIOUS_QUERY,
-} from "../common/constants/dndTypes";
 import type { QueryIdT } from "../api/types";
-import type { DraggedNodeType, DraggedQueryType } from "./types";
-import { DropTargetMonitor } from "react-dnd";
+import { DNDType } from "../common/constants/dndTypes";
+import { nodeIsConceptQueryNode } from "../model/node";
+import DropzoneWithFileInput, {
+  DragItemFile,
+} from "../ui-components/DropzoneWithFileInput";
 
-const DROP_TYPES = [CONCEPT_TREE_NODE, QUERY_NODE, PREVIOUS_QUERY];
+import { EmptyQueryEditorDropzone } from "./EmptyQueryEditorDropzone";
+import type { StandardQueryNodeT } from "./types";
+
+const DROP_TYPES = [
+  DNDType.CONCEPT_TREE_NODE,
+  DNDType.PREVIOUS_QUERY,
+  DNDType.PREVIOUS_SECONDARY_ID_QUERY,
+];
 
 const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
   isInitial?: boolean;
@@ -32,7 +34,6 @@ const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)<{
     css`
       height: 100px;
       white-space: nowrap;
-      margin-top: 70px;
       width: initial;
     `};
 `;
@@ -41,100 +42,66 @@ const Text = styled("p")`
   margin: 0;
   font-size: ${({ theme }) => theme.font.sm};
 `;
-const TextInitial = styled("div")`
-  width: 100%;
-  font-size: ${({ theme }) => theme.font.lg};
-  padding: 30px;
-  font-weight: 400;
 
-  p {
-    margin: 0;
-  }
-  ul {
-    margin: 0;
-    padding: 0 22px;
-  }
-  h2 {
-    font-size: ${({ theme }) => theme.font.huge};
-    line-height: 1.3;
-    margin: 0 0 20px;
-  }
-`;
-
-const ArrowRight = styled(FaIcon)`
-  font-size: 140px;
-  margin-right: 30px;
-  color: ${({ theme }) => theme.col.grayLight};
-`;
-const Row = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
-
-interface PropsT {
+interface Props {
+  className?: string;
   isInitial?: boolean;
   isAnd?: boolean;
-  onDropNode: (node: DraggedNodeType | DraggedQueryType) => void;
+  onDropNode: (node: StandardQueryNodeT) => void;
   onDropFile: (file: File) => void;
   onLoadPreviousQuery: (id: QueryIdT) => void;
+  onImportLines?: (lines: string[]) => void;
 }
 
-const QueryEditorDropzone: FC<PropsT> = ({
-  isAnd,
-  isInitial,
-  onLoadPreviousQuery,
-  onDropFile,
-  onDropNode,
-}) => {
-  const onDrop = (_: any, monitor: DropTargetMonitor) => {
-    const item = monitor.getItem();
+const QueryEditorDropzone = forwardRef<HTMLDivElement, Props>(
+  (
+    {
+      className,
+      isAnd,
+      isInitial,
+      onLoadPreviousQuery,
+      onDropFile,
+      onDropNode,
+      onImportLines,
+    },
+    ref,
+  ) => {
+    const { t } = useTranslation();
+    const onDrop = useCallback(
+      (item: StandardQueryNodeT | DragItemFile) => {
+        if (item.type === "__NATIVE_FILE__") {
+          onDropFile(item.files[0]);
+        } else {
+          onDropNode(item);
 
-    if (item.files) {
-      onDropFile(item.files[0]);
-    } else {
-      onDropNode(item);
+          if (!nodeIsConceptQueryNode(item)) onLoadPreviousQuery(item.id);
+        }
+      },
+      [onDropFile, onDropNode, onLoadPreviousQuery],
+    );
 
-      if (item.isPreviousQuery) onLoadPreviousQuery(item.id);
-    }
-  };
+    return (
+      <SxDropzoneWithFileInput /* TODO: ADD GENERIC TYPE <FC<DropzoneProps<StandardQueryNodeT>>> */
+        ref={ref}
+        className={className}
+        isAnd={isAnd}
+        isInitial={isInitial}
+        acceptedDropTypes={DROP_TYPES}
+        onDrop={(item) => onDrop(item as StandardQueryNodeT | DragItemFile)}
+        onSelectFile={onDropFile}
+        disableClick={isInitial}
+        showImportButton={isInitial}
+        onImportLines={onImportLines}
+      >
+        {() => (
+          <>
+            {isInitial && <EmptyQueryEditorDropzone />}
+            {!isInitial && <Text>{t("dropzone.dragElementPlease")}</Text>}
+          </>
+        )}
+      </SxDropzoneWithFileInput>
+    );
+  },
+);
 
-  return (
-    <SxDropzoneWithFileInput
-      isAnd={isAnd}
-      isInitial={isInitial}
-      acceptedDropTypes={DROP_TYPES}
-      onDrop={onDrop}
-      onSelectFile={onDropFile}
-      disableClick={isInitial}
-      showFileSelectButton={isInitial}
-    >
-      {() => (
-        <>
-          {isInitial && (
-            <TextInitial>
-              <h2>{T.translate("dropzone.explanation")}</h2>
-              <Row>
-                <ArrowRight icon="arrow-right" />
-                <div>
-                  <p>{T.translate("dropzone.drop")}</p>
-                  <ul>
-                    <li>{T.translate("dropzone.aConcept")}</li>
-                    <li>{T.translate("dropzone.aQuery")}</li>
-                    <li>{T.translate("dropzone.aConceptList")}</li>
-                  </ul>
-                  <p>{T.translate("dropzone.intoThisArea")}</p>
-                </div>
-              </Row>
-            </TextInitial>
-          )}
-          {!isInitial && (
-            <Text>{T.translate("dropzone.dragElementPlease")}</Text>
-          )}
-        </>
-      )}
-    </SxDropzoneWithFileInput>
-  );
-};
-
-export default QueryEditorDropzone;
+export default memo(QueryEditorDropzone);

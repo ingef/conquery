@@ -7,7 +7,7 @@
       "label": "Datum",
       "column": "table.datum"
     },
-    "filter": {
+    "filters": {
       "type": "COUNT",
       "description": "Test count_filter",
       "column": "table.nr",

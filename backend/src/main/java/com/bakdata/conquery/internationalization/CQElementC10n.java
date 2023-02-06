@@ -20,4 +20,13 @@ public interface CQElementC10n {
 	@En("and further")
 	@De("und weitere")
 	String furtherConcepts();
+
+	@En("and")
+	@De("und")
+	String and();
+
+	@En("or")
+	@De("oder")
+	String or();
+
 }

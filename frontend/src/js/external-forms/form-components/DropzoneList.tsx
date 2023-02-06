@@ -1,10 +1,18 @@
-import React, { ReactNode } from "react";
 import styled from "@emotion/styled";
+import { ReactNode, forwardRef, Ref, ReactElement, ForwardedRef } from "react";
+import { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";
-import Dropzone, { ChildArgs } from "../../form-components/Dropzone";
-import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
-import Label from "../../form-components/Label";
+import InfoTooltip from "../../tooltip/InfoTooltip";
+import {
+  ChildArgs,
+  PossibleDroppableObject,
+} from "../../ui-components/Dropzone";
+import DropzoneWithFileInput, {
+  DragItemFile,
+} from "../../ui-components/DropzoneWithFileInput";
+import Label from "../../ui-components/Label";
+import Optional from "../../ui-components/Optional";
 
 const ListItem = styled("div")`
   position: relative;
@@ -21,52 +29,87 @@ const StyledIconButton = styled(IconButton)`
   right: 0;
 `;
 
-interface PropsT {
+const Row = styled("div")`
+  display: flex;
+  align-items: center;
+`;
+
+interface PropsT<DroppableObject> {
   className?: string;
   label?: ReactNode;
-  dropzoneChildren: (args: ChildArgs) => ReactNode;
+  tooltip?: string;
+  optional?: boolean;
+  dropzoneChildren: (args: ChildArgs<DroppableObject>) => ReactNode;
   items: ReactNode[];
   acceptedDropTypes: string[];
-  onDrop: (props: any, monitor: any) => void;
-  onDropFile?: (file: File) => void;
   onDelete: (idx: number) => void;
   disallowMultipleColumns?: boolean;
+  onDrop: (
+    props: DroppableObject | DragItemFile,
+    monitor: DropTargetMonitor,
+  ) => void;
+  onDropFile: (file: File) => void;
+  onImportLines: (lines: string[]) => void;
 }
 
-const DropzoneList = (props: PropsT) => {
+const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
+  {
+    className,
+    label,
+    tooltip,
+    optional,
+    dropzoneChildren,
+    items,
+    acceptedDropTypes,
+    onDelete,
+    disallowMultipleColumns,
+    onDrop,
+    onImportLines,
+  }: PropsT<DroppableObject>,
+  ref: Ref<HTMLDivElement>,
+) => {
   // allow at least one column
   const showDropzone =
-    (props.items && props.items.length === 0) || !props.disallowMultipleColumns;
-
-  const DropzoneClass = props.onDropFile ? DropzoneWithFileInput : Dropzone;
+    (items && items.length === 0) || !disallowMultipleColumns;
 
   return (
-    <div className={props.className}>
-      {props.label && <Label>{props.label}</Label>}
-      {props.items && props.items.length > 0 && (
+    <div className={className}>
+      <Row>
+        {label && (
+          <Label>
+            {optional && <Optional />}
+            {label}
+          </Label>
+        )}
+        {tooltip && <InfoTooltip text={tooltip} />}
+      </Row>
+      {items && items.length > 0 && (
         <div>
-          {props.items.map((item, i) => (
+          {items.map((item, i) => (
             <ListItem key={i}>
-              <StyledIconButton
-                icon="times"
-                onClick={() => props.onDelete(i)}
-              />
+              <StyledIconButton icon="times" onClick={() => onDelete(i)} />
               {item}
             </ListItem>
           ))}
         </div>
       )}
-      {showDropzone && (
-        <DropzoneClass
-          acceptedDropTypes={props.acceptedDropTypes}
-          onDrop={props.onDrop}
-          onSelectFile={props.onDropFile!}
-        >
-          {props.dropzoneChildren}
-        </DropzoneClass>
-      )}
+      <div ref={ref}>
+        {showDropzone && onImportLines && (
+          <DropzoneWithFileInput
+            acceptedDropTypes={acceptedDropTypes}
+            onDrop={onDrop}
+            onImportLines={onImportLines}
+          >
+            {dropzoneChildren}
+          </DropzoneWithFileInput>
+        )}
+      </div>
     </div>
   );
 };
 
-export default DropzoneList;
+export default forwardRef(DropzoneList) as <
+  DroppableObject extends PossibleDroppableObject = DragItemFile,
+>(
+  props: PropsT<DroppableObject> & { ref?: ForwardedRef<HTMLDivElement> },
+) => ReactElement;

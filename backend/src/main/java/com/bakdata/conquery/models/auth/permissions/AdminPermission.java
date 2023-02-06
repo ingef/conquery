@@ -30,10 +30,14 @@ public final class AdminPermission extends StringPermissionBuilder {
 	 */
 	@Override
 	public Set<Ability> getAllowedAbilities() {
-		return Collections.emptySet();
+		return Set.of(Ability.READ);
 	}
 
 	public static ConqueryPermission onDomain() {
 		return INSTANCE.domainPermission();
+	}
+
+	public static ConqueryPermission onDomain(Set<Ability> abilities) {
+		return INSTANCE.abilityPermission(abilities);
 	}
 }

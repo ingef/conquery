@@ -1,51 +1,51 @@
 package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
-import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.io.xodus.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.io.xodus.WorkerStorageImpl;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
+import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.events.stores.root.ColumnStore;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToNamespace;
 import com.bakdata.conquery.models.query.QueryExecutor;
-import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Worker implements MessageSender.Transforming<NamespaceMessage, NetworkMessage<?>>, Closeable {
 	// Making this private to have more control over adding and deleting and keeping a consistent state
 	private final WorkerStorage storage;
-	
+
 	@Getter
 	private final JobManager jobManager;
 	@Getter
@@ -56,74 +56,71 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	 * Pool that can be used in Jobs to execute a job in parallel.
 	 */
 	@Getter
-	private final ExecutorService executorService;
-	@Getter 
+	private final ExecutorService jobsExecutorService;
+	@Getter
 	private final BucketManager bucketManager;
-	
-	
-	private Worker(
-		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-		@NonNull WorkerStorage storage,
-		@NonNull ExecutorService executorService,
-		boolean failOnError
-		) {
-		this.jobManager = new JobManager(storage.getWorker().getName(), failOnError);
-		this.storage = storage;
-		this.queryExecutor = new QueryExecutor(queryThreadPoolDefinition.createService("QueryExecutor %d"));
-		this.executorService = executorService;
-		this.bucketManager = BucketManager.create(this, storage);
-		
-	}
 
-	public static Worker newWorker(
+	@Getter
+	private final ObjectMapper communicationMapper;
+
+
+	public Worker(
 			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-			@NonNull ExecutorService executorService,
 			@NonNull WorkerStorage storage,
+			@NonNull ExecutorService jobsExecutorService,
 			boolean failOnError,
-			int entityBucketSize) {
+			int entityBucketSize,
+			ObjectMapper persistenceMapper,
+			ObjectMapper communicationMapper) {
+		this.storage = storage;
+		this.jobsExecutorService = jobsExecutorService;
+		this.communicationMapper = communicationMapper;
 
-		return new Worker(queryThreadPoolDefinition, storage, executorService, failOnError);
+
+		storage.openStores(persistenceMapper);
+		storage.loadData();
+
+		jobManager = new JobManager(storage.getWorker().getName(), failOnError);
+		queryExecutor = new QueryExecutor(this, queryThreadPoolDefinition.createService("QueryExecutor %d"));
+		bucketManager = BucketManager.create(this, storage, entityBucketSize);
 	}
 
+	@SneakyThrows(IOException.class)
 	public static Worker newWorker(
-		@NonNull Dataset dataset,
-		@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
-		@NonNull ExecutorService executorService,
-		@NonNull StorageConfig config,
-		@NonNull File directory,
-		@NonNull Validator validator,
-		boolean failOnError,
-		int entityBucketSize) {
+			@NonNull Dataset dataset,
+			@NonNull ThreadPoolDefinition queryThreadPoolDefinition,
+			@NonNull ExecutorService jobsExecutorService,
+			@NonNull StoreFactory config,
+			@NonNull String directory,
+			@NonNull Validator validator,
+			boolean failOnError,
+			int entityBucketSize,
+			ObjectMapper persistenceMapper,
+			ObjectMapper communicationMapper) {
 
-		WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config, directory);
-		if (workerStorage != null) {
-			throw new IllegalStateException(String.format("Cannot create a new worker %s, because the storage directory already exists: %s", dataset, directory));
-		}
+		WorkerStorage workerStorage = new WorkerStorage(config, validator, directory);
 
-
+		// On the worker side we don't have to set the object writer vor ForwardToWorkerMessages in WorkerInformation
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
-		info.setName(directory.getName());
+		info.setName(directory);
 		info.setEntityBucketSize(entityBucketSize);
 
-		workerStorage = new WorkerStorageImpl(validator, config, directory);
+		workerStorage.openStores(persistenceMapper);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		workerStorage.setWorker(info);
+		workerStorage.close();
 
-		return new Worker(queryThreadPoolDefinition, workerStorage, executorService, failOnError);
+		return new Worker(queryThreadPoolDefinition, workerStorage, jobsExecutorService, failOnError, entityBucketSize, persistenceMapper, communicationMapper);
 	}
-	
+
 	public ModificationShieldedWorkerStorage getStorage() {
 		return new ModificationShieldedWorkerStorage(storage);
 	}
-	
+
 	public WorkerInformation getInfo() {
 		return storage.getWorker();
-	}
-	
-	public Int2ObjectMap<Entity> getEntities(){
-		return bucketManager.getEntities();
 	}
 
 	@Override
@@ -137,7 +134,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public ObjectMapper inject(ObjectMapper binaryMapper) {
-		return new SingletonNamespaceCollection(storage.getCentralRegistry()).injectInto(binaryMapper);
+		return new SingletonNamespaceCollection(storage.getCentralRegistry())
+				.injectIntoNew(binaryMapper);
 	}
 
 	@Override
@@ -152,7 +150,8 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 		try {
 			jobManager.close();
-		}catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.error("Unable to close worker query executor of {}.", this, e);
 		}
 
@@ -163,41 +162,39 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 			log.error("Unable to close worker storage of {}.", this, e);
 		}
 	}
-	
+
 	@Override
 	public String toString() {
-		return "Worker[" + getInfo().getId() + ", " + session.getLocalAddress() + "]";
+		return "Worker[" + getInfo().getId() + ", " + (session != null ? session.getLocalAddress() : "no session") + "]";
 	}
+
 	public boolean isBusy() {
-		return queryExecutor.isBusy();
+		return queryExecutor.isBusy() || jobManager.isSlowWorkerBusy();
 	}
 
 	public void addImport(Import imp) {
 		storage.addImport(imp);
 	}
 
-	public void removeImport(ImportId importId) {
-		final Import imp = storage.getImport(importId);
+	public void removeImport(Import imp) {
 
-		for (DictionaryId dictionaryId : imp.getDictionaries()) {
-			storage.removeDictionary(dictionaryId);
+		for (DictionaryId dictionary : imp.getDictionaries()) {
+			storage.removeDictionary(dictionary);
 		}
 
-		storage.removeImport(importId);
-		bucketManager.removeImport(importId);
+		bucketManager.removeImport(imp);
 	}
 
 	public void addBucket(Bucket bucket) {
 		bucketManager.addBucket(bucket);
 	}
 
-	public void removeConcept(ConceptId conceptId) {
+	public void removeConcept(Concept<?> conceptId) {
 		bucketManager.removeConcept(conceptId);
 	}
 
 	public void updateConcept(Concept<?> concept) {
-		bucketManager.removeConcept(concept.getId());
-		bucketManager.addConcept(concept);
+		bucketManager.updateConcept(concept);
 	}
 
 	public void updateDataset(Dataset dataset) {
@@ -206,23 +203,83 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	public void updateDictionary(Dictionary dictionary) {
 		storage.updateDictionary(dictionary);
+
+		// Since we've updated a Dictionary, we also have to update the prior usages of that Dictionary in all Buckets and Imports
+		final DictionaryId dictionaryId = dictionary.getId();
+		final Set<Import> relevantImports =
+				storage.getAllImports().stream()
+					   .filter(imp -> imp.getDictionaries().contains(dictionaryId))
+					   .collect(Collectors.toSet());
+
+		// First replace in all Imports
+		for (Import imp : relevantImports) {
+			for (ImportColumn column : imp.getColumns()) {
+				final ColumnStore store = column.getTypeDescription();
+
+				if (!(store instanceof StringStore)) {
+					continue;
+				}
+
+				StringStore strings = ((StringStore) store);
+
+				if (!strings.isDictionaryHolding() || !strings.getUnderlyingDictionary().getId().equals(dictionaryId)) {
+					continue;
+				}
+				strings.setUnderlyingDictionary(dictionary);
+			}
+		}
+
+		// Then replace in all Buckets of those Imports
+		for (Bucket bucket : getStorage().getAllBuckets()) {
+			if (!relevantImports.contains(bucket.getImp())) {
+				continue;
+			}
+
+			for (ColumnStore store : bucket.getStores()) {
+				if (!(store instanceof StringStore)) {
+					continue;
+				}
+
+				StringStore strings = ((StringStore) store);
+
+				if (!strings.isDictionaryHolding() || !strings.getUnderlyingDictionary().getId().equals(dictionaryId)) {
+					continue;
+				}
+				strings.setUnderlyingDictionary(dictionary);
+			}
+		}
 	}
 
 	public void updateWorkerInfo(WorkerInformation info) {
 		storage.updateWorker(info);
 	}
 
+	@SneakyThrows
 	public void remove() {
-		storage.clear();
-		close();
+		try {
+			queryExecutor.close();
+		}
+		catch (IOException e) {
+			log.error("Unable to close worker query executor of {}.", this, e);
+		}
+
+		try {
+			jobManager.close();
+		}
+		catch (Exception e) {
+			log.error("Unable to close worker query executor of {}.", this, e);
+		}
+
+		// Don't call close() here because, it would try to close a removed store or remove a closed store
+		storage.removeStorage();
 	}
 
 	public void addTable(Table table) {
 		storage.addTable(table);
 	}
 
-	public void removeTable(TableId table) {
-		storage.removeTable(table);
+	public void removeTable(@NsIdRef Table table) {
+		bucketManager.removeTable(table);
 	}
 
 	public void addSecondaryId(SecondaryIdDescription secondaryId) {

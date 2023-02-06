@@ -1,43 +1,50 @@
-import React, { useRef, FC } from "react";
+import { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 
+import type { ConceptIdT, ConceptT } from "../api/types";
+import { getWidthAndHeight } from "../app/DndProvider";
+import { DNDType } from "../common/constants/dndTypes";
+import { exists } from "../common/helpers/exists";
+import type {
+  ConceptQueryNodeType,
+  DragItemConceptTreeNode,
+} from "../standard-query-editor/types";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
-import { isEmpty } from "../common/helpers";
-import { CONCEPT_TREE_NODE } from "../common/constants/dndTypes";
-
-import type { AdditionalInfoHoverableNodeType } from "../tooltip/AdditionalInfoHoverable";
-import type { DraggedNodeType } from "../standard-query-editor/types";
-import type { SearchT } from "./reducer";
 
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
-import { getWidthAndHeight } from "../app/DndProvider";
+import type { SearchT } from "./reducer";
 
 interface PropsT {
-  node: AdditionalInfoHoverableNodeType & {
-    label: string;
-    description?: string;
-    matchingEntries?: number;
-  };
+  node: ConceptT;
+  conceptId: ConceptIdT;
   open: boolean;
   depth: number;
   active?: boolean;
-  onTextClick?: Function;
-  createQueryElement: () => DraggedNodeType;
-  search?: SearchT;
+  onTextClick?: () => void;
+  createQueryElement?: () => ConceptQueryNodeType;
+  search: SearchT;
   isStructFolder?: boolean;
 }
 
-function getResultCount(search, node) {
-  return search.result &&
-    search.result[node.id] > 0 &&
+function getResultCount(
+  search: SearchT,
+  node: ConceptT,
+  conceptId: ConceptIdT,
+) {
+  if (!search.result) {
+    return null;
+  }
+
+  return search.result[conceptId] > 0 &&
     node.children &&
-    node.children.some((child) => search.result[child] > 0)
-    ? search.result[node.id]
+    node.children.some((child) => search.result && search.result[child] > 0)
+    ? search.result[conceptId]
     : null;
 }
 
 const ConceptTreeNodeTextContainer: FC<PropsT> = ({
   node,
+  conceptId,
   depth,
   search,
   active,
@@ -48,46 +55,63 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
-  const red = !isEmpty(node.matchingEntries) && node.matchingEntries === 0;
-  const resultCount = getResultCount(search, node);
+  const red = exists(node.matchingEntries) && node.matchingEntries === 0;
+  const resultCount = getResultCount(search, node, conceptId);
   const hasChildren = !!node.children && node.children.length > 0;
 
-  const item = {
-    height: 0,
-    width: 0,
-    type: CONCEPT_TREE_NODE,
-    ...createQueryElement(),
+  const item: DragItemConceptTreeNode = {
+    dragContext: {
+      height: 0,
+      width: 0,
+    },
+    type: DNDType.CONCEPT_TREE_NODE,
+    ...(createQueryElement
+      ? createQueryElement() // Should always be defined when draggable => when active === true
+      : {
+          ids: [],
+          tables: [],
+          selects: [],
+          tree: conceptId,
+          label: "",
+          matchingEntities: 0,
+          matchingEntries: 0,
+        }),
   };
-  const [, drag] = useDrag({
-    item,
-    begin: () => ({
+  const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
+    type: item.type,
+    item: () => ({
       ...item,
-      ...getWidthAndHeight(ref),
+      dragContext: {
+        ...item.dragContext,
+        ...getWidthAndHeight(ref),
+      },
     }),
   });
 
   return (
-    <ConceptTreeNodeText
-      ref={(instance) => {
-        ref.current = instance;
+    <AdditionalInfoHoverable node={node}>
+      <ConceptTreeNodeText
+        ref={(instance) => {
+          ref.current = instance;
 
-        // Don't allow dragging with inactive elements
-        if (active !== false) {
-          drag(instance);
-        }
-      }}
-      label={node.label}
-      depth={depth}
-      description={node.description}
-      resultCount={resultCount}
-      searchWords={search.words}
-      hasChildren={hasChildren}
-      isOpen={open}
-      isStructFolder={isStructFolder || active === false}
-      red={red}
-      onClick={onTextClick}
-    />
+          // Don't allow dragging with inactive elements
+          if (active !== false) {
+            drag(instance);
+          }
+        }}
+        label={node.label}
+        depth={depth}
+        description={node.description}
+        resultCount={resultCount}
+        searchWords={search.words}
+        hasChildren={hasChildren}
+        isOpen={open}
+        isStructFolder={isStructFolder || active === false}
+        red={red}
+        onClick={onTextClick}
+      />
+    </AdditionalInfoHoverable>
   );
 };
 
-export default AdditionalInfoHoverable(ConceptTreeNodeTextContainer);
+export default ConceptTreeNodeTextContainer;

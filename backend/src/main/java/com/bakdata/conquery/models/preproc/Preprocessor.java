@@ -6,21 +6,22 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import com.bakdata.conquery.io.HCFile;
-import com.bakdata.conquery.io.csv.CsvIo;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.parser.Parser;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
+import com.bakdata.conquery.models.preproc.parser.Parser;
+import com.bakdata.conquery.util.DateReader;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.util.io.FileUtil;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Strings;
@@ -40,46 +41,6 @@ import org.apache.commons.io.FileUtils;
 @UtilityClass
 public class Preprocessor {
 
-	public static long getTotalCsvSize(TableImportDescriptor descriptor) {
-		long totalCsvSize = 0;
-		for (TableInputDescriptor input : descriptor.getInputs()) {
-			totalCsvSize += input.getSourceFile().length();
-		}
-
-		return totalCsvSize;
-	}
-
-	public static boolean requiresProcessing(TableImportDescriptor descriptor) {
-		ConqueryMDC.setLocation(descriptor.toString());
-		if (descriptor.getInputFile().getPreprocessedFile().exists()) {
-
-			log.info("EXISTS ALREADY");
-
-			int currentHash = descriptor.calculateValidityHash();
-
-			try (HCFile outFile = new HCFile(descriptor.getInputFile().getPreprocessedFile(), false);
-				 InputStream is = outFile.readHeader()) {
-
-				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PreprocessedHeader.class);
-
-				if (header.getValidityHash() == currentHash) {
-					log.info("\tHASH STILL VALID");
-					return false;
-				}
-				log.info("\tHASH OUTDATED");
-			}
-			catch (Exception e) {
-				log.error("\tHEADER READING FAILED", e);
-				return false;
-			}
-		}
-		else {
-			log.info("DOES NOT EXIST");
-		}
-
-		return true;
-	}
-
 	/**
 	 * Create version of file-name with tag.
 	 */
@@ -95,14 +56,15 @@ public class Preprocessor {
 	/**
 	 * Apply transformations in descriptor, then write them out to CQPP file for imports.
 	 * <p>
-	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link com.bakdata.conquery.models.events.stores.ColumnStore}.
+	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link com.bakdata.conquery.models.events.stores.root.ColumnStore}.
 	 */
-	public static void preprocess(TableImportDescriptor descriptor, ProgressBar progressBar, ConqueryConfig config) throws IOException {
+	public static void preprocess(PreprocessingJob preprocessingJob, ProgressBar progressBar, ConqueryConfig config) throws IOException {
 
-		final File preprocessedFile = descriptor.getInputFile().getPreprocessedFile();
+		final File preprocessedFile = preprocessingJob.getPreprocessedFile();
+		final TableImportDescriptor descriptor = preprocessingJob.getDescriptor();
 
 		// Create temp file that will be moved when finished (we ensure the same file system, to avoid unnecessary copying)
-		File tmp = new File(preprocessedFile.getParentFile(), preprocessedFile.getName() + ".tmp");
+		final File tmp = new File(preprocessedFile.getParentFile(), preprocessedFile.getName() + ".tmp");
 
 		// Ensures deletion on failure
 		tmp.deleteOnExit();
@@ -122,22 +84,22 @@ public class Preprocessor {
 			FileUtils.forceDelete(preprocessedFile);
 		}
 
-		log.info("PREPROCESSING START in {}", descriptor.getInputFile().getDescriptionFile());
+		log.info("PREPROCESSING START in {}", preprocessingJob);
 
 		// Preprocessed data is collected into this.
-		final Preprocessed result = new Preprocessed(descriptor, config.getPreprocessor().getParsers());
+		final Preprocessed result = new Preprocessed(config, preprocessingJob);
 
 		long lines = 0;
 		long errors = 0;
 
 		// Gather exception classes to get better overview of what kind of errors are happening.
-		Object2IntMap<Class<? extends Throwable>> exceptions = new Object2IntArrayMap<>();
+		final Object2IntMap<Class<? extends Throwable>> exceptions = new Object2IntArrayMap<>();
 		exceptions.defaultReturnValue(0);
 
 		for (final TableInputDescriptor input : descriptor.getInputs()) {
-			final File sourceFile = input.getSourceFile();
+			final File sourceFile = resolveSourceFile(input.getSourceFile(), preprocessingJob.getCsvDirectory(), preprocessingJob.getTag());
 
-			final String name = String.format("%s:%s[%s]", descriptor.toString(), descriptor.getTable(), sourceFile.getName());
+			final String name = String.format("%s:%s[%s]", descriptor, descriptor.getTable(), sourceFile.getName());
 
 			ConqueryMDC.setLocation(name);
 
@@ -147,11 +109,11 @@ public class Preprocessor {
 
 			CsvParser parser = null;
 			final PreprocessingRowProcessor processor =
-					new PreprocessingRowProcessor(input, result, exceptions, progressBar, config.getPreprocessor().getMaximumPrintedErrors());
+					new PreprocessingRowProcessor(input, result, exceptions, progressBar, config.getPreprocessor().getMaximumPrintedErrors(), config.getLocale().getDateReader(), config);
 
 			try (InputStream inputStream = new FileInputStream(sourceFile)) {
 
-				CSVConfig csvSettings = config.getCsv();
+				final CSVConfig csvSettings = config.getCsv();
 
 				// Create CSV parser according to config, but overriding some behaviour.
 				final CsvParserSettings parserSettings =
@@ -166,7 +128,7 @@ public class Preprocessor {
 
 				parser = new CsvParser(parserSettings);
 
-				parser.parse(CsvIo.isGZipped(sourceFile) ? new GZIPInputStream(inputStream) : inputStream, csvSettings.getEncoding());
+				parser.parse(FileUtil.isGZipped(sourceFile) ? new GZIPInputStream(inputStream) : inputStream, csvSettings.getEncoding());
 
 			}
 			finally {
@@ -179,7 +141,7 @@ public class Preprocessor {
 		}
 
 		if (errors > 0) {
-			log.warn("File `{}` contained {} faulty lines of {} total.", descriptor.getInputFile().getDescriptionFile(), errors, lines);
+			log.warn("File `{}` contained {} faulty lines of {} total.", preprocessingJob, errors, lines);
 			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%f.2", 100d * (double) errors / (double) lines), errors, lines);
 		}
 
@@ -187,17 +149,46 @@ public class Preprocessor {
 			exceptions.forEach((clazz, count) -> log.warn("Got {} `{}`", count, clazz.getSimpleName()));
 		}
 
+		result.write(tmp);
+
+		if (errors > 0) {
+			log.warn("Had {}% faulty lines ({} of ~{} lines)", String.format("%.2f", 100d * (double) errors / (double) lines), errors, lines);
+		}
+
 		if ((double) errors / (double) lines > config.getPreprocessor().getFaultyLineThreshold()) {
 			throw new RuntimeException("Too many faulty lines.");
 		}
 
-		try (HCFile outFile = new HCFile(tmp, true)) {
-			result.write(outFile);
-		}
 
 		//if successful move the tmp file to the target location
 		FileUtils.moveFile(tmp, preprocessedFile);
-		log.info("PREPROCESSING DONE in {}", descriptor.getInputFile().getDescriptionFile());
+		log.info("PREPROCESSING DONE in {}", preprocessingJob);
+	}
+
+	/**
+	 * Resolve a source file with tag appended if present, in csvDirectory.
+	 */
+	public static File resolveSourceFile(String fileName, Path csvDirectory, Optional<String> tag) {
+		if (tag.isEmpty()) {
+			return csvDirectory.resolve(fileName).toFile();
+		}
+
+		String name = fileName;
+		final String suffix;
+
+		if (name.endsWith(".csv.gz")) {
+			name = name.substring(0, name.length() - ".csv.gz".length());
+			suffix = ".csv.gz";
+		}
+		else if (name.endsWith(".csv")) {
+			name = name.substring(0, name.length() - ".csv".length());
+			suffix = ".csv";
+		}
+		else {
+			throw new IllegalArgumentException("Unknown suffix for file " + name);
+		}
+
+		return csvDirectory.resolve(name + "." + tag.get() + suffix).toFile();
 	}
 
 	/**
@@ -205,13 +196,13 @@ public class Preprocessor {
 	 */
 	private static Object[] applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId)
 			throws OutputDescription.OutputException {
-		Object[] outRow = new Object[outputs.size()];
+		final Object[] outRow = new Object[outputs.size()];
 
 		for (int index = 0; index < outputs.size(); index++) {
 			final OutputDescription.Output out = outputs.get(index);
 
 			try {
-				final Parser<?> parser = columns[index].getParser();
+				final Parser parser = columns[index].getParser();
 
 				final Object result = out.createOutput(row, parser, lineId);
 
@@ -236,14 +227,13 @@ public class Preprocessor {
 		private final Object2IntMap<Class<? extends Throwable>> exceptions;
 		private final ProgressBar totalProgress;
 		private final int maximumPrintedErrors;
-
+		private final DateReader dateReader;
+		private final ConqueryConfig config;
 		private GroovyPredicate filter;
 		private OutputDescription.Output primaryOut;
 		private List<OutputDescription.Output> outputs;
-
-		private long progress =  0;
-		private long errors = 0;
-
+		private long progress;
+		private long errors;
 
 		@Override
 		public void processStarted(ParsingContext context) {
@@ -258,12 +248,12 @@ public class Preprocessor {
 			// Compile filter.
 			filter = input.createFilter(headers);
 
-			primaryOut = input.getPrimary().createForHeaders(headerMap);
+			primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader, config);
 			outputs = new ArrayList<>();
 
 			// Instantiate Outputs based on descriptors (apply header positions)
 			for (OutputDescription op : input.getOutput()) {
-				outputs.add(op.createForHeaders(headerMap));
+				outputs.add(op.createForHeaders(headerMap, dateReader, config));
 			}
 		}
 
@@ -277,7 +267,7 @@ public class Preprocessor {
 				}
 
 				try {
-					int primaryId =
+					final int primaryId =
 							(int) Objects.requireNonNull(
 									primaryOut.createOutput(row, result.getPrimaryColumn(), context.currentLine()),
 									"primaryId may not be null"

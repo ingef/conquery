@@ -1,46 +1,19 @@
-import { de } from "date-fns/locale";
-import { enGB } from "date-fns/locale";
-
+import { theme } from "./app-theme";
 import conquery from "./js";
-
-import { initializeLocalization } from "./js/localization";
+import { language, CustomEnvironment } from "./js/environment";
+import FormsTab from "./js/external-forms";
+import i18next from "./js/localization/i18next";
+import { TabT } from "./js/pane/types";
+import StandardQueryEditorTab from "./js/standard-query-editor";
+import TimebasedQueryEditorTab from "./js/timebased-query-editor";
 import translationsDe from "./localization/de.json";
 import translationsEn from "./localization/en.json";
 
-import StandardQueryEditorTab from "./js/standard-query-editor";
-import TimebasedQueryEditorTab from "./js/timebased-query-editor";
-import FormsTab from "./js/external-forms";
+i18next.addResourceBundle("de", "translation", translationsDe, true, true);
+i18next.addResourceBundle("en", "translation", translationsEn, true, true);
+i18next.changeLanguage(language);
 
-import { theme } from "./app-theme";
-
-import "./app-styles.sass";
-import { TabT } from "./js/pane/types";
-import { Environment } from "./js/environment";
-
-const isProduction = process.env.NODE_ENV === "production";
-const disableLogin = !!process.env.REACT_APP_DISABLE_LOGIN;
-const LANG = process.env.REACT_APP_LANG;
-
-if (!LANG || LANG === "de") {
-  initializeLocalization("de", de, translationsDe);
-} else {
-  initializeLocalization("en", enGB, translationsEn);
-}
-
-const MOCK_API_URL = "http://localhost:8001";
-
-const environment: Environment = {
-  isProduction: isProduction,
-  basename: isProduction
-    ? "/" // Possibly: Run under a subpath in production
-    : "/",
-  apiUrl: !!process.env.REACT_APP_API_URL
-    ? process.env.REACT_APP_API_URL
-    : isProduction
-    ? ""
-    : MOCK_API_URL,
-  disableLogin,
-};
+const customEnvironment: CustomEnvironment = {};
 
 const tabs: TabT[] = [
   StandardQueryEditorTab,
@@ -48,4 +21,4 @@ const tabs: TabT[] = [
   FormsTab,
 ];
 
-conquery({ environment, tabs, theme });
+conquery({ theme, tabs, customEnvironment });

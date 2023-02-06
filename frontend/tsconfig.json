@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
-    "baseUrl": "src",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "moduleResolution": "node",
     "sourceMap": true,
     "inlineSourceMap": false,
@@ -11,6 +10,7 @@
     "preserveConstEnums": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    "downlevelIteration": true,
     "esModuleInterop": true,
     "strict": true,
     "noEmit": true,
@@ -28,7 +28,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "isolatedModules": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "strictBindCallApply": true
   },
   "include": [
     "src",

@@ -1,7 +1,8 @@
-import React, { FC } from "react";
-import { ColumnDescriptionType } from "./Preview";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { FC } from "react";
+import { useTranslation } from "react-i18next";
+
+import { ColumnDescriptionType } from "./Preview";
 
 const Stats = styled("div")`
   padding: 0 10px 10px 0;
@@ -75,6 +76,8 @@ function toLocalizedNumberString(num: number) {
 }
 
 const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
+  const { t } = useTranslation();
+
   switch (columnType) {
     case "NUMERIC":
     case "MONEY":
@@ -89,6 +92,7 @@ const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
               return parseInt(x);
             case "NUMERIC":
             case "MONEY":
+            default:
               return parseFloat(x);
           }
         })
@@ -112,25 +116,25 @@ const ColumnStats: FC<Props> = ({ colName, columnType, rawColumnData }) => {
           <Name>{colName}</Name>
           <Values>
             <Stat>
-              <Label>{T.translate("common.average")}:</Label>
+              <Label>{t("common.average")}:</Label>
               <Value>
                 {toRoundedDecimalsString(toMoneyMaybe(avg), decimals)}
               </Value>
             </Stat>
             <Stat>
-              <Label>{T.translate("common.median")}:</Label>
+              <Label>{t("common.median")}:</Label>
               <Value>{toLocalizedNumberString(toMoneyMaybe(median))}</Value>
             </Stat>
             <Stat>
-              <Label>{T.translate("common.min")}:</Label>
+              <Label>{t("common.min")}:</Label>
               <Value>{toLocalizedNumberString(toMoneyMaybe(min))}</Value>
             </Stat>
             <Stat>
-              <Label>{T.translate("common.max")}:</Label>
+              <Label>{t("common.max")}:</Label>
               <Value>{toLocalizedNumberString(toMoneyMaybe(max))}</Value>
             </Stat>
             <Stat>
-              <Label>{T.translate("common.std")}:</Label>
+              <Label>{t("common.std")}:</Label>
               <Value>
                 {toRoundedDecimalsString(toMoneyMaybe(std), decimals)}
               </Value>

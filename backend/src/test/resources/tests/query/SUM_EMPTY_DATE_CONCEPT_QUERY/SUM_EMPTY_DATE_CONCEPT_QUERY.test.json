@@ -16,16 +16,16 @@
             "child":{  
                   
                      "ids":[  
-                        "${dataset}.sum"
+                        "sum"
                      ],
                      "type":"CONCEPT",
                      "label":"vs",
                      "tables":[  
                         {  
-                           "id":"${dataset}.sum.sum_connector",
+                           "id":"sum.sum_connector",
                            "filters":[  
                               {  
-                                 "filter":"${dataset}.sum.sum_connector.value",
+                                 "filter":"sum.sum_connector.value",
                                  "type":"REAL_RANGE",
                                  "value":{  
                                     "min": 2,
@@ -44,7 +44,7 @@
    "concepts":[  
       {  
          "label":"sum",
-         "type":"VIRTUAL",
+         "type":"TREE",
          "connectors":[  
             {  
                "label":"sum_connector",
@@ -53,7 +53,7 @@
                   "label":"datum",
                   "column":"table1.datum"
                },
-               "filter":{  
+               "filters":{
                   "label":"value",
                   "description":"xy",
                   "column":"table1.value",

@@ -2,15 +2,14 @@ package com.bakdata.conquery.io.mina;
 
 import java.net.SocketAddress;
 
-import lombok.Getter;
-import org.apache.mina.core.future.WriteFuture;
-
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.ToString;
+import org.apache.mina.core.future.WriteFuture;
 
 public interface MessageSender<MESSAGE> {
 
@@ -54,6 +53,7 @@ public interface MessageSender<MESSAGE> {
 	}
 	
 	@AllArgsConstructor
+	@ToString(of = "session")
 	public static abstract class Simple<MESSAGE extends NetworkMessage<?>> implements MessageSender<MESSAGE> {
 		
 		@JsonIgnore @Setter @Getter @NonNull

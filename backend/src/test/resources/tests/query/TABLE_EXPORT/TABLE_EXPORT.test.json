@@ -6,36 +6,16 @@
     "type": "TABLE_EXPORT",
     "tables": [
       {
-        "id": "${dataset}.number.number_connector",
-        "dateColumn": {
-          "value": "${dataset}.number.number_connector.datum"
-        }
-      },
-      {
-        "id": "${dataset}.number.number_connector2",
-        "dateColumn": {
-          "value": "${dataset}.number.number_connector2.datum"
-        }
-      }
-    ],
-    "dateRange": {
-      "min": "2000-01-01",
-      "max": "2020-12-31"
-    },
-    "query": {
-      "type": "CONCEPT_QUERY",
-      "root": {
         "ids": [
-          "${dataset}.number"
+          "concept"
         ],
         "type": "CONCEPT",
-        "label": "vs",
         "tables": [
           {
-            "id": "${dataset}.number.number_connector",
+            "id": "concept.connector",
             "filters": [
               {
-                "filter": "${dataset}.number.number_connector.value",
+                "filter": "concept.connector.value",
                 "type": "REAL_RANGE",
                 "value": {
                   "min": 1,
@@ -45,10 +25,42 @@
             ]
           },
           {
-            "id": "${dataset}.number.number_connector2",
+            "id": "concept.connector2"
+          }
+        ]
+      }
+    ],
+    "dateRange": {
+      "min": "2000-01-01",
+      "max": "2020-12-31"
+    },
+    "rawConceptValues" : false,
+    "query": {
+      "type": "CONCEPT_QUERY",
+      "root": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
             "filters": [
               {
-                "filter": "${dataset}.number.number_connector2.value",
+                "filter": "concept.connector.value",
+                "type": "REAL_RANGE",
+                "value": {
+                  "min": 1,
+                  "max": 1
+                }
+              }
+            ]
+          },
+          {
+            "id": "concept.connector2",
+            "filters": [
+              {
+                "filter": "concept.connector2.value",
                 "type": "REAL_RANGE",
                 "value": {
                   "min": 1,
@@ -63,45 +75,58 @@
   },
   "concepts": [
     {
-      "label": "number",
-      "type": "VIRTUAL",
+      "name": "concept",
+      "type": "TREE",
       "connectors": [
         {
-          "label": "number_connector",
-          "table": "vers_stamm",
+          "name": "connector",
+          "column": "table1.code",
           "validityDates": {
             "label": "datum",
-            "column": "vers_stamm.datum"
+            "column": "table1.datum"
           },
-          "filter": {
-            "label": "value",
-            "description": "xy",
-            "column": "vers_stamm.value",
+          "filters": {
+            "name": "value",
+            "column": "table1.value",
             "type": "NUMBER"
           }
         },
         {
-          "label": "number_connector2",
-          "table": "vers_stamm2",
+          "label": "connector2",
+          "column": "table2.code",
           "validityDates": {
             "label": "datum",
-            "column": "vers_stamm2.datum"
+            "column": "table2.datum"
           },
-          "filter": {
-            "label": "value",
-            "description": "xy",
-            "column": "vers_stamm2.value",
+          "filters": {
+            "name": "value",
+            "column": "table2.value",
             "type": "NUMBER"
+          }
+        }
+      ],
+      "children": [
+        {
+          "label": "A Child",
+          "condition": {
+            "type": "EQUAL",
+            "values": [
+              "a"
+            ]
           }
         }
       ]
     }
   ],
   "content": {
+    "secondaryIds": {
+      "name": "sid",
+      "label": "SecondaryId"
+    },
     "tables": [
       {
         "csv": "tests/query/TABLE_EXPORT/content.csv",
-        "name": "vers_stamm",
+        "name": "table1",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -109,7 +134,8 @@
         "columns": [
           {
             "name": "sid",
-            "type": "STRING"
+            "type": "STRING",
+            "secondaryId": "sid"
           },
           {
             "name": "value",
@@ -118,12 +144,16 @@
           {
             "name": "datum",
             "type": "DATE_RANGE"
+          },
+          {
+            "name": "code",
+            "type": "STRING"
           }
         ]
       },
       {
         "csv": "tests/query/TABLE_EXPORT/content2.csv",
-        "name": "vers_stamm2",
+        "name": "table2",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -131,7 +161,8 @@
         "columns": [
           {
             "name": "sid",
-            "type": "STRING"
+            "type": "STRING",
+            "secondaryId": "sid"
           },
           {
             "name": "value",
@@ -140,6 +171,10 @@
           {
             "name": "datum",
             "type": "DATE_RANGE"
+          },
+          {
+            "name": "code",
+            "type": "STRING"
           }
         ]
       }

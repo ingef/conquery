@@ -5,6 +5,7 @@ import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import org.junit.jupiter.api.Test;
 
@@ -12,8 +13,8 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.bakdata.conquery.models.forms.util.DateContext.Alignment.*;
-import static com.bakdata.conquery.models.forms.util.DateContext.Resolution.*;
+import static com.bakdata.conquery.models.forms.util.Alignment.*;
+import static com.bakdata.conquery.models.forms.util.Resolution.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DateContextTest {
@@ -25,7 +26,7 @@ public class DateContextTest {
 		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, List.of(ExportForm.ResolutionAndAlignment.of(COMPLETE, NO_ALIGN)));
 
 		assertThat(contexts).containsExactly(
-			new DateContext(mask, FeatureGroup.OUTCOME, null, null, COMPLETE)
+			new DateContext(mask, FeatureGroup.SINGLE_GROUP, null, null, COMPLETE)
 		);
 	}
 
@@ -42,7 +43,7 @@ public class DateContextTest {
 			CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)),
 			CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 4, 21))
 		);
-		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.OUTCOME);
+		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
 	
 	@Test
@@ -57,7 +58,7 @@ public class DateContextTest {
 			CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)),
 			CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 4, 21))
 		);
-		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.OUTCOME);
+		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
 
 	@Test
@@ -83,7 +84,7 @@ public class DateContextTest {
 			CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 3, 31)),
 			CDateRange.of(LocalDate.of(2003, 4, 1), LocalDate.of(2003, 4, 21))
 		);
-		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.OUTCOME);
+		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
 	
 	@Test
@@ -102,12 +103,12 @@ public class DateContextTest {
 			CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 3, 31)),
 			CDateRange.of(LocalDate.of(2003, 4, 1), LocalDate.of(2003, 4, 21))
 		);
-		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.OUTCOME);
+		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.SINGLE_GROUP);
 	}
 
 	@Test
 	public void rangeRelDaysBeforeTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
+		CalendarUnit timeUnit = CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -118,17 +119,17 @@ public class DateContextTest {
 		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, List.of(ExportForm.ResolutionAndAlignment.of(COMPLETE, NO_ALIGN), ExportForm.ResolutionAndAlignment.of(DAYS, DAY)));
 
 		assertThat(contexts).containsExactly (
-			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 23)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 24), LocalDate.of(2001, 5, 24)), FeatureGroup.OUTCOME, null, eventDate, COMPLETE),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 22)), FeatureGroup.FEATURE, -1, eventDate, DAYS),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 5, 23)), FeatureGroup.FEATURE, 0, eventDate, DAYS),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 24), LocalDate.of(2001, 5, 24)), FeatureGroup.OUTCOME, 1, eventDate, DAYS)
+				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 23)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 24), LocalDate.of(2001, 5, 24)), FeatureGroup.OUTCOME, null, eventDate, COMPLETE),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 22)), FeatureGroup.FEATURE, -2, eventDate, DAYS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 5, 23)), FeatureGroup.FEATURE, -1, eventDate, DAYS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 24), LocalDate.of(2001, 5, 24)), FeatureGroup.OUTCOME, 1, eventDate, DAYS)
 		);
 	}
 
 	@Test
 	public void rangeRelDaysBeforeCompleteOnlyTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
+		CalendarUnit timeUnit = CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -147,7 +148,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysAfterTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
+		CalendarUnit timeUnit = CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -155,21 +156,23 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.AFTER;
 
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime,  timeUnit, ExportForm.getResolutionAlignmentMap(List.of(COMPLETE,DAYS), DAY));
+		List<DateContext>
+				contexts =
+				DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, ExportForm.getResolutionAlignmentMap(List.of(COMPLETE, DAYS), DAY));
 
-		assertThat(contexts).containsExactly (
-			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 21), LocalDate.of(2001, 5, 22)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 5, 24)), FeatureGroup.OUTCOME, null, eventDate, COMPLETE),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 21), LocalDate.of(2001, 5, 21)), FeatureGroup.FEATURE, -2, eventDate, DAYS),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 22)), FeatureGroup.FEATURE, -1, eventDate, DAYS),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 5, 23)), FeatureGroup.OUTCOME, 0, eventDate, DAYS),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 5, 24), LocalDate.of(2001, 5, 24)), FeatureGroup.OUTCOME, 1, eventDate, DAYS)
+		assertThat(contexts).containsExactly(
+				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 21), LocalDate.of(2001, 5, 22)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 5, 24)), FeatureGroup.OUTCOME, null, eventDate, COMPLETE),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 21), LocalDate.of(2001, 5, 21)), FeatureGroup.FEATURE, -2, eventDate, DAYS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 22)), FeatureGroup.FEATURE, -1, eventDate, DAYS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 5, 23)), FeatureGroup.OUTCOME, 1, eventDate, DAYS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 24), LocalDate.of(2001, 5, 24)), FeatureGroup.OUTCOME, 2, eventDate, DAYS)
 		);
 	}
 
 	@Test
 	public void rangeRelDaysNeutralTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
+		CalendarUnit timeUnit = CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -191,7 +194,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelQuarterBeforeTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
+		CalendarUnit timeUnit = CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -202,17 +205,17 @@ public class DateContextTest {
 		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, ExportForm.getResolutionAlignmentMap(List.of(COMPLETE,QUARTERS), QUARTER));
 
 		assertThat(contexts).containsExactly(
-			new DateContext(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 6, 30)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)), FeatureGroup.OUTCOME, null, eventDate, COMPLETE),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, -1, eventDate, QUARTERS),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 4, 1), LocalDate.of(2001, 6, 30)), FeatureGroup.FEATURE, 0, eventDate, QUARTERS),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)), FeatureGroup.OUTCOME, 1, eventDate, QUARTERS)
+				new DateContext(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 6, 30)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)), FeatureGroup.OUTCOME, null, eventDate, COMPLETE),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, -2, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 4, 1), LocalDate.of(2001, 6, 30)), FeatureGroup.FEATURE, -1, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)), FeatureGroup.OUTCOME, 1, eventDate, QUARTERS)
 		);
 	}
 
 	@Test
 	public void rangeRelQuarterAfterTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
+		CalendarUnit timeUnit = CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -220,21 +223,23 @@ public class DateContextTest {
 		IndexPlacement indexPlacement = IndexPlacement.AFTER;
 
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, ExportForm.getResolutionAlignmentMap(List.of(COMPLETE,QUARTERS), QUARTER));
+		List<DateContext>
+				contexts =
+				DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, ExportForm.getResolutionAlignmentMap(List.of(COMPLETE, QUARTERS), QUARTER));
 
-		assertThat(contexts).containsExactly (
-			new DateContext(CDateRange.of(LocalDate.of(2000, 10, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 4, 1), LocalDate.of(2001, 9, 30)), FeatureGroup.OUTCOME, null, eventDate, COMPLETE),
-			new DateContext(CDateRange.of(LocalDate.of(2000, 10, 1), LocalDate.of(2000, 12, 31)), FeatureGroup.FEATURE, -2, eventDate, QUARTERS),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, -1, eventDate, QUARTERS),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 4, 1), LocalDate.of(2001, 6, 30)), FeatureGroup.OUTCOME, 0, eventDate, QUARTERS),
-			new DateContext(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)), FeatureGroup.OUTCOME, 1, eventDate, QUARTERS)
+		assertThat(contexts).containsExactly(
+				new DateContext(CDateRange.of(LocalDate.of(2000, 10, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, null, eventDate, COMPLETE),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 4, 1), LocalDate.of(2001, 9, 30)), FeatureGroup.OUTCOME, null, eventDate, COMPLETE),
+				new DateContext(CDateRange.of(LocalDate.of(2000, 10, 1), LocalDate.of(2000, 12, 31)), FeatureGroup.FEATURE, -2, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, -1, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 4, 1), LocalDate.of(2001, 6, 30)), FeatureGroup.OUTCOME, 1, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)), FeatureGroup.OUTCOME, 2, eventDate, QUARTERS)
 		);
 	}
 
 	@Test
 	public void rangeRelQuarterNeutralTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
+		CalendarUnit timeUnit = CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -256,7 +261,7 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelYearsAlignQuarterNeutralTest() {
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.QUARTERS;
+		CalendarUnit timeUnit = CalendarUnit.QUARTERS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -277,9 +282,9 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelDaysAlignQuarterNeutralTest() {
-		// This should ignore the QUARTER alignment hint be cause it does not make sense to align a finer resolution than the alignment.
+		// This should ignore the QUARTER alignment hint because it does not make sense to align a finer resolution than the alignment.
 
-		DateContext.CalendarUnit timeUnit = DateContext.CalendarUnit.DAYS;
+		CalendarUnit timeUnit = CalendarUnit.DAYS;
 		LocalDate eventDate = LocalDate.of(2001, 5, 23);
 		int event = CDate.ofLocalDate(eventDate);
 		int featureTime = 2;
@@ -294,6 +299,36 @@ public class DateContextTest {
 				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 22), LocalDate.of(2001, 5, 22)), FeatureGroup.FEATURE, -1, eventDate, DAYS),
 				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 24), LocalDate.of(2001, 5, 24)), FeatureGroup.OUTCOME, 1, eventDate, DAYS),
 				new DateContext(CDateRange.of(LocalDate.of(2001, 5, 25), LocalDate.of(2001, 5, 25)), FeatureGroup.OUTCOME, 2, eventDate, DAYS)
+		);
+	}
+
+
+	@Test
+	public void rangeRelYearsQuarterAlignYearsNeutralTest() {
+		// This should ignore the YEAR alignment hint for QUARTERS because the alignment is to coarse. For QUARTERS it should fallback to QUARTER.
+
+		CalendarUnit timeUnit = CalendarUnit.QUARTERS;
+		LocalDate eventDate = LocalDate.of(2001, 5, 23);
+		int event = CDate.ofLocalDate(eventDate);
+		int featureTime = 3;
+		int outcomeTime = 3;
+		IndexPlacement indexPlacement = IndexPlacement.NEUTRAL;
+
+
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, indexPlacement, featureTime, outcomeTime, timeUnit, ExportForm.getResolutionAlignmentMap(List.of(YEARS, QUARTERS), YEAR));
+
+		assertThat(contexts).containsExactly (
+				new DateContext(CDateRange.of(LocalDate.of(2000, 7, 1), LocalDate.of(2000, 12, 31)), FeatureGroup.FEATURE, -2, eventDate, YEARS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, -1, eventDate, YEARS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 12, 31)), FeatureGroup.OUTCOME, 1, eventDate, YEARS),
+				new DateContext(CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 31)), FeatureGroup.OUTCOME, 2, eventDate, YEARS),
+
+				new DateContext(CDateRange.of(LocalDate.of(2000, 7, 1), LocalDate.of(2000, 9, 30)), FeatureGroup.FEATURE, -3, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2000, 10, 1), LocalDate.of(2000, 12, 31)), FeatureGroup.FEATURE, -2, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)), FeatureGroup.FEATURE, -1, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)), FeatureGroup.OUTCOME, 1, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)), FeatureGroup.OUTCOME, 2, eventDate, QUARTERS),
+				new DateContext(CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 31)), FeatureGroup.OUTCOME, 3, eventDate, QUARTERS)
 		);
 	}
 }

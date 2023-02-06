@@ -1,14 +1,13 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import { FC } from "react";
 
 import type { ConceptT, ConceptIdT } from "../api/types";
-
-import { getConceptById } from "./globalTreeStoreHelper";
-import type { SearchT, TreesT } from "./reducer";
+import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 
 import ConceptTree from "./ConceptTree";
 import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
-import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
+import { getConceptById } from "./globalTreeStoreHelper";
+import type { SearchT, TreesT } from "./reducer";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -18,14 +17,23 @@ interface PropsT {
   depth: number;
   trees: TreesT;
   tree: ConceptT;
-  treeId: ConceptIdT;
-  active: boolean;
+  conceptId: ConceptIdT;
+  active?: boolean;
   openInitially?: boolean;
   search: SearchT;
   onLoadTree: (id: string) => void;
 }
 
-const sumMatchingEntries = (children, initSum) => {
+const sumMatchingEntities = (children: string[], initSum: number) => {
+  return children.reduce((sum, treeId) => {
+    const rootConcept = getConceptById(treeId);
+    const rootMatchingEntities = rootConcept ? rootConcept.matchingEntities : 0;
+
+    return rootMatchingEntities ? sum + rootMatchingEntities : sum;
+  }, initSum);
+};
+
+const sumMatchingEntries = (children: string[], initSum: number) => {
   return children.reduce((sum, treeId) => {
     const rootConcept = getConceptById(treeId);
     const rootMatchingEntries = rootConcept ? rootConcept.matchingEntries : 0;
@@ -37,7 +45,7 @@ const sumMatchingEntries = (children, initSum) => {
 const ConceptTreeFolder: FC<PropsT> = ({
   trees,
   tree,
-  treeId,
+  conceptId,
   search,
   depth,
   active,
@@ -45,7 +53,7 @@ const ConceptTreeFolder: FC<PropsT> = ({
   openInitially,
 }) => {
   const { open, onToggleOpen } = useOpenableConcept({
-    conceptId: treeId,
+    conceptId,
     openInitially,
   });
 
@@ -54,24 +62,26 @@ const ConceptTreeFolder: FC<PropsT> = ({
       ? null
       : sumMatchingEntries(tree.children, tree.matchingEntries);
 
+  const matchingEntities =
+    !tree.children || !tree.matchingEntities
+      ? null
+      : sumMatchingEntities(tree.children, tree.matchingEntities);
+
   const isOpen = open || search.allOpen;
 
   return (
     <Root>
       <ConceptTreeNodeTextContainer
         node={{
-          id: treeId,
           label: tree.label,
           description: tree.description,
-          matchingEntries: matchingEntries,
+          matchingEntries,
+          matchingEntities,
           dateRange: tree.dateRange,
           additionalInfos: tree.additionalInfos,
           children: tree.children,
         }}
-        createQueryElement={() => {
-          // We don't have to implement this since ConceptTreeFolders should never be
-          // dragged into the editor, hence they're 'active: false' and thus not draggable
-        }}
+        conceptId={conceptId}
         isStructFolder
         open={open || false}
         depth={depth}
@@ -81,12 +91,12 @@ const ConceptTreeFolder: FC<PropsT> = ({
       />
       {isOpen &&
         tree.children &&
-        tree.children.map((childId, i) => {
+        tree.children.map((childId) => {
           const tree = trees[childId];
 
           const treeProps = {
-            key: i,
-            treeId: childId,
+            key: childId,
+            conceptId: childId as ConceptIdT,
             depth: depth + 1,
             search,
             onLoadTree,
@@ -97,9 +107,7 @@ const ConceptTreeFolder: FC<PropsT> = ({
 
             return (
               <ConceptTree
-                id={childId}
                 label={tree.label}
-                description={tree.description}
                 error={tree.error}
                 loading={tree.loading}
                 tree={rootConcept}

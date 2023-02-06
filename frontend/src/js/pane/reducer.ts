@@ -1,51 +1,42 @@
-import { CLICK_PANE_TAB } from "./actionTypes";
+import { getType } from "typesafe-actions";
 
-export interface TabType {
-  label: string;
-  key: string;
-}
+import type { Action } from "../app/actions";
 
+import { clickPaneTab } from "./actions";
+
+export type LeftPaneTab = "conceptTrees" | "previousQueries" | "formConfigs";
 export interface PanesStateT {
-  left: {
-    activeTab: "conceptTrees" | "previousQueries" | "formConfigs";
-    tabs: TabType[];
-  };
-  right: {
-    activeTab: string;
-    tabs: TabType[];
-  };
+  left: { activeTab: LeftPaneTab };
+  right: { activeTab: string | null };
 }
 
-export const buildPanesReducer = tabs => {
-  const initialState: PanesStateT = {
-    left: {
-      activeTab: "conceptTrees",
-      tabs: [
-        { label: "leftPane.conceptTrees", key: "conceptTrees" },
-        { label: "leftPane.previousQueries", key: "previousQueries" },
-        { label: "leftPane.formConfigs", key: "formConfigs" }
-      ]
-    },
-    right: {
-      activeTab: tabs[0].key,
-      tabs: tabs.map(tab => ({ label: tab.label, key: tab.key }))
-    }
-  };
-
-  return (state: PanesStateT = initialState, action: Object): PanesStateT => {
-    switch (action.type) {
-      case CLICK_PANE_TAB:
-        const { paneType, tab } = action.payload;
-
-        return {
-          ...state,
-          [paneType]: {
-            ...state[paneType],
-            activeTab: tab
-          }
-        };
-      default:
-        return state;
-    }
-  };
+const initialState: PanesStateT = {
+  left: {
+    activeTab: "conceptTrees",
+  },
+  right: {
+    activeTab: null,
+  },
 };
+
+const reducer = (
+  state: PanesStateT = initialState,
+  action: Action,
+): PanesStateT => {
+  switch (action.type) {
+    case getType(clickPaneTab):
+      const { paneType, tab } = action.payload;
+
+      return {
+        ...state,
+        [paneType]: {
+          ...state[paneType],
+          activeTab: tab,
+        },
+      };
+    default:
+      return state;
+  }
+};
+
+export default reducer;

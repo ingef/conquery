@@ -39,7 +39,7 @@
 				"type": "FIRST",
 				"column": "vers_stamm.geschlecht",
 				"name": "geschlecht_select",
-				"label": "Ausgabe Geschlecht",
+				"label": "Geschlecht",
 				"description": "Automatisch erzeugter Zusatzwert.",
 				"default": true
 			}

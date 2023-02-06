@@ -5,49 +5,65 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.forms.export.AbsExportGenerator;
-import com.bakdata.conquery.models.forms.util.DateContext;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
+import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.google.common.collect.ImmutableList;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
-@CPSType(id="ABSOLUTE", base=Mode.class)
+@Getter
+@Setter
+@CPSType(id = "ABSOLUTE", base = Mode.class)
 public class AbsoluteMode extends Mode {
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private Range<LocalDate> dateRange;
 
-	@NotEmpty
-	private List<CQElement> features = ImmutableList.of();
-
-	@Override
-	public void visit(Consumer<Visitable> visitor) {
-		features.forEach(e -> visitor.accept(e));
-	}
 
 	@NotNull
-	private DateContext.Alignment alignmentHint = DateContext.Alignment.QUARTER;
+	private Alignment alignmentHint = Alignment.QUARTER;
+
+
+	@JsonView(View.InternalCommunication.class)
+	private ArrayConceptQuery resolvedFeatures;
 
 	@Override
-	public IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
-		return AbsExportGenerator.generate(datasets, this, userId, submittedDataset, getAlignmentHint());
+	public Query createSpecializedQuery(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+
+		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments =
+				ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint());
+
+		return new AbsoluteFormQuery(
+				getForm().getPrerequisite(),
+				dateRange,
+				resolvedFeatures,
+				resolutionsAndAlignments
+		);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
+		resolvedFeatures = ArrayConceptQuery.createFromFeatures(getForm().getFeatures());
+
 		// Resolve all
-		features.forEach(e -> e.resolve(context));
+		resolvedFeatures.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
+	}
+
+	@Override
+	public void visit(Consumer<Visitable> visitor) {
+
 	}
 }

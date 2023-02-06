@@ -1,0 +1,7 @@
+result,resolution,index,date_range,explicitly set select Table1 Ausgabe Alter
+1,complete,,2012-03-01/2012-03-02,55
+1,year,1,2012-03-01/2012-03-02,55
+1,quarter,1,2012-03-01/2012-03-02,55
+1,complete,,2012-03-04/2012-03-04,55
+1,year,1,2012-03-04/2012-03-04,55
+1,quarter,1,2012-03-04/2012-03-04,55

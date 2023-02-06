@@ -1,30 +1,22 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
-import Hotkeys from "react-hot-keys";
-import T from "i18n-react";
+import { FC } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
-import Preview from "../preview/Preview";
+import { exists } from "../common/helpers/exists";
 import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryResults from "./QueryResults";
-import QueryRunningSpinner from "./QueryRunningSpinner";
-import QueryRunnerInfo from "./QueryRunnerInfo";
 import QueryRunnerButton from "./QueryRunnerButton";
+import QueryRunnerInfo from "./QueryRunnerInfo";
+import QueryRunningProgress from "./QueryRunningProgress";
+import { QueryRunningSpinner } from "./QueryRunningSpinner";
 import type { QueryRunnerStateT } from "./reducer";
-
-interface PropsT {
-  queryRunner?: QueryRunnerStateT;
-  isQueryRunning: boolean;
-  isButtonEnabled: boolean;
-  buttonTooltipKey?: string | null;
-  startQuery: () => void;
-  stopQuery: () => void;
-}
 
 const Root = styled("div")`
   flex-shrink: 0;
-  padding: 10px 20px 0 10px;
+  padding: 10px 20px 10px 10px;
   border-top: 1px solid ${({ theme }) => theme.col.grayLight};
+  background-color: ${({ theme }) => theme.col.bg};
   display: flex;
   align-items: center;
   width: 100%;
@@ -45,33 +37,42 @@ const LoadingGroup = styled("div")`
   justify-content: flex-end;
 `;
 
+interface PropsT {
+  queryRunner?: QueryRunnerStateT;
+  isQueryRunning: boolean;
+  isButtonEnabled: boolean;
+  buttonTooltip?: string;
+  startQuery: () => void;
+  stopQuery: () => void;
+}
+
 const QueryRunner: FC<PropsT> = ({
   queryRunner,
   startQuery,
   stopQuery,
-  buttonTooltipKey,
+  buttonTooltip,
   isQueryRunning,
   isButtonEnabled,
 }) => {
   const btnAction = isQueryRunning ? stopQuery : startQuery;
-
   const isStartStopLoading =
     !!queryRunner &&
     !!(queryRunner.startQuery.loading || queryRunner.stopQuery.loading);
 
+  const progress = queryRunner?.progress;
+
+  useHotkeys(
+    "shift+enter",
+    () => {
+      if (isButtonEnabled) btnAction();
+    },
+    [isButtonEnabled, btnAction],
+  );
+
   return (
     <Root>
-      <Hotkeys
-        keyName="shift+enter"
-        onKeyDown={() => {
-          if (isButtonEnabled) btnAction();
-        }}
-      />
-      <Preview />
       <Left>
-        <WithTooltip
-          text={buttonTooltipKey ? T.translate(buttonTooltipKey) : null}
-        >
+        <WithTooltip text={buttonTooltip}>
           <QueryRunnerButton
             onClick={btnAction}
             isStartStopLoading={isStartStopLoading}
@@ -82,17 +83,21 @@ const QueryRunner: FC<PropsT> = ({
       </Left>
       <Right>
         <LoadingGroup>
-          <QueryRunningSpinner isQueryRunning={isQueryRunning} />
+          {exists(progress) && <QueryRunningProgress progress={progress} />}
+          {isQueryRunning && <QueryRunningSpinner />}
           {!!queryRunner && <QueryRunnerInfo queryRunner={queryRunner} />}
         </LoadingGroup>
         {!!queryRunner &&
           !!queryRunner.queryResult &&
           !queryRunner.queryResult.error &&
           !queryRunner.queryResult.loading &&
+          exists(queryRunner.queryResult.resultUrls) &&
+          exists(queryRunner.queryResult.resultLabel) &&
           !isQueryRunning && (
             <QueryResults
+              resultLabel={queryRunner.queryResult.resultLabel}
               resultCount={queryRunner.queryResult.resultCount}
-              resultUrl={queryRunner.queryResult.resultUrl}
+              resultUrls={queryRunner.queryResult.resultUrls}
               resultColumns={queryRunner.queryResult.resultColumns}
               queryType={queryRunner.queryResult.queryType}
             />

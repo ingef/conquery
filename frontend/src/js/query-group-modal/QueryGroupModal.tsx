@@ -1,14 +1,18 @@
-import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
-import { connect } from "react-redux";
+import { Fragment, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
 
-import InputDateRange from "../form-components/InputDateRange";
+import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
+import { DateStringMinMax } from "../common/helpers/dateHelper";
 import Modal from "../modal/Modal";
+import { nodeIsConceptQueryNode } from "../model/node";
+import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
+import { QueryGroupType } from "../standard-query-editor/types";
+import InputDateRange from "../ui-components/InputDateRange";
 
 import {
-  queryGroupModalClearNode,
   queryGroupModalSetDate,
   queryGroupModalResetAllDates,
 } from "./actions";
@@ -29,97 +33,108 @@ const ResetAll = styled(IconButton)`
   margin-left: 20px;
 `;
 
-type PropsType = {
-  group: Object;
+function findGroup(query: StandardQueryStateT, andIdx: number) {
+  if (!query[andIdx]) return null;
+
+  return query[andIdx];
+}
+
+const QueryGroupModalWrap = ({
+  andIdx,
+  onClose,
+}: {
   andIdx: number;
   onClose: () => void;
-  onSetDate: (date: any) => void;
-  onResetAllDates: () => void;
+}) => {
+  const group = useSelector<StateT, QueryGroupType | null>((state) =>
+    findGroup(state.queryEditor.query, andIdx),
+  );
+
+  if (!group) return null;
+
+  return <QueryGroupModal andIdx={andIdx} group={group} onClose={onClose} />;
 };
 
-const QueryGroupModal = (props: PropsType) => {
-  if (!props.group) return null;
+const QueryGroupModal = ({
+  andIdx,
+  onClose,
+  group,
+}: {
+  andIdx: number;
+  onClose: () => void;
+  group: QueryGroupType;
+}) => {
+  const { t } = useTranslation();
 
-  const { dateRange } = props.group;
+  const dispatch = useDispatch();
 
-  const minDate = dateRange ? dateRange.min : null;
-  const maxDate = dateRange ? dateRange.max : null;
+  const onSetDate = (date: DateStringMinMax) => {
+    dispatch(
+      queryGroupModalSetDate({
+        andIdx,
+        date: {
+          min: date.min || undefined,
+          max: date.max || undefined,
+        },
+      }),
+    );
+  };
+
+  const onResetAllDates = useCallback(
+    () => dispatch(queryGroupModalResetAllDates({ andIdx })),
+    [dispatch, andIdx],
+  );
+
+  const { dateRange } = group;
+
+  const minDate = dateRange ? dateRange.min || null : null;
+  const maxDate = dateRange ? dateRange.max || null : null;
   const hasActiveDate = !!(minDate || maxDate);
 
-  const { onSetDate } = props;
+  const labelSuffix = useMemo(() => {
+    return hasActiveDate ? (
+      <ResetAll bare onClick={onResetAllDates} icon="undo">
+        {t("queryNodeEditor.reset")}
+      </ResetAll>
+    ) : null;
+  }, [t, hasActiveDate, onResetAllDates]);
 
   return (
     <Modal
-      onClose={props.onClose}
+      onClose={onClose}
       doneButton
-      headline={T.translate("queryGroupModal.explanation")}
+      headline={t("queryGroupModal.explanation")}
     >
       <Elements>
-        {props.group.elements.reduce(
-          (parts, concept, i, elements) => [
-            ...parts,
-            <HeadlinePart key={i + "-headline"}>
-              {concept.label || concept.id}
-            </HeadlinePart>,
-            i !== elements.length - 1 ? <span key={i + "-comma"}>, </span> : "",
-          ],
-          [
-            <HeadlinePart key={-1}>
-              {T.translate("queryGroupModal.headlineStart")}
-            </HeadlinePart>,
-          ]
-        )}
+        <HeadlinePart key={-1}>
+          {t("queryGroupModal.headlineStart")}
+        </HeadlinePart>
+        {group.elements.map((node, i) => (
+          <Fragment key={i + "-headline"}>
+            <HeadlinePart>
+              {node.label ||
+                (nodeIsConceptQueryNode(node) ? node.ids[0] : node.id)}
+            </HeadlinePart>
+            {i !== group.elements.length - 1 && (
+              <span key={i + "-comma"}>, </span>
+            )}
+          </Fragment>
+        ))}
       </Elements>
       <InputDateRange
         large
         inline
-        label={T.translate("queryGroupModal.dateRange")}
-        labelSuffix={
-          <>
-            {hasActiveDate && (
-              <ResetAll bare onClick={props.onResetAllDates} icon="undo">
-                {T.translate("queryNodeEditor.reset")}
-              </ResetAll>
-            )}
-          </>
-        }
-        input={{
-          onChange: onSetDate,
-          value: dateRange,
+        autoFocus
+        label={t("queryGroupModal.dateRange")}
+        labelSuffix={labelSuffix}
+        onChange={onSetDate}
+        value={{
+          min: minDate,
+          max: maxDate,
         }}
       />
     </Modal>
   );
 };
 
-function findGroup(query, andIdx) {
-  if (!query[andIdx]) return null;
-
-  return query[andIdx];
-}
-
-const mapStateToProps = (state) => ({
-  group: findGroup(state.queryEditor.query, state.queryGroupModal.andIdx),
-  andIdx: state.queryGroupModal.andIdx,
-});
-
-const mapDispatchToProps = (dispatch: any) => ({
-  onClose: () => dispatch(queryGroupModalClearNode()),
-  onSetDate: (andIdx, date) => dispatch(queryGroupModalSetDate(andIdx, date)),
-  onResetAllDates: (andIdx) => dispatch(queryGroupModalResetAllDates(andIdx)),
-});
-
-// Used to enhance the dispatchProps with the andIdx
-const mergeProps = (stateProps, dispatchProps, ownProps) => ({
-  ...ownProps,
-  ...stateProps,
-  ...dispatchProps,
-  onSetDate: (date) => dispatchProps.onSetDate(stateProps.andIdx, date),
-  onResetAllDates: () => dispatchProps.onResetAllDates(stateProps.andIdx),
-});
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps,
-  mergeProps
-)(QueryGroupModal);
+export default QueryGroupModalWrap;

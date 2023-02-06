@@ -1,0 +1,118 @@
+{
+  "type": "QUERY_TEST",
+  "label": "CQExternal Extra Data Test",
+  "expectedCsv": "tests/query/CQEXTERNAL_EXTRA_DATA/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "EXTERNAL",
+      "format": [
+        "ID",
+        "EVENT_DATE",
+        "EXTRA",
+        "EXTRA",
+        "EXTRA",
+        "EXTRA",
+        "EXTRA",
+        "EXTRA",
+        "EXTRA",
+        "EXTRA"
+      ],
+      "values": [
+        [
+          "result",
+          "dates",
+          "payload 1",
+          "payload 2",
+          "payload 3",
+          "payload 4",
+          "payload 5",
+          "payload 6",
+          "payload 7",
+          "payload 8"
+        ],
+        [
+          3,
+          "2013-11-10",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ],
+        [
+          6,
+          "2013-11-10",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ],
+        [
+          1,
+          "2012-01-01",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ],
+        [
+          3,
+          "2013-11-10",
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8"
+        ]
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "test_tree",
+      "type": "TREE",
+      "connectors": {
+        "label": "tree_label",
+        "name": "test_concept",
+        "table": "test_table",
+        "validityDates": {
+          "label": "datum",
+          "column": "test_table.datum"
+        }
+      }
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/CQEXTERNAL_EXTRA_DATA/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

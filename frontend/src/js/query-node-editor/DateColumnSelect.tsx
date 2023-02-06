@@ -1,26 +1,31 @@
-import React from "react";
-import T from "i18n-react";
-
-import InputSelect from "../form-components/InputSelect";
+import { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 import type { SelectedDateColumnT } from "../standard-query-editor/types";
+import InputSelect from "../ui-components/InputSelect/InputSelect";
 
-type PropsT = {
-  dateColumn: SelectedDateColumnT,
-  onSelectDateColumn: (dateColum: string) => void
-};
+interface PropsT {
+  dateColumn: SelectedDateColumnT;
+  onSelectDateColumn: (dateColumn: string) => void;
+}
 
-export default ({ dateColumn, onSelectDateColumn }: PropsT) => {
+const DateColumnSelect: FC<PropsT> = ({ dateColumn, onSelectDateColumn }) => {
+  const { t } = useTranslation();
+
   return (
     <div>
       <InputSelect
-        label={T.translate("queryNodeEditor.dateColumn")}
+        label={t("queryNodeEditor.dateColumn")}
         options={dateColumn.options}
-        input={{
-          value: dateColumn.value,
-          onChange: onSelectDateColumn
+        value={
+          dateColumn.options.find((op) => op.value === dateColumn.value) || null
+        }
+        onChange={(value) => {
+          if (value) onSelectDateColumn(value.value as string);
         }}
       />
     </div>
   );
 };
+
+export default DateColumnSelect;

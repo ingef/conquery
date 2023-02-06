@@ -8,19 +8,19 @@ import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.apiv1.auth.JwtWrapper;
 import com.bakdata.conquery.apiv1.auth.UsernamePasswordToken;
-import com.bakdata.conquery.models.auth.basic.UsernamePasswordChecker;
+import com.bakdata.conquery.models.auth.basic.AccessTokenCreator;
 import lombok.AllArgsConstructor;
 
 @Path("/")
 @AllArgsConstructor
 public class TokenResource {
 
-	private final UsernamePasswordChecker realm;
+	private final AccessTokenCreator realm;
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public JwtWrapper getToken(UsernamePasswordToken token) {
-		return new JwtWrapper(realm.checkCredentialsAndCreateJWT(token.getUser(), token.getPassword()));
+		return new JwtWrapper(realm.createAccessToken(token.getUser(), token.getPassword()));
 	}
 }

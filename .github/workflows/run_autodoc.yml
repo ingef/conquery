@@ -1,0 +1,45 @@
+name: "Generate Documentation and Push to Repo-Wiki"
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "autodoc/**"
+      - "backend/src/main/java/com/bakdata/conquery/models/dataset/**"
+      - "backend/src/main/java/com/bakdata/conquery/models/config/**"
+      - "backend/src/main/java/com/bakdata/conquery/preproc/**"
+      - "backend/src/main/java/com/bakdata/conquery/resources/**"
+      - "backend/src/main/java/com/bakdata/conquery/apiv1/**"
+
+jobs:
+  generate_auto_doc:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+      - name: Build Backend
+        run: mvn install -T 1C -DskipTests -pl '!executable'
+      - name: Run AutoDoc
+        run: mvn exec:java -f autodoc/pom.xml -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -Dexec.arguments=documentation
+      - name: Upload Documentation to Wiki
+        uses: SwiftDocOrg/github-wiki-publish-action@v1
+        with:
+          path: "documentation"
+        env:
+          GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.REPO_SCOPED_TOKEN }}
+          

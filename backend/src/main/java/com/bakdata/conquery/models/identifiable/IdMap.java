@@ -11,23 +11,23 @@ import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.google.common.collect.ForwardingMap;
 
 /**
  * A typesafe mapping for the ID-system that does not allow a remapping of an existing key.
- * 
+ *
  * @implNote implementation of {@link Iterable} is dropped, because hibernate could not decide on how to validate this map (either with an map-extractor or an iterable-extractor).
  */
-public class IdMap<ID extends IId<? super V>, V extends Identifiable<? extends ID>> extends ForwardingMap <ID,V> {
+public class IdMap<ID extends Id<? super V>, V extends Identifiable<? extends ID>> extends ForwardingMap<ID, V> {
 
 	@Valid
 	private final ConcurrentMap<ID, V> map;
-	
+
 	public IdMap() {
 		map = new ConcurrentHashMap<ID, V>();
 	}
-	
+
 	public IdMap(Collection<V> collection) {
 		map = new ConcurrentHashMap<>();
 		for(V value : collection) {
@@ -63,7 +63,8 @@ public class IdMap<ID extends IId<? super V>, V extends Identifiable<? extends I
 	}
 
 	private void addToMap(V entry) {
-		V old = map.put(entry.getId(), entry);
+		// The following cast should be unnecessary, but intellij is complaining without it. Please leave it here for now
+		V old = (V) map.put(entry.getId(), entry);
 		if(old != null && !old.equals(entry)) {
 			throw new IllegalStateException("The element "+entry.getId()+" is present twice in this map.");
 		}
@@ -78,8 +79,8 @@ public class IdMap<ID extends IId<? super V>, V extends Identifiable<? extends I
 		return true;
 	}
 	
-	public void update(V entry) {
-		map.put(entry.getId(), entry);
+	public V update(V entry) {
+		return map.put((ID)entry.getId(), entry);
 	}
 	
 	public V remove(ID id) {
@@ -95,16 +96,6 @@ public class IdMap<ID extends IId<? super V>, V extends Identifiable<? extends I
 	@Override @Deprecated
 	public V put(ID key, V value) {
 		return super.put(key, value);
-	}
-	
-	public boolean addAll(Collection<? extends V> c) {
-		boolean modified = false;
-		for (V e : c) {
-			if (add(e)) {
-				modified = true;
-			}
-		}
-		return modified;
 	}
 
 	@Override

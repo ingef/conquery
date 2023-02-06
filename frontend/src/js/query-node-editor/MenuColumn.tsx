@@ -1,112 +1,141 @@
-import React from "react";
-import T from "i18n-react";
 import styled from "@emotion/styled";
+import { FC } from "react";
+import { useTranslation } from "react-i18next";
 
-import EditableText from "../form-components/EditableText";
+import type { ConceptIdT } from "../api/types";
+import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
+import { Heading3 } from "../headings/Headings";
+import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
+import type {
+  DragItemConceptTreeNode,
+  StandardQueryNodeT,
+} from "../standard-query-editor/types";
 
-import ResetAllFiltersButton from "./ResetAllFiltersButton";
+import AdditionalConceptNodeChildren from "./AdditionalConceptNodeChildren";
+import { HeadingBetween } from "./HeadingBetween";
 import MenuColumnItem from "./MenuColumnItem";
-import MenuColumnButton from "./MenuColumnButton";
 
-import type { PropsType } from "./QueryNodeEditor";
-
-const FixedColumn = styled("div")`
-  height: 100%;
+const FixedColumn = styled("div")<{ isEmpty?: boolean }>`
   display: flex;
   flex-direction: column;
-  min-width: 205px;
-  max-width: 220px;
+  width: ${({ isEmpty }) => (isEmpty ? "200px" : "270px")};
   overflow: hidden;
   flex-shrink: 0;
   flex-grow: 1;
+  height: 100%;
 
   &:first-of-type {
     border-right: 1px solid ${({ theme }) => theme.col.grayLight};
   }
 `;
 
-const CategoryHeader = styled("p")`
+const DimmedNote = styled(Heading3)`
+  color: ${({ theme }) => theme.col.grayLight};
+  padding: 15px;
+  font-weight: 400;
+`;
+
+const CommonSettingsLabel = styled(Heading3)`
+  padding: 15px 15px 0;
   margin: 0;
-  padding: 10px 0 5px 14px;
-  line-height: 1;
-  font-size: ${({ theme }) => theme.font.xs};
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.col.black};
+  cursor: pointer;
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
-const NodeName = styled("div")`
-  padding: 10px 15px;
-  border-bottom: 1px solid #ccc;
-`;
+interface PropsT {
+  className?: string;
 
-const MenuColumn = (props: PropsType) => {
-  const {
-    node,
-    editorState,
-    showTables,
-    blacklistedTables,
-    whitelistedTables,
-    onToggleTable,
-    onResetAllFilters,
-    onUpdateLabel
-  } = props;
+  node: StandardQueryNodeT;
+  selectedTableIdx: number | null;
+  showTables: boolean;
+  allowlistedTables?: string[];
+  blocklistedTables?: string[];
 
+  onCommonSettingsClick: () => void;
+  onDropConcept: (node: DragItemConceptTreeNode) => void;
+  onRemoveConcept: (conceptId: ConceptIdT) => void;
+  onToggleTable: (tableIdx: number, isExcluded: boolean) => void;
+  onSelectTable: (tableIdx: number) => void;
+  onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
+}
+
+const MenuColumn: FC<PropsT> = ({
+  className,
+  node,
+  selectedTableIdx,
+  showTables,
+  blocklistedTables,
+  allowlistedTables,
+  onCommonSettingsClick,
+  onDropConcept,
+  onRemoveConcept,
+  onToggleTable,
+  onSelectTable,
+  onResetTable,
+}) => {
+  const { t } = useTranslation();
   const isOnlyOneTableIncluded =
-    !node.isPreviousQuery &&
-    node.tables.filter(table => !table.exclude).length === 1;
+    nodeIsConceptQueryNode(node) &&
+    node.tables.filter((table) => !table.exclude).length === 1;
+
+  const rootConcept = nodeIsConceptQueryNode(node)
+    ? getConceptById(node.tree)
+    : null;
+
+  const isEmpty =
+    !nodeIsConceptQueryNode(node) ||
+    (!showTables &&
+      (!rootConcept ||
+        !rootConcept.children ||
+        rootConcept.children.length === 0));
 
   return (
-    <FixedColumn>
-      <NodeName>
-        {!node.isPreviousQuery && (
-          <EditableText
-            large
-            loading={false}
-            text={node.label}
-            selectTextOnMount={true}
-            editing={editorState.editingLabel}
-            onSubmit={value => {
-              onUpdateLabel(value);
-              editorState.onToggleEditLabel();
-            }}
-            onToggleEdit={editorState.onToggleEditLabel}
-          />
-        )}
-        {node.isPreviousQuery && (node.label || node.id || node.ids)}
-      </NodeName>
-      <MenuColumnButton
-        active={editorState.detailsViewActive}
-        onClick={editorState.onSelectDetailsView}
-      >
-        {T.translate("queryNodeEditor.properties")}
-      </MenuColumnButton>
-      {!node.isPreviousQuery && showTables && (
-        <div>
-          <CategoryHeader>
-            {T.translate("queryNodeEditor.conceptNodeTables")}
-          </CategoryHeader>
+    <FixedColumn className={className} isEmpty={isEmpty}>
+      {isEmpty && (
+        <DimmedNote>{t("queryNodeEditor.emptyMenuColumn")}</DimmedNote>
+      )}
+      {nodeIsConceptQueryNode(node) && showTables && (
+        <>
+          <CommonSettingsLabel onClick={onCommonSettingsClick}>
+            {t("queryNodeEditor.properties")}
+          </CommonSettingsLabel>
+          <HeadingBetween>
+            {t("queryNodeEditor.conceptNodeTables")}
+          </HeadingBetween>
           {node.tables.map((table, tableIdx) => (
             <MenuColumnItem
               key={tableIdx}
-              idx={tableIdx}
               table={table}
-              isActive={
-                editorState.selectedInputTableIdx === tableIdx &&
-                !editorState.detailsViewActive
-              }
+              isActive={selectedTableIdx === tableIdx}
               isOnlyOneTableIncluded={isOnlyOneTableIncluded}
-              blacklistedTables={blacklistedTables}
-              whitelistedTables={whitelistedTables}
-              onClick={() => editorState.onSelectInputTableView(tableIdx)}
-              onToggleTable={value => onToggleTable(tableIdx, value)}
+              blocklistedTables={blocklistedTables}
+              allowlistedTables={allowlistedTables}
+              onClick={() => {
+                if (!table.exclude) {
+                  onSelectTable(tableIdx);
+                }
+              }}
+              onToggleTable={(value) => onToggleTable(tableIdx, value)}
+              onResetTable={(config: NodeResetConfig) =>
+                onResetTable(tableIdx, config)
+              }
             />
           ))}
-          <ResetAllFiltersButton
-            node={node}
-            onResetAllFilters={onResetAllFilters}
-          />
-        </div>
+        </>
       )}
+      {nodeIsConceptQueryNode(node) &&
+        rootConcept &&
+        rootConcept.children &&
+        rootConcept.children.length > 0 && (
+          <AdditionalConceptNodeChildren
+            node={node}
+            rootConcept={rootConcept}
+            onDropConcept={onDropConcept}
+            onRemoveConcept={onRemoveConcept}
+          />
+        )}
     </FixedColumn>
   );
 };

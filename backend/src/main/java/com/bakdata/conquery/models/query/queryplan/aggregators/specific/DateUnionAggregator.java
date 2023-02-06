@@ -3,27 +3,37 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
+import lombok.ToString;
 
 /**
  * Aggregator, listing all days present.
  */
-public class DateUnionAggregator extends SingleColumnAggregator<String> {
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
+public class DateUnionAggregator extends SingleColumnAggregator<CDateSet> {
 
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
+
+	private int realUpperBound;
 
 	public DateUnionAggregator(Column column) {
 		super(column);
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void init(Entity entity, QueryExecutionContext context) {
+		set.clear();
+		realUpperBound = context.getToday();
+	}
+
+	@Override
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		dateRestriction = ctx.getDateRestriction();
 	}
 
@@ -33,27 +43,18 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 			return;
 		}
 
-		CDateRange value = bucket.getAsDateRange(event, getColumn());
-		//otherwise the result would be something weird
-		if (value.isOpen()) {
-			return;
-		}
+		final CDateRange value = bucket.getAsDateRange(event, getColumn());
 
-		set.maskedAdd(value, dateRestriction);
+		set.maskedAdd(value, dateRestriction, realUpperBound);
 	}
 
 	@Override
-	public DateUnionAggregator doClone(CloneContext ctx) {
-		return new DateUnionAggregator(getColumn());
-	}
-
-	@Override
-	public String getAggregationResult() {
-		return set.toString();
+	public CDateSet createAggregationResult() {
+		return CDateSet.create(set.asRanges());
 	}
 
 	@Override
 	public ResultType getResultType() {
-		return ResultType.STRING;
+		return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
 	}
 }

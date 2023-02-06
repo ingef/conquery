@@ -1,15 +1,27 @@
 package com.bakdata.conquery.resources.admin;
 
+import static com.bakdata.conquery.resources.ResourceConstants.ADMIN_SERVLET_PATH;
+import static com.bakdata.conquery.resources.ResourceConstants.ADMIN_UI_SERVLET_PATH;
+
 import java.util.Collections;
 
+import javax.validation.Validator;
+
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.freemarker.Freemarker;
+import com.bakdata.conquery.io.jackson.IdRefPathParamConverterProvider;
+import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
 import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
@@ -17,6 +29,7 @@ import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
 import com.bakdata.conquery.resources.admin.rest.GroupResource;
 import com.bakdata.conquery.resources.admin.rest.PermissionResource;
 import com.bakdata.conquery.resources.admin.rest.RoleResource;
+import com.bakdata.conquery.resources.admin.rest.UIProcessor;
 import com.bakdata.conquery.resources.admin.rest.UserResource;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.AuthOverviewUIResource;
@@ -31,7 +44,6 @@ import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.views.ViewMessageBodyWriter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.realm.Realm;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -44,80 +56,107 @@ import org.glassfish.jersey.servlet.ServletContainer;
 @Slf4j
 public class AdminServlet {
 
-	/**
-	 * Marker interface for classes that provide admin UI functionality.
-	 */
-	@CPSBase
-	public interface AuthAdminResourceProvider {
-		void registerAuthenticationAdminResources(DropwizardResourceConfig jerseyConfig);
-	}
+	public static final String ADMIN_UI = "admin-ui";
+	private final AdminProcessor adminProcessor;
+	private final DropwizardResourceConfig jerseyConfig;
+	private final AdminDatasetProcessor adminDatasetProcessor;
+	private final DropwizardResourceConfig jerseyConfigUI;
 
-	private AdminProcessor adminProcessor;
-	private DropwizardResourceConfig jerseyConfig;
-
-	public void register(ManagerNode manager) {
+	public AdminServlet(ManagerNode manager) {
 		jerseyConfig = new DropwizardResourceConfig(manager.getEnvironment().metrics());
 		jerseyConfig.setUrlPattern("/admin");
+		jerseyConfigUI = new DropwizardResourceConfig(manager.getEnvironment().metrics());
+		jerseyConfigUI.setUrlPattern("/admin-ui");
 
 		RESTServer.configure(manager.getConfig(), jerseyConfig);
 
-		manager.getEnvironment().admin().addServlet("admin", new ServletContainer(jerseyConfig)).addMapping("/admin/*");
+		manager.getEnvironment().admin().addServlet(ADMIN_SERVLET_PATH, new ServletContainer(jerseyConfig)).addMapping("/" + ADMIN_SERVLET_PATH + "/*");
+		manager.getEnvironment().admin().addServlet(ADMIN_UI_SERVLET_PATH, new ServletContainer(jerseyConfigUI)).addMapping("/" + ADMIN_UI_SERVLET_PATH + "/*");
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
 		// freemarker support
-		jerseyConfig.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)));
+
 
 		adminProcessor = new AdminProcessor(
-			manager.getConfig(),
-			manager.getStorage(),
-			manager.getDatasetRegistry(),
-			manager.getJobManager(),
-			manager.getMaintenanceService(),
-			manager.getValidator(),
-			manager.getConfig().getCluster().getEntityBucketSize()
+				manager.getConfig(),
+				manager.getStorage(),
+				manager.getDatasetRegistry(),
+				manager.getJobManager(),
+				manager.getMaintenanceService(),
+				manager.getValidator()
 		);
 
-		// inject required services
-		jerseyConfig.register(new AbstractBinder() {
+		adminDatasetProcessor = new AdminDatasetProcessor(
+				manager.getConfig(),
+				manager.getValidator(),
+				manager.getDatasetRegistry(),
+				manager.getJobManager()
+		);
 
-			@Override
-			protected void configure() {
-				bind(adminProcessor).to(AdminProcessor.class);
-			}
-		});
+		final AuthCookieFilter authCookieFilter = manager.getConfig().getAuthentication().getAuthCookieFilter();
+
+		jerseyConfig.register(new AbstractBinder() {
+						@Override
+						protected void configure() {
+							bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
+							bind(manager.getStorage()).to(MetaStorage.class);
+							bind(manager.getValidator()).to(Validator.class);
+							bind(manager.getJobManager()).to(JobManager.class);
+							bind(manager.getConfig()).to(ConqueryConfig.class);
+							bind(adminProcessor).to(AdminProcessor.class);
+							bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
+						}
+					})
+					.register(PathParamInjector.class)
+					.register(AdminPermissionFilter.class)
+					.register(IdRefPathParamConverterProvider.class)
+					.register(new MultiPartFeature())
+					.register(IdParamConverter.Provider.INSTANCE)
+					.register(authCookieFilter)
+					.register(manager.getAuthController().getAuthenticationFilter());
+
+
+		jerseyConfigUI.register(new ViewMessageBodyWriter(manager.getEnvironment().metrics(), Collections.singleton(Freemarker.HTML_RENDERER)))
+					  .register(new AbstractBinder() {
+						  @Override
+						  protected void configure() {
+							  bind(adminProcessor).to(AdminProcessor.class);
+							  bindAsContract(UIProcessor.class);
+							  bind(manager.getDatasetRegistry()).to(DatasetRegistry.class);
+							  bind(manager.getStorage()).to(MetaStorage.class);
+						  }
+					  })
+					  .register(AdminPermissionFilter.class)
+					  .register(IdRefPathParamConverterProvider.class)
+					  .register(authCookieFilter)
+					  .register(manager.getAuthController().getRedirectingAuthFilter());
+		;
+	}
+
+	public void register() {
 
 		// register root resources
 		jerseyConfig
-			.register(AdminResource.class)
-			.register(AdminDatasetResource.class)
-			.register(AdminConceptsResource.class)
-			.register(AdminTablesResource.class)
-			.register(AdminUIResource.class)
-			.register(RoleResource.class)
-			.register(RoleUIResource.class)
-			.register(UserResource.class)
-			.register(UserUIResource.class)
-			.register(GroupResource.class)
-			.register(GroupUIResource.class)
-			.register(DatasetsUIResource.class)
-			.register(TablesUIResource.class)
-			.register(ConceptsUIResource.class)
-			.register(PermissionResource.class)
-			.register(AuthOverviewUIResource.class)
-			.register(AuthOverviewResource.class);
+				.register(AdminDatasetResource.class)
+				.register(AdminDatasetsResource.class)
+				.register(AdminConceptsResource.class)
+				.register(AdminTablesResource.class)
+				.register(RoleResource.class)
+				.register(UserResource.class)
+				.register(GroupResource.class)
+				.register(PermissionResource.class)
+				.register(AuthOverviewResource.class)
+				.register(AdminResource.class);
 
-		// Scan classpath for Admin side plugins and register them.
-		for ( Realm realm : manager.getAuthController().getRealms()) {
-			if(realm instanceof AuthAdminResourceProvider) {
-				((AuthAdminResourceProvider)realm).registerAuthenticationAdminResources(jerseyConfig);
-			}
-		}
+		jerseyConfigUI
+				.register(AdminUIResource.class)
+				.register(RoleUIResource.class)
+				.register(UserUIResource.class)
+				.register(GroupUIResource.class)
+				.register(DatasetsUIResource.class)
+				.register(TablesUIResource.class)
+				.register(ConceptsUIResource.class)
+				.register(AuthOverviewUIResource.class);
 
-		// register features
-		jerseyConfig
-			.register(new MultiPartFeature())
-			.register(manager.getAuthController().getAuthenticationFilter())
-			.register(IdParamConverter.Provider.INSTANCE)
-			.register(AuthCookieFilter.class);
 	}
 }

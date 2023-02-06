@@ -1,30 +1,16 @@
-import * as React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { FC, useState } from "react";
+import { useTranslation } from "react-i18next";
 
-import InfoTooltip from "../../tooltip/InfoTooltip";
-
-import DropzoneWithFileInput from "../../form-components/DropzoneWithFileInput";
-
-import Modal from "../../modal/Modal";
-import ErrorMessage from "../../error-message/ErrorMessage";
+import type { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
 import FaIcon from "../../icon/FaIcon";
+import Modal from "../../modal/Modal";
+import InfoTooltip from "../../tooltip/InfoTooltip";
+import DropzoneWithFileInput from "../../ui-components/DropzoneWithFileInput";
 
-import CSVColumnPicker, { ExternalQueryT } from "./CSVColumnPicker";
-import { DropTargetMonitor } from "react-dnd";
+import CSVColumnPicker, { QueryToUploadT } from "./CSVColumnPicker";
 
-const Root = styled("div")`
-  text-align: center;
-`;
-
-const Error = styled("div")`
-  margin: 20px 0;
-`;
-
-const ErrorMessageSub = styled(ErrorMessage)`
-  font-size: ${({ theme }) => theme.font.sm};
-  margin: 0;
-`;
+const Root = styled("div")``;
 
 const Success = styled("div")`
   margin: 25px 0;
@@ -42,55 +28,60 @@ const SuccessMsg = styled("p")`
 `;
 
 const SxDropzoneWithFileInput = styled(DropzoneWithFileInput)`
-  padding: 40px;
+  padding: 180px 250px;
   width: 100%;
   cursor: pointer;
 `;
 
 interface PropsT {
   loading: boolean;
-  success: Object | null;
-  error: Object | null;
+  config: QueryUploadConfigT;
+  uploadResult: UploadQueryResponseT | null;
+  onClearUploadResult: () => void;
   onClose: () => void;
-  onUpload: (query: ExternalQueryT) => void;
+  onUpload: (query: QueryToUploadT) => void;
 }
 
-const UploadQueryResultsModal: React.FC<PropsT> = ({
+const UploadQueryResultsModal: FC<PropsT> = ({
   loading,
-  success,
-  error,
+  config,
+  uploadResult,
+  onClearUploadResult,
   onClose,
   onUpload,
 }) => {
-  const [file, setFile] = React.useState<File | null>(null);
+  const { t } = useTranslation();
+  const [file, setFile] = useState<File | null>(null);
 
-  function onDrop(_: any, monitor: DropTargetMonitor) {
-    const item = monitor.getItem();
-
-    if (item.files) {
-      setFile(item.files[0]);
-    }
-  }
+  const fullUploadSuccess =
+    uploadResult &&
+    uploadResult.resolved > 0 &&
+    uploadResult.unreadableDate.length === 0 &&
+    uploadResult.unresolvedId.length === 0;
 
   return (
     <Modal
       onClose={onClose}
       closeIcon
+      scrollable
       headline={
         <>
-          {T.translate("uploadQueryResultsModal.headline")}
+          {t("uploadQueryResultsModal.headline")}
           <InfoTooltip
-            text={T.translate("uploadQueryResultsModal.formatInfo.text")}
+            wide
+            text={t("uploadQueryResultsModal.formatInfo.text")}
           />
         </>
       }
     >
       <Root>
-        {success ? (
+        {fullUploadSuccess ? (
           <Success>
             <StyledFaIcon icon="check-circle" />
             <SuccessMsg>
-              {T.translate("uploadQueryResultsModal.uploadSucceeded")}
+              {t("uploadQueryResultsModal.uploadSucceeded", {
+                count: uploadResult?.resolved || 0,
+              })}
             </SuccessMsg>
           </Success>
         ) : (
@@ -98,27 +89,29 @@ const UploadQueryResultsModal: React.FC<PropsT> = ({
             {file && (
               <CSVColumnPicker
                 file={file}
+                uploadResult={uploadResult}
+                config={config}
                 loading={loading}
                 onUpload={onUpload}
-                onReset={() => setFile(null)}
+                onCancel={onClose}
+                onReset={() => {
+                  setFile(null);
+                  onClearUploadResult();
+                }}
               />
             )}
             {!file && (
-              <SxDropzoneWithFileInput onDrop={onDrop} onSelectFile={setFile}>
-                {() => T.translate("uploadQueryResultsModal.dropzone")}
+              <SxDropzoneWithFileInput
+                onDrop={(item) => {
+                  if (item.type === "__NATIVE_FILE__") {
+                    setFile(item.files[0]);
+                  }
+                }}
+                onSelectFile={setFile}
+                accept="text/csv"
+              >
+                {() => t("uploadQueryResultsModal.dropzone")}
               </SxDropzoneWithFileInput>
-            )}
-            {error && (
-              <Error>
-                <ErrorMessage
-                  message={T.translate("uploadQueryResultsModal.uploadFailed")}
-                />
-                <ErrorMessageSub
-                  message={T.translate(
-                    "uploadQueryResultsModal.uploadFailedSub"
-                  )}
-                />
-              </Error>
             )}
           </div>
         )}

@@ -1,23 +1,10 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
-import IconButton from "../button/IconButton";
-import WithTooltip from "../tooltip/WithTooltip";
-import FaIcon from "../icon/FaIcon";
+import { memo } from "react";
+import { useTranslation } from "react-i18next";
 
-interface PropsT {
-  excludeTimestamps?: boolean;
-  excludeFromSecondaryIdQuery?: boolean;
-  isExpandable?: boolean;
-  hasDetails?: boolean;
-  previousQueryLoading?: boolean;
-  error?: string;
-  hasActiveSecondaryId?: boolean;
-  onDeleteNode: () => void;
-  onExpandClick: () => void;
-  onToggleTimestamps: () => void;
-  onToggleSecondaryIdExclude: () => void;
-}
+import IconButton from "../button/IconButton";
+import FaIcon from "../icon/FaIcon";
+import WithTooltip from "../tooltip/WithTooltip";
 
 const Actions = styled("div")`
   display: flex;
@@ -31,7 +18,7 @@ const StyledFaIcon = styled(FaIcon)`
 `;
 
 const StyledIconButton = styled(IconButton)`
-  padding: 0px 6px 4px;
+  padding: 4px 6px 4px;
 `;
 
 const RelativeContainer = styled.div`
@@ -49,36 +36,56 @@ const CrossedOut = styled.div`
   pointer-events: none;
 `;
 
-const QueryNodeActions: FC<PropsT> = (props) => {
+interface Props {
+  andIdx: number;
+  orIdx: number;
+  excludeTimestamps?: boolean;
+  excludeFromSecondaryId?: boolean;
+  isExpandable?: boolean;
+  hasDetails?: boolean;
+  previousQueryLoading?: boolean;
+  error?: string;
+  hasActiveSecondaryId?: boolean;
+  onDeleteNode: (andIdx: number, orIdx: number) => void;
+  onExpandClick: () => void;
+  onToggleTimestamps: (andIdx: number, orIdx: number) => void;
+  onToggleSecondaryIdExclude: (andIdx: number, orIdx: number) => void;
+}
+
+const QueryNodeActions = (props: Props) => {
+  const { t } = useTranslation();
+
   return (
     <Actions>
-      <StyledIconButton
-        icon="times"
-        onClick={(e) => {
-          e.stopPropagation();
-          props.onDeleteNode();
-        }}
-      />
+      <WithTooltip text={t("queryEditor.removeNode")}>
+        <StyledIconButton
+          icon="times"
+          onClick={(e) => {
+            e.stopPropagation();
+            props.onDeleteNode(props.andIdx, props.orIdx);
+          }}
+        />
+      </WithTooltip>
       {props.excludeTimestamps && (
-        <WithTooltip text={T.translate("queryNodeEditor.excludingTimestamps")}>
+        <WithTooltip text={t("queryNodeEditor.excludingTimestamps")}>
           <StyledIconButton
             red
             regular
             icon="calendar"
             onClick={(e) => {
               e.stopPropagation();
-              props.onToggleTimestamps();
+              props.onToggleTimestamps(props.andIdx, props.orIdx);
             }}
           />
         </WithTooltip>
       )}
       {!props.error && !!props.previousQueryLoading && (
-        <WithTooltip text={T.translate("queryEditor.loadingPreviousQuery")}>
+        <WithTooltip text={t("queryEditor.loadingPreviousQuery")}>
           <StyledFaIcon icon="spinner" />
         </WithTooltip>
       )}
       {!props.error && props.isExpandable && !props.previousQueryLoading && (
-        <WithTooltip text={T.translate("queryEditor.expand")}>
+        <WithTooltip text={t("queryEditor.expand")}>
           <StyledIconButton
             icon="expand-arrows-alt"
             onClick={(e) => {
@@ -91,9 +98,9 @@ const QueryNodeActions: FC<PropsT> = (props) => {
       {props.hasActiveSecondaryId && (
         <WithTooltip
           text={
-            props.excludeFromSecondaryIdQuery
-              ? T.translate("queryNodeEditor.excludingFromSecondaryIdQuery")
-              : T.translate("queryEditor.hasSecondaryId")
+            props.excludeFromSecondaryId
+              ? t("queryNodeEditor.excludingFromSecondaryId")
+              : t("queryEditor.hasSecondaryId")
           }
         >
           <RelativeContainer>
@@ -101,10 +108,10 @@ const QueryNodeActions: FC<PropsT> = (props) => {
               icon="microscope"
               onClick={(e) => {
                 e.stopPropagation();
-                props.onToggleSecondaryIdExclude();
+                props.onToggleSecondaryIdExclude(props.andIdx, props.orIdx);
               }}
             />
-            {props.excludeFromSecondaryIdQuery && <CrossedOut />}
+            {props.excludeFromSecondaryId && <CrossedOut />}
           </RelativeContainer>
         </WithTooltip>
       )}
@@ -112,4 +119,4 @@ const QueryNodeActions: FC<PropsT> = (props) => {
   );
 };
 
-export default QueryNodeActions;
+export default memo(QueryNodeActions);

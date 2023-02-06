@@ -1,55 +1,37 @@
-import React from "react";
 import styled from "@emotion/styled";
-import type { Dispatch } from "redux-thunk";
-import T from "i18n-react";
-import { connect } from "react-redux";
-import Markdown from "react-markdown/with-html";
-
 import Highlighter from "react-highlight-words";
+import { useTranslation } from "react-i18next";
+import Markdown from "react-markdown";
+import { useDispatch, useSelector } from "react-redux";
+import remarkGfm from "remark-gfm";
 
+import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
-import FaIcon from "../icon/FaIcon";
 import type { SearchT } from "../concept-trees/reducer";
+import FaIcon from "../icon/FaIcon";
 
 import ActivateTooltip from "./ActivateTooltip";
-import {
-  toggleDisplayTooltip as toggleTooltip,
-  toggleAdditionalInfos as toggleInfos
-} from "./actions";
-import type { AdditionalInfosType } from "./reducer";
 import TooltipEntries from "./TooltipEntries";
+import { TooltipHeader } from "./TooltipHeader";
+import { toggleAdditionalInfos as toggleInfos } from "./actions";
+import type { AdditionalInfosType } from "./reducer";
 
 const Root = styled("div")`
   width: 100%;
   height: 100%;
-  padding: 50px 0 10px;
+  padding: 40px 0 10px;
   position: relative;
   display: flex;
   flex-direction: column;
-  background: ${({ theme }) =>
-    `linear-gradient(135deg, ${theme.col.bgAlt}, ${theme.col.bg});`};
+  background: ${({ theme }) => theme.col.bgAlt};
 `;
 
-const Header = styled("h2")`
-  background-color: white;
-  height: 47px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #ccc;
-  margin: 0 0 5px;
-  padding: 0 20px;
-  font-size: ${({ theme }) => theme.font.sm};
-  letter-spacing: 1px;
-  line-height: 38px;
-  text-transform: uppercase;
-  color: ${({ theme }) => theme.col.blueGrayDark};
-`;
 const Content = styled("div")`
-  padding: 10px 20px;
+  padding: 12px 20px 10px;
   width: 100%;
   flex-grow: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overflow-x: hidden;
 `;
 const Head = styled("div")`
@@ -125,33 +107,26 @@ const InfoHeadline = styled("h4")`
   line-height: 1.3;
 `;
 
-const StyledIconButton = styled(IconButton)`
-  position: absolute;
-  top: 58px;
-  right: 0;
-  border-right: 0;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
-`;
+const Tooltip = () => {
+  const { t } = useTranslation();
 
-type PropsType = {
-  additionalInfos: AdditionalInfosType;
-  displayTooltip: boolean;
-  toggleAdditionalInfos: boolean;
-  onToggleDisplayTooltip: Function;
-  onToggleAdditionalInfos: Function;
-  search: SearchT;
-};
+  const additionalInfos = useSelector<StateT, AdditionalInfosType>(
+    (state) => state.tooltip.additionalInfos,
+  );
+  const displayTooltip = useSelector<StateT, boolean>(
+    (state) => state.tooltip.displayTooltip,
+  );
+  const toggleAdditionalInfos = useSelector<StateT, boolean>(
+    (state) => state.tooltip.toggleAdditionalInfos,
+  );
+  const search = useSelector<StateT, SearchT>(
+    (state) => state.conceptTrees.search,
+  );
 
-const Tooltip = (props: PropsType) => {
-  if (!props.displayTooltip) return <ActivateTooltip />;
+  const dispatch = useDispatch();
+  const onToggleAdditionalInfos = () => dispatch(toggleInfos());
 
-  const {
-    additionalInfos,
-    toggleAdditionalInfos,
-    onToggleDisplayTooltip,
-    onToggleAdditionalInfos
-  } = props;
+  if (!displayTooltip) return <ActivateTooltip />;
 
   const {
     label,
@@ -159,44 +134,34 @@ const Tooltip = (props: PropsType) => {
     isFolder,
     infos,
     matchingEntries,
-    dateRange
+    matchingEntities,
+    dateRange,
   } = additionalInfos;
 
-  const searchHighlight = text => {
+  const searchHighlight = (text: string) => {
     return (
       <Highlighter
-        searchWords={props.search.words || []}
+        searchWords={search.words || []}
         autoEscape={true}
         textToHighlight={text || ""}
       />
     );
   };
 
-  const renderers = {
-    text: ({ value, children, nodeKey }) => searchHighlight(value)
-  };
-
   return (
     <Root>
-      <StyledIconButton
-        small
-        frame
-        onClick={onToggleDisplayTooltip}
-        icon="angle-left"
-      />
-      <Header>{T.translate("tooltip.headline")}</Header>
+      <TooltipHeader />
       <Content>
         <TooltipEntries
           matchingEntries={matchingEntries}
+          matchingEntities={matchingEntities}
           dateRange={dateRange}
         />
         <Head>
           <PinnedLabel>
             <TypeIcon icon={isFolder ? "folder" : "minus"} />
             <Label>
-              {label
-                ? searchHighlight(label)
-                : T.translate("tooltip.placeholder")}
+              {label ? searchHighlight(label) : t("tooltip.placeholder")}
             </Label>
             {toggleAdditionalInfos && (
               <TackIconButton
@@ -217,10 +182,19 @@ const Tooltip = (props: PropsType) => {
               <PieceOfInfo key={info.key + i}>
                 <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
                 <Markdown
-                  escapeHtml={true}
-                  renderers={renderers}
-                  source={info.value}
-                />
+                  remarkPlugins={[remarkGfm]}
+                  components={
+                    {
+                      // TODO: Won't work anymore with the latest react-markdown, because
+                      // node is now a ReactElement, not a string.
+                      // Try to use another package for highlighting that doesn't depend on a string
+                      // or just highlight ourselves
+                      // p: ({ node }) => searchHighlight(node)
+                    }
+                  }
+                >
+                  {info.value}
+                </Markdown>
               </PieceOfInfo>
             ))}
         </Infos>
@@ -229,18 +203,4 @@ const Tooltip = (props: PropsType) => {
   );
 };
 
-const mapStateToProps = state => {
-  return {
-    additionalInfos: state.tooltip.additionalInfos,
-    displayTooltip: state.tooltip.displayTooltip,
-    toggleAdditionalInfos: state.tooltip.toggleAdditionalInfos,
-    search: state.conceptTrees.search
-  };
-};
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onToggleDisplayTooltip: () => dispatch(toggleTooltip()),
-  onToggleAdditionalInfos: () => dispatch(toggleInfos())
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Tooltip);
+export default Tooltip;

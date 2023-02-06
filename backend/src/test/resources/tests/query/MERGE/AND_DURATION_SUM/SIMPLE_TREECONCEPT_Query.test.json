@@ -1,0 +1,98 @@
+{
+  "type": "QUERY_TEST",
+  "label": "AND DURATION SUM Test",
+  "expectedCsv": "tests/query/MERGE/AND_DURATION_SUM/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "dateAggregationMode" : "MERGE",
+    "root": {
+      "type": "AND",
+      "createExists": true,
+      "children": [
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "tree.a"
+          ],
+          "tables": [
+            {
+              "id": "tree.connector",
+              "selects": [
+                "tree.connector.event_duration_sum"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "tree.b"
+          ],
+          "tables": [
+            {
+              "id": "tree.connector"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "tree",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "column": "table.column",
+        "validityDates": {
+          "name": "datum",
+          "column": "table.datum"
+        },
+        "selects": {
+          "type": "EVENT_DURATION_SUM",
+          "name": "event_duration_sum"
+        }
+      },
+      "children": [
+        {
+          "name": "a",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "A"
+          },
+          "children": []
+        },
+        {
+          "name": "b",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "B"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/MERGE/AND_DURATION_SUM/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

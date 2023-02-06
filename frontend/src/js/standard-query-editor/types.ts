@@ -10,143 +10,105 @@ import type {
   TableT,
   DateRangeT,
   DateColumnT,
+  QueryT,
+  BigMultiSelectFilterT,
+  InfoT,
 } from "../api/types";
-
-// A concept that is part of a query node in the editor
-export interface ConceptType {
-  id: string;
-  label: string;
-  description?: string;
-  matchingEntries?: number;
-}
-
-export interface InfoType {
-  key: string;
-  value: string;
-}
+import { DNDType } from "../common/constants/dndTypes";
 
 export type RangeFilterWithValueType = RangeFilterT;
 
 export interface MultiSelectFilterWithValueType extends MultiSelectFilterT {
   value?: MultiSelectFilterValueT;
 }
+export interface BigMultiSelectFilterWithValueType
+  extends BigMultiSelectFilterT {
+  value?: MultiSelectFilterValueT;
+}
 
 export interface SelectFilterWithValueType extends SelectFilterT {
-  value?: SelectFilterValueT;
+  value: SelectFilterValueT | null;
 }
 
 export type FilterWithValueType =
   | SelectFilterWithValueType
   | MultiSelectFilterWithValueType
+  | BigMultiSelectFilterWithValueType
   | RangeFilterWithValueType;
 
-export interface SelectedSelectorType extends SelectorT {
+export interface SelectedSelectorT extends SelectorT {
   selected?: boolean;
 }
 
 export interface SelectedDateColumnT extends DateColumnT {
-  value?: string;
+  value: string;
 }
 
-export interface TableWithFilterValueType
+export interface TableWithFilterValueT
   extends Omit<TableT, "filters" | "selects" | "dateColumn"> {
-  filters: FilterWithValueType[] | null;
-  selects?: SelectedSelectorType[];
+  filters: FilterWithValueType[];
+  selects: SelectedSelectorT[];
   dateColumn?: SelectedDateColumnT;
 }
 
-export interface DraggedQueryType {
-  id: QueryIdT;
-
-  // drag info;
-  type: string;
+export interface DragContext {
   width: number;
   height: number;
-
-  // eslint-disable-next-line no-use-before-define
-  query?: PreviousQueryType;
-  label: string;
-  excludeTimestamps?: boolean;
-
-  moved?: boolean;
-  andIdx?: number;
-  orIdx?: number; // These two only exist if moved === true
-
-  loading?: boolean;
-  error?: string;
-
-  files?: void;
-  isPreviousQuery: boolean; // true
-
-  canExpand?: boolean;
+  movedFromAndIdx?: number;
+  movedFromOrIdx?: number;
 }
 
-// A Query Node that is being dragged from the tree or within the standard editor.
-// Corresponds to CONCEPT_TREE_NODE and QUERY_NODE drag-and-drop types.
-export interface DraggedNodeType {
-  ids: ConceptIdT[];
-  tables: TableWithFilterValueType[];
-  selects: SelectedSelectorType[];
-  tree: ConceptIdT;
-  label: string;
-  excludeTimestamps?: boolean;
-  excludeFromSecondaryIdQuery?: boolean;
+export interface DragItemQuery extends PreviousQueryQueryNodeType {
+  dragContext: DragContext;
+  type: DNDType.PREVIOUS_QUERY | DNDType.PREVIOUS_SECONDARY_ID_QUERY;
+}
 
-  additionalInfos: Object;
-  matchingEntries: number;
-  dateRange: Object;
-
-  moved?: boolean;
-  andIdx?: number;
-  orIdx?: number; // These two only exist if moved === true
-
-  loading?: boolean;
-  error?: string;
-
-  files?: void;
-  isPreviousQuery?: void;
+export interface DragItemConceptTreeNode extends ConceptQueryNodeType {
+  dragContext: DragContext;
+  type: DNDType.CONCEPT_TREE_NODE;
 }
 
 export interface ConceptQueryNodeType {
   ids: ConceptIdT[];
-  tables: TableWithFilterValueType[];
-  selects: SelectedSelectorType[];
+  tables: TableWithFilterValueT[];
+  selects: SelectedSelectorT[];
   tree: ConceptIdT;
+  description?: string;
+  additionalInfos?: InfoT[];
+  matchingEntries: number | null;
+  matchingEntities: number | null;
+  dateRange?: DateRangeT;
 
   label: string;
-  description?: string;
   excludeTimestamps?: boolean;
-  excludeFromSecondaryIdQuery?: boolean;
+  excludeFromSecondaryId?: boolean;
   loading?: boolean;
   error?: string;
-
-  isEditing?: boolean;
-  isPreviousQuery?: void | false;
 }
 
 export interface PreviousQueryQueryNodeType {
+  id: QueryIdT;
+  query?: QueryT;
+  canExpand?: boolean;
+  secondaryId?: string | null;
+  availableSecondaryIds?: string[];
+  files?: void;
+
+  own?: boolean;
+  shared?: boolean;
+
   label: string;
   excludeTimestamps?: boolean;
+  excludeFromSecondaryId?: boolean;
   loading?: boolean;
   error?: string;
-
-  id: QueryIdT;
-  // eslint-disable-next-line no-use-before-define
-  query?: PreviousQueryType;
-  isPreviousQuery: true;
-  canExpand?: boolean;
+  tags: string[];
 }
 
-export type QueryNodeType = ConceptQueryNodeType | PreviousQueryQueryNodeType;
+export type StandardQueryNodeT = DragItemConceptTreeNode | DragItemQuery;
 
 export interface QueryGroupType {
-  elements: QueryNodeType[];
+  elements: StandardQueryNodeT[];
   dateRange?: DateRangeT;
   exclude?: boolean;
 }
-
-interface PreviousQueryType {
-  groups: QueryGroupType[];
-}
-
-export type StandardQueryType = QueryGroupType[];

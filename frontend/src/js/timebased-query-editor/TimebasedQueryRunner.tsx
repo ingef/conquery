@@ -1,57 +1,63 @@
-import React, { FC } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { StateT } from "app-types";
+import { useSelector } from "react-redux";
 
-import { DatasetIdT } from "../api/types";
-import { QueryRunnerStateT } from "../query-runner/reducer";
-import actions from "../app/actions";
+import type { DatasetT, QueryIdT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import QueryRunner from "../query-runner/QueryRunner";
+import { useStartQuery, useStopQuery } from "../query-runner/actions";
+import { QueryRunnerStateT } from "../query-runner/reducer";
 
 import { allConditionsFilled } from "./helpers";
 import { TimebasedQueryStateT } from "./reducer";
 
-const { startTimebasedQuery, stopTimebasedQuery } = actions;
+const selectIsButtonEnabled =
+  (datasetId: DatasetT["id"] | null, queryRunner: QueryRunnerStateT | null) =>
+  (state: StateT) => {
+    if (!queryRunner) return false;
 
-const selectIsButtonEnabled = (
-  datasetId: DatasetIdT,
-  queryRunner: QueryRunnerStateT | null
-) => (state: StateT) => {
-  if (!queryRunner) return false;
+    return !!(
+      datasetId !== null &&
+      !queryRunner.startQuery.loading &&
+      !queryRunner.stopQuery.loading &&
+      allConditionsFilled(state.timebasedQueryEditor.timebasedQuery)
+    );
+  };
 
-  return !!(
-    datasetId !== null &&
-    !queryRunner.startQuery.loading &&
-    !queryRunner.stopQuery.loading &&
-    allConditionsFilled(state.timebasedQueryEditor.timebasedQuery)
+const TimebasedQueryRunner = () => {
+  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
+    (state) => state.datasets.selectedDatasetId,
   );
-};
-
-interface PropsT {
-  datasetId: DatasetIdT;
-}
-
-const TimebasedQueryRunner: FC<PropsT> = ({ datasetId }) => {
   const queryRunner = useSelector<StateT, QueryRunnerStateT>(
-    (state) => state.timebasedQueryEditor.timebasedQueryRunner
+    (state) => state.timebasedQueryEditor.timebasedQueryRunner,
   );
   const isButtonEnabled = useSelector<StateT, boolean>(
-    selectIsButtonEnabled(datasetId, queryRunner)
+    selectIsButtonEnabled(datasetId, queryRunner),
   );
   const isQueryRunning = !!queryRunner.runningQuery;
   // Following ones only needed in dispatch functions
-  const queryId = useSelector<StateT, string | number | null>(
-    (state) => state.timebasedQueryEditor.timebasedQueryRunner.runningQuery
+  const queryId = useSelector<StateT, QueryIdT | null>(
+    (state) => state.timebasedQueryEditor.timebasedQueryRunner.runningQuery,
   );
   const query = useSelector<StateT, TimebasedQueryStateT>(
-    (state) => state.timebasedQueryEditor.timebasedQuery
+    (state) => state.timebasedQueryEditor.timebasedQuery,
   );
 
-  const dispatch = useDispatch();
-  const startQuery = () => dispatch(startTimebasedQuery(datasetId, query));
-  const stopQuery = () => dispatch(stopTimebasedQuery(datasetId, queryId));
+  const startTimebasedQuery = useStartQuery("timebased");
+  const stopTimebasedQuery = useStopQuery("timebased");
+
+  const startQuery = () => {
+    if (datasetId && allConditionsFilled(query)) {
+      startTimebasedQuery(datasetId, query);
+    }
+  };
+  const stopQuery = () => {
+    if (queryId) {
+      stopTimebasedQuery(queryId);
+    }
+  };
 
   return (
     <QueryRunner
+      queryRunner={queryRunner}
       isButtonEnabled={isButtonEnabled}
       isQueryRunning={isQueryRunning}
       startQuery={startQuery}

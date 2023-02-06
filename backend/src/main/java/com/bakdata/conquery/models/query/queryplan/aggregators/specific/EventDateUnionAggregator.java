@@ -1,17 +1,17 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Collects the event dates of all events that are applicable to the specific
@@ -20,41 +20,47 @@ import lombok.RequiredArgsConstructor;
  *
  */
 @RequiredArgsConstructor
-public class EventDateUnionAggregator implements Aggregator<String> {
+@ToString(of = {"requiredTables"})
+public class EventDateUnionAggregator extends Aggregator<CDateSet> {
 
-	private final Set<TableId> requiredTables;
+	private final Set<Table> requiredTables;
 	private Column validityDateColumn;
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
+	public void collectRequiredTables(Set<Table> requiredTables) {
 		requiredTables.addAll(this.requiredTables);
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
-		validityDateColumn = Objects.requireNonNull(ctx.getValidityDateColumn());
-		if (!validityDateColumn.getType().isDateCompatible()) {
+	public void init(Entity entity, QueryExecutionContext context) {
+		set.clear();
+	}
+
+	@Override
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+		validityDateColumn = ctx.getValidityDateColumn();
+		if (validityDateColumn != null && !validityDateColumn.getType().isDateCompatible()) {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
 		}
 		
 		dateRestriction = ctx.getDateRestriction();
-		Aggregator.super.nextTable(ctx, currentTable);
+		super.nextTable(ctx, currentTable);
 	}
 
 	@Override
-	public Aggregator<String> doClone(CloneContext ctx) {
-		return new EventDateUnionAggregator(requiredTables);
-	}
-
-	@Override
-	public String getAggregationResult() {
-		return set.toString();
+	public CDateSet createAggregationResult() {
+		return CDateSet.create(set.asRanges());
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
+		if(validityDateColumn == null) {
+			set.addAll(dateRestriction);
+			return;
+		}
+
 		if (!bucket.has(event, validityDateColumn)) {
 			return;
 		}
@@ -63,7 +69,7 @@ public class EventDateUnionAggregator implements Aggregator<String> {
 
 	@Override
 	public ResultType getResultType() {
-		return ResultType.STRING;
+		return new ResultType.ListT(ResultType.DateRangeT.INSTANCE);
 	}
 
 }

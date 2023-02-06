@@ -1,7 +1,9 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import { FC } from "react";
+
+import { parseStdDate, getDiffInDays } from "../common/helpers/dateHelper";
+
 import { Cell } from "./Cell";
-import { parseStdDate, getDiffInDays } from "../common/helpers";
 
 const Span = styled("div")`
   position: absolute;
@@ -21,6 +23,10 @@ interface PropsT {
 }
 
 const DateCell: FC<PropsT> = ({ cell, minDate, dateDiffInDays }) => {
+  if (cell.length === 0 || cell === "{}") {
+    return <Cell isDates></Cell>;
+  }
+
   return (
     <Cell isDates>
       {cell
@@ -28,6 +34,7 @@ const DateCell: FC<PropsT> = ({ cell, minDate, dateDiffInDays }) => {
         .split(",")
         .map((dateRange, k) => {
           const s = dateRange.split("/");
+
           const dateStr1 = s[0].trim();
           const date1 = parseStdDate(dateStr1);
 

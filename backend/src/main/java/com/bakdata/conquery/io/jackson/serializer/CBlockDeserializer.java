@@ -3,13 +3,10 @@ package com.bakdata.conquery.io.jackson.serializer;
 import java.io.IOException;
 import java.util.Optional;
 
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -30,13 +27,12 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 	private JsonDeserializer<CBlock> beanDeserializer;
 	
 	@Override
-	public CBlock deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public CBlock deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 		CBlock block = beanDeserializer.deserialize(p, ctxt);
-		
-		Connector con = IdResolveContext.get(ctxt).getOptional(block.getConnector()).get();
-		Concept<?> concept = con.getConcept();
-		if(concept instanceof TreeConcept && block.getMostSpecificChildren() != null) {
-			TreeConcept tree = (TreeConcept) concept;
+
+		TreeConcept concept = block.getConnector().getConcept();
+
+		if(block.getMostSpecificChildren() != null) {
 
 			// deduplicate concrete paths after loading from disk.
 			for (int event = 0; event < block.getMostSpecificChildren().length; event++) {
@@ -48,7 +44,7 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 				}
 
 				log.trace("Getting Elements for local ids: {}", mostSpecificChildren);
-				block.getMostSpecificChildren()[event] = tree.getElementByLocalId(mostSpecificChildren).getPrefix();
+				block.getMostSpecificChildren()[event] = concept.getElementByLocalIdPath(mostSpecificChildren).getPrefix();
 			}
 		}
 		return block;

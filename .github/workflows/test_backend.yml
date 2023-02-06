@@ -1,0 +1,36 @@
+name: "Test Backend"
+
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          overwrite-settings: false
+      - name: Build Backend
+        run: mvn -T 1C install -pl backend -DskipTests -am
+      - name: Unit Test
+        run: mvn test -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+      - name: Programmatic Integration Tests
+        run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
+      - name: JSON based Integration Tests
+        run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_JSON"

@@ -1,23 +1,29 @@
 package com.bakdata.conquery.commands;
 
-import java.io.File;
 import java.net.InetSocketAddress;
-import java.util.concurrent.*;
+import java.util.Collection;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.NetworkSession;
-import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.io.storage.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
@@ -29,6 +35,9 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -52,118 +61,153 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 @Getter
 public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
+	public static final String DEFAULT_NAME = "shard-node";
+
 	private NioSocketConnector connector;
 	private JobManager jobManager;
 	private Validator validator;
 	private ConqueryConfig config;
 	private ShardNodeNetworkContext context;
+	@Setter
 	private Workers workers;
 	@Setter
 	private ScheduledExecutorService scheduler;
+	private Environment environment;
 
 	public ShardNode() {
-		this("shard-node");
+		this(DEFAULT_NAME);
 	}
 
 	public ShardNode(String name) {
 		super(name, "Connects this instance as a ShardNode to a running ManagerNode.");		
 	}
-	
-
 
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+		this.environment = environment;
+		this.config = config;
+
 		connector = new NioSocketConnector();
 
 		jobManager = new JobManager(getName(), config.isFailOnError());
-		synchronized (environment) {
-			environment.lifecycle().manage(this);
-			validator = environment.getValidator();
+		environment.lifecycle().manage(this);
+		validator = environment.getValidator();
 
-			scheduler = environment
-								.lifecycle()
-								.scheduledExecutorService("Scheduled Messages")
-								.build();
-		}
+		scheduler = environment
+				.lifecycle()
+				.scheduledExecutorService("Scheduled Messages")
+				.build();
 
-		this.config = config;
-
-		ScheduledFuture<?> handle = scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
+		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 
-		if (config.getStorage().getDirectory().mkdirs()) {
-			log.warn("Had to create Storage Dir at `{}`", config.getStorage().getDirectory());
-		}
+		workers = new Workers(
+				getConfig().getQueries().getExecutionPool(),
+				() -> createInternalObjectMapper(View.Persistence.Shard.class),
+				() -> createInternalObjectMapper(View.InternalCommunication.class),
+				getConfig().getCluster().getEntityBucketSize()
+		);
 
-		workers = new Workers(config.getQueries().getExecutionPool(), config.getStorage().getNThreads(), config.getCluster().getEntityBucketSize());
-		ExecutorService loaders = Executors.newFixedThreadPool(config.getStorage().getNThreads());
+		final Collection<WorkerStorage> workerStorages = config.getStorage().discoverWorkerStorages();
 
 
-		File storageDir = config.getStorage().getDirectory();
-		for (File directory : storageDir.listFiles((file, name) -> name.startsWith("worker_"))) {
+		ExecutorService loaders = config.getQueries().getExecutionPool().createService("Worker loader");
 
+		Queue<Worker> workersDone = new ConcurrentLinkedQueue<>();
+		for (WorkerStorage workerStorage : workerStorages) {
 			loaders.submit(() -> {
-				ConqueryMDC.setLocation(directory.toString());
-
-				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
-				if (workerStorage == null) {
-					log.warn("No valid WorkerStorage found.");
-					return;
+				try {
+					workersDone.add(workers.createWorker(workerStorage, config.isFailOnError()));
 				}
-
-				workers.createWorker(
-						workerStorage,
-						config.isFailOnError()
-				);
-
-				ConqueryMDC.clearLocation();
+				catch (Exception e) {
+					log.error("Failed reading Storage", e);
+				}
+				finally {
+					log.debug("DONE reading Storage {}", workerStorage);
+					ConqueryMDC.clearLocation();
+				}
 			});
 		}
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			log.debug("Waiting for Workers to load. {} are already finished.", workers.getWorkers().size());
+
+
+			log.debug("Waiting for Worker workers to load. {} are already finished. {} pending", workersDone.size(), workerStorages.size()
+																													 - workersDone.size());
 		}
 
-		log.info("All Worker Storages loaded: {}", workers.getWorkers().size());
+		log.info("All Worker loaded: {}", this.workers.getWorkers().size());
+	}
+
+
+	/**
+	 * Pendant to {@link ManagerNode#createInternalObjectMapper(Class)}.
+	 * <p>
+	 * TODO May move to {@link ConqueryCommand}
+	 *
+	 * @return a preconfigured binary object mapper
+	 */
+	public ObjectMapper createInternalObjectMapper(Class<? extends View> viewClass) {
+		final ObjectMapper objectMapper = getConfig().configureObjectMapper(Jackson.copyMapperAndInjectables(Jackson.BINARY_MAPPER));
+
+		final MutableInjectableValues injectableValues = new MutableInjectableValues();
+		objectMapper.setInjectableValues(injectableValues);
+		injectableValues.add(Validator.class, getValidator());
+
+
+		// Set serialization config
+		SerializationConfig serializationConfig = objectMapper.getSerializationConfig();
+
+		serializationConfig = serializationConfig.withView(viewClass);
+
+		objectMapper.setConfig(serializationConfig);
+
+		// Set deserialization config
+		DeserializationConfig deserializationConfig = objectMapper.getDeserializationConfig();
+
+		deserializationConfig = deserializationConfig.withView(viewClass);
+
+		objectMapper.setConfig(deserializationConfig);
+		
+		return objectMapper;
 	}
 
 	@Override
-	public void messageReceived(IoSession session, Object message) throws Exception {
+	public void messageReceived(IoSession session, Object message) {
 		setLocation(session);
-		if (message instanceof MessageToShardNode) {
-			MessageToShardNode srm = (MessageToShardNode) message;
-			log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<MessageToShardNode, NetworkMessageContext.ShardNodeNetworkContext> job = new ReactingJob<>(srm, context);
-
-			if (((Message) message).isSlowMessage()) {
-				((SlowMessage) message).setProgressReporter(job.getProgressReporter());
-				jobManager.addSlowJob(job);
-			}
-			else {
-				jobManager.addFastJob(job);
-			}
-		}
-		else {
+		if (!(message instanceof MessageToShardNode)) {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 			return;
 		}
+
+		MessageToShardNode toShardNode = (MessageToShardNode) message;
+		log.trace("{} recieved {} from {}", getName(), message.getClass().getSimpleName(), session.getRemoteAddress());
+		ReactingJob<MessageToShardNode, ShardNodeNetworkContext> job = new ReactingJob<>(toShardNode, context);
+
+		if (message instanceof SlowMessage slowMessage) {
+			slowMessage.setProgressReporter(job.getProgressReporter());
+			jobManager.addSlowJob(job);
+		}
+		else {
+			jobManager.addFastJob(job);
+		}
 	}
 
 	@Override
-	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
+	public void exceptionCaught(IoSession session, Throwable cause) {
 		setLocation(session);
-		log.error("cought exception", cause);
+		log.error("Exception caught", cause);
 	}
 
 	@Override
-	public void sessionOpened(IoSession session) throws Exception {
+	public void sessionOpened(IoSession session) {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 
-		context = new NetworkMessageContext.ShardNodeNetworkContext(jobManager, networkSession, workers, config, validator);
-		log.info("Connected to ManagerNode @ {}", session.getRemoteAddress());
+		context = new NetworkMessageContext.ShardNodeNetworkContext(this, networkSession, workers, config, validator);
+		log.info("Connected to ManagerNode @ `{}`", session.getRemoteAddress());
 
 		// Authenticate with ManagerNode
 		context.send(new AddShardNode());
@@ -177,25 +221,25 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 	}
 
 	@Override
-	public void sessionClosed(IoSession session) throws Exception {
+	public void sessionClosed(IoSession session) {
 		setLocation(session);
 		log.info("Disconnected from ManagerNode");
 	}
 
 	@Override
-	public void sessionCreated(IoSession session) throws Exception {
+	public void sessionCreated(IoSession session) {
 	}
 
 	@Override
-	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
+	public void sessionIdle(IoSession session, IdleStatus status) {
 	}
 
 	@Override
-	public void messageSent(IoSession session, Object message) throws Exception {
+	public void messageSent(IoSession session, Object message) {
 	}
 
 	@Override
-	public void inputClosed(IoSession session) throws Exception {
+	public void inputClosed(IoSession session) {
 	}
 
 	@Override
@@ -213,8 +257,10 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 			value.getJobManager().addSlowJob(new SimpleJob("Update Bucket Manager", value.getBucketManager()::fullUpdate));
 		}
 
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
-		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
+		ObjectMapper om = createInternalObjectMapper(View.InternalCommunication.class);
+
+		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator, om);
+		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
 

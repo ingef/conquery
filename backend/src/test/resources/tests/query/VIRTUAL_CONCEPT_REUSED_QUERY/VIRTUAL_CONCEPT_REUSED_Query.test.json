@@ -1,80 +1,84 @@
 {
-    "type": "QUERY_TEST",
-    "label": "VIRTUAL_CONCEPT_REUSED_QUERY Test",
-    "expectedCsv": "tests/query/VIRTUAL_CONCEPT_REUSED_QUERY/expected.csv",
-    "query": {
-        "type": "CONCEPT_QUERY",
-        "root": {
-            "type": "AND",
-            "children": [
-                {
-                    "query": "00000000-0000-0000-0000-000000000001",
-                    "type": "SAVED_QUERY"
-                },
-                {
-                    "ids": [
-                        "${dataset}.test_concept"
-                    ],
-                    "type": "CONCEPT",
-                    "label": "test_concept",
-                    "tables": [
-                        {
-                            "id": "${dataset}.test_concept.test_connector",
-                            "filters": [
-                                {
-                                    "filter": "${dataset}.test_concept.test_connector.test_filter",
-                                    "type": "MULTI_SELECT",
-                                    "value": [
-                                        "2"
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        }
-    },
-    "concepts": [
+  "type": "QUERY_TEST",
+  "label": "VIRTUAL_CONCEPT_REUSED_QUERY Test",
+  "expectedCsv": "tests/query/VIRTUAL_CONCEPT_REUSED_QUERY/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
         {
-            "label": "test_concept",
-            "type": "VIRTUAL",
-            "connectors": [
+          "query": "00000000-0000-0000-0000-000000000001",
+          "type": "SAVED_QUERY",
+          "excludeFromSecondaryId": false
+        },
+        {
+          "ids": [
+            "test_concept"
+          ],
+          "type": "CONCEPT",
+          "label": "test_concept",
+          "tables": [
+            {
+              "id": "test_concept.test_connector",
+              "filters": [
                 {
-                    "label": "test_connector",
-                    "table": "test_table",
-                    "validityDates": {"label": "datum" ,"column": "test_table.datum"},
-                    "filter": {
-                        "label": "test_filter",
-                        "description": "Tests a column against a specified value",
-                        "column": "test_table.test_column",
-                        "type": "SELECT"
-                    }
+                  "filter": "test_concept.test_connector.test_filter",
+                  "type": "MULTI_SELECT",
+                  "value": [
+                    "2"
+                  ]
                 }
-            ]
-        }
-    ],
-    "content": {
-        "tables": [
-			{
-                "csv": "tests/query/VIRTUAL_CONCEPT_REUSED_QUERY/content.csv",
-				"name": "test_table",
-                "primaryColumn": {
-                    "name": "pid",
-                    "type": "STRING"
-                },
-				"columns": [
-					{
-						"name": "datum",
-						"type": "DATE"
-					},
-					{
-						"name": "test_column",
-						"type": "STRING"
-					}
-				]
+              ]
             }
-		],
-        "previousQueryResults": "tests/query/VIRTUAL_CONCEPT_REUSED_QUERY/query_results.csv"
+          ]
+        }
+      ]
     }
+  },
+  "concepts": [
+    {
+      "label": "test_concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "test_connector",
+          "table": "test_table",
+          "validityDates": {
+            "label": "datum",
+            "column": "test_table.datum"
+          },
+          "filters": {
+            "label": "test_filter",
+            "description": "Tests a column against a specified value",
+            "column": "test_table.test_column",
+            "type": "SELECT"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/VIRTUAL_CONCEPT_REUSED_QUERY/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ],
+    "previousQueryResults": "tests/query/VIRTUAL_CONCEPT_REUSED_QUERY/query_results.csv"
+  }
 }

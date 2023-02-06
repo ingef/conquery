@@ -1,12 +1,9 @@
-import React from "react";
 import styled from "@emotion/styled";
-import { connect } from "react-redux";
-import IconButton from "../button/IconButton";
-import { toggleDisplayTooltip } from "./actions";
+import { useDispatch } from "react-redux";
 
-type PropsType = {
-  toggleDisplayTooltip: () => void;
-};
+import IconButton from "../button/IconButton";
+
+import { toggleDisplayTooltip } from "./actions";
 
 const Root = styled("div")`
   position: relative;
@@ -15,28 +12,28 @@ const Root = styled("div")`
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
-  top: 58px;
+  top: 45px;
+  padding: 7px 10px;
   right: 0;
   border-right: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 `;
 
-const ActivateTooltip = (props: PropsType) => {
+const ActivateTooltip = () => {
+  const dispatch = useDispatch();
+  const onToggleTooltip = () => dispatch(toggleDisplayTooltip());
+
   return (
     <Root>
       <StyledIconButton
         small
         frame
         icon="angle-right"
-        onClick={props.toggleDisplayTooltip}
+        onClick={onToggleTooltip}
       />
     </Root>
   );
 };
 
-const mapDispatchToProps = dispatch => ({
-  toggleDisplayTooltip: () => dispatch(toggleDisplayTooltip())
-});
-
-export default connect(() => ({}), mapDispatchToProps)(ActivateTooltip);
+export default ActivateTooltip;

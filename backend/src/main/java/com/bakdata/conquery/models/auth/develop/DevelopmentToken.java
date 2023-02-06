@@ -9,7 +9,7 @@ import org.apache.shiro.authc.AuthenticationToken;
 @Getter
 @RequiredArgsConstructor
 public class DevelopmentToken implements AuthenticationToken {
-
+	//TODO migrate to user?
 	private final UserId principal;
 	private final String credentials;
 

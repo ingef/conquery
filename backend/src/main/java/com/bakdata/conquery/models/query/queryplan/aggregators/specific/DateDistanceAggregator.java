@@ -5,16 +5,18 @@ import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
+import lombok.ToString;
 
 /**
  * Aggregator, returning the min duration in the column, relative to the end of date restriction.
  */
+@ToString(callSuper = true, of = "unit")
 public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 
 	private LocalDate reference;
@@ -29,9 +31,15 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void init(Entity entity, QueryExecutionContext context) {
+		hit = false;
+		result = Long.MAX_VALUE;
+	}
+
+	@Override
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
-			reference = null;
+			reference = CDate.toLocalDate(ctx.getToday());
 		}
 		else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
@@ -39,21 +47,12 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public DateDistanceAggregator doClone(CloneContext ctx) {
-		return new DateDistanceAggregator(getColumn(), unit);
-	}
-
-	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return result != Long.MAX_VALUE || hit ? result : null;
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-		if(reference == null) {
-			return;
-		}
-
 		if(!bucket.has(event, getColumn())) {
 			return;
 		}
@@ -69,6 +68,6 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return ResultType.IntegerT.INSTANCE;
 	}
 }

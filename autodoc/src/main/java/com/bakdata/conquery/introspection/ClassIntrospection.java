@@ -24,7 +24,7 @@ public class ClassIntrospection extends AbstractJavadocIntrospection<ClassOrInte
 		for(var decl : value.getMembers()) {
 			if(decl.isClassOrInterfaceDeclaration()) {
 				var cType = decl.asClassOrInterfaceDeclaration();
-				if((value.getNameAsString()+"$"+cType.getNameAsString()).equals(simpleName)) {
+				if(cType.getNameAsString().equals(simpleName)) {
 					return new ClassIntrospection(file, cType);
 				}
 			}

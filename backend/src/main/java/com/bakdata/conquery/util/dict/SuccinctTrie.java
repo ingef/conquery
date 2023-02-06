@@ -7,26 +7,38 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryEntry;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.util.BufferUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.AbstractIterator;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectArrayMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
+import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.mina.core.buffer.IoBuffer;
+import lombok.ToString;
 
-@CPSType(id="SUCCINCT_TRIE", base=Dictionary.class)
+/**
+ * Implementation of a succinct trie that maps stored strings (byte arrays) to an id (https://en.wikipedia.org/wiki/Succinct_data_structure). The id is the node index of the
+ * starting byte in the trie. To get all bytes of a string, all bytes towards the root must be collected. This means
+ * that every node in the trie can be the beginning of a string, and that the nodes closest to the root are the endings
+ * of the string.
+ * <p>
+ * Inserting the strings this way (reversed) into the trie allows lookups in either direction with little computational
+ * overhead.
+ */
+@CPSType(id = "SUCCINCT_TRIE", base = Dictionary.class)
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
+@Getter
 public class SuccinctTrie extends Dictionary {
 
 	@Getter
 	private int nodeCount;
+	@Getter
+	private int depth = 0;
 	@Getter
 	private int entryCount;
 	@Getter
@@ -40,6 +52,7 @@ public class SuccinctTrie extends Dictionary {
 	// keyPartArray[x] contains the byte stored in node x
 	private byte[] keyPartArray;
 
+	@JsonIgnore
 	private HelpNode root;
 
 	// caches the the access on select0
@@ -48,9 +61,10 @@ public class SuccinctTrie extends Dictionary {
 	// indicates whether compress() has been performed and if the trie is ready to
 	// query
 	@Getter
+	@JsonIgnore
 	private boolean compressed;
 
-	public SuccinctTrie(DatasetId dataset, String name) {
+	public SuccinctTrie(Dataset dataset, String name) {
 		super(dataset, name);
 		this.root = new HelpNode(null, (byte) 0);
 		this.root.setPositionInArray(0);
@@ -58,93 +72,100 @@ public class SuccinctTrie extends Dictionary {
 		entryCount = 0;
 	}
 
-	@JsonCreator
-	public static SuccinctTrie fromSerialized(SerializedSuccinctTrie serialized) {
-		SuccinctTrie trie = new SuccinctTrie(serialized.getDataset(), serialized.getName());
-		trie.nodeCount = serialized.getNodeCount();
-		trie.entryCount = serialized.getEntryCount();
-		trie.reverseLookup = serialized.getReverseLookup();
-		trie.parentIndex = serialized.getParentIndex();
-		trie.lookup = serialized.getLookup();
-		trie.keyPartArray = serialized.getKeyPartArray();
-		trie.selectZeroCache = serialized.getSelectZeroCache();
-		trie.totalBytesStored = serialized.getTotalBytesStored();
+	@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+	public SuccinctTrie(String name,
+						Dataset dataset,
+						int nodeCount,
+						int entryCount,
+						int[] reverseLookup,
+						int[] parentIndex,
+						int[] lookup,
+						byte[] keyPartArray,
+						int[] selectZeroCache,
+						long totalBytesStored,
+						int depth) {
+		super(dataset, name);
+		this.nodeCount = nodeCount;
+		this.entryCount = entryCount;
+		this.reverseLookup = reverseLookup;
+		this.parentIndex = parentIndex;
+		this.lookup = lookup;
+		this.keyPartArray = keyPartArray;
+		this.selectZeroCache = selectZeroCache;
+		this.totalBytesStored = totalBytesStored;
+		this.depth = depth;
 
-		trie.root = null;
-		trie.compressed = true;
-
-		return trie;
+		this.root = null;
+		this.compressed = true;
 	}
 
 	@Override
 	public int add(byte[] bytes) {
-		return put(bytes,entryCount,true);
+		return put(bytes, entryCount, true);
 	}
 
 	@Override
 	public int put(byte[] key) {
 		return put(key, entryCount, false);
 	}
-	
+
 	public void checkCompressed(String errorMessage) {
 		if (!isCompressed()) {
 			throw new IllegalStateException(errorMessage);
 		}
 	}
-	
+
 	public void checkUncompressed(String errorMessage) {
 		if (isCompressed()) {
 			throw new IllegalStateException(errorMessage);
 		}
 	}
-	
-	public void tryCompress() {
-		if(!isCompressed()) {
-			this.compress();
-		}
-	}
 
-	private int put(byte[] key, int value, boolean failOnDuplicate) {
-		checkUncompressed("no put allowed after compression");
-		// insert help nodes
-		int nodeIndex = 0;
+	private int put(byte[] key, int entryCount, boolean failOnDuplicate) {
+		checkUncompressed("No put allowed after compression");
+
+		// start at the end of the byte sequence and insert it reversed
+		int keyIndex = key.length - 1;
 		HelpNode current = root;
-		while (nodeIndex < key.length) {
+		while (keyIndex >= 0) {
 			// check if a prefix node exists
-			HelpNode next = current.children.get(key[nodeIndex]);
+			HelpNode next = current.children.get(key[keyIndex]);
 			if (next == null) {
 				// no prefix node could be found, we add a new one
-				next = new HelpNode(current, key[nodeIndex]);
+				next = new HelpNode(current, key[keyIndex]);
 				next.setParent(current);
 				current.addChild(next);
 				nodeCount++;
-				if (nodeCount > Integer.MAX_VALUE - 10)
-					throw new IllegalStateException("This dictionary is to large " + nodeCount);
+
+				if (next.depth > depth) {
+					depth = next.depth;
+				}
+
+				if (nodeCount > Integer.MAX_VALUE - 10) {
+					throw new IllegalStateException("This dictionary is too large " + nodeCount);
+				}
 			}
 			current = next;
-			nodeIndex++;
+			keyIndex--;
 		}
 
 		// end of key, write the value into current
 		if (current.getValue() == -1) {
-			current.setValue(value);
+			current.setValue(entryCount);
 			totalBytesStored += key.length;
-			return entryCount++;
+			this.entryCount++;
 		}
-		else if (failOnDuplicate){
-			throw new IllegalStateException(String.format("the key {} was already part of this trie", new String(key, StandardCharsets.UTF_8)));
+		else if (failOnDuplicate) {
+			throw new IllegalStateException(String.format("the key `%s` was already part of this trie", new String(key, StandardCharsets.UTF_8)));
 		}
-		else {
-			return current.getValue();
-		}
+
+		return current.getValue();
 	}
 
-	/*
-	 * select0(n) - returns the position of the nth 0 in the bit store.
-	 */
-
 	public void compress() {
-		checkUncompressed("compress is only allowed once");
+		if (compressed) {
+			return;
+		}
 
 		// get the nodes in left right, top down order (level order)
 		List<HelpNode> nodesInOrder = createNodesInOrder();
@@ -156,7 +177,7 @@ public class SuccinctTrie extends Dictionary {
 		selectZeroCache[1] = 1;
 
 		for (HelpNode node : nodesInOrder) {
-			position+=node.children.size();
+			position += node.children.size();
 			zeroesWritten++;
 			selectZeroCache[zeroesWritten] = position;
 			position++;
@@ -168,7 +189,7 @@ public class SuccinctTrie extends Dictionary {
 	}
 
 	private List<HelpNode> createNodesInOrder() {
-		ArrayList<HelpNode> nodesInOrder = new ArrayList<HelpNode>(nodeCount-1);
+		ArrayList<HelpNode> nodesInOrder = new ArrayList<HelpNode>(nodeCount - 1);
 
 		// initialize arrays for rebuilding the data later on
 		reverseLookup = new int[entryCount];
@@ -182,7 +203,7 @@ public class SuccinctTrie extends Dictionary {
 		keyPartArray = new byte[nodeCount];
 
 		nodesInOrder.add(root);
-		for (int index=0; index < nodeCount-1; index++) {
+		for (int index = 0; index < nodeCount - 1; index++) {
 			HelpNode node = nodesInOrder.get(index);
 			node.setPositionInArray(index);
 			if (node != root) {
@@ -203,17 +224,13 @@ public class SuccinctTrie extends Dictionary {
 		return nodesInOrder;
 	}
 
-	private int select0(int positionForZero) {
-		return selectZeroCache[positionForZero];
-	}
-
 	@Override
 	@JsonIgnore
 	public int getId(byte[] value) {
 		if (!compressed) {
 			HelpNode node = root;
-			for (byte val : value) {
-				node = findChildWithKey(node, val);
+			for (int i = value.length - 1; i >= 0; i--) {
+				node = findChildWithKey(node, value[i]);
 				if (node == null) {
 					return -1;
 				}
@@ -223,14 +240,10 @@ public class SuccinctTrie extends Dictionary {
 		}
 
 		int node = 0;
-		for (byte val : value) {
-			// check for fitting child
+		// Traverse the tree along the byte[], exiting when we don't find a match
+		for (int i = value.length - 1; i >= 0; i--) {
 
-			int firstChildNode = select0(node + 1) - node;
-			// get the first child of the next node
-			int lastChild = select0(node + 1 + 1) - (node + 1);
-
-			node = childIdWithKey(firstChildNode, lastChild, val);
+			node = childIdWithKey(node, value[i]);
 
 			if (node == -1) {
 				// no fitting child found
@@ -241,11 +254,19 @@ public class SuccinctTrie extends Dictionary {
 		return lookup[node];
 	}
 
+	public int findStart(int node) {
+		return selectZeroCache[node + 1] - node;
+	}
+
 	private HelpNode findChildWithKey(HelpNode node, byte val) {
 		return node.children.get(val);
 	}
 
-	private int childIdWithKey(int firstChildNode, int lastChildNode, byte val) {
+	private int childIdWithKey(int node, byte val) {
+		int firstChildNode = findStart(node);
+		// get the first child of the next node
+		int lastChildNode = findStart(node + 1);
+
 		for (int i = firstChildNode; i < lastChildNode; i++) {
 			if (keyPartArray[i] == val) {
 				return i;
@@ -255,33 +276,28 @@ public class SuccinctTrie extends Dictionary {
 		return -1;
 	}
 
-	public boolean containsReverse(int intValue) {
-		checkCompressed("use compress before performing containsReverse on the trie");
-		return intValue < reverseLookup.length;
-	}
 
-	public void getReverse(int intValue, IoBuffer buffer) {
+	/**
+	 * The provided id for the string is the index of the trie node that holds the first byte of the sequence.
+	 * From there on, the bytes of the parents until the root are collected to build byte sequence in forward order.
+	 *
+	 * @param id  the id that references the search byte sequence
+	 * @param buf the buffer into which the bytes are inserted
+	 */
+	public void get(int id, ByteArrayList buf) {
 		checkCompressed("use compress before performing getReverse on the trie");
 
-		if (intValue >= reverseLookup.length) {
-			throw new IllegalArgumentException(String.format("intValue %d too high, no such key in the trie (Have only %d values)", intValue, reverseLookup.length));
+		if (id >= reverseLookup.length) {
+			throw new IllegalArgumentException(String.format("intValue %d too high, no such key in the trie (Have only %d values)", id, reverseLookup.length));
 		}
-		int nodeIndex = reverseLookup[intValue];
-		while (parentIndex[nodeIndex] != -1) {
-			// resolve nodeIndex and append byteValue
-			buffer.put(keyPartArray[nodeIndex]);
-			nodeIndex = parentIndex[nodeIndex];
-		}
-		buffer.flip();
 
-		//reverse bytes
-		byte tmp;
-		int length = buffer.limit();
-		for (int i = 0; i < length / 2; i++) {
-			tmp = buffer.get(i);
-			buffer.put(i, buffer.get(length - i - 1));
-			buffer.put(length - i - 1, tmp);
+		int nodeIndex = reverseLookup[id];
+		int parentIndex = -1;
+		while ((parentIndex = this.parentIndex[nodeIndex]) != -1) {
+			buf.add(keyPartArray[nodeIndex]);
+			nodeIndex = parentIndex;
 		}
+		;
 	}
 
 	@Override
@@ -289,57 +305,40 @@ public class SuccinctTrie extends Dictionary {
 		return entryCount;
 	}
 
+	@JsonIgnore
 	public boolean isEmpty() {
 		return entryCount == 0;
 	}
 
-	public List<byte[]> getValuesBytes() {
-		List<byte[]> valuesBytes = new ArrayList<>();
-		IoBuffer buffer = IoBuffer.allocate(512);
-		buffer.setAutoExpand(true);
-		for (int i = 0; i < entryCount; i++) {
-			getReverse(i, buffer);
-			byte[] bytes = new byte[buffer.limit() - buffer.position()];
-			buffer.get(bytes);
-			valuesBytes.add(bytes);
-			buffer.clear();
-		}
-		buffer.free();
-		return valuesBytes;
-	}
-
-	@Data @RequiredArgsConstructor
+	@Data
+	@RequiredArgsConstructor
 	public static class Entry {
 		private final int key;
 		private final String value;
 	}
 
+
 	@Override
 	public Iterator<DictionaryEntry> iterator() {
-		IoBuffer buffer = IoBuffer.allocate(512);
-		buffer.setAutoExpand(true);
-		return new AbstractIterator<DictionaryEntry>() {
 
+		return new AbstractIterator<>() {
+
+			private final ByteArrayList buf = new ByteArrayList(depth);
 			private int index = 0;
 
 			@Override
 			protected DictionaryEntry computeNext() {
 				if (index == entryCount) {
-					buffer.free();
 					return endOfData();
 				}
-				getReverse(index++, buffer);
-				byte[] result = BufferUtil.toBytes(buffer);
-				buffer.clear();
-				return new DictionaryEntry(index, result);
+				buf.clear();
+
+				final int id = index++;
+
+				get(id, buf);
+				return new DictionaryEntry(id, buf.toByteArray());
 			}
 		};
-	}
-
-	@JsonValue
-	public SerializedSuccinctTrie toSerialized() {
-		checkCompressed("no serialisation allowed before compressing the trie");
-		return new SerializedSuccinctTrie(getName(), getDataset(), nodeCount, entryCount, reverseLookup, parentIndex, lookup, keyPartArray, selectZeroCache, totalBytesStored);
 	}
 
 	@Data
@@ -350,6 +349,7 @@ public class SuccinctTrie extends Dictionary {
 		private HelpNode parent;
 		private int value = -1;
 		private int positionInArray = -1;
+		private int depth = 0;
 
 		public HelpNode(HelpNode parent, byte key) {
 			this.parent = parent;
@@ -357,34 +357,21 @@ public class SuccinctTrie extends Dictionary {
 		}
 
 		public void addChild(HelpNode child) {
+			child.setDepth(this.depth + 1);
 			this.children.put(child.partialKey, child);
 		}
 
 	}
 
-	public SuccinctTrie uncompress() {
-		checkCompressed("Constructor only works for compressed tries");
-
-		SuccinctTrie trie = new SuccinctTrie(getDataset(), getName());
-		for (byte[] value : getValuesBytes()) {
-			trie.put(value);
-		}
-		return trie;
-	}
-
 	@Override
 	public byte[] getElement(int id) {
-		IoBuffer buffer = IoBuffer.allocate(512);
-		buffer.setAutoExpand(true);
-		getReverse(id, buffer);
-		byte[] out = new byte[buffer.limit()-buffer.position()];
-		buffer.get(out);
-		buffer.free();
-		return out;
+		ByteArrayList buf = new ByteArrayList(depth);
+		get(id, buf);
+		return buf.toByteArray();
 	}
 
 	@Override
 	public long estimateMemoryConsumption() {
-		return 13L*getNodeCount() + 4L*size();
+		return 13L * getNodeCount() + 4L * size();
 	}
 }

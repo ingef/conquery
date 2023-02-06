@@ -1,50 +1,42 @@
-import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { FC } from "react";
+import { useTranslation } from "react-i18next";
 
-import { CONCEPT_TREE_NODE } from "../common/constants/dndTypes";
-import Dropzone from "../form-components/Dropzone";
-import type { QueryNodeType } from "../standard-query-editor/types";
+import { DNDType } from "../common/constants/dndTypes";
+import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
+import Dropzone from "../ui-components/Dropzone";
 
-const StyledDropzone = styled(Dropzone)`
+const SxDropzone = styled(Dropzone)`
   width: 100%;
 `;
 
-const DROP_TYPES = [CONCEPT_TREE_NODE];
+const DROP_TYPES = [DNDType.CONCEPT_TREE_NODE];
 
-type PropsType = {
-  node: QueryNodeType;
-  onDropConcept: (concept: QueryNodeType) => void;
-};
+interface PropsT {
+  node: DragItemConceptTreeNode;
+  onDropConcept: (concept: DragItemConceptTreeNode) => void;
+}
 
-const ConceptDropzone = ({ node, onDropConcept }: PropsType) => {
-  const dropzoneTarget = {
-    // Usually, "drop" is specified here as well, but our Dropzone implementation splits that
-
-    canDrop(_, monitor) {
-      const item = monitor.getItem();
-      // The dragged item should contain exactly one id
-      // since it was dragged from the tree
-      const conceptId = item.ids[0];
-
-      return item.tree === node.tree && !node.ids.some(id => id === conceptId);
-    }
-  };
-
-  const onDrop = (_, monitor) => {
-    const item = monitor.getItem();
-
-    onDropConcept(item);
-  };
+const ConceptDropzone: FC<PropsT> = ({ node, onDropConcept }) => {
+  const { t } = useTranslation();
 
   return (
-    <StyledDropzone
+    <SxDropzone /* TOOD: ADD GENERIC TYPE <FC<DropzoneProps<DragItemConceptTreeNode>>> */
       acceptedDropTypes={DROP_TYPES}
-      onDrop={onDrop}
-      target={dropzoneTarget}
+      onDrop={(item) => onDropConcept(item as DragItemConceptTreeNode)}
+      canDrop={(item) => {
+        // The dragged item should contain exactly one id
+        // since it was dragged from the tree
+        const conceptId = (item as DragItemConceptTreeNode).ids[0];
+
+        return (
+          (item as DragItemConceptTreeNode).tree === node.tree &&
+          !node.ids.some((id) => id === conceptId)
+        );
+      }}
     >
-      {() => T.translate("queryNodeEditor.dropConcept")}
-    </StyledDropzone>
+      {() => t("queryNodeEditor.dropConcept")}
+    </SxDropzone>
   );
 };
 

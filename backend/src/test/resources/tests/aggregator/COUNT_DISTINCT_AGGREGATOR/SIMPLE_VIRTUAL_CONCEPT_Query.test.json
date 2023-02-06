@@ -6,37 +6,36 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "ids": [
-        "${dataset}.select"
+        "concept"
       ],
       "type": "CONCEPT",
-      "label": "select",
       "tables": [
         {
-          "id": "${dataset}.select.connector"
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.select"
+          ]
         }
-      ],
-      "selects": [
-        "${dataset}.select.connector.count_gender"
       ]
     }
   },
   "concepts": [
     {
-      "label": "select",
-      "type": "VIRTUAL",
+      "name": "concept",
+      "type": "TREE",
       "connectors": [
         {
-          "label": "connector",
-          "table": "table1",
+          "name": "connector",
+          "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "column": "table.datum"
           },
           "selects": {
-            "name": "count_gender",
+            "name": "select",
             "type": "COUNT",
             "distinct": true,
-            "column": "table1.geschlecht"
+            "column": "table.value"
           }
         }
       ]
@@ -46,7 +45,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/COUNT_DISTINCT_AGGREGATOR/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -57,7 +56,7 @@
             "type": "DATE"
           },
           {
-            "name": "geschlecht",
+            "name": "value",
             "type": "STRING"
           }
         ]

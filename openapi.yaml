@@ -1,0 +1,839 @@
+openapi: 3.0.0
+info:
+  version: 0.0.0
+  title: Conquery API
+  description: Conquery API
+  license:
+    #TODO find a fitting license
+    name: TODO
+    url: http://TODO/
+tags:
+  - name: dataset
+  - name: concept
+  - name: query
+  - name: user
+  - name: entity-preview
+  - name: config
+  - name: frontend
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+
+    Bearer:
+      type: http
+      scheme: bearer
+  parameters:
+    dataset:
+      in: path
+      name: dataset
+      required: true
+      schema:
+        $ref: "#/components/schemas/datasetId"
+    query:
+      in: path
+      name: query
+      required: true
+      schema:
+        $ref: "#/components/schemas/executionId"
+    concept:
+      in: path
+      name: concept
+      required: true
+      schema:
+        $ref: "#/components/schemas/conceptId"
+  responses:
+    unauthorized:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error"
+      description: The user is not logged in or misses permissions to access the resource.
+  schemas:
+    id:
+      description: Typed identifier of an object. Usually consists of a recursive structure separated by dots, starting with the dataset. The dataset can be omitted, when the url is already in a context with a bound dataset.
+      type: string
+    tableId:
+      $ref: "#/components/schemas/id"
+    datasetId:
+      $ref: "#/components/schemas/id"
+    filterId:
+      $ref: "#/components/schemas/id"
+    selectId:
+      $ref: "#/components/schemas/id"
+    conceptId:
+      $ref: "#/components/schemas/id"
+    connectorId:
+      $ref: "#/components/schemas/id"
+    secondaryIdId:
+      $ref: "#/components/schemas/id"
+    columnId:
+      $ref: "#/components/schemas/id"
+    executionId:
+      $ref: "#/components/schemas/id"
+    userId:
+      $ref: "#/components/schemas/id"
+    dateTime: #TODO
+      type: string
+      # format: date-time TODO not compatible: Value does not conform to the required ISO-8601 datetime format. Invalid value '2022-12-13T13:33:32.455901838Z' for type datetime at
+    date: #TODO
+      type: string
+      format: date
+    query-state:
+      description: Potential states of a query.
+      type: string
+      enum:
+        - NEW
+        - RUNNING
+        - FAILED
+        - DONE
+    frontend-dataset-id:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/datasetId"
+        label:
+          type: string
+    resolved-concepts-result:
+      description: Response object for resolve endpoint.
+      type: object
+      properties:
+        resolvedConcepts:
+          description: Ids of resolved concept elements.
+          type: array
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/conceptId"
+        unknownCodes:
+          description: Values that could not be resolved.
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+        resolvedFilter:
+          type: object
+          properties:
+            tableId:
+              $ref: "#/components/schemas/tableId"
+            filterId:
+              $ref: "#/components/schemas/filterId"
+            value:
+              description: List of resolved filter values.
+              type: array
+              items:
+                type: object
+                properties:
+                  value:
+                    description: Actual value - can be treated as the id of the value. To be used when querying the Filter.
+                    type: string
+                  label:
+                    description: Verbose description of the value.
+                    type: string
+                  optionValue:
+                    description: Less verbose description of the value.
+                    type: string
+                required:
+                  - "value"
+    mail:
+      type: string
+      format: mail
+    column-config:
+      type: object
+      properties:
+        name:
+          description: Name of the Column-Config to be used when resolving with Upload.
+          type: string
+        label:
+          description: Map of Localized labels.
+          type: object
+          items:
+            type: string
+        description:
+          description: Map of Localized descriptions.
+          type: object
+          items:
+            type: string
+        field:
+          type: string
+          description: Name of column in result csv.
+        pad:
+          description: Pad-String when uploading data, to avoid problems with some tools truncating leading zeros or similar.
+          type: string
+        length:
+          description: In conjunction with pad, the length of the padded string.
+          type: integer
+        resolvable:
+          description: True, if the Column should be printed to output. This can be used to have resolvable but not printable fields in mapping.
+          type: boolean
+
+    upload-config:
+      description: Describes the format of ids for EXTERNAL and entity-preview id kinds. Also describes the output format for ids in the result files.
+      type: object
+      properties:
+        ids:
+          type: array
+          items:
+            $ref: "#/components/schemas/column-config"
+
+    currency-config:
+      description: Describes how the frontend shall interpret and display currency values.
+      type: object
+      properties:
+        prefix:
+          type: string
+        thousandSeparator:
+          type: string
+        decimalSeparator:
+          type: string
+          pattern: "[.,]"
+        decimalScale:
+          type: string
+
+    frontend-config:
+      type: object
+      properties:
+        version:
+          description: Revision of the backend.
+          type: string
+        manualUrl:
+          description: URL to this instances manual if available.
+          type: string
+          format: url
+        contactEmail:
+          $ref: "#/components/schemas/mail"
+        currency:
+          $ref: "#/components/schemas/currency-config"
+        upload:
+          $ref: "#/components/schemas/upload-config"
+    error:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: number
+    me:
+      type: object
+      properties:
+        userName:
+          type: string
+        hideLogoutButton:
+          type: boolean
+        datasetAbilities:
+          description: Per dataset abilities of the logged in User.
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              canUpload:
+                type: boolean
+        groups:
+          description: Groups the user is part of.
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                $ref: "#/components/schemas/id"
+              label:
+                type: string
+    query-status:
+      description: Status of an executing or executed query.
+      type: object
+      properties:
+        label:
+          description: Display label of the query.
+          type: string
+        isPristineLabel:
+          description: True if the user did not alter the queries label.
+          type: boolean
+        tags:
+          description: Tags of the query. To be treated like directories.
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        createdAt:
+          $ref: "#/components/schemas/dateTime"
+        lastUsed:
+          $ref: "#/components/schemas/dateTime"
+        owner:
+          $ref: "#/components/schemas/userId"
+        ownerName:
+          type: string
+        shared:
+          description: True if the query is shared with other users.
+          type: boolean
+        own:
+          description: True if the query is owned by the current user.
+          type: boolean
+        system:
+          description: True if the query is system generated.
+          type: boolean
+        id:
+          $ref: "#/components/schemas/executionId"
+        status:
+          $ref: "#/components/schemas/query-state"
+        numberOfResults:
+          description: Number of result-lines of the query.
+          type: integer
+        requiredTime:
+          description: Duration of the last execution.
+          nullable: true
+          type: integer
+        startTime:
+          $ref: "#/components/schemas/dateTime"
+        finishTime:
+          $ref: "#/components/schemas/dateTime"
+        queryType:
+          description: Specific subtype of the query.
+          type: string # TODO use discriminator from Query
+        secondaryId:
+          $ref: "#/components/schemas/secondaryIdId"
+        resultUrls:
+          description: Available result urls of the query.
+          type: array
+          items:
+            type: string #TODO url?
+            format: url
+
+    labeled:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+    column-type:
+      description: Available types for input and output of conquery. Additionally list, which is a nested type of column-type.
+      oneOf:
+        - type: string
+          enum:
+            - STRING
+            - INTEGER
+            - BOOLEAN
+            - NUMERIC
+            - MONEY
+            - DATE
+            - DATE_RANGE
+        - type: string
+          pattern: "LIST\\[.*\\]"
+
+    semantic-event-date:
+      description: Values contain the primary date of a row.
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "EVENT_DATE"
+    semantic-sources:
+      description: Values in the column contain references to the source connector.
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "SOURCES"
+    semantic-categorical:
+      description: Values are an enumeration.
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "CATEGORICAL"
+    semantic-group:
+      description: One of the columns to group by in entity-preview.
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "GROUP"
+    semantic-hidden:
+      description: Values should not be displayed in entity-preview.
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "HIDDEN"
+    semantic-select:
+      description: Values are of the referenced select.
+      properties:
+        type:
+          type: string
+          enum:
+            - "SELECT"
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
+        - type: object
+          properties:
+            select:
+              $ref: "#/components/schemas/selectId"
+    semantic-concept-column:
+      description: Values contain the ids of the concept-element resolved to the event.
+      properties:
+        type:
+          type: string
+          enum:
+            - "CONCEPT_COLUMN"
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
+        - type: object
+          properties:
+            concept:
+              $ref: "#/components/schemas/conceptId"
+    semantic-column:
+      description: Values are of a specific column, without any aggregation.
+      properties:
+        type:
+          type: string
+          enum:
+            - "COLUMN"
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
+        - type: object
+          properties:
+            column:
+              $ref: "#/components/schemas/columnId"
+    semantic-id:
+      description: Values are an entities id.
+      properties:
+        type:
+          type: string
+          enum:
+            - "ID"
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
+        - type: object
+          properties:
+            kind:
+              type: string
+    semantic-secondaryId:
+      description: Values are a secondaryId.
+      allOf:
+        - $ref: "#/components/schemas/semantic-base"
+        - type: object
+          properties:
+            secondaryId:
+              $ref: "#/components/schemas/secondaryIdId"
+    semantic-base:
+      type: object
+      properties:
+        type:
+          type: string
+      required:
+        - "type"
+    semantics:
+      description: Used to add additional information to a queries resulting column, such as sources or restrictions of the values.
+      discriminator:
+        propertyName: "type"
+        mapping:
+          "CATEGORICAL": "#/components/schemas/semantic-categorical"
+          "COLUMN": "#/components/schemas/semantic-column"
+          "CONCEPT_COLUMN": "#/components/schemas/semantic-concept-column"
+          "EVENT_DATE": "#/components/schemas/semantic-event-date"
+          "GROUP": "#/components/schemas/semantic-group"
+          "HIDDEN": "#/components/schemas/semantic-hidden"
+          "ID": "#/components/schemas/semantic-id"
+          "SECONDARY_ID": "#/components/schemas/semantic-secondaryId"
+          "SELECT": "#/components/schemas/semantic-select"
+          "SOURCES": "#/components/schemas/semantic-sources"
+      oneOf:
+        - $ref: "#/components/schemas/semantic-categorical"
+        - $ref: "#/components/schemas/semantic-column"
+        - $ref: "#/components/schemas/semantic-concept-column"
+        - $ref: "#/components/schemas/semantic-event-date"
+        - $ref: "#/components/schemas/semantic-group"
+        - $ref: "#/components/schemas/semantic-hidden"
+        - $ref: "#/components/schemas/semantic-id"
+        - $ref: "#/components/schemas/semantic-secondaryId"
+        - $ref: "#/components/schemas/semantic-select"
+        - $ref: "#/components/schemas/semantic-sources"
+    column-description:
+      description: Metadata of a result column of a query.
+      type: object
+      properties:
+        label:
+          description: label of the column in csv.
+          type: string
+        description:
+          description: If available any description of the data of the query. For example SecondaryId or an exported Column.
+          nullable: true
+          type: string
+        defaultLabel:
+          nullable: true
+          type: string
+        type:
+          $ref: "#/components/schemas/column-type"
+        semantics:
+          description: Additional information and tags of the query.
+          type: array
+          uniqueItems: true
+          items:
+            $ref: "#/components/schemas/semantics"
+    date-range:
+      type: object
+      properties:
+        min:
+          $ref: "#/components/schemas/date"
+        max:
+          $ref: "#/components/schemas/date"
+    query:
+      type: object
+      additionalProperties: true
+      #TODO but in separate file
+    error-info:
+      description: Basic format of an error.
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        message:
+          type: string
+        context:
+          type: object
+          additionalProperties: true
+
+    entity-preview-config:
+      description: Frontend configuration for the entity-preview.
+      type: object
+      properties:
+        all:
+          description: For frontend, list of sources to show the user. Usually a list of sources that have been tidied up.
+          type: array
+          items:
+            properties:
+              name:
+                type: string
+              label:
+                type: string
+        default:
+          description: For frontend, list of sources to select by default.
+          type: array
+          items:
+            properties:
+              name:
+                type: string
+              label:
+                type: string
+    entity-history-execution-status:
+      description: Specific execution info for a entity-preview, containing additional information for the entity.
+      allOf:
+        - $ref: "#/components/schemas/full-execution-status"
+        - type: object
+          properties:
+            infos:
+              description: Auxiliary information to the entity.
+              type: array
+              items:
+                type: object
+                properties:
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  typeInfo:
+                    type: string
+                  value:
+                    type: string
+                  semantics:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/semantics"
+    full-execution-status:
+      allOf:
+        - $ref: "#/components/schemas/query-status"
+        - type: object
+          properties:
+            progress:
+              description: Progress of the query.
+              nullable: true
+              type: number
+              minimum: 0
+              maximum: 1
+            columnDescriptions:
+              description: Metadata of the queries result by column.
+              type: array
+              items:
+                $ref: "#/components/schemas/column-description"
+            canExpand:
+              description: Flag for the frontend, if the query can be rendered by it and therefore should allow expansion.
+              type: boolean
+            query:
+              $ref: "#/components/schemas/query"
+            error:
+              $ref: "#/components/schemas/error-info"
+            availableSecondaryIds:
+              description: List of all secondaryIds available inside this query, this is used by the frontend to display them to users when reusing queries.
+              type: array
+              items:
+                $ref: "#/components/schemas/secondaryIdId"
+servers:
+  - url: http://localhost:8080/api
+paths:
+  /frontend/config:
+    get:
+      summary: An Endpoint describing the configuration for the frontend.
+      tags:
+        - frontend
+      operationId: get-frontend-config
+      responses:
+        "200":
+          description: The Configuration for the Frontend
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/frontend-config"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+  /datasets/{dataset}/entity-preview:
+    parameters:
+      - $ref: "#/components/parameters/dataset"
+    get:
+      tags:
+        - frontend
+        - entity-preview
+      operationId: get-entity-preview-config
+      summary: Retrieve config and defaults for entity-preview for the frontend.
+      responses:
+        "200":
+          description: The config.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/entity-preview-config"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+
+  /me:
+    get:
+      tags:
+        - frontend
+        - user
+      operationId: get-me
+      summary: Fetches description of the currently logged in user
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/me"
+          description: Description of the user
+        "401":
+          $ref: "#/components/responses/unauthorized"
+  /datasets:
+    get:
+      tags:
+        - frontend
+      operationId: list-datasets
+      summary: Fetch all datasets available to the User.
+      responses:
+        "200":
+          description: The available datasets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/frontend-dataset-id"
+  /concepts/{concept}/resolve:
+    post:
+      tags:
+        - concept
+      parameters:
+        - $ref: "#/components/parameters/concept"
+      operationId: resolve-concepts
+      summary: Resolve values to concept-ids
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                concepts:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '400':
+          description: When the requested Concept does not have children.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        "200":
+          description: Resolved Concepts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/resolved-concepts-result"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+
+  /datasets/{dataset}/queries:
+    parameters:
+      - $ref: "#/components/parameters/dataset"
+    get:
+      tags:
+        - query
+        - dataset
+      operationId: list-queries
+      summary: Fetch Status and metadata of all queries visible to the user.
+      responses:
+        "200":
+          description: The Status and Metadata.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/query-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+    post:
+      tags:
+        - query
+        - dataset
+      operationId: post-query
+      summary: Submit a query for execution in the dataset.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/query"
+      responses:
+        "200":
+          description: Status of the submitted query.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/full-execution-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+
+  /queries/{query}:
+    parameters:
+      - $ref: "#/components/parameters/query"
+    get:
+      tags:
+        - query
+      operationId: get-query-status
+      summary: Get Status and metadata of Query
+      responses:
+        "200":
+          description: The Status and Metadata.
+          content:
+            application/json;charset=utf-8:
+              schema:
+                $ref: "#/components/schemas/full-execution-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+    patch:
+      tags:
+        - query
+      summary: Update a query.
+      operationId: patch-query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/query"
+      responses:
+        "200":
+          description: Description of the updated execution
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/full-execution-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+    delete:
+      summary: Delete the query.
+      tags:
+        - query
+      operationId: delete-query
+      responses:
+        "200":
+          description: Query was deleted.
+        "401":
+          $ref: "#/components/responses/unauthorized"
+  /queries/{query}/cancel:
+    parameters:
+      - $ref: "#/components/parameters/query"
+    post:
+      summary: Cancel a running query.
+      tags:
+        - query
+      operationId: cancel-query
+      responses:
+        "200":
+          description: Query was cancelled.
+        "401":
+          $ref: "#/components/responses/unauthorized"
+  /queries/{query}/reexecute:
+    parameters:
+      - $ref: "#/components/parameters/query"
+    post:
+      summary: Restart a query. Useful for when it is empty after a restart, or the underlying data has changed.
+      tags:
+        - query
+      operationId: reexecute-query
+      responses:
+        "200":
+          description: Description of restarted Query.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/full-execution-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"
+
+  /datasets/{dataset}/queries/entity:
+    parameters:
+      - $ref: "#/components/parameters/dataset"
+    post:
+      tags:
+        - entity-preview
+      operationId: get-entity-preview
+      summary: Submit a query for the history of a single entity
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                idKind:
+                  description: The kind of the entity id. Options are made available through `column-config#name`
+                  type: string
+                entityId:
+                  description: The id of the entity.
+                  type: string
+                time:
+                  $ref: "#/components/schemas/date-range"
+                sources:
+                  description: List of connectorIds to export their backing tables.
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/connectorId"
+      responses:
+        "200":
+          description: Description of the history of the entity.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/entity-history-execution-status"
+        "401":
+          $ref: "#/components/responses/unauthorized"

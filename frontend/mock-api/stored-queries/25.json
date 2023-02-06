@@ -2,11 +2,15 @@
   "id": 25,
   "status": "DONE",
   "numberOfResults": 5,
-  "resultUrl": "/api/results/1234-123123123-123123-1231.csv",
+  "resultUrls": ["/api/results/1234-123123123-123123-1231.csv"],
   "createdAt": "2016-12-02T14:19:09Z",
   "version": 0,
   "tags": ["Fun"],
+  "canExpand": true,
+  "secondaryId": "fun2_fall_id",
+  "availableSecondaryIds": ["fun2_fall_id"],
   "query": {
+    "secondaryId": "fun2_fall_id",
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "AND",
@@ -24,11 +28,13 @@
               "children": [
                 {
                   "query": "25602",
-                  "type": "SAVED_QUERY"
+                  "type": "SAVED_QUERY",
+                  "excludeFromSecondaryId": true
                 },
                 {
                   "ids": ["action_movies"],
                   "type": "CONCEPT",
+                  "excludeFromSecondaryId": true,
                   "excludeFromTimeAggregation": true,
                   "selects": ["123456789"],
                   "tables": [

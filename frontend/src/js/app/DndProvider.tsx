@@ -1,12 +1,16 @@
 import styled from "@emotion/styled";
-import React, { FC } from "react";
+import { FC } from "react";
 import { DndProvider as ReactDndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import MultiBackend, {
+import {
+  MultiBackend,
   TouchTransition,
   usePreview,
 } from "react-dnd-multi-backend";
 import { TouchBackend } from "react-dnd-touch-backend";
+
+import { DNDType } from "../common/constants/dndTypes";
+import { PossibleDroppableObject } from "../ui-components/Dropzone";
 
 const PreviewItem = styled("div")<{ width: number; height: number }>`
   background-color: ${({ theme }) => theme.col.grayVeryLight};
@@ -21,9 +25,11 @@ const PreviewItem = styled("div")<{ width: number; height: number }>`
 const CustomHTML5toTouch = {
   backends: [
     {
+      id: "html5",
       backend: HTML5Backend,
     },
     {
+      id: "touch",
       backend: TouchBackend,
       transition: TouchTransition,
       options: { enableMouseEvents: true, delayTouchStart: 100 },
@@ -43,14 +49,30 @@ export function getWidthAndHeight(ref: React.RefObject<HTMLElement | null>) {
   };
 }
 
-const DndPreview: FC = () => {
-  const { display, item, style } = usePreview();
+const findItemWithAndHeight = (
+  item: PossibleDroppableObject,
+): { width: number; height: number } => {
+  switch (item.type) {
+    case "__NATIVE_FILE__":
+      return { width: 0, height: 0 };
+    case DNDType.FORM_CONFIG:
+    case DNDType.CONCEPT_TREE_NODE:
+    case DNDType.PREVIOUS_QUERY:
+    case DNDType.PREVIOUS_SECONDARY_ID_QUERY:
+      return { width: item.dragContext.width, height: item.dragContext.height };
+  }
+};
 
-  if (!display) {
+const DndPreview: FC = () => {
+  const preview = usePreview<PossibleDroppableObject>();
+
+  if (!preview.display) {
     return null;
   }
 
-  return <PreviewItem width={item.width} height={item.height} style={style} />;
+  const { width, height } = findItemWithAndHeight(preview.item);
+
+  return <PreviewItem width={width} height={height} style={preview.style} />;
 };
 
 const DndProvider: FC = ({ children }) => {

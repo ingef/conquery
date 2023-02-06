@@ -1,50 +1,47 @@
-import React, { FC } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { StateT } from "app-types";
+import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
-import QueryRunner from "../query-runner/QueryRunner";
-
+import type { DatasetT } from "../api/types";
+import type { StateT } from "../app/reducers";
 import { validateQueryLength, validateQueryDates } from "../model/query";
-
-import actions from "../app/actions";
-
-import type { DatasetIdT } from "../api/types";
+import QueryRunner from "../query-runner/QueryRunner";
+import { useStartQuery, useStopQuery } from "../query-runner/actions";
 import type { QueryRunnerStateT } from "../query-runner/reducer";
-import type { StandardQueryStateT } from "./queryReducer";
 
-const { startStandardQuery, stopStandardQuery } = actions;
+import type { StandardQueryStateT } from "./queryReducer";
 
 function validateQueryStartStop({ startQuery, stopQuery }: QueryRunnerStateT) {
   return !startQuery.loading && !stopQuery.loading;
 }
 
-function validateDataset(datasetId: DatasetIdT) {
+function validateDataset(datasetId: DatasetT["id"] | null) {
   return datasetId !== null;
 }
 
-function getButtonTooltipKey(hasQueryValidDates: boolean) {
+function useButtonTooltip(hasQueryValidDates: boolean) {
+  const { t } = useTranslation();
+
   if (!hasQueryValidDates) {
-    return "queryRunner.errorDates";
+    return t("queryRunner.errorDates");
   }
 
   // Potentially add further validation and more detailed messages
 
-  return null;
+  return undefined;
 }
 
-interface PropsT {
-  datasetId: DatasetIdT;
-}
-
-const StandardQueryRunner: FC<PropsT> = ({ datasetId }) => {
+const StandardQueryRunner = () => {
+  const datasetId = useSelector<StateT, DatasetT["id"] | null>(
+    (state) => state.datasets.selectedDatasetId,
+  );
   const query = useSelector<StateT, StandardQueryStateT>(
-    (state) => state.queryEditor.query
+    (state) => state.queryEditor.query,
   );
   const queryRunner = useSelector<StateT, QueryRunnerStateT>(
-    (state) => state.queryEditor.queryRunner
+    (state) => state.queryEditor.queryRunner,
   );
   const selectedSecondaryId = useSelector<StateT, string | null>(
-    (state) => state.queryEditor.selectedSecondaryId
+    (state) => state.queryEditor.selectedSecondaryId,
   );
 
   const queryId = queryRunner.runningQuery;
@@ -54,20 +51,28 @@ const StandardQueryRunner: FC<PropsT> = ({ datasetId }) => {
   const isQueryValid = validateQueryLength(query) && hasQueryValidDates;
   const isQueryNotStartedOrStopped = validateQueryStartStop(queryRunner);
 
-  const dispatch = useDispatch();
+  const buttonTooltip = useButtonTooltip(hasQueryValidDates);
 
-  const startQuery = () =>
-    dispatch(
+  const startStandardQuery = useStartQuery("standard");
+  const stopStandardQuery = useStopQuery("standard");
+
+  const startQuery = () => {
+    if (datasetId) {
       startStandardQuery(datasetId, query, {
         selectedSecondaryId,
-      })
-    );
-  const stopQuery = () => dispatch(stopStandardQuery(datasetId, queryId));
+      });
+    }
+  };
+  const stopQuery = () => {
+    if (queryId) {
+      stopStandardQuery(queryId);
+    }
+  };
 
   return (
     <QueryRunner
       queryRunner={queryRunner}
-      buttonTooltipKey={getButtonTooltipKey(hasQueryValidDates)}
+      buttonTooltip={buttonTooltip}
       isButtonEnabled={
         isDatasetValid && isQueryValid && isQueryNotStartedOrStopped
       }

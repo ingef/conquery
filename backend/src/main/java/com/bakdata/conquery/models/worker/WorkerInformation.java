@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,9 +24,12 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	private IntArraySet includedBuckets = new IntArraySet();
 	@JsonIgnore
 	private transient ShardNodeInformation connectedShardNode;
+	@JsonIgnore
+	private transient ObjectWriter communicationWriter;
 
 	@Min(0)
 	private int entityBucketSize;
+
 
 	@Override
 	public WorkerId createId() {
@@ -39,6 +43,6 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 
 	@Override
 	public MessageToShardNode transform(WorkerMessage message) {
-		return new ForwardToWorker(getId(), message);
+		return ForwardToWorker.create(getId(), message, communicationWriter);
 	}
 }

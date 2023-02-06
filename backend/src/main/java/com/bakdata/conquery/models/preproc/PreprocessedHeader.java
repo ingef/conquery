@@ -7,10 +7,13 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.events.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -19,7 +22,8 @@ import lombok.extern.slf4j.Slf4j;
  * @implSpec The Columns and their order must directly match the layout in the data.
  */
 @Data
-@NoArgsConstructor
+@Getter @Setter
+@NoArgsConstructor(onConstructor_ = {@JsonCreator})
 @AllArgsConstructor
 @Slf4j
 public class PreprocessedHeader {

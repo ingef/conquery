@@ -1,17 +1,18 @@
-import React from "react";
-import { useSelector } from "react-redux";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
+import styled from "@emotion/styled";
+import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
-import Tooltip from "../tooltip/Tooltip";
-import ActivateTooltip from "../tooltip/ActivateTooltip";
-
+import { History } from "../entity-history/History";
 import type { TabT } from "../pane/types";
+import Preview from "../preview/Preview";
+import ActivateTooltip from "../tooltip/ActivateTooltip";
+import Tooltip from "../tooltip/Tooltip";
+
+import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
-import DndProvider from "./DndProvider";
-import { StateT } from "app-types";
+import type { StateT } from "./reducers";
 
 // ADDING TO react-split-pane STYLES
 // Because otherwise, vertical panes don't expand properly in Safari
@@ -35,26 +36,36 @@ export interface ContentPropsT {
 
 const Content = ({ rightTabs }: ContentPropsT) => {
   const displayTooltip = useSelector<StateT, boolean>(
-    (state) => state.tooltip.displayTooltip
+    (state) => state.tooltip.displayTooltip,
+  );
+
+  const isPreviewOpen = useSelector<StateT, boolean>(
+    (state) => state.preview.isOpen,
+  );
+
+  const isHistoryOpen = useSelector<StateT, boolean>(
+    (state) => state.entityHistory.isOpen,
   );
 
   return (
     <DndProvider>
       <Root>
+        {isHistoryOpen && <History />}
+        {isPreviewOpen && <Preview />}
         <SplitPane
           split="vertical"
           allowResize={displayTooltip}
           minSize={displayTooltip ? 200 : 30}
           maxSize={600}
-          defaultSize={displayTooltip ? "18%" : 30}
+          defaultSize={displayTooltip ? "15%" : 30}
           className={!displayTooltip ? "SplitPane--tooltip-fixed" : ""}
         >
           {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
           <SplitPane
             split="vertical"
             minSize={350}
-            maxSize={-420}
-            defaultSize="39%"
+            maxSize={-300}
+            defaultSize="42%"
           >
             <LeftPane />
             <RightPane tabs={rightTabs} />

@@ -1,7 +1,8 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.messages.network.MessageToShardNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.ShardNodeNetworkContext;
@@ -14,11 +15,14 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter @Slf4j
 public class RemoveWorker extends MessageToShardNode.Slow {
 
-	private final DatasetId dataset;
+	@NsIdRef
+	private final Dataset dataset;
 	
 	@Override
 	public void react(ShardNodeNetworkContext context) throws Exception {
-		log.info("removing worker for {}", dataset);
-		context.getWorkers().removeWorkersFor(dataset);
+		log.info("Removing worker {}", dataset);
+
+		context.getWorkers().removeWorkerFor(dataset.getId());
+
 	}
 }

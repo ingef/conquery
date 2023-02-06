@@ -16,16 +16,16 @@
             "child":{  
                   
                      "ids":[  
-                        "${dataset}.number"
+                        "number"
                      ],
                      "type":"CONCEPT",
                      "label":"vs",
                      "tables":[  
                         {  
-                           "id":"${dataset}.number.number_connector",
+                           "id":"number.number_connector",
                            "filters":[  
                               {  
-                                 "filter":"${dataset}.number.number_connector.value",
+                                 "filter":"number.number_connector.value",
                                  "type":"REAL_RANGE",
                                  "value":{  
                                     "min": 0,
@@ -44,7 +44,7 @@
    "concepts":[  
       {  
          "label":"number",
-         "type":"VIRTUAL",
+         "type":"TREE",
          "connectors":[  
             {  
                "label":"number_connector",
@@ -53,7 +53,7 @@
                   "label":"datum",
                   "column":"table1.datum"
                },
-               "filter":{  
+               "filters":{
                   "label":"value",
                   "description":"xy",
                   "column":"table1.value",

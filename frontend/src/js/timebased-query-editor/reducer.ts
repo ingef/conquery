@@ -1,83 +1,111 @@
-import { RENAME_PREVIOUS_QUERY_SUCCESS } from "../previous-queries/list/actionTypes";
+import { ActionType, getType } from "typesafe-actions";
+
+import { Action } from "../app/actions";
+import type { DragItemQuery } from "../standard-query-editor/types";
 
 import {
-  BEFORE,
-  DAYS_OR_NO_EVENT_BEFORE,
-  TIMEBASED_OPERATOR_TYPES
-} from "../common/constants/timebasedQueryOperatorTypes";
+  addTimebasedCondition,
+  clearTimebasedQuery,
+  dropTimebasedNode,
+  removeTimebasedCondition,
+  removeTimebasedNode,
+  setTimebasedConditionMaxDays,
+  setTimebasedConditionMinDays,
+  setTimebasedConditionMinDaysOrNoEvent,
+  setTimebasedConditionOperator,
+  setTimebasedIndexResult,
+  setTimebasedNodeTimestamp,
+} from "./actions";
 
-import {
-  EARLIEST,
-  TIMEBASED_TIMESTAMP_TYPES
-} from "../common/constants/timebasedQueryTimestampTypes";
+export type TimebasedTimestampType = "EARLIEST" | "LATEST" | "RANDOM";
 
-import {
-  DROP_TIMEBASED_NODE,
-  REMOVE_TIMEBASED_NODE,
-  SET_TIMEBASED_NODE_TIMESTAMP,
-  SET_TIMEBASED_CONDITION_OPERATOR,
-  SET_TIMEBASED_CONDITION_MIN_DAYS,
-  SET_TIMEBASED_CONDITION_MAX_DAYS,
-  SET_TIMEBASED_CONDITION_MIN_DAYS_OR_NO_EVENT,
-  SET_TIMEBASED_INDEX_RESULT,
-  ADD_TIMEBASED_CONDITION,
-  REMOVE_TIMEBASED_CONDITION,
-  CLEAR_TIMEBASED_QUERY
-} from "./actionTypes";
-
-type ResultType = {
-  id: number;
-  timestamp: $Keys<typeof TIMEBASED_TIMESTAMP_TYPES>;
+export type TimebasedResultType = {
+  id: string;
+  label: string;
+  timestamp: TimebasedTimestampType;
 };
 
-type ConditionType = {
-  operator: $Keys<typeof TIMEBASED_OPERATOR_TYPES>;
-  result0: ResultType | null;
-  result1: ResultType | null;
-};
+export type TimebasedOperatorType =
+  | "BEFORE"
+  | "BEFORE_OR_SAME"
+  | "SAME"
+  | "DAYS_BEFORE"
+  | "DAYS_OR_NO_EVENT_BEFORE";
 
-export type TimebasedQueryStateT = {
-  indexResult: number | null;
-  conditions: ConditionType[];
-};
+export const TIMEBASED_OPERATOR_TYPES: TimebasedOperatorType[] = [
+  "BEFORE",
+  "BEFORE_OR_SAME",
+  "SAME",
+  "DAYS_BEFORE",
+  "DAYS_OR_NO_EVENT_BEFORE",
+];
+
+export interface TimebasedConditionT {
+  operator: TimebasedOperatorType;
+  result0: TimebasedResultType | null;
+  result1: TimebasedResultType | null;
+  minDays?: number | null;
+  maxDays?: number | null;
+  minDaysOrNoEvent?: number | null;
+}
+
+export interface ValidatedTimebasedConditionT extends TimebasedConditionT {
+  result0: TimebasedResultType;
+  result1: TimebasedResultType;
+}
+
+export interface TimebasedQueryStateT {
+  indexResult: string | null;
+  conditions: TimebasedConditionT[];
+}
+
+export interface ValidatedTimebasedQueryStateT extends TimebasedQueryStateT {
+  conditions: ValidatedTimebasedConditionT[];
+}
 
 const getEmptyNode = () => ({
-  operator: BEFORE,
+  operator: "BEFORE" as const,
   result0: null,
-  result1: null
+  result1: null,
 });
 
-const setTimebasedConditionAttributes = (state, action, attributes) => {
-  const { conditionIdx } = action.payload;
-
+const setTimebasedConditionAttributes = (
+  state: TimebasedQueryStateT,
+  conditionIdx: number,
+  attributes: Partial<TimebasedConditionT>,
+) => {
   return {
     ...state,
     conditions: [
       ...state.conditions.slice(0, conditionIdx),
       {
         ...state.conditions[conditionIdx],
-        ...attributes
+        ...attributes,
       },
-      ...state.conditions.slice(conditionIdx + 1)
-    ]
+      ...state.conditions.slice(conditionIdx + 1),
+    ],
   };
 };
 
-const setNode = (state, action, node) => {
-  const { resultIdx } = action.payload;
-
+const setNode = (
+  state: TimebasedQueryStateT,
+  resultIdx: number,
+  conditionIdx: number,
+  node: TimebasedResultType | DragItemQuery,
+) => {
   const attributes = {
     [`result${resultIdx}`]: {
-      ...node,
-      timestamp: node.timestamp || EARLIEST
-    }
+      id: node.id,
+      label: node.label,
+      timestamp: ("timestamp" in node && node.timestamp) || "EARLIEST",
+    } as TimebasedResultType,
   };
 
-  return setTimebasedConditionAttributes(state, action, attributes);
+  return setTimebasedConditionAttributes(state, conditionIdx, attributes);
 };
 
-const conditionResultsToArray = conditions => {
-  return conditions.reduce((results, c) => {
+const conditionResultsToArray = (conditions: TimebasedConditionT[]) => {
+  return conditions.reduce<TimebasedResultType[]>((results, c) => {
     if (c.result0) results.push(c.result0);
     if (c.result1) results.push(c.result1);
 
@@ -85,22 +113,25 @@ const conditionResultsToArray = conditions => {
   }, []);
 };
 
-const getPossibleIndexResults = conditions => {
-  return conditions.reduce((possibleResults, condition, i) => {
-    if (condition.operator === DAYS_OR_NO_EVENT_BEFORE && condition.result1)
-      possibleResults.push(condition.result1);
+const getPossibleIndexResults = (conditions: TimebasedConditionT[]) => {
+  return conditions.reduce<TimebasedResultType[]>(
+    (possibleResults, condition) => {
+      if (condition.operator === "DAYS_OR_NO_EVENT_BEFORE" && condition.result1)
+        possibleResults.push(condition.result1);
 
-    if (condition.operator !== DAYS_OR_NO_EVENT_BEFORE && condition.result0)
-      possibleResults.push(condition.result0);
+      if (condition.operator !== "DAYS_OR_NO_EVENT_BEFORE" && condition.result0)
+        possibleResults.push(condition.result0);
 
-    if (condition.operator !== DAYS_OR_NO_EVENT_BEFORE && condition.result1)
-      possibleResults.push(condition.result1);
+      if (condition.operator !== "DAYS_OR_NO_EVENT_BEFORE" && condition.result1)
+        possibleResults.push(condition.result1);
 
-    return possibleResults;
-  }, []);
+      return possibleResults;
+    },
+    [],
+  );
 };
 
-const ensureIndexResult = state => {
+const ensureIndexResult = (state: TimebasedQueryStateT) => {
   // Return if there is already an indexResult
   if (state.indexResult) return state;
 
@@ -121,25 +152,41 @@ const ensureIndexResult = state => {
   return { ...state, indexResult: null };
 };
 
-const dropTimebasedNode = (state, action) => {
-  const { node } = action.payload;
-  const stateWithNode = setNode(state, action, node);
+const onDropTimebasedNode = (
+  state: TimebasedQueryStateT,
+  {
+    node,
+    resultIdx,
+    conditionIdx,
+    moved,
+  }: ActionType<typeof dropTimebasedNode>["payload"],
+) => {
+  const stateWithNode = setNode(state, resultIdx, conditionIdx, node);
 
-  return node.moved ? stateWithNode : ensureIndexResult(stateWithNode);
+  return moved ? stateWithNode : ensureIndexResult(stateWithNode);
 };
 
-const removeTimebasedNode = (state, action) => {
-  const { conditionIdx, resultIdx, moved } = action.payload;
-  const node = state.conditions[conditionIdx][`result${resultIdx}`];
+const onRemoveTimebasedNode = (
+  state: TimebasedQueryStateT,
+  {
+    conditionIdx,
+    resultIdx,
+    moved,
+  }: ActionType<typeof removeTimebasedNode>["payload"],
+) => {
+  const condition = state.conditions[conditionIdx];
+  const node = resultIdx === 0 ? condition.result0 : condition.result1;
+
+  if (!node) return state;
 
   const attributes = {
-    [`result${resultIdx}`]: null
+    [`result${resultIdx}`]: null,
   };
 
   const stateWithoutNode = setTimebasedConditionAttributes(
     state,
-    action,
-    attributes
+    conditionIdx,
+    attributes,
   );
 
   if (moved) return stateWithoutNode;
@@ -153,33 +200,46 @@ const removeTimebasedNode = (state, action) => {
   return ensureIndexResult(nextState);
 };
 
-const setTimebasedNodeTimestamp = (state, action) => {
-  const { conditionIdx, resultIdx, timestamp } = action.payload;
-
+const onSetTimebasedNodeTimestamp = (
+  state: TimebasedQueryStateT,
+  {
+    conditionIdx,
+    resultIdx,
+    timestamp,
+  }: ActionType<typeof setTimebasedNodeTimestamp>["payload"],
+) => {
+  const condition = state.conditions[conditionIdx];
+  const node = resultIdx === 0 ? condition.result0 : condition.result1;
   const attributes = {
     [`result${resultIdx}`]: {
-      ...state.conditions[conditionIdx][`result${resultIdx}`],
-      timestamp
-    }
+      ...node,
+      timestamp,
+    },
   };
 
-  return setTimebasedConditionAttributes(state, action, attributes);
+  return setTimebasedConditionAttributes(state, conditionIdx, attributes);
 };
 
-const setTimebasedConditionOperator = (state, action) => {
-  const { conditionIdx, operator } = action.payload;
-
+const onSetTimebasedConditionOperator = (
+  state: TimebasedQueryStateT,
+  {
+    conditionIdx,
+    operator,
+  }: ActionType<typeof setTimebasedConditionOperator>["payload"],
+) => {
   // Check if we're not switching to DAYS_OR_NO_EVENT_BEFORE. Then we're good.
   // But IF IN FACT we do, check if the indexResult is somewhere else than on the left result
   // Then we're also good.
-  const nextState = setTimebasedConditionAttributes(state, action, {
-    operator
+  const nextState = setTimebasedConditionAttributes(state, conditionIdx, {
+    operator,
   });
 
+  const { result0 } = state.conditions[conditionIdx];
+
   if (
-    operator !== DAYS_OR_NO_EVENT_BEFORE ||
-    !state.conditions[conditionIdx].result0 ||
-    state.conditions[conditionIdx].result0.id !== state.indexResult
+    operator !== "DAYS_OR_NO_EVENT_BEFORE" ||
+    !result0 ||
+    result0.id !== state.indexResult
   )
     return nextState;
 
@@ -197,55 +257,74 @@ const setTimebasedConditionOperator = (state, action) => {
     : // Nice, take the first result
       {
         ...nextState,
-        indexResult: possibleResults[0].id
+        indexResult: possibleResults[0].id,
       };
 };
 
-const setTimebasedConditionMinDays = (state, action) => {
-  const { days } = action.payload;
-
-  return setTimebasedConditionAttributes(state, action, { minDays: days });
-};
-
-const setTimebasedConditionMaxDays = (state, action) => {
-  const { days } = action.payload;
-
-  return setTimebasedConditionAttributes(state, action, { maxDays: days });
-};
-
-const setTimebasedConditionMinDaysOrNoEvent = (state, action) => {
-  const { days } = action.payload;
-
-  return setTimebasedConditionAttributes(state, action, {
-    minDaysOrNoEvent: days
+const onSetTimebasedConditionMinDays = (
+  state: TimebasedQueryStateT,
+  {
+    days,
+    conditionIdx,
+  }: ActionType<typeof setTimebasedConditionMinDays>["payload"],
+) => {
+  return setTimebasedConditionAttributes(state, conditionIdx, {
+    minDays: days,
   });
 };
 
-const setTimebasedIndexResult = (state, action) => {
-  const { indexResult } = action.payload;
+const onSetTimebasedConditionMaxDays = (
+  state: TimebasedQueryStateT,
+  {
+    days,
+    conditionIdx,
+  }: ActionType<typeof setTimebasedConditionMaxDays>["payload"],
+) => {
+  return setTimebasedConditionAttributes(state, conditionIdx, {
+    maxDays: days,
+  });
+};
 
+const onSetTimebasedConditionMinDaysOrNoEvent = (
+  state: TimebasedQueryStateT,
+  {
+    days,
+    conditionIdx,
+  }: ActionType<typeof setTimebasedConditionMinDaysOrNoEvent>["payload"],
+) => {
+  return setTimebasedConditionAttributes(state, conditionIdx, {
+    minDaysOrNoEvent: days,
+  });
+};
+
+const onSetTimebasedIndexResult = (
+  state: TimebasedQueryStateT,
+  { indexResult }: ActionType<typeof setTimebasedIndexResult>["payload"],
+) => {
   return {
     ...state,
-    indexResult
+    indexResult,
   };
 };
 
-const addTimebasedCondition = (state, action) => {
+const onAddTimebasedCondition = (state: TimebasedQueryStateT) => {
   return {
     ...state,
-    conditions: [...state.conditions, getEmptyNode()]
+    conditions: [...state.conditions, getEmptyNode()],
   };
 };
 
-const removeTimebasedCondition = (state, action) => {
-  const { conditionIdx } = action.payload;
+const onRemoveTimebasedCondition = (
+  state: TimebasedQueryStateT,
+  { conditionIdx }: ActionType<typeof removeTimebasedCondition>["payload"],
+) => {
   const deletedCondition = state.conditions[conditionIdx];
   const nextState = {
     ...state,
     conditions: [
       ...state.conditions.slice(0, conditionIdx),
-      ...state.conditions.slice(conditionIdx + 1)
-    ]
+      ...state.conditions.slice(conditionIdx + 1),
+    ],
   };
 
   // if no node was indexed
@@ -264,32 +343,9 @@ const removeTimebasedCondition = (state, action) => {
   return ensureIndexResult({ ...nextState, indexResult: null });
 };
 
-const renamePreviousQueries = (state, action) => {
-  return {
-    ...state,
-    conditions: state.conditions.map(c => {
-      const result0 =
-        c.result0 && c.result0.id === action.payload.queryId
-          ? { ...c.result0, label: action.payload.label }
-          : c.result0;
-
-      const result1 =
-        c.result1 && c.result1.id === action.payload.queryId
-          ? { ...c.result1, label: action.payload.label }
-          : c.result1;
-
-      return {
-        ...c,
-        result0,
-        result1
-      };
-    })
-  };
-};
-
 const initialState = {
   indexResult: null,
-  conditions: [getEmptyNode()]
+  conditions: [getEmptyNode()],
 };
 
 // This state contains multiple and-conditions.
@@ -339,32 +395,30 @@ const initialState = {
 // }
 const timebasedQuery = (
   state: TimebasedQueryStateT = initialState,
-  action: Object
+  action: Action,
 ): TimebasedQueryStateT => {
   switch (action.type) {
-    case DROP_TIMEBASED_NODE:
-      return dropTimebasedNode(state, action);
-    case REMOVE_TIMEBASED_NODE:
-      return removeTimebasedNode(state, action);
-    case SET_TIMEBASED_NODE_TIMESTAMP:
-      return setTimebasedNodeTimestamp(state, action);
-    case SET_TIMEBASED_CONDITION_OPERATOR:
-      return setTimebasedConditionOperator(state, action);
-    case SET_TIMEBASED_CONDITION_MIN_DAYS:
-      return setTimebasedConditionMinDays(state, action);
-    case SET_TIMEBASED_CONDITION_MAX_DAYS:
-      return setTimebasedConditionMaxDays(state, action);
-    case SET_TIMEBASED_CONDITION_MIN_DAYS_OR_NO_EVENT:
-      return setTimebasedConditionMinDaysOrNoEvent(state, action);
-    case SET_TIMEBASED_INDEX_RESULT:
-      return setTimebasedIndexResult(state, action);
-    case ADD_TIMEBASED_CONDITION:
-      return addTimebasedCondition(state, action);
-    case REMOVE_TIMEBASED_CONDITION:
-      return removeTimebasedCondition(state, action);
-    case RENAME_PREVIOUS_QUERY_SUCCESS:
-      return renamePreviousQueries(state, action);
-    case CLEAR_TIMEBASED_QUERY:
+    case getType(dropTimebasedNode):
+      return onDropTimebasedNode(state, action.payload);
+    case getType(removeTimebasedNode):
+      return onRemoveTimebasedNode(state, action.payload);
+    case getType(setTimebasedNodeTimestamp):
+      return onSetTimebasedNodeTimestamp(state, action.payload);
+    case getType(setTimebasedConditionOperator):
+      return onSetTimebasedConditionOperator(state, action.payload);
+    case getType(setTimebasedConditionMinDays):
+      return onSetTimebasedConditionMinDays(state, action.payload);
+    case getType(setTimebasedConditionMaxDays):
+      return onSetTimebasedConditionMaxDays(state, action.payload);
+    case getType(setTimebasedConditionMinDaysOrNoEvent):
+      return onSetTimebasedConditionMinDaysOrNoEvent(state, action.payload);
+    case getType(setTimebasedIndexResult):
+      return onSetTimebasedIndexResult(state, action.payload);
+    case getType(addTimebasedCondition):
+      return onAddTimebasedCondition(state);
+    case getType(removeTimebasedCondition):
+      return onRemoveTimebasedCondition(state, action.payload);
+    case getType(clearTimebasedQuery):
       return initialState;
     default:
       return state;

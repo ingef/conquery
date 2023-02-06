@@ -3,10 +3,15 @@
 <#import "templates/permissionCreator.html.ftl" as permissionCreator>
 
 <@layout.layout>
+<div class="container">
 	<div class="row">
 		<div class="col">
-			<h2>Role: ${c.owner.label}</h2>
-			<h3>Id: ${c.owner.id}</h3>
+		<h2>Role ${c.owner.label}</h2>
+		<small class="text-muted">${c.owner.id}</small>
+		</div>
+	</div>
+	<div class="row pt-3">
+		<div class="col">
 
 			<ul class="nav nav-tabs" id="myTab" role="tablist">
 				<li class="nav-item">
@@ -37,8 +42,8 @@
 				<div class="tab-pane fade" id="owners" role="tabpanel" aria-labelledby="owners-tab">
 
 					<div class="row">
-						<div class="col">
-							<table class="table table-striped">
+						<div class="col table-responsive">
+							<table class="table table-sm table-striped">
 								<thead>
 									<tr>
 										<th scope="col">User</th>
@@ -56,8 +61,8 @@
 							</table>
 						</div>
 
-						<div class="col">
-							<table class="table table-striped">
+						<div class="col table-responsive">
+							<table class="table table-sm table-striped">
 								<thead>
 									<tr>
 										<th scope="col">Groups</th>
@@ -78,4 +83,6 @@
 				</div>
 			</div>
 		</div>
+	</div>
+</div>
 </@layout.layout>

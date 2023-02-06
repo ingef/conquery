@@ -1,78 +1,107 @@
 package com.bakdata.conquery.models.query;
 
+import static com.bakdata.conquery.models.error.ConqueryError.asConqueryError;
+
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
+import com.bakdata.conquery.models.worker.Worker;
 import com.google.common.util.concurrent.MoreExecutors;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class QueryExecutor implements Closeable {
 
+	private final Worker worker;
+
 	private final ThreadPoolExecutor executor;
-	private final ListeningExecutorService pool;
-	
-	public QueryExecutor(ThreadPoolExecutor executor) {
-		this.executor = executor;
-		this.pool = MoreExecutors.listeningDecorator(executor);
+
+	private final Set<ManagedExecutionId> cancelledQueries = new HashSet<>();
+
+	public void unsetQueryCancelled(ManagedExecutionId query) {
+		cancelledQueries.remove(query);
 	}
 
-	// TODO inline Entry key/value as id and QueryPlan
-	public ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry) {
-		return execute(result, context, entry, pool);
+	public void setQueryCancelled(ManagedExecutionId query) {
+		cancelledQueries.add(query);
 	}
 
-	public static ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry, ListeningExecutorService executor) {
-		ManagedExecutionId executionId = entry.getKey();
-		Collection<Entity> entries = context.getBucketManager().getEntities().values();
+	public boolean isCancelled(ManagedExecutionId query) {
+		return cancelledQueries.contains(query);
+	}
 
-		if(entries.isEmpty()) {
-			log.warn("entries for query {} are empty", executionId);
+	public boolean execute(Query query, QueryExecutionContext executionContext, ShardResult result, Set<Entity> entities) {
+
+		final ThreadLocal<QueryPlan<?>> plan = ThreadLocal.withInitial(() -> query.createQueryPlan(new QueryPlanContext(worker)));
+
+		if (entities.isEmpty()) {
+			log.warn("Entities for query are empty");
 		}
 
-		QueryPlan queryPlan = entry.getValue();
-		List<ListenableFuture<EntityResult>> futures = new ArrayList<>();
+		try {
+			// We log the QueryPlan once for debugging purposes.
+			if (log.isDebugEnabled()) {
+				log.debug("QueryPlan for Query[{}] = `{}`", result.getQueryId(), plan.get());
+			}
 
-		for (Entity entity : entries) {
-			QueryJob queryJob = new QueryJob(context, queryPlan, entity);
-			ListenableFuture<EntityResult> submit = executor.submit(queryJob);
-			futures.add(submit);
+			final List<CompletableFuture<Optional<EntityResult>>> futures =
+					entities.stream()
+							.map(entity -> new QueryJob(executionContext, plan, entity))
+							.map(job -> CompletableFuture.supplyAsync(job, executor))
+							.collect(Collectors.toList());
+
+			final CompletableFuture<Void> allDone = CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
+
+			allDone.thenApply((ignored) -> futures.stream()
+												  .map(CompletableFuture::join)
+												  .flatMap(Optional::stream)
+												  .collect(Collectors.toList()))
+				   .whenComplete((results, exc) -> result.finish(Objects.requireNonNullElse(results, Collections.emptyList()), Optional.ofNullable(exc), worker));
+
+
+			return true;
 		}
+		catch (Exception e) {
+			ConqueryError err = asConqueryError(e);
+			log.warn("Error while executing {}", executionContext.getExecutionId(), err);
+			sendFailureToManagerNode(result, asConqueryError(err));
+			return false;
+		}
+	}
 
-		ListenableFuture<List<EntityResult>> future = Futures.allAsList(futures);
-		result.setFuture(future);
-		future.addListener(result::finish, MoreExecutors.directExecutor());
-		return result;
+	public void sendFailureToManagerNode(ShardResult result, ConqueryError error) {
+		result.finish(Collections.emptyList(), Optional.of(error), worker);
 	}
 
 	@Override
 	public void close() throws IOException {
-		pool.shutdown();
-		try {
-			boolean success = pool.awaitTermination(1, TimeUnit.DAYS);
-			if (!success && log.isDebugEnabled()) {
-				log.error("Timeout has elapsed before termination completed for executor {}", pool);
-			}
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+		boolean success = MoreExecutors.shutdownAndAwaitTermination(executor, Duration.of(1, ChronoUnit.DAYS));
+		if (!success && log.isDebugEnabled()) {
+			log.error("Timeout has elapsed before termination completed for executor {}", executor);
 		}
 	}
-	
-	public boolean isBusy () {
+
+	public boolean isBusy() {
 		// This might not be super accurate (see the Documentation of ThreadPoolExecutor)
 		return executor.getActiveCount() != 0 || !executor.getQueue().isEmpty();
 	}

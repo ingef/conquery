@@ -38,9 +38,6 @@ public class ConceptPermission extends StringPermissionBuilder {
 	}
 
 	//// Helper functions
-	public static ConqueryPermission onInstance(Ability ability, ConceptId instance) {
-		return INSTANCE.instancePermission(ability, instance);
-	}
 
 	public static ConqueryPermission onInstance(Set<Ability> abilities, ConceptId instance) {
 		return INSTANCE.instancePermission(abilities, instance);

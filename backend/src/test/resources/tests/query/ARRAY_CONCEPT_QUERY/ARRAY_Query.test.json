@@ -3,21 +3,22 @@
     "label": "ARRAY_CONCEPT_QUERY Test",
     "expectedCsv": "tests/query/ARRAY_CONCEPT_QUERY/expected.csv",
     "query": {
-		"type": "ARRAY_CONCEPT_QUERY",
+        "type": "ARRAY_CONCEPT_QUERY",
+        "dateAggregationMode": "MERGE",
         "childQueries": [
             {
                 "type": "CONCEPT_QUERY",
                 "root": {
                     "ids": [
-                        "${dataset}.select"
+                        "select"
                     ],
                     "type": "CONCEPT",
                     "label": "select",
                     "tables": [
                         {
-                            "id": "${dataset}.select.connector",
+                            "id": "select.connector",
                             "selects": [
-                                "${dataset}.select.connector.count_genders"
+                                "select.connector.count_genders"
                             ]
                         }
                     ]
@@ -27,17 +28,17 @@
                 "type": "CONCEPT_QUERY",
                 "root": {
                     "ids": [
-                        "${dataset}.select"
+                        "select"
                     ],
                     "type": "CONCEPT",
                     "label": "select",
                     "tables": [
                         {
-							"id": "${dataset}.select.connector",
+							"id": "select.connector",
 							"filters":[
 								{
 								"type": "INTEGER_RANGE",
-								"filter":"${dataset}.select.connector.geschlecht",
+								"filter":"select.connector.geschlecht",
 								"value": {
 									"min": 2,
 									"max": 6
@@ -45,7 +46,7 @@
 							}
 							],
                             "selects": [
-                                "${dataset}.select.connector.count_genders"
+                                "select.connector.count_genders"
                             ]
                         }
                     ]
@@ -56,7 +57,7 @@
     "concepts": [
         {
             "label": "select",
-            "type": "VIRTUAL",
+            "type": "TREE",
             "connectors": [
                 {
                     "label": "connector",
@@ -65,7 +66,7 @@
                         "label": "datum",
                         "column": "table1.datum"
 					},
-					"filter": {
+					"filters": {
 						"label": "geschlecht",
 						"type": "COUNT",
 						"column": "table1.geschlecht",

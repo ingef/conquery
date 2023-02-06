@@ -1,0 +1,49 @@
+{
+	"type": "FORM_TEST",
+	"label": "WITH SELECT SET Test",
+	"expectedCsv": {
+		"results": "tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/expected_with_select.csv"
+	},
+	"form": {
+		"type": "EXPORT_FORM",
+		"queryGroup": "00000000-0000-0000-0000-000000000001",
+		"resolution": "QUARTERS",
+		"alsoCreateCoarserSubdivisions": true,
+		"features": [
+			{
+				"ids": [
+					"two_connector"
+				],
+				"type": "CONCEPT",
+				"label": "explicitly set select",
+				"tables": [
+					{
+						"id": "two_connector.table1",
+						"selects": "two_connector.table1.liste_geburtsdatum"
+					},
+					{
+						"id": "two_connector.table2"
+					}
+				]
+			}
+		],
+		"timeMode": {
+			"value": "ENTITY_DATE",
+			"dateRange": {
+				"min": "2012-03-01",
+				"max": "2020-12-17"
+			}
+		}
+	},
+	"concepts": [
+		"/tests/form/shared/two_connector.concept.json"
+	],
+	"content": {
+		"tables": [
+			"/tests/form/shared/vers_stamm.table.json"
+		],
+		"previousQueryResults": [
+			"tests/form/EXPORT_FORM/ENTITY_DATE/SIMPLE/query_results_1.csv"
+		]
+	}
+}

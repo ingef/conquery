@@ -1,14 +1,18 @@
 {
   "locale": "de",
   "headline": "Anfragen und Analyse",
+  "error": {
+    "sorry": "Das hat leider nicht geklappt",
+    "description": "Versuche es noch einmal. Falls es erneut nicht klappt, bitte hinterlasse uns eine Nachricht, damit wir dieses Problem beheben können.",
+    "reload": "Seite vollständig neu laden"
+  },
   "errorCodes": {
     "EXAMPLE_ERROR": "Dies ist eine Beispiel-Fehlermeldung",
-    "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {adjective} Beispiel-Fehlermeldung"
+    "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {{adjective}} Beispiel-Fehlermeldung"
   },
   "leftPane": {
-    "conceptTrees": "Konzeptbäume",
-    "previousQueries": "Anfragen",
-    "formConfigs": "Formulare"
+    "conceptTrees": "Konzepte",
+    "previousQueries": "Anfragen und Formulare"
   },
   "rightPane": {
     "queryEditor": "Editor",
@@ -16,10 +20,10 @@
     "externalForms": "Formular-Editor"
   },
   "conceptTreeList": {
-    "loading": "Lade Konzeptbäume",
-    "loadingTree": "Lade Konzeptbaum: {tree}",
-    "error": "Konnte Konzeptbaum {tree} nicht laden.",
-    "noTrees": "Keine Konzeptbäume",
+    "loading": "Lade Konzepte",
+    "loadingTree": "Lade Konzept: {{tree}}",
+    "error": "Konnte Konzept {{tree}} nicht laden.",
+    "noTrees": "Keine Konzepte",
     "noTreesExplanation": "Wahrscheinlich ist beim Laden etwas schiefgelaufen. Bitte erneut laden.",
     "openAll": "Alle aufklappen",
     "closeAll": "Einzeln aufklappen",
@@ -55,63 +59,88 @@
     "loadingPreviousQuery": "Lade Anfragedetails",
     "secondaryId": "Analyse-Ebene",
     "secondaryIdStandard": "Standard",
-    "hasSecondaryId": "Analyse-Ebene aktiv"
+    "hasSecondaryId": "Analyse-Ebene aktiv",
+    "removeNode": "Knoten entfernen",
+    "removeColumn": "Spalte entfernen",
+    "clear": "Editor-Oberfläche zurücksetzen",
+    "clearConfirm": "Jetzt zurücksetzen",
+    "hasDefaultSettings": "Standardeinstellungen",
+    "hasNonDefaultSettings": "Eigene Einstellungen"
+  },
+  "expandPreviousQueryModal": {
+    "headline": "Anfrage wirklich expandieren?",
+    "description": "Beim Klick auf Expandieren werden alle Konzepte innerhalb des Editors durch die Inhalte der expandierten Anfrage ersetzt. Bist Du dir sicher?",
+    "submit": "Expandieren"
   },
   "dropzone": {
     "dragElementPlease": "Füge ein Element hinzu",
     "dragQuery": "Füge eine Anfrage hinzu",
     "explanation": "In diesem Bereich erstellst Du eine Anfrage",
-    "drop": "Ziehe",
+    "dropIntoThisArea": "Zum Starten, ziehe Folgendes hinein",
     "aConcept": "ein Konzept",
     "aQuery": "eine Anfrage",
-    "aConceptList": "eine Konzeptliste",
-    "intoThisArea": "in diesen Bereich"
+    "aConceptList": "eine Konzeptliste"
   },
   "datasetSelector": {
-    "pleaseChoose": "Datenbank auswählen",
-    "error": "Konnte Datenbanken nicht laden"
+    "label": "Datensatz",
+    "pleaseChoose": "Datensatz auswählen",
+    "error": "Konnte Datensätze nicht laden",
+    "disabled": "Der Datensatz kann gerade nicht verändert werden."
   },
   "queryNodeEditor": {
-    "conceptTree": "Konzeptbaum",
+    "conceptTree": "Konzept",
     "queryNode": "Abfrageknoten",
     "conceptNodes": "Konzeptknoten",
-    "conceptNodeTables": "Anfragetabellen",
-    "properties": "Eigenschaften",
+    "conceptNodeTables": "Quellen",
+    "properties": "Allgemeine Einstellungen",
     "reset": "Zurücksetzen",
-    "resetSettings": "Änderungen zurücksetzen",
+    "resetSettings": "Auf Standard zurücksetzen",
+    "clearAllSettings": "Alle Felder leeren",
+    "clearAllSettingsConfirm": "Jetzt leeren",
+    "clearSettings": "Felder leeren",
     "excludeTimestamps": "Von Zeitberechnung ausschließen",
     "excludingTimestamps": "Von Zeitberechnung ausgeschlossen",
-    "excludeFromSecondaryIdQuery": "Von Analyse-Ebene ausschließen",
-    "excludingFromSecondaryIdQuery": "Von Analyse-Ebene ausgeschlossen",
+    "excludeFromSecondaryId": "Von Analyse-Ebene ausschließen",
+    "excludingFromSecondaryId": "Von Analyse-Ebene ausgeschlossen",
     "description": "Beschreibung",
     "noDescriptionProvided": "Keine Beschreibung verfügbar.",
     "selectAFilter": "Kein Filter ausgewählt.",
-    "dropConcept": "Füge ein weiteres Konzept hinzu",
+    "dropConcept": "Füge weitere Elemente des selben Konzeptes hinzu",
     "includeSubnodes": "Untergeordnete Konzepte einbeziehen",
-    "tooManyValues": "{count} Werte ausgewählt",
+    "tooManyValues": "{{count}} Werte ausgewählt",
     "filters": "Filter",
-    "selects": "Zusatzwerte",
+    "selects": "Ausgabewerte",
+    "commonSelects": "Allgemeine Ausgabewerte",
     "nodeNotFound": "Konzept nicht gefunden",
     "selectValidityDate": "Relevanter Zeitraum",
-    "dateColumn": "Datumsspalte"
+    "dateColumn": "Datumsspalte",
+    "dropMoreConcepts": "Konzepte im Knoten",
+    "emptyMenuColumn": "Keine weiteren Einstellungen"
   },
   "queryGroupModal": {
     "explanation": "Zeitlich einschränken",
     "dateRange": "Datumsbereich",
     "headlineStart": "Konzepte:"
   },
-  "deletePreviousQueryModal": {
-    "areYouSure": "Diese Anfrage wirklich löschen?"
+  "deletePreviousQueryFolderModal": {
+    "areYouSure": "Diesen Ordner wirklich löschen?",
+    "description": "Alle Anfragen aus dem Ordner {{folder}} werden aus dem Ordner entfernt, bleiben aber gespeichert."
   },
   "sharePreviousQueryModal": {
-    "headline": "Anfrage freigeben: ",
-    "groupsLabel": "Gruppen mit denen die Anfrage geteilt werden soll",
+    "headline": "Freigabe bearbeiten",
+    "groupsLabelQuery": "Gruppen mit denen die Anfrage geteilt wird",
+    "groupsLabelConfig": "Gruppen mit denen die Formular-Einstellung geteilt wird",
     "unshare": "Freigabe aufheben"
   },
   "common": {
+    "manual": "Handbuch",
+    "contact": "Kontakt",
+    "confirm": "Bestätigen",
+    "optional": "Optional",
     "back": "Zurück",
     "any": "Beliebig",
     "save": "Speichern",
+    "saveAndCloseEsc": "Speichern und Schließen (ESC)",
     "edit": "Bearbeiten",
     "cancel": "Abbrechen",
     "delete": "Löschen",
@@ -122,11 +151,11 @@
     "timeUnitDays": "Tage",
     "title": "Titel",
     "description": "Beschreibung",
-    "clearAll": "Alle entfernen",
     "clearValue": "Wert entfernen",
     "closeEsc": "Schließen (ESC)",
+    "close": "Schließen",
     "create": "Erstellen",
-    "addTag": "Schlagwort hinzufügen",
+    "addTag": "Zu Ordner hinzufügen",
     "share": "Freigeben",
     "shared": "Freigegeben",
     "loading": "Lade ...",
@@ -135,32 +164,24 @@
     "min": "Min",
     "max": "Max",
     "std": "Std.",
-    "logout": "Ausloggen"
+    "logout": "Ausloggen",
+    "dateInvalid": "Ungültiges Datum",
+    "missingLabel": "Unbenannt",
+    "import": "Importieren",
+    "openFileDialog": "Datei auswählen"
   },
   "tooltip": {
     "headline": "Info",
     "placeholder": "Weitere Informationen zu Konzepten ...",
-    "entriesFound": {
-      "1": "Eintrag",
-      "_": "Einträge"
-    },
+    "entitiesFound_one": "Entität",
+    "entitiesFound_other": "Entitäten",
+    "entriesFound_one": "Eintrag",
+    "entriesFound_other": "Einträge",
     "date": {
       "daterange": "Zeitraum",
       "from": "Von",
       "to": "Bis"
     }
-  },
-  "reactSelect": {
-    "placeholder": "Auswählen ...",
-    "tagPlaceholder": "Schlagwort ...",
-    "searchPlaceholder": "Suchen ...",
-    "dndPlaceholder": "Auswählen oder Datei hochladen ...",
-    "backspaceToRemove": "Backspace zum Entfernen drücken",
-    "noResults": "Keine Werte gefunden",
-    "createTag": "Schlagwort erstellen: {label}",
-    "searchFor": "Suchen nach: {label}",
-    "clearAll": "Alle entfernen",
-    "clearValue": "Wert entfernen"
   },
   "inputRange": {
     "range": "Bereich",
@@ -176,34 +197,50 @@
     "today": "Heute",
     "dateFormat": "dd.MM.yyyy",
     "tooltip": {
-      "possiblePattern": "j2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
+      "possiblePattern": "Folgende Abkürzungen sind erlaubt <table><tr><td>m8.2020</td><td>von 01.08.2020<br/>bis 31.08.2020</td></tr><tr><td>q2.2020</td><td>von 01.04.2020<br/>bis 30.06.2020</td></tr><tr><td>j2020 j.2020</td><td>von 01.01.2020<br/>bis 31.12.2020</td></tr></table>"
     }
   },
+  "inputSelect": {
+    "placeholder": "Auswählen ...",
+    "searchPlaceholder": "Suchen ...",
+    "empty": "Keine Werte gefunden"
+  },
   "inputMultiSelect": {
-    "openFileDialog": "Datei auswählen",
+    "dndPlaceholder": "Auswählen oder Datei hochladen ...",
     "insertAll": "Alle einfügen",
-    "options": "Werte"
+    "options_one": "1 Wert",
+    "options_other": "{{count}} Werte",
+    "ofTotal": " von {{count}}",
+    "tagPlaceholder": "Ordner ...",
+    "createTag": "Zu Ordner hinzufügen: {{label}}"
   },
   "previousQueries": {
-    "loading": "Lade Anfragen",
+    "loading": "Lade Anfragen und Formulare",
     "error": "Konnte Anfragen nicht laden",
     "results": "Ergebnisse",
-    "noQueriesFound": "Keine Anfragen gefunden"
+    "noQueriesFound": "Keine Anfragen / Formulare gefunden",
+    "searchPlaceholder": "Anfragen und Formulare durchsuchen ..."
   },
   "previousQuery": {
     "notExecuted": "Noch nicht ausgeführt",
     "downloadResults": "Ergebnisse herunterladen",
     "loadError": "Konnte Anfrage nicht laden",
     "renameError": "Konnte Anfrage nicht umbenennen",
-    "retagError": "Konnte Schlagwörter nicht speichern",
+    "retagError": "Konnte Ordner nicht speichern",
     "shareError": "Konnte Anfrage nicht freigeben",
-    "deleteError": "Konnte Anfrage nicht löschen"
+    "deleteError": "Konnte Anfrage nicht löschen",
+    "editFolders": "Ordner bearbeiten",
+    "deleteNow": "Anfrage jetzt löschen"
   },
-  "previousQueriesFilter": {
+  "projectItemsFilter": {
     "all": "Alle",
     "own": "Eigene",
     "shared": "Freigegeben",
     "system": "SYSTEM"
+  },
+  "projectItemsTypeFilter": {
+    "queries": "Nur Anfragen",
+    "configs": "Nur Formulare"
   },
   "formConfigsFilter": {
     "activeForm": "Aktives Formular"
@@ -226,12 +263,8 @@
     "maxDaysLabel": "Ende Tage"
   },
   "externalForms": {
+    "manualButton": "Hilfe zum Formular im Handbuch öffnen",
     "forms": "Formulare",
-    "config": {
-      "headline": "Formular-Konfiguration",
-      "save": "Speichern",
-      "saveError": "Konnte Formular-Konfiguration nicht speichern"
-    },
     "formValidation": {
       "mustBePositiveNumber": "Muss positive Zahl sein",
       "isRequired": "Erforderlich",
@@ -279,19 +312,23 @@
         "copyFrom": "Kopieren von ...",
         "copying": "Kopieren"
       },
-      "clear": "Formular leeren"
+      "clear": "Formular leeren",
+      "clearConfirm": "Formular jetzt leeren"
     }
   },
   "uploadQueryResultsModal": {
     "headline": "Ergebnisliste hochladen",
     "dropzone": "Lege eine CSV-Datei hier ab",
     "upload": "Hochladen",
-    "uploadFailed": "Konnte Datei nicht hochladen",
-    "uploadFailedSub": "Bitte überprüfen Sie das Format und die Netzwerkverbindung",
-    "uploadSucceeded": "Ergebnisliste hochladen erfolgreich",
+    "uploadAgain": "Erneut hochladen",
+    "uploadFailed": "Datei konnte nicht hochgeladen werden. Bitte überprüfe das Dateiformat und die Netzwerkverbindung.",
+    "uploadSucceeded_one": "Alle Zeilen (1 Zeile) wurden erfolgreich hochgeladen.",
+    "uploadSucceeded_other": "Alle {{count}} Zeilen wurden erfolgreich hochgeladen.",
     "formatInfo": {
       "text": "Datei sollte ein Ergebnis pro Zeile enthalten, getrennt mit ; (Semikolon)"
-    }
+    },
+    "downloadUnresolved_one": "Eine Unauflösbare Zeile herunterladen (CSV)",
+    "downloadUnresolved_other": "{{ count }} Unauflösbare Zeilen herunterladen (CSV)"
   },
   "csvColumnPicker": {
     "loading": "Lese Daten ...",
@@ -300,25 +337,29 @@
     "colon": "Doppelpunkt",
     "comma": "Komma",
     "id": "ID",
-    "dateSet": "DATUMSBEREICH",
-    "startDate": "START_DATUM",
-    "endDate": "END_DATUM",
-    "ignore": "IGNORIEREN"
+    "dateSet": "Datumswerte",
+    "startDate": "Startdatum",
+    "endDate": "Enddatum",
+    "extra": "Zusatzspalte",
+    "ignore": "Ignorieren",
+    "partialSuccess": "Hochladen teilweise erfolgreich.",
+    "resolved_one": "1 Zeile aufgelöst.",
+    "resolved_other": "{{count}} Zeilen aufgelöst.",
+    "unreadableDate_one": "Datum nicht lesbar in der folgenden Zeile",
+    "unreadableDate_other": "Datum nicht lesbar in den folgenden {{count}} Zeilen",
+    "unresolvedId_one": "ID nicht auflösbar in der folgenden Zeile",
+    "unresolvedId_other": "ID nicht auflösbar in den folgenden {{count}} Zeilen"
   },
   "uploadConceptListModal": {
     "headline": "Konzepte aus Liste einfügen",
     "label": "Name der Liste",
-    "selectConceptRootNode": "Konzeptbaum-Wurzel auswählen",
+    "selectConceptRootNode": "Auflösen als Konzeptliste, oder als Filterliste in einem Konzept",
     "insertNode": "Jetzt einfügen",
     "result": "Ergebnis",
-    "resolvedCodes": {
-      "1": "1 Wert aufgelöst.",
-      "_": "{context} Werte aufgelöst."
-    },
-    "unknownCodes": {
-      "1": "1 Wert nicht aufgelöst",
-      "_": "{context} Werte nicht aufgelöst"
-    },
+    "resolvedCodes_one": "1 Wert aufgelöst.",
+    "resolvedCodes_other": "{{count}} Werte aufgelöst.",
+    "unknownCodes_one": "1 Wert nicht aufgelöst",
+    "unknownCodes_other": "{{count}} Werte nicht aufgelöst",
     "error": "Beim Auflösen der Werte ist ein Fehler aufgetreten.",
     "nothingResolved": "Kein Konzept konnte aufgelöst werden."
   },
@@ -326,26 +367,29 @@
     "headline": "Filter-Werte aus Liste einfügen"
   },
   "conceptListDetailsModal": {
-    "conceptTreeRoot": "Konzeptbaum",
+    "conceptTreeRoot": "Konzept",
     "conceptCodes": "Konzeptcodes"
   },
   "uploadQueryResults": {
     "uploadResults": "Lade Anfrageergebnis hoch"
+  },
+  "previousQueriesFolderButton": {
+    "tooltip": "Ordner anzeigen / verstecken"
   },
   "authorization": {
     "unauthorized": "Authorisierung fehlgeschlagen. Ein Authorisierungs-Token fehlt, oder ist abgelaufen"
   },
   "search": {
     "placeholder": "Suchen ...",
-    "resultLabel": "{totalResults} Ergebnisse ({duration} s)"
+    "resultLabel": "{{totalResults}} Ergebnisse ({{duration}} s)"
   },
   "preview": {
     "preview": "Vorschau",
     "headline": "Ergebnisvorschau",
     "previewHeadline": "Ergebnis-CSV",
-    "previewSubline": "Auszug der ersten {count} Zeilen",
+    "previewSubline": "Auszug der ersten {{count}} Zeilen",
     "statisticsHeadline": "Spaltenstatistik",
-    "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werten als 0 interpretiert.",
+    "statisticsSubline": "Basierend auf den vollständigen Ergebnissen. Fehlende Zahlenwerte werden als 0 interpretiert.",
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",
@@ -364,17 +408,105 @@
     "noneFound": "Keine Formular-Konfigurationen gefunden"
   },
   "formConfig": {
-    "loadError": "Konnte Konfiguration nicht laden",
-    "renameError": "Konnte Konfiguration nicht umbenennen",
-    "retagError": "Konnte Schlagwörter nicht speichern",
-    "shareError": "Konnte Konfiguration nicht freigeben",
-    "deleteError": "Konnte Konfiguration nicht löschen"
-  },
-  "deleteFormConfigModal": {
-    "areYouSure": "Diese Konfiguration wirklich löschen?"
+    "loadSuccess": "Formular-Konfiguration <strong>{{label}}</strong> wurde erfolgreich geladen.",
+    "loadError": "Konnte Formular-Konfiguration nicht laden",
+    "renameError": "Konnte Formular-Konfiguration nicht umbenennen",
+    "retagError": "Konnte Ordner nicht speichern",
+    "shareError": "Konnte Formular-Konfiguration nicht freigeben",
+    "deleteError": "Konnte Formular-Konfiguration nicht löschen",
+    "deleteNow": "Formular-Konfiguration jetzt löschen"
   },
   "conceptTreesOpen": {
     "resetAll": "Zurück zu Standardansicht",
     "closeAll": "Alle Konzepte schließen"
+  },
+  "folders": {
+    "headline": "Ordner",
+    "noFolders": "ohne",
+    "allQueries": "Alle",
+    "add": "Neuer Ordner",
+    "addShort": "Neu"
+  },
+  "addFolderModal": {
+    "headline": "Ordner hinzufügen",
+    "description": "Der Ordner wird temporär erstellt und bleibt nur dann erhalten, wenn er eine Anfrage enthält. Ordner ohne Anfrage werden wieder entfernt.",
+    "inputLabel": "Name des Ordners"
+  },
+  "editPreviousQueryFoldersModal": {
+    "headline": "Ordner bearbeiten"
+  },
+  "help": {
+    "tabConceptTrees": "Auswahl der Konzepte zur Verwendung im Editor oder Formular-Editor.",
+    "tabPreviousQueries": "Auswahl der getätigten Anfragen zur Verwendung im Editor, Zeit-Editor oder Formular-Editor. Auswahl der gespeicherten Formulare zur Verwendung im Formular-Editor.",
+    "tabQueryEditor": "Hier kann eine Anfrage gestellt werden.",
+    "tabTimebasedEditor": "Hier kann eine Zeit-Anfrage gestellt werden. Das heißt, dass mehrere Anfragen in zeitlichen Bezug gesetzt werden können.",
+    "tabFormEditor": "Hier können Auswertungen und Analysen zu bestehenden Anfragen erstellt werden.",
+    "datasetSelector": "Auswahl des Datensatzes – die jeweiligen Konzepte, Anfragen und Formulare werden geladen.",
+    "excludeTimestamps": "Auswahl führt dazu, dass die Datumswerte des Konzepts bei der Weiterverarbeitung nicht berücksichtigt werden.",
+    "excludeFromSecondaryId": "Auswahl führt dazu, dass dieses Konzept nicht in der Analyse-Ebene berücksichtigt wird, falls eine Analyse-Ebene gewählt wurde.",
+    "editConceptName": "Konzeptname bearbeiten",
+    "queryEditorExclude": "Auswahl führt dazu dass Ergebnisse selektiert werden, die die Konzepte in dieser Spalte nicht enthalten.",
+    "queryEditorDate": "Auswahl des Datumsbereiches für alle Konzepte in dieser Spalte.",
+    "editorDropzoneAnd": "Konzepte hier ablegen um sie per UND zu verknüpfen. Via Klick kann eine Konzeptliste ausgewählt werden.",
+    "editorDropzoneOr": "Konzepte hier ablegen um sie per ODER zu verknüpfen. Via Klick kann eine Konzeptliste ausgewählt werden.",
+    "queryNodeDetails": "Detail-Einstellungen bearbeiten"
+  },
+  "history": {
+    "emptyTimeline": {
+      "headline": "Historie",
+      "description": "Hier werden Informationen chronologisch dargestellt.",
+      "descriptionWithoutIds": "Importiere IDs in die leere Liste auf der linken Seite, um zu starten.",
+      "descriptionWithoutId": "Wähle eine ID aus der Liste auf der linken Seite.",
+      "descriptionWithId": "Für diese ID konnten keine Daten gefunden werden."
+    },
+    "backButtonWarning": "Achtung: Wenn Du zurück gehst, werden Änderungen an der Liste verworfen. Lade die Liste vorher herunter, um sie zu speichern.",
+    "history": "Historie",
+    "marked": "mit Status",
+    "events_one": "Datenpunkt",
+    "events_other": "Datenpunkte",
+    "downloadButtonLabel": "Liste mit Status-Einträgen herunterladen",
+    "nextButtonLabel": "Weiterblättern",
+    "prevButtonLabel": "Zurückblättern",
+    "downloadEntityData": "Einzelhistorie herunterladen",
+    "differencesTooltip": "Unterschiede aus den einzelnen Datenpunkten",
+    "closeAll": "Alle schließen",
+    "openAll": "Alle aufklappen",
+    "dates": "Datumswerte",
+    "options": {
+      "check": "auffällig",
+      "noCheck": "unauffällig"
+    },
+    "detail": {
+      "summary": "Zusammenfassung",
+      "detail": "Gruppiert",
+      "full": "Alle Einzeldatenpunkte"
+    },
+    "content": {
+      "money": "Geldbeträge",
+      "secondaryId": "IDs aus Analyse-Ebene",
+      "concept": "Konzepte",
+      "rest": "Zusatzinfos",
+      "fingerprint": "IDs"
+    },
+    "settings": {
+      "headline": "Historie-Einstellungen",
+      "reset": "Historie zurücksetzen",
+      "resetConfirm": "Jetzt zurücksetzen",
+      "selectStatusHeadline": "Möglicher Status pro Eintrag",
+      "selectStatusPlaceholder": "Optionen ...",
+      "selectStatusTooltip": "Hier werden die möglichen Status-Werte festgelegt, die danach an die einzelnen Entitäten vergeben werden können."
+    },
+    "load": {
+      "importDescription": "Bitte CSV-Format mit folgenden Spalten verwenden:<br /><code><strong>ID-Art</strong>;<strong>ID</strong> (+ optional: ;<strong>Status 1</strong>;<strong>Status 2</strong>;...)</code>",
+      "importPlaceholder": "{{idkind}};A0123456788;auffällig;\n{{idkind}};A0123456789;;unauffällig",
+      "error": "Konnte Historie für diese Datei nicht laden."
+    }
+  },
+  "importModal": {
+    "headline": "Zeilenweise Importieren",
+    "subtitle": "Importiere Werte zeilenweise, zum Beispiel aus der Zwischenablage: Kopieren (STRG+C) und Einfügen (STRG+V). Wähle alternativ eine Datei im Textformat (TXT) aus, oder lege sie direkt im Textfeld ab.",
+    "paste": "Aus Zwischenablage einfügen",
+    "submit": "Übernehmen",
+    "pasted": "Importiert"
   }
 }

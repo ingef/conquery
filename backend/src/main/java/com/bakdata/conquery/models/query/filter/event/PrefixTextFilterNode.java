@@ -5,16 +5,18 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Single events are filtered, and included if they start with a given prefix. Entity is only included if it has any event with prefix.
  */
+@ToString(callSuper = true, of = "column")
 public class PrefixTextFilterNode extends EventFilterNode<String> {
 
 	@NotNull
@@ -22,14 +24,16 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 	@Setter
 	private Column column;
 
+	private StringStore store;
+
 	public PrefixTextFilterNode(Column column, String filterValue) {
 		super(filterValue);
 		this.column = column;
 	}
 
 	@Override
-	public PrefixTextFilterNode doClone(CloneContext ctx) {
-		return new PrefixTextFilterNode(getColumn(), filterValue);
+	public void nextBlock(Bucket bucket) {
+		store = (StringStore) bucket.getStore(getColumn());
 	}
 
 	@Override
@@ -38,17 +42,16 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 			return false;
 		}
 
-		int stringToken = bucket.getString(event, getColumn());
-
-		String value = (String) getColumn().getTypeFor(bucket).createScriptValue(stringToken);
+		final int id = store.getString(event);
+		String value = store.getElement(id);
 
 		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
 		return value.startsWith(filterValue);
 	}
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		requiredTables.add(column.getTable().getId());
+	public void collectRequiredTables(Set<Table> requiredTables) {
+		requiredTables.add(column.getTable());
 	}
 
 }

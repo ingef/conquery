@@ -3,14 +3,19 @@ package com.bakdata.conquery.io.jackson;
 import java.io.IOException;
 import java.util.Currency;
 import java.util.List;
+import java.util.Locale;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
+import com.bakdata.conquery.io.jackson.serializer.CharArrayBufferDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.CharArrayBufferSerializer;
 import com.bakdata.conquery.io.jackson.serializer.ClassToInstanceMapDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.ConqueryDoubleSerializer;
 import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitSerializer;
 import com.bakdata.conquery.io.jackson.serializer.IdKeyDeserializer;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.io.jackson.serializer.LocaleDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.LocaleSerializer;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.ValueInstantiator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -20,6 +25,7 @@ import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.HashBiMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.apache.http.util.CharArrayBuffer;
 
 public class ConquerySerializersModule extends SimpleModule {
 
@@ -47,13 +53,18 @@ public class ConquerySerializersModule extends SimpleModule {
 
 		//register IdKeySerializer for all id types
 		List<Class<?>> idTypes = CPSTypeIdResolver
-			.SCAN_RESULT
-			.getClassesImplementing(IId.class.getName())
-			.loadClasses();
+				.SCAN_RESULT
+				.getSubclasses(Id.class.getName())
+				.loadClasses();
 
-		for(Class<?> type : idTypes) {
+		for (Class<?> type : idTypes) {
 			addKeyDeserializer(type, new IdKeyDeserializer<>());
 		}
 		addSerializer(new ConqueryDoubleSerializer());
+		addDeserializer(CharArrayBuffer.class, new CharArrayBufferDeserializer());
+		addSerializer(CharArrayBuffer.class, new CharArrayBufferSerializer());
+
+		addDeserializer(Locale.class, new LocaleDeserializer());
+		addSerializer(Locale.class, new LocaleSerializer());
 	}
 }

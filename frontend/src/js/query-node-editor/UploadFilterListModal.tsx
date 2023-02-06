@@ -1,10 +1,11 @@
-import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { FC } from "react";
+import { useTranslation } from "react-i18next";
 
+import type { PostFilterResolveResponseT } from "../api/types";
+import FaIcon from "../icon/FaIcon";
 import Modal from "../modal/Modal";
 import ScrollableList from "../scrollable-list/ScrollableList";
-import FaIcon from "../icon/FaIcon";
 
 const Root = styled("div")`
   padding: 0 0 10px;
@@ -29,29 +30,34 @@ const CenteredIcon = styled(FaIcon)`
   text-align: center;
 `;
 
-type PropsType = {
+interface PropsT {
   loading: boolean;
-  resolved: Object;
-  error: Object;
-  onClose: Function;
+  resolved: PostFilterResolveResponseT | null;
+  error: boolean;
+  onClose: () => void;
+}
+
+const selectResolvedItemsCount = (
+  resolved: PostFilterResolveResponseT | null,
+) => {
+  return resolved?.resolvedFilter?.value?.length || 0;
 };
 
-const selectResolvedItemsCount = resolved => {
-  return resolved &&
-    resolved.resolvedFilter &&
-    resolved.resolvedFilter.value &&
-    resolved.resolvedFilter.value.length
-    ? resolved.resolvedFilter.value.length
-    : 0;
-};
-
-const selectUnresolvedItemsCount = resolved => {
+const selectUnresolvedItemsCount = (
+  resolved: PostFilterResolveResponseT | null,
+) => {
   return resolved && resolved.unknownCodes && resolved.unknownCodes.length
     ? resolved.unknownCodes.length
     : 0;
 };
 
-export default ({ loading, resolved, error, onClose }: PropsType) => {
+const UploadFilterListModal: FC<PropsT> = ({
+  loading,
+  resolved,
+  error,
+  onClose,
+}) => {
+  const { t } = useTranslation();
   const resolvedItemsCount = selectResolvedItemsCount(resolved);
   const unresolvedItemsCount = selectUnresolvedItemsCount(resolved);
 
@@ -62,14 +68,14 @@ export default ({ loading, resolved, error, onClose }: PropsType) => {
     <Modal
       onClose={onClose}
       doneButton
-      headline={T.translate("uploadFilterListModal.headline")}
+      headline={t("uploadFilterListModal.headline")}
     >
       <Root>
         {loading && <CenteredIcon icon="spinner" />}
         {error && (
           <p>
             <ErrorIcon icon="exclamation-circle" />
-            {T.translate("uploadConceptListModal.error")}
+            {t("uploadConceptListModal.error")}
           </p>
         )}
         {resolved && (
@@ -77,8 +83,8 @@ export default ({ loading, resolved, error, onClose }: PropsType) => {
             {hasResolvedItems && (
               <Msg>
                 <SuccessIcon icon="check-circle" />
-                {T.translate("uploadConceptListModal.resolvedCodes", {
-                  context: resolvedItemsCount
+                {t("uploadConceptListModal.resolvedCodes", {
+                  count: resolvedItemsCount,
                 })}
               </Msg>
             )}
@@ -88,19 +94,16 @@ export default ({ loading, resolved, error, onClose }: PropsType) => {
                   <ErrorIcon icon="exclamation-circle" />
                   <span
                     dangerouslySetInnerHTML={{
-                      __html: T.translate(
-                        "uploadConceptListModal.unknownCodes",
-                        {
-                          context: unresolvedItemsCount
-                        }
-                      )
+                      __html: t("uploadConceptListModal.unknownCodes", {
+                        count: unresolvedItemsCount,
+                      }),
                     }}
                   />
                 </Msg>
                 <ScrollableList
                   maxVisibleItems={3}
                   fullWidth
-                  items={resolved.unknownCodes}
+                  items={resolved.unknownCodes || []}
                 />
               </>
             )}
@@ -110,3 +113,5 @@ export default ({ loading, resolved, error, onClose }: PropsType) => {
     </Modal>
   );
 };
+
+export default UploadFilterListModal;

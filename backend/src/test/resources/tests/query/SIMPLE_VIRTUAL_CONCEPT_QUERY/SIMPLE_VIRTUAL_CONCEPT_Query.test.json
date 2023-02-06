@@ -6,16 +6,16 @@
         "type": "CONCEPT_QUERY",
         "root": {
             "ids": [
-                "${dataset}.geschlecht_select"
+                "geschlecht_select"
             ],
             "type": "CONCEPT",
           "label": "geschlecht_select",
             "tables": [
                 {
-                    "id": "${dataset}.geschlecht_select.geschlecht_connector",
+                    "id": "geschlecht_select.geschlecht_connector",
                     "filters": [
                         {
-                            "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
+                            "filter": "geschlecht_select.geschlecht_connector.geschlecht",
                             "type": "MULTI_SELECT",
                             "value": [
                                 "f"
@@ -29,13 +29,13 @@
     "concepts": [
         {
           "label": "geschlecht_select",
-            "type": "VIRTUAL",
+            "type": "TREE",
             "connectors": [
                 {
                     "label": "geschlecht_connector",
                     "table": "table1",
                     "validityDates": {"label": "datum" ,"column": "table1.datum"},
-                    "filter": {
+                    "filters": {
                       "label": "geschlecht",
                         "description": "Geschlecht zur gegebenen Datumseinschränkung",
                         "column": "table1.geschlecht",

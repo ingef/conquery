@@ -21,4 +21,12 @@ public class ClusterConfig extends Configuration {
 	private MinaConfig mina = new MinaConfig();
 	@Min(1)
 	private int entityBucketSize = 1000;
+
+	/**
+	 * Amount of backpressure before jobs can volunteer to block to send messages to their shards.
+	 *
+	 * Mostly {@link com.bakdata.conquery.models.jobs.ImportJob} is interested in this. Note that an average import should create more than #Entities / {@linkplain #entityBucketSize} jobs (via {@link com.bakdata.conquery.models.jobs.CalculateCBlocksJob}) in short succession, which will cause it to sleep. This field helps alleviate memory pressure on the Shards by slowing down the Manager, should it be sending too fast.
+	 */
+	@Min(0)
+	private int backpressure = 3000;
 }

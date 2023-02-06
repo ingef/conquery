@@ -1,16 +1,11 @@
-import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
-import { formatDate, parseDate } from "../common/helpers/dateHelper";
+import { useTranslation } from "react-i18next";
+
+import type { DateRangeT } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
-
+import { formatDate, parseDate } from "../common/helpers/dateHelper";
+import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
-
-type PropsType = {
-  className?: string;
-  matchingEntries?: number | null;
-  dateRange?: Object | null;
-};
 
 const Root = styled("div")``;
 const Row = styled("div")`
@@ -30,7 +25,7 @@ const Date = styled("p")`
 
 const ConceptDateRangeTooltip = styled(Row)``;
 
-const Text = styled("p")`
+const Text = styled("p")<{ zero?: boolean }>`
   margin: 0 0 5px;
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme, zero }) => (zero ? theme.col.red : theme.col.gray)};
@@ -43,6 +38,9 @@ const StyledFaIcon = styled(FaIcon)`
   color: ${({ theme }) => theme.col.grayMediumLight};
 `;
 
+const EntitiesIcon = styled(StyledFaIcon)`
+  padding-right: 24px;
+`;
 const StatsIcon = styled(StyledFaIcon)`
   padding-right: 15px;
 `;
@@ -54,7 +52,7 @@ const Info = styled("div")`
   flex-shrink: 0;
 `;
 
-const Number = styled("p")`
+const Number = styled("p")<{ zero?: boolean }>`
   margin: 0;
   font-size: ${({ theme }) => theme.font.lg};
   color: ${({ theme, zero }) => (zero ? theme.col.red : "inherit")};
@@ -83,13 +81,34 @@ const Suffix = styled("span")`
   margin-left: 5px;
 `;
 
-const TooltipEntries = (props: PropsType) => {
-  const { matchingEntries, dateRange } = props;
+interface Props {
+  className?: string;
+  matchingEntries?: number | null;
+  matchingEntities?: number | null;
+  dateRange?: DateRangeT;
+}
+
+const TooltipEntries = (props: Props) => {
+  const { t } = useTranslation();
+  const { matchingEntries, matchingEntities, dateRange } = props;
 
   const isZero = props.matchingEntries === 0;
+  const isZeroEntities = props.matchingEntities === 0;
 
   const dateFormat = "yyyy-MM-dd";
-  const displayDateFormat = T.translate("inputDateRange.dateFormat");
+  const displayDateFormat = t("inputDateRange.dateFormat");
+
+  const parsedFromDate =
+    dateRange && dateRange.min ? parseDate(dateRange.min, dateFormat) : null;
+  const fromDate = parsedFromDate
+    ? formatDate(parsedFromDate, displayDateFormat)
+    : "- - - - - - - -";
+
+  const parsedToDate =
+    dateRange && dateRange.max ? parseDate(dateRange.max, dateFormat) : null;
+  const toDate = parsedToDate
+    ? formatDate(parsedToDate, displayDateFormat)
+    : "- - - - - - - -";
 
   return (
     <Root className={props.className}>
@@ -97,7 +116,7 @@ const TooltipEntries = (props: PropsType) => {
         <StatsIcon icon="chart-bar" />
         <Info>
           <Number zero={isZero}>
-            {matchingEntries || isZero ? (
+            {exists(matchingEntries) ? (
               numberToThreeDigitArray(matchingEntries).map((threeDigits, i) => (
                 <Digits key={i}>{threeDigits}</Digits>
               ))
@@ -106,9 +125,29 @@ const TooltipEntries = (props: PropsType) => {
             )}
           </Number>
           <Text zero={isZero}>
-            {T.translate(
+            {t(
               "tooltip.entriesFound",
-              { context: matchingEntries || 2 } // For pluralization
+              { count: matchingEntries || 2 }, // For pluralization
+            )}
+          </Text>
+        </Info>
+      </Row>
+      <Row>
+        <EntitiesIcon icon="id-badge" />
+        <Info>
+          <Number zero={isZeroEntities}>
+            {exists(matchingEntities) ? (
+              numberToThreeDigitArray(matchingEntities).map(
+                (threeDigits, i) => <Digits key={i}>{threeDigits}</Digits>,
+              )
+            ) : (
+              <Digits>-</Digits>
+            )}
+          </Number>
+          <Text zero={isZeroEntities}>
+            {t(
+              "tooltip.entitiesFound",
+              { count: matchingEntities || 2 }, // For pluralization
             )}
           </Text>
         </Info>
@@ -117,22 +156,12 @@ const TooltipEntries = (props: PropsType) => {
         <CalIcon regular icon="calendar" />
         <Info>
           <Date>
-            {dateRange && dateRange.min
-              ? formatDate(
-                  parseDate(dateRange.min, dateFormat),
-                  displayDateFormat
-                )
-              : "- - - - - - - -"}
-            <Suffix>{`${T.translate("tooltip.date.from")}`}</Suffix>
+            {fromDate}
+            <Suffix>{`${t("tooltip.date.from")}`}</Suffix>
           </Date>
           <Date>
-            {dateRange && dateRange.max
-              ? formatDate(
-                  parseDate(dateRange.max, dateFormat),
-                  displayDateFormat
-                )
-              : "- - - - - - - -"}
-            <Suffix>{`${T.translate("tooltip.date.to")}`}</Suffix>
+            {toDate}
+            <Suffix>{`${t("tooltip.date.to")}`}</Suffix>
           </Date>
         </Info>
       </ConceptDateRangeTooltip>

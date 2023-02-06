@@ -1,5 +1,9 @@
+import { SelectorResultType } from "../api/types";
+
 /* ------------------------------ */
+
 /* COMMON, FORMS, TABS */
+
 /* ------------------------------ */
 interface TranslatableString {
   de: string;
@@ -8,7 +12,7 @@ interface TranslatableString {
 
 export type Forms = Form[];
 
-export type FormField = Field | Tabs;
+export type FormField = Field | Tabs | Group;
 export type NonFormField = Headline | Description;
 
 export type GeneralField = FormField | NonFormField;
@@ -16,11 +20,23 @@ export type GeneralField = FormField | NonFormField;
 export interface Form {
   type: string; // Sent to backend API
   title: TranslatableString; // Displayed
-  headline: TranslatableString; // Displayed
+  fields: GeneralField[];
+  description?: TranslatableString; // Displayed
+  manualUrl?: string;
+}
+
+export interface Group {
+  type: "GROUP";
+  label?: TranslatableString;
+  description?: TranslatableString;
+  style?: {
+    display: "flex" | "grid";
+    gridColumns?: number;
+  };
   fields: GeneralField[];
 }
 
-interface Tabs {
+export interface Tabs {
   name: string; // Sent to backend API
   type: "TABS";
   tabs: Tab[];
@@ -30,6 +46,7 @@ interface Tabs {
 interface Tab {
   name: string; // // Sent to backend API
   title: TranslatableString;
+  tooltip?: TranslatableString;
   fields: GeneralField[];
 }
 
@@ -42,28 +59,32 @@ type GREATER_THAN_ZERO_VALIDATION = "GREATER_THAN_ZERO";
 /* ------------------------------ */
 /* FIELDS AND THEIR VALIDATIONS */
 /* ------------------------------ */
-type Field =
+export type Field =
   | CheckboxField
   | StringField
   | NumberField
   | SelectField
   | DatasetSelectField
-  | MultiSelectField
   | ResultGroupField
-  | MultiResultGroupField
   | ConceptListField
   | DateRangeField;
+// TODO: At some point, handle multi select as well
+// | MultiSelectField;
 
 interface CommonField {
   name: string; // Sent to backend API
   label: TranslatableString; // Used to display
+  tooltip?: TranslatableString;
 }
 
 /* ------------------------------ */
 
-interface Headline {
+export interface Headline {
   type: "HEADLINE";
   label: TranslatableString;
+  style?: {
+    size?: "h1" /* default */ | "h2" | "h3";
+  };
 }
 
 /* ------------------------------ */
@@ -75,7 +96,7 @@ interface Description {
 
 /* ------------------------------ */
 
-type CheckboxField = CommonField & {
+export type CheckboxField = CommonField & {
   type: "CHECKBOX";
   defaultValue?: boolean; // Default: False
 };
@@ -131,12 +152,13 @@ type DatasetSelectField = CommonField & {
 
 /* ------------------------------ */
 
-type MultiSelectField = CommonField & {
-  type: "MULTI_SELECT";
-  options: SelectOption[];
-  defaultOption?: SelectValue;
-  validations?: SelectFieldValidation[];
-};
+// TODO: At some point, handle multi select as well
+// type MultiSelectField = CommonField & {
+//   type: "MULTI_SELECT";
+//   options: SelectOption[];
+//   defaultValue?: SelectValue[];
+//   validations?: SelectFieldValidation[];
+// };
 
 /* ------------------------------ */
 
@@ -157,14 +179,6 @@ type ResultGroupField = CommonField & {
 
 /* ------------------------------ */
 
-type MultiResultGroupField = CommonField & {
-  type: "MULTI_RESULT_GROUP";
-  dropzoneLabel: TranslatableString;
-  validations?: ResultGroupFieldValidation[];
-};
-
-/* ------------------------------ */
-
 type SelectName = string;
 export interface ConnectorDefault {
   name: string;
@@ -175,21 +189,24 @@ export interface ConceptListDefaults {
   connectors?: ConnectorDefault[];
 }
 type ConceptListFieldValidation = NOT_EMPTY_VALIDATION;
-type ConceptListField = CommonField & {
+export type ConceptListField = CommonField & {
   type: "CONCEPT_LIST";
   conceptDropzoneLabel?: TranslatableString;
   conceptColumnDropzoneLabel?: TranslatableString;
-  rowPrefixField?: SelectField & { apiType: string }; // Used for PSM with "MATCHES"
+  rowPrefixField?: SelectField;
   isTwoDimensional?: boolean; // Default: False
   isSingle?: boolean; // Default: False
   defaults?: ConceptListDefaults;
   validations?: ConceptListFieldValidation[];
-  // EITHER USE BLACKLISTING OR WHITELISTING OR NONE OF THE TWO:
-  blacklistedConceptIds?: string[]; // Matching ("contains") the ID string, lowercased
-  whitelistedConceptIds?: string[]; // Matching ("contains") the ID string, lowercased
-  // EITHER USE BLACKLISTING OR WHITELISTING OR NONE OF THE TWO:
-  blacklistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
-  whitelistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
+  // EITHER USE BLOCKLISTING OR ALLOWLISTING OR NONE OF THE TWO:
+  blocklistedConceptIds?: string[]; // Matching ("contains") the ID string, lowercased
+  allowlistedConceptIds?: string[]; // Matching ("contains") the ID string, lowercased
+  // EITHER USE BLOCKLISTING OR ALLOWLISTING OR NONE OF THE TWO:
+  blocklistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
+  allowlistedConnectors?: string[]; // Matching ("contains") the name of the connector / table
+  // EITHER USE BLOCKLISTING OR ALLOWLISTING OR NONE OF THE TWO:
+  blocklistedSelects?: SelectorResultType[];
+  allowlistedSelects?: SelectorResultType[];
 };
 
 /* ------------------------------ */

@@ -1,15 +1,14 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import java.util.List;
-
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+
+import java.util.List;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
 public class ConceptId extends ConceptElementId<Concept<?>> implements NamespacedId {
@@ -32,10 +31,10 @@ public class ConceptId extends ConceptElementId<Concept<?>> implements Namespace
 		dataset.collectComponents(components);
 		components.add(name);
 	}
-	
-	public static enum Parser implements IId.Parser<ConceptId> {
+
+	public static enum Parser implements IdUtil.Parser<ConceptId> {
 		INSTANCE;
-		
+
 		@Override
 		public ConceptId parseInternally(IdIterator parts) {
 			String name = parts.next();

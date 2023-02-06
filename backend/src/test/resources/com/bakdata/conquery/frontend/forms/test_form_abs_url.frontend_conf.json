@@ -1,0 +1,12 @@
+{
+    "title": {
+        "en": "Test Form",
+        "de": "Testformular"
+    },
+    "description": {
+        "de": "Testformular"
+    },
+    "type": "TEST_FORM_ABS_URL",
+    "fields": [],
+    "manualUrl": "http://example.org/absolute-url/test-form"
+}

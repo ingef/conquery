@@ -7,7 +7,7 @@
         {
             "name": "table1",
             "label": "Table1",
-            "column": "vers_stamm.geburtsdatum",
+            "table": "vers_stamm",
             "validityDates": {
                 "name": "versichertenzeit",
                 "label": "Versichertenzeit",
@@ -34,7 +34,7 @@
         {
             "name": "table2",
             "label": "Table2",
-            "column": "vers_stamm.geburtsdatum",
+            "table": "vers_stamm",
             "validityDates": {
                 "name": "versichertenzeit",
                 "label": "Versichertenzeit",

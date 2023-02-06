@@ -1,5 +1,7 @@
-import * as React from "react";
 import styled from "@emotion/styled";
+import { forwardRef, ReactNode } from "react";
+
+import { Heading4 } from "../headings/Headings";
 
 const Root = styled("div")`
   flex-shrink: 0;
@@ -10,23 +12,26 @@ const Root = styled("div")`
 
 const Content = styled("div")`
   flex-grow: 1;
-  padding: 10px;
+  padding: 3px 10px;
 `;
 
-const Headline = styled("h5")`
-  margin: 10px 18px 0;
-  font-size: ${({ theme }) => theme.font.sm};
+const Headline = styled(Heading4)`
+  margin: 14px 10px 0;
 `;
 
-type PropsType = {
+interface PropsT {
   className?: string;
-  children?: React.Node;
+  children?: ReactNode;
   headline?: string;
-};
+}
 
-export default ({ className, headline, children }: PropsType) => (
-  <Root className={className}>
-    {headline && <Headline>{headline}</Headline>}
-    <Content>{children}</Content>
-  </Root>
+const ContentCell = forwardRef<HTMLDivElement, PropsT>(
+  ({ className, headline, children }, ref) => (
+    <Root ref={ref} className={className}>
+      {headline && <Headline>{headline}</Headline>}
+      <Content>{children}</Content>
+    </Root>
+  ),
 );
+
+export default ContentCell;

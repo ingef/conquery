@@ -1,37 +1,50 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Aggregator summing over {@code addendColumn} and subtracting over {@code subtrahendColumn}, for money columns.
  */
+@ToString(of = {"addendColumn", "subtrahendColumn"})
 public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 
 	@Getter
-	private Column addendColumn;
+	private final Column addendColumn;
 	@Getter
-	private Column subtrahendColumn;
-	private long sum = 0L;
+	private final Column subtrahendColumn;
+	private long sum;
 	private boolean hit;
 
 	public MoneyDiffSumAggregator(Column addend, Column subtrahend) {
-		this.addendColumn = addend;
-		this.subtrahendColumn = subtrahend;
+		addendColumn = addend;
+		subtrahendColumn = subtrahend;
 	}
 
 	@Override
-	public MoneyDiffSumAggregator doClone(CloneContext ctx) {
-		return new MoneyDiffSumAggregator(getAddendColumn(), getSubtrahendColumn());
+	public void init(Entity entity, QueryExecutionContext context) {
+		hit = false;
+		sum = 0;
 	}
 
+
 	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[]{getAddendColumn(), getSubtrahendColumn()};
+	public List<Column> getRequiredColumns() {
+		final List<Column> out = new ArrayList<>();
+
+		out.add(getAddendColumn());
+		out.add(getSubtrahendColumn());
+
+		return out;
 	}
 
 	@Override
@@ -51,12 +64,12 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return hit ? sum : null;
 	}
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.MONEY;
+		return ResultType.MoneyT.INSTANCE;
 	}
 }

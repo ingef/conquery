@@ -1,32 +1,45 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
 
 import IconButton from "../../button/IconButton";
-import type { PreviousQueryT } from "../../previous-queries/list/reducer";
+import { exists } from "../../common/helpers/exists";
+import type { DragItemQuery } from "../../standard-query-editor/types";
+
+const Root = styled("div")<{ error?: boolean }>`
+  padding: 5px 10px;
+  background-color: white;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  border: 1px solid
+    ${({ theme, error }) => (error ? theme.col.red : theme.col.grayLight)};
+  font-size: ${({ theme }) => theme.font.md};
+  color: ${({ theme }) => theme.col.black};
+`;
+
+const ErrorMessage = styled.span`
+  color: ${({ theme }) => theme.col.red};
+  font-weight: 400;
+`;
 
 interface PropsT {
-  queryResult?: PreviousQueryT;
+  queryResult?: DragItemQuery;
   className?: string;
+  error?: string;
   onDelete?: () => void;
 }
 
-const Root = styled("div")`
-  display: inline-block;
-  padding: 5px 10px;
-  background-color: white;
-  border: 1px solid ${({ theme }) => theme.col.blueGrayLight};
-  border-radius: ${({ theme }) => theme.borderRadius};
-  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
-  font-size: 14px;
-`;
-
-const FormQueryResult: FC<PropsT> = ({ queryResult, className, onDelete }) => {
-  if (!queryResult) return null;
-
+const FormQueryResult = ({
+  queryResult,
+  className,
+  error,
+  onDelete,
+}: PropsT) => {
   return (
-    <Root className={className}>
-      {queryResult.label || queryResult.id}
-      {!!onDelete && <IconButton tiny icon="times" onClick={onDelete} />}
+    <Root className={className} error={exists(error)}>
+      {error ? (
+        <ErrorMessage>{error}</ErrorMessage>
+      ) : queryResult ? (
+        queryResult.label || queryResult.id
+      ) : null}
+      {onDelete && <IconButton tiny icon="times" onClick={onDelete} />}
     </Root>
   );
 };

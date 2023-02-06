@@ -5,76 +5,75 @@
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "type" : "OR",
-      "children" : [
+      "type": "OR",
+      "children": [
         {
           "ids": [
-            "${dataset}.number"
+            "concept"
           ],
           "type": "CONCEPT",
           "tables": [
             {
-              "id": "${dataset}.number.number_connector",
+              "id": "concept.connector",
               "filters": [
                 {
-                  "filter": "${dataset}.number.number_connector.value",
+                  "filter": "concept.connector.value",
                   "type": "REAL_RANGE",
                   "value": {
                     "min": 1,
                     "max": 1
                   }
                 }
-              ],
-              "selects": "${dataset}.number.exists"
+              ]
             }
-          ]
+          ],
+          "selects": "concept.exists"
         },
         {
           "ids": [
-            "${dataset}.number"
+            "concept"
           ],
           "type": "CONCEPT",
-          "label": "vs",
           "tables": [
             {
-              "id": "${dataset}.number.number_connector",
+              "id": "concept.connector",
               "filters": [
                 {
-                  "filter": "${dataset}.number.number_connector.value",
+                  "filter": "concept.connector.value",
                   "type": "REAL_RANGE",
                   "value": {
                     "min": 2,
                     "max": 2
                   }
                 }
-              ],
-              "selects": "${dataset}.number.exists"
+              ]
             }
-          ]
+          ],
+          "selects": "concept.exists"
         }
       ]
     }
   },
   "concepts": [
     {
-      "label": "number",
-      "type": "VIRTUAL",
+      "label": "concept",
+      "type": "TREE",
       "selects": {
         "type": "EXISTS",
         "name": "exists"
       },
       "connectors": [
         {
-          "label": "number_connector",
-          "table": "table1",
+          "label": "connector",
+          "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "column": "table.datum"
           },
-          "filter": {
+          "filters": {
             "label": "value",
             "description": "xy",
-            "column": "table1.value",
+            "column": "table.value",
             "type": "NUMBER"
           }
         }
@@ -85,7 +84,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/EXISTS_AGGREGATOR_OR/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"

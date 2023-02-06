@@ -9,17 +9,18 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * Entity is included as long as Dates are within a certain range.
  */
+@ToString(callSuper = true, of = {"column", "unit"})
 public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 
 	private LocalDate reference;
@@ -37,9 +38,9 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
-			reference = null;
+			reference = LocalDate.now();
 		}
 		else {
 			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
@@ -47,17 +48,8 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 	}
 
 	@Override
-	public DateDistanceFilterNode doClone(CloneContext ctx) {
-		return new DateDistanceFilterNode(getColumn(), unit, filterValue);
-	}
-
-	@Override
 	public boolean checkEvent(Bucket bucket, int event) {
 		if (!bucket.has(event, getColumn())) {
-			return false;
-		}
-
-		if (reference == null) {
 			return false;
 		}
 
@@ -69,7 +61,8 @@ public class DateDistanceFilterNode extends EventFilterNode<Range.LongRange> {
 	}
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		requiredTables.add(column.getTable().getId());
+	public void collectRequiredTables(Set<Table> requiredTables) {
+		requiredTables.add(column.getTable());
 	}
+
 }

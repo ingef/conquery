@@ -1,12 +1,12 @@
-import React, { useRef, FC, ReactNode } from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
-import Hotkeys from "react-hot-keys";
+import { useRef, FC, ReactNode } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
+import { useTranslation } from "react-i18next";
 
-import FaIcon from "../icon/FaIcon";
-import TransparentButton from "../button/TransparentButton";
-import WithTooltip from "../tooltip/WithTooltip";
+import { TransparentButton } from "../button/TransparentButton";
 import { useClickOutside } from "../common/helpers/useClickOutside";
+import FaIcon from "../icon/FaIcon";
+import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
   position: fixed;
@@ -23,8 +23,7 @@ const Root = styled("div")`
   cursor: pointer;
 `;
 
-const Content = styled("div")`
-  display: inline-block;
+const Content = styled("div")<{ scrollable?: boolean }>`
   text-align: left;
   cursor: initial;
   background-color: white;
@@ -33,6 +32,8 @@ const Content = styled("div")`
   padding: 30px;
   margin: 0 20px;
   position: relative;
+  max-height: 95%;
+  overflow-y: ${({ scrollable }) => (scrollable ? "auto" : "visible")};
 `;
 
 const TopRow = styled("div")`
@@ -47,21 +48,36 @@ const Headline = styled("h3")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-const ModalContent: FC<{ onClose: () => void }> = ({ children, onClose }) => {
+const Subtitle = styled(`p`)`
+  margin: -15px 0 20px;
+  max-width: 600px;
+`;
+
+const ModalContent: FC<{ onClose: () => void; scrollable?: boolean }> = ({
+  children,
+  scrollable,
+  onClose,
+}) => {
   const ref = useRef(null);
 
   useClickOutside(ref, onClose);
 
-  return <Content ref={ref}>{children}</Content>;
+  return (
+    <Content scrollable={scrollable} ref={ref}>
+      {children}
+    </Content>
+  );
 };
 
-type PropsT = {
+interface PropsT {
   className?: string;
   headline?: ReactNode;
+  subtitle?: ReactNode;
   doneButton?: boolean;
   closeIcon?: boolean;
+  scrollable?: boolean;
   onClose: () => void;
-};
+}
 
 // A modal with three ways to close it
 // - a button
@@ -71,31 +87,37 @@ const Modal: FC<PropsT> = ({
   className,
   children,
   headline,
+  subtitle,
   doneButton,
   closeIcon,
+  scrollable,
   onClose,
 }) => {
+  const { t } = useTranslation();
+
+  useHotkeys("esc", onClose);
+
   return (
     <Root className={className}>
-      <Hotkeys keyName="escape" onKeyDown={onClose} />
-      <ModalContent onClose={onClose}>
+      <ModalContent onClose={onClose} scrollable={scrollable}>
         <TopRow>
           <Headline>{headline}</Headline>
           {closeIcon && (
-            <WithTooltip text={T.translate("common.closeEsc")}>
+            <WithTooltip text={t("common.closeEsc")}>
               <TransparentButton small onClick={onClose}>
                 <FaIcon icon="times" />
               </TransparentButton>
             </WithTooltip>
           )}
           {doneButton && (
-            <WithTooltip text={T.translate("common.closeEsc")}>
+            <WithTooltip text={t("common.closeEsc")}>
               <TransparentButton small onClick={onClose}>
-                {T.translate("common.done")}
+                {t("common.done")}
               </TransparentButton>
             </WithTooltip>
           )}
         </TopRow>
+        {subtitle && <Subtitle>{subtitle}</Subtitle>}
         {children}
       </ModalContent>
     </Root>

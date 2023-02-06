@@ -1,14 +1,16 @@
-import React, { FC } from "react";
 import styled from "@emotion/styled";
+import { memo } from "react";
+
 import QueryClearButton from "./QueryClearButton";
 
 const Container = styled("div")`
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  margin-bottom: 5px;
 `;
 
-const QueryHeader: FC = () => {
+const QueryHeader = () => {
   return (
     <Container>
       <QueryClearButton />
@@ -16,4 +18,4 @@ const QueryHeader: FC = () => {
   );
 };
 
-export default QueryHeader;
+export default memo(QueryHeader);

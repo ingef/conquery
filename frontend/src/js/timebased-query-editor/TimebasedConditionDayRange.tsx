@@ -1,8 +1,7 @@
-import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { useTranslation } from "react-i18next";
 
-import InputText from "../form-components/InputText";
+import InputPlain from "../ui-components/InputPlain/InputPlain";
 
 const Container = styled("div")`
   width: 100%;
@@ -12,46 +11,55 @@ const Container = styled("div")`
   justify-content: center;
 `;
 
-const StyledInputText = styled(InputText)`
+const SxInputPlain = styled(InputPlain)`
   padding: 0 5px;
 `;
 
-type PropsType = {
+interface PropsType {
   minDays?: number | string | null;
   maxDays?: number | string | null;
-  onSetTimebasedConditionMinDays: Function;
-  onSetTimebasedConditionMaxDays: Function;
-};
+  onSetTimebasedConditionMinDays?: (value: number | null) => void;
+  onSetTimebasedConditionMaxDays?: (value: number | null) => void;
+}
 
-const TimebasedConditionDayRange = (props: PropsType) => (
-  <Container>
-    {props.minDays !== undefined && (
-      <StyledInputText
-        inputType="number"
-        input={{
-          value: props.minDays,
-          onChange: value => props.onSetTimebasedConditionMinDays(value)
-        }}
-        inputProps={{ min: 1, pattern: "^(?!-)\\d*$" }}
-        placeholder={T.translate("common.timeUnitDays")}
-        label={T.translate("timebasedQueryEditor.minDaysLabel")}
-        tinyLabel
-      />
-    )}
-    {props.maxDays !== undefined && (
-      <StyledInputText
-        inputType="number"
-        input={{
-          value: props.maxDays,
-          onChange: value => props.onSetTimebasedConditionMaxDays(value)
-        }}
-        inputProps={{ min: 1, pattern: "^(?!-)\\d*$" }}
-        placeholder={T.translate("common.timeUnitDays")}
-        label={T.translate("timebasedQueryEditor.maxDaysLabel")}
-        tinyLabel
-      />
-    )}
-  </Container>
-);
+const TimebasedConditionDayRange = ({
+  minDays,
+  maxDays,
+  onSetTimebasedConditionMinDays,
+  onSetTimebasedConditionMaxDays,
+}: PropsType) => {
+  const { t } = useTranslation();
+
+  return (
+    <Container>
+      {minDays !== undefined && !!onSetTimebasedConditionMinDays && (
+        <SxInputPlain
+          inputType="number"
+          value={minDays}
+          onChange={(value) => {
+            onSetTimebasedConditionMinDays(value as number | null);
+          }}
+          inputProps={{ min: 1, pattern: "^(?!-)\\d*$" }}
+          placeholder={t("common.timeUnitDays")}
+          label={t("timebasedQueryEditor.minDaysLabel")}
+          tinyLabel
+        />
+      )}
+      {maxDays !== undefined && !!onSetTimebasedConditionMaxDays && (
+        <SxInputPlain
+          inputType="number"
+          value={maxDays}
+          onChange={(value) => {
+            onSetTimebasedConditionMaxDays(value as number | null);
+          }}
+          inputProps={{ min: 1, pattern: "^(?!-)\\d*$" }}
+          placeholder={t("common.timeUnitDays")}
+          label={t("timebasedQueryEditor.maxDaysLabel")}
+          tinyLabel
+        />
+      )}
+    </Container>
+  );
+};
 
 export default TimebasedConditionDayRange;

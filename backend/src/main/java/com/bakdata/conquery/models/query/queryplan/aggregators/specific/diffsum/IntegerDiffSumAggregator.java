@@ -1,15 +1,21 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * Aggregator summing over {@code addendColumn} and subtracting over {@code subtrahendColumn}, for integer columns.
  */
+@ToString(callSuper = false, of = {"addendColumn", "subtrahendColumn"})
 public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 
 	@Getter
@@ -26,15 +32,21 @@ public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 	}
 
 	@Override
-	public IntegerDiffSumAggregator doClone(CloneContext ctx) {
-		return new IntegerDiffSumAggregator(getAddendColumn(), getSubtrahendColumn());
+	public void init(Entity entity, QueryExecutionContext context) {
+		hit = false;
+		sum = 0;
 	}
+
 
 	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[]{getAddendColumn(), getSubtrahendColumn()};
-	}
+	public List<Column> getRequiredColumns() {
+		final List<Column> out = new ArrayList<>();
 
+		out.add(getAddendColumn());
+		out.add(getSubtrahendColumn());
+
+		return out;
+	}
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
 
@@ -51,12 +63,12 @@ public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return hit ? sum : null;
 	}
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return ResultType.IntegerT.INSTANCE;
 	}
 }

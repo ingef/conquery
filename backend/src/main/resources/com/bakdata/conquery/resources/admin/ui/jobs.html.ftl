@@ -27,9 +27,7 @@
                                 </td>
                                 <td>
                                     <#if !job.cancelled>
-                                        <form action="/admin/jobs/${job.jobId}/cancel" method="post" enctype="multipart/form-data">
-                                            <input class="btn btn-warning btn-sm" type="submit" value="Cancel"/>
-                                        </form>
+                                        <a href="" onclick="cancelJob('${job.jobId}')" class="btn btn-warning btn-sm"/>
                                     <#else>
                                         <div>Cancelled</div>
                                     </#if>
@@ -46,15 +44,28 @@
 	
 	<div class="row">
 		<div class="col">
-			<br/><br/>
-			<form action="/admin/jobs" method="post" enctype="multipart/form-data">
-				<h3>Create Demo Job</h3>
-				<input class="btn btn-primary" type="submit"/>
-			</form>
+            <input type="checkbox" id="update" name="update" checked>
+            <label for="update">Reload automatically.</label><br>
 			<script type="text/javascript">
 				setTimeout(function () {
-					location.reload(false);
-				}, 2000);
+                    if(!document.getElementById("update").checked){
+                        return
+                    }
+					
+                    location.reload(false);
+				}, 5000);
+
+                
+                function cancelJob(jobId) {
+		            event.preventDefault(); 
+                    fetch(
+                        ${r"`/admin/jobs/${jobId}/cancel`"},
+                        {
+                            method: "post",
+                            credentials: "same-origin"
+                        }
+                    )
+                }
 			</script>
 		</div>
 	</div>

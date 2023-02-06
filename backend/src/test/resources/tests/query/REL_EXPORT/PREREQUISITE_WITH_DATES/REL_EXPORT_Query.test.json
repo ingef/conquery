@@ -19,11 +19,11 @@
             "root": {
                 "type": "CONCEPT",
                 "ids": [
-                    "${dataset}.test_tree.test_child1"
+                    "test_tree.test_child1"
                 ],
                 "tables": [
                     {
-                        "id": "${dataset}.test_tree.test_column",
+                        "id": "test_tree.test_column",
                         "filters": []
                     }
                 ]
@@ -36,35 +36,14 @@
                 "root": {
                     "type": "CONCEPT",
                     "ids": [
-                        "${dataset}.test_tree.test_child1"
+                        "test_tree.test_child1"
                     ],
                     "selects": [
-                        "${dataset}.test_tree.exists"
+                        "test_tree.exists"
                     ],
                     "tables": [
                         {
-                            "id": "${dataset}.test_tree.test_column",
-                            "filters": []
-                        }
-                    ]
-                }
-            }
-        },
-        "outcomes": {
-            "type": "ARRAY_CONCEPT_QUERY",
-            "childQueries": {
-                "type": "CONCEPT_QUERY",
-                "root": {
-                    "type": "CONCEPT",
-                    "ids": [
-                        "${dataset}.test_tree.test_child1"
-                    ],
-                    "selects": [
-                        "${dataset}.test_tree.exists"
-                    ],
-                    "tables": [
-                        {
-                            "id": "${dataset}.test_tree.test_column",
+                            "id": "test_tree.test_column",
                             "filters": []
                         }
                     ]

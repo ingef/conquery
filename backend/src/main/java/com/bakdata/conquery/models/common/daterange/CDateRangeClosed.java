@@ -18,9 +18,9 @@ public class CDateRangeClosed extends CDateRange {
 				String.format("Min(%s) is not less than max(%s)", CDate.toLocalDate(min), CDate.toLocalDate(max)));
 		}
 		
-		if (min == Integer.MIN_VALUE || max == Integer.MAX_VALUE || min==max) {
+		if (min == CDateRange.NEGATIVE_INFINITY || max == CDateRange.POSITIVE_INFINITY || min == max) {
 			throw new IllegalArgumentException(
-				String.format("%s is not a valid closed range", this.toString()));
+				String.format("%s is not a valid closed range", this));
 		}
 	}
 	

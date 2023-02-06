@@ -1,31 +1,35 @@
-import { defaultError, defaultSuccess } from "../common/actions";
-
-import {
-  LOAD_CONFIG_START,
-  LOAD_CONFIG_ERROR,
-  LOAD_CONFIG_SUCCESS,
-} from "./actionTypes";
+import { useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { useGetFrontendConfig } from "../api/api";
+import { ActionType, createAsyncAction } from "typesafe-actions";
 
-export const loadConfigStart = () => ({ type: LOAD_CONFIG_START });
-export const loadConfigError = (err: any) =>
-  defaultError(LOAD_CONFIG_ERROR, err);
-export const loadConfigSuccess = (res: any) =>
-  defaultSuccess(LOAD_CONFIG_SUCCESS, res);
+import { useGetFrontendConfig } from "../api/api";
+import { GetFrontendConfigResponseT } from "../api/types";
+import {
+  ErrorObject,
+  errorPayload,
+  successPayload,
+} from "../common/actions/genericActions";
+
+export type StartupActions = ActionType<typeof loadConfig>;
+
+export const loadConfig = createAsyncAction(
+  "startup/LOAD_CONFIG_START",
+  "startup/LOAD_CONFIG_SUCCESS",
+  "startup/LOAD_CONFIG_ERROR",
+)<undefined, { data: GetFrontendConfigResponseT }, ErrorObject>();
 
 export const useLoadConfig = () => {
   const dispatch = useDispatch();
   const getFrontendConfig = useGetFrontendConfig();
 
-  return async () => {
-    dispatch(loadConfigStart());
+  return useCallback(async () => {
+    dispatch(loadConfig.request());
 
     try {
       const result = await getFrontendConfig();
-      dispatch(loadConfigSuccess(result));
+      dispatch(loadConfig.success(successPayload(result, {})));
     } catch (error) {
-      dispatch(loadConfigError(error));
+      dispatch(loadConfig.failure(errorPayload(error as Error, {})));
     }
-  };
+  }, [dispatch, getFrontendConfig]);
 };

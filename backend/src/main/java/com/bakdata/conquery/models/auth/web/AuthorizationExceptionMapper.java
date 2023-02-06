@@ -17,7 +17,9 @@ public class AuthorizationExceptionMapper implements ExceptionMapper<Authorizati
 
 	@Override
 	public Response toResponse(AuthorizationException exception) {
-		log.warn("Shiro failed to authorize the request. See the following trace:", exception);
+		// Only print the exception message since this is expected error
+		log.warn("Shiro failed to authorize the request. Reason: {}", exception.getMessage());
+		log.trace("Shiro failed to authorize the request.", exception);
 		return Response.status(Response.Status.FORBIDDEN)
 			.type(MediaType.APPLICATION_JSON_TYPE)
 			.entity("Not sufficient permissions to perform action: " + exception.getMessage())

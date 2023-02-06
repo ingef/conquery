@@ -1,46 +1,41 @@
-import React, { FC } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import T from "i18n-react";
+import styled from "@emotion/styled";
+import { FC } from "react";
+import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
 
-import { getStoredAuthToken } from "../authorization/helper";
-import { openPreview } from "../preview/actions";
-
-import IconButton from "./IconButton";
-import { StateT } from "app-types";
 import type { ColumnDescription } from "../api/types";
+import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
+import { openPreview, useLoadPreviewData } from "../preview/actions";
+
+import { TransparentButton } from "./TransparentButton";
+
+const Button = styled(TransparentButton)`
+  white-space: nowrap;
+  height: 35px;
+`;
 
 interface PropsT {
   columns: ColumnDescription[];
   url: string;
-  className?: string;
 }
 
-const PreviewButton: FC<PropsT> = ({
-  url,
-  columns,
-  className,
-  ...restProps
-}) => {
-  const authToken = getStoredAuthToken();
-  const isLoading = useSelector<StateT, boolean>(
-    (state) => state.preview.isLoading
-  );
-
+const PreviewButton: FC<PropsT> = ({ url, columns, ...restProps }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
-  const onOpenPreview = (url: string) => dispatch(openPreview(url, columns));
 
-  const href = `${url}?access_token=${encodeURIComponent(
-    authToken || ""
-  )}&charset=utf-8&pretty=false`;
+  const loadPreviewData = useLoadPreviewData();
+  const getAuthorizedUrl = useGetAuthorizedUrl();
 
   return (
-    <IconButton
-      icon={isLoading ? "spinner" : "search"}
-      onClick={() => onOpenPreview(href)}
+    <Button
+      onClick={async () => {
+        await loadPreviewData(getAuthorizedUrl(url), columns);
+        dispatch(openPreview());
+      }}
       {...restProps}
     >
-      {T.translate("preview.preview")}
-    </IconButton>
+      {t("preview.preview")}
+    </Button>
   );
 };
 

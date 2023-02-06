@@ -6,21 +6,29 @@ import java.time.temporal.IsoFields;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+import lombok.ToString;
 
 /**
  * Count the number of distinct quarters of the related events. Implementation is specific for LocalDates
  */
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class CountQuartersOfDatesAggregator extends SingleColumnAggregator<Long> {
 
 	private final IntSet quarters = new IntOpenHashSet();
 
 	public CountQuartersOfDatesAggregator(Column column) {
 		super(column);
+	}
+
+	@Override
+	public void init(Entity entity, QueryExecutionContext context) {
+		quarters.clear();
 	}
 
 	@Override
@@ -34,17 +42,12 @@ public class CountQuartersOfDatesAggregator extends SingleColumnAggregator<Long>
 	}
 
 	@Override
-	public Long getAggregationResult() {
+	public Long createAggregationResult() {
 		return quarters.isEmpty() ? null : (long) quarters.size();
 	}
 
 	@Override
-	public CountQuartersOfDatesAggregator doClone(CloneContext ctx) {
-		return new CountQuartersOfDatesAggregator(getColumn());
-	}
-	
-	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return ResultType.IntegerT.INSTANCE;
 	}
 }

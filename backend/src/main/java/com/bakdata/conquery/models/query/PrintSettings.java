@@ -1,113 +1,86 @@
 package com.bakdata.conquery.models.query;
 
 import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
+import java.util.Currency;
+import java.util.Date;
 import java.util.Locale;
-import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
-import com.bakdata.conquery.models.query.resultinfo.SelectNameExtractor;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.LocaleConfig;
+import com.bakdata.conquery.models.identifiable.mapping.PrintIdMapper;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
+import lombok.With;
+import lombok.experimental.Wither;
 
-@Getter @ToString(onlyExplicitlyIncluded = true)
-public class PrintSettings implements SelectNameExtractor {
+@Getter
+@ToString(onlyExplicitlyIncluded = true)
+@With
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+public class PrintSettings {
 
-	private static final Function<Locale,NumberFormat> NUMBER_FORMAT = (locale) -> NumberFormat.getNumberInstance(locale);
-	private static final Function<Locale,NumberFormat> DECIMAL_FORMAT = (locale) -> {
+	private static final Function<Locale, NumberFormat> NUMBER_FORMAT = NumberFormat::getNumberInstance;
+	private static final Function<Locale, NumberFormat> DECIMAL_FORMAT = (locale) -> {
 		NumberFormat fmt = NumberFormat.getNumberInstance(locale);
 		fmt.setMaximumFractionDigits(Integer.MAX_VALUE);
 		return fmt;
 	};
 
+	private static final LocaleConfig.ListFormat UNPRETTY_LIST_FORMAT = new LocaleConfig.ListFormat("{", ",", "}");
+	private static final String UNPRETTY_DATERANGE_SEPERATOR = "/";
+	private static final DateTimeFormatter UNPRETTY_DATEFORMATTER = DateTimeFormatter.ISO_DATE;
+
 	@ToString.Include
 	private final boolean prettyPrint;
 	@ToString.Include
 	private final Locale locale;
+	private final String dateFormat;
+	private final DateTimeFormatter dateFormatter;
 	private final NumberFormat decimalFormat;
 	private final NumberFormat integerFormat;
-	
+	private final Currency currency;
+
 	/**
-	 * Use the registry to resolve ids to objects/labels where this was not done yet, such as {@link CQConcept::getIds()}.
+	 * Use the registry to resolve ids to objects/labels where this was not done yet, such as {@link CQConcept#getElements()}.
 	 */
 	private final DatasetRegistry datasetRegistry;
-	
-	@NonNull
-	private final BiFunction<SelectResultInfo, DatasetRegistry, String> columnNamer;
-	
-	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, BiFunction<SelectResultInfo, DatasetRegistry, String> columnNamer) {		
+
+	private final Function<SelectResultInfo, String> columnNamer;
+
+	private final String dateRangeSeparator;
+
+	private final LocaleConfig.ListFormat listFormat;
+
+	private final PrintIdMapper idMapper;
+
+	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper, Function<SelectResultInfo, String> columnNamer) {
 		this.prettyPrint = prettyPrint;
 		this.locale = locale;
 		this.datasetRegistry = datasetRegistry;
+		this.currency = config.getPreprocessor().getParsers().getCurrency();
 		this.columnNamer = columnNamer;
+		this.idMapper = idMapper;
+
 		this.integerFormat = NUMBER_FORMAT.apply(locale);
 		this.decimalFormat = DECIMAL_FORMAT.apply(locale);
-	}
-	
-	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry) {
-		this(prettyPrint, locale, datasetRegistry, PrintSettings::defaultColumnName);
-	}
-	
 
-	/**
-	 * Generates the name for a query result column.
-	 */
-	@Override
-	public String columnName(SelectResultInfo columnInfo) {
-		if (columnNamer == null) {
-			// Should never be reached
-			throw new IllegalStateException("No column namer was supplied");
-		}
-		return columnNamer.apply(columnInfo, datasetRegistry);
+		this.listFormat = prettyPrint ? config.getLocale().getListFormats().get(0) : UNPRETTY_LIST_FORMAT;
+		this.dateRangeSeparator = prettyPrint ? config.getLocale().findDateRangeSeparator(locale) : UNPRETTY_DATERANGE_SEPERATOR;
+
+		this.dateFormat = config.getLocale().findDateFormat(locale);
+		this.dateFormatter = prettyPrint ? DateTimeFormatter.ofPattern(dateFormat) : UNPRETTY_DATEFORMATTER;
+
 	}
 
-
-	private static String defaultColumnName(SelectResultInfo columnInfo, DatasetRegistry datasetRegistry) {
-		StringBuilder sb = new StringBuilder();
-		String cqLabel = columnInfo.getCqConcept().getLabel();
-		String conceptLabel = columnInfo.getSelect().getHolder().findConcept().getLabel();
-		
-		sb.append(conceptLabel);
-		sb.append(" - ");
-		if (cqLabel != null && !cqLabel.equalsIgnoreCase(conceptLabel)) {
-			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
-			sb.append(cqLabel);
-			sb.append(" - ");
-		}
-		else if(columnInfo.getCqConcept().getIds().size() > 0) {
-			// When no Label was set within the query, get the labels of all ids that are in the CQConcept
-			String concatElementLabels = columnInfo.getCqConcept().getIds().stream()
-			.map(id -> getLabelFromChildId(datasetRegistry, id))
-			.collect(Collectors.joining("+"));
-			
-			if(!concatElementLabels.equalsIgnoreCase(conceptLabel)) {
-				// Only add all child labels if they are different from the actual label of the concept
-				sb.append(concatElementLabels);
-				sb.append(" - ");
-			}
-		}
-		if (columnInfo.getSelect().getHolder() instanceof Connector && columnInfo.getSelect().getHolder().findConcept().getConnectors().size() > 1) {
-			// The select originates from a connector and the corresponding concept has more than one connector -> Print also the connector
-			sb.append(((Connector)columnInfo.getSelect().getHolder()).getLabel());
-			sb.append(' ');
-		}
-		sb.append(columnInfo.getSelect().getLabel());
-		return sb.toString();
+	public PrintSettings(boolean prettyPrint, Locale locale, DatasetRegistry datasetRegistry, ConqueryConfig config, PrintIdMapper idMapper) {
+		this(prettyPrint, locale, datasetRegistry, config, idMapper, null);
 	}
 
-	private static String getLabelFromChildId(DatasetRegistry datasetRegistry, ConceptElementId id){
-		Concept<?> concept = datasetRegistry.resolve(id.findConcept());
-		if(id instanceof ConceptTreeChildId) {
-			return concept.getChildById((ConceptTreeChildId) id).getLabel();
-		}
-		return concept.getLabel();
-	}
 }

@@ -1,16 +1,12 @@
-import React from "react";
-
-import type { TabPropsType } from "../pane";
-
-import TimebasedQueryEditor from "./TimebasedQueryEditor";
 import TimebasedQueryClearButton from "./TimebasedQueryClearButton";
+import TimebasedQueryEditor from "./TimebasedQueryEditor";
 import TimebasedQueryRunner from "./TimebasedQueryRunner";
 
-const TimebasedQueryEditorTab = (props: TabPropsType) => (
+const TimebasedQueryEditorTab = () => (
   <>
     <TimebasedQueryClearButton />
     <TimebasedQueryEditor />
-    <TimebasedQueryRunner datasetId={props.selectedDatasetId} />
+    <TimebasedQueryRunner />
   </>
 );
 

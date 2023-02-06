@@ -1,18 +1,15 @@
-import React from "react";
 import styled from "@emotion/styled";
-import T from "i18n-react";
+import { forwardRef } from "react";
+import { useTranslation } from "react-i18next";
 
 import BasicButton from "../button/BasicButton";
 import FaIcon from "../icon/FaIcon";
 
-type PropsType = {
-  isStartStopLoading: boolean;
-  isQueryRunning: boolean;
-  disabled: boolean;
-  onClick: Function;
-};
+const Root = styled("div")`
+  display: flex;
+`;
 
-const Left = styled("span")`
+const Left = styled("span")<{ running?: boolean }>`
   transition: ${({ theme }) =>
     `color ${theme.transitionTime}, background-color ${theme.transitionTime}`};
   padding: 0 15px;
@@ -50,31 +47,43 @@ const StyledBasicButton = styled(BasicButton)`
   }
 `;
 
-function getIcon(loading, running) {
+function getIcon(loading: boolean, running: boolean) {
   return loading ? "spinner" : running ? "stop" : "play";
 }
 
+interface Props {
+  isStartStopLoading: boolean;
+  isQueryRunning: boolean;
+  disabled: boolean;
+  onClick: () => void;
+}
+
 // A button that is prefixed by an icon
-const QueryRunnerButton = ({
-  onClick,
-  isStartStopLoading,
-  isQueryRunning,
-  disabled
-}: PropsType) => {
-  const label = isQueryRunning
-    ? T.translate("queryRunner.stop")
-    : T.translate("queryRunner.start");
+const QueryRunnerButton = forwardRef<HTMLDivElement, Props>(
+  ({ onClick, isStartStopLoading, isQueryRunning, disabled }, ref) => {
+    const { t } = useTranslation();
+    const label = isQueryRunning
+      ? t("queryRunner.stop")
+      : t("queryRunner.start");
 
-  const icon = getIcon(isStartStopLoading, isQueryRunning);
+    const icon = getIcon(isStartStopLoading, isQueryRunning);
 
-  return (
-    <StyledBasicButton type="button" onClick={onClick} disabled={disabled}>
-      <Left running={isQueryRunning}>
-        <FaIcon white={!isQueryRunning} icon={icon} />
-      </Left>
-      <Label>{label}</Label>
-    </StyledBasicButton>
-  );
-};
+    return (
+      <Root ref={ref}>
+        <StyledBasicButton
+          type="button"
+          onClick={onClick}
+          disabled={disabled}
+          data-test-id="query-runner-button"
+        >
+          <Left running={isQueryRunning}>
+            <FaIcon white={!isQueryRunning} icon={icon} />
+          </Left>
+          <Label>{label}</Label>
+        </StyledBasicButton>
+      </Root>
+    );
+  },
+);
 
 export default QueryRunnerButton;

@@ -2,13 +2,15 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
 import java.util.OptionalInt;
 
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.types.ResultType;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -16,12 +18,13 @@ import lombok.extern.slf4j.Slf4j;
  * @param <VALUE> Value type of the column/return value
  */
 @Slf4j
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private OptionalInt selectedEvent = OptionalInt.empty();
 	private Bucket selectedBucket;
 
-	private int date = Integer.MAX_VALUE;
+	private int date = CDateRange.POSITIVE_INFINITY;
 
 	private Column validityDateColumn;
 
@@ -30,7 +33,14 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	}
 
 	@Override
-	public void nextTable(QueryExecutionContext ctx, TableId currentTable) {
+	public void init(Entity entity, QueryExecutionContext context) {
+		selectedEvent = OptionalInt.empty();
+		date = CDateRange.POSITIVE_INFINITY;
+		selectedBucket = null;
+	}
+
+	@Override
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		validityDateColumn = ctx.getValidityDateColumn();
 	}
 
@@ -69,7 +79,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	}
 
 	@Override
-	public VALUE getAggregationResult() {
+	public VALUE createAggregationResult() {
 		if (selectedBucket == null && selectedEvent.isEmpty()) {
 			return null;
 		}
@@ -77,11 +87,6 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 		return (VALUE) selectedBucket.createScriptValue(selectedEvent.getAsInt(), getColumn());
 	}
 
-	@Override
-	public FirstValueAggregator doClone(CloneContext ctx) {
-		return new FirstValueAggregator(getColumn());
-	}
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.resolveResultType(getColumn().getType());

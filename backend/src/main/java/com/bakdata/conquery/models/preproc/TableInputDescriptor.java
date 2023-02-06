@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.preproc;
 
-import java.io.File;
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,29 +11,33 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.events.parser.MajorTypeId;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
+import com.bakdata.conquery.models.preproc.parser.Parser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import groovy.lang.GroovyShell;
 import io.dropwizard.validation.ValidationMethod;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 /**
  * An input describes transformations on a single CSV file to be loaded into the table described in {@link TableImportDescriptor}.
- *
+ * <p>
  * It requires a primary Output and at least one normal output.
- *
- * Input data can be filter using the field filter, which is evaluated as a groovy script on every row.
+ * <p>
+ * Input data can be filtered using the field filter, which is evaluated as a groovy script on every row.
  */
 @Data
 @Slf4j
-public class TableInputDescriptor implements Serializable {
+public class TableInputDescriptor {
 
 	private static final long serialVersionUID = 1L;
 	private static final String[] AUTO_IMPORTS = Stream.of(
@@ -44,7 +46,7 @@ public class TableInputDescriptor implements Serializable {
 	).map(Class::getName).toArray(String[]::new);
 
 	@NotNull
-	private File sourceFile;
+	private String sourceFile;
 
 	private String filter;
 
@@ -55,7 +57,10 @@ public class TableInputDescriptor implements Serializable {
 	@NotNull
 	@Valid
 	private OutputDescription primary = new CopyOutput("pid", "id", MajorTypeId.STRING);
-	@Valid @NotEmpty
+
+	@Valid
+	@NotEmpty
+	@JsonManagedReference
 	private OutputDescription[] output;
 
 	@JsonIgnore
@@ -73,13 +78,23 @@ public class TableInputDescriptor implements Serializable {
 	 */
 	public static final String[] FAKE_HEADERS = new String[50];
 
-	@JsonIgnore @ValidationMethod(message = "Groovy script is not valid.")
-	public boolean isValidGroovyScript(){
-		try{
+	@JsonIgnore
+	@ValidationMethod(message = "One or more columns are duplicated")
+	public boolean allColumnsDistinct() {
+		return Arrays.stream(getOutput()).map(OutputDescription::getName)
+					 .distinct()
+					 .count() == getOutput().length;
+	}
+
+
+	@JsonIgnore
+	@ValidationMethod(message = "Groovy script is not valid.")
+	public boolean isValidGroovyScript() {
+		try {
 			createFilter(FAKE_HEADERS);
 		}
 		catch (Exception ex) {
-			log.error("Groovy script is not valid",ex);
+			log.error("Groovy script is not valid", ex);
 			return false;
 		}
 
@@ -95,7 +110,7 @@ public class TableInputDescriptor implements Serializable {
 
 		for (int index = 0; index < output.length; index++) {
 			int prev = names.put(output[index].getName(), index);
-			if(prev != -1){
+			if (prev != -1) {
 				log.error("Duplicate Output to Column[{}] at indices {} and {}", output[index].getName(), prev, index);
 				return false;
 			}
@@ -110,8 +125,8 @@ public class TableInputDescriptor implements Serializable {
 		return primary.getResultType() == MajorTypeId.STRING;
 	}
 
-	public GroovyPredicate createFilter(String[] headers){
-		if(filter == null) {
+	public GroovyPredicate createFilter(String[] headers) {
+		if (filter == null) {
 			return null;
 		}
 
@@ -126,8 +141,9 @@ public class TableInputDescriptor implements Serializable {
 				groovy.setVariable(headers[col], col);
 			}
 
-			return  (GroovyPredicate) groovy.parse(filter);
-		} catch (Exception e) {
+			return (GroovyPredicate) groovy.parse(filter);
+		}
+		catch (Exception e) {
 			throw new RuntimeException("Failed to compile filter `" + filter + "`", e);
 		}
 	}
@@ -141,7 +157,6 @@ public class TableInputDescriptor implements Serializable {
 		return output[i].getColumnDescription();
 	}
 
-
 	/**
 	 * Create a mapping from a header to it's column position.
 	 */
@@ -149,5 +164,22 @@ public class TableInputDescriptor implements Serializable {
 		final int[] indices = new int[headers.length];
 		Arrays.setAll(indices, i -> i);
 		return new Object2IntArrayMap<>(headers, indices);
+	}
+
+	/**
+	 * Hashcode is used to in validity-hash of Preprocessed files.
+	 */
+	public int hashCode() {
+		final HashCodeBuilder builder = new HashCodeBuilder();
+
+		builder.append(getSourceFile());
+		builder.append(getFilter());
+		builder.append(getPrimary());
+
+		for (OutputDescription outputDescription : getOutput()) {
+			builder.append(outputDescription.hashCode());
+		}
+
+		return builder.toHashCode();
 	}
 }

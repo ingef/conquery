@@ -1,5 +1,4 @@
 import type { ConceptIdT, ConceptT } from "../api/types";
-import type { TreesT } from "./reducer";
 
 export const doesQueryMatchNode = (node: ConceptT, query: string) => {
   return (
@@ -32,12 +31,12 @@ export const doesQueryMatchNode = (node: ConceptT, query: string) => {
     this object through the recursion and define new properties as we go (side effects)
 */
 export const findConcepts = (
-  trees: TreesT,
+  trees: Record<string, Record<string, ConceptT>>,
   treeId: string,
   nodeId: ConceptIdT,
   node: ConceptT,
   query: string,
-  intermediateResult: { [key: ConceptIdT]: number } = {}
+  intermediateResult: { [key: ConceptIdT]: number } = {},
 ) => {
   // !node normall shouldn't happen.
   // It happens when window.conceptTrees doesn't contain a node
@@ -66,7 +65,7 @@ export const findConcepts = (
       child,
       trees[treeId][child],
       query,
-      intermediateResult
+      intermediateResult,
     );
 
     sum += result[child] || 0;

@@ -14,43 +14,34 @@ public abstract class ANode<N extends ANode<N>> extends NodeParent<N> {
 	@Getter @Setter
 	private N parent;
 
-	protected abstract int ownValue();
-	
 	@Override
 	protected void replace(N oldNode, TTDirection direction, N newNode) {
-		switch(direction) {
-			case LEFT: {
-				if(left!=oldNode) {
+		switch (direction) {
+			case LEFT -> {
+				if (left != oldNode) {
 					throw new IllegalStateException();
 				}
-				this.setLeft(newNode);
-				return;
+				setLeft(newNode);
 			}
-			case MIDDLE: {
-				if(middle!=oldNode) {
+			case MIDDLE -> {
+				if (middle != oldNode) {
 					throw new IllegalStateException();
 				}
-				this.setMiddle(newNode);
-				return;
+				setMiddle(newNode);
 			}
-			case RIGHT: {
-				if(right!=oldNode) {
+			case RIGHT -> {
+				if (right != oldNode) {
 					throw new IllegalStateException();
 				}
-				this.setRight(newNode);
-				return;
+				setRight(newNode);
 			}
-			default:
-				throw new IllegalStateException();
 		}
 	}
-	
-	public void added(int v) {}
-	
+
 	protected void copyChildrenFrom(N node) {
-		this.setLeft(node.getLeft());
-		this.setMiddle(node.getMiddle());
-		this.setRight(node.getRight());
+		setLeft(node.getLeft());
+		setMiddle(node.getMiddle());
+		setRight(node.getRight());
 	}
 	
 	@Override

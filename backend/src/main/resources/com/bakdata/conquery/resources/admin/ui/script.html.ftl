@@ -70,7 +70,7 @@ return print;`
 				<div class="form-group">
 					<label for="comment">Groovy Script:</label>
 					<textarea id="script" class="form-control text-monospace" style="font-family:monospace;" rows="10" id="query"></textarea>
-					<input class="btn btn-primary" type="submit"  onclick="event.preventDefault(); document.getElementById('answer').innerHTML='waiting for response'; fetch('/admin/script', {method: 'post', body: document.getElementById('script').value, headers: {'Content-Type': 'text/plain'}}).then(response => response.text().then(function (text) {document.getElementById('answer').innerHTML=text}))"/>
+					<input class="btn btn-primary" type="submit"  onclick="event.preventDefault(); document.getElementById('answer').innerHTML='waiting for response'; fetch('/admin/script', {method: 'post', credentials: 'same-origin', body: document.getElementById('script').value, headers: {'Content-Type': 'text/plain'}}).then(response => response.text().then(function (text) {document.getElementById('answer').innerHTML=text}))"/>
 				</div> 
 			</form>		
 			<div class="card">

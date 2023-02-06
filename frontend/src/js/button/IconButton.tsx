@@ -1,35 +1,73 @@
-import * as React from "react";
-import BasicButton from "./BasicButton";
-import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
 import styled from "@emotion/styled";
+import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { forwardRef, memo, useMemo } from "react";
+
+import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
+
+import BasicButton, { BasicButtonProps } from "./BasicButton";
 
 interface StyledFaIconProps extends FaIconPropsT {
   tight?: boolean;
   red?: boolean;
+  secondary?: boolean;
   hasChildren: boolean;
 }
 
-const StyledFaIcon = styled(FaIcon)<StyledFaIconProps>`
-  color: ${({ theme, active, red }) =>
-    red ? theme.col.red : active ? theme.col.blueGrayDark : theme.col.black};
-  font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
-  margin-right: ${({ hasChildren, tight }) =>
-    hasChildren ? (tight ? "5px" : "10px") : "0"};
+const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
+  color: ${({ theme, active, red, secondary, light }) =>
+    red
+      ? theme.col.red
+      : active
+      ? theme.col.blueGrayDark
+      : light
+      ? theme.col.gray
+      : secondary
+      ? theme.col.orange
+      : theme.col.black};
+  font-size: ${({ theme, large, small }) =>
+    large ? theme.font.md : small ? theme.font.xs : theme.font.sm};
 `;
 
-const StyledTransparentButton = styled(BasicButton)<{ frame?: boolean }>`
+const FixedIconContainer = styled("span")`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  display: inline-block;
+`;
+
+const SxBasicButton = styled(BasicButton)<{
+  frame?: boolean;
+  active?: boolean;
+  secondary?: boolean;
+  tight?: boolean;
+  bgHover?: boolean;
+  red?: boolean;
+}>`
   background-color: transparent;
-  color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayDark : theme.col.black};
-  opacity: 0.8;
-  transition: opacity ${({ theme }) => theme.transitionTime};
+  color: ${({ theme, active, secondary, red }) =>
+    active
+      ? theme.col.blueGrayDark
+      : secondary
+      ? theme.col.orange
+      : red
+      ? theme.col.red
+      : theme.col.black};
+  opacity: ${({ frame }) => (frame ? 1 : 0.75)};
+  transition: opacity ${({ theme }) => theme.transitionTime},
+    background-color ${({ theme }) => theme.transitionTime};
 
   border-radius: ${({ theme }) => theme.borderRadius};
   border: ${({ theme, frame }) =>
     frame ? "1px solid " + theme.col.gray : "none"};
+  display: inline-flex;
+  align-items: center;
+  gap: ${({ tight }) => (tight ? "5px" : "10px")};
 
   &:hover {
     opacity: 1;
+
+    background-color: ${({ frame, bgHover, theme }) =>
+      frame || bgHover ? theme.col.grayVeryLight : " inherit"};
   }
 
   &:disabled {
@@ -39,48 +77,102 @@ const StyledTransparentButton = styled(BasicButton)<{ frame?: boolean }>`
   }
 `;
 
-interface PropsT extends React.HTMLAttributes<HTMLButtonElement> {
+export interface IconButtonPropsT extends BasicButtonProps {
   iconProps?: IconStyleProps;
   active?: boolean;
   large?: boolean;
-  icon: string;
+  small?: boolean;
+  icon: IconName;
   regular?: boolean;
+  secondary?: boolean;
   tight?: boolean;
   red?: boolean;
   left?: boolean;
   frame?: boolean;
   bare?: boolean;
-  onClick: () => void;
+  light?: boolean;
+  fixedIconWidth?: number;
+  bgHover?: boolean;
 }
 
 // A button that is prefixed by an icon
-const IconButton: React.FC<PropsT> = ({
-  icon,
-  active,
-  red,
-  large,
-  regular,
-  left,
-  children,
-  tight,
-  iconProps,
-  ...restProps
-}) => (
-  <StyledTransparentButton active={active} {...restProps}>
-    <StyledFaIcon
-      main
-      left={left}
-      regular={regular}
-      large={large}
-      active={active}
-      red={red}
-      icon={icon}
-      hasChildren={!!children}
-      tight={tight}
-      {...iconProps}
-    />
-    {children}
-  </StyledTransparentButton>
+const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
+  (
+    {
+      icon,
+      active,
+      red,
+      large,
+      regular,
+      left,
+      children,
+      tight,
+      iconProps,
+      small,
+      secondary,
+      light,
+      fixedIconWidth,
+      bgHover,
+      ...restProps
+    },
+    ref,
+  ) => {
+    const iconElement = useMemo(() => {
+      const iconEl = (
+        <SxFaIcon
+          main
+          left={left}
+          regular={regular}
+          large={large}
+          active={active}
+          red={red}
+          secondary={secondary}
+          icon={icon}
+          hasChildren={!!children}
+          tight={tight}
+          small={small}
+          light={light}
+          {...iconProps}
+        />
+      );
+
+      return fixedIconWidth ? (
+        <FixedIconContainer style={{ width: fixedIconWidth }}>
+          {iconEl}
+        </FixedIconContainer>
+      ) : (
+        iconEl
+      );
+    }, [
+      icon,
+      active,
+      red,
+      large,
+      regular,
+      left,
+      children,
+      tight,
+      iconProps,
+      small,
+      secondary,
+      light,
+      fixedIconWidth,
+    ]);
+    return (
+      <SxBasicButton
+        active={active}
+        secondary={secondary}
+        tight={tight}
+        bgHover={bgHover}
+        red={red}
+        {...restProps}
+        ref={ref}
+      >
+        {iconElement}
+        {children && <span>{children}</span>}
+      </SxBasicButton>
+    );
+  },
 );
 
-export default IconButton;
+export default memo(IconButton);

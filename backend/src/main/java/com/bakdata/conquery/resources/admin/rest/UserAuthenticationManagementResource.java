@@ -15,20 +15,21 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.models.auth.basic.UserAuthenticationManagementProcessor;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
+import lombok.RequiredArgsConstructor;
 
 @Path("local-authentiaction")
-public class UserAuthenticationManagementResource extends HAuthorized{
-	
-	@Inject
-	private UserAuthenticationManagementProcessor processor;
-	
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
+public class UserAuthenticationManagementResource extends HAuthorized {
+
+	private final UserAuthenticationManagementProcessor processor;
+
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response addUser(ProtoUser pUser) {
-		
-		if(processor.addUser(pUser)) {			
+
+		if (processor.tryRegister(pUser)) {
 			return Response.status(Status.CREATED).build();
 		}
 		return Response.serverError().status(Status.CONFLICT).build();
@@ -46,8 +47,8 @@ public class UserAuthenticationManagementResource extends HAuthorized{
 
 	@Path("{" + USER_ID + "}")
 	@DELETE
-	public Response removeUser(@PathParam(USER_ID) UserId userId) {
-		processor.remove(userId);
+	public Response removeUser(@PathParam(USER_ID) User user) {
+		processor.remove(user);
 		return Response.ok().build();
 	
 	}

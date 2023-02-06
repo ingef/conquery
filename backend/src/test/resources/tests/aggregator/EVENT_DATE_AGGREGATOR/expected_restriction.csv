@@ -1,4 +1,4 @@
-result,dates,con.geschlecht_connector.event-date,con.geschlecht_connector.event-date_1
+result,dates,concept event-date,concept event-date_1
 1,{2010-02-01/2010-02-28},{2010-02-01/2010-02-28},{2010-02-01/2010-02-28}
 10,{2010-02-01/2010-02-28},{2010-02-01/2010-02-28},{2010-02-01/2010-02-28}
 2,{2010-02-01/2010-02-28},{2010-02-01/2010-02-28},{2010-02-01/2010-02-28}

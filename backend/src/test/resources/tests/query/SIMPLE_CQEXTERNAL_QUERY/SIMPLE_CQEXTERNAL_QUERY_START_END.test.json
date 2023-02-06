@@ -1,0 +1,66 @@
+{
+  "type": "QUERY_TEST",
+  "label": "SIMPLE_CQEXTERNAL_QUERY Test",
+  "expectedCsv": "tests/query/SIMPLE_CQEXTERNAL_QUERY/expected_start_end.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "EXTERNAL",
+      "format": [
+        "ID",
+        "START_DATE",
+        "END_DATE"
+      ],
+      "values": [
+        [
+          "result",
+          "start",
+          "end"
+        ],
+        [
+          1,
+          "2012-01-01",
+          "2012-01-10"
+        ],
+        [
+          3,
+          "2013-11-10",
+          "2013-11-20"
+        ]
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "test_tree",
+      "type": "TREE",
+      "connectors": {
+        "label": "tree_label",
+        "name": "test_concept",
+        "table": "test_table",
+        "validityDates": {
+          "label": "datum",
+          "column": "test_table.datum"
+        }
+      }
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/SIMPLE_CQEXTERNAL_QUERY/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -35,24 +35,4 @@ public final class TTHelper {
 	}
 
 
-	public static byte[] concat(byte a, byte[] b) {
-		byte[] res = new byte[1+b.length];
-		res[0] = a;
-		System.arraycopy(b, 0, res, 1, b.length);
-		return res;
-	}
-	
-	public static byte[] concat(byte[] a, byte b) {
-		byte[] res = new byte[a.length+1];
-		System.arraycopy(a, 0, res, 0, a.length);
-		res[a.length] = b;
-		return res;
-	}
-	
-	public static byte[] concat(byte[] a, byte[] b) {
-		byte[] res = new byte[a.length+b.length];
-		System.arraycopy(a, 0, res, 0, a.length);
-		System.arraycopy(b, 0, res, a.length, b.length);
-		return res;
-	}
 }

@@ -3,7 +3,7 @@ package com.bakdata.conquery.apiv1.auth;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.auth.AuthorizationConfig;
+import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;

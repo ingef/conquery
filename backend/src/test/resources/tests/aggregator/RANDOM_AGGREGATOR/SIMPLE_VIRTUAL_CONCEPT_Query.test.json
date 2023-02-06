@@ -6,36 +6,35 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "ids": [
-        "${dataset}.select"
+        "concept"
       ],
       "type": "CONCEPT",
-      "label": "select",
       "tables": [
         {
-          "id": "${dataset}.select.connector"
+          "id": "concept.connector",
+          "selects": [
+            "concept.connector.select"
+          ]
         }
-      ],
-      "selects": [
-        "${dataset}.select.connector.select"
       ]
     }
   },
   "concepts": [
     {
-      "label": "SELECT",
-      "type": "VIRTUAL",
+      "label": "concept",
+      "type": "TREE",
       "connectors": [
         {
           "label": "connector",
-          "table": "table1",
+          "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "column": "table.datum"
           },
           "selects": {
             "name" : "select",
             "type": "LAST",
-            "column": "table1.geschlecht"
+            "column": "table.value"
           }
         }
       ]
@@ -45,7 +44,7 @@
     "tables": [
       {
         "csv": "tests/aggregator/RANDOM_AGGREGATOR/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -56,7 +55,7 @@
             "type": "DATE"
           },
           {
-            "name": "geschlecht",
+            "name": "value",
             "type": "STRING"
           }
         ]

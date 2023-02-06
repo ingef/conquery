@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.Getter;
 
+//TODO replace with https://github.com/vdurmont/etaprinter
 public class ProgressBar {
 	
 	private static final int CHARACTERS = 50;

@@ -1,0 +1,161 @@
+{
+  "type": "QUERY_TEST",
+  "label": "AND DURATION SUM Test",
+  "expectedCsv": "tests/query/LOGICAL/AND_DURATION_SUM_MULTI_CONCEPT/expected.csv",
+  "query": {
+    "type": "SECONDARY_ID_QUERY",
+    "secondaryId": "secondary",
+    "dateAggregationMode" : "LOGICAL",
+    "root": {
+      "type": "AND",
+      "createExists": true,
+      "children": [
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "tree1.a"
+          ],
+          "tables": [
+            {
+              "id": "tree1.connector"
+            }
+          ],
+          "selects": [
+            "tree1.connector.event_duration_sum"
+          ]
+        },
+        {
+          "type": "CONCEPT",
+          "ids": [
+            "tree2.b"
+          ],
+          "tables": [
+            {
+              "id": "tree2.connector"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "tree1",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "column": "table1.column",
+        "validityDates": {
+          "name": "datum",
+          "column": "table1.datum"
+        },
+        "selects": {
+          "type": "EVENT_DURATION_SUM",
+          "name": "event_duration_sum"
+        }
+      },
+      "children": [
+        {
+          "name": "a",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "A"
+          },
+          "children": []
+        },
+        {
+          "name": "b",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "B"
+          },
+          "children": []
+        }
+      ]
+    },
+    
+    {
+      "name": "tree2",
+      "type": "TREE",
+      "connectors": {
+        "name": "connector",
+        "column": "table2.column",
+        "validityDates": {
+          "name": "datum",
+          "column": "table2.datum"
+        }
+      },
+      "children": [
+        {
+          "name": "a",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "A"
+          },
+          "children": []
+        },
+        {
+          "name": "b",
+          "condition": {
+            "type": "PREFIX_LIST",
+            "prefixes": "B"
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "secondaryIds": [
+      {
+        "name": "secondary"
+      },
+      {
+        "name": "ignored"
+      }
+    ],
+    "tables": [
+      {
+        "csv": "tests/query/LOGICAL/AND_DURATION_SUM_MULTI_CONCEPT/table1.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "secondary",
+            "type": "STRING",
+            "secondaryId": "secondary"
+          },
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          }
+        ]
+      },
+      {
+        "csv": "tests/query/LOGICAL/AND_DURATION_SUM_MULTI_CONCEPT/table2.csv",
+        "name": "table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "column",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

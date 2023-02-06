@@ -1,25 +1,24 @@
 {
   "type": "QUERY_TEST",
-  "label": "TEMPORAL_BEFORE_CONCEPT_QUERY Test",
+  "label": "Temporal Before",
   "expectedCsv": "tests/query/TEMPORAL_BEFORE_CONCEPT_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "BEFORE",
-      "index":  {
+      "index": {
         "sampler": "LATEST",
         "child": {
           "ids": [
-            "${dataset}.geschlecht_select"
+            "concept"
           ],
           "type": "CONCEPT",
-          "label": "index",
           "tables": [
             {
-              "id": "${dataset}.geschlecht_select.geschlecht_connector",
+              "id": "concept.connector",
               "filters": [
                 {
-                  "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
+                  "filter": "concept.connector.filter",
                   "type": "SELECT",
                   "value": "f"
                 }
@@ -32,16 +31,15 @@
         "sampler": "LATEST",
         "child": {
           "ids": [
-            "${dataset}.geschlecht_select"
+            "concept"
           ],
           "type": "CONCEPT",
-          "label": "preceding",
           "tables": [
             {
-              "id": "${dataset}.geschlecht_select.geschlecht_connector",
+              "id": "concept.connector",
               "filters": [
                 {
-                  "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
+                  "filter": "concept.connector.filter",
                   "type": "SELECT",
                   "value": "m"
                 }
@@ -54,19 +52,19 @@
   },
   "concepts": [
     {
-      "label": "geschlecht_select",
-      "type": "VIRTUAL",
+      "name": "concept",
+      "type": "TREE",
       "connectors": [
         {
-          "label": "geschlecht_connector",
-          "table": "table1",
+          "name": "connector",
+          "table": "table",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "column": "table.datum"
           },
-          "filter": {
-            "label": "geschlecht",
-            "column": "table1.geschlecht",
+          "filters": {
+            "name": "filter",
+            "column": "table.value",
             "type": "SINGLE_SELECT"
           }
         }
@@ -77,7 +75,7 @@
     "tables": [
       {
         "csv": "tests/query/TEMPORAL_BEFORE_CONCEPT_QUERY/content.csv",
-        "name": "table1",
+        "name": "table",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -88,7 +86,7 @@
             "type": "DATE"
           },
           {
-            "name": "geschlecht",
+            "name": "value",
             "type": "STRING"
           }
         ]

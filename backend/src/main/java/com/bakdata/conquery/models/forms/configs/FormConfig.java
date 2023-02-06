@@ -3,28 +3,35 @@ package com.bakdata.conquery.models.forms.configs;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.FormConfigPatch;
-import com.bakdata.conquery.apiv1.IdLabel;
-import com.bakdata.conquery.io.xodus.MetaStorage;
+import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.FormConfigPermission;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.Labelable;
+import com.bakdata.conquery.models.execution.Owned;
 import com.bakdata.conquery.models.execution.Shareable;
 import com.bakdata.conquery.models.execution.Taggable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
@@ -47,9 +54,10 @@ import org.apache.shiro.authz.Permission;
 @ToString
 @EqualsAndHashCode(callSuper = false)
 @FieldNameConstants
-public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable{
+public class FormConfig extends IdentifiableImpl<FormConfigId> implements Shareable, Labelable, Taggable, Owned {
 
-	protected DatasetId dataset;
+	@NsIdRef
+	protected Dataset dataset;
 	@NotEmpty
 	private String formType;
 	@VariableDefaultValue @NonNull
@@ -65,7 +73,8 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 	 */
 	@NotNull
 	private JsonNode values;
-	private UserId owner;
+	@MetaIdRef
+	private User owner;
 	@VariableDefaultValue
 	private LocalDateTime creationTime = LocalDateTime.now();
 	
@@ -77,15 +86,15 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 
 	@Override
 	public FormConfigId createId() {
-		return new FormConfigId(dataset, formType, formId);
+		return new FormConfigId(dataset.getId(), formType, formId);
 	}
 
 	/**
 	 * Provides an overview (meta data) of this form configuration without the
 	 * actual form field values.
 	 */
-	public FormConfigOverviewRepresentation overview(MetaStorage storage, User user) {
-		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
+	public FormConfigOverviewRepresentation overview(Subject subject) {
+		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
 
 		return FormConfigOverviewRepresentation.builder()
 			.id(getId())
@@ -93,84 +102,50 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 			.label(label)
 			.tags(tags)
 			.ownerName(ownerName)
-			.own(owner.equals(user.getId()))
+			.own(subject.isOwner(this))
 			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 			.shared(shared)
 			// system?
 			.build();
 	}
 
-// TODO rework translation with rework of Id-System
-//	/**
-//	 * Tries to convert this form to the provided dataset. It does not
-//	 * check whether the {@link NamespacedId} that are converted in this processes
-//	 * are actually resolvable. Also, it tries to map the values to a subclass of
-//	 * {@link Form}, for conversion. If that is not possible the an empty optional is returned.
-//	 */
-//	public Optional<FormConfig> tryTranslateToDataset(Namespaces namespaces, DatasetId target, ObjectMapper mapper) {
-//		ObjectNode finalRep = (ObjectNode) values;
-//		if(!finalRep.has("type")) {
-//			finalRep.put("type", formType);			
-//		}
-//		try {
-//			Form intermediateRep = mapper.readerFor(Form.class).readValue(values);
-//			if (! NamespacedIdHolding.class.isAssignableFrom(intermediateRep.getClass())) {
-//				log.trace("Not translating FormConfig ({}) with form type ({}) to dataset ({}), because it does not hold any namespaced ids for translation.", this.getId(), this.getFormType(), target);
-//				return Optional.empty();
-//			}
-//			Form translatedRep = QueryTranslator.replaceDataset(namespaces, intermediateRep, target);
-//			finalRep = mapper.valueToTree(translatedRep);
-//		}
-//		catch (IOException e) {
-//			log.warn("Unable to translate form configuration {} to dataset {}.", getId(), target, e);
-//			return Optional.empty();
-//		}
-//		
-//		FormConfig translatedConf = new FormConfig(
-//			target,
-//			formType,
-//			formId,
-//			label,
-//			tags,
-//			shared,
-//			finalRep,
-//			owner,
-//			creationTime
-//			);
-//
-//		return Optional.of(translatedConf);
-//	}
-
 	/**
 	 * Return the full representation of the configuration with the configured form fields and meta data.
 	 */
-	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, User requestingUser){
-		String ownerName = Optional.ofNullable(storage.getUser(owner)).map(User::getLabel).orElse(null);
+	public FormConfigFullRepresentation fullRepresentation(MetaStorage storage, Subject requestingUser){
+		String ownerName = Optional.ofNullable(owner).map(User::getLabel).orElse(null);
 
 		/* Calculate which groups can see this query.
 		 * This is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
-		List<IdLabel<GroupId>> permittedGroups = new ArrayList<>();
+
+		List<GroupId> permittedGroups = new ArrayList<>();
 		for(Group group : storage.getAllGroups()) {
 			for(Permission perm : group.getPermissions()) {
-				if(perm.implies(FormConfigPermission.onInstance(Ability.READ, this.getId()))) {
-					permittedGroups.add(new IdLabel<GroupId>(group.getId(), group.getLabel()));
+				if(perm.implies(createPermission(Ability.READ.asSet()))) {
+					permittedGroups.add(group.getId());
 					continue;
 				}
 			}
 		}
 
 		return FormConfigFullRepresentation.builder()
-			.id(getId()).formType(formType)
-			.label(label)
-			.tags(tags)
+										   .id(getId()).formType(formType)
+										   .label(label)
+										   .tags(tags)
 			.ownerName(ownerName)
-			.own(requestingUser != null? requestingUser.getId().equals(owner) : false)
-			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
-			.shared(shared)
-			.groups(permittedGroups)
-			// system? TODO discuss how system is determined (may check if owning user is in a special system group or so)
-			.values(values).build();
+			.own(requestingUser.isOwner(this))
+										   .createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
+										   .shared(shared)
+										   .groups(permittedGroups)
+										   // system? TODO discuss how system is determined (may check if owning user is in a special system group or so)
+										   .values(values)
+										   .build();
+	}
+
+	@Override
+	public ConqueryPermission createPermission(Set<Ability> abilities) {
+		return FormConfigPermission.onInstance(abilities, getId());
 	}
 
 	/**
@@ -211,7 +186,7 @@ public class FormConfig extends IdentifiableImpl<FormConfigId> implements Sharea
 		/**
 		 * The groups this config is shared with.
 		 */
-		private Collection<IdLabel<GroupId>> groups;
+		private Collection<GroupId> groups;
 
 		private JsonNode values;
 	}

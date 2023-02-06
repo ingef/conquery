@@ -6,9 +6,9 @@ import java.util.UUID;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
@@ -38,17 +38,17 @@ public class FormConfigAPI {
 	@VariableDefaultValue @Builder.Default
 	private LocalDateTime creationTime = LocalDateTime.now();
 	
-	public static FormConfig intern(FormConfigAPI extern, UserId owner, DatasetId dataset) {
+	public FormConfig intern(User owner, Dataset dataset) {
 		FormConfig intern = new FormConfig();
-		intern.setFormId(extern.formId);
-		intern.setFormType(extern.formType);
-		intern.setLabel(extern.label);
-		intern.setTags(extern.tags);
-		intern.setValues(extern.values);
-		intern.setCreationTime(extern.creationTime);
+		intern.setFormId(formId);
+		intern.setFormType(formType);
+		intern.setLabel(label);
+		intern.setTags(tags);
+		intern.setValues(values);
+		intern.setCreationTime(creationTime);
 		intern.setOwner(owner);
 		intern.setDataset(dataset);
 		return intern;
-		
+
 	}
 }

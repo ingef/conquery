@@ -1,22 +1,23 @@
-import * as React from "react";
-import styled from "@emotion/styled";
 import { css } from "@emotion/react";
+import styled from "@emotion/styled";
+import { ReactNode } from "react";
 import ReactList from "react-list";
 
-type PropsType = {
-  items: React.Node[];
-  maxVisibleItems?: number;
+interface PropsType {
+  items: ReactNode[];
+  maxVisibleItems: number;
   fullWidth?: boolean;
-  minWidth?: boolean;
-};
+}
 
-const Root = styled("div")`
+// With the number of visible items specified here,
+// make an additional element half-visible at the end to indicate
+// that the list is scrollable
+const Root = styled("div")<{ maxVisibleItems: number; fullWidth?: boolean }>`
+  max-height: ${({ maxVisibleItems }) => (maxVisibleItems + 0.5) * 34}px;
+
   overflow-x: none;
   overflow-y: auto;
-  // If the number of visible items is specified here,
-  // make an additional element half-visible at the end to indicate
-  // that the list is scrollable
-  max-height: ${({ maxVisibleItems }) => (maxVisibleItems + 0.5) * 34}px;
+  -webkit-overflow-scrolling: touch;
   max-width: 340px;
   border-radius: 2px;
   border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
@@ -31,9 +32,10 @@ const Root = styled("div")`
 `;
 
 const Item = styled("div")`
-  line-height: 34px;
+  line-height: 24px;
   padding-left: 10px;
   padding-right: 10px;
+  border-bottom: 1px solid ${({ theme }) => theme.col.grayVeryLight};
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -41,20 +43,20 @@ const Item = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
-const ScrollableList = (props: PropsType) => {
-  const renderItem = (index, key) => {
+const ScrollableList = ({ items, maxVisibleItems, fullWidth }: PropsType) => {
+  const renderItem = (index: number, key: string | number) => {
     return (
       <Item key={key} className="scrollable-list-item">
-        {props.items[index]}
+        {items[index]}
       </Item>
     );
   };
 
   return (
-    <Root maxVisibleItems={props.maxVisibleItems} fullWidth={!!props.fullWidth}>
+    <Root maxVisibleItems={maxVisibleItems} fullWidth={!!fullWidth}>
       <ReactList
         itemRenderer={renderItem}
-        length={props.items ? props.items.length : 0}
+        length={items ? items.length : 0}
         type="uniform"
       />
     </Root>

@@ -1,0 +1,55 @@
+name: "End-To-End Tests"
+
+on:
+  pull_request:
+    paths:
+      - "**"
+
+jobs:
+  end-to-end-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 17
+
+      - name: Build Backend
+        run: ./scripts/build_backend_no_version.sh
+
+      - name: Build Frontend
+        run: ./scripts/build_frontend.sh
+
+      - name: Cypress run
+        # This is a preconfigured action, maintained by cypress, to run e2e tests
+        # https://github.com/cypress-io/github-action
+        uses: cypress-io/github-action@v2
+        with:
+          working-directory: .
+          start: bash ./scripts/run_e2e_all.sh
+          wait-on: "http://localhost:8000"
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-videos
+          path: cypress/videos

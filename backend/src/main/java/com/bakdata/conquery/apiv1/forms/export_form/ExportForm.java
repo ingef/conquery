@@ -1,91 +1,131 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
-import c10n.C10N;
-import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.QueryDescription;
-import com.bakdata.conquery.apiv1.forms.Form;
-import com.bakdata.conquery.internationalization.ExportFormC10n;
-import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.forms.util.DateContext;
-import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-
-import javax.validation.Valid;
-import javax.validation.ValidationException;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import javax.validation.Valid;
+import javax.validation.ValidationException;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+
+import c10n.C10N;
+import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
+import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.Query;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.internationalization.ExportFormC10n;
+import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
+import com.bakdata.conquery.models.forms.util.Alignment;
+import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.forms.util.ResolutionShortNames;
+import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.DateAggregationMode;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.collect.ImmutableList;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Getter @Setter
 @CPSType(id="EXPORT_FORM", base=QueryDescription.class)
-public class ExportForm implements Form, NamespacedIdHolding {
+public class ExportForm extends Form {
+
 	@NotNull
-	private ManagedExecutionId queryGroup;
-	@NotNull @Valid @JsonManagedReference
-	private Mode timeMode;
-	
-	@NotNull @NotEmpty
-	private List<DateContext.Resolution> resolution = List.of(DateContext.Resolution.COMPLETE);
-	
-	private boolean alsoCreateCoarserSubdivisions = true;
+	@JsonProperty("queryGroup")
+	private ManagedExecutionId queryGroupId;
 
 	@JsonIgnore
-	private IQuery prerequisite;
+	private ManagedQuery queryGroup;
+
+	@NotNull
+	@Valid
+	@JsonManagedReference
+	private Mode timeMode;
+
+	@NotEmpty
+	private List<CQElement> features = ImmutableList.of();
+
+	@NotNull
+	@NotEmpty
+	private List<ResolutionShortNames> resolution = List.of(ResolutionShortNames.COMPLETE);
+
+	private boolean alsoCreateCoarserSubdivisions = false;
+
+	@JsonIgnore
+	private Query prerequisite;
+	@JsonIgnore
+	private List<Resolution> resolvedResolutions;
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
 		timeMode.visit(visitor);
+		features.forEach(visitor);
 	}
 
-	@Override
-	public void collectNamespacedIds(Set<NamespacedId> ids) {
-		checkNotNull(ids);
-		if(queryGroup != null) {
-			ids.add(queryGroup);
-		}
-	}
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
 		return Map.of(
 			ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
 			List.of(
-				timeMode.createSpecializedQuery(datasets, userId, submittedDataset)
-					.toManagedExecution(datasets, userId, submittedDataset)));
+				timeMode.createSpecializedQuery(datasets, user, submittedDataset)
+					.toManagedExecution(user, submittedDataset)));
 	}
 
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
-		return Set.of(queryGroup);
+		return Set.of(queryGroupId);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
+		queryGroup = (ManagedQuery) context.getDatasetRegistry().getMetaRegistry().resolve(queryGroupId);
+
+
+		// Apply defaults to user concept
+		ExportForm.DefaultSelectSettable.enable(features);
+
 		timeMode.resolve(context);
-		prerequisite = Form.resolvePrerequisite(context, queryGroup);
+		prerequisite = queryGroup.getQuery();
+
+		List<Resolution> resolutionsFlat = resolution.stream()
+													 .flatMap(ResolutionShortNames::correspondingResolutions)
+													 .distinct()
+													 .toList();
+
+
+		if (isAlsoCreateCoarserSubdivisions()) {
+			if (resolutionsFlat.size() != 1) {
+				throw new IllegalStateException("Abort Form creation, because coarser subdivision are requested and multiple resolutions are given. With 'alsoCreateCoarserSubdivisions' set to true, provide only one resolution.");
+			}
+			resolvedResolutions = resolutionsFlat.get(0).getThisAndCoarserSubdivisions();
+		}
+		else {
+			resolvedResolutions = resolutionsFlat;
+		}
 	}
 
 	@Override
@@ -97,21 +137,24 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	/**
 	 * Maps the given resolution to a fitting alignment. It tries to use the alignment which was given as a hint.
 	 * If the alignment does not fit to a resolution (resolution is finer than the alignment), the first alignment that
-	 * this resolution supports is chosen (see the alignment order in {@link DateContext.Resolution})
+	 * this resolution supports is chosen (see the alignment order in {@link Resolution})
 	 * @param resolutions The temporal resolutions for which sub queries should be generated per entity
 	 * @param alignmentHint The preferred calendar alignment on which the sub queries of each resolution should be aligned.
 	 * 						Note that this alignment is chosen when a resolution is equal or coarser.
 	 * @return The given resolutions mapped to a fitting calendar alignment.
 	 */
-	public static List<ExportForm.ResolutionAndAlignment> getResolutionAlignmentMap(List<DateContext.Resolution> resolutions, DateContext.Alignment alignmentHint) {
+	public static List<ExportForm.ResolutionAndAlignment> getResolutionAlignmentMap(List<Resolution> resolutions, Alignment alignmentHint) {
 
 		return resolutions.stream()
 				.map(r -> ResolutionAndAlignment.of(r, getFittingAlignment(alignmentHint, r)))
 				.collect(Collectors.toList());
 	}
 
-	private static DateContext.Alignment getFittingAlignment(DateContext.Alignment alignmentHint, DateContext.Resolution resolution) {
-		return resolution.getSupportedAlignments().contains(alignmentHint)? alignmentHint : resolution.getSupportedAlignments().iterator().next();
+	private static Alignment getFittingAlignment(Alignment alignmentHint, Resolution resolution) {
+		if(resolution.isAlignmentSupported(alignmentHint) ) {
+			return alignmentHint;
+		}
+		return resolution.getDefaultAlignment();
 	}
 
 	/**
@@ -120,16 +163,37 @@ public class ExportForm implements Form, NamespacedIdHolding {
 	@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 	@Getter
 	public static class ResolutionAndAlignment {
-		private final  DateContext.Resolution resolution;
-		private final DateContext.Alignment alignment;
+		private final Resolution resolution;
+		private final Alignment alignment;
 
 		@JsonCreator
-		public static ResolutionAndAlignment of(DateContext.Resolution resolution, DateContext.Alignment alignment){
-			if (!resolution.getSupportedAlignments().contains(alignment)) {
+		public static ResolutionAndAlignment of(Resolution resolution, Alignment alignment){
+			if (!resolution.isAlignmentSupported(alignment)) {
 				throw new ValidationException(String.format("The alignment %s is not supported by the resolution %s", alignment, resolution));
 			}
 
 			return new ResolutionAndAlignment(resolution, alignment);
 		}
+	}
+
+	/**
+	 * Classes that can be used as Features in ExportForm, having default-exists, are triggered this way.
+	 */
+	public static interface DefaultSelectSettable {
+		public static void enable(List<CQElement> features) {
+			for (CQElement feature : features) {
+				if(feature instanceof DefaultSelectSettable){
+					((DefaultSelectSettable) feature).setDefaultExists();
+				}
+			}
+		}
+
+		void setDefaultExists();
+	}
+
+
+	@Override
+	public ManagedForm toManagedExecution(User user, Dataset submittedDataset) {
+		return new ManagedInternalForm(this, user, submittedDataset);
 	}
 }

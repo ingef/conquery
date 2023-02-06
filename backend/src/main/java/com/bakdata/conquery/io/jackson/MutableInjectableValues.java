@@ -19,13 +19,7 @@ public class MutableInjectableValues extends InjectableValues {
 		values.put(type.getName(), value);
 		return this;
 	}
-	
-	public <T> MutableInjectableValues withValue(Class<T> type, T value) {
-		MutableInjectableValues res = this.copy();
-		res.values.put(type.getName(), value);
-		return res;
-	}
-	
+
 	@Override
 	public Object findInjectableValue(Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance) throws JsonMappingException {
 		if(valueId instanceof Class) {

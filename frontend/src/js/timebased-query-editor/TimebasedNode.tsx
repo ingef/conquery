@@ -1,19 +1,61 @@
-import React, { useRef, FC } from "react";
-import T from "i18n-react";
 import styled from "@emotion/styled";
+import { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
+import { useTranslation } from "react-i18next";
 
+import { getWidthAndHeight } from "../app/DndProvider";
+import IconButton from "../button/IconButton";
+import { DNDType } from "../common/constants/dndTypes";
+import { DragItemQuery } from "../standard-query-editor/types";
 import VerticalToggleButton, {
   Option,
-} from "../form-components/VerticalToggleButton";
-import {
-  EARLIEST,
-  LATEST,
-  RANDOM,
-} from "../common/constants/timebasedQueryTimestampTypes";
-import { TIMEBASED_NODE } from "../common/constants/dndTypes";
-import IconButton from "../button/IconButton";
-import { getWidthAndHeight } from "../app/DndProvider";
+} from "../ui-components/VerticalToggleButton";
+
+import { TimebasedResultType } from "./reducer";
+
+const TimebasedNodeContainer = styled("div")`
+  border: 1px solid ${({ theme }) => theme.col.blueGray};
+  border-radius: ${({ theme }) => theme.borderRadius};
+  transition: all ${({ theme }) => theme.transitionTime};
+  overflow: hidden;
+
+  &:hover {
+    border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+  }
+`;
+
+const TimebasedNodeContent = styled("div")`
+  display: table;
+  width: 100%;
+  background-color: white;
+`;
+
+const TimebasedNodeDescription = styled("div")`
+  display: table-cell;
+  vertical-align: middle;
+  position: relative;
+  padding: 10px;
+`;
+const TimebasedNodeDescriptionText = styled("p")`
+  word-break: break-word;
+`;
+
+const TimebasedNodeTimestamp = styled("div")`
+  width: 70px;
+  display: table-cell;
+  vertical-align: middle;
+  border-right: 1px solid ${({ theme }) => theme.col.blueGrayLight};
+  text-align: right;
+`;
+
+const TimebasedNodeTimestampTitle = styled("p")`
+  font-size: ${({ theme }) => theme.font.tiny};
+  margin: 0 0 5px;
+  padding: 2px 5px 0;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: ${({ theme }) => theme.col.gray};
+`;
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
@@ -40,41 +82,42 @@ const StyledVerticalToggleButton = styled(VerticalToggleButton)`
 `;
 
 interface PropsT {
-  node: Object;
+  node: TimebasedResultType;
   position: "left" | "right";
-  isIndexResult: boolean;
-  onRemove: Function;
-  onSetTimebasedNodeTimestamp: Function;
-  onSetTimebasedIndexResult: Function;
+  onRemove: () => void;
+  onSetTimebasedNodeTimestamp: (value: string) => void;
   conditionIdx: number;
   resultIdx: number;
-  connectDragSource: Function;
-  isIndexResultDisabled: boolean;
 }
 
 const TimebasedNode: FC<PropsT> = ({
   node,
-  // isIndexResult,
-  // isIndexResultDisabled,
   onRemove,
-  // onSetTimebasedIndexResult,
   onSetTimebasedNodeTimestamp,
   conditionIdx,
   resultIdx,
 }) => {
+  const { t } = useTranslation();
   const ref = useRef<HTMLDivElement | null>(null);
-  const item = {
-    conditionIdx,
-    resultIdx,
-    node,
-    moved: true,
-    type: TIMEBASED_NODE,
+  const item: DragItemQuery = {
+    ...node,
+    type: DNDType.PREVIOUS_QUERY,
+    tags: [],
+    dragContext: {
+      width: 0,
+      height: 0,
+      movedFromAndIdx: conditionIdx,
+      movedFromOrIdx: resultIdx,
+    },
   };
   const [, drag] = useDrag({
-    item,
-    begin: () => ({
+    type: item.type,
+    item: () => ({
       ...item,
-      ...getWidthAndHeight(ref),
+      dragContext: {
+        ...item.dragContext,
+        ...getWidthAndHeight(ref),
+      },
     }),
   });
 
@@ -84,16 +127,16 @@ const TimebasedNode: FC<PropsT> = ({
       activeValue={node.timestamp}
       options={[
         {
-          label: T.translate("timebasedQueryEditor.timestampFirst"),
-          value: EARLIEST,
+          label: t("timebasedQueryEditor.timestampFirst"),
+          value: "EARLIEST",
         },
         {
-          label: T.translate("timebasedQueryEditor.timestampRandom"),
-          value: RANDOM,
+          label: t("timebasedQueryEditor.timestampRandom"),
+          value: "RANDOM",
         },
         {
-          label: T.translate("timebasedQueryEditor.timestampLast"),
-          value: LATEST,
+          label: t("timebasedQueryEditor.timestampLast"),
+          value: "LATEST",
         },
       ]}
     />
@@ -106,26 +149,48 @@ const TimebasedNode: FC<PropsT> = ({
         drag(instance);
       }}
     >
-      <div className="timebased-node__container">
-        <div className="timebased-node__content">
-          <div className="timebased-node__timestamp">
-            <p className="timebased-node__timestamp__title">
-              {T.translate("timebasedQueryEditor.timestamp")}
-            </p>
+      <TimebasedNodeContainer>
+        <TimebasedNodeContent>
+          <TimebasedNodeTimestamp>
+            <TimebasedNodeTimestampTitle>
+              {t("timebasedQueryEditor.timestamp")}
+            </TimebasedNodeTimestampTitle>
             {toggleButton}
-          </div>
-          <div className="timebased-node__description">
+          </TimebasedNodeTimestamp>
+          <TimebasedNodeDescription>
             <StyledIconButton icon="times" onClick={onRemove} />
-            <p className="timebased-node__description__text">
+            <TimebasedNodeDescriptionText>
               {node.label || node.id}
-            </p>
-          </div>
-        </div>
-      </div>
+            </TimebasedNodeDescriptionText>
+          </TimebasedNodeDescription>
+        </TimebasedNodeContent>
+      </TimebasedNodeContainer>
     </Root>
   );
 };
 
+// &__index-result-btn
+//   border: none
+//   border-top: 1px solid $col-blue-gray-light
+//   width: 100%
+//   color: $col-black
+//   padding: 6px 0
+//   background-color: white
+//   transition: all $transition-time
+//   font-size: $font-xs
+
+//   &:hover
+//     &:not(.timebased-node__index-result-btn--active)
+//       background-color: $col-gray-very-light
+
+//   &--active
+//     background-color: $col-blue-gray-very-light
+//     border-top: 1px solid $col-blue-gray
+//     color: $col-black
+
+//   &--disabled
+//     cursor: not-allowed
+//     opacity: 0.6
 // Button indexResult (to re-enable this soon)
 // <button
 //   className={classnames("timebased-node__index-result-btn", {
@@ -135,7 +200,7 @@ const TimebasedNode: FC<PropsT> = ({
 //   disabled={isIndexResultDisabled}
 //   onClick={onSetTimebasedIndexResult}
 // >
-//   {T.translate("timebasedQueryEditor.timestampResultsFrom")}
+//   {t("timebasedQueryEditor.timestampResultsFrom")}
 // </button>
 
 export default TimebasedNode;

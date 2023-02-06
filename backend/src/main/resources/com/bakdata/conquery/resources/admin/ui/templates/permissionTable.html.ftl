@@ -1,5 +1,6 @@
 <#macro permissionTable ownerId permissions>
-    <table class="table table-striped">
+    <div class="table-responsive">
+    <table class="table table-sm table-striped">
         <thead>
             <tr>
             <th scope="col">Domains</th>
@@ -21,12 +22,24 @@
                         </#if>
                     <td>
                         <#if abilities?has_content>
-                            <#list abilities as ability>${ability} </#list>
+                            <ul class="list-group">
+                                <#list abilities as ability>
+                                    <li class="list-group-item p-1">
+                                        ${ability}
+                                    </li>
+                                </#list>
+                            </ul>
                         </#if>
                     </td>
                     <td>
                         <#if targets?has_content>
-                            <#list targets as target> ${target} </#list>
+                            <ul class="list-group">
+                                <#list targets as target>
+                                    <li class="list-group-item p-1">
+                                        ${target}
+                                    </li>
+                                </#list>
+                            </ul>
                         </#if>
                     </td>
                     <td>${permission.creationTime}</td>
@@ -35,6 +48,7 @@
             </#list>
         </tbody>
     </table>
+    </div>
     <script type="application/javascript">
     function handleDeletePermission(permission){
         event.preventDefault();
@@ -42,8 +56,11 @@
             '/admin/permissions/${ownerId}',
             {
                 method: 'delete',
-                 headers: {'Content-Type': 'text/plain'},
-                 body: permission}).then(function(){location.reload()});
+                credentials: 'same-origin',
+                headers: {'Content-Type': 'application/json'},
+                body: permission
+            })
+            .then(function(){location.reload()});
     }
     </script>
 </#macro>

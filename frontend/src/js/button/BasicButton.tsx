@@ -1,17 +1,21 @@
-import React from "react";
 import styled from "@emotion/styled";
+import { forwardRef, ButtonHTMLAttributes } from "react";
 
-interface PropsT extends React.HTMLAttributes<HTMLButtonElement> {
+export interface BasicButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement> {
   bare?: boolean;
   tiny?: boolean;
   small?: boolean;
   large?: boolean;
   active?: boolean;
+  secondary?: boolean;
+  autoFocus?: boolean; // Should actually be within the extends, not sure why I had to declare this.
 }
 
-const Button = styled("button")<PropsT>`
+const Button = styled("button")<BasicButtonProps>`
   cursor: pointer;
-  font-weight: ${({ active }) => (active ? "700" : "400")};
+  font-weight: ${({ active, secondary }) =>
+    active || secondary ? "700" : "400"};
   padding: ${({ small, tiny, bare, large }) =>
     bare
       ? "0"
@@ -33,10 +37,12 @@ const Button = styled("button")<PropsT>`
   }
 `;
 
-const BasicButton: React.FC<PropsT> = ({ children, ...props }) => (
-  <Button type="button" {...props}>
-    {children}
-  </Button>
+const BasicButton = forwardRef<HTMLButtonElement, BasicButtonProps>(
+  ({ children, ...props }, ref) => (
+    <Button type="button" {...props} ref={ref}>
+      {children}
+    </Button>
+  ),
 );
 
 export default BasicButton;

@@ -1,5 +1,5 @@
-import React from "react";
 import styled from "@emotion/styled";
+import { FC, ReactNode } from "react";
 
 const Root = styled("div")`
   position: relative;
@@ -18,8 +18,7 @@ const MsgContainer = styled("div")`
 `;
 
 const Msg = styled("div")`
-  width: 400px;
-  white-space: initial;
+  white-space: nowrap;
 `;
 
 const Message = styled("p")`
@@ -37,10 +36,10 @@ const Preview = styled("div")<{ large?: boolean }>`
 `;
 
 interface PropsT {
-  emptyMessage: React.ReactNode;
+  emptyMessage: ReactNode;
 }
 
-const EmptyList: React.FC<PropsT> = ({ emptyMessage }) => (
+const EmptyList: FC<PropsT> = ({ emptyMessage }) => (
   <Root>
     <MsgContainer>
       <Msg>

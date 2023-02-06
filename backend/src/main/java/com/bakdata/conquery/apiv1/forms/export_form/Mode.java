@@ -1,18 +1,19 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang3.ArrayUtils;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "value")
 @CPSBase
@@ -23,12 +24,7 @@ public abstract class Mode implements Visitable {
 	@JsonBackReference
 	private ExportForm form;
 
-	@JsonIgnore
-	public String[] getAdditionalHeader() {
-		return ArrayUtils.EMPTY_STRING_ARRAY;
-	}
-
 	public abstract void resolve(QueryResolveContext context);
 	
-	public abstract IQuery createSpecializedQuery(DatasetRegistry datasets, UserId userId, DatasetId submittedDataset);
+	public abstract Query createSpecializedQuery(DatasetRegistry datasets, User user, Dataset submittedDataset);
 }

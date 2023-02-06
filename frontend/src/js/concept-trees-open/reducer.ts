@@ -1,33 +1,41 @@
+import { getType } from "typesafe-actions";
+
+import type { ConceptIdT } from "../api/types";
+import type { Action } from "../app/actions";
+import { searchTrees } from "../concept-trees/actions";
+
 import {
-  RESET_ALL_CONCEPT_OPEN,
-  SET_CONCEPT_OPEN,
-  CLOSE_ALL_CONCEPT_OPEN,
-} from "./actionTypes";
-import { SEARCH_TREES_SUCCESS } from "../concept-trees/actionTypes";
+  closeAllConceptOpen,
+  resetAllConceptOpen,
+  setConceptOpen,
+} from "./actions";
 
 export type ConceptTreesOpenStateT = {
-  [conceptId: string]: boolean;
+  [conceptId: ConceptIdT]: boolean;
 };
 
 const initialState: ConceptTreesOpenStateT = {};
 
 const conceptTreesOpen = (
   state: ConceptTreesOpenStateT = initialState,
-  action: Object
+  action: Action,
 ): ConceptTreesOpenStateT => {
   switch (action.type) {
-    case SET_CONCEPT_OPEN: {
+    case getType(setConceptOpen): {
       const { conceptId, open } = action.payload;
 
       return { ...state, [conceptId]: open };
     }
-    case CLOSE_ALL_CONCEPT_OPEN:
-      return action.payload.rootConceptIds.reduce((all, conceptId) => {
-        all[conceptId] = false;
-        return all;
-      }, {});
-    case SEARCH_TREES_SUCCESS:
-    case RESET_ALL_CONCEPT_OPEN:
+    case getType(closeAllConceptOpen):
+      return action.payload.rootConceptIds.reduce<ConceptTreesOpenStateT>(
+        (all, conceptId) => {
+          all[conceptId] = false;
+          return all;
+        },
+        {},
+      );
+    case getType(searchTrees.success):
+    case getType(resetAllConceptOpen):
       return initialState;
     default:
       return state;

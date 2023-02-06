@@ -1,13 +1,37 @@
-import React from "react";
 import styled from "@emotion/styled";
+import type { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import FaIcon from "../icon/FaIcon";
+import type { NodeResetConfig } from "../model/node";
+import { tableHasFilterValues, tableIsDisabled } from "../model/table";
+import type { TableWithFilterValueT } from "../standard-query-editor/types";
+import WithTooltip from "../tooltip/WithTooltip";
 
-import { tableHasActiveFilters, tableIsDisabled } from "../model/table";
-import type { TableWithFilterValueType } from "../standard-query-node-editor/types";
+const Container = styled("div")<{ disabled?: boolean }>`
+  font-size: ${({ theme }) => theme.font.md};
+  line-height: 21px;
+  padding: 8px 15px;
+  font-weight: 700;
+  color: ${({ theme, disabled }) =>
+    disabled ? theme.col.gray : theme.col.black};
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background-color: transparent;
+  cursor: pointer;
 
-import MenuColumnButton from "./MenuColumnButton";
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const SxWithTooltip = styled(WithTooltip)`
+  display: flex !important;
+`;
 
 const SxIconButton = styled(IconButton)`
   font-size: ${({ theme }) => theme.font.lg};
@@ -19,9 +43,8 @@ const SxIconButton = styled(IconButton)`
     line-height: ${({ theme }) => theme.font.lg};
   }
 `;
-const SxFaIcon = styled(FaIcon)`
-  font-size: ${({ theme }) => theme.font.lg};
-  line-height: ${({ theme }) => theme.font.lg};
+const ResetButton = styled(IconButton)`
+  padding: 0;
 `;
 
 const Label = styled("span")`
@@ -29,52 +52,85 @@ const Label = styled("span")`
   line-height: ${({ theme }) => theme.font.lg};
 `;
 
-type PropsT = {
-  table: TableWithFilterValueType;
+const Row = styled("div")`
+  display: flex;
+  align-items: center;
+`;
+
+interface PropsT {
+  table: TableWithFilterValueT;
   isActive: boolean;
   isOnlyOneTableIncluded: boolean;
-  blacklistedTables?: string[];
-  whitelistedTables?: string[];
+  blocklistedTables?: string[];
+  allowlistedTables?: string[];
   onClick: () => void;
   onToggleTable: (value: boolean) => void;
-};
+  onResetTable: (config: NodeResetConfig) => void;
+}
 
-export default ({
+const MenuColumnItem: FC<PropsT> = ({
   table,
-  isActive,
   isOnlyOneTableIncluded,
-  blacklistedTables,
-  whitelistedTables,
+  blocklistedTables,
+  allowlistedTables,
   onClick,
-  onToggleTable
-}: PropsT) => {
+  onToggleTable,
+  onResetTable,
+}) => {
+  const { t } = useTranslation();
   const isDisabled = tableIsDisabled(
     table,
-    blacklistedTables,
-    whitelistedTables
+    blocklistedTables,
+    allowlistedTables,
   );
 
-  // TODO: This creates an invalid DOM nesting, a <button> inside a <button>
-  //       Yet, this is the way we can get it to work in IE11
-  //       => Try to use a clickable div and a nested button instead
-  return (
-    <MenuColumnButton active={isActive} disabled={isDisabled} onClick={onClick}>
-      <SxIconButton
-        regular
-        icon={table.exclude ? "square" : "check-square"}
-        disabled={isDisabled || (!table.exclude && isOnlyOneTableIncluded)}
-        onClick={event => {
-          // To prevent selecting the table as well, see above
-          event.stopPropagation();
+  const includable = table.exclude;
+  const excludable = !isOnlyOneTableIncluded;
 
-          if (!isDisabled && (table.exclude || !isOnlyOneTableIncluded))
-            onToggleTable(!table.exclude);
-        }}
-      />
-      <Label>{table.label}</Label>
-      {tableHasActiveFilters(table) && (
-        <SxFaIcon right white={isActive} light={!isActive} icon="filter" />
+  const isFilterActive = tableHasFilterValues(table);
+
+  return (
+    <Container disabled={isDisabled} onClick={onClick}>
+      <Row>
+        <SxIconButton
+          regular
+          icon={includable ? "square" : "check-square"}
+          disabled={isDisabled || (!includable && !excludable)}
+          onClick={(event) => {
+            // To prevent selecting the table as well, see above
+            event.stopPropagation();
+
+            if (isDisabled) {
+              return;
+            }
+
+            if (includable || excludable) {
+              onToggleTable(!table.exclude);
+            }
+          }}
+        />
+        <Label>{table.label}</Label>
+      </Row>
+      {isFilterActive && (
+        <SxWithTooltip text={t("queryNodeEditor.clearSettings")}>
+          <ResetButton
+            icon="filter"
+            active
+            onClick={(event) => {
+              // To prevent selecting the table as well, see above
+              event.stopPropagation();
+
+              if (isDisabled) {
+                return;
+              }
+
+              onResetTable({ useDefaults: false });
+            }}
+          />
+        </SxWithTooltip>
       )}
-    </MenuColumnButton>
+    </Container>
   );
 };
+
+export default MenuColumnItem;

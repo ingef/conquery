@@ -10,21 +10,23 @@ import java.util.ListIterator;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.math.DoubleMath;
 import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import lombok.ToString;
 
 @CPSType(id = "MAP_DICTIONARY", base = Dictionary.class)
+@ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class MapDictionary extends Dictionary {
 
 	private Object2IntOpenHashMap<ByteArrayList> value2Id;
 	private List<ByteArrayList> id2Value;
 
-	public MapDictionary(DatasetId dataset, @NotNull String name) {
+	public MapDictionary(Dataset dataset, @NotNull String name) {
 		super(dataset, name);
 		value2Id = new Object2IntOpenHashMap<>();
 		value2Id.defaultReturnValue(-1);
@@ -32,8 +34,8 @@ public class MapDictionary extends Dictionary {
 	}
 
 	@JsonCreator
-	public MapDictionary(DatasetId datasetId, String name, byte[][] id2Value) {
-		super(datasetId, name);
+	public MapDictionary(Dataset dataset, String name, byte[][] id2Value) {
+		super(dataset, name);
 		if (id2Value == null) {
 			id2Value = new byte[0][];
 		}

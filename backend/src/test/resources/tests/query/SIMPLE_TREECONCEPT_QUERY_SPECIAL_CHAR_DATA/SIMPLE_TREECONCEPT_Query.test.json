@@ -7,11 +7,11 @@
         "root": {
             "type": "CONCEPT",
             "ids": [
-              "${dataset}.test_tree.$c3$a41" // =Ä1
+              "test_tree.$c3$a41" // =Ä1
             ],
             "tables": [
                 {
-                  "id": "${dataset}.test_tree.test_column",
+                  "id": "test_tree.test_column",
                     "filters": []
                 }
             ]
