@@ -39,7 +39,7 @@ public class SerializationTestUtil<T> {
 	/**
 	 * These don't seem to behave well in combination with recursiveComparison.
 	 */
-	private static final Class<?>[]
+	public static final Class<?>[]
 			TYPES_TO_IGNORE =
 			new Class[]{
 					AtomicInteger.class,

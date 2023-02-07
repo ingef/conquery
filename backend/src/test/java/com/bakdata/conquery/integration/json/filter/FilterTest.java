@@ -24,6 +24,7 @@ import com.bakdata.conquery.integration.json.AbstractQueryEngineTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -175,7 +176,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 			if (expectedFrontendConfig != null) {
 				log.info("Checking actual FrontendConfig: {}", actual);
-				assertThat(actual).usingRecursiveComparison().isEqualTo(expectedFrontendConfig);
+				assertThat(actual).usingRecursiveComparison().ignoringFieldsOfTypes(SerializationTestUtil.TYPES_TO_IGNORE).isEqualTo(expectedFrontendConfig);
 			}
 		}
 		catch (ConceptConfigurationException e) {
