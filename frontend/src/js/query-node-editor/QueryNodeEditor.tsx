@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import type { PostPrefixForSuggestionsParams } from "../api/api";
@@ -25,9 +25,7 @@ import ContentColumn from "./ContentColumn";
 import MenuColumn from "./MenuColumn";
 import NodeName from "./NodeName";
 import ResetAndClose from "./ResetAndClose";
-
-// TEMPORARILY DISABLED UNTIL FEATURE IS COMPLETE
-// import { useAutoLabel } from "./useAutoLabel";
+import { useAutoLabel } from "./useAutoLabel";
 
 const Root = styled("div")`
   padding: 10px;
@@ -160,20 +158,19 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
       ? RIGHT_SIDE_WIDTH_COMPACT
       : RIGHT_SIDE_WIDTH);
 
-  // TEMPORARILY DISABLED UNTIL FEATURE IS COMPLETE
-  // const { autoLabel, autoLabelEnabled, setAutoLabelEnabled } = useAutoLabel({
-  //   node,
-  //   onUpdateLabel: props.onUpdateLabel,
-  // });
-  // const nodeLabel =
-  //   autoLabelEnabled && autoLabel
-  //     ? autoLabel
-  //     : nodeIsConceptQueryNode(node)
-  //     ? node.label
-  //     : node.label || node.id;
-  const nodeLabel = nodeIsConceptQueryNode(node)
-    ? node.label
-    : node.label || node.id;
+  const { autoLabel, autoLabelEnabled, setAutoLabelEnabled } = useAutoLabel({
+    node,
+    onUpdateLabel: props.onUpdateLabel,
+  });
+  const nodeLabel = useMemo(
+    () =>
+      !nodeIsConceptQueryNode(node)
+        ? node.label || node.id
+        : autoLabelEnabled && autoLabel && node.ids.length > 1
+        ? autoLabel
+        : node.label,
+    [autoLabel, autoLabelEnabled, node],
+  );
 
   return (
     <Root
@@ -191,8 +188,7 @@ const QueryNodeEditor = ({ node, ...props }: QueryNodeEditorPropsT) => {
             allowEditing={nodeIsConceptQueryNode(node)}
             label={nodeLabel}
             onUpdateLabel={(label) => {
-              // TEMPORARILY DISABLED UNTIL FEATURE IS COMPLETE
-              // setAutoLabelEnabled(false);
+              setAutoLabelEnabled(false);
               props.onUpdateLabel(label);
             }}
           />

@@ -1,16 +1,34 @@
+import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
 
-const InteractionControl = ({ onCloseAll }: { onCloseAll: () => void }) => {
+const Root = styled("div")`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+const InteractionControl = ({
+  onCloseAll,
+  onOpenAll,
+}: {
+  onCloseAll: () => void;
+  onOpenAll: () => void;
+}) => {
   const { t } = useTranslation();
 
   return (
-    <WithTooltip text={t("history.closeAll")}>
-      <IconButton onClick={onCloseAll} icon="home" />
-    </WithTooltip>
+    <Root>
+      <WithTooltip text={t("history.closeAll")}>
+        <IconButton onClick={onCloseAll} icon="home" />
+      </WithTooltip>
+      <WithTooltip text={t("history.openAll")}>
+        <IconButton onClick={onOpenAll} icon="chevron-right" />
+      </WithTooltip>
+    </Root>
   );
 };
 

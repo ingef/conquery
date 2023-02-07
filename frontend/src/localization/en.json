@@ -82,10 +82,10 @@
     "aConceptList": "a concept list"
   },
   "datasetSelector": {
-    "label": "Data sets",
-    "pleaseChoose": "Choose a data set",
-    "error": "Could not load data sets",
-    "disabled": "Can't change the data set at the moment."
+    "label": "Datasets",
+    "pleaseChoose": "Choose a dataset",
+    "error": "Could not load datasets",
+    "disabled": "Can't change the dataset at the moment."
   },
   "queryNodeEditor": {
     "conceptTree": "Concept Tree",
@@ -442,7 +442,7 @@
     "tabQueryEditor": "In the Editor, a query may be built and sent.",
     "tabTimebasedEditor": "In the Timebased Editor, a time-based query may be built and sent. That means, previous queries may be combined using time based relations, such as 'before' and 'after'.",
     "tabFormEditor": "The Form Editor allows for further analysis and statistics of previous queries.",
-    "datasetSelector": "Select the data set – concept trees, previous queries and forms will be loaded.",
+    "datasetSelector": "Select the dataset – concept trees, previous queries and forms will be loaded.",
     "excludeTimestamps": "If selected, will avoid using the date values from this concept within a query.",
     "excludeFromSecondaryId": "If selected, will avoid using this concept in the analysis layer, should an analysis layer be selected.",
     "editConceptName": "Edit concept name",
@@ -453,6 +453,13 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "emptyTimeline": {
+      "headline": "History",
+      "description": "Exploring individual events chronologically.",
+      "descriptionWithoutIds": "To get started, import IDs into the empty list on the left side.",
+      "descriptionWithoutId": "Select an ID from the list on the left side",
+      "descriptionWithId": "Couldn't find any data for this ID."
+    },
     "backButtonWarning": "Note: changes will be discarded. Please download the list before going back.",
     "history": "History",
     "marked": "with status",
@@ -464,6 +471,7 @@
     "downloadEntityData": "Download entity history",
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
+    "openAll": "Open all",
     "dates": "Dates",
     "options": {
       "check": "interesting",
@@ -483,11 +491,15 @@
     },
     "settings": {
       "headline": "History session settings",
+      "reset": "Reset history",
+      "resetConfirm": "Reset now",
       "selectStatusHeadline": "Possible status values",
       "selectStatusPlaceholder": "Options ...",
       "selectStatusTooltip": "Set possible status values, that may be assigned to individual entites during the history session."
     },
     "load": {
+      "importDescription": "Please provide aa CSV format with columns<br /><code><strong>ID kind</strong>;<strong>ID</strong> (+ optionally: ;<strong>status 1</strong>;<strong>status 2</strong>;...)</code>",
+      "importPlaceholder": "{{idkind}};A0123456788;interesting;\n{{idkind}};A0123456789;;not interesting",
       "error": "Couldn't load history for this file."
     }
   },

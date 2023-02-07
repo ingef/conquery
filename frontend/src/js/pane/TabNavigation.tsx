@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import { FC } from "react";
 
 import FaIcon from "../icon/FaIcon";
+import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
@@ -68,21 +69,29 @@ const TabNavigation: FC<PropsT> = ({
   onClickTab,
   dataTestId,
 }) => {
+  function createClickHandler(key: string) {
+    return () => {
+      if (key !== activeTab) {
+        onClickTab(key);
+      }
+    };
+  }
+
   return (
     <Root data-test-id={dataTestId}>
       {tabs.map(({ key, label, tooltip, loading }) => {
         return (
-          <SxWithTooltip text={tooltip} lazy key={key}>
-            <Headline
-              active={activeTab === key}
-              onClick={() => {
-                if (key !== activeTab) onClickTab(key);
-              }}
-            >
-              {label}
-              {loading && <SxFaIcon icon="spinner" />}
-            </Headline>
-          </SxWithTooltip>
+          <HoverNavigatable key={key} triggerNavigate={createClickHandler(key)}>
+            <SxWithTooltip text={tooltip} lazy>
+              <Headline
+                active={activeTab === key}
+                onClick={createClickHandler(key)}
+              >
+                {label}
+                {loading && <SxFaIcon icon="spinner" />}
+              </Headline>
+            </SxWithTooltip>
+          </HoverNavigatable>
         );
       })}
     </Root>

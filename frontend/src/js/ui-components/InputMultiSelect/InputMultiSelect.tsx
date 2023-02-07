@@ -8,7 +8,7 @@ import { exists } from "../../common/helpers/exists";
 import { useDebounce } from "../../common/helpers/useDebounce";
 import FaIcon from "../../icon/FaIcon";
 import InfoTooltip from "../../tooltip/InfoTooltip";
-import InputMultiSelectDropzone from "../InputMultiSelectDropzone";
+import DropzoneWithFileInput from "../DropzoneWithFileInput";
 import {
   Control,
   DropdownToggleButton,
@@ -16,6 +16,7 @@ import {
   ItemsInputContainer,
   List,
   Menu,
+  MenuContainer,
   ResetButton,
   SelectContainer,
   VerticalSeparator,
@@ -45,10 +46,6 @@ const getSentinelInsertIndex = (optionsLength: number) => {
 
   return optionsLength - SENTINEL_INSERT_INDEX_FROM_BOTTOM;
 };
-
-const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
-  display: block;
-`;
 
 const SxFaIcon = styled(FaIcon)`
   margin: 3px 6px;
@@ -93,12 +90,12 @@ const InputMultiSelect = ({
   onLoadMore,
   onLoadAndInsertAll,
 }: Props) => {
-  const { onDropFile } = useResolvableSelect({
+  useResolvableSelect({
     defaultValue,
     onResolve,
   });
 
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const menuContainerRef = useRef<HTMLDivElement | null>(null);
   const [inputValue, setInputValue] = useState("");
   const { t } = useTranslation();
 
@@ -268,7 +265,7 @@ const InputMultiSelect = ({
   useEffect(
     function scrollIntoView() {
       if (isOpen) {
-        menuRef.current?.scrollIntoView({
+        menuContainerRef.current?.scrollIntoView({
           behavior: "smooth",
           block: "nearest",
         });
@@ -365,60 +362,58 @@ const InputMultiSelect = ({
         />
       </Control>
       {isOpen ? (
-        <Menu
-          {...menuProps}
-          ref={(instance) => {
-            menuRef.current = instance;
-            menuPropsRef(instance);
-          }}
-        >
-          <MenuActionBar
-            total={total}
-            optionsCount={filterOptionsCount}
-            onInsertAllClick={() => {
-              const moreInsertableThanCurrentlyLoaded =
-                exists(total) && total > filterOptionsCount;
+        <MenuContainer ref={menuContainerRef}>
+          <Menu {...menuProps} ref={(instance) => menuPropsRef(instance)}>
+            <MenuActionBar
+              total={total}
+              optionsCount={filterOptionsCount}
+              onInsertAllClick={() => {
+                const moreInsertableThanCurrentlyLoaded =
+                  exists(total) && total > filterOptionsCount;
 
-              if (!!onLoadAndInsertAll && moreInsertableThanCurrentlyLoaded) {
-                onLoadAndInsertAll(inputValue);
-              } else {
-                const optionsWithoutCreatable =
-                  creatable && inputValue.length > 0
-                    ? filteredOptions.slice(1)
-                    : filteredOptions;
+                if (!!onLoadAndInsertAll && moreInsertableThanCurrentlyLoaded) {
+                  onLoadAndInsertAll(inputValue);
+                } else {
+                  const optionsWithoutCreatable =
+                    creatable && inputValue.length > 0
+                      ? filteredOptions.slice(1)
+                      : filteredOptions;
 
-                setSelectedItems([
-                  ...selectedItems,
-                  ...optionsWithoutCreatable,
-                ]);
-                setInputValue("");
-              }
-            }}
-          />
-          <List>
-            {!creatable && filteredOptions.length === 0 && <EmptyPlaceholder />}
-            {filteredOptions.map((option, index) => (
-              <Fragment key={`${index}${option.value}${option.label}`}>
-                <ListItem
-                  index={index}
-                  highlightedIndex={highlightedIndex}
-                  item={filteredOptions[index]}
-                  getItemProps={getItemProps}
-                />
-                {index === getSentinelInsertIndex(filteredOptions.length) &&
-                  exists(onLoadMore) && (
-                    <LoadMoreSentinel
-                      onLoadMore={() => {
-                        if (!loading) {
-                          onLoadMore(inputValue);
-                        }
-                      }}
-                    />
-                  )}
-              </Fragment>
-            ))}
-          </List>
-        </Menu>
+                  setSelectedItems([
+                    ...selectedItems,
+                    ...optionsWithoutCreatable,
+                  ]);
+                  setInputValue("");
+                }
+              }}
+            />
+            <List>
+              {!creatable && filteredOptions.length === 0 && (
+                <EmptyPlaceholder />
+              )}
+              {filteredOptions.map((option, index) => (
+                <Fragment key={`${index}${option.value}${option.label}`}>
+                  <ListItem
+                    index={index}
+                    highlightedIndex={highlightedIndex}
+                    item={filteredOptions[index]}
+                    getItemProps={getItemProps}
+                  />
+                  {index === getSentinelInsertIndex(filteredOptions.length) &&
+                    exists(onLoadMore) && (
+                      <LoadMoreSentinel
+                        onLoadMore={() => {
+                          if (!loading) {
+                            onLoadMore(inputValue);
+                          }
+                        }}
+                      />
+                    )}
+                </Fragment>
+              ))}
+            </List>
+          </Menu>
+        </MenuContainer>
       ) : (
         <span ref={menuPropsRef} /> // To avoid a warning / error by downshift that ref is not applied
       )}
@@ -433,10 +428,17 @@ const InputMultiSelect = ({
         <TooManyValues count={value.length} onClear={() => onChange([])} />
       )}
       {!hasTooManyValues && !onResolve && Select}
-      {!hasTooManyValues && !!onResolve && onDropFile && (
-        <SxInputMultiSelectDropzone disabled={disabled} onDropFile={onDropFile}>
+      {!hasTooManyValues && !!onResolve && (
+        <DropzoneWithFileInput
+          onDrop={() => {}}
+          disableClick
+          tight
+          importButtonOutside
+          showImportButton={!disabled}
+          onImportLines={onResolve}
+        >
           {() => Select}
-        </SxInputMultiSelectDropzone>
+        </DropzoneWithFileInput>
       )}
     </>
   );

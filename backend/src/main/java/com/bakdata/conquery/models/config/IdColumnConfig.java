@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -20,6 +21,7 @@ import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Functions;
+import com.google.common.collect.MoreCollectors;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -51,7 +53,7 @@ public class IdColumnConfig {
 			ColumnConfig.builder()
 						.name("ID")
 						.field("result")
-						.label(Map.of("", "result")) // "" ~= Locale.ROOT
+						.label(Map.of(Locale.ROOT, "result"))
 						.resolvable(true)
 						.fillAnon(true)
 						.print(true)
@@ -114,7 +116,19 @@ public class IdColumnConfig {
 		return ids.stream()
 				  .filter(ColumnConfig::isPrint)
 				  .map(col -> new LocalizedDefaultResultInfo(
-						  locale -> col.getLabel().getOrDefault(locale.getLanguage(), col.getField()),
+						  locale -> {
+							  final Map<Locale, String> label = col.getLabel();
+							  // Get the label for the locale,
+							  // fall back to any label if there is exactly one defined,
+							  // then fall back to the field name.
+							  return label.getOrDefault(
+									  locale,
+									  // fall backs
+									  label.size() == 1 ?
+									  label.values().stream().collect(MoreCollectors.onlyElement()) :
+									  col.getField()
+							  );
+						  },
 						  locale -> col.getField(),
 						  ResultType.StringT.getINSTANCE(),
 						  Set.of(new SemanticType.IdT(col.getName()))

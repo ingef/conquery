@@ -8,6 +8,7 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -712,6 +713,20 @@ public class SerializationTests extends AbstractSerializationTest {
 				})
 				.objectMappers(getApiMapper(), getManagerInternalMapper(), getShardInternalMapper())
 				.test(range);
+	}
+
+	@Test
+	public void locale() throws JSONException, IOException {
+		SerializationTestUtil.forType(Locale.class)
+							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .test(Locale.GERMANY);
+	}
+
+	@Test
+	public void localeArray() throws JSONException, IOException {
+		SerializationTestUtil.forType(Locale[].class)
+							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .test(new Locale[]{Locale.GERMANY, Locale.ROOT, Locale.ENGLISH, Locale.US, Locale.UK});
 	}
 
 }

@@ -74,6 +74,6 @@ public class ResultParquetProcessor {
 		};
 
 
-		return makeResponseWithFileName(out, exec.getLabelWithoutAutoLabelSuffix(), FILE_EXTENTION_PARQUET, PARQUET_MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out), exec.getLabelWithoutAutoLabelSuffix(), FILE_EXTENTION_PARQUET, PARQUET_MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 }

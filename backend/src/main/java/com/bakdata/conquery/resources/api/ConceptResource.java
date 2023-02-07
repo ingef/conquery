@@ -28,6 +28,8 @@ import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -64,7 +66,7 @@ public class ConceptResource extends HAuthorized {
 
 		final List<String> codes = conceptCodes.getConcepts().stream().map(String::trim).collect(Collectors.toList());
 
-		if (concept instanceof TreeConcept) {
+		if (concept instanceof TreeConcept treeConcept && treeConcept.countElements() > 1) {
 			return processor.resolveConceptElements((TreeConcept) concept, codes);
 		}
 		throw new WebApplicationException("can only resolved elements on tree concepts", Response.Status.BAD_REQUEST);
@@ -73,6 +75,7 @@ public class ConceptResource extends HAuthorized {
 
 	@Data
 	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	@ToString
 	public static class ConceptCodeList {
 		private final List<String> concepts;
 	}

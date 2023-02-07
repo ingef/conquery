@@ -14,6 +14,7 @@ import { useDatasetId } from "../dataset/selectors";
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
+import { TimelineEmptyPlaceholder } from "./timeline/TimelineEmptyPlaceholder";
 import Year from "./timeline/Year";
 import {
   isConceptColumn,
@@ -29,7 +30,7 @@ const Root = styled("div")`
   -webkit-overflow-scrolling: touch;
   padding: 0 20px 0 10px;
   display: inline-grid;
-  grid-template-columns: 100px auto;
+  grid-template-columns: 125px auto;
   grid-auto-rows: minmax(min-content, max-content);
   gap: 20px 4px;
   width: 100%;
@@ -71,6 +72,10 @@ const Timeline = ({
   });
 
   if (!datasetId) return null;
+
+  if (eventsByQuarterWithGroups.length === 0) {
+    return <TimelineEmptyPlaceholder />;
+  }
 
   return (
     <Root className={className}>

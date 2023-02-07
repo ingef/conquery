@@ -452,6 +452,13 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "emptyTimeline": {
+      "headline": "Historie",
+      "description": "Hier werden Informationen chronologisch dargestellt.",
+      "descriptionWithoutIds": "Importiere IDs in die leere Liste auf der linken Seite, um zu starten.",
+      "descriptionWithoutId": "Wähle eine ID aus der Liste auf der linken Seite.",
+      "descriptionWithId": "Für diese ID konnten keine Daten gefunden werden."
+    },
     "backButtonWarning": "Achtung: Wenn Du zurück gehst, werden Änderungen an der Liste verworfen. Lade die Liste vorher herunter, um sie zu speichern.",
     "history": "Historie",
     "marked": "mit Status",
@@ -463,6 +470,7 @@
     "downloadEntityData": "Einzelhistorie herunterladen",
     "differencesTooltip": "Unterschiede aus den einzelnen Datenpunkten",
     "closeAll": "Alle schließen",
+    "openAll": "Alle aufklappen",
     "dates": "Datumswerte",
     "options": {
       "check": "auffällig",
@@ -482,17 +490,21 @@
     },
     "settings": {
       "headline": "Historie-Einstellungen",
+      "reset": "Historie zurücksetzen",
+      "resetConfirm": "Jetzt zurücksetzen",
       "selectStatusHeadline": "Möglicher Status pro Eintrag",
       "selectStatusPlaceholder": "Optionen ...",
       "selectStatusTooltip": "Hier werden die möglichen Status-Werte festgelegt, die danach an die einzelnen Entitäten vergeben werden können."
     },
     "load": {
+      "importDescription": "Bitte CSV-Format mit folgenden Spalten verwenden:<br /><code><strong>ID-Art</strong>;<strong>ID</strong> (+ optional: ;<strong>Status 1</strong>;<strong>Status 2</strong>;...)</code>",
+      "importPlaceholder": "{{idkind}};A0123456788;auffällig;\n{{idkind}};A0123456789;;unauffällig",
       "error": "Konnte Historie für diese Datei nicht laden."
     }
   },
   "importModal": {
     "headline": "Zeilenweise Importieren",
-    "subtitle": "Neben Drag & Drop können Werte zeilenweise importiert werden, zum Beispiel aus der Zwischenablage (Kopieren und Einfügen STRG+C / STRG+V).",
+    "subtitle": "Importiere Werte zeilenweise, zum Beispiel aus der Zwischenablage: Kopieren (STRG+C) und Einfügen (STRG+V). Wähle alternativ eine Datei im Textformat (TXT) aus, oder lege sie direkt im Textfeld ab.",
     "paste": "Aus Zwischenablage einfügen",
     "submit": "Übernehmen",
     "pasted": "Importiert"

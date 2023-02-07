@@ -19,6 +19,7 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.frontend.FrontendList;
+import com.bakdata.conquery.apiv1.frontend.FrontendPreviewConfig;
 import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -43,7 +44,6 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.search.Cursor;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -146,19 +146,6 @@ public class ConceptsProcessor {
 						 .collect(Collectors.toList());
 	}
 
-	@Data
-	public static class FrontendPreviewConfig {
-		@Data
-		public static class Labelled {
-			private final String name;
-			private final String label;
-		}
-
-		private final Collection<Labelled> all;
-		@JsonProperty("default")
-		private final Collection<Labelled> defaultConnectors;
-	}
-
 
 	public FrontendPreviewConfig getEntityPreviewFrontendConfig(Dataset dataset) {
 		final Namespace namespace = namespaces.get(dataset.getId());
@@ -175,7 +162,8 @@ public class ConceptsProcessor {
 				previewConfig.getDefaultConnectors()
 							 .stream()
 							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
-							 .collect(Collectors.toSet())
+							 .collect(Collectors.toSet()),
+				previewConfig.getSearchConcept()
 		);
 	}
 

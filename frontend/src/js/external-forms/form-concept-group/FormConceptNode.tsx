@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
+import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import WithTooltip from "../../tooltip/WithTooltip";
@@ -121,40 +122,44 @@ const FormConceptNode: FC<PropsT> = ({
     : undefined;
 
   return (
-    <Root
-      ref={(instance) => {
-        ref.current = instance;
-        drag(instance);
-      }}
-      active={hasNonDefaultSettings || hasFilterValues}
-      onClick={onClick}
-    >
-      <div>
-        <WithTooltip text={tooltipText}>
-          <>
-            {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-            <Label>{conceptNode && conceptNode.label}</Label>
-            {conceptNode && !!conceptNode.description && (
-              <Description>{conceptNode.description}</Description>
-            )}
-          </>
-        </WithTooltip>
-      </div>
-      <Right>
-        {expand && expand.expandable && (
-          <WithTooltip text={t("externalForms.common.concept.expand")}>
-            <SxIconButton
-              icon={expand.active ? "compress-arrows-alt" : "expand-arrows-alt"}
-              tiny
-              onClick={(e) => {
-                e.stopPropagation();
-                expand.onClick();
-              }}
-            />
+    <HoverNavigatable triggerNavigate={onClick}>
+      <Root
+        ref={(instance) => {
+          ref.current = instance;
+          drag(instance);
+        }}
+        active={hasNonDefaultSettings || hasFilterValues}
+        onClick={onClick}
+      >
+        <div>
+          <WithTooltip text={tooltipText}>
+            <>
+              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
+              <Label>{conceptNode && conceptNode.label}</Label>
+              {conceptNode && !!conceptNode.description && (
+                <Description>{conceptNode.description}</Description>
+              )}
+            </>
           </WithTooltip>
-        )}
-      </Right>
-    </Root>
+        </div>
+        <Right>
+          {expand && expand.expandable && (
+            <WithTooltip text={t("externalForms.common.concept.expand")}>
+              <SxIconButton
+                icon={
+                  expand.active ? "compress-arrows-alt" : "expand-arrows-alt"
+                }
+                tiny
+                onClick={(e) => {
+                  e.stopPropagation();
+                  expand.onClick();
+                }}
+              />
+            </WithTooltip>
+          )}
+        </Right>
+      </Root>
+    </HoverNavigatable>
   );
 };
 
