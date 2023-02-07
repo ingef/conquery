@@ -1,4 +1,16 @@
 <#import "templates/template.html.ftl" as layout>
+<#import "templates/styledTable.html.ftl" as styledTable>
+<#assign columnsMappers=["id", "name", "initialized"]>
+<#assign columnsSearchIndices=["id", "name"]>
+
+<#macro deleteMappersButton id>
+	 <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/internToExtern/${id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+</#macro>
+
+<#macro deleteSearchIndiciesButton id>
+	<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/searchIndex/${id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+</#macro>
+
 <@layout.layout>
 	<h3>Dataset ${c.ds.label}</h3>
 	
@@ -13,23 +25,10 @@
 	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
 	<@layout.kc k="IdMapping"><a href="./${c.ds.id}/mapping">Here</a></@layout.kc>
     <@layout.kc k="Mappings">
-        <ul>
-        <#list c.internToExternMappers as mapper>
-            <li>
-                ${mapper.name} <#if mapper.initialized() ><i class="fas fa-check" alt="In use"></i><#else><i class="fas fa-moon" alt="Not used by any select"></i></i></#if>
-                <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/internToExtern/${mapper.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
-            </li>
-        </#list>
-        </ul>
+        <@styledTable.styledTable columns=columnsMappers items=c.internToExternMappers deleteButton=deleteMappersButton />
     </@layout.kc>
     <@layout.kc k="SearchIndices">
-        <ul>
-        <#list c.searchIndices as searchIndex>
-            <li>
-                ${searchIndex.name} <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/searchIndex/${searchIndex.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
-            </li>
-        </#list>
-        </ul>
+        <@styledTable.styledTable columns=columnsSearchIndices items=c.searchIndices deleteButton=deleteSearchIndiciesButton />
     </@layout.kc>
 	<@layout.kc k="Tables">
 		<ul>
