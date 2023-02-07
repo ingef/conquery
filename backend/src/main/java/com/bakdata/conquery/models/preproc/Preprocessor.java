@@ -18,6 +18,7 @@ import com.bakdata.conquery.util.io.FileUtil;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Strings;
+import com.univocity.parsers.common.processor.ConcurrentRowProcessor;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -116,7 +117,7 @@ public class Preprocessor {
 					parserSettings.selectFields(input.getRequiredHeaders().toArray(new String[0]));
 				}
 
-				parserSettings.setProcessor(processor);
+				parserSettings.setProcessor(new ConcurrentRowProcessor(processor));
 
 				parser = new CsvParser(parserSettings);
 

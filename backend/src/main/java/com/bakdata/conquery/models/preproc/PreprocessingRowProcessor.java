@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.preproc;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.ToIntFunction;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -18,6 +17,9 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * RowProcessor to ingest and parse a single CSV for Preprocessing.
+ */
 @Data
 @RequiredArgsConstructor
 @Slf4j
@@ -48,10 +50,11 @@ class PreprocessingRowProcessor extends AbstractRowProcessor {
 		// Compile filter.
 		filter = input.createFilter(headers);
 
+		// Instantiate Outputs based on descriptors (apply header positions)
 		primaryOut = input.getPrimary().createForHeaders(headerMap, dateReader, config);
+
 		outputs = new ArrayList<>();
 
-		// Instantiate Outputs based on descriptors (apply header positions)
 		for (OutputDescription op : input.getOutput()) {
 			outputs.add(op.createForHeaders(headerMap, dateReader, config));
 		}
@@ -61,17 +64,19 @@ class PreprocessingRowProcessor extends AbstractRowProcessor {
 	public void rowProcessed(String[] row, ParsingContext context) {
 		try {
 			// Check if row shall be evaluated
-			// This is explicitly NOT in a try-catch block as scripts may not fail and we should not recover from faulty scripts.
+			// This is explicitly NOT in a try-catch block as scripts may not fail, and we should not recover from faulty scripts.
 			if (filter != null && !filter.filterRow(row)) {
 				return;
 			}
 
 			try {
-				final int primaryId =
-						(int) Objects.requireNonNull(
-								primaryOut.createOutput(row, result.getPrimaryColumn(), context.currentLine()),
-								"primaryId may not be null"
-						);
+				final Object output = primaryOut.createOutput(row, result.getPrimaryColumn(), context.currentLine());
+
+				if (output == null) {
+					throw new NullPointerException("primaryId may not be null");
+				}
+
+				final int primaryId = (int) output;
 
 				final int primary = result.addPrimary(primaryId);
 				final PPColumn[] columns = result.getColumns();
@@ -125,7 +130,6 @@ class PreprocessingRowProcessor extends AbstractRowProcessor {
 	 */
 	private void handleOutputException(String[] row, OutputDescription.OutputException e, long lineId) {
 		exceptions.put(e.getCause().getClass(), exceptions.getInt(e.getCause().getClass()) + 1);
-
 		errors++;
 
 		if (log.isTraceEnabled() || errors < maximumPrintedErrors) {
@@ -151,6 +155,6 @@ class PreprocessingRowProcessor extends AbstractRowProcessor {
 
 	@Override
 	public void processEnded(ParsingContext context) {
-		log.info("Done reading file.");
+		log.info("DONE reading file.");
 	}
 }
