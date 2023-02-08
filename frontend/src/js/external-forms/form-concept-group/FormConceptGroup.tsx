@@ -7,7 +7,10 @@ import { SelectorResultType } from "../../api/types";
 import { TransparentButton } from "../../button/TransparentButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
-import { getConceptById, hasConceptChildren } from "../../concept-trees/globalTreeStoreHelper";
+import {
+  getConceptById,
+  hasConceptChildren,
+} from "../../concept-trees/globalTreeStoreHelper";
 import {
   nodeHasFilterValues,
   nodeHasNonDefaultSettings,
