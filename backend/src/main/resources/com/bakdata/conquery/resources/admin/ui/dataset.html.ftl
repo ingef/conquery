@@ -1,14 +1,26 @@
 <#import "templates/template.html.ftl" as layout>
-<#import "templates/styledTable.html.ftl" as styledTable>
-<#assign columnsMappers=["id", "name", "initialized"]>
-<#assign columnsSearchIndices=["id", "name"]>
+<#import "templates/table.html.ftl" as table>
+
+<#assign columnsMappers=["id", "initialized", "actions"]>
+<#assign columnsSearchIndices=["id", "actions"]>
+<#assign columnsTables=["id", "label", "imports", "entries", "actions"]>
+<#assign columnsConcepts=["id", "label", "actions"]>
+<#assign columnsSecondaryIds=["id", "label"]>
 
 <#macro deleteMappersButton id>
-	 <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/internToExtern/${id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+	 <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/internToExtern/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 </#macro>
 
 <#macro deleteSearchIndiciesButton id>
-	<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/searchIndex/${id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+	<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/searchIndex/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+</#macro>
+
+<#macro deleteTablesButton id>
+	<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/tables/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+</#macro>
+
+<#macro deleteConceptsButton id>
+    <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/concepts/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 </#macro>
 
 <@layout.layout>
@@ -18,45 +30,26 @@
 	<@layout.kc k="Label">
 		<form method="post" enctype="multipart/form-data">
 			<input id="newDatasetLabel" type="text" name="label" title="Label of the dataset" value="${c.ds.label}">
-			<input type="submit" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/label',{ method: 'post', body: document.getElementById('newDatasetLabel').value}).then(function(){location.reload();});"/>
+			<input type="submit" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/label',{ method: 'post', body: document.getElementById('newDatasetLabel').value}).then(function(res){if(res.ok)location.reload();});"/>
 		</form>
 	</@layout.kc>
 	<@layout.kv k="Dictionaries" v=layout.si(c.dictionariesSize)+"B"/>
 	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
 	<@layout.kc k="IdMapping"><a href="./${c.ds.id}/mapping">Here</a></@layout.kc>
     <@layout.kc k="Mappings">
-        <@styledTable.styledTable columns=columnsMappers items=c.internToExternMappers deleteButton=deleteMappersButton />
+        <@table.table columns=columnsMappers items=c.internToExternMappers deleteButton=deleteMappersButton />
     </@layout.kc>
     <@layout.kc k="SearchIndices">
-        <@styledTable.styledTable columns=columnsSearchIndices items=c.searchIndices deleteButton=deleteSearchIndiciesButton />
+        <@table.table columns=columnsSearchIndices items=c.searchIndices deleteButton=deleteSearchIndiciesButton />
     </@layout.kc>
 	<@layout.kc k="Tables">
-		<ul>
-			<#list c.tables?sort_by("name") as table>
-				<li>
-					<a href="./${c.ds.id}/tables/${table.id}">${table.name} <span>[${table.imports}] (${table.entries})</span></a>
-					<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/tables/${table.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
-				</li>
-			</#list>
-		</ul>
+        <@table.table columns=columnsTables items=c.tables?sort_by("name") deleteButton=deleteTablesButton link="./${c.ds.id}/tables/" />
 	</@layout.kc>
 	<@layout.kc k="Concepts">
-		<ul>
-		<#list c.concepts?sort_by("name") as concept>
-			<li>
-				<a href="./${c.ds.id}/concepts/${concept.id}">${concept.name}</a>
-				<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/concepts/${concept.id}',{method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
-			</li>
-		</#list>
-		</ul>
+        <@table.table columns=columnsConcepts items=c.concepts?sort_by("name") deleteButton=deleteConceptsButton link="./${c.ds.id}/concepts/" />
 	</@layout.kc>
-
     <@layout.kc k="SecondaryIds">
-	    <ul>
-        <#list c.secondaryIds?sort_by("name") as secondaryId>
-            <li>${secondaryId}</li>
-        </#list>
-	    </ul>
+        <@table.table columns=columnsSecondaryIds items=c.secondaryIds?sort_by("name") />
 	</@layout.kc>
 
     <div class="container">

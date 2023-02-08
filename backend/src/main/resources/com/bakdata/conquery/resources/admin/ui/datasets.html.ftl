@@ -1,6 +1,6 @@
 <#import "templates/template.html.ftl" as layout>
-<#import "templates/styledTable.html.ftl" as styledTable>
-<#assign columns=["id", "label"]>
+<#import "templates/table.html.ftl" as table>
+<#assign columns=["id", "label", "actions"]>
 
 <#macro deleteDatasetButton id>
 	<a href="" onclick="deleteDataset('${id}')"><i class="fas fa-trash-alt text-danger"></i></a>
@@ -9,11 +9,12 @@
 <@layout.layout>
 	<div class="row">
 		<div class="col">
-			<div class="col bg-light pb-3 rounded">
+			<h1>Datasets</h1>
+			<div class="col bg-light pb-3 pt-1 rounded">
 				<form>
 					<h3>Create Dataset</h3>
 					<div class="form-group">
-						<label for="entity_name">Name:</label>
+						<label for="entity_name">Label:</label>
 						<input id="entity_name" name="entity_name" pattern="<#include "templates/namePattern.ftl">" class="form-control text-monospace" style="font-family:monospace;">
 					</div>
 					<div class="form-group">
@@ -25,8 +26,8 @@
 			</div>
 
 			<div id="all_datasets" class="mt-1">
-				<h3>Datasets</h3>
-				<@styledTable.styledTable columns=columns items=c?sort_by("name") link="/admin-ui/datasets/" deleteButton=deleteDatasetButton />
+				<h3>All Datasets</h3>
+				<@table.table columns=columns items=c?sort_by("name") link="/admin-ui/datasets/" deleteButton=deleteDatasetButton />
 			</div>
 
 		</div>
@@ -47,7 +48,10 @@
 							name: document.getElementById('entity_id').value,
 							label: document.getElementById('entity_name').value
 						})
-			}).then(function(){location.reload();});
+			}).then(function(res){
+				showMessageForResponse(res);
+				if(res.ok) { location.reload(); }
+			});
 		}
 
 		function deleteDataset(datasetId) {
@@ -57,7 +61,10 @@
 				{
 					method: 'delete',
 					credentials: "same-origin"
-				}).then(function(){location.reload();});
+			}).then(function(res){
+				showMessageForResponse(res);
+				if(res.ok) { location.reload(); }
+			});
 		}
 	</script>
 </@layout.layout>
