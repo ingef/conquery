@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,7 @@ import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
 import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -61,6 +63,22 @@ public class DatasetQueryResource {
 		final UriBuilder uriBuilder = RequestAwareUriBuilder.fromRequest(request);
 		return processor.getSingleEntityExport(subject, uriBuilder, query.getIdKind(), query.getEntityId(), query.getSources(), dataset, query.getTime());
 	}
+
+	public static record ResolveEntitiesContainer(List<FilterValue<?>> filters){ }
+
+	public static record ResolvedEntities(List<Map<String, String>> entities){ }
+
+	@POST
+	@Path("/resolve-entities")
+	public ResolvedEntities resolveEntities(@Auth Subject subject, ResolveEntitiesContainer container, @Context HttpServletRequest request) {
+		subject.authorize(dataset, Ability.READ);
+		subject.authorize(dataset, Ability.PRESERVE_ID);
+
+		final UriBuilder uriBuilder = RequestAwareUriBuilder.fromRequest(request);
+		return processor.resolveEntities(subject, uriBuilder, container, dataset);
+	}
+
+
 
 	@POST
 	@Path("/upload")
