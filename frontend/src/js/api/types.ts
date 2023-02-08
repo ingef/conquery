@@ -390,12 +390,17 @@ export interface ColumnDescription {
   userConceptLabel: string | null;
 }
 
+export interface ResultUrlsWithLabel {
+  label: string;
+  url: string; 
+}
+
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields
 export interface GetQueryResponseDoneT {
   status: "DONE" | "NEW"; // NEW might mean canceled (query not (yet) executed)
   label: string;
   numberOfResults: number | null;
-  resultUrls: string[];
+  resultUrls: ResultUrlsWithLabel[];
   columnDescriptions: ColumnDescription[] | null;
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   requiredTime: number; // In ms, unused at the moment
@@ -529,7 +534,7 @@ export interface EntityInfo {
 }
 
 export type GetEntityHistoryResponse = {
-  resultUrls: string[];
+  resultUrls: ResultUrlsWithLabel[];
   columnDescriptions: ColumnDescription[];
   infos: EntityInfo[];
 };
