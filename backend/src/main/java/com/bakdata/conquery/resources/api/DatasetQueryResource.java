@@ -76,7 +76,7 @@ public class DatasetQueryResource {
 
 	@POST
 	@Path("/resolve-entities")
-	public Stream<Map<String, String>> resolveEntities(@Auth Subject subject, ResolveEntitiesContainer container, @Context HttpServletRequest request) {
+	public Stream<Map<String, String>> resolveEntities(@Auth Subject subject, List<FilterValue<?>> container, @Context HttpServletRequest request) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 

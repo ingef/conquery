@@ -30,6 +30,7 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
@@ -66,7 +67,6 @@ import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.api.DatasetQueryResource;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
@@ -430,16 +430,18 @@ public class QueryProcessor {
 	/**
 	 * Execute a basic query on a single concept and return only the included entities Id's.
 	 */
-	public Stream<Map<String, String>> resolveEntities(Subject subject, DatasetQueryResource.ResolveEntitiesContainer container, Dataset dataset) {
+	public Stream<Map<String, String>> resolveEntities(Subject subject, List<FilterValue<?>> filters, Dataset dataset) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
 		final CQConcept cqConcept = new CQConcept();
-		cqConcept.setElements(List.of(container.filters().get(0).getFilter().getConnector().getConcept()));
+		cqConcept.setElements(List.of(filters.get(0).getFilter().getConnector().getConcept()));
 
 		final CQTable cqTable = new CQTable();
-		cqTable.setFilters(container.filters());
-		cqTable.setConnector(container.filters().get(0).getFilter().getConnector());
+		cqTable.setFilters(filters);
+		cqTable.setConnector(filters.get(0).getFilter().getConnector());
 		cqTable.setConcept(cqConcept);
+
+		cqConcept.setTables(List.of(cqTable));
 
 		final QueryDescription query = new ConceptQuery(cqConcept);
 
