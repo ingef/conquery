@@ -49,6 +49,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
@@ -426,7 +427,10 @@ public class QueryProcessor {
 	}
 
 
-	public DatasetQueryResource.ResolvedEntities resolveEntities(Subject subject, UriBuilder uriBuilder, DatasetQueryResource.ResolveEntitiesContainer container, Dataset dataset) {
+	/**
+	 * Execute a basic query on a single concept and return only the included entities Id's.
+	 */
+	public Stream<Map<String, String>> resolveEntities(Subject subject, DatasetQueryResource.ResolveEntitiesContainer container, Dataset dataset) {
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
 		final CQConcept cqConcept = new CQConcept();
@@ -437,7 +441,7 @@ public class QueryProcessor {
 		cqTable.setConnector(container.filters().get(0).getFilter().getConnector());
 		cqTable.setConcept(cqConcept);
 
-		final ConceptQuery query = new ConceptQuery(cqConcept);
+		final QueryDescription query = new ConceptQuery(cqConcept);
 
 		final ManagedExecution<?> execution = postQuery(dataset, query, subject, true);
 
@@ -459,14 +463,13 @@ public class QueryProcessor {
 					  .collect(Collectors.toMap(Function.identity(), info -> result.getResultInfos().indexOf(info)));
 
 		final IdPrinter printer = IdColumnUtil.getIdPrinter(subject, execution, namespace, config.getIdColumns().getIds());
-		final PrintSettings printSettings = new PrintSettings(false, null, null, null, null);
+		final PrintSettings printSettings = new PrintSettings(false, I18n.LOCALE.get(), datasetRegistry, config, printer::createId);
 
 		return result.streamResults()
 				.map(printer::createId)
-				.map(id -> indices.entrySet().stream().collect(Collectors.toMap(entry -> entry.getKey().defaultColumnName(printSettings), entry -> id.getExternalId()[entry.getValue()])));
-
-
-
-		return null;
+				.map(id -> indices.entrySet().stream().collect(Collectors.toMap(
+						(Map.Entry<ResultInfo, Integer> entry) -> entry.getKey().defaultColumnName(printSettings),
+						(Map.Entry<ResultInfo, Integer> entry) -> id.getExternalId()[entry.getValue()])
+				));
 	}
 }
