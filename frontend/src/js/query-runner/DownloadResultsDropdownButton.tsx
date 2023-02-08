@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { memo, useEffect, useMemo, useState } from "react";
+import { ResultUrlsWithLabel } from "../api/types";
 
 import DownloadButton from "../button/DownloadButton";
 import IconButton from "../button/IconButton";
@@ -45,14 +46,14 @@ const dropdownOffset: [number, number] = [-37, 8]; // [skidding, distance] / def
 
 const getEnding = (url: string) => url.split(".").reverse()[0].toUpperCase();
 
-const getInitialEndingChoice = (resultUrls: string[]) => {
+const getInitialEndingChoice = (resultUrls: ResultUrlsWithLabel[]) => {
   const { preferredDownloadFormat } = getUserSettings();
 
   const found = resultUrls.find(
-    (url) => getEnding(url) === preferredDownloadFormat,
+    (url) => url.label === preferredDownloadFormat,
   );
 
-  return found ? getEnding(found) : getEnding(resultUrls[0]);
+  return found ? found.label : resultUrls[0].label;
 };
 
 const DownloadResultsDropdownButton = ({
@@ -60,7 +61,7 @@ const DownloadResultsDropdownButton = ({
   tiny,
   tooltip,
 }: {
-  resultUrls: string[];
+  resultUrls: ResultUrlsWithLabel[];
   tiny?: boolean;
   tooltip?: string;
 }) => {
@@ -74,7 +75,7 @@ const DownloadResultsDropdownButton = ({
 
   const urlChoice = useMemo(
     () =>
-      resultUrls.find((url) => getEnding(url) === endingChoice) ||
+      resultUrls.find((url) => url.label === endingChoice) ||
       resultUrls[0],
     [resultUrls, endingChoice],
   );
@@ -83,16 +84,16 @@ const DownloadResultsDropdownButton = ({
     return (
       <List>
         {resultUrls.map((url) => {
-          const ending = getEnding(url);
+          const ending = getEnding(url.url);
 
           return (
             <SxDownloadButton
-              key={url}
+              key={url.url}
               url={url}
               onClick={() => setEndingChoice(ending)}
               bgHover
             >
-              {ending}
+              {url.label}
             </SxDownloadButton>
           );
         })}
@@ -105,7 +106,7 @@ const DownloadResultsDropdownButton = ({
       {!tiny && (
         <>
           <SxDownloadButton bgHover url={urlChoice}>
-            {endingChoice}
+            {urlChoice.label}
           </SxDownloadButton>
           <Separator />
         </>

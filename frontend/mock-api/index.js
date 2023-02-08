@@ -151,8 +151,14 @@ module.exports = function (app, port) {
               status: "DONE",
               numberOfResults: 5,
               resultUrls: [
-                `/api/results/results.xlsx`,
-                `/api/results/results.csv`,
+                {
+                  label: "XLSX",
+                  url: "http://localhost:8080/api/result/xlsx/mimic-iii-demo.51cd95fd-90b2-4573-aab5-11846126427b.xlsx",
+                },
+                {
+                  label: "CSV",
+                  url: "http://localhost:8080/api/result/csv/mimic-iii-demo.51cd95fd-90b2-4573-aab5-11846126427b.csv",
+                },
               ],
               columnDescriptions: [
                 {
@@ -258,7 +264,17 @@ module.exports = function (app, port) {
             shared: Math.random() < 0.8,
             resultUrls: notExecuted
               ? []
-              : [`/api/results/results.xlsx`, `/api/results/results.csv`],
+              : [
+                  {
+                    label: "XLSX",
+                    url: "http://localhost:8080/api/result/xlsx/mimic-iii-demo.51cd95fd-90b2-4573-aab5-11846126427b.xlsx",
+                  },
+                  {
+                    label: "CSV",
+                    url: "http://localhost:8080/api/result/csv/mimic-iii-demo.51cd95fd-90b2-4573-aab5-11846126427b.csv",
+                  },
+                ],
+
             ownerName: "System",
             ...(Math.random() > 0.2
               ? { queryType: "CONCEPT_QUERY" }

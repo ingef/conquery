@@ -1,6 +1,6 @@
 import { getType } from "typesafe-actions";
 
-import type { QueryIdT, UserGroupIdT } from "../../api/types";
+import type { QueryIdT, ResultUrlsWithLabel, UserGroupIdT } from "../../api/types";
 import { Action } from "../../app/actions";
 
 import {
@@ -42,7 +42,7 @@ export interface PreviousQueryT {
   own: boolean;
   ownerName: string;
   system?: boolean;
-  resultUrls: string[];
+  resultUrls: ResultUrlsWithLabel[];
   shared: boolean;
   isPristineLabel?: boolean;
   canExpand?: boolean;

@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
-import type { ColumnDescription } from "../api/types";
+import type { ColumnDescription, ResultUrlsWithLabel } from "../api/types";
 import { StateT } from "../app/reducers";
 import { ErrorObject, errorPayload } from "../common/actions/genericActions";
 import { loadCSV } from "../file/csv";
@@ -18,7 +18,7 @@ export const closePreview = createAction("preview/CLOSE")();
 interface PreviewData {
   csv: string[][];
   columns: ColumnDescription[];
-  resultUrl: string;
+  resultUrl: ResultUrlsWithLabel;
 }
 
 export const loadCSVForPreview = createAsyncAction(
@@ -42,7 +42,7 @@ export function useLoadPreviewData() {
       : null;
 
   return async (
-    url: string,
+    url: ResultUrlsWithLabel,
     columns: ColumnDescription[],
     { noLoading }: { noLoading: boolean } = { noLoading: false },
   ): Promise<PreviewData | null> => {
@@ -55,7 +55,7 @@ export function useLoadPreviewData() {
     }
 
     try {
-      const result = await loadCSV(url);
+      const result = await loadCSV(url.url);
       const payload = {
         csv: result.data,
         columns,

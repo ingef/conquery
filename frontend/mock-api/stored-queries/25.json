@@ -2,7 +2,20 @@
   "id": 25,
   "status": "DONE",
   "numberOfResults": 5,
-  "resultUrls": ["/api/results/1234-123123123-123123-1231.csv"],
+  "resultUrls": [
+    {
+      "label": "Alle Dateien",
+      "url": "http://localhost:8080/api/results/all.zip"
+    },
+    {
+      "label": "Bericht.pdf",
+      "url": "http://localhost:8080/api/results/Bericht.pdf"
+    },
+    {
+      "label": "Statistik.xlsx",
+      "url": "http://localhost:8080/api/results/Statistik.xlsx"
+    }
+  ],
   "createdAt": "2016-12-02T14:19:09Z",
   "version": 0,
   "tags": ["Fun"],
