@@ -1,5 +1,7 @@
 <#import "templates/template.html.ftl" as layout>
 <#import "templates/table.html.ftl" as table>
+<#import "templates/accordion.html.ftl" as accordion>
+<#import "templates/infoCard.html.ftl" as infoCard>
 
 <#assign columnsMappers=["id", "initialized", "actions"]>
 <#assign columnsSearchIndices=["id", "actions"]>
@@ -23,93 +25,84 @@
     <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/concepts/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 </#macro>
 
+<#macro label>
+  <form method="post" enctype="multipart/form-data">
+    <input id="newDatasetLabel" type="text" name="label" title="Label of the dataset" value="${c.ds.label}">
+    <input type="submit" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/label',{ method: 'post', body: document.getElementById('newDatasetLabel').value}).then(function(res){if(res.ok)location.reload();});"/>
+  </form>
+</#macro>
+<#macro idMapping><a href="./${c.ds.id}/mapping">Here</a></#macro>
+
 <@layout.layout>
-	<h3>Dataset ${c.ds.label}</h3>
-	
-	<@layout.kid k="ID" v=c.ds.id/>
-	<@layout.kc k="Label">
-		<form method="post" enctype="multipart/form-data">
-			<input id="newDatasetLabel" type="text" name="label" title="Label of the dataset" value="${c.ds.label}">
-			<input type="submit" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/label',{ method: 'post', body: document.getElementById('newDatasetLabel').value}).then(function(res){if(res.ok)location.reload();});"/>
-		</form>
-	</@layout.kc>
-	<@layout.kv k="Dictionaries" v=layout.si(c.dictionariesSize)+"B"/>
-	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
-	<@layout.kc k="IdMapping"><a href="./${c.ds.id}/mapping">Here</a></@layout.kc>
-    <@layout.kc k="Mappings">
-        <@table.table columns=columnsMappers items=c.internToExternMappers deleteButton=deleteMappersButton />
-    </@layout.kc>
-    <@layout.kc k="SearchIndices">
-        <@table.table columns=columnsSearchIndices items=c.searchIndices deleteButton=deleteSearchIndiciesButton />
-    </@layout.kc>
-	<@layout.kc k="Tables">
+  <div class="d-flex justify-content-between mb-3">
+    <div class="d-flex align-items-start">
+      <@infoCard.infoCard
+        class="d-inline-flex"
+        title="Dataset ${c.ds.label}"
+        labels=["ID", "Label", "Dictionaries", "Size", "IdMapping"]
+        values=[c.ds.id, label, layout.si(c.dictionariesSize)+"B", layout.si(c.size)+"B", idMapping]
+      />
+      <!-- File Upload -->
+      <div class="card d-inline-flex mx-3">
+        <div class="card-body">
+          <h5 class="card-title">File Upload</h5>
+          <form class="d-flex flex-column align-items-stretch" onsubmit="postFile(event, '/admin/datasets/${c.ds.id}/internToExtern');">
+            <select
+              class="custom-select"
+              onchange="let x = {mapping: {name: 'mapping', uri: 'internToExtern', accept: '*.mapping.json'}, table: {name: 'table_schema', uri: 'tables', accept: '*.table.json'}, concept: {name: 'concept_schema', uri: 'concepts', accept: '*.concept.json'}, structure: {name: 'structure_schema', uri: 'structure', accept: 'structure.json'}}; let data = x[this.value]; let fi = $(this).next(); fi.value = ''; fi.attr('accept', data.accept); fi.attr('name', data.name); $(this).parent().attr('onsubmit', 'postFile(event, \'/admin/datasets/${c.ds.id}/' + data.uri + '\')');"
+              required
+            >
+              <option value="mapping" selected>Mapping JSON</option>
+              <option value="table">Table JSON</option>
+              <option value="concept">Concept JSON</option>
+              <option value="structure">Structure JSON</option>
+            </select>
+            <input
+              type="file"
+              class="restparam form-control my-3"
+              name="mapping"
+              accept="*.mapping.json"
+              multiple
+              required
+            />
+            <input class="btn btn-primary" type="submit"/>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- Dataset Actions -->
+    <div>
+      <button 
+        type="button" class="btn" data-toggle="tooltip" data-placement="bottom" title="Update Matching Stats"
+        onclick="rest('/admin/datasets/${c.ds.id}/update-matching-stats',{method: 'post'})"
+      >
+        <i class="fa fa-sync"></i>
+      </button>
+      <button
+        type="button" class="btn" data-toggle="tooltip" data-placement="bottom" title="Clear Mapping Cache"
+        onclick="rest('/admin/datasets/${c.ds.id}/clear-internToExtern-cache',{method: 'post'})"
+      >
+        <i class="fa fa-eraser"></i>
+      </button>
+    </div>
+  </div>
+
+  <@accordion.accordionGroup>
+    <@accordion.accordion summary="Mappings" infoText="${c.internToExternMappers?size} Einträge">
+      <@table.table columns=columnsMappers items=c.internToExternMappers deleteButton=deleteMappersButton />
+    </@accordion.accordion>
+    <@accordion.accordion summary="SearchIndices" infoText="${c.searchIndices?size} Einträge">
+      <@table.table columns=columnsSearchIndices items=c.searchIndices deleteButton=deleteSearchIndiciesButton />
+    </@accordion.accordion>
+    <@accordion.accordion summary="Tables" infoText="${c.tables?size} Einträge">
         <@table.table columns=columnsTables items=c.tables?sort_by("name") deleteButton=deleteTablesButton link="./${c.ds.id}/tables/" />
-	</@layout.kc>
-	<@layout.kc k="Concepts">
+    </@accordion.accordion>
+    <@accordion.accordion summary="Concepts" infoText="${c.concepts?size} Einträge">
         <@table.table columns=columnsConcepts items=c.concepts?sort_by("name") deleteButton=deleteConceptsButton link="./${c.ds.id}/concepts/" />
-	</@layout.kc>
-    <@layout.kc k="SecondaryIds">
+    </@accordion.accordion>
+    <@accordion.accordion summary="SecondaryIds" infoText="${c.secondaryIds?size} Einträge">
         <@table.table columns=columnsSecondaryIds items=c.secondaryIds?sort_by("name") />
-	</@layout.kc>
-
-    <div class="container">
-        <div class="row">
-            <div class="col-sm">
-                <button class="btn btn-primary" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/update-matching-stats',{method: 'post'})">
-                        Update Matching Stats
-                </button>
-
-                <button class="btn btn-primary" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/clear-internToExtern-cache',{method: 'post'})">
-                    Clear Mapping Cache
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <#assign uploadContainerStyle = "border border-secondary rounded p-2 m-2">
-    <div class="container">
-        <div class="row">
-            <div class="${uploadContainerStyle}">
-                <form onsubmit="postFile(event, '/admin/datasets/${c.ds.id}/internToExtern');">
-                    <div class="form-group>
-                        <label for="mappingFile" class="form-label">Upload mapping JSON</label>
-                        <input type="file" class="restparam form-control" id="mappingFile" name="mapping" title="Mapping configuration" accept="*.mapping.json" multiple required>
-                    </div>
-                    <input class="btn btn-primary" type="submit"/>
-                </form>
-            </div>
-
-            <div class="${uploadContainerStyle}">
-                <form onsubmit="postFile(event, '/admin/datasets/${c.ds.id}/tables');">
-                    <div class="form-group">
-                        <label for="tableFile" class="form-label">Upload table JSON</label>
-                        <input type="file" class="restparam form-control" id="tableFile" name="table_schema" title="Schema of the Table" accept="*.table.json" multiple required>
-                    </div>
-                    <input class="btn btn-primary" type="submit"/>
-                </form>
-            </div>
-
-            <div class="${uploadContainerStyle}">
-                <form onsubmit="postFile(event, '/admin/datasets/${c.ds.id}/concepts');">
-                    <div class="form-group">
-                        <label for="conceptFile" class="form-label">Upload concept JSON</label>
-                        <input type="file" class="restparam form-control" id="conceptFile" name="concept_schema" title="Schema of the Concept" accept="*.concept.json" multiple required>
-                    </div>
-                    <input class="btn btn-primary" type="submit"/>
-                </form>
-            </div>
-
-            <div class="${uploadContainerStyle}">
-                <form onsubmit="postFile(event, '/admin/datasets/${c.ds.id}/structure');">
-                    <div class="form-group">
-                        <label for="structureFile" class="form-label">Upload structure JSON</label>
-                        <input type="file" class="restparam form-control" id="structureFile" name="structure_schema" title="Schema of the Structure Nodes" accept="structure.json" required>
-                    </div>
-                    <input class="btn btn-primary" type="submit"/>
-                </form>
-            </div>
-
-        </div>
-    </div>
+    </@accordion.accordion>
+  </@accordion.accordionGroup>
 </@layout.layout>
 

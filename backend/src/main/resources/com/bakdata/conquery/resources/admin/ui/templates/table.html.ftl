@@ -1,6 +1,6 @@
 <#macro table columns items deleteButton="" link="">
     <div class="row">
-        <div class="col table-responsive">
+        <div class="col m-0 table-responsive">
             <table class="table table-sm table-striped">
                 <thead>
                     <tr>
@@ -24,9 +24,6 @@
                                     <td> <#if item.initialized() ><i class="fas fa-check" alt="In use"></i><#else><i class="fas fa-moon" alt="Not used by any select"></i></i></#if> </td>
                                 <#elseif column == "actions">
                                     <td>
-                                        <#if link?has_content>
-                                            <a href="${link}${item.id}"><i class="fas fa-edit"></i></a>
-                                        </#if>
                                         <#if deleteButton?is_macro>
                                             <@deleteButton id="${item.id}"/>
                                         </#if>
