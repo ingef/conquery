@@ -147,7 +147,7 @@
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
-            <version>3.0.13</version>
+            <version>3.0.15</version>
             <classifier>indy</classifier>
         </dependency>
         <dependency>
