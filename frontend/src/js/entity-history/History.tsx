@@ -6,7 +6,12 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
-import type { EntityInfo, HistorySources, ResultUrlsWithLabel, SelectOptionT } from "../api/types";
+import type {
+  EntityInfo,
+  HistorySources,
+  ResultUrlsWithLabel,
+  SelectOptionT,
+} from "../api/types";
 import type { StateT } from "../app/reducers";
 import ErrorFallback from "../error-fallback/ErrorFallback";
 import DownloadResultsDropdownButton from "../query-runner/DownloadResultsDropdownButton";

@@ -29,7 +29,10 @@ const PreviewButton: FC<PropsT> = ({ url, columns, ...restProps }) => {
   return (
     <Button
       onClick={async () => {
-        await loadPreviewData({...url, url: getAuthorizedUrl(url.url)}, columns);
+        await loadPreviewData(
+          { ...url, url: getAuthorizedUrl(url.url) },
+          columns,
+        );
         dispatch(openPreview());
       }}
       {...restProps}

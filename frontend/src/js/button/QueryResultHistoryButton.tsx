@@ -35,7 +35,11 @@ export const QueryResultHistoryButton = ({ url, label, columns }: PropsT) => {
       icon={isLoading ? "spinner" : "list-ul"}
       frame
       onClick={async () => {
-        await newHistorySession({...url, url: getAuthorizedUrl(url.url)}, columns, label);
+        await newHistorySession(
+          { ...url, url: getAuthorizedUrl(url.url) },
+          columns,
+          label,
+        );
         dispatch(openHistory());
       }}
     >
