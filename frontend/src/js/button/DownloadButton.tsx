@@ -29,7 +29,8 @@ function getFileIcon(label:string): IconName {
 
   // Forms
   if(label.includes(".")){
-    const ext = label.split(".").pop();
+    const ext = label.split(".").pop()?.toLocaleUpperCase();
+    console.log("ext " + ext)
     if(!ext) return "file-download";
     if(ext in fileTypeToIcon){
        return fileTypeToIcon[ext];
