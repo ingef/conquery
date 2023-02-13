@@ -101,10 +101,7 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 		}
 
 
-		log.info("{}", result);
-
-
-
+		assertThat(result).containsExactly(Map.of("ID", "1"));
 	}
 
 }

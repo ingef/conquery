@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -76,7 +77,7 @@ public class DatasetQueryResource {
 
 	@POST
 	@Path("/resolve-entities")
-	public Stream<Map<String, String>> resolveEntities(@Auth Subject subject, List<FilterValue<?>> container, @Context HttpServletRequest request) {
+	public Stream<Map<String, String>> resolveEntities(@Auth Subject subject, @Valid @NotEmpty List<FilterValue<?>> container, @Context HttpServletRequest request) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 

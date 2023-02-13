@@ -11,9 +11,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -43,6 +43,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -50,21 +51,17 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
 import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
@@ -431,8 +428,13 @@ public class QueryProcessor {
 	 * Execute a basic query on a single concept and return only the included entities Id's.
 	 */
 	public Stream<Map<String, String>> resolveEntities(Subject subject, List<FilterValue<?>> filters, Dataset dataset) {
+		if(filters.stream().map(fv ->  fv.getFilter().getConnector()).distinct().count() != 1){
+			throw new BadRequestException("May only query one connector at once.");
+		}
+
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
+		// Build query, assuming FilterValues are all of the same concept and connector.
 		final CQConcept cqConcept = new CQConcept();
 		cqConcept.setElements(List.of(filters.get(0).getFilter().getConnector().getConcept()));
 
@@ -458,20 +460,30 @@ public class QueryProcessor {
 
 		final SingleTableResult result = (SingleTableResult) execution;
 
-		final Map<ResultInfo, Integer> indices =
-				result.getResultInfos()
-					  .stream()
-					  .filter(info1 -> info1.getSemantics().stream().anyMatch(SemanticType.IdT.class::isInstance))
-					  .collect(Collectors.toMap(Function.identity(), info -> result.getResultInfos().indexOf(info)));
 
-		final IdPrinter printer = IdColumnUtil.getIdPrinter(subject, execution, namespace, config.getIdColumns().getIds());
-		final PrintSettings printSettings = new PrintSettings(false, I18n.LOCALE.get(), datasetRegistry, config, printer::createId);
+		final List<ColumnConfig> ids = config.getIdColumns()
+											 .getIds().stream()
+											 // We're only interested in returning printable AND resolvable ids
+											 .filter(ColumnConfig::isPrint)
+											 .filter(ColumnConfig::isResolvable)
+											 .collect(Collectors.toList());
 
+
+		final Map<String, Integer> id2index = IntStream.range(0, ids.size())
+													   .boxed()
+													   .collect(Collectors.toMap(
+														 idx -> ids.get(idx).getName(),
+														 idx -> idx
+												 ));
+
+		final IdPrinter printer = IdColumnUtil.getIdPrinter(subject, execution, namespace, ids);
+
+		// For each included entity emit a Map of { Id-Name -> Id-Value }
 		return result.streamResults()
 				.map(printer::createId)
-				.map(id -> indices.entrySet().stream().collect(Collectors.toMap(
-						(Map.Entry<ResultInfo, Integer> entry) -> entry.getKey().defaultColumnName(printSettings),
-						(Map.Entry<ResultInfo, Integer> entry) -> id.getExternalId()[entry.getValue()])
-				));
+				.map(entityPrintId -> id2index.entrySet().stream().collect(Collectors.toMap(
+						Map.Entry::getKey,
+						entry -> entityPrintId.getExternalId()[entry.getValue()]
+				)));
 	}
 }
