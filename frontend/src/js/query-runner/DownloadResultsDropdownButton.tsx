@@ -44,7 +44,7 @@ const Separator = styled("div")`
 // might need to adjust this when adding more content.
 const dropdownOffset: [number, number] = [-37, 8]; // [skidding, distance] / default [0, 10]
 
-interface fileChoice {
+interface FileChoice {
   label: string;
   ending: string;
 }
@@ -75,7 +75,7 @@ const DownloadResultsDropdownButton = ({
   tiny?: boolean;
   tooltip?: string;
 }) => {
-  const [fileChoice, setFileChoice] = useState<fileChoice>(() => {
+  const [fileChoice, setFileChoice] = useState<FileChoice>(() => {
     const initial = getInitialEndingChoice(resultUrls);
     return { label: initial.label, ending: getEnding(initial.url) };
   });
