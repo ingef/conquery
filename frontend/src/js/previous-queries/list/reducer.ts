@@ -159,6 +159,24 @@ const deleteFormConfig = (
   };
 };
 
+const removeLocalFolder = (
+  state: PreviousQueriesStateT,
+  { folderName }: { folderName: string },
+) => {
+  const { localFolders } = state;
+  const idx = localFolders.findIndex((f) => f === folderName);
+
+  return idx === -1
+    ? state
+    : {
+        ...state,
+        localFolders: [
+          ...localFolders.slice(0, idx),
+          ...localFolders.slice(idx + 1),
+        ],
+      };
+};
+
 const previousQueriesReducer = (
   state: PreviousQueriesStateT = initialState,
   action: Action,
@@ -201,17 +219,7 @@ const previousQueriesReducer = (
         localFolders: [...state.localFolders, action.payload.folderName],
       };
     case getType(removeFolder):
-      const idx = state.localFolders.indexOf(action.payload.folderName);
-
-      if (idx === -1) return state;
-
-      return {
-        ...state,
-        localFolders: [
-          ...state.localFolders.slice(0, idx),
-          ...state.localFolders.slice(idx + 1),
-        ],
-      };
+      return removeLocalFolder(state, action.payload);
     default:
       return state;
   }
