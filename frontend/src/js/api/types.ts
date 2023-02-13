@@ -524,7 +524,9 @@ export interface HistorySources {
   default: { label: string; name: TableT["id"] }[];
 }
 
-export type GetEntityHistoryDefaultParamsResponse = HistorySources;
+export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
+  searchConcept: string | null;
+};
 
 export interface EntityInfo {
   label: string;

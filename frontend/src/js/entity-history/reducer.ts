@@ -34,6 +34,7 @@ export interface EntityId {
 export type EntityHistoryStateT = {
   defaultParams: {
     sources: HistorySources;
+    searchConcept: string | null;
   };
   isLoading: boolean;
   isOpen: boolean;
@@ -52,6 +53,7 @@ export type EntityHistoryStateT = {
 const initialState: EntityHistoryStateT = {
   defaultParams: {
     sources: { all: [], default: [] },
+    searchConcept: null,
   },
   label: "",
   columns: {},
@@ -76,7 +78,8 @@ export default function reducer(
       return {
         ...state,
         defaultParams: {
-          sources: action.payload.sources,
+          sources: { all: action.payload.all, default: action.payload.default },
+          searchConcept: action.payload.searchConcept,
         },
       };
     case getType(loadHistoryData.request):

@@ -14,6 +14,7 @@ import { EntityIdsList } from "./EntityIdsList";
 import type { EntityIdsStatus } from "./History";
 import { LoadHistoryDropzone, LoadingPayload } from "./LoadHistoryDropzone";
 import { NavigationHeader } from "./NavigationHeader";
+import { SearchEntites } from "./SearchEntities";
 import { closeHistory, resetHistory, useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
 import { saveHistory } from "./saveAndLoad";
@@ -173,6 +174,9 @@ export const Navigation = memo(
             </SxWithTooltip>
           </TopActions>
           <SxLoadHistoryDropzone onLoadFromFile={onLoadFromFile}>
+            {entityIds.length === 0 && (
+              <SearchEntites onLoad={onLoadFromFile} />
+            )}
             <EntityIdsList
               currentEntityId={currentEntityId}
               entityIds={entityIds}

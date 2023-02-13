@@ -10,6 +10,7 @@ import type {
   ColumnDescription,
   DatasetT,
   EntityInfo,
+  GetEntityHistoryDefaultParamsResponse,
   HistorySources,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -40,7 +41,7 @@ export const closeHistory = createAction("history/CLOSE")();
 
 export const loadDefaultHistoryParamsSuccess = createAction(
   "history/LOAD_DEFAULT_HISTORY_PARAMS_SUCCESS",
-)<{ sources: HistorySources }>();
+)<GetEntityHistoryDefaultParamsResponse>();
 
 export const useLoadDefaultHistoryParams = () => {
   const dispatch = useDispatch();
@@ -51,7 +52,7 @@ export const useLoadDefaultHistoryParams = () => {
       try {
         const result = await getEntityHistoryDefaultParams(datasetId);
 
-        dispatch(loadDefaultHistoryParamsSuccess({ sources: result }));
+        dispatch(loadDefaultHistoryParamsSuccess(result));
       } catch (error) {
         // TODO: Fail without noticing user, maybe change this later if required
         console.error(error);

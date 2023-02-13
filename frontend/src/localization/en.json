@@ -501,7 +501,8 @@
       "importDescription": "Please provide aa CSV format with columns<br /><code><strong>ID kind</strong>;<strong>ID</strong> (+ optionally: ;<strong>status 1</strong>;<strong>status 2</strong>;...)</code>",
       "importPlaceholder": "{{idkind}};A0123456788;interesting;\n{{idkind}};A0123456789;;not interesting",
       "error": "Couldn't load history for this file."
-    }
+    },
+    "searchResultLabel": "Found IDs"
   },
   "importModal": {
     "headline": "Import codes",
