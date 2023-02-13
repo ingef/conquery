@@ -53,11 +53,15 @@ const getEnding = (url: string) => url.split(".").reverse()[0].toUpperCase();
 
 const getInitialEndingChoice = (resultUrls: ResultUrlsWithLabel[]) => {
   const { preferredDownloadFormat, preferredDownloadLabel } = getUserSettings();
-  const labelResult = resultUrls.find((url) => url.label === preferredDownloadLabel);
-  if(labelResult) {
+  const labelResult = resultUrls.find(
+    (url) => url.label === preferredDownloadLabel,
+  );
+  if (labelResult) {
     return labelResult;
   }
-  const found = resultUrls.find((url) => getEnding(url.url) === preferredDownloadFormat);
+  const found = resultUrls.find(
+    (url) => getEnding(url.url) === preferredDownloadFormat,
+  );
 
   return found ? found : resultUrls[0];
 };
@@ -71,24 +75,29 @@ const DownloadResultsDropdownButton = ({
   tiny?: boolean;
   tooltip?: string;
 }) => {
-
-  const [fileChoice, setFileChoice] = useState<fileChoice>(
-    () => {
-      const initial = getInitialEndingChoice(resultUrls);
-      return { label: initial.label, ending: getEnding(initial.url) };
-    }
-  );
+  const [fileChoice, setFileChoice] = useState<fileChoice>(() => {
+    const initial = getInitialEndingChoice(resultUrls);
+    return { label: initial.label, ending: getEnding(initial.url) };
+  });
 
   useEffect(() => {
-    storeUserSettings({ preferredDownloadFormat: fileChoice.ending, preferredDownloadLabel: fileChoice.label });
+    storeUserSettings({
+      preferredDownloadFormat: fileChoice.ending,
+      preferredDownloadLabel: fileChoice.label,
+    });
   }, [fileChoice]);
 
   const urlChoice = useMemo(() => {
-    const labelResult = resultUrls.find((url) => url.label === fileChoice.label);
-    if(labelResult) {
+    const labelResult = resultUrls.find(
+      (url) => url.label === fileChoice.label,
+    );
+    if (labelResult) {
       return labelResult;
     }
-    return resultUrls.find((url) => getEnding(url.url) === fileChoice.ending) || resultUrls[0];
+    return (
+      resultUrls.find((url) => getEnding(url.url) === fileChoice.ending) ||
+      resultUrls[0]
+    );
   }, [resultUrls, fileChoice]);
 
   const dropdown = useMemo(() => {

@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { ReactNode, useContext, forwardRef } from "react";
-import { ResultUrlsWithLabel } from "../api/types";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { ReactNode, useContext, forwardRef } from "react";
 
+import { ResultUrlsWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 
 import IconButton, { IconButtonPropsT } from "./IconButton";
@@ -16,23 +16,23 @@ const Link = styled("a")`
 `;
 
 const fileTypeToIcon: Record<string, IconName> = {
-  "ZIP": "file-archive",
-  "XLSX": "file-excel",
-  "PDF": "file-pdf",
-  "CSV": "file-csv",
-}
-function getFileIcon(label:string): IconName {
+  ZIP: "file-archive",
+  XLSX: "file-excel",
+  PDF: "file-pdf",
+  CSV: "file-csv",
+};
+function getFileIcon(label: string): IconName {
   // Editor Requests
-  if(label in fileTypeToIcon) {
+  if (label in fileTypeToIcon) {
     return fileTypeToIcon[label];
   }
 
   // Forms
-  if(label.includes(".")){
+  if (label.includes(".")) {
     const ext = label.split(".").pop()?.toLocaleUpperCase();
-    if(!ext) return "file-download";
-    if(ext in fileTypeToIcon){
-       return fileTypeToIcon[ext];
+    if (!ext) return "file-download";
+    if (ext in fileTypeToIcon) {
+      return fileTypeToIcon[ext];
     }
   }
   return "file-download";
@@ -55,7 +55,11 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
 
     return (
       <Link href={href} className={className} ref={ref}>
-        <SxIconButton {...restProps} icon={getFileIcon(url.label)} onClick={onClick}>
+        <SxIconButton
+          {...restProps}
+          icon={getFileIcon(url.label)}
+          onClick={onClick}
+        >
           {children}
         </SxIconButton>
       </Link>

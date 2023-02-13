@@ -114,7 +114,11 @@ export function useNewHistorySession() {
   const loadPreviewData = useLoadPreviewData();
   const updateHistorySession = useUpdateHistorySession();
 
-  return async (url: ResultUrlsWithLabel, columns: ColumnDescription[], label: string) => {
+  return async (
+    url: ResultUrlsWithLabel,
+    columns: ColumnDescription[],
+    label: string,
+  ) => {
     dispatch(loadHistoryData.request());
 
     const result = await loadPreviewData(url, columns, { noLoading: true });

@@ -392,7 +392,7 @@ export interface ColumnDescription {
 
 export interface ResultUrlsWithLabel {
   label: string;
-  url: string; 
+  url: string;
 }
 
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields
