@@ -6,8 +6,6 @@ on:
       - ".github/workflows/lint_openapi.yaml"
 
 jobs:
-  checkout:
-    runs-on: ubuntu-latest
   lint:
     runs-on: ubuntu-latest
     container: dshanley/vacuum
