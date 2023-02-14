@@ -1,0 +1,14 @@
+name: "Release Backend"
+on:
+  pull_request:
+    paths:
+      - "openapi.yaml"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    container: dshanley/vacuum
+
+    steps:
+      - name: "Lint OpenApi spec"
+        run: vacuum lint --details openapi.yaml
