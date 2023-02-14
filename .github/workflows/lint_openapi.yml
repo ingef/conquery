@@ -1,4 +1,4 @@
-name: "Release Backend"
+name: "OpenAPI linter"
 on:
   pull_request:
     paths:
