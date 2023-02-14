@@ -4,7 +4,7 @@
   </div>
 </#macro>
 <#macro accordion summary infoText="">
-  <div class="card accordion-card">
+  <div class="card accordion-card" data-test-id="accordion-${summary}">
     <div
       class="card-header d-inline-flex justify-content-between"
       style="user-select: none; cursor: pointer;"

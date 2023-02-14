@@ -18,17 +18,17 @@
 </#macro>
 
 <#macro deleteTablesButton id>
-	<a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/tables/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+	<a href="" data-test-id="delete-btn-table-${id}" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/tables/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 </#macro>
 
 <#macro deleteConceptsButton id>
-    <a href="" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/concepts/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+    <a href="" data-test-id="delete-btn-concept-${id}" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/concepts/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 </#macro>
 
 <#macro label>
   <form method="post" enctype="multipart/form-data">
-    <input id="newDatasetLabel" type="text" name="label" title="Label of the dataset" value="${c.ds.label}">
-    <input type="submit" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/label',{ method: 'post', body: document.getElementById('newDatasetLabel').value}).then(function(res){if(res.ok)location.reload();});"/>
+    <input id="newDatasetLabel" data-test-id="dataset-label-input" type="text" name="label" title="Label of the dataset" value="${c.ds.label}">
+    <input type="submit" data-test-id="dataset-label-btn" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/label',{ method: 'post', body: document.getElementById('newDatasetLabel').value}).then(function(res){if(res.ok)location.reload();});"/>
   </form>
 </#macro>
 <#macro idMapping><a href="./${c.ds.id}/mapping">Here</a></#macro>
@@ -49,6 +49,7 @@
           <form class="d-flex flex-column align-items-stretch" onsubmit="postFile(event, '/admin/datasets/${c.ds.id}/internToExtern');">
             <select
               class="custom-select"
+              data-test-id="upload-select"
               onchange="let x = {mapping: {name: 'mapping', uri: 'internToExtern', accept: '*.mapping.json'}, table: {name: 'table_schema', uri: 'tables', accept: '*.table.json'}, concept: {name: 'concept_schema', uri: 'concepts', accept: '*.concept.json'}, structure: {name: 'structure_schema', uri: 'structure', accept: 'structure.json'}}; let data = x[this.value]; let fi = $(this).next(); fi.value = ''; fi.attr('accept', data.accept); fi.attr('name', data.name); $(this).parent().attr('onsubmit', 'postFile(event, \'/admin/datasets/${c.ds.id}/' + data.uri + '\')');"
               required
             >
@@ -60,12 +61,13 @@
             <input
               type="file"
               class="restparam form-control my-3"
+              data-test-id="upload-input"
               name="mapping"
               accept="*.mapping.json"
               multiple
               required
             />
-            <input class="btn btn-primary" type="submit"/>
+            <input class="btn btn-primary" data-test-id="upload-btn" type="submit" value="upload"/>
           </form>
         </div>
       </div>
@@ -88,19 +90,19 @@
   </div>
 
   <@accordion.accordionGroup>
-    <@accordion.accordion summary="Mappings" infoText="${c.internToExternMappers?size} Einträge">
+    <@accordion.accordion summary="Mappings" infoText="${c.internToExternMappers?size} entries">
       <@table.table columns=columnsMappers items=c.internToExternMappers deleteButton=deleteMappersButton />
     </@accordion.accordion>
-    <@accordion.accordion summary="SearchIndices" infoText="${c.searchIndices?size} Einträge">
+    <@accordion.accordion summary="SearchIndices" infoText="${c.searchIndices?size} entries">
       <@table.table columns=columnsSearchIndices items=c.searchIndices deleteButton=deleteSearchIndiciesButton />
     </@accordion.accordion>
-    <@accordion.accordion summary="Tables" infoText="${c.tables?size} Einträge">
+    <@accordion.accordion summary="Tables" infoText="${c.tables?size} entries">
         <@table.table columns=columnsTables items=c.tables?sort_by("name") deleteButton=deleteTablesButton link="./${c.ds.id}/tables/" />
     </@accordion.accordion>
-    <@accordion.accordion summary="Concepts" infoText="${c.concepts?size} Einträge">
+    <@accordion.accordion summary="Concepts" infoText="${c.concepts?size} entries">
         <@table.table columns=columnsConcepts items=c.concepts?sort_by("name") deleteButton=deleteConceptsButton link="./${c.ds.id}/concepts/" />
     </@accordion.accordion>
-    <@accordion.accordion summary="SecondaryIds" infoText="${c.secondaryIds?size} Einträge">
+    <@accordion.accordion summary="SecondaryIds" infoText="${c.secondaryIds?size} entries">
         <@table.table columns=columnsSecondaryIds items=c.secondaryIds?sort_by("name") />
     </@accordion.accordion>
   </@accordion.accordionGroup>

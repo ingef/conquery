@@ -157,11 +157,15 @@
 		}
 
 		async function showMessageForResponse(response){
-			let body = await response.json();
-			if(response.ok){
-				showToastMessage(ToastTypes.SUCCESS, "Success", "The request has been successfully completed", "Status " + response.status);
-			} else {
-				showToastMessage(ToastTypes.ERROR, "Error", "The send request came back with the following error: " + JSON.stringify(body), "Status " + response.status);
+			if(response){
+				try {
+					let body = await response.json();
+					if(!response.ok){
+						showToastMessage(ToastTypes.ERROR, "Error", "The send request came back with the following error: " + JSON.stringify(body), "Status " + response.status);
+					}
+				} catch (e) {
+					// ignore, because some responses don't have a body
+				}
 			}
 		}
 
@@ -191,9 +195,11 @@
 					}})
 						.then(function(response){
 							if (response.ok) {
-								setTimeout(location.reload, 2000);
+								setTimeout(() => location.reload(), 2000);
+								showToastMessage(ToastTypes.SUCCESS, "Success", "The file has been posted successfully");
+							} else {
+								showMessageForResponse(response);
 							}
-							showMessageForResponse(response);
 						})
 						.catch(function(error) {
 							showToastMessage(ToastTypes.ERROR, "Error", "There has been a problem with posting a file: " + error.message);

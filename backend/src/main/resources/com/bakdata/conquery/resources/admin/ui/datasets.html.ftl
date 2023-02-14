@@ -3,7 +3,7 @@
 <#assign columns=["id", "label", "actions"]>
 
 <#macro deleteDatasetButton id>
-	<a href="" onclick="deleteDataset('${id}')"><i class="fas fa-trash-alt text-danger"></i></a>
+	<a data-test-id="delete-btn-${id}" href="" onclick="deleteDataset('${id}')"><i class="fas fa-trash-alt text-danger"></i></a>
 </#macro>
 
 <@layout.layout>
@@ -15,13 +15,13 @@
 					<h3>Create Dataset</h3>
 					<div class="form-group">
 						<label for="entity_name">Label:</label>
-						<input id="entity_name" name="entity_name" pattern="<#include "templates/namePattern.ftl">" class="form-control text-monospace" style="font-family:monospace;">
+						<input id="entity_name" name="entity_name" data-test-id="entity-name" pattern="<#include "templates/namePattern.ftl">" class="form-control text-monospace" style="font-family:monospace;">
 					</div>
 					<div class="form-group">
 						<label for="entity_id">ID:</label>
-						<input id="entity_id" name="entity_id"  class="form-control text-monospace" style="font-family:monospace;">
+						<input id="entity_id" name="entity_id" data-test-id="entity-id" class="form-control text-monospace" style="font-family:monospace;">
 					</div>
-					<input class="btn btn-primary mt-3" type="submit" onclick="createDataset()"/>
+					<input class="btn btn-primary mt-3" data-test-id="create-dataset-btn" type="submit" onclick="createDataset()"/>
 				</form>
 			</div>
 
@@ -49,8 +49,10 @@
 							label: document.getElementById('entity_name').value
 						})
 			}).then(function(res){
-				showMessageForResponse(res);
-				if(res.ok) { location.reload(); }
+				if(res.ok) 
+					location.reload();
+				else
+					showMessageForResponse(res);
 			});
 		}
 
@@ -62,8 +64,10 @@
 					method: 'delete',
 					credentials: "same-origin"
 			}).then(function(res){
-				showMessageForResponse(res);
-				if(res.ok) { location.reload(); }
+				if(res.ok) 
+					location.reload();
+				else
+					showMessageForResponse(res);
 			});
 		}
 	</script>
