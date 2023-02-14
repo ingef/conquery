@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - "openapi.yaml"
+      - ".github/workflows/lint_openapi.yaml"
 
 jobs:
   release:
