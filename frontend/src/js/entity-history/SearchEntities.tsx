@@ -1,21 +1,27 @@
 import styled from "@emotion/styled";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import { usePostPrefixForSuggestions } from "../api/api";
+import {
+  usePostPrefixForSuggestions,
+  usePostResolveEntities,
+} from "../api/api";
 import { transformFilterValueToApi } from "../api/apiHelper";
-import { ConceptT, RangeFilterT, TableT } from "../api/types";
+import { ConceptT, TableT } from "../api/types";
 import { StateT } from "../app/reducers";
 import PrimaryButton from "../button/PrimaryButton";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
+import { useDatasetId } from "../dataset/selectors";
 import FaIcon from "../icon/FaIcon";
 import { isMultiSelectFilter, resetFilters } from "../model/filter";
 import { nodeIsElement } from "../model/node";
 import TableFilters from "../query-node-editor/TableFilters";
 import { filterSuggestionToSelectOption } from "../query-node-editor/suggestionsHelper";
-import { FilterWithValueType } from "../standard-query-editor/types";
-import { ModeT } from "../ui-components/InputRange";
+import {
+  BigMultiSelectFilterWithValueType,
+  MultiSelectFilterWithValueType,
+} from "../standard-query-editor/types";
 
 import { useDefaultStatusOptions } from "./History";
 import { LoadingPayload } from "./LoadHistoryDropzone";
@@ -44,27 +50,23 @@ export const SearchEntites = ({
   return <SearchEntitiesComponent table={searchConceptTable} onLoad={onLoad} />;
 };
 
-const isRangeFilter = (filter: FilterWithValueType): filter is RangeFilterT =>
-  filter.type === "REAL_RANGE" ||
-  filter.type === "INTEGER_RANGE" ||
-  filter.type === "MONEY_RANGE";
+type MultiSelectFilter =
+  | MultiSelectFilterWithValueType
+  | BigMultiSelectFilterWithValueType;
 
 const useFilterState = (table: TableT) => {
-  const [searchFilters, setSearchFilters] = useState<FilterWithValueType[]>(
-    resetFilters(table.filters as FilterWithValueType[]),
+  const [searchFilters, setSearchFilters] = useState<MultiSelectFilter[]>(
+    resetFilters(
+      table.filters.filter(
+        (f): f is MultiSelectFilter =>
+          f.type === "BIG_MULTI_SELECT" || f.type === "MULTI_SELECT",
+      ),
+    ) as MultiSelectFilter[],
   );
 
   const setFilterValue = useCallback((filterIdx: number, value: any) => {
     setSearchFilters((filters) =>
       filters.map((f, i) => (i === filterIdx ? { ...f, value } : f)),
-    );
-  }, []);
-
-  const setFilterMode = useCallback((filterIdx: number, mode: ModeT) => {
-    setSearchFilters((filters) =>
-      filters.map((f, i) =>
-        i === filterIdx && isRangeFilter(f) ? { ...f, mode } : f,
-      ),
     );
   }, []);
 
@@ -121,7 +123,6 @@ const useFilterState = (table: TableT) => {
   return {
     searchFilters,
     setFilterValue,
-    setFilterMode,
     loadFilterSuggestions,
   };
 };
@@ -130,35 +131,67 @@ const useSubmitSearch = ({
   searchFilters,
   onLoad,
 }: {
-  searchFilters: FilterWithValueType[];
+  searchFilters: (
+    | MultiSelectFilterWithValueType
+    | BigMultiSelectFilterWithValueType
+  )[];
   onLoad: (payload: LoadingPayload) => void;
 }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const defaultStatusOptions = useDefaultStatusOptions();
+  const datasetId = useDatasetId();
+  const postResolveEntities = usePostResolveEntities();
+
   const onSubmitSearch = useCallback(async () => {
+    if (!datasetId) return;
+
     setLoading(true);
 
-    console.log(
-      searchFilters.map((f) => ({
+    const filterValues = searchFilters
+      .map((f) => ({
         filter: f.id,
-        type: f.type,
-        value: transformFilterValueToApi(f),
-      })),
-    );
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+        type: f.type as "MULTI_SELECT" | "BIG_MULTI_SELECT",
+        value: transformFilterValueToApi(f) as string[],
+      }))
+      .filter((f) => f.value.length !== 0);
 
-    setLoading(false);
-    onLoad({
-      label: t("history.searchResultLabel"),
-      loadedEntityIds: [],
-      loadedEntityStatus: {},
-      loadedEntityStatusOptions: defaultStatusOptions,
-    });
-  }, [t, onLoad, defaultStatusOptions, searchFilters]);
+    try {
+      const result = await postResolveEntities(datasetId, filterValues);
+
+      const loadedEntityIds = result.map((e) => {
+        const keys = Object.keys(e);
+        return { id: e[keys[0]], kind: keys[0] };
+      });
+
+      setLoading(false);
+      onLoad({
+        label: t("history.searchResultLabel"),
+        loadedEntityIds,
+        loadedEntityStatus: {},
+        loadedEntityStatusOptions: defaultStatusOptions,
+      });
+    } catch (e) {
+      setLoading(false);
+      throw e;
+    }
+  }, [
+    t,
+    datasetId,
+    onLoad,
+    defaultStatusOptions,
+    searchFilters,
+    postResolveEntities,
+  ]);
+
+  const hasFiltersSet = useMemo(
+    () => searchFilters.some((f) => (f.value?.length ?? 0) > 0),
+    [searchFilters],
+  );
 
   return {
     loading,
+    hasFiltersSet,
     onSubmitSearch,
   };
 };
@@ -183,6 +216,8 @@ const SxPrimaryButton = styled(PrimaryButton)`
   gap: 14px;
 `;
 
+const noop = () => {};
+
 export const SearchEntitiesComponent = ({
   table,
   onLoad,
@@ -190,14 +225,11 @@ export const SearchEntitiesComponent = ({
   table: TableT;
   onLoad: (payload: LoadingPayload) => void;
 }) => {
-  const {
-    searchFilters,
-    setFilterValue,
-    setFilterMode,
-    loadFilterSuggestions,
-  } = useFilterState(table);
+  const { t } = useTranslation();
+  const { searchFilters, setFilterValue, loadFilterSuggestions } =
+    useFilterState(table);
 
-  const { loading, onSubmitSearch } = useSubmitSearch({
+  const { loading, hasFiltersSet, onSubmitSearch } = useSubmitSearch({
     searchFilters,
     onLoad,
   });
@@ -208,12 +240,15 @@ export const SearchEntitiesComponent = ({
         filters={searchFilters}
         excludeTable={false}
         onSetFilterValue={setFilterValue}
-        onSwitchFilterMode={setFilterMode}
+        onSwitchFilterMode={noop}
         onLoadFilterSuggestions={loadFilterSuggestions}
       />
-      <SxPrimaryButton onClick={onSubmitSearch} disabled={loading}>
+      <SxPrimaryButton
+        onClick={onSubmitSearch}
+        disabled={!hasFiltersSet || loading}
+      >
         {loading && <FaIcon white icon="spinner" />}
-        Submit
+        {t("history.searchEntitiesButton")}
       </SxPrimaryButton>
     </Root>
   );

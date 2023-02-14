@@ -472,6 +472,8 @@
     "closeAll": "Alle schließen",
     "openAll": "Alle aufklappen",
     "dates": "Datumswerte",
+    "searchEntitiesButton": "Historie starten",
+    "error": "Konnte Historie für diese ID nicht laden.",
     "options": {
       "check": "auffällig",
       "noCheck": "unauffällig"

@@ -535,8 +535,12 @@ export interface EntityInfo {
   semantics: ColumnDescriptionSemantic[];
 }
 
-export type GetEntityHistoryResponse = {
+export interface GetEntityHistoryResponse {
   resultUrls: string[];
   columnDescriptions: ColumnDescription[];
   infos: EntityInfo[];
-};
+}
+
+export type PostResolveEntitiesResponse = {
+  [idKind: string]: string;
+}[];

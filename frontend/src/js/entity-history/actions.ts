@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
@@ -24,6 +25,8 @@ import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { useLoadPreviewData } from "../preview/actions";
+import { setMessage } from "../snack-message/actions";
+import { SnackMessageType } from "../snack-message/reducer";
 
 import { EntityEvent, EntityId } from "./reducer";
 
@@ -167,6 +170,7 @@ export function useUpdateHistorySession() {
   const datasetId = useDatasetId();
   const getEntityHistory = useGetEntityHistory();
   const getAuthorizedUrl = useGetAuthorizedUrl();
+  const { t } = useTranslation();
 
   const defaultEntityHistoryParams = useSelector<
     StateT,
@@ -242,9 +246,16 @@ export function useUpdateHistorySession() {
         );
       } catch (e) {
         dispatch(loadHistoryData.failure(errorPayload(e as Error, {})));
+        dispatch(
+          setMessage({
+            message: t("history.error"),
+            type: SnackMessageType.ERROR,
+          }),
+        );
       }
     },
     [
+      t,
       datasetId,
       defaultEntityHistoryParams.sources,
       dispatch,
