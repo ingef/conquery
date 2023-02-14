@@ -6,14 +6,13 @@ on:
       - ".github/workflows/lint_openapi.yaml"
 
 jobs:
-  release:
+  checkout:
+    runs-on: ubuntu-latest
+  lint:
     runs-on: ubuntu-latest
     container: dshanley/vacuum
-
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-        with:
-          submodules: true
       - name: "Lint OpenApi spec"
-        run: vacuum lint --details openapi.yaml
+        run: vacuum lint --details /openapi.yaml
