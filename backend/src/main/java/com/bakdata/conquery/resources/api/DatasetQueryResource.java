@@ -38,7 +38,6 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import io.dropwizard.auth.Auth;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -67,17 +66,10 @@ public class DatasetQueryResource {
 		return processor.getSingleEntityExport(subject, uriBuilder, query.getIdKind(), query.getEntityId(), query.getSources(), dataset, query.getTime());
 	}
 
-	public static record ResolveEntitiesContainer(List<FilterValue<?>> filters){
-		@ValidationMethod(message = "Only one Connector is supported.")
-		public boolean isFiltersForSameConnector() {
-			return filters().stream().map(fv -> fv.getFilter().getConnector()).distinct().count() == 1;
-		}
-	}
-
 
 	@POST
 	@Path("/resolve-entities")
-	public Stream<Map<String, String>> resolveEntities(@Auth Subject subject, @Valid @NotEmpty List<FilterValue<?>> container, @Context HttpServletRequest request) {
+	public Stream<Map<String, String>> resolveEntities(@Auth Subject subject, @Valid @NotEmpty List<FilterValue<?>> container) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 
