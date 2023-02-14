@@ -429,7 +429,7 @@ public class QueryProcessor {
 	 */
 	public Stream<Map<String, String>> resolveEntities(Subject subject, List<FilterValue<?>> filters, Dataset dataset) {
 		if(filters.stream().map(fv ->  fv.getFilter().getConnector()).distinct().count() != 1){
-			throw new BadRequestException("May only query one connector at once.");
+			throw new BadRequestException("Query exactly one connector at once.");
 		}
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
