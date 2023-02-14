@@ -39,7 +39,7 @@ public class ExternalResultProvider implements ResultRendererProvider {
 	 * @return
 	 */
 	@Override
-	public Collection<URL> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<URL> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		if (!(exec instanceof ExternalResult)) {
 			return Collections.emptyList();
@@ -52,7 +52,7 @@ public class ExternalResultProvider implements ResultRendererProvider {
 		return ((ExternalResult) exec).getResultFileExtensions().stream()
 									  .map(resultFileReference -> {
 										  try {
-											  return ResultExternalResource.getDownloadURL(uriBuilder.clone(), (ManagedExecution<?> & ExternalResult) exec, resultFileReference);
+											  return ResultExternalResource.getDownloadURL(uriBuilder.clone(), (ManagedExecution & ExternalResult) exec, resultFileReference);
 										  }
 										  catch (MalformedURLException e) {
 											  Throwables.throwIfUnchecked(e);

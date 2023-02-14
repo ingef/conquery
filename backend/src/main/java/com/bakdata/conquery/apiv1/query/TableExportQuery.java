@@ -25,6 +25,7 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefKeys;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -50,12 +51,12 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,13 +76,12 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @CPSType(id = "TABLE_EXPORT", base = QueryDescription.class)
-@RequiredArgsConstructor(onConstructor = @__({@JsonCreator}))
 public class TableExportQuery extends Query {
 
 	@Valid
 	@NotNull
 	@NonNull
-	protected Query query;
+	protected final Query query;
 	@NotNull
 	private Range<LocalDate> dateRange = Range.all();
 
@@ -109,6 +109,11 @@ public class TableExportQuery extends Query {
 	@JsonIgnore
 	private List<ResultInfo> resultInfos = Collections.emptyList();
 
+	public TableExportQuery(@NotNull @JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage, Query query) {
+		super(storage);
+		this.query = query;
+	}
+
 
 	@Override
 	public TableExportQueryPlan createQueryPlan(QueryPlanContext context) {
@@ -118,7 +123,7 @@ public class TableExportQuery extends Query {
 		for (CQConcept cqConcept : tables) {
 			for (CQTable table : cqConcept.getTables()) {
 				// We use this query just to properly Construct a QPNode, filtering is done manually inside TableQueryPlan
-				final ConceptQuery tableFilterQuery = new ConceptQuery(cqConcept, DateAggregationMode.NONE);
+				final ConceptQuery tableFilterQuery = new ConceptQuery(cqConcept, DateAggregationMode.NONE, getStorage());
 				filterQueryNodes.put(table, tableFilterQuery.createQueryPlan(context).getChild());
 			}
 		}

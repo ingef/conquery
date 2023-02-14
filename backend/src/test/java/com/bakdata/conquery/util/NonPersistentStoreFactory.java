@@ -59,7 +59,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	private final Map<String, NonPersistentStore<Boolean, EntityIdMap>> idMappingStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Boolean, WorkerToBucketsMap>> workerToBucketStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Boolean, StructureNode[]>> structureStore = new ConcurrentHashMap<>();
-	private final Map<String, NonPersistentStore<Id<ManagedExecution<?>>, ManagedExecution<?>>> executionStore = new ConcurrentHashMap<>();
+	private final Map<String, NonPersistentStore<Id<ManagedExecution>, ManagedExecution>> executionStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<FormConfig>, FormConfig>> formConfigStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<User>, User>> userStore = new ConcurrentHashMap<>();
 	private final Map<String, NonPersistentStore<Id<Role>, Role>> roleStore = new ConcurrentHashMap<>();
@@ -154,7 +154,7 @@ public class NonPersistentStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<ManagedExecution<?>> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
+	public IdentifiableStore<ManagedExecution> createExecutionsStore(CentralRegistry centralRegistry, DatasetRegistry datasetRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(executionStore.computeIfAbsent(pathName, n -> new NonPersistentStore<>()), centralRegistry);
 	}
 

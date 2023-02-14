@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -16,11 +19,23 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 @EqualsAndHashCode
 public abstract class Query implements QueryDescription {
+
+	@NotNull
+	@Getter(AccessLevel.PROTECTED)
+	private final MetaStorage storage;
+
+	protected Query(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		this.storage = storage;
+	}
 
 	public abstract QueryPlan<?> createQueryPlan(QueryPlanContext context);
 
@@ -40,7 +55,7 @@ public abstract class Query implements QueryDescription {
 
 	@Override
 	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset) {
-		return new ManagedQuery(this, user, submittedDataset);
+		return new ManagedQuery(this, user, submittedDataset, storage);
 	}
 
 	/**
@@ -54,9 +69,9 @@ public abstract class Query implements QueryDescription {
 	/**
 	 * Implement Query-type aware counting of results. Standard method is counting unique entities.
 	 *
-	 * @see ManagedQuery#finish(MetaStorage, ExecutionState) for how it's used.
-	 * @return the number of results in the result List.
 	 * @param results
+	 * @return the number of results in the result List.
+	 * @see ManagedExecution#finish(ExecutionState) for how it's used.
 	 */
 	public long countResults(Stream<EntityResult> results) {
 		return results.map(EntityResult::listResultLines)

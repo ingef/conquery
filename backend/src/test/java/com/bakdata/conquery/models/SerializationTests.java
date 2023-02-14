@@ -362,7 +362,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		registry.register(dataset);
 
-		ExportForm form = new ExportForm();
+		ExportForm form = new ExportForm(getMetaStorage());
 		AbsoluteMode mode = new AbsoluteMode();
 		form.setTimeMode(mode);
 		mode.setForm(form);
@@ -394,7 +394,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		getMetaStorage().updateUser(user);
 
-		ManagedQuery execution = new ManagedQuery(null, user, dataset);
+		ManagedQuery execution = new ManagedQuery(null, user, dataset, getMetaStorage());
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)
@@ -509,7 +509,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		tables[0].setConnector(connector);
 		tables[0].setConcept(concept);
 		concept.setTables(Arrays.asList(tables));
-		ConceptQuery subQuery = new ConceptQuery(concept);
+		ConceptQuery subQuery = new ConceptQuery(concept, getMetaStorage());
 
 
 		CQOr features = new CQOr();
@@ -519,11 +519,12 @@ public class SerializationTests extends AbstractSerializationTest {
 		AbsoluteFormQuery query = new AbsoluteFormQuery(
 				subQuery,
 				CDateRange.exactly(LocalDate.now()).toSimpleRange(),
-				ArrayConceptQuery.createFromFeatures(Collections.singletonList(features)),
+				ArrayConceptQuery.createFromFeatures(Collections.singletonList(features), getMetaStorage()),
 				List.of(
 						ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
 						ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
-				)
+				),
+				getMetaStorage()
 		);
 
 		CentralRegistry centralRegistry = getMetaStorage().getCentralRegistry();
@@ -720,7 +721,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void mostlyExecution() throws JSONException, IOException {
-		final MostlyAiForm mostlyAiForm = new MostlyAiForm();
+		final MostlyAiForm mostlyAiForm = new MostlyAiForm(getMetaStorage());
 
 		mostlyAiForm.setValues(new TextNode("test"));
 

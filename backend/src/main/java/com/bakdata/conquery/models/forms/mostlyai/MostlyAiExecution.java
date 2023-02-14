@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -35,17 +36,19 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
 import it.unimi.dsi.fastutil.Pair;
@@ -59,7 +62,7 @@ import org.apache.commons.io.FileUtils;
  * An execution that submits the internal results to the Mostly-AI API and provides the
  * synthesized result as a download zip-archive.
  * <br/>
- * The internal result is intercepted in the {@link MostlyAiExecution#finish(MetaStorage, ExecutionState)}-Hook and
+ * The internal result is intercepted in the {@link ManagedExecution#finish(ExecutionState)}-Hook and
  * forwarded to the service.
  * <p>
  * The progress of the synthesis is tracked on every status request through a call of {@link MostlyAiExecution#setStatusBase(Subject, ExecutionStatus)}.
@@ -71,7 +74,7 @@ import org.apache.commons.io.FileUtils;
 @CPSType(id = "MOSTLY_AI_EXECUTION", base = ManagedExecution.class)
 @Slf4j
 @EqualsAndHashCode(callSuper = true)
-public class MostlyAiExecution extends ManagedForm implements ExternalResult {
+public class MostlyAiExecution extends ManagedForm<MostlyAiForm> implements ExternalResult, InternalExecution<ShardResult> {
 
 	final static String EXECUTION_ID = "EXECUTION_ID";
 	final static String JOB_ID = "JOB_ID";
@@ -98,13 +101,12 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 	@JsonIgnore
 	private final Map<ExternalResultProcessor.ResultFileReference, BiConsumer<UUID, Consumer<InputStream>>> resultUrls = new HashMap<>();
 
-	public MostlyAiExecution(MostlyAiForm form, User user, Dataset submittedDataset) {
-		super(form, user, submittedDataset);
+	public MostlyAiExecution(MostlyAiForm form, User user, Dataset submittedDataset, MetaStorage storage) {
+		super(form, user, submittedDataset, storage);
 	}
 
 	@Override
 	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
-		super.doInitExecutable(datasetRegistry, config);
 
 		// Check that an ExternalResultProvider is configured
 		config.getResultProviders()
@@ -133,6 +135,7 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 	@Override
 	public void start() {
 		super.start();
+		getSubmittedForm().getQueryGroup().start();
 	}
 
 	@Override
@@ -149,7 +152,7 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 
 			case NEW, QUEUED, IN_PROGRESS, CANCELING -> super.setStatusBase(subject, status);
 			case DONE -> {
-				super.finish(getStorage(), ExecutionState.DONE);
+				super.finish(ExecutionState.DONE);
 				// Register download provider(s)
 				resultUrls.put(RESULT_FILE_EXTENTION, api::downloadSyntheticData);
 				super.setStatusBase(subject, status);
@@ -166,20 +169,34 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 						null
 				);
 				setError(contextError);
-				finish(getStorage(), ExecutionState.FAILED);
+				finish(ExecutionState.FAILED);
 				super.setStatusBase(subject, status);
 			}
 		}
 	}
 
 	@Override
-	public WorkerMessage createExecutionMessage() {
-		return new ExecuteForm(getId(), getFlatSubQueries().entrySet().stream()
-														   .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
+	public void addResult(ShardResult result) {
+		getSubmittedForm().getQueryGroup().addResult(result);
 	}
 
 	@Override
-	protected void finish(MetaStorage storage, ExecutionState executionState) {
+	public WorkerMessage createExecutionMessage() {
+		return getSubmittedForm().getQueryGroup().createExecutionMessage();
+	}
+
+	@Override
+	public Set<NamespacedIdentifiable<?>> getUsedNamespacedIds() {
+		return getSubmittedForm().getQueryGroup().getUsedNamespacedIds();
+	}
+
+	@Override
+	public Set<Namespace> getRequiredDatasets() {
+		return getSubmittedForm().getQueryGroup().getRequiredDatasets();
+	}
+
+	@Override
+	protected void finish(ExecutionState executionState) {
 		/*
 			This method is called after all shard results have been collected (or an error occurred),
 			We intercept the finishing here and send the result to the mostly platform.
@@ -188,7 +205,7 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 
 		if (executionState != ExecutionState.DONE) {
 			// Internal execution failed end execution immediately
-			super.finish(storage, executionState);
+			super.finish(executionState);
 			return;
 		}
 
@@ -198,7 +215,7 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 		catch (Exception e) {
 			log.warn("Could not start synthetization job", e);
 			setError(ConqueryError.asConqueryError(e));
-			super.finish(getStorage(), ExecutionState.FAILED);
+			super.finish(ExecutionState.FAILED);
 		}
 
 	}
@@ -209,14 +226,14 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 			try (OutputStreamWriter writer = new OutputStreamWriter(baos, Charsets.UTF_8)) {
 				CsvRenderer renderer = new CsvRenderer(csvConfig.createWriter(writer), printSettings);
 
-				final Stream<EntityResult> resultStream = subQueries.values().iterator().next().stream().flatMap(ManagedQuery::streamResults);
+				final Stream<EntityResult> resultStream = getSubmittedForm().getQueryGroup().streamResults();
 
 				renderer.toCSV(idResultInfos, ((MostlyAiForm) getSubmittedForm()).getQueryGroup().getResultInfos(), resultStream);
 			}
 			catch (Exception e) {
 				log.debug("Could not write csv", e);
 				setError(ConqueryError.asConqueryError(e));
-				super.finish(getStorage(), ExecutionState.FAILED);
+				super.finish(ExecutionState.FAILED);
 				return;
 			}
 

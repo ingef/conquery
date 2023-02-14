@@ -22,14 +22,10 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.ExcelResultProvider;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourceConstants;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,10 +42,10 @@ public class ResultExcelResource {
 	@GET
 	@Path("{" + QUERY + "}.xlsx")
 	@Produces(AdditionalMediaTypes.EXCEL)
-	public <E extends ManagedExecution<?> & SingleTableResult> Response get(
+	public <E extends ManagedExecution & SingleTableResult> Response get(
 			@Auth Subject subject,
 			@PathParam(DATASET) Dataset dataset,
-			@PathParam(QUERY) ManagedExecution<?> execution,
+			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);
@@ -57,7 +53,7 @@ public class ResultExcelResource {
 		return processor.createResult(subject, (E) execution, dataset, pretty.orElse(true));
 	}
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
 				.path(ResultExcelResource.class)
 				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())

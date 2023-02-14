@@ -81,7 +81,7 @@ public class QueryResource {
 
 		subject.authorize(dataset, Ability.READ);
 
-		ManagedExecution<?> execution = processor.postQuery(dataset, query, subject, false);
+		ManagedExecution execution = processor.postQuery(dataset, query, subject, false);
 
 		return Response.ok(processor.getQueryFullStatus(execution, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false)))
 					   .status(Status.CREATED)
@@ -90,7 +90,7 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getStatus(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders)
+	public FullExecutionStatus getStatus(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") Optional<Boolean> allProviders)
 			throws InterruptedException {
 
 		subject.authorize(dataset, Ability.READ);
@@ -103,7 +103,7 @@ public class QueryResource {
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus patchQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders, MetaDataPatch patch)
+	public FullExecutionStatus patchQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") Optional<Boolean> allProviders, MetaDataPatch patch)
 			throws JSONException {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(query, Ability.READ);
@@ -115,7 +115,7 @@ public class QueryResource {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query) {
+	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(query, Ability.DELETE);
 
@@ -124,7 +124,7 @@ public class QueryResource {
 
 	@POST
 	@Path("{" + QUERY + "}/reexecute")
-	public FullExecutionStatus reexecute(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+	public FullExecutionStatus reexecute(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(query, Ability.READ);
 
@@ -134,7 +134,7 @@ public class QueryResource {
 
 	@POST
 	@Path("{" + QUERY + "}/cancel")
-	public void cancel(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query) {
+	public void cancel(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
 
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(query, Ability.CANCEL);

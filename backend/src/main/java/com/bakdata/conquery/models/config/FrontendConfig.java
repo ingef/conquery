@@ -218,7 +218,7 @@ public class FrontendConfig {
 		/**
 		 * Try to create a {@link FullIdPrinter} for user if they are allowed. If not allowed to read ids, they will receive a pseudomized result instead.
 		 */
-		public IdPrinter getIdPrinter(Subject owner, ManagedExecution<?> execution, Namespace namespace) {
+		public IdPrinter getIdPrinter(Subject owner, ManagedExecution execution, Namespace namespace) {
 			final int size = (int) ids.stream().filter(ColumnConfig::isPrint).count();
 
 			final int pos = IntStream.range(0, getIds().size())

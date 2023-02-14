@@ -22,7 +22,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.LoadingUtil;
-import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -97,7 +96,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 		// Normal reuse
 		{
 
-			final ConceptQuery reused = new ConceptQuery(new CQReusedQuery(execution.getId()));
+			final ConceptQuery reused = new ConceptQuery(new CQReusedQuery(execution.getId()), metaStorage);
 
 			IntegrationUtils.assertQueryResult(conquery, reused, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 		}
@@ -122,7 +121,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 		// Reuse in SecondaryId
 		{
-			final SecondaryIdQuery reused = new SecondaryIdQuery();
+			final SecondaryIdQuery reused = new SecondaryIdQuery(metaStorage);
 			reused.setRoot(new CQReusedQuery(execution.getId()));
 
 			reused.setSecondaryId(query.getSecondaryId());
@@ -132,7 +131,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 		// Reuse in SecondaryId, but do exclude
 		{
-			final SecondaryIdQuery reused = new SecondaryIdQuery();
+			final SecondaryIdQuery reused = new SecondaryIdQuery(metaStorage);
 
 			final CQAnd root = new CQAnd();
 			reused.setRoot(root);
@@ -166,7 +165,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 		// Reuse Multiple times with different query types
 		{
-			final SecondaryIdQuery reused1 = new SecondaryIdQuery();
+			final SecondaryIdQuery reused1 = new SecondaryIdQuery(metaStorage);
 			reused1.setRoot(new CQReusedQuery(execution.getId()));
 
 			reused1.setSecondaryId(query.getSecondaryId());
@@ -174,7 +173,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			final ManagedExecutionId reused1Id = IntegrationUtils.assertQueryResult(conquery, reused1, 4L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			final ManagedQuery execution1 = (ManagedQuery) metaStorage.getExecution(reused1Id);
 			{
-				final SecondaryIdQuery reused2 = new SecondaryIdQuery();
+				final SecondaryIdQuery reused2 = new SecondaryIdQuery(metaStorage);
 				reused2.setRoot(new CQReusedQuery(execution1.getId()));
 
 				reused2.setSecondaryId(query.getSecondaryId());
@@ -189,13 +188,13 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 						.isEqualTo(reused1Id);
 
 				// Now we change to ConceptQuery
-				final ConceptQuery reused3 = new ConceptQuery(new CQReusedQuery(execution2.getId()));
+				final ConceptQuery reused3 = new ConceptQuery(new CQReusedQuery(execution2.getId()), metaStorage);
 
 				IntegrationUtils.assertQueryResult(conquery, reused3, 2L, ExecutionState.DONE, conquery.getTestUser(), 201);
 			}
 
 			{
-				final SecondaryIdQuery reusedDiffId = new SecondaryIdQuery();
+				final SecondaryIdQuery reusedDiffId = new SecondaryIdQuery(metaStorage);
 				reusedDiffId.setRoot(new CQReusedQuery(execution1.getId()));
 
 				// ignored is a single global value and therefore the same as by-PID
@@ -215,7 +214,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 			{
 				// Reuse by another user (create a copy of the actual query)
 
-				final SecondaryIdQuery reused = new SecondaryIdQuery();
+				final SecondaryIdQuery reused = new SecondaryIdQuery(metaStorage);
 				reused.setRoot(new CQReusedQuery(execution.getId()));
 
 				reused.setSecondaryId(query.getSecondaryId());
@@ -230,7 +229,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				ManagedExecutionId copyId = IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE, shareHolder, 201);
 
-				ManagedExecution<?> copy = metaStorage.getExecution(copyId);
+				ManagedExecution copy = metaStorage.getExecution(copyId);
 
 
 				// Contentwise the label and tags should be the same

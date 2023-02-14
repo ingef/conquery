@@ -11,20 +11,16 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,7 +34,7 @@ public class ResultExcelProcessor {
 	private final ConqueryConfig config;
 
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty) {
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty) {
 
 		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {} on dataset {}", exec, dataset);

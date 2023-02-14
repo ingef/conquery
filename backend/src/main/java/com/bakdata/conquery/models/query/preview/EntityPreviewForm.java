@@ -34,6 +34,8 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.Sets;
@@ -62,19 +64,25 @@ public class EntityPreviewForm extends Form {
 	private final AbsoluteFormQuery infoCardQuery;
 	private final TableExportQuery valuesQuery;
 
+	public EntityPreviewForm(AbsoluteFormQuery infoCardQuery, TableExportQuery valuesQuery, @JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		super(storage);
+		this.infoCardQuery = infoCardQuery;
+		this.valuesQuery = valuesQuery;
+	}
+
 	@Nullable
 	@Override
 	public JsonNode getValues() {
 		return null; // will not be implemented.
 	}
 
-	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos) {
+	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, MetaStorage storage) {
 
 		// We use this query to filter for the single selected query.
-		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
+		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true), storage);
 
 		// Query exporting selected Sources of the Entity.
-		final TableExportQuery exportQuery = new TableExportQuery(entitySelectQuery);
+		final TableExportQuery exportQuery = new TableExportQuery(storage, entitySelectQuery);
 
 		exportQuery.setDateRange(dateRange);
 		exportQuery.setTables(sources.stream().map(CQConcept::forConnector).collect(Collectors.toList()));
@@ -86,11 +94,14 @@ public class EntityPreviewForm extends Form {
 									  ArrayConceptQuery.createFromFeatures(
 											  infos.stream()
 												   .map(CQConcept::forSelect)
-												   .collect(Collectors.toList())),
-									  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
+												   .collect(Collectors.toList()),
+											  storage
+									  ),
+									  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN)),
+									  storage
 				);
 
-		return new EntityPreviewForm(infoCardQuery, exportQuery);
+		return new EntityPreviewForm(infoCardQuery, exportQuery, storage);
 	}
 
 
@@ -114,8 +125,8 @@ public class EntityPreviewForm extends Form {
 	}
 
 	@Override
-	public ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset) {
-		return new EntityPreviewExecution(this, user, submittedDataset);
+	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset) {
+		return new EntityPreviewExecution(this, user, submittedDataset, getStorage());
 	}
 
 	@Override

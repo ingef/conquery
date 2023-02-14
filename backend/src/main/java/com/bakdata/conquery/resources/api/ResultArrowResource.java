@@ -21,11 +21,9 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.io.result.arrow.ResultArrowProcessor;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.SingleTableResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.resources.ResourceConstants;
 import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +42,7 @@ public class ResultArrowResource {
 	public Response getFile(
 			@Auth Subject subject,
 			@PathParam(DATASET) Dataset dataset,
-			@PathParam(QUERY) ManagedExecution<?> query,
+			@PathParam(QUERY) ManagedExecution query,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 
@@ -53,7 +51,7 @@ public class ResultArrowResource {
 		return processor.createResultFile(subject, query, dataset, pretty.orElse(false));
 	}
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
 				.path(ResultArrowResource.class)
 				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
@@ -64,7 +62,7 @@ public class ResultArrowResource {
 	}
 
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> URL getStreamDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getStreamDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
 				.path(ResultArrowResource.class)
 				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
@@ -80,7 +78,7 @@ public class ResultArrowResource {
 	public Response getStream(
 			@Auth Subject subject,
 			@PathParam(DATASET) Dataset dataset,
-			@PathParam(QUERY) ManagedExecution<?> execution,
+			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);

@@ -30,7 +30,9 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Stopwatch;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +45,7 @@ import org.deidentifier.arx.aggregates.HierarchyBuilderDate;
 
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "ARX_EXECUTION")
-public class ArxExecution extends ManagedInternalForm implements SingleTableResult {
+public class ArxExecution extends ManagedInternalForm<ArxForm> implements SingleTableResult {
 
 	@JsonIgnore
 	private PrintSettings printSettings;
@@ -51,8 +53,8 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 	@JsonIgnore
 	ARXResult result;
 
-	public ArxExecution(ArxForm form, User user, Dataset submittedDataset) {
-		super(form, user, submittedDataset);
+	public ArxExecution(ArxForm form, User user, Dataset submittedDataset, @JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		super(form, user, submittedDataset, storage);
 	}
 
 	@Override
@@ -65,7 +67,7 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 	}
 
 	@Override
-	protected void finish(MetaStorage storage, ExecutionState executionState) {
+	protected void finish(ExecutionState executionState) {
 		/*
 			This method is called after all shard results have been collected (or an error occurred),
 			We intercept the finishing here and apply the arx deidentifier to the data and hold it in memory
@@ -74,22 +76,22 @@ public class ArxExecution extends ManagedInternalForm implements SingleTableResu
 
 		if (executionState != ExecutionState.DONE) {
 			// Internal execution failed end execution immediately
-			super.finish(storage, executionState);
+			super.finish(executionState);
 			return;
 		}
 
 		try {
-			super.finish(storage, anonymizeResult());
+			super.finish(anonymizeResult());
 		}
 		catch (ConqueryError e) {
 			log.error("Unable to anonymize {}", getId(), e);
 			setError(e);
-			super.finish(storage, ExecutionState.FAILED);
+			super.finish(ExecutionState.FAILED);
 		}
 		catch (Exception e) {
 			log.error("Unable to anonymize {}", getId(), e);
 			setError(new ConqueryError.ExecutionProcessingError());
-			super.finish(storage, ExecutionState.FAILED);
+			super.finish(ExecutionState.FAILED);
 		}
 	}
 

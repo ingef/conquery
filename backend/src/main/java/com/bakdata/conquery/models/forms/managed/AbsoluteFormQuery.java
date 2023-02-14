@@ -15,6 +15,7 @@ import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
@@ -26,13 +27,12 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 @CPSType(id="ABSOLUTE_FORM_QUERY", base=QueryDescription.class)
-@RequiredArgsConstructor(onConstructor_=@JsonCreator)
 public class AbsoluteFormQuery extends Query {
 
 	/**
@@ -40,15 +40,26 @@ public class AbsoluteFormQuery extends Query {
 	 */
 	public static final int FEATURES_OFFSET = 3;
 
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private final Query query;
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private final Range<LocalDate> dateRange;
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private final ArrayConceptQuery features;
 	@NotNull
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
-	
+
+	public AbsoluteFormQuery(Query query, Range<LocalDate> dateRange, ArrayConceptQuery features, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap, @JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		super(storage);
+		this.query = query;
+		this.dateRange = dateRange;
+		this.features = features;
+		this.resolutionsAndAlignmentMap = resolutionsAndAlignmentMap;
+	}
+
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context);

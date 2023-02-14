@@ -32,9 +32,9 @@ class QueryCleanupTaskTest {
 		final CQAnd root = new CQAnd();
 		root.setChildren(new ArrayList<>());
 
-		ConceptQuery query = new ConceptQuery(root);
+		ConceptQuery query = new ConceptQuery(root, STORAGE);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"));
+		final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"), STORAGE);
 
 		managedQuery.setCreationTime(LocalDateTime.now().minus(queryExpiration).minusDays(1));
 
@@ -100,7 +100,7 @@ class QueryCleanupTaskTest {
 		final ManagedQuery managedQuery = createManagedQuery();
 		final ManagedQuery managedQueryReused = createManagedQuery();
 
-		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
+		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId()), STORAGE));
 
 		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
@@ -117,7 +117,7 @@ class QueryCleanupTaskTest {
 		final ManagedQuery managedQueryReused = createManagedQuery();
 		managedQueryReused.setLabel("test2");
 
-		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
+		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId()), STORAGE));
 
 		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
@@ -134,7 +134,7 @@ class QueryCleanupTaskTest {
 		final ManagedQuery managedQueryReused = createManagedQuery();
 		managedQueryReused.setLabel("test2");
 
-		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
+		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId()), STORAGE));
 
 		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
@@ -150,7 +150,7 @@ class QueryCleanupTaskTest {
 
 		final ManagedQuery managedQueryReused = createManagedQuery();
 
-		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
+		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId()), STORAGE));
 
 		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
@@ -166,7 +166,7 @@ class QueryCleanupTaskTest {
 		final ManagedQuery managedQueryReused = createManagedQuery();
 		managedQueryReused.setTags(new String[] { "tag" });
 
-		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
+		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId()), STORAGE));
 
 		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 
@@ -182,7 +182,7 @@ class QueryCleanupTaskTest {
 		final ManagedQuery managedQueryReused = createManagedQuery();
 		managedQueryReused.setCreationTime(LocalDateTime.now());
 
-		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId())));
+		managedQuery.setQuery(new ConceptQuery(new CQReusedQuery(managedQueryReused.getId()), STORAGE));
 
 		new QueryCleanupTask(STORAGE, queryExpiration).execute(Map.of(), null);
 

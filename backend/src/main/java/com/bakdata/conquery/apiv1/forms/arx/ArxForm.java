@@ -15,6 +15,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -80,6 +81,10 @@ public class ArxForm extends Form {
 	@EqualsAndHashCode.Exclude
 	private ConqueryConfig config;
 
+	public ArxForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		super(storage);
+	}
+
 	@ValidationMethod(message = "The referenced privacy model is not configured")
 	@JsonIgnore
 	public boolean isPrivacyModelSupported() {
@@ -104,8 +109,8 @@ public class ArxForm extends Form {
 	}
 
 	@Override
-	public ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset) {
-		return new ArxExecution(this, user, submittedDataset);
+	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset) {
+		return new ArxExecution(this, user, submittedDataset, getStorage());
 	}
 
 	@Override

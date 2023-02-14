@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
@@ -43,11 +44,12 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -58,8 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString(callSuper = true)
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
-@NoArgsConstructor
-public class ManagedQuery extends ManagedExecution<ShardResult> implements SingleTableResult {
+public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution<ShardResult> {
 
 	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 70;
 	@JsonIgnore
@@ -80,8 +81,12 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 
-	public ManagedQuery(Query query, User owner, Dataset submittedDataset) {
-		super(owner, submittedDataset);
+	protected ManagedQuery(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		super(storage);
+	}
+
+	public ManagedQuery(Query query, User owner, Dataset submittedDataset, MetaStorage storage) {
+		super(owner, submittedDataset, storage);
 		this.query = query;
 	}
 
@@ -96,13 +101,13 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 	}
 
 	@Override
-	public void addResult(@NonNull MetaStorage storage, ShardResult result) {
+	public void addResult(ShardResult result) {
 		log.debug("Received Result[size={}] for Query[{}]", result.getResults().size(), result.getQueryId());
 
 		log.trace("Received Result\n{}", result.getResults());
 
 		if (result.getError().isPresent()) {
-			fail(storage, result.getError().get());
+			fail(result.getError().get());
 			return;
 		}
 
@@ -111,15 +116,15 @@ public class ManagedQuery extends ManagedExecution<ShardResult> implements Singl
 		getExecutionManager().addQueryResult(this, result.getResults());
 
 		if (involvedWorkers.isEmpty() && getState() == ExecutionState.RUNNING) {
-			finish(storage, ExecutionState.DONE);
+			finish(ExecutionState.DONE);
 		}
 	}
 
 	@Override
-	protected void finish(@NonNull MetaStorage storage, ExecutionState executionState) {
+	protected void finish(ExecutionState executionState) {
 		lastResultCount = query.countResults(streamResults());
 
-		super.finish(storage, executionState);
+		super.finish(executionState);
 	}
 
 	public Stream<EntityResult> streamResults() {

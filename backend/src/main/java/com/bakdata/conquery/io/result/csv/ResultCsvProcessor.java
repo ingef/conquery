@@ -16,7 +16,6 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -38,7 +37,7 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 	private final DatasetRegistry datasetRegistry;
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty, Charset charset) {
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, Dataset dataset, boolean pretty, Charset charset) {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 

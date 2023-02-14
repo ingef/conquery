@@ -14,7 +14,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.result.excel.ResultExcelProcessor;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.resources.api.ResultExcelResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -40,7 +39,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)
-	public Collection<URL> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<URL> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 		// We only support/produce xlsx files with one sheet for now
 		if (!(exec instanceof SingleTableResult singleExecution)) {
 			log.trace("Execution result is not a single table");
@@ -74,7 +73,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		final URL resultUrl = ResultExcelResource.getDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec);
+		final URL resultUrl = ResultExcelResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec);
 		log.trace("Generated URL: {}", resultUrl);
 
 		return List.of(resultUrl);

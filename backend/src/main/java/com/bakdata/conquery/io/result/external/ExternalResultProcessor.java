@@ -29,12 +29,12 @@ public class ExternalResultProcessor {
 	private final DatasetRegistry datasetRegistry;
 	private final MetaStorage storage;
 
-	public <T extends ManagedExecution<?> & ExternalResult> Response getResult(Subject subject, DatasetId datasetId, ManagedExecutionId executionId, String fileName, String fileExtension) {
+	public <T extends ManagedExecution & ExternalResult> Response getResult(Subject subject, DatasetId datasetId, ManagedExecutionId executionId, String fileName, String fileExtension) {
 		Dataset dataset = datasetRegistry.get(datasetId).getDataset();
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.DOWNLOAD);
 
-		ManagedExecution<?> execution = storage.getExecution(executionId);
+		ManagedExecution execution = storage.getExecution(executionId);
 
 		ResourceUtil.throwNotFoundIfNull(executionId, execution);
 

@@ -39,9 +39,9 @@ class PermissionCleanupTaskTest {
         final CQAnd root = new CQAnd();
         root.setChildren(new ArrayList<>());
 
-        ConceptQuery query = new ConceptQuery(root);
+        ConceptQuery query = new ConceptQuery(root, STORAGE);
 
-        final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"));
+		final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"), STORAGE);
 
         managedQuery.setCreationTime(LocalDateTime.now().minusDays(1));
 

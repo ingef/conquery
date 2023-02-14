@@ -1,6 +1,5 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,9 +19,9 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
@@ -34,10 +33,12 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -67,6 +68,10 @@ public class ExportForm extends Form {
 	private Query prerequisite;
 	@JsonIgnore
 	private List<Resolution> resolvedResolutions;
+
+	public ExportForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		super(storage);
+	}
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
@@ -179,6 +184,6 @@ public class ExportForm extends Form {
 
 	@Override
 	public ManagedForm toManagedExecution(User user, Dataset submittedDataset) {
-		return new ManagedInternalForm(this, user, submittedDataset);
+		return new ManagedInternalForm(this, user, submittedDataset, getStorage());
 	}
 }

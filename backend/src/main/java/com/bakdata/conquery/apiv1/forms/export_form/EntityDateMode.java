@@ -58,8 +58,8 @@ public class EntityDateMode extends Mode {
     public void resolve(QueryResolveContext context) {
     	// Apply defaults to user concept
         ExportForm.DefaultSelectSettable.enable(features);
-		resolvedFeatures = ArrayConceptQuery.createFromFeatures(features);
-        resolvedFeatures.resolve(context);
+		resolvedFeatures = ArrayConceptQuery.createFromFeatures(features, getForm().getStorage());
+		resolvedFeatures.resolve(context);
     }
 
     @Override
@@ -67,11 +67,12 @@ public class EntityDateMode extends Mode {
         CDateRange dateRestriction = dateRange == null ? CDateRange.all() : CDateRange.of(dateRange);
 
         return new EntityDateQuery(
-                getForm().getPrerequisite(),
-                resolvedFeatures,
-                ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
-                dateRestriction,
-                dateAggregationMode
-        );
+				getForm().getPrerequisite(),
+				resolvedFeatures,
+				ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
+				dateRestriction,
+				dateAggregationMode,
+				getForm().getStorage()
+		);
     }
 }

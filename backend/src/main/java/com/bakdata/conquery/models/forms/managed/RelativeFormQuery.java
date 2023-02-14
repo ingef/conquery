@@ -17,6 +17,7 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSamplerFactory;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -26,13 +27,12 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @CPSType(id="RELATIVE_FORM_QUERY", base=QueryDescription.class)
 @Getter
-@RequiredArgsConstructor(onConstructor_=@JsonCreator)
 public class RelativeFormQuery extends Query {
 	@NotNull @Valid
 	private final Query query;
@@ -50,16 +50,29 @@ public class RelativeFormQuery extends Query {
 	private final CalendarUnit timeUnit;
 	@NotNull
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
-	
+
+	public RelativeFormQuery(Query query, ArrayConceptQuery features, TemporalSamplerFactory indexSelector, IndexPlacement indexPlacement, int timeCountBefore, int timeCountAfter, CalendarUnit timeUnit, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap, @JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		super(storage);
+		this.query = query;
+		this.features = features;
+		this.indexSelector = indexSelector;
+		this.indexPlacement = indexPlacement;
+		this.timeCountBefore = timeCountBefore;
+		this.timeCountAfter = timeCountAfter;
+		this.timeUnit = timeUnit;
+		this.resolutionsAndAlignmentMap = resolutionsAndAlignmentMap;
+	}
+
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
-	
+
 	@Override
 	public RelativeFormQueryPlan createQueryPlan(QueryPlanContext context) {
-		return new RelativeFormQueryPlan(query.createQueryPlan(context),
+		return new RelativeFormQueryPlan(
+				query.createQueryPlan(context),
 			// At the moment we do not use the dates of feature and outcome query
 			features.createQueryPlan(context),
 			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutionsAndAlignmentMap);

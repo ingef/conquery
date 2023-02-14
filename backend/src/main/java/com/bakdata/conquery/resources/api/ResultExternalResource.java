@@ -9,7 +9,6 @@ import java.util.Optional;
 
 import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
-import javax.validation.constraints.NotEmpty;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -43,7 +42,7 @@ public class ResultExternalResource {
 	private ExternalResultProcessor processor;
 
 
-	public static <E extends ManagedExecution<?> & ExternalResult> URL getDownloadURL(UriBuilder uriBuilder, E exec, ExternalResultProcessor.ResultFileReference resultFileReference)
+	public static <E extends ManagedExecution & ExternalResult> URL getDownloadURL(UriBuilder uriBuilder, E exec, ExternalResultProcessor.ResultFileReference resultFileReference)
 			throws MalformedURLException {
 		return uriBuilder
 				.path(ResultExternalResource.class)

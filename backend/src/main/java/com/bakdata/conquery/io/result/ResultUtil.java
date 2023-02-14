@@ -4,8 +4,11 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDown
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 import javax.ws.rs.BadRequestException;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -17,15 +20,6 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.ws.rs.BadRequestException;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 
 @Slf4j
 public class ResultUtil {
@@ -78,14 +72,14 @@ public class ResultUtil {
 	 *
 	 * @param exec the execution to test
 	 */
-	public static void checkSingleTableResult(ManagedExecution<?> exec) {
+	public static void checkSingleTableResult(ManagedExecution exec) {
 		if (!(exec instanceof SingleTableResult)) {
 			throw new BadRequestException("Execution cannot be rendered as the requested format");
 		}
 	}
 
 
-	public static void authorizeExecutable(Subject subject, ManagedExecution<?> exec, Dataset dataset) {
+	public static void authorizeExecutable(Subject subject, ManagedExecution exec, Dataset dataset) {
 		subject.authorize(dataset, Ability.READ);
 		subject.authorize(dataset, Ability.DOWNLOAD);
 
