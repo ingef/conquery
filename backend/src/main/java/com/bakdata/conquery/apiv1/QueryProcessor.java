@@ -5,6 +5,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetA
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -481,9 +482,20 @@ public class QueryProcessor {
 		// For each included entity emit a Map of { Id-Name -> Id-Value }
 		return result.streamResults()
 				.map(printer::createId)
-				.map(entityPrintId -> id2index.entrySet().stream().collect(Collectors.toMap(
-						Map.Entry::getKey,
-						entry -> entityPrintId.getExternalId()[entry.getValue()]
-				)));
+				.map(entityPrintId -> {
+					final Map<String, String> out = new HashMap<>();
+
+					for (Map.Entry<String, Integer> entry : id2index.entrySet()) {
+						// Not all ExternalIds are expected to be set.
+						if (entityPrintId.getExternalId()[entry.getValue()] == null) {
+							continue;
+						}
+
+						out.put(entry.getKey(), entityPrintId.getExternalId()[entry.getValue()]);
+					}
+
+					return out;
+				})
+				.filter(Predicate.not(Map::isEmpty));
 	}
 }
