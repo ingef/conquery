@@ -391,7 +391,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		getMetaStorage().updateUser(user);
 
-		ManagedQuery execution = new ManagedQuery(null, user, dataset);
+		ManagedQuery execution = new ManagedQuery(null, user, dataset, getMetaStorage());
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)

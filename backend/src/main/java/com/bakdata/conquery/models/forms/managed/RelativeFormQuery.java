@@ -32,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 
 @CPSType(id="RELATIVE_FORM_QUERY", base=QueryDescription.class)
 @Getter
-@RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class RelativeFormQuery extends Query {
 	@NotNull @Valid
 	private final Query query;
@@ -50,19 +50,21 @@ public class RelativeFormQuery extends Query {
 	private final CalendarUnit timeUnit;
 	@NotNull
 	private final List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignmentMap;
-	
+
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 		features.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));
 	}
-	
+
 	@Override
 	public RelativeFormQueryPlan createQueryPlan(QueryPlanContext context) {
-		return new RelativeFormQueryPlan(query.createQueryPlan(context),
-			// At the moment we do not use the dates of feature and outcome query
-			features.createQueryPlan(context),
-			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit, resolutionsAndAlignmentMap);
+		return new RelativeFormQueryPlan(
+				query.createQueryPlan(context),
+				// At the moment we do not use the dates of feature and outcome query
+				features.createQueryPlan(context),
+				indexSelector, indexPlacement, timeCountBefore, timeCountAfter, timeUnit, resolutionsAndAlignmentMap
+		);
 	}
 
 	@Override

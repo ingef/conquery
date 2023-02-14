@@ -1,7 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
-
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.Collection;
@@ -9,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -52,7 +49,6 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
@@ -90,7 +86,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Subject subject, boolean system) {
+	public ManagedExecution postQuery(Dataset dataset, QueryDescription query, Subject subject, boolean system) {
 
 		log.info("Query posted on Dataset[{}] by User[{{}].", dataset.getId(), subject.getId());
 
@@ -134,7 +130,7 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final Optional<ManagedExecution<?>>
+			final Optional<ManagedExecution>
 					execution =
 					executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, subject.getUser()));
 
@@ -150,9 +146,9 @@ public class QueryProcessor {
 	/**
 	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
 	 */
-	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config, ExecutionManager executionManager, User user) {
+	private ManagedExecution tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config, ExecutionManager executionManager, User user) {
 
-		ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
+		ManagedExecution execution = datasetRegistry.getMetaRegistry().resolve(executionId);
 
 		if (execution == null) {
 			return null;
@@ -176,7 +172,7 @@ public class QueryProcessor {
 
 		// If the user is not the owner of the execution, we definitely create a new Execution, so the owner can cancel it
 		if (!user.isOwner(execution)) {
-			final ManagedExecution<?>
+			final ManagedExecution
 					newExecution =
 					executionManager.createExecution(datasetRegistry, execution.getSubmitted(), user, execution.getDataset(), false);
 			newExecution.setLabel(execution.getLabel());
@@ -201,13 +197,12 @@ public class QueryProcessor {
 
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
-		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
+		Collection<ManagedExecution> allQueries = storage.getAllExecutions();
 
 		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
-		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(subject, datasetRegistry);
+	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution> allQueries, boolean allProviders) {
 
 		return allQueries.stream()
 						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
@@ -220,7 +215,7 @@ public class QueryProcessor {
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
 							 OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
-							 if (mq.isReadyToDownload(datasetAbilities)) {
+							 if (mq.isReadyToDownload()) {
 								 status.setResultUrls(getDownloadUrls(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
 							 return status;
@@ -238,7 +233,7 @@ public class QueryProcessor {
 	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
 	 * @return The modified status
 	 */
-	public static List<URL> getDownloadUrls(List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public static List<URL> getDownloadUrls(List<ResultRendererProvider> renderer, ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		return renderer.stream()
 					   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
@@ -251,7 +246,7 @@ public class QueryProcessor {
 	/**
 	 * Test if the query is structured in a way the Frontend can render it.
 	 */
-	private static boolean canFrontendRender(ManagedExecution<?> q) {
+	private static boolean canFrontendRender(ManagedExecution q) {
 		//TODO FK: should this be used to fill into canExpand instead of hiding the Executions?
 		if (!(q instanceof ManagedQuery)) {
 			return false;
@@ -282,7 +277,7 @@ public class QueryProcessor {
 	/**
 	 * Cancel a running query: Sending cancellation to shards, which will cause them to stop executing them, results are not sent back, and incoming results will be discarded.
 	 */
-	public void cancel(Subject subject, Dataset dataset, ManagedExecution<?> query) {
+	public void cancel(Subject subject, Dataset dataset, ManagedExecution query) {
 
 		// Does not make sense to cancel a query that isn't running.
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
@@ -298,7 +293,7 @@ public class QueryProcessor {
 		namespace.sendToAll(new CancelQuery(query.getId()));
 	}
 
-	public void patchQuery(Subject subject, ManagedExecution<?> execution, MetaDataPatch patch) {
+	public void patchQuery(Subject subject, ManagedExecution execution, MetaDataPatch patch) {
 
 		log.info("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
 
@@ -312,7 +307,7 @@ public class QueryProcessor {
 
 		for (Dataset dataset : remainingDatasets) {
 			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(), execution.getQueryId());
-			final ManagedExecution<?> otherExecution = storage.getExecution(id);
+			final ManagedExecution otherExecution = storage.getExecution(id);
 			if (otherExecution == null) {
 				continue;
 			}
@@ -322,7 +317,7 @@ public class QueryProcessor {
 		}
 	}
 
-	public void reexecute(Subject subject, ManagedExecution<?> query) {
+	public void reexecute(Subject subject, ManagedExecution query) {
 		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
@@ -331,7 +326,7 @@ public class QueryProcessor {
 	}
 
 
-	public void deleteQuery(Subject subject, ManagedExecution<?> execution) {
+	public void deleteQuery(Subject subject, ManagedExecution execution) {
 		log.info("User[{}] deleted Query[{}]", subject.getId(), execution.getId());
 
 		datasetRegistry.get(execution.getDataset().getId())
@@ -341,14 +336,13 @@ public class QueryProcessor {
 		storage.removeExecution(execution.getId());
 	}
 
-	public FullExecutionStatus getQueryFullStatus(ManagedExecution<?> query, Subject subject, UriBuilder url, Boolean allProviders) {
+	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, Subject subject, UriBuilder url, Boolean allProviders) {
 
 		query.initExecutable(datasetRegistry, config);
 
-		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(subject, datasetRegistry);
 		final FullExecutionStatus status = query.buildStatusFull(storage, subject, datasetRegistry, config);
 
-		if (query.isReadyToDownload(datasetAbilities)) {
+		if (query.isReadyToDownload() && subject.isPermitted(query.getDataset(), Ability.DOWNLOAD)) {
 			status.setResultUrls(getDownloadUrls(config.getResultProviders(), query, url, allProviders));
 		}
 		return status;
@@ -448,7 +442,7 @@ public class QueryProcessor {
 
 		final QueryDescription query = new ConceptQuery(cqConcept);
 
-		final ManagedExecution<?> execution = postQuery(dataset, query, subject, true);
+		final ManagedExecution execution = postQuery(dataset, query, subject, true);
 
 		if (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
 			log.warn("Still waiting for {} after 10 Seconds.", execution.getId());

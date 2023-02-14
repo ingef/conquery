@@ -1,6 +1,5 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,16 +14,14 @@ import javax.validation.constraints.NotNull;
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
-import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
@@ -32,7 +29,6 @@ import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.forms.util.ResolutionShortNames;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
@@ -41,7 +37,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -77,7 +72,6 @@ public class ExportForm extends Form {
 	private Query prerequisite;
 	@JsonIgnore
 	private List<Resolution> resolvedResolutions;
-
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
@@ -87,12 +81,13 @@ public class ExportForm extends Form {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset, MetaStorage storage) {
 		return Map.of(
-			ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
-			List.of(
-				timeMode.createSpecializedQuery(datasets, user, submittedDataset)
-					.toManagedExecution(user, submittedDataset)));
+				ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
+				List.of(
+						timeMode.createSpecializedQuery(datasets, user, submittedDataset)
+								.toManagedExecution(user, submittedDataset, storage))
+		);
 	}
 
 	@Override
@@ -193,7 +188,7 @@ public class ExportForm extends Form {
 
 
 	@Override
-	public ManagedForm toManagedExecution(User user, Dataset submittedDataset) {
-		return new ManagedInternalForm(this, user, submittedDataset);
+	public ManagedForm toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
+		return new ManagedInternalForm(this, user, submittedDataset, storage);
 	}
 }

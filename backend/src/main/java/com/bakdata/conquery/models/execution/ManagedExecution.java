@@ -6,7 +6,6 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -38,27 +37,24 @@ import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -71,9 +67,8 @@ import org.apache.shiro.authz.Permission;
 @ToString
 @Slf4j
 @CPSBase
-@NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
+public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
 	 * Some unusual suffix. Its not too bad if someone actually uses this.
@@ -118,8 +113,18 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@JsonIgnore
 	private transient ExecutionManager executionManager;
 
+	@JsonIgnore
+	@Getter(AccessLevel.PROTECTED)
+	@NotNull
+	private final MetaStorage storage;
 
-	public ManagedExecution(User owner, Dataset dataset) {
+	protected ManagedExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		this.storage = storage;
+	}
+
+
+	public ManagedExecution(User owner, Dataset dataset, MetaStorage storage) {
+		this(storage);
 		this.owner = owner;
 		this.dataset = dataset;
 	}
@@ -147,13 +152,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	protected abstract void doInitExecutable(DatasetRegistry namespaces, ConqueryConfig config);
 
-	/**
-	 * Returns the set of namespaces, this execution needs to be executed on.
-	 * The {@link ExecutionManager} then submits the queries to these namespaces.
-	 */
-	@JsonIgnore
-	public abstract Set<Namespace> getRequiredDatasets();
-
 
 	@Override
 	public ManagedExecutionId createId() {
@@ -166,7 +164,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Fails the execution and log the occurred error.
 	 */
-	protected void fail(MetaStorage storage, ConqueryErrorInfo error) {
+	protected void fail(ConqueryErrorInfo error) {
 		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
@@ -177,12 +175,13 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			log.warn("The execution [{}] failed with:\n\t{}", this.getId(), this.error);
 		}
 
-		finish(storage, ExecutionState.FAILED);
+		finish(ExecutionState.FAILED);
 	}
 
 	public void start() {
 		synchronized (this) {
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
+			Preconditions.checkArgument(getState() != ExecutionState.RUNNING);
 
 			startTime = LocalDateTime.now();
 
@@ -193,7 +192,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
-	protected void finish(MetaStorage storage, ExecutionState executionState) {
+	protected void finish(ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW) {
 			log.error("Query[{}] was never run.", getId());
 		}
@@ -208,11 +207,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 			// No need to persist failed queries. (As they are most likely invalid)
 			if (getState() == ExecutionState.DONE) {
-				if (storage == null) {
-					log.warn("Not saving successful execution {} because no storage was provided", getId());
-					return;
-				}
-				storage.updateExecution(this);
+				getStorage().updateExecution(this);
 			}
 		}
 
@@ -350,34 +345,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setQuery(canExpand ? getSubmitted() : null);
 	}
 
-	public boolean isReadyToDownload(Map<DatasetId, Set<Ability>> datasetAbilities) {
-		if (getState() != ExecutionState.DONE) {
-			// No url for unfinished executions, quick return
-			return false;
-		}
-
-		//TODO this is no longer the case.
-
-		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
-		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
-		 */
-
-		return getUsedNamespacedIds().stream()
-									 .map(NamespacedIdentifiable::getDataset)
-									 .distinct()
-									 .allMatch((id) -> datasetAbilities.get(id.getId()).contains(Ability.DOWNLOAD));
-	}
-
-	/**
-	 * Gives all {@link NamespacedId}s that were required in the execution.
-	 *
-	 * @return A List of all {@link NamespacedId}s needed for the execution.
-	 */
 	@JsonIgnore
-	public abstract Set<NamespacedIdentifiable<?>> getUsedNamespacedIds();
-
-
-	public abstract void addResult(@NonNull MetaStorage storage, R result);
+	public boolean isReadyToDownload() {
+		return getState() == ExecutionState.DONE;
+	}
 
 	/**
 	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.

@@ -73,8 +73,8 @@ public class LoadingUtil {
 
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
-			ManagedExecution<?> managed = support.getNamespace().getExecutionManager()
-												 .createQuery(support.getDatasetRegistry(), query, queryId, user, support.getNamespace().getDataset(), false);
+			ManagedExecution managed = support.getNamespace().getExecutionManager()
+											  .createQuery(support.getDatasetRegistry(), query, queryId, user, support.getNamespace().getDataset(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -88,7 +88,7 @@ public class LoadingUtil {
 			Query query = ConqueryTestSpec.parseSubTree(support, queryNode, Query.class);
 			UUID queryId = new UUID(0L, id++);
 
-			ManagedExecution<?> managed =
+			ManagedExecution managed =
 					support.getNamespace()
 						   .getExecutionManager()
 						   .createQuery(support.getDatasetRegistry(), query, queryId, user, support.getNamespace().getDataset(), false);

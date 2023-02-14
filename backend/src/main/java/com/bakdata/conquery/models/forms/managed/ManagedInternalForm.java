@@ -2,47 +2,162 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.configs.FormConfig;
+import com.bakdata.conquery.models.identifiable.IdMap;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.FormShardResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.QueryUtils;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- *	Execution type for simple forms, that are completely executed within Conquery and produce a single table as result.
+ * Execution type for simple forms, that are completely executed within Conquery and produce a single table as result.
  */
+@Slf4j
 @CPSType(base = ManagedExecution.class, id = "INTERNAL_FORM")
-public class ManagedInternalForm extends ManagedForm implements SingleTableResult {
+@Getter
+public class ManagedInternalForm<F extends Form> extends ManagedForm<F> implements SingleTableResult, InternalExecution<FormShardResult> {
 
 
-	public ManagedInternalForm(Form form, User user, Dataset submittedDataset) {
-		super(form, user, submittedDataset);
+	/**
+	 * Mapping of a result table name to a set of queries.
+	 * This is required by forms that have multiple results (CSVs) as output.
+	 */
+	@JsonIgnore
+	private Map<String, List<ManagedQuery>> subQueries;
+
+	/**
+	 * Subqueries that are send to the workers.
+	 */
+	@JsonIgnore
+	@EqualsAndHashCode.Exclude
+	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
+
+	public ManagedInternalForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		super(storage);
+	}
+
+	public ManagedInternalForm(F form, User user, Dataset submittedDataset, MetaStorage storage) {
+		super(form, user, submittedDataset, storage);
+	}
+
+	@Override
+	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
+		// init all subqueries
+		final Form submittedForm = getSubmittedForm();
+
+		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, config, null));
+		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), getDataset(), getStorage());
+		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
+	}
+
+
+	@Override
+	@JsonIgnore
+	public Set<Namespace> getRequiredDatasets() {
+		return flatSubQueries.values().stream()
+							 .map(ManagedQuery::getRequiredDatasets)
+							 .flatMap(Set::stream)
+							 .collect(Collectors.toSet());
+	}
+
+
+	@Override
+	public void start() {
+		synchronized (this) {
+			subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
+
+
+			if (getSubmittedForm().getValues() != null) {
+				// save as formConfig
+				final FormConfigAPI build = FormConfigAPI.builder().formType(getSubmittedForm().getFormType())
+														 .label(this.getLabelWithoutAutoLabelSuffix())
+														 .tags(this.getTags())
+														 .values(getSubmittedForm().getValues()).build();
+
+				final FormConfig formConfig = build.intern(getOwner(), getDataset());
+
+				getStorage().addFormConfig(formConfig);
+			}
+		}
+		flatSubQueries.values().forEach(ManagedQuery::start);
+		super.start();
 	}
 
 	@Override
 	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
-		return getSubQueries().values().iterator().next().get(0).generateColumnDescriptions(datasetRegistry);
+		return subQueries.values().iterator().next().get(0).generateColumnDescriptions(datasetRegistry);
+	}
+
+
+	@Override
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, datasetRegistry);
+		// Set the ColumnDescription if the Form only consits of a single subquery
+		if (subQueries == null) {
+			// If subqueries was not set the Execution was not initialized, do it manually
+			subQueries = getSubmittedForm().createSubQueries(datasetRegistry, super.getOwner(), super.getDataset(), getStorage());
+		}
+		if (subQueries.size() != 1) {
+			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported
+			log.trace("Column description is not generated for {} ({} from Form {}), because the form does not consits of a single subquery. Subquery size was {}.", subQueries
+							  .size(),
+					  this.getClass().getSimpleName(), getId(), getSubmitted().getClass().getSimpleName()
+			);
+			return;
+		}
+		List<ManagedQuery> subQuery = subQueries.entrySet().iterator().next().getValue();
+		if (subQuery.isEmpty()) {
+			log.warn(
+					"The {} ({} from Form {}) does not have any subqueries after initialization. Not creating a column description.",
+					this.getClass().getSimpleName(),
+					getId(),
+					getSubmitted().getClass().getSimpleName()
+			);
+			return;
+		}
+		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions(datasetRegistry));
 	}
 
 	@Override
 	@JsonIgnore
 	public List<ResultInfo> getResultInfos() {
-		if(getSubQueries().size() != 1) {
+		if (subQueries.size() != 1) {
 			throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
 		}
-		return getSubQueries().values().iterator().next().get(0).getResultInfos();
+		return subQueries.values().iterator().next().get(0).getResultInfos();
 	}
 
 	@Override
@@ -65,7 +180,70 @@ public class ManagedInternalForm extends ManagedForm implements SingleTableResul
 
 	@Override
 	public WorkerMessage createExecutionMessage() {
-		return new ExecuteForm(getId(), getFlatSubQueries().entrySet().stream()
-														   .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
+		return new ExecuteForm(getId(), flatSubQueries.entrySet().stream()
+													  .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
+	}
+
+
+	@Override
+	public Set<NamespacedIdentifiable<?>> getUsedNamespacedIds() {
+		QueryUtils.NamespacedIdentifiableCollector collector = new QueryUtils.NamespacedIdentifiableCollector();
+
+		for (Map.Entry<String, List<ManagedQuery>> entry : subQueries.entrySet()) {
+			for (ManagedQuery subquery : entry.getValue()) {
+				subquery.getQuery().visit(collector);
+			}
+		}
+
+		return collector.getIdentifiables();
+	}
+
+
+	/**
+	 * Distribute the result to a sub query.
+	 */
+	@Override
+	public void addResult(FormShardResult result) {
+		if (result.getError().isPresent()) {
+			fail(result.getError().get());
+			return;
+		}
+
+		ManagedExecutionId subQueryId = result.getSubQueryId();
+
+		ManagedQuery subQuery = flatSubQueries.get(subQueryId);
+		subQuery.addResult(result);
+
+		switch (subQuery.getState()) {
+			case DONE -> {
+				if (allSubQueriesDone()) {
+					finish(ExecutionState.DONE);
+				}
+			}
+			// Fail the whole execution if a subquery fails
+			case FAILED -> {
+				fail(
+						result.getError().orElseThrow(
+								() -> new IllegalStateException(String.format("Query [%s] failed but no error was set.", getId()))
+						)
+				);
+			}
+
+			default -> {
+			}
+		}
+
+	}
+
+
+	private boolean allSubQueriesDone() {
+		synchronized (this) {
+			for (ManagedQuery q : flatSubQueries.values()) {
+				if (!q.getState().equals(ExecutionState.DONE)) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 }

@@ -38,7 +38,7 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 	private final DatasetRegistry datasetRegistry;
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, Charset charset) {
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, Charset charset) {
 
 		final Dataset dataset = exec.getDataset();
 
@@ -47,7 +47,7 @@ public class ResultCsvProcessor {
 		ConqueryMDC.setLocation(subject.getName());
 		log.info("Downloading results for {} on dataset {}", exec, dataset);
 
-		ResultUtil.authorizeExecutable(subject, exec, dataset);
+		ResultUtil.authorizeExecutable(subject, exec);
 
 		// Check if subject is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(subject, exec);

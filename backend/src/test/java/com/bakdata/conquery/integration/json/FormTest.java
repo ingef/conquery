@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -120,7 +121,7 @@ public class FormTest extends ConqueryTestSpec {
 				.isEmpty();
 
 
-		ManagedForm managedForm = (ManagedForm) support
+		ManagedInternalForm<?> managedForm = (ManagedInternalForm<?>) support
 				.getNamespace()
 				.getExecutionManager()
 				.runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig(), false);
@@ -140,8 +141,7 @@ public class FormTest extends ConqueryTestSpec {
 		checkResults(support, managedForm, support.getTestUser());
 	}
 
-	private void checkResults(StandaloneSupport standaloneSupport, ManagedForm managedForm, User user) throws IOException {
-		Map<String, List<ManagedQuery>> managedMapping = managedForm.getSubQueries();
+	private void checkResults(StandaloneSupport standaloneSupport, ManagedInternalForm<?> managedForm, User user) throws IOException {
 
 		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(
 				user,
@@ -161,12 +161,7 @@ public class FormTest extends ConqueryTestSpec {
 						idPrinter::createId
 				);
 
-		if (managedForm instanceof SingleTableResult) {
-			checkSingleResult((ManagedForm & SingleTableResult) managedForm, config, printSettings);
-		}
-		else {
-			checkMultipleResult(managedMapping, config, printSettings);
-		}
+		checkSingleResult((ManagedForm & SingleTableResult) managedForm, config, printSettings);
 
 	}
 

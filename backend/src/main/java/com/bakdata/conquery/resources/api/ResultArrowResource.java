@@ -40,7 +40,7 @@ public class ResultArrowResource {
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response getFile(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution<?> query,
+			@PathParam(QUERY) ManagedExecution query,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 
@@ -49,7 +49,7 @@ public class ResultArrowResource {
 		return processor.createResultFile(subject, query, pretty.orElse(false));
 	}
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
 				.path(ResultArrowResource.class)
 				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
@@ -60,7 +60,7 @@ public class ResultArrowResource {
 	}
 
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> URL getStreamDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getStreamDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
 				.path(ResultArrowResource.class)
 				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
@@ -75,7 +75,7 @@ public class ResultArrowResource {
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
 	public Response getStream(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution<?> execution,
+			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);

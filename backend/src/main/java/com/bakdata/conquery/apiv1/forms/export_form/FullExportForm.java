@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,10 +19,10 @@ import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.i18n.I18n;
@@ -65,7 +64,7 @@ public class FullExportForm extends Form {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset, MetaStorage storage) {
 
 		// Forms are sent as an array of standard queries containing AND/OR of CQConcepts, we ignore everything and just convert the CQConcepts into CQUnfiltered for export.
 
@@ -74,7 +73,7 @@ public class FullExportForm extends Form {
 
 		exportQuery.setTables(tables);
 
-		final ManagedQuery managedQuery = new ManagedQuery(exportQuery, user, submittedDataset);
+		final ManagedQuery managedQuery = new ManagedQuery(exportQuery, user, submittedDataset, storage);
 
 
 		return Map.of(
@@ -101,7 +100,7 @@ public class FullExportForm extends Form {
 
 
 	@Override
-	public ManagedForm toManagedExecution(User user, Dataset submittedDataset) {
-		return new ManagedInternalForm(this, user, submittedDataset);
+	public ManagedForm toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
+		return new ManagedInternalForm<FullExportForm>(this, user, submittedDataset, storage);
 	}
 }

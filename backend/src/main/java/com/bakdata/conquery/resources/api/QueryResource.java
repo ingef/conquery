@@ -44,7 +44,7 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus getStatus(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+	public FullExecutionStatus getStatus(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
 
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.READ);
@@ -56,7 +56,7 @@ public class QueryResource {
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public FullExecutionStatus patchQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders, MetaDataPatch patch) {
+	public FullExecutionStatus patchQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") Optional<Boolean> allProviders, MetaDataPatch patch) {
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
@@ -67,7 +67,7 @@ public class QueryResource {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query) {
+	public void deleteQuery(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.DELETE);
 
@@ -76,7 +76,7 @@ public class QueryResource {
 
 	@POST
 	@Path("{" + QUERY + "}/reexecute")
-	public FullExecutionStatus reexecute(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
+	public FullExecutionStatus reexecute(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query, @QueryParam("all-providers") Optional<Boolean> allProviders) {
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
@@ -86,7 +86,7 @@ public class QueryResource {
 
 	@POST
 	@Path("{" + QUERY + "}/cancel")
-	public void cancel(@Auth Subject subject, @PathParam(QUERY) ManagedExecution<?> query) {
+	public void cancel(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
 
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.CANCEL);

@@ -32,7 +32,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 
 	private final StoreFactory storageFactory;
 
-	private IdentifiableStore<ManagedExecution<?>> executions;
+	private IdentifiableStore<ManagedExecution> executions;
 
 	private IdentifiableStore<FormConfig> formConfigs;
 	private IdentifiableStore<User> authUser;
@@ -78,19 +78,19 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 		centralRegistry.clear();
 	}
 
-	public void addExecution(ManagedExecution<?> query) {
+	public void addExecution(ManagedExecution query) {
 		executions.add(query);
 	}
 
-	public ManagedExecution<?> getExecution(ManagedExecutionId id) {
+	public ManagedExecution getExecution(ManagedExecutionId id) {
 		return executions.get(id);
 	}
 
-	public Collection<ManagedExecution<?>> getAllExecutions() {
+	public Collection<ManagedExecution> getAllExecutions() {
 		return executions.getAll();
 	}
 
-	public void updateExecution(ManagedExecution<?> query) {
+	public void updateExecution(ManagedExecution query) {
 		executions.update(query);
 	}
 

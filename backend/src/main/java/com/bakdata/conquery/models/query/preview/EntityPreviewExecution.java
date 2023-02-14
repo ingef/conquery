@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
-import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
@@ -29,7 +29,9 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.MoreCollectors;
 import lombok.NonNull;
 
@@ -38,7 +40,7 @@ import lombok.NonNull;
  * This mostly delegates to {@link EntityPreviewForm#VALUES_QUERY_NAME}, but embeds the result of {@link EntityPreviewForm#INFOS_QUERY_NAME} into {@link EntityPreviewStatus#getInfos()}.
  */
 @CPSType(id = "ENTITY_PREVIEW_EXECUTION", base = ManagedExecution.class)
-public class EntityPreviewExecution extends ManagedForm implements SingleTableResult {
+public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewForm> implements SingleTableResult {
 
 	private PreviewConfig previewConfig;
 
@@ -48,8 +50,12 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		return true;
 	}
 
-	EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset) {
-		super(entityPreviewQuery, user, submittedDataset);
+	protected EntityPreviewExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		super(storage);
+	}
+
+	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
+		super(entityPreviewQuery, user, submittedDataset, storage);
 	}
 
 	/**

@@ -45,9 +45,10 @@ public interface QueryDescription extends Visitable {
 	 *
 	 * @param user
 	 * @param submittedDataset
+	 * @param storage
 	 * @return
 	 */
-	ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset);
+	ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage);
 
 
 	Set<ManagedExecutionId> collectRequiredQueries();
@@ -100,10 +101,10 @@ public interface QueryDescription extends Visitable {
 		subject.authorize(concepts, Ability.READ);
 
 		// Check reused query permissions
-		final Set<ManagedExecution<?>> collectedExecutions = queryDescription.collectRequiredQueries().stream()
-																			 .map(storage::getExecution)
-																			 .filter(Objects::nonNull)
-																			 .collect(Collectors.toSet());
+		final Set<ManagedExecution> collectedExecutions = queryDescription.collectRequiredQueries().stream()
+																		  .map(storage::getExecution)
+																		  .filter(Objects::nonNull)
+																		  .collect(Collectors.toSet());
 
 		subject.authorize(collectedExecutions, Ability.READ);
 

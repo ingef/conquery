@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -22,8 +23,8 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 public abstract class TestForm extends Form {
 
 	@Override
-	public ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset) {
-		return new ManagedInternalForm(this, user, submittedDataset);
+	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
+		return new ManagedInternalForm(this, user, submittedDataset, storage);
 	}
 
 	@Override
@@ -37,7 +38,7 @@ public abstract class TestForm extends Form {
 	}
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset, MetaStorage storage) {
 		return Collections.emptyMap();
 	}
 
