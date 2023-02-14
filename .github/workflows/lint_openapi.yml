@@ -4,7 +4,6 @@ on:
     paths:
       - "openapi.yaml"
       - ".github/workflows/lint_openapi.yaml"
-
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -12,7 +11,5 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: ls
-        run: ls
       - name: "Lint OpenApi spec"
         run: vacuum lint --details ./openapi.yaml
