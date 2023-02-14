@@ -7,7 +7,10 @@ import { SelectorResultType } from "../../api/types";
 import { TransparentButton } from "../../button/TransparentButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
-import { hasConceptChildren } from "../../concept-trees/globalTreeStoreHelper";
+import {
+  getConceptById,
+  hasConceptChildren,
+} from "../../concept-trees/globalTreeStoreHelper";
 import {
   nodeHasFilterValues,
   nodeHasNonDefaultSettings,
@@ -401,9 +404,14 @@ const FormConceptGroup = (props: Props) => {
           }}
           onRemoveConcept={(conceptId) => {
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            const newIds = editedNode.ids.filter((id) => id !== conceptId);
             props.onChange(
               setConceptProperties(props.value, valueIdx, conceptIdx, {
-                ids: editedNode.ids.filter((id) => id !== conceptId),
+                ids: newIds,
+                description:
+                  newIds.length === 1
+                    ? getConceptById(newIds[0])?.description
+                    : editedNode.description,
               }),
             );
           }}
