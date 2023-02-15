@@ -3,17 +3,14 @@ package com.bakdata.conquery.models.config;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Strings;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -65,18 +62,18 @@ public class ColumnConfig {
 	 */
 	@NotEmpty
 	@Builder.Default
-	private Map<String, String> label = Collections.emptyMap();
+	private Map<Locale, String> label = Collections.emptyMap();
 
 	/**
 	 * Map of Localized description.
 	 */
 	@Builder.Default
-	private Map<String, String> description = Collections.emptyMap();
+	private Map<Locale, String> description = Collections.emptyMap();
 
 	/**
 	 * Name of column in csv for {@link AdminDatasetProcessor#setIdMapping(java.io.InputStream, com.bakdata.conquery.models.worker.Namespace)}.
-	 *
-	 * Also Name of output column for {@link FrontendConfig.UploadConfig#getIdResultInfos()}, ergo output csv-Columns.
+	 * <p>
+	 * Also Name of output column for {@link IdColumnConfig#getIdResultInfos()}, ergo output csv-Columns.
 	 */
 	private String field;
 
@@ -110,17 +107,4 @@ public class ColumnConfig {
 	@Builder.Default
 	@JsonView(View.Persistence.class)
 	private boolean fillAnon = false;
-
-	@JsonIgnore
-	@ValidationMethod(message = "Keys must be valid Locales.")
-	public boolean isLabelKeysLocale() {
-		return getLabel().keySet().stream().map(Locale::forLanguageTag).noneMatch(Objects::isNull);
-	}
-
-	@JsonIgnore
-	@ValidationMethod(message = "Keys must be valid Locales.")
-	public boolean isDescriptionKeysLocale() {
-		return getDescription().keySet().stream().map(Locale::forLanguageTag).noneMatch(Objects::isNull);
-	}
-
 }

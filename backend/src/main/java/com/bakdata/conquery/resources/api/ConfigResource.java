@@ -1,16 +1,17 @@
 package com.bakdata.conquery.resources.api;
 
-import java.util.stream.Collectors;
-
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.apiv1.frontend.FrontendConfiguration;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FrontendConfig;
+import com.bakdata.conquery.models.config.IdColumnConfig;
+import com.bakdata.conquery.util.VersionInfo;
 import lombok.RequiredArgsConstructor;
 
 @Path("config")
@@ -22,17 +23,22 @@ public class ConfigResource {
 
 	@GET
 	@Path("frontend")
-	public FrontendConfig getFrontendConfig() {
+	public FrontendConfiguration getFrontendConfig() {
 		// Filter Ids that are not resolvable
-		return config.getFrontend()
-					 .withQueryUpload(config.getFrontend()
-											.getQueryUpload()
-											.withIds(config.getFrontend()
-														   .getQueryUpload()
-														   .getIds()
-														   .stream()
-														   .filter(ColumnConfig::isResolvable)
-														   .collect(Collectors.toList())));
+		final IdColumnConfig idColumns = config.getIdColumns().withIds(config.getIdColumns()
+																			 .getIds()
+																			 .stream()
+																			 .filter(ColumnConfig::isResolvable)
+																			 .toList());
+
+		final FrontendConfig frontendConfig = config.getFrontend();
+		return new FrontendConfiguration(
+				VersionInfo.INSTANCE.getProjectVersion(),
+				frontendConfig.getCurrency(),
+				idColumns,
+				frontendConfig.getManualUrl(),
+				frontendConfig.getContactEmail()
+		);
 	}
 
 }

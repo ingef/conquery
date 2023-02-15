@@ -19,7 +19,7 @@ import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import SourcesControl from "./SourcesControl";
 import Timeline from "./Timeline";
-import { DEFAULT_ID_KIND, useUpdateHistorySession } from "./actions";
+import { useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
 
 const FullScreen = styled("div")`
@@ -61,6 +61,7 @@ const SidebarBottom = styled("div")`
 
 const Header = styled("div")`
   display: flex;
+  flex-direction: row-reverse;
   gap: 15px;
   justify-content: space-between;
 `;
@@ -145,10 +146,8 @@ export const History = () => {
     }: LoadingPayload) => {
       updateHistorySession({
         label,
-        // Here, we're assuming that ids from the uploaded file have a default id kind
-        // TODO: possibly allow users to specifiy the id kind from the file they're uploading
-        entityIds: loadedEntityIds.map((id) => ({ id, kind: DEFAULT_ID_KIND })),
-        entityId: { id: loadedEntityIds[0], kind: DEFAULT_ID_KIND },
+        entityIds: loadedEntityIds,
+        entityId: loadedEntityIds[0],
       });
       setEntityIdsStatus(loadedEntityStatus);
       setEntityStatusOptions(loadedEntityStatusOptions);
@@ -156,7 +155,7 @@ export const History = () => {
     [setEntityIdsStatus, setEntityStatusOptions, updateHistorySession],
   );
 
-  const { getIsOpen, toggleOpenYear, toggleOpenQuarter, closeAll } =
+  const { getIsOpen, toggleOpenYear, toggleOpenQuarter, closeAll, openAll } =
     useOpenCloseInteraction();
 
   return (
@@ -179,6 +178,13 @@ export const History = () => {
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Main>
             <Header>
+              <Controls>
+                <SxSourcesControl
+                  options={options}
+                  sourcesFilter={sourcesFilter}
+                  setSourcesFilter={setSourcesFilter}
+                />
+              </Controls>
               {currentEntityId && (
                 <EntityHeader
                   currentEntityIndex={currentEntityIndex}
@@ -189,13 +195,6 @@ export const History = () => {
                   entityStatusOptions={entityStatusOptions}
                 />
               )}
-              <Controls>
-                <SxSourcesControl
-                  options={options}
-                  sourcesFilter={sourcesFilter}
-                  setSourcesFilter={setSourcesFilter}
-                />
-              </Controls>
             </Header>
             <Flex>
               <Sidebar>
@@ -205,7 +204,7 @@ export const History = () => {
                     setDetailLevel={setDetailLevel}
                   />
                 )}
-                <InteractionControl onCloseAll={closeAll} />
+                <InteractionControl onCloseAll={closeAll} onOpenAll={openAll} />
                 <ContentControl
                   value={contentFilter}
                   onChange={setContentFilter}
@@ -388,10 +387,27 @@ const useOpenCloseInteraction = () => {
     setIsOpen({});
   }, []);
 
+  const openAll = useCallback(() => {
+    const lastYearsToUse = 20;
+    const currYear = new Date().getFullYear();
+    const years = [...Array(lastYearsToUse).keys()].map((i) => currYear - i);
+
+    const newIsOpen: Record<string, boolean> = {};
+
+    for (const year of years) {
+      for (const quarter of [1, 2, 3, 4]) {
+        newIsOpen[toId(year, quarter)] = true;
+      }
+    }
+
+    setIsOpen(newIsOpen);
+  }, [toId]);
+
   return {
     getIsOpen,
     toggleOpenYear,
     toggleOpenQuarter,
     closeAll,
+    openAll,
   };
 };

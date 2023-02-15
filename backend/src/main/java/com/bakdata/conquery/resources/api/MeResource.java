@@ -7,7 +7,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.apiv1.MeProcessor;
-import com.bakdata.conquery.apiv1.MeProcessor.FEMeInformation;
+import com.bakdata.conquery.apiv1.MeProcessor.FrontendMeInformation;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -26,7 +26,7 @@ public class MeResource extends HAuthorized {
 
 	@Produces(MediaType.APPLICATION_JSON)
 	@GET
-	public FEMeInformation getUserInformation() {
+	public FrontendMeInformation getUserInformation() {
 		return processor.getUserInformation(subject.getUser());
 	}
 }

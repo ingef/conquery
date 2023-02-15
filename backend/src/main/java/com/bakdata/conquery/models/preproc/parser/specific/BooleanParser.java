@@ -33,6 +33,11 @@ public class BooleanParser extends Parser<Boolean, BooleanStore> {
 
 	@Override
 	public void setValue(BooleanStore store, int event, Boolean value) {
+		if(value == null){
+			store.setNull(event);
+			return;
+		}
+
 		store.setBoolean(event, value);
 	}
 

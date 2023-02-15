@@ -50,6 +50,7 @@ interface Props {
   onDropNode: (node: StandardQueryNodeT) => void;
   onDropFile: (file: File) => void;
   onLoadPreviousQuery: (id: QueryIdT) => void;
+  onImportLines?: (lines: string[]) => void;
 }
 
 const QueryEditorDropzone = forwardRef<HTMLDivElement, Props>(
@@ -61,6 +62,7 @@ const QueryEditorDropzone = forwardRef<HTMLDivElement, Props>(
       onLoadPreviousQuery,
       onDropFile,
       onDropNode,
+      onImportLines,
     },
     ref,
   ) => {
@@ -88,7 +90,8 @@ const QueryEditorDropzone = forwardRef<HTMLDivElement, Props>(
         onDrop={(item) => onDrop(item as StandardQueryNodeT | DragItemFile)}
         onSelectFile={onDropFile}
         disableClick={isInitial}
-        showFileSelectButton={isInitial}
+        showImportButton={isInitial}
+        onImportLines={onImportLines}
       >
         {() => (
           <>

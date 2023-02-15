@@ -18,7 +18,6 @@ import type {
 } from "../api/types";
 import { successPayload } from "../common/actions/genericActions";
 import type { TreesT } from "../concept-trees/reducer";
-import { useDatasetId } from "../dataset/selectors";
 import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
@@ -124,7 +123,6 @@ export const expandPreviousQuery = createAction(
 )<StandardQueryStateT>();
 
 const useLoadBigMultiSelectValues = () => {
-  const datasetId = useDatasetId();
   const postFilterValuesResolve = usePostFilterValuesResolve();
 
   return useCallback(
@@ -133,8 +131,6 @@ const useLoadBigMultiSelectValues = () => {
     // don't have value: SelectOptionT[] yet, but string[]
     // we just don't have an extra type for it.
     async (state: StandardQueryStateT): Promise<StandardQueryStateT> => {
-      if (!datasetId) return state;
-
       return Promise.all(
         state.map(async (val) => ({
           ...val,
@@ -158,9 +154,6 @@ const useLoadBigMultiSelectValues = () => {
 
                         try {
                           const result = await postFilterValuesResolve(
-                            datasetId,
-                            el.tree,
-                            table.id,
                             filter.id,
                             filter.value as unknown as string[], // See explanation above
                           );
@@ -182,7 +175,7 @@ const useLoadBigMultiSelectValues = () => {
         })),
       );
     },
-    [datasetId, postFilterValuesResolve],
+    [postFilterValuesResolve],
   );
 };
 

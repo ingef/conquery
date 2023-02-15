@@ -30,8 +30,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 		final User user = new User("testU", "testU", storage);
 
-		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8()
-			.readAll();
+		final String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(conquery.getDataset(), testJson);
 
 		storage.updateUser(user);
@@ -54,7 +53,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 			assertThat(status.getResultUrls()).isEmpty();
 		}
 
-		{			
+		{
 			// Thinker the state of the execution and try again: still not possible because of missing permissions
 			exec.setState(ExecutionState.DONE);
 
@@ -62,13 +61,13 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 			assertThat(status.getResultUrls()).isEmpty();
 		}
 
-		{			
+		{
 			// Add permission to download: now it should be possible
 			user.addPermission(DatasetPermission.onInstance(Set.of(Ability.DOWNLOAD), conquery.getDataset().getId()));
 
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
 			// This Url is missing the `/api` path part, because we use the standard UriBuilder here
-			assertThat(status.getResultUrls()).contains(new URL(String.format("%s/datasets/%s/result/%s.csv", conquery.defaultApiURIBuilder().toString(), conquery.getDataset().getId(), exec.getId())));
+			assertThat(status.getResultUrls()).contains(new URL(String.format("%s/result/%s.csv", conquery.defaultApiURIBuilder().toString(), exec.getId())));
 		}
 	}
 

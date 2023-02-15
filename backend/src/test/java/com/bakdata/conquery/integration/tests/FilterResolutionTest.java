@@ -15,7 +15,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -116,7 +116,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 			//check the resolved values
 			// "aaa" is hit by "a" and "aaa" therefore should be first
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).containsExactly("aaa", "a");
+			assertThat(resolved.getResolvedFilter().getValue().stream().map(FrontendValue::getValue)).containsExactly("aaa", "a");
 			assertThat(resolved.getUnknownCodes()).containsExactly("unknown");
 		}
 
@@ -129,7 +129,7 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 			ResolvedConceptsResult resolved = fromCsvResponse.readEntity(ResolvedConceptsResult.class);
 
 			//check the resolved values
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FEValue::getValue)).contains("f");
+			assertThat(resolved.getResolvedFilter().getValue().stream().map(FrontendValue::getValue)).contains("f");
 			assertThat(resolved.getUnknownCodes()).containsExactly("unknown");
 		}
 	}

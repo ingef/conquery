@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,15 +40,14 @@ public class RelativeMode extends Mode {
 	private IndexPlacement indexPlacement;
 	@NotNull
 	private TemporalSamplerFactory indexSelector;
-	@NotEmpty
-	private List<CQElement> features;
+
 
 	@JsonView(View.InternalCommunication.class)
 	private ArrayConceptQuery resolvedFeatures;
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
-		features.forEach(visitor);
+
 	}
 
 	@Override
@@ -57,9 +57,7 @@ public class RelativeMode extends Mode {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		ExportForm.DefaultSelectSettable.enable(features);
-
-		resolvedFeatures = ArrayConceptQuery.createFromFeatures(features);
+		resolvedFeatures = ArrayConceptQuery.createFromFeatures(getForm().getFeatures());
 
 		// Resolve all
 		resolvedFeatures.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));

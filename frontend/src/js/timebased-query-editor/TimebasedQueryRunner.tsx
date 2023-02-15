@@ -50,8 +50,8 @@ const TimebasedQueryRunner = () => {
     }
   };
   const stopQuery = () => {
-    if (datasetId && queryId) {
-      stopTimebasedQuery(datasetId, queryId);
+    if (queryId) {
+      stopTimebasedQuery(queryId);
     }
   };
 

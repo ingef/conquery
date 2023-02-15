@@ -31,11 +31,6 @@ const ContentControl = ({ value, onChange }: Props) => {
   const options = useMemo(
     () => [
       {
-        key: "groupId" as const,
-        icon: "fingerprint" as const,
-        tooltip: t("history.content.fingerprint"),
-      },
-      {
         key: "money" as const,
         icon: "euro-sign" as const,
         tooltip: t("history.content.money"),
@@ -49,6 +44,11 @@ const ContentControl = ({ value, onChange }: Props) => {
         key: "rest" as const,
         icon: "info" as const,
         tooltip: t("history.content.rest"),
+      },
+      {
+        key: "groupId" as const,
+        icon: "fingerprint" as const,
+        tooltip: t("history.content.fingerprint"),
       },
     ],
     [t],
@@ -77,11 +77,11 @@ const ContentControl = ({ value, onChange }: Props) => {
 
 export const useContentControl = () => {
   const [contentFilter, setContentFilter] = useState<ContentFilterValue>({
-    groupId: true,
+    groupId: false,
     secondaryId: true,
     concept: true,
     money: true,
-    rest: true,
+    rest: false,
     dates: true,
   });
 

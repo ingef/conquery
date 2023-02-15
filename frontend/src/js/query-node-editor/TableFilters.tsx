@@ -13,7 +13,7 @@ const TableFilters = ({ filters, ...rest }: PropsT) => {
     <div>
       {filters.map((filter, filterIdx) => (
         <TableFilter
-          key={`${rest.context.tableId}-${filter.id}`}
+          key={filter.id}
           filter={filter}
           filterIdx={filterIdx}
           {...rest}

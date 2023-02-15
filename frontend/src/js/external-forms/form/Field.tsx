@@ -19,6 +19,7 @@ import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputDateRange from "../../ui-components/InputDateRange";
 import InputPlain from "../../ui-components/InputPlain/InputPlain";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
+import { InputTextarea } from "../../ui-components/InputTextarea/InputTextarea";
 import ToggleButton from "../../ui-components/ToggleButton";
 import type { Field as FieldT, GeneralField, Tabs } from "../config-types";
 import { Description } from "../form-components/Description";
@@ -187,6 +188,32 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               fullWidth={field.style ? field.style.fullWidth : false}
               value={fieldProps.value as string}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
+              tooltip={field.tooltip ? field.tooltip[locale] : undefined}
+              optional={optional}
+            />
+          )}
+        </ConnectedField>
+      );
+    case "TEXTAREA":
+      return (
+        <ConnectedField
+          formField={field}
+          control={control}
+          defaultValue={defaultValue}
+        >
+          {({ ref, ...fieldProps }) => (
+            <InputTextarea
+              ref={ref}
+              label={field.label[locale] || ""}
+              placeholder={
+                (field.placeholder && field.placeholder[locale]) || ""
+              }
+              rows={field.style?.rows ?? 4}
+              value={fieldProps.value as string}
+              onChange={(value) => {
+                console.log(value);
+                setValue(field.name, value, setValueConfig);
+              }}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
               optional={optional}
             />

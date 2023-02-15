@@ -8,6 +8,7 @@ import java.util.BitSet;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -366,7 +367,6 @@ public class SerializationTests extends AbstractSerializationTest {
 		AbsoluteMode mode = new AbsoluteMode();
 		form.setTimeMode(mode);
 		mode.setForm(form);
-		mode.setFeatures(List.of(new CQConcept()));
 
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 		JsonNode values = mapper.valueToTree(form);
@@ -476,15 +476,15 @@ public class SerializationTests extends AbstractSerializationTest {
 	public void meInformation() throws IOException, JSONException {
 		User user = new User("name", "labe", getMetaStorage());
 
-		MeProcessor.FEMeInformation info = MeProcessor.FEMeInformation.builder()
-																	  .userName(user.getLabel())
-																	  .hideLogoutButton(false)
-																	  .groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
-																	  .datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FEDatasetAbility(true)))
-																	  .build();
+		MeProcessor.FrontendMeInformation info = MeProcessor.FrontendMeInformation.builder()
+																				  .userName(user.getLabel())
+																				  .hideLogoutButton(false)
+																				  .groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
+																				  .datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FrontendDatasetAbility(true)))
+																				  .build();
 
 		SerializationTestUtil
-				.forType(MeProcessor.FEMeInformation.class)
+				.forType(MeProcessor.FrontendMeInformation.class)
 				.objectMappers(getManagerInternalMapper(), getApiMapper())
 				.test(info);
 	}
@@ -666,9 +666,9 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil.forType(Double.class)
 							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.POSITIVE_INFINITY, null);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(new Double(Double.MAX_VALUE));
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MAX_VALUE);
 		SerializationTestUtil.forType(Double.class)
-							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(new Double(Double.MIN_VALUE));
+							 .objectMappers(getApiMapper(), getManagerInternalMapper()).test(Double.MIN_VALUE);
 		SerializationTestUtil
 				.forType(EntityResult.class)
 				.objectMappers(getApiMapper(), getManagerInternalMapper())
@@ -716,6 +716,20 @@ public class SerializationTests extends AbstractSerializationTest {
 				})
 				.objectMappers(getApiMapper(), getManagerInternalMapper(), getShardInternalMapper())
 				.test(range);
+	}
+
+	@Test
+	public void locale() throws JSONException, IOException {
+		SerializationTestUtil.forType(Locale.class)
+							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .test(Locale.GERMANY);
+	}
+
+	@Test
+	public void localeArray() throws JSONException, IOException {
+		SerializationTestUtil.forType(Locale[].class)
+							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .test(new Locale[]{Locale.GERMANY, Locale.ROOT, Locale.ENGLISH, Locale.US, Locale.UK});
 	}
 
 	@Test

@@ -15,8 +15,12 @@ fi
 
 pushd "./frontend"
 echo "Using frontend env variables from .env.e2e"
-./scripts/replace-env-at-runtime.sh ./.env.e2e
-
+(
+	set -a
+	source .env.e2e
+	set +a
+	./scripts/replace-env-at-runtime.sh ./build/index.html 
+)
 
 echo
 echo "Starting frontend server"

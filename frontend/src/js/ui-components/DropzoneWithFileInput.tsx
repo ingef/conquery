@@ -1,5 +1,13 @@
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { useRef, ReactNode, Ref, forwardRef, ReactElement } from "react";
+import {
+  useRef,
+  ReactNode,
+  Ref,
+  forwardRef,
+  ReactElement,
+  useState,
+} from "react";
 import { DropTargetMonitor } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
@@ -8,6 +16,7 @@ import { SelectFileButton } from "../button/SelectFileButton";
 import FaIcon from "../icon/FaIcon";
 
 import Dropzone, { ChildArgs, PossibleDroppableObject } from "./Dropzone";
+import { ImportModal } from "./ImportModal";
 
 export interface DragItemFile {
   type: "__NATIVE_FILE__"; // Actually, this seems to not be passed by react-dnd
@@ -18,20 +27,25 @@ const FileInput = styled("input")`
   display: none;
 `;
 
-const SxDropzone = styled(Dropzone)<{ isInitial?: boolean }>`
+const SxDropzone = styled(Dropzone)<{ isInitial?: boolean; tight?: boolean }>`
   cursor: ${({ isInitial }) => (isInitial ? "initial" : "pointer")};
   transition: box-shadow ${({ theme }) => theme.transitionTime};
   position: relative;
+  ${({ tight }) =>
+    tight &&
+    css`
+      padding: 5px;
+    `}
 
   &:hover {
     box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
   }
 `;
 
-const SxSelectFileButton = styled(SelectFileButton)`
+const SxSelectFileButton = styled(SelectFileButton)<{ outside?: boolean }>`
   position: absolute;
-  top: 5px;
-  right: 10px;
+  top: ${({ outside }) => (outside ? "-26px" : "3px")};
+  right: ${({ outside }) => (outside ? "-12px" : "0")};
 `;
 
 const SxFaIcon = styled(FaIcon)`
@@ -41,7 +55,7 @@ const SxFaIcon = styled(FaIcon)`
 
 interface PropsT<DroppableObject> {
   children: (args: ChildArgs<DroppableObject>) => ReactNode;
-  onSelectFile: (file: File) => void;
+  onSelectFile?: (file: File) => void;
   onDrop: (
     item: DroppableObject | DragItemFile,
     monitor: DropTargetMonitor,
@@ -49,9 +63,15 @@ interface PropsT<DroppableObject> {
   acceptedDropTypes?: string[];
   accept?: string;
   disableClick?: boolean;
-  showFileSelectButton?: boolean;
   isInitial?: boolean;
   className?: string;
+  tight?: boolean;
+
+  showImportButton?: boolean;
+  importButtonOutside?: boolean;
+  onImportLines?: (lines: string[]) => void;
+  importPlaceholder?: string;
+  importDescription?: string;
 }
 
 /*
@@ -67,14 +87,19 @@ const DropzoneWithFileInput = <
 >(
   {
     onSelectFile,
+    onImportLines,
+    importPlaceholder,
+    importDescription,
+    importButtonOutside,
     acceptedDropTypes,
     disableClick,
-    showFileSelectButton,
+    showImportButton,
     children,
     onDrop,
     isInitial,
     className,
     accept,
+    tight,
   }: PropsT<DroppableObject>,
   ref: Ref<HTMLDivElement>,
 ) => {
@@ -82,6 +107,12 @@ const DropzoneWithFileInput = <
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const dropTypes = [...(acceptedDropTypes || []), NativeTypes.FILE];
+
+  const [importModalOpen, setImportModalOpen] = useState(false);
+
+  function onSubmitImport(lines: string[]) {
+    onImportLines?.(lines);
+  }
 
   function onOpenFileDialog() {
     if (fileInputRef.current) {
@@ -91,11 +122,16 @@ const DropzoneWithFileInput = <
 
   return (
     <SxDropzone /* <FC<DropzoneProps<DroppableObject | DragItemFile>>> */
+      tight={tight}
       acceptedDropTypes={dropTypes}
       onClick={() => {
         if (disableClick) return;
 
-        onOpenFileDialog();
+        if (onImportLines) {
+          setImportModalOpen(true);
+        } else {
+          onOpenFileDialog();
+        }
       }}
       onDrop={(item, monitor) => {
         if ("files" in item) {
@@ -111,26 +147,39 @@ const DropzoneWithFileInput = <
     >
       {(args) => (
         <>
-          {showFileSelectButton && (
-            <SxSelectFileButton onClick={onOpenFileDialog}>
-              <SxFaIcon icon="file" regular gray />
-              {t("inputMultiSelect.openFileDialog")}
+          {importModalOpen && (
+            <ImportModal
+              onClose={() => setImportModalOpen(false)}
+              onSubmit={onSubmitImport}
+              placeholder={importPlaceholder}
+              description={importDescription}
+            />
+          )}
+          {showImportButton && onImportLines && (
+            <SxSelectFileButton
+              outside={importButtonOutside}
+              onClick={() => setImportModalOpen(true)}
+            >
+              <SxFaIcon icon="file-import" gray />
+              {t("common.import")}
             </SxSelectFileButton>
           )}
-          <FileInput
-            ref={fileInputRef}
-            type="file"
-            accept={accept}
-            onChange={(e) => {
-              if (e.target.files) {
-                onSelectFile(e.target.files[0]);
-              }
+          {onSelectFile && (
+            <FileInput
+              ref={fileInputRef}
+              type="file"
+              accept={accept}
+              onChange={(e) => {
+                if (e.target.files) {
+                  onSelectFile(e.target.files[0]);
+                }
 
-              if (fileInputRef.current) {
-                fileInputRef.current.value = "";
-              }
-            }}
-          />
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
+              }}
+            />
+          )}
           {children(args as ChildArgs<DroppableObject>)}
         </>
       )}

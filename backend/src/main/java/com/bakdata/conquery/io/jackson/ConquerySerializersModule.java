@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.jackson;
 import java.io.IOException;
 import java.util.Currency;
 import java.util.List;
+import java.util.Locale;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.CharArrayBufferDeserializer;
@@ -12,6 +13,8 @@ import com.bakdata.conquery.io.jackson.serializer.ConqueryDoubleSerializer;
 import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitSerializer;
 import com.bakdata.conquery.io.jackson.serializer.IdKeyDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.LocaleDeserializer;
+import com.bakdata.conquery.io.jackson.serializer.LocaleSerializer;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.ValueInstantiator;
@@ -54,11 +57,14 @@ public class ConquerySerializersModule extends SimpleModule {
 				.getSubclasses(Id.class.getName())
 				.loadClasses();
 
-		for(Class<?> type : idTypes) {
+		for (Class<?> type : idTypes) {
 			addKeyDeserializer(type, new IdKeyDeserializer<>());
 		}
 		addSerializer(new ConqueryDoubleSerializer());
 		addDeserializer(CharArrayBuffer.class, new CharArrayBufferDeserializer());
 		addSerializer(CharArrayBuffer.class, new CharArrayBufferSerializer());
+
+		addDeserializer(Locale.class, new LocaleDeserializer());
+		addSerializer(Locale.class, new LocaleSerializer());
 	}
 }

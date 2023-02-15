@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.error;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.validation.constraints.NotEmpty;
@@ -19,9 +20,11 @@ import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.map.Flat3Map;
 import org.apache.commons.text.StringSubstitutor;
@@ -254,6 +257,27 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 		public ExecutionCreationPlanError() {
 			super("Unable to generate query plan.");
+		}
+	}
+
+	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_CREATION_PLAN_FLAGS_MISSING")
+	@FieldNameConstants(level = AccessLevel.PRIVATE)
+	public static class ExecutionCreationPlanMissingFlagsError extends ContextError {
+
+		private final Void ALIGNMENT = null;
+		private static final String TEMPLATE = "Do not know labels ${" + Fields.ALIGNMENT + "}.";
+
+		/**
+		 * Constructor for deserialization.
+		 */
+		@JsonCreator
+		private ExecutionCreationPlanMissingFlagsError() {
+			super(TEMPLATE);
+		}
+
+		public ExecutionCreationPlanMissingFlagsError(Set<String> labels) {
+			this();
+			getContext().put(Fields.ALIGNMENT, String.join(", ", labels).trim());
 		}
 	}
 

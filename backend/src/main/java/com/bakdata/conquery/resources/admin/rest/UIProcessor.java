@@ -33,11 +33,11 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
-import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
-import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
-import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
-import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
+import com.bakdata.conquery.resources.admin.ui.model.FrontendAuthOverview;
+import com.bakdata.conquery.resources.admin.ui.model.FrontendGroupContent;
+import com.bakdata.conquery.resources.admin.ui.model.FrontendPermission;
+import com.bakdata.conquery.resources.admin.ui.model.FrontendRoleContent;
+import com.bakdata.conquery.resources.admin.ui.model.FrontendUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
@@ -69,27 +69,27 @@ public class UIProcessor {
 		return new UIContext(getDatasetRegistry());
 	}
 
-	public FEAuthOverview getAuthOverview() {
-		Collection<FEAuthOverview.OverviewRow> overview = new TreeSet<>();
+	public FrontendAuthOverview getAuthOverview() {
+		Collection<FrontendAuthOverview.OverviewRow> overview = new TreeSet<>();
 		for (User user : getStorage().getAllUsers()) {
 			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, getStorage());
 			Set<Role> effectiveRoles = user.getRoles().stream().map(getStorage()::getRole).collect(Collectors.toSet());
 			userGroups.forEach(g -> effectiveRoles.addAll(g.getRoles().stream().map(getStorage()::getRole).sorted().collect(Collectors.toList())));
-			overview.add(FEAuthOverview.OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
+			overview.add(FrontendAuthOverview.OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
 		}
 
-		return FEAuthOverview.builder().overview(overview).build();
+		return FrontendAuthOverview.builder().overview(overview).build();
 	}
 
 
-	public FERoleContent getRoleContent(Role role) {
-		return FERoleContent.builder()
-							.permissions(wrapInFEPermission(role.getPermissions()))
-							.permissionTemplateMap(preparePermissionTemplate())
-							.users(getUsers(role))
-							.groups(getGroups(role))
-							.owner(role)
-							.build();
+	public FrontendRoleContent getRoleContent(Role role) {
+		return FrontendRoleContent.builder()
+								  .permissions(wrapInFEPermission(role.getPermissions()))
+								  .permissionTemplateMap(preparePermissionTemplate())
+								  .users(getUsers(role))
+								  .groups(getGroups(role))
+								  .owner(role)
+								  .build();
 	}
 
 	private Map<String, Pair<Set<Ability>, List<Object>>> preparePermissionTemplate() {
@@ -126,20 +126,20 @@ public class UIProcessor {
 					 .collect(Collectors.toList());
 	}
 
-	private SortedSet<FEPermission> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
-		TreeSet<FEPermission> fePermissions = new TreeSet<>();
+	private SortedSet<FrontendPermission> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
+		TreeSet<FrontendPermission> fePermissions = new TreeSet<>();
 
 		for (ConqueryPermission permission : permissions) {
-			fePermissions.add(FEPermission.from(permission));
+			fePermissions.add(FrontendPermission.from(permission));
 		}
 		return fePermissions;
 	}
 
-	public FEUserContent getUserContent(User user) {
+	public FrontendUserContent getUserContent(User user) {
 		final Collection<Group> availableGroups = new ArrayList<>(getStorage().getAllGroups());
 		availableGroups.removeIf(g -> g.containsMember(user));
 
-		return FEUserContent
+		return FrontendUserContent
 				.builder()
 				.owner(user)
 				.groups(AuthorizationHelper.getGroupsOf(user, getStorage()))
@@ -152,12 +152,12 @@ public class UIProcessor {
 	}
 
 
-	public FEGroupContent getGroupContent(Group group) {
+	public FrontendGroupContent getGroupContent(Group group) {
 
 		Set<UserId> membersIds = group.getMembers();
 		ArrayList<User> availableMembers = new ArrayList<>(getStorage().getAllUsers());
 		availableMembers.removeIf(u -> membersIds.contains(u.getId()));
-		return FEGroupContent
+		return FrontendGroupContent
 				.builder()
 				.owner(group)
 				.members(membersIds.stream().map(getStorage()::getUser).collect(Collectors.toList()))

@@ -10,15 +10,15 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilterConfiguration;
-import com.bakdata.conquery.apiv1.frontend.FEList;
-import com.bakdata.conquery.apiv1.frontend.FENode;
-import com.bakdata.conquery.apiv1.frontend.FERoot;
-import com.bakdata.conquery.apiv1.frontend.FESecondaryId;
-import com.bakdata.conquery.apiv1.frontend.FESelect;
-import com.bakdata.conquery.apiv1.frontend.FETable;
-import com.bakdata.conquery.apiv1.frontend.FEValidityDate;
-import com.bakdata.conquery.apiv1.frontend.FEValue;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterConfiguration;
+import com.bakdata.conquery.apiv1.frontend.FrontendList;
+import com.bakdata.conquery.apiv1.frontend.FrontendNode;
+import com.bakdata.conquery.apiv1.frontend.FrontendRoot;
+import com.bakdata.conquery.apiv1.frontend.FrontendSecondaryId;
+import com.bakdata.conquery.apiv1.frontend.FrontendSelect;
+import com.bakdata.conquery.apiv1.frontend.FrontendTable;
+import com.bakdata.conquery.apiv1.frontend.FrontendValidityDate;
+import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -44,16 +44,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FrontEndConceptBuilder {
 
-	public static FERoot createRoot(NamespaceStorage storage, Subject subject) {
+	public static FrontendRoot createRoot(NamespaceStorage storage, Subject subject) {
 
-		FERoot root = new FERoot();
-		Map<Id<?>, FENode> roots = root.getConcepts();
+		FrontendRoot root = new FrontendRoot();
+		Map<Id<?>, FrontendNode> roots = root.getConcepts();
 
 		List<? extends Concept<?>> allConcepts = new ArrayList<>(storage.getAllConcepts());
 		// Remove any hidden concepts
 		allConcepts.removeIf(Concept::isHidden);
 
-		if(allConcepts.isEmpty()) {
+		if (allConcepts.isEmpty()) {
 			log.warn("There are no displayable concepts in the dataset {}", storage.getDataset().getId());
 		}
 
@@ -72,7 +72,7 @@ public class FrontEndConceptBuilder {
 		}
 		//add the structure tree
 		for(StructureNode sn : storage.getStructure()) {
-			FENode node = createStructureNode(sn, roots);
+			FrontendNode node = createStructureNode(sn, roots);
 			if(node == null) {
 				log.trace("Did not create a structure node entry for {}. Contained no concepts.", sn.getId());
 				continue;
@@ -83,48 +83,49 @@ public class FrontEndConceptBuilder {
 		root.getSecondaryIds()
 			.addAll(
 					storage.getSecondaryIds().stream()
-						   .map(sid -> new FESecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
+						   .filter(sid -> !sid.isHidden())
+						   .map(sid -> new FrontendSecondaryId(sid.getId().toString(), sid.getLabel(), sid.getDescription()))
 						   .collect(Collectors.toSet())
 			);
 
 		return root;
 	}
 
-	private static FENode createCTRoot(Concept<?> c, StructureNode[] structureNodes) {
+	private static FrontendNode createCTRoot(Concept<?> c, StructureNode[] structureNodes) {
 
 		MatchingStats matchingStats = c.getMatchingStats();
 
 		StructureNodeId structureParent = Arrays
-			.stream(structureNodes)
-			.filter(sn->sn.getContainedRoots().contains(c.getId()))
-			.findAny()
-			.map(StructureNode::getId)
-			.orElse(null);
+				.stream(structureNodes)
+				.filter(sn -> sn.getContainedRoots().contains(c.getId()))
+				.findAny()
+				.map(StructureNode::getId)
+				.orElse(null);
 
-		FENode n = FENode.builder()
-				.active(true)
-				.description(c.getDescription())
-				.label(c.getLabel())
-				.additionalInfos(c.getAdditionalInfos())
-				.matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
-				.matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
-				.dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
-				.detailsAvailable(Boolean.TRUE)
-				.codeListResolvable(c.countElements() > 1)
-				.parent(structureParent)
-				.selects(c
-					.getSelects()
-					.stream()
-					.map(FrontEndConceptBuilder::createSelect)
-					.collect(Collectors.toList())
-				)
-				.tables(c
-						.getConnectors()
-						.stream()
-						.map(FrontEndConceptBuilder::createTable)
-						.collect(Collectors.toList())
-				)
-				.build();
+		FrontendNode n = FrontendNode.builder()
+									 .active(true)
+									 .description(c.getDescription())
+									 .label(c.getLabel())
+									 .additionalInfos(c.getAdditionalInfos())
+									 .matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
+									 .matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
+									 .dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
+									 .detailsAvailable(Boolean.TRUE)
+									 .codeListResolvable(c.countElements() > 1)
+									 .parent(structureParent)
+									 .selects(c
+													  .getSelects()
+													  .stream()
+													  .map(FrontEndConceptBuilder::createSelect)
+													  .collect(Collectors.toList())
+									 )
+									 .tables(c
+													 .getConnectors()
+													 .stream()
+													 .map(FrontEndConceptBuilder::createTable)
+													 .collect(Collectors.toList())
+									 )
+									 .build();
 
 		if (c instanceof ConceptTreeNode<?> tree && tree.getChildren() != null) {
 			n.setChildren(
@@ -138,7 +139,7 @@ public class FrontEndConceptBuilder {
 	}
 
 	@Nullable
-	private static FENode createStructureNode(StructureNode cn, Map<Id<?>, FENode> roots) {
+	private static FrontendNode createStructureNode(StructureNode cn, Map<Id<?>, FrontendNode> roots) {
 		List<ConceptId> unstructured = new ArrayList<>();
 		for (ConceptId id : cn.getContainedRoots()) {
 			if (!roots.containsKey(id)) {
@@ -152,34 +153,34 @@ public class FrontEndConceptBuilder {
 			return null;
 		}
 
-		return FENode.builder()
-			.active(false)
-			.description(cn.getDescription())
-			.label(cn.getLabel())
-			.detailsAvailable(Boolean.FALSE)
-			.codeListResolvable(false)
-			.additionalInfos(cn.getAdditionalInfos())
-			.parent(cn.getParent() == null ? null : cn.getParent().getId())
-			.children(
-					Stream.concat(
-							cn.getChildren().stream().map(IdentifiableImpl::getId),
-							unstructured.stream()
-					).toArray(Id[]::new)
-			)
-			.build();
+		return FrontendNode.builder()
+						   .active(false)
+						   .description(cn.getDescription())
+						   .label(cn.getLabel())
+						   .detailsAvailable(Boolean.FALSE)
+						   .codeListResolvable(false)
+						   .additionalInfos(cn.getAdditionalInfos())
+						   .parent(cn.getParent() == null ? null : cn.getParent().getId())
+						   .children(
+								   Stream.concat(
+										   cn.getChildren().stream().map(IdentifiableImpl::getId),
+										   unstructured.stream()
+								   ).toArray(Id[]::new)
+						   )
+						   .build();
 	}
 
-	private static FENode createCTNode(ConceptElement<?> ce) {
+	private static FrontendNode createCTNode(ConceptElement<?> ce) {
 		MatchingStats matchingStats = ce.getMatchingStats();
-		FENode n = FENode.builder()
-				.active(null)
-				.description(ce.getDescription())
-				.label(ce.getLabel())
-				.additionalInfos(ce.getAdditionalInfos())
-				.matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
-				.matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
-				.dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
-				.build();
+		FrontendNode n = FrontendNode.builder()
+									 .active(null)
+									 .description(ce.getDescription())
+									 .label(ce.getLabel())
+									 .additionalInfos(ce.getAdditionalInfos())
+									 .matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
+									 .matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
+									 .dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
+									 .build();
 
 		if (ce instanceof ConceptTreeNode<?> tree) {
 			if (tree.getChildren() != null) {
@@ -192,44 +193,44 @@ public class FrontEndConceptBuilder {
 		return n;
 	}
 
-	public static FETable createTable(Connector con) {
-		FETable result =
-				FETable.builder()
-					   .id(con.getTable().getId())
-					   .connectorId(con.getId())
-					   .label(con.getLabel())
-					   .isDefault(con.isDefault())
-					   .filters(
-							   con.collectAllFilters()
-								  .stream()
-								  .map(FrontEndConceptBuilder::createFilter)
-								  .collect(Collectors.toList())
-					   )
-					   .selects(
-							   con.getSelects()
-								  .stream()
-								  .map(FrontEndConceptBuilder::createSelect)
-								  .collect(Collectors.toList())
-					   )
-					   .supportedSecondaryIds(
-							   Arrays.stream(con.getTable().getColumns())
-									 .map(Column::getSecondaryId)
-									 .filter(Objects::nonNull)
-									 .map(Identifiable::getId)
-									 .collect(Collectors.toSet())
-					   )
-					   .build();
+	public static FrontendTable createTable(Connector con) {
+		FrontendTable result =
+				FrontendTable.builder()
+							 .id(con.getTable().getId())
+							 .connectorId(con.getId())
+							 .label(con.getLabel())
+							 .isDefault(con.isDefault())
+							 .filters(
+									 con.collectAllFilters()
+										.stream()
+										.map(FrontEndConceptBuilder::createFilter)
+										.collect(Collectors.toList())
+							 )
+							 .selects(
+									 con.getSelects()
+										.stream()
+										.map(FrontEndConceptBuilder::createSelect)
+										.collect(Collectors.toList())
+							 )
+							 .supportedSecondaryIds(
+									 Arrays.stream(con.getTable().getColumns())
+										   .map(Column::getSecondaryId)
+										   .filter(Objects::nonNull)
+										   .map(Identifiable::getId)
+										   .collect(Collectors.toSet())
+							 )
+							 .build();
 
 		if(con.getValidityDates().size() > 1) {
 			result.setDateColumn(
-				new FEValidityDate(
-					null,
-						con
-						.getValidityDates()
-						.stream()
-							.map(vd -> new FEValue(vd.getId().toString(), vd.getLabel()))
-							.collect(Collectors.toList())
-				)
+					new FrontendValidityDate(
+							null,
+							con
+									.getValidityDates()
+									.stream()
+									.map(vd -> new FrontendValue(vd.getId().toString(), vd.getLabel()))
+									.collect(Collectors.toList())
+					)
 			);
 
 			if(!result.getDateColumn().getOptions().isEmpty()) {
@@ -240,7 +241,7 @@ public class FrontEndConceptBuilder {
 		return result;
 	}
 
-	public static FEFilterConfiguration.Top createFilter(Filter<?> filter) {
+	public static FrontendFilterConfiguration.Top createFilter(Filter<?> filter) {
 		try {
 			return filter.createFrontendConfig();
 		}
@@ -249,24 +250,24 @@ public class FrontEndConceptBuilder {
 		}
 	}
 
-	public static FESelect createSelect(Select select) {
-		return FESelect
-					.builder()
-					.id(select.getId())
-					.label(select.getLabel())
-					.description(select.getDescription())
-					.resultType(select.getResultType())
-					.isDefault(select.isDefault())
-					.build();
+	public static FrontendSelect createSelect(Select select) {
+		return FrontendSelect
+				.builder()
+				.id(select.getId())
+				.label(select.getLabel())
+				.description(select.getDescription())
+				.resultType(select.getResultType())
+				.isDefault(select.isDefault())
+				.build();
 	}
 
-	public static FEList createTreeMap(Concept<?> concept) {
-		FEList map = new FEList();
+	public static FrontendList createTreeMap(Concept<?> concept) {
+		FrontendList map = new FrontendList();
 		fillTreeMap(concept, map);
 		return map;
 	}
 
-	private static void fillTreeMap(ConceptElement<?> ce, FEList map) {
+	private static void fillTreeMap(ConceptElement<?> ce, FrontendList map) {
 		map.add(ce.getId(), createCTNode(ce));
 		if (ce instanceof ConceptTreeNode && ((ConceptTreeNode<?>) ce).getChildren() != null) {
 			for (ConceptTreeChild c : ((ConceptTreeNode<?>) ce).getChildren()) {

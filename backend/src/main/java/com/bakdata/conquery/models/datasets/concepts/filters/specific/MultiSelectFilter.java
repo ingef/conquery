@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.datasets.concepts.filters.specific;
 
-import com.bakdata.conquery.apiv1.frontend.FEFilterType;
+import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
@@ -18,10 +18,10 @@ public class MultiSelectFilter extends SelectFilter<String[]> {
 	public String getFilterType() {
 		// If we have labels we don't need a big multi select.
 		if (!getLabels().isEmpty()) {
-			return FEFilterType.Fields.MULTI_SELECT;
+			return FrontendFilterType.Fields.MULTI_SELECT;
 		}
 
-		return FEFilterType.Fields.BIG_MULTI_SELECT;
+		return FrontendFilterType.Fields.BIG_MULTI_SELECT;
 
 	}
 

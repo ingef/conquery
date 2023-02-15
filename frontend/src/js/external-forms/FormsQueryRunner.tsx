@@ -71,8 +71,8 @@ const FormQueryRunner: FC = () => {
     }
   };
   const stopQuery = () => {
-    if (datasetId && queryId) {
-      stopExternalFormsQuery(datasetId, queryId);
+    if (queryId) {
+      stopExternalFormsQuery(queryId);
     }
   };
 

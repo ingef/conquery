@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useEffect, useState, useRef } from "react";
+import { ReactNode, useEffect, useState, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -7,7 +7,10 @@ import { SelectorResultType } from "../../api/types";
 import { TransparentButton } from "../../button/TransparentButton";
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
-import { hasConceptChildren } from "../../concept-trees/globalTreeStoreHelper";
+import {
+  getConceptById,
+  hasConceptChildren,
+} from "../../concept-trees/globalTreeStoreHelper";
 import {
   nodeHasFilterValues,
   nodeHasNonDefaultSettings,
@@ -111,6 +114,10 @@ const FormConceptGroup = (props: Props) => {
   const { t } = useTranslation();
   const newValue = props.newValue;
   const defaults = props.defaults || {};
+  const tableConfig = {
+    allowlistedTables: props.allowlistedTables,
+    blocklistedTables: props.blocklistedTables,
+  };
 
   // indicator if it should be scrolled down back to the dropZone
   const [scrollToDropzone, setScrollToDropzone] = useState<boolean>(false);
@@ -140,11 +147,13 @@ const FormConceptGroup = (props: Props) => {
     onDropFile,
     onAcceptConceptsOrFilter: onAcceptUploadModalConceptsOrFilter,
     onClose: onCloseUploadConceptListModal,
+    onImportLines,
   } = useUploadConceptListModal({
     value: props.value,
     newValue,
     onChange: props.onChange,
     defaults,
+    tableConfig,
     isValidConcept: props.isValidConcept,
   });
 
@@ -158,11 +167,13 @@ const FormConceptGroup = (props: Props) => {
     newValue,
   });
 
-  const editedNode = exists(editedFormQueryNodePosition)
-    ? props.value[editedFormQueryNodePosition.valueIdx].concepts[
-        editedFormQueryNodePosition.conceptIdx
-      ]
-    : null;
+  const editedNode = useMemo(() => {
+    return exists(editedFormQueryNodePosition)
+      ? props.value[editedFormQueryNodePosition.valueIdx].concepts[
+          editedFormQueryNodePosition.conceptIdx
+        ]
+      : null;
+  }, [editedFormQueryNodePosition, props.value]);
 
   return (
     <div>
@@ -194,6 +205,9 @@ const FormConceptGroup = (props: Props) => {
         onDropFile={(file) =>
           onDropFile(file, { valueIdx: props.value.length })
         }
+        onImportLines={(lines) =>
+          onImportLines(lines, { valueIdx: props.value.length })
+        }
         onDrop={(item: DragItemFile | DragItemConceptTreeNode) => {
           setScrollToDropzone(true);
           if (item.type === "__NATIVE_FILE__") {
@@ -218,7 +232,7 @@ const FormConceptGroup = (props: Props) => {
             addConcept(
               addValue(props.value, newValue),
               props.value.length, // Assuming the last index has increased after addValue
-              initializeConcept(item, defaults),
+              initializeConcept(item, defaults, tableConfig),
             ),
           );
         }}
@@ -279,7 +293,7 @@ const FormConceptGroup = (props: Props) => {
                       nodeHasNonDefaultSettings(concept)
                     }
                     hasFilterValues={nodeHasFilterValues(concept)}
-                    onFilterClick={() =>
+                    onClick={() =>
                       setEditedFormQueryNodePosition({
                         valueIdx: i,
                         conceptIdx: j,
@@ -304,8 +318,8 @@ const FormConceptGroup = (props: Props) => {
                 ) : (
                   <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <DragItemConceptTreeNode> */
                     acceptedDropTypes={DROP_TYPES}
-                    onSelectFile={(file) =>
-                      onDropFile(file, { valueIdx: i, conceptIdx: j })
+                    onImportLines={(lines) =>
+                      onImportLines(lines, { valueIdx: i, conceptIdx: j })
                     }
                     onDrop={(item: DragItemConceptTreeNode | DragItemFile) => {
                       if (item.type === "__NATIVE_FILE__") {
@@ -331,7 +345,7 @@ const FormConceptGroup = (props: Props) => {
                           props.value,
                           i,
                           j,
-                          initializeConcept(item, defaults),
+                          initializeConcept(item, defaults, tableConfig),
                         ),
                       );
                     }}
@@ -390,9 +404,14 @@ const FormConceptGroup = (props: Props) => {
           }}
           onRemoveConcept={(conceptId) => {
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            const newIds = editedNode.ids.filter((id) => id !== conceptId);
             props.onChange(
               setConceptProperties(props.value, valueIdx, conceptIdx, {
-                ids: editedNode.ids.filter((id) => id !== conceptId),
+                ids: newIds,
+                description:
+                  newIds.length === 1
+                    ? getConceptById(newIds[0])?.description
+                    : editedNode.description,
               }),
             );
           }}

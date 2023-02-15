@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { SelectOptionT } from "../../api/types";
@@ -15,6 +16,7 @@ import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-t
 import {
   addConceptsFromFile,
   FormConceptGroupT,
+  TableConfig,
 } from "./formConceptGroupState";
 
 interface UploadConceptListModalContext {
@@ -27,14 +29,17 @@ export const useUploadConceptListModal = ({
   onChange,
   newValue,
   defaults,
+  tableConfig,
   isValidConcept,
 }: {
   value: FormConceptGroupT[];
   onChange: (value: FormConceptGroupT[]) => void;
   newValue: FormConceptGroupT;
   defaults: ConceptListDefaultsType;
+  tableConfig: TableConfig;
   isValidConcept?: (concept: DragItemConceptTreeNode) => boolean;
 }) => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const rootConcepts = useSelector<StateT, TreesT>(
     (state) => state.conceptTrees.trees,
@@ -69,6 +74,21 @@ export const useUploadConceptListModal = ({
     setIsOpen(true); // For the Modal "container"
   };
 
+  const onImportLines = (
+    lines: string[],
+    { valueIdx, conceptIdx }: UploadConceptListModalContext,
+  ) => {
+    setModalContext({ valueIdx, conceptIdx });
+    dispatch(
+      initUploadConceptListModal({
+        rows: lines,
+        filename: t("importModal.pasted"),
+      }),
+    );
+
+    setIsOpen(true); // For the Modal "container"
+  };
+
   const onAcceptConceptsOrFilter = (
     label: string,
     resolvedConcepts: string[],
@@ -87,6 +107,7 @@ export const useUploadConceptListModal = ({
         rootConcepts,
         resolvedConcepts,
 
+        tableConfig,
         defaults,
         isValidConcept,
 
@@ -107,6 +128,7 @@ export const useUploadConceptListModal = ({
     isOpen,
     onClose,
     onDropFile,
+    onImportLines,
     onAcceptConceptsOrFilter,
   };
 };

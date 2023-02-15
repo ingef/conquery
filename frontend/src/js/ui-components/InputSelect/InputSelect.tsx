@@ -17,6 +17,7 @@ import {
   ItemsInputContainer,
   List,
   Menu,
+  MenuContainer,
   ResetButton,
   SelectContainer,
   SxSelectListOption,
@@ -73,7 +74,7 @@ const InputSelect = ({
   const previousValue = usePrevious(value);
   const previousOptions = usePrevious(options);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
+  const menuContainerRef = useRef<HTMLDivElement | null>(null);
 
   const [filteredOptions, setFilteredOptions] = useState(() => {
     if (!value) return options;
@@ -228,7 +229,7 @@ const InputSelect = ({
   useEffect(
     function scrollIntoView() {
       if (isOpen) {
-        menuRef.current?.scrollIntoView({
+        menuContainerRef.current?.scrollIntoView({
           behavior: "smooth",
           block: "nearest",
         });
@@ -264,6 +265,9 @@ const InputSelect = ({
             spellCheck={false}
             disabled={disabled}
             placeholder={placeholder || t("inputSelect.placeholder")}
+            onFocus={(e) => {
+              e.target.select();
+            }}
             onClick={(e) => {
               if (inputProps.onClick) {
                 inputProps.onClick(e);
@@ -298,44 +302,43 @@ const InputSelect = ({
         />
       </Control>
       {isOpen ? (
-        <Menu
-          {...menuProps}
-          onMouseDown={(e) => {
-            // To prevent causing input blur too soon, when selecting an option
-            // otherwise, input blur resets the search, which resets the filtered options list
-            // leading to a wrong click behavior when filtered
-            e.stopPropagation();
-          }}
-          ref={(instance) => {
-            menuRef.current = instance;
-            menuPropsRef(instance);
-          }}
-        >
-          <List small={smallMenu}>
-            {filteredOptions.length === 0 && <SelectEmptyPlaceholder />}
-            {filteredOptions.map((option, index) => {
-              const { ref: itemPropsRef, ...itemProps } = getItemProps({
-                index,
-                item: filteredOptions[index],
-              });
+        <MenuContainer ref={menuContainerRef}>
+          <Menu
+            {...menuProps}
+            onMouseDown={(e) => {
+              // To prevent causing input blur too soon, when selecting an option
+              // otherwise, input blur resets the search, which resets the filtered options list
+              // leading to a wrong click behavior when filtered
+              e.stopPropagation();
+            }}
+            ref={(instance) => menuPropsRef(instance)}
+          >
+            <List small={smallMenu}>
+              {filteredOptions.length === 0 && <SelectEmptyPlaceholder />}
+              {filteredOptions.map((option, index) => {
+                const { ref: itemPropsRef, ...itemProps } = getItemProps({
+                  index,
+                  item: filteredOptions[index],
+                });
 
-              return (
-                <SxSelectListOption
-                  key={`${option.value}`}
-                  option={option}
-                  active={
-                    highlightedIndex === index ||
-                    selectedItem?.value === option.value
-                  }
-                  {...itemProps}
-                  ref={(instance) => {
-                    itemPropsRef(instance);
-                  }}
-                />
-              );
-            })}
-          </List>
-        </Menu>
+                return (
+                  <SxSelectListOption
+                    key={`${option.value}`}
+                    option={option}
+                    active={
+                      highlightedIndex === index ||
+                      selectedItem?.value === option.value
+                    }
+                    {...itemProps}
+                    ref={(instance) => {
+                      itemPropsRef(instance);
+                    }}
+                  />
+                );
+              })}
+            </List>
+          </Menu>
+        </MenuContainer>
       ) : (
         <span ref={menuPropsRef} /> // To avoid a warning / error by downshift that ref is not applied
       )}
