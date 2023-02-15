@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -23,7 +22,6 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.ExternalIdChecker;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
@@ -40,7 +38,7 @@ public interface QueryDescription extends Visitable {
 	 * Transforms the submitted query to an {@link ManagedExecution}.
 	 * In this step some external dependencies are resolve (such as {@link CQExternal}).
 	 * However, steps that require add or manipulates queries programmatically based on the submitted query
-	 * should be done in an extra init procedure (see {@link ManagedForm#doInitExecutable(DatasetRegistry, ConqueryConfig)}.
+	 * should be done in an extra init procedure (see {@link ManagedExecution#doInitExecutable(com.bakdata.conquery.models.worker.Namespace, ConqueryConfig)}.
 	 * These steps are executed right before the execution of the query and not necessary in this creation phase.
 	 *
 	 * @param user

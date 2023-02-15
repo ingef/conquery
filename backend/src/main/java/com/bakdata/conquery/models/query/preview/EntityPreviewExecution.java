@@ -28,7 +28,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -62,7 +62,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	 * Takes a ManagedQuery, and transforms its result into a List of {@link EntityPreviewStatus.Info}.
 	 * The format of the query is an {@link AbsoluteFormQuery} containing a single line for one person. This should correspond to {@link EntityPreviewForm#VALUES_QUERY_NAME}.
 	 */
-	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, Namespace namespace, ConqueryConfig config) {
 
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
@@ -70,7 +70,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		final Object[] values = result.getValues().get(0);
 
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
-		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null, previewConfig::resolveSelectLabel);
+		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null, previewConfig::resolveSelectLabel);
 
 		// We are only interested in the Select results.
 		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
@@ -91,9 +91,9 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
-		super.doInitExecutable(datasetRegistry, config);
-		previewConfig = datasetRegistry.get(getDataset().getId()).getPreviewConfig();
+	public void doInitExecutable(Namespace namespace, ConqueryConfig config) {
+		super.doInitExecutable(namespace, config);
+		previewConfig = namespace.getPreviewConfig();
 	}
 
 	/**
@@ -102,22 +102,22 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	 * Most importantly to {@link EntityPreviewStatus#setInfos(List)} to for infos of entity.
 	 */
 	@Override
-	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Subject subject, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Subject subject, Namespace namespace, ConqueryConfig config) {
 
-		initExecutable(datasetRegistry, config);
+		initExecutable(namespace, config);
 
 		final EntityPreviewStatus status = new EntityPreviewStatus();
-		setStatusFull(status, storage, subject, datasetRegistry);
+		setStatusFull(status, storage, subject, namespace);
 		status.setQuery(getValuesQuery().getQuery());
 
-		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), datasetRegistry, config));
+		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), namespace, config));
 
 		return status;
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		status.setColumnDescriptions(generateColumnDescriptions(datasetRegistry));
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, Namespace namespace) {
+		status.setColumnDescriptions(generateColumnDescriptions(namespace));
 	}
 
 	@JsonIgnore
@@ -138,13 +138,14 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
-		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(datasetRegistry);
+	public List<ColumnDescriptor> generateColumnDescriptions(Namespace namespace) {
+		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(namespace);
 
 		for (ColumnDescriptor descriptor : descriptors) {
 			if (descriptor.getSemantics()
 						  .stream()
-						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc && previewConfig.isGroupingColumn(desc.getSecondaryId()))) {
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc
+													&& previewConfig.isGroupingColumn(desc.getSecondaryId()))) {
 				descriptor.getSemantics().add(new SemanticType.GroupT());
 			}
 

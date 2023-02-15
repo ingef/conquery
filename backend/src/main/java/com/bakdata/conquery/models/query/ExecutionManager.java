@@ -60,23 +60,24 @@ public class ExecutionManager {
 	}
 
 
-	public ManagedExecution runQuery(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
-		final ManagedExecution execution = createExecution(datasets, query, user, submittedDataset, system);
-		execute(datasets, execution, config);
+	public ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
+		final ManagedExecution execution = createExecution(namespace, query, user, submittedDataset, system);
+		execute(namespace, execution, config);
 
 		return execution;
 	}
 
-	public void execute(DatasetRegistry datasets, ManagedExecution execution, ConqueryConfig config) {
+	public void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
+		final MetaStorage storage = datasetRegistry.getMetaStorage();
 		// Initialize the query / create subqueries
 		try {
-			execution.initExecutable(datasets, config);
+			execution.initExecutable(namespace, config);
 		}
 		catch (Exception e) {
 			log.error("Failed to initialize Query[{}]", execution.getId(), e);
 
 			//TODO we don't want to store completely faulty queries but is that right like this?
-			datasets.getMetaStorage().removeExecution(execution.getId());
+			storage.removeExecution(execution.getId());
 			throw e;
 		}
 
@@ -85,31 +86,28 @@ public class ExecutionManager {
 		execution.start();
 
 
-		final MetaStorage storage = datasets.getMetaStorage();
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), storage).map(Group::getName).orElse("none");
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
 		if (execution instanceof InternalExecution<?> internalExecution) {
-			log.info("Executing Query[{}] in Datasets[{}]", execution.getQueryId(), internalExecution.getRequiredDatasets());
-			for (Namespace namespace : internalExecution.getRequiredDatasets()) {
-				namespace.sendToAll(execution.createExecutionMessage());
-			}
+			log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), namespace.getDataset().getId());
+			namespace.sendToAll(internalExecution.createExecutionMessage());
 		}
 	}
 
-	public ManagedExecution createExecution(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset, boolean system) {
-		return createQuery(datasets, query, UUID.randomUUID(), user, submittedDataset, system);
+	public ManagedExecution createExecution(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, boolean system) {
+		return createQuery(namespace, query, UUID.randomUUID(), user, submittedDataset, system);
 	}
 
 
-	public ManagedExecution createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
+	public ManagedExecution createQuery(Namespace namespace, QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution managed = query.toManagedExecution(user, submittedDataset, datasetRegistry.getMetaStorage());
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
 
 		// Store the execution
-		datasets.getMetaStorage().addExecution(managed);
+		datasetRegistry.getMetaStorage().addExecution(managed);
 
 		return managed;
 	}

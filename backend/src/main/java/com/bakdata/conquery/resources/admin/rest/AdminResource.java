@@ -123,7 +123,7 @@ public class AdminResource {
 					  .limit(limit)
 					  .map(t -> {
 						  try {
-							  return t.buildStatusFull(storage, currentUser, datasetRegistry, processor.getConfig());
+							  return t.buildStatusFull(storage, currentUser, datasetRegistry.get(t.getDataset().getId()), processor.getConfig());
 						  }
 						  catch (ConqueryError e) {
 							  // Initialization of execution probably failed, so we construct a status based on the overview status

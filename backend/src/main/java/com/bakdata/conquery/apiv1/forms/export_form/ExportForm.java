@@ -14,6 +14,7 @@ import javax.validation.constraints.NotNull;
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
@@ -32,7 +33,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -43,9 +44,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter
-@CPSType(id="EXPORT_FORM", base=QueryDescription.class)
-public class ExportForm extends Form {
+@Getter
+@Setter
+@CPSType(id = "EXPORT_FORM", base = QueryDescription.class)
+public class ExportForm extends Form implements InternalForm {
 
 	@NotNull
 	@JsonProperty("queryGroup")
@@ -81,11 +83,11 @@ public class ExportForm extends Form {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset, MetaStorage storage) {
+	public Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, Dataset submittedDataset, MetaStorage storage) {
 		return Map.of(
 				ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
 				List.of(
-						timeMode.createSpecializedQuery(datasets, user, submittedDataset)
+						timeMode.createSpecializedQuery(namespace, user, submittedDataset)
 								.toManagedExecution(user, submittedDataset, storage))
 		);
 	}
@@ -97,7 +99,7 @@ public class ExportForm extends Form {
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		queryGroup = (ManagedQuery) context.getDatasetRegistry().getMetaRegistry().resolve(queryGroupId);
+		queryGroup = (ManagedQuery) context.getStorage().getExecution(queryGroupId);
 
 
 		// Apply defaults to user concept

@@ -55,7 +55,7 @@ public class ResultParquetProcessor {
 		PrintSettings settings = new PrintSettings(
 				pretty,
 				locale,
-				datasetRegistry,
+				namespace,
 				config,
 				idPrinter::createId
 		);

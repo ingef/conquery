@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.Setter;
@@ -55,15 +55,15 @@ public class EntityDateMode extends Mode {
     }
 
 	@Override
-	public Query createSpecializedQuery(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+	public Query createSpecializedQuery(Namespace namespace, User user, Dataset submittedDataset) {
 		CDateRange dateRestriction = dateRange == null ? CDateRange.all() : CDateRange.of(dateRange);
 
-        return new EntityDateQuery(
+		return new EntityDateQuery(
 				getForm().getPrerequisite(),
 				resolvedFeatures,
 				ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
 				dateRestriction,
 				dateAggregationMode
 		);
-    }
+	}
 }

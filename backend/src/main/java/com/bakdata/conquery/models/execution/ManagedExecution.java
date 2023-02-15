@@ -39,11 +39,10 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JacksonInject;
@@ -132,7 +131,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * Executed right before execution submission.
 	 */
-	public final void initExecutable(DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public final void initExecutable(Namespace namespace, ConqueryConfig config) {
 		synchronized (this) {
 			if (initialized) {
 				log.trace("Execution {} was already initialized", getId());
@@ -140,17 +139,17 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			}
 			if (label == null) {
 				// IdMapper is not necessary here
-				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null));
+				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null));
 			}
 
-			executionManager = datasetRegistry.get(getDataset().getId()).getExecutionManager();
+			executionManager = namespace.getExecutionManager();
 
-			doInitExecutable(datasetRegistry, config);
+			doInitExecutable(namespace, config);
 			initialized = true;
 		}
 	}
 
-	protected abstract void doInitExecutable(DatasetRegistry namespaces, ConqueryConfig config);
+	protected abstract void doInitExecutable(Namespace namespace, ConqueryConfig config);
 
 
 	@Override
@@ -270,19 +269,19 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Subject subject, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Subject subject, Namespace namespace, ConqueryConfig config) {
 
-		initExecutable(datasetRegistry, config);
+		initExecutable(namespace, config);
 		FullExecutionStatus status = new FullExecutionStatus();
-		setStatusFull(status, storage, subject, datasetRegistry);
+		setStatusFull(status, storage, subject, namespace);
 
 		return status;
 	}
 
-	public void setStatusFull(FullExecutionStatus status, MetaStorage storage, Subject subject, DatasetRegistry datasetRegistry) {
+	public void setStatusFull(FullExecutionStatus status, MetaStorage storage, Subject subject, Namespace namespace) {
 		setStatusBase(subject, status);
 
-		setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, datasetRegistry);
+		setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, namespace);
 		setAdditionalFieldsForStatusWithSource(subject, status);
 		setAdditionalFieldsForStatusWithGroups(storage, status);
 		setAvailableSecondaryIds(status);
@@ -320,7 +319,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, Namespace namespace) {
 		// Implementation specific
 	}
 
@@ -382,8 +381,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	public ConqueryPermission createPermission(Set<Ability> abilities) {
 		return ExecutionPermission.onInstance(abilities, getId());
 	}
-
-	public abstract WorkerMessage createExecutionMessage();
 
 	public void reset() {
 		setState(ExecutionState.NEW);

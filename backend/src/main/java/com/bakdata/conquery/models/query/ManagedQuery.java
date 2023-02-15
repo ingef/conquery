@@ -40,7 +40,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
@@ -91,12 +90,12 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	protected void doInitExecutable(@NonNull DatasetRegistry namespaces, ConqueryConfig config) {
+	protected void doInitExecutable(Namespace namespace, ConqueryConfig config) {
 		this.config = config;
 
-		namespace = namespaces.get(getDataset().getId());
+		this.namespace = namespace;
 
-		query.resolve(new QueryResolveContext(getDataset(), namespaces, config, null));
+		query.resolve(new QueryResolveContext(getDataset(), namespace, config, getStorage(), null));
 
 	}
 
@@ -160,10 +159,10 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, datasetRegistry);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, Namespace namespace) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, namespace);
 		if (columnDescriptions == null) {
-			columnDescriptions = generateColumnDescriptions(datasetRegistry);
+			columnDescriptions = generateColumnDescriptions(namespace);
 		}
 		status.setColumnDescriptions(columnDescriptions);
 	}
@@ -171,13 +170,13 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	/**
 	 * Generates a description of each column that will appear in the resulting csv.
 	 */
-	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
+	public List<ColumnDescriptor> generateColumnDescriptions(Namespace namespace) {
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(true, locale, datasetRegistry, config, null);
+		PrintSettings settings = new PrintSettings(true, locale, namespace, config, null);
 
 		UniqueNamer uniqNamer = new UniqueNamer(settings);
 
@@ -206,11 +205,6 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		NamespacedIdentifiableCollector collector = new NamespacedIdentifiableCollector();
 		query.visit(collector);
 		return collector.getIdentifiables();
-	}
-
-	@Override
-	public Set<Namespace> getRequiredDatasets() {
-		return Set.of(namespace);
 	}
 
 	@Override

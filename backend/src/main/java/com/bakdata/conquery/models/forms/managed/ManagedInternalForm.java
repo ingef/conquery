@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.forms.Form;
-import com.bakdata.conquery.apiv1.forms.FormConfigAPI;
+import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -31,7 +30,6 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FormShardResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JacksonInject;
@@ -48,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "INTERNAL_FORM")
 @Getter
-public class ManagedInternalForm<F extends Form> extends ManagedForm<F> implements SingleTableResult, InternalExecution<FormShardResult> {
+public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedForm<F> implements SingleTableResult, InternalExecution<FormShardResult> {
 
 
 	/**
@@ -63,7 +61,7 @@ public class ManagedInternalForm<F extends Form> extends ManagedForm<F> implemen
 	 */
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
+	private final IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 
 	public ManagedInternalForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
 		super(storage);
@@ -74,23 +72,13 @@ public class ManagedInternalForm<F extends Form> extends ManagedForm<F> implemen
 	}
 
 	@Override
-	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public void doInitExecutable(Namespace namespace, ConqueryConfig config) {
 		// init all subqueries
-		final Form submittedForm = getSubmittedForm();
+		final F submittedForm = getSubmittedForm();
 
-		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, config, null));
-		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), getDataset(), getStorage());
-		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
-	}
-
-
-	@Override
-	@JsonIgnore
-	public Set<Namespace> getRequiredDatasets() {
-		return flatSubQueries.values().stream()
-							 .map(ManagedQuery::getRequiredDatasets)
-							 .flatMap(Set::stream)
-							 .collect(Collectors.toSet());
+		submittedForm.resolve(new QueryResolveContext(getDataset(), namespace, config, getStorage(), null));
+		subQueries = submittedForm.createSubQueries(namespace, super.getOwner(), getDataset(), getStorage());
+		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(namespace, config));
 	}
 
 
@@ -98,37 +86,24 @@ public class ManagedInternalForm<F extends Form> extends ManagedForm<F> implemen
 	public void start() {
 		synchronized (this) {
 			subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
-
-
-			if (getSubmittedForm().getValues() != null) {
-				// save as formConfig
-				final FormConfigAPI build = FormConfigAPI.builder().formType(getSubmittedForm().getFormType())
-														 .label(this.getLabelWithoutAutoLabelSuffix())
-														 .tags(this.getTags())
-														 .values(getSubmittedForm().getValues()).build();
-
-				final FormConfig formConfig = build.intern(getOwner(), getDataset());
-
-				getStorage().addFormConfig(formConfig);
-			}
 		}
 		flatSubQueries.values().forEach(ManagedQuery::start);
 		super.start();
 	}
 
 	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
-		return subQueries.values().iterator().next().get(0).generateColumnDescriptions(datasetRegistry);
+	public List<ColumnDescriptor> generateColumnDescriptions(Namespace namespace) {
+		return subQueries.values().iterator().next().get(0).generateColumnDescriptions(namespace);
 	}
 
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, datasetRegistry);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, Namespace namespace) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, namespace);
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if (subQueries == null) {
 			// If subqueries was not set the Execution was not initialized, do it manually
-			subQueries = getSubmittedForm().createSubQueries(datasetRegistry, super.getOwner(), super.getDataset(), getStorage());
+			subQueries = getSubmittedForm().createSubQueries(namespace, super.getOwner(), super.getDataset(), getStorage());
 		}
 		if (subQueries.size() != 1) {
 			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported
@@ -148,7 +123,7 @@ public class ManagedInternalForm<F extends Form> extends ManagedForm<F> implemen
 			);
 			return;
 		}
-		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions(datasetRegistry));
+		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions(namespace));
 	}
 
 	@Override

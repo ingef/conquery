@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -33,7 +34,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
@@ -57,7 +58,7 @@ import org.jetbrains.annotations.Nullable;
 @CPSType(id = "ENTITY_PREVIEW", base = QueryDescription.class)
 @Getter
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-public class EntityPreviewForm extends Form {
+public class EntityPreviewForm extends Form implements InternalForm {
 
 	public static final String INFOS_QUERY_NAME = "INFOS";
 	public static final String VALUES_QUERY_NAME = "VALUES";
@@ -100,7 +101,7 @@ public class EntityPreviewForm extends Form {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset, MetaStorage storage) {
+	public Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, Dataset submittedDataset, MetaStorage storage) {
 		return Map.of(
 				VALUES_QUERY_NAME, List.of(getValuesQuery().toManagedExecution(user, submittedDataset, storage)),
 				INFOS_QUERY_NAME, List.of(getInfoCardQuery().toManagedExecution(user, submittedDataset, storage))

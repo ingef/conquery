@@ -132,7 +132,7 @@ public class QueryProcessor {
 
 			final Optional<ManagedExecution>
 					execution =
-					executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, subject.getUser()));
+					executionId.map(id -> tryReuse(query, id, namespace, config, executionManager, subject.getUser()));
 
 			if (execution.isPresent()) {
 				return execution.get();
@@ -140,15 +140,15 @@ public class QueryProcessor {
 		}
 
 		// Execute the query
-		return executionManager.runQuery(datasetRegistry, query, subject.getUser(), dataset, config, system);
+		return executionManager.runQuery(namespace, query, subject.getUser(), dataset, config, system);
 	}
 
 	/**
 	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
 	 */
-	private ManagedExecution tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config, ExecutionManager executionManager, User user) {
+	private ManagedExecution tryReuse(QueryDescription query, ManagedExecutionId executionId, Namespace namespace, ConqueryConfig config, ExecutionManager executionManager, User user) {
 
-		ManagedExecution execution = datasetRegistry.getMetaRegistry().resolve(executionId);
+		ManagedExecution execution = storage.getExecution(executionId);
 
 		if (execution == null) {
 			return null;
@@ -174,7 +174,7 @@ public class QueryProcessor {
 		if (!user.isOwner(execution)) {
 			final ManagedExecution
 					newExecution =
-					executionManager.createExecution(datasetRegistry, execution.getSubmitted(), user, execution.getDataset(), false);
+					executionManager.createExecution(namespace, execution.getSubmitted(), user, execution.getDataset(), false);
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
 			storage.updateExecution(newExecution);
@@ -189,7 +189,7 @@ public class QueryProcessor {
 
 		log.trace("Re-executing Query {}", execution);
 
-		executionManager.execute(datasetRegistry, execution, config);
+		executionManager.execute(namespace, execution, config);
 
 		return execution;
 
@@ -319,9 +319,10 @@ public class QueryProcessor {
 
 	public void reexecute(Subject subject, ManagedExecution query) {
 		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
+		final Namespace namespace = datasetRegistry.get(query.getDataset().getId());
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
-			datasetRegistry.get(query.getDataset().getId()).getExecutionManager().execute(datasetRegistry, query, config);
+			datasetRegistry.get(query.getDataset().getId()).getExecutionManager().execute(namespace, query, config);
 		}
 	}
 
@@ -337,10 +338,11 @@ public class QueryProcessor {
 	}
 
 	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, Subject subject, UriBuilder url, Boolean allProviders) {
+		final Namespace namespace = datasetRegistry.get(query.getDataset().getId());
 
-		query.initExecutable(datasetRegistry, config);
+		query.initExecutable(namespace, config);
 
-		final FullExecutionStatus status = query.buildStatusFull(storage, subject, datasetRegistry, config);
+		final FullExecutionStatus status = query.buildStatusFull(storage, subject, namespace, config);
 
 		if (query.isReadyToDownload() && subject.isPermitted(query.getDataset(), Ability.DOWNLOAD)) {
 			status.setResultUrls(getDownloadUrls(config.getResultProviders(), query, url, allProviders));
@@ -353,12 +355,13 @@ public class QueryProcessor {
 	 */
 	public ExternalUploadResult uploadEntities(Subject subject, Dataset dataset, ExternalUpload upload) {
 
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		final CQExternal.ResolveStatistic
 				statistic =
-				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(), datasetRegistry.get(dataset.getId())
-																								  .getStorage()
-																								  .getIdMapping(), config.getIdColumns(), config.getLocale()
-																																				.getDateReader(), upload.isOneRowPerEntity()
+				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(), namespace
+						.getStorage()
+						.getIdMapping(), config.getIdColumns(), config.getLocale()
+																	  .getDateReader(), upload.isOneRowPerEntity()
 
 				);
 
@@ -374,9 +377,9 @@ public class QueryProcessor {
 		// We only create the Query, really no need to execute it as it's only useful for composition.
 		final ManagedQuery
 				execution =
-				((ManagedQuery) datasetRegistry.get(dataset.getId())
-											   .getExecutionManager()
-											   .createExecution(datasetRegistry, query, subject.getUser(), dataset, false));
+				((ManagedQuery) namespace
+						.getExecutionManager()
+						.createExecution(namespace, query, subject.getUser(), dataset, false));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 
@@ -384,7 +387,7 @@ public class QueryProcessor {
 			execution.setLabel(upload.getLabel());
 		}
 
-		execution.initExecutable(datasetRegistry, config);
+		execution.initExecutable(namespace, config);
 
 		return new ExternalUploadResult(execution.getId(), statistic.getResolved().size(), statistic.getUnresolvedId(), statistic.getUnreadableDate());
 	}
@@ -394,8 +397,9 @@ public class QueryProcessor {
 	 */
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		EntityPreviewForm form =
-				EntityPreviewForm.create(entity, idKind, dateRange, sources, datasetRegistry.get(dataset.getId()).getPreviewConfig().getSelects());
+				EntityPreviewForm.create(entity, idKind, dateRange, sources, namespace.getPreviewConfig().getSelects());
 
 		// TODO make sure that subqueries are also system
 		// TODO do not persist system queries
@@ -413,7 +417,7 @@ public class QueryProcessor {
 		}
 
 
-		FullExecutionStatus status = execution.buildStatusFull(storage, subject, datasetRegistry, config);
+		FullExecutionStatus status = execution.buildStatusFull(storage, subject, namespace, config);
 		status.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, false));
 		return status;
 	}

@@ -24,7 +24,7 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,7 +36,7 @@ public class DefaultLabelTest {
 
 	private final static MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 
-	private static final DatasetRegistry DATASET_REGISTRY = Mockito.mock(DatasetRegistry.class);
+	private static final Namespace NAMESPACE = Mockito.mock(Namespace.class);
 	private static final Dataset DATASET = new Dataset("dataset");
 	private static final User user = new User("user","user", STORAGE);
 
@@ -59,7 +59,7 @@ public class DefaultLabelTest {
 		doAnswer((invocation -> {
 			return CONCEPT;
 
-		})).when(DATASET_REGISTRY)
+		})).when(NAMESPACE)
 		   .resolve(CONCEPT.getId());
 	}
 
@@ -83,7 +83,7 @@ public class DefaultLabelTest {
 
 	@NotNull
 	private PrintSettings getPrintSettings(Locale locale) {
-		return new PrintSettings(true, locale, DATASET_REGISTRY, CONFIG, null, null);
+		return new PrintSettings(true, locale, NAMESPACE, CONFIG, null, null);
 	}
 
 	private static CQConcept makeCQConcept(String label) {

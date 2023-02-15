@@ -111,7 +111,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void passwordCredential() throws IOException, JSONException {
-		PasswordCredential credential = new PasswordCredential(new String("testPassword").toCharArray());
+		PasswordCredential credential = new PasswordCredential("testPassword".toCharArray());
 
 		SerializationTestUtil
 				.forType(PasswordCredential.class)
