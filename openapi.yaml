@@ -571,12 +571,6 @@ components:
         - $ref: "#/components/schemas/filter-value-single-select"
         - $ref: "#/components/schemas/filter-value-multi-select"
         - $ref: "#/components/schemas/filter-value-big-multi-select"
-
-
-
-
-
-
     column-description:
       description: Metadata of a result column of a query.
       type: object
