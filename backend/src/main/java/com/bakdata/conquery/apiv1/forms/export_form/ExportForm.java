@@ -33,12 +33,10 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -68,11 +66,6 @@ public class ExportForm extends Form {
 	private Query prerequisite;
 	@JsonIgnore
 	private List<Resolution> resolvedResolutions;
-
-	public ExportForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
@@ -81,12 +74,13 @@ public class ExportForm extends Form {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset, MetaStorage storage) {
 		return Map.of(
-			ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
-			List.of(
-				timeMode.createSpecializedQuery(datasets, user, submittedDataset)
-					.toManagedExecution(user, submittedDataset)));
+				ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
+				List.of(
+						timeMode.createSpecializedQuery(datasets, user, submittedDataset)
+								.toManagedExecution(user, submittedDataset, storage))
+		);
 	}
 
 	@Override
@@ -183,7 +177,7 @@ public class ExportForm extends Form {
 
 
 	@Override
-	public ManagedForm toManagedExecution(User user, Dataset submittedDataset) {
-		return new ManagedInternalForm(this, user, submittedDataset, getStorage());
+	public ManagedForm toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
+		return new ManagedInternalForm(this, user, submittedDataset, storage);
 	}
 }

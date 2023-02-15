@@ -79,7 +79,7 @@ public class ManagedInternalForm<F extends Form> extends ManagedForm<F> implemen
 		final Form submittedForm = getSubmittedForm();
 
 		submittedForm.resolve(new QueryResolveContext(getDataset(), datasetRegistry, config, null));
-		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), getDataset());
+		subQueries = submittedForm.createSubQueries(datasetRegistry, super.getOwner(), getDataset(), getStorage());
 		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(datasetRegistry, config));
 	}
 
@@ -128,7 +128,7 @@ public class ManagedInternalForm<F extends Form> extends ManagedForm<F> implemen
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if (subQueries == null) {
 			// If subqueries was not set the Execution was not initialized, do it manually
-			subQueries = getSubmittedForm().createSubQueries(datasetRegistry, super.getOwner(), super.getDataset());
+			subQueries = getSubmittedForm().createSubQueries(datasetRegistry, super.getOwner(), super.getDataset(), getStorage());
 		}
 		if (subQueries.size() != 1) {
 			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported

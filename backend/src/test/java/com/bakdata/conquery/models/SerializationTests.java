@@ -362,7 +362,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		registry.register(dataset);
 
-		ExportForm form = new ExportForm(getMetaStorage());
+		ExportForm form = new ExportForm();
 		AbsoluteMode mode = new AbsoluteMode();
 		form.setTimeMode(mode);
 		mode.setForm(form);
@@ -509,7 +509,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		tables[0].setConnector(connector);
 		tables[0].setConcept(concept);
 		concept.setTables(Arrays.asList(tables));
-		ConceptQuery subQuery = new ConceptQuery(concept, getMetaStorage());
+		ConceptQuery subQuery = new ConceptQuery(concept);
 
 
 		CQOr features = new CQOr();
@@ -519,12 +519,11 @@ public class SerializationTests extends AbstractSerializationTest {
 		AbsoluteFormQuery query = new AbsoluteFormQuery(
 				subQuery,
 				CDateRange.exactly(LocalDate.now()).toSimpleRange(),
-				ArrayConceptQuery.createFromFeatures(Collections.singletonList(features), getMetaStorage()),
+				ArrayConceptQuery.createFromFeatures(Collections.singletonList(features)),
 				List.of(
 						ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
 						ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
-				),
-				getMetaStorage()
+				)
 		);
 
 		CentralRegistry centralRegistry = getMetaStorage().getCentralRegistry();
@@ -721,7 +720,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void mostlyExecution() throws JSONException, IOException {
-		final MostlyAiForm mostlyAiForm = new MostlyAiForm(getMetaStorage());
+		final MostlyAiForm mostlyAiForm = new MostlyAiForm();
 
 		mostlyAiForm.setValues(new TextNode("test"));
 
@@ -731,7 +730,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		User user = new User("user", "user", getMetaStorage());
 
 		// UUT
-		final MostlyAiExecution managedExecution = mostlyAiForm.toManagedExecution(user, dataset);
+		final MostlyAiExecution managedExecution = mostlyAiForm.toManagedExecution(user, dataset, getMetaStorage());
 
 		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 		registry.register(dataset);

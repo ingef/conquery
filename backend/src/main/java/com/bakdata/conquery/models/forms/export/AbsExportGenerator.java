@@ -8,7 +8,6 @@ import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.Query;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import lombok.experimental.UtilityClass;
@@ -22,10 +21,10 @@ public class AbsExportGenerator {
 				ExportForm.getResolutionAlignmentMap(mode.getForm().getResolvedResolutions(), mode.getAlignmentHint());
 
 		return generate(mode.getFeatures(), mode.getForm()
-												.getPrerequisite(), mode.getDateRange(), resolutionsAndAlignments, mode.getForm().getStorage());
+												.getPrerequisite(), mode.getDateRange(), resolutionsAndAlignments);
 	}
 
-	public static AbsoluteFormQuery generate(List<CQElement> features, Query queryGroup, Range<LocalDate> dateRange, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment, MetaStorage storage) {
+	public static AbsoluteFormQuery generate(List<CQElement> features, Query queryGroup, Range<LocalDate> dateRange, List<ExportForm.ResolutionAndAlignment> resolutionAndAlignment) {
 
 		// Apply defaults to user concepts
 		ExportForm.DefaultSelectSettable.enable(features);
@@ -34,9 +33,8 @@ public class AbsExportGenerator {
 		return new AbsoluteFormQuery(
 				queryGroup,
 				dateRange,
-				ArrayConceptQuery.createFromFeatures(features, storage),
-				resolutionAndAlignment,
-				storage
+				ArrayConceptQuery.createFromFeatures(features),
+				resolutionAndAlignment
 		);
 	}
 

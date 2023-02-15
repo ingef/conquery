@@ -81,10 +81,6 @@ public class ArxForm extends Form {
 	@EqualsAndHashCode.Exclude
 	private ConqueryConfig config;
 
-	public ArxForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
 	@ValidationMethod(message = "The referenced privacy model is not configured")
 	@JsonIgnore
 	public boolean isPrivacyModelSupported() {
@@ -98,7 +94,7 @@ public class ArxForm extends Form {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset, MetaStorage storage) {
 		return Map.of(ConqueryConstants.SINGLE_RESULT_TABLE_NAME, List.of(queryGroup));
 	}
 
@@ -109,8 +105,8 @@ public class ArxForm extends Form {
 	}
 
 	@Override
-	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset) {
-		return new ArxExecution(this, user, submittedDataset, getStorage());
+	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
+		return new ArxExecution(this, user, submittedDataset, storage);
 	}
 
 	@Override

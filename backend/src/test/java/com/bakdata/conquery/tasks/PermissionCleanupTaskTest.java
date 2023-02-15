@@ -39,7 +39,7 @@ class PermissionCleanupTaskTest {
         final CQAnd root = new CQAnd();
         root.setChildren(new ArrayList<>());
 
-        ConceptQuery query = new ConceptQuery(root, STORAGE);
+        ConceptQuery query = new ConceptQuery(root);
 
 		final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"), STORAGE);
 

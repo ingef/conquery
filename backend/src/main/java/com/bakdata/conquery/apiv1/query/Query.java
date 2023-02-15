@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -19,23 +17,11 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 
 @EqualsAndHashCode
 public abstract class Query implements QueryDescription {
-
-	@NotNull
-	@Getter(AccessLevel.PROTECTED)
-	private final MetaStorage storage;
-
-	protected Query(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		this.storage = storage;
-	}
 
 	public abstract QueryPlan<?> createQueryPlan(QueryPlanContext context);
 
@@ -54,7 +40,7 @@ public abstract class Query implements QueryDescription {
 	public abstract List<ResultInfo> getResultInfos();
 
 	@Override
-	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset) {
+	public ManagedQuery toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
 		return new ManagedQuery(this, user, submittedDataset, storage);
 	}
 

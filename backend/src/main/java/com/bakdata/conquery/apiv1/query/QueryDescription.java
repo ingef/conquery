@@ -45,9 +45,10 @@ public interface QueryDescription extends Visitable {
 	 *
 	 * @param user
 	 * @param submittedDataset
+	 * @param storage
 	 * @return
 	 */
-	ManagedExecution toManagedExecution(User user, Dataset submittedDataset);
+	ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage);
 
 
 	Set<ManagedExecutionId> collectRequiredQueries();

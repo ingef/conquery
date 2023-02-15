@@ -132,7 +132,7 @@ public class FormConfigTest {
 		final ManagedQuery managedQuery = new ManagedQuery(null, null, dataset, null);
 		managedQuery.setQueryId(UUID.randomUUID());
 
-		form = new ExportForm(storage);
+		form = new ExportForm();
 		AbsoluteMode mode = new AbsoluteMode();
 		form.setTimeMode(mode);
 		form.setQueryGroupId(managedQuery.getId());
@@ -243,13 +243,13 @@ public class FormConfigTest {
 		user.addPermission(dataset.createPermission(Ability.READ.asSet()));
 		user.addPermission(FormPermission.onInstance(Ability.CREATE, form.getFormType()));
 
-		ExportForm form2 = new ExportForm(storage);
+		ExportForm form2 = new ExportForm();
 		RelativeMode mode3 = new RelativeMode();
 		form2.setTimeMode(mode3);
 		mode3.setForm(form);
 		mode3.setFeatures(List.of(new CQConcept()));
 
-		TestForm form3 = new TestForm.Abs(null);
+		TestForm form3 = new TestForm.Abs();
 
 		ObjectMapper mapper = FormConfigProcessor.getMAPPER();
 

@@ -59,7 +59,7 @@ public class RelativeMode extends Mode {
 	public void resolve(QueryResolveContext context) {
 		ExportForm.DefaultSelectSettable.enable(features);
 
-		resolvedFeatures = ArrayConceptQuery.createFromFeatures(features, getForm().getStorage());
+		resolvedFeatures = ArrayConceptQuery.createFromFeatures(features);
 
 		// Resolve all
 		resolvedFeatures.resolve(context.withDateAggregationMode(DateAggregationMode.NONE));

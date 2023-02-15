@@ -19,10 +19,8 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -51,12 +49,8 @@ public class MostlyAiForm extends Form {
 	@EqualsAndHashCode.Exclude
 	private ManagedQuery queryGroup;
 
-	public MostlyAiForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset, MetaStorage storage) {
 		return Map.of(ConqueryConstants.SINGLE_RESULT_TABLE_NAME, List.of(queryGroup));
 	}
 
@@ -66,8 +60,8 @@ public class MostlyAiForm extends Form {
 	}
 
 	@Override
-	public MostlyAiExecution toManagedExecution(User user, Dataset submittedDataset) {
-		return new MostlyAiExecution(this, user, submittedDataset, getStorage());
+	public MostlyAiExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
+		return new MostlyAiExecution(this, user, submittedDataset, storage);
 	}
 
 	@Override

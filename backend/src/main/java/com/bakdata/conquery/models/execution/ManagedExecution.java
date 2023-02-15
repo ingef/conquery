@@ -347,6 +347,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setQuery(canExpand ? getSubmitted() : null);
 	}
 
+	@JsonIgnore
 	public boolean isReadyToDownload() {
 		return getState() == ExecutionState.DONE;
 	}

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -18,12 +17,9 @@ import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
-import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -35,10 +31,6 @@ import lombok.Setter;
 @EqualsAndHashCode
 public abstract class Form implements QueryDescription {
 
-	@NotNull
-	@Getter(AccessLevel.PUBLIC)
-	private final MetaStorage storage;
-
 	/**
 	 * Raw form config (basically the raw format of this form), that is used by the backend at the moment to
 	 * create a {@link com.bakdata.conquery.models.forms.configs.FormConfig} upon start of this form (see {@link ManagedForm#start()}).
@@ -48,16 +40,12 @@ public abstract class Form implements QueryDescription {
 	@Setter
 	private JsonNode values;
 
-	protected Form(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		this.storage = storage;
-	}
-
 	@JsonIgnore
 	public String getFormType() {
 		return this.getClass().getAnnotation(CPSType.class).id();
 	}
 
-	public abstract Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset);
+	public abstract Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset, MetaStorage storage);
 
 
 	@Override

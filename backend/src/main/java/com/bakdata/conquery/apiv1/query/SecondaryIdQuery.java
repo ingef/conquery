@@ -15,7 +15,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
@@ -32,9 +31,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -66,9 +63,6 @@ public class SecondaryIdQuery extends Query {
 	@JsonView(View.InternalCommunication.class)
 	private Set<Table> withoutSecondaryId;
 
-	public SecondaryIdQuery(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
 
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
@@ -92,7 +86,7 @@ public class SecondaryIdQuery extends Query {
 		}
 		final QueryResolveContext resolvedContext = context.withDateAggregationMode(resolvedDateAggregationMode);
 
-		this.query = new ConceptQuery(root, getStorage());
+		this.query = new ConceptQuery(root);
 		query.resolve(resolvedContext);
 
 		withSecondaryId = new HashSet<>();

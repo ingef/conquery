@@ -58,7 +58,7 @@ public class EntityDateMode extends Mode {
     public void resolve(QueryResolveContext context) {
     	// Apply defaults to user concept
         ExportForm.DefaultSelectSettable.enable(features);
-		resolvedFeatures = ArrayConceptQuery.createFromFeatures(features, getForm().getStorage());
+		resolvedFeatures = ArrayConceptQuery.createFromFeatures(features);
 		resolvedFeatures.resolve(context);
     }
 
@@ -71,8 +71,7 @@ public class EntityDateMode extends Mode {
 				resolvedFeatures,
 				ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint()),
 				dateRestriction,
-				dateAggregationMode,
-				getForm().getStorage()
+				dateAggregationMode
 		);
     }
 }

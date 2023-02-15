@@ -158,9 +158,9 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		if (dateRange != null) {
 			CQDateRestriction restriction = new CQDateRestriction(dateRange, cqConcept);
-			return new ConceptQuery(restriction, support.getMetaStorage());
+			return new ConceptQuery(restriction);
 		}
-		return new ConceptQuery(cqConcept, support.getMetaStorage());
+		return new ConceptQuery(cqConcept);
 	}
 
 	@Override

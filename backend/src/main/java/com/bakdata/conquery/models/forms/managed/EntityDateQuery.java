@@ -17,7 +17,6 @@ import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -27,9 +26,9 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.OptBoolean;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * This query uses the date range defined by {@link EntityDateQuery#query} for each entity and applies it as a
@@ -38,6 +37,7 @@ import lombok.Getter;
  */
 @CPSType(id = "ENTITY_DATE_QUERY", base = QueryDescription.class)
 @Getter
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class EntityDateQuery extends Query {
 
     @NotNull
@@ -57,14 +57,6 @@ public class EntityDateQuery extends Query {
 	@NotNull
 	private final DateAggregationMode dateAggregationMode;
 
-	public EntityDateQuery(Query query, ArrayConceptQuery features, List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments, CDateRange dateRange, DateAggregationMode dateAggregationMode, @JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-		this.query = query;
-		this.features = features;
-		this.resolutionsAndAlignments = resolutionsAndAlignments;
-		this.dateRange = dateRange;
-		this.dateAggregationMode = dateAggregationMode;
-	}
 
 
 	@Override

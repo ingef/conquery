@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -21,17 +19,12 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.fasterxml.jackson.annotation.JacksonInject;
 
 public abstract class TestForm extends Form {
 
-	public TestForm(@NotNull MetaStorage storage) {
-		super(storage);
-	}
-
 	@Override
-	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset) {
-		return new ManagedInternalForm(this, user, submittedDataset, getStorage());
+	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
+		return new ManagedInternalForm(this, user, submittedDataset, storage);
 	}
 
 	@Override
@@ -45,7 +38,7 @@ public abstract class TestForm extends Form {
 	}
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset, MetaStorage storage) {
 		return Collections.emptyMap();
 	}
 
@@ -61,15 +54,9 @@ public abstract class TestForm extends Form {
 
 	@CPSType(id = "TEST_FORM_ABS_URL", base = QueryDescription.class)
 	public static class Abs extends TestForm {
-		public Abs(@JacksonInject MetaStorage storage) {
-			super(storage);
-		}
 	}
 
 	@CPSType(id = "TEST_FORM_REL_URL", base = QueryDescription.class)
 	public static class Rel extends TestForm {
-		public Rel(@JacksonInject MetaStorage storage) {
-			super(storage);
-		}
 	}
 }

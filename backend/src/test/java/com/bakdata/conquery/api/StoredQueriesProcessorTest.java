@@ -105,12 +105,12 @@ public class StoredQueriesProcessorTest {
 			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_3, NEW, DATASET_0, 100L),         // not included: missing permission
 			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_4, DONE, DATASET_0, 100L),        // included
 			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_5, FAILED, DATASET_0, 100L),        // not included: wrong state
-			mockManagedQuery(new AbsoluteFormQuery(null, null, null, null, STORAGE), USERS[0], QUERY_ID_6, NEW, DATASET_0, 100L),                                                    // not included: wrong query structure
+			mockManagedQuery(new AbsoluteFormQuery(null, null, null, null), USERS[0], QUERY_ID_6, NEW, DATASET_0, 100L),                                                    // not included: wrong query structure
 			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_7, DONE, new CQAnd() {{
 				setChildren(List.of(new CQConcept()));
 			}}, DATASET_0),    // included, but secondaryId-Query
 			mockManagedSecondaryIdQueryFrontEnd(USERS[1], QUERY_ID_8, DONE, new CQConcept(), DATASET_0),    // not-included, wrong structure
-			mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0], false), STORAGE), USERS[1], QUERY_ID_9, DONE, DATASET_0, 100L),        // included
+			mockManagedQuery(new ConceptQuery(new CQExternal(new ArrayList<>(), new String[0][0], false)), USERS[1], QUERY_ID_9, DONE, DATASET_0, 100L),        // included
 			mockManagedConceptQueryFrontEnd(USERS[1], QUERY_ID_10, DONE, DATASET_0, 2_000_000L)        // included, but no result url for xlsx (result has too many rows)
 
 	);
@@ -147,7 +147,7 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedForm mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
-		return new ManagedInternalForm(new ExportForm(STORAGE), user, dataset, STORAGE) {
+		return new ManagedInternalForm(new ExportForm(), user, dataset, STORAGE) {
 			{
 				setState(execState);
 				setCreationTime(LocalDateTime.MIN);
@@ -162,8 +162,7 @@ public class StoredQueriesProcessorTest {
 						new CQAnd() {{
 							// short hand class initializer block to support visiting of CQAnd Children
 							setChildren(List.of(new CQConcept()));
-						}},
-						STORAGE
+						}}
 				),
 				user,
 				id,
@@ -171,7 +170,7 @@ public class StoredQueriesProcessorTest {
 		);
 	}
 	private static ManagedQuery mockManagedSecondaryIdQueryFrontEnd(User user, ManagedExecutionId id, ExecutionState execState, CQElement root, Dataset dataset){
-		final SecondaryIdQuery sid = new SecondaryIdQuery(STORAGE);
+		final SecondaryIdQuery sid = new SecondaryIdQuery();
 		sid.setSecondaryId(new SecondaryIdDescription() {{
 			setDataset(dataset);
 			setName("sid");

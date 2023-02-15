@@ -13,7 +13,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -21,10 +20,11 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.fasterxml.jackson.annotation.JacksonInject;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.annotation.OptBoolean;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = QueryDescription.class)
 @Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor_ = {@JsonCreator})
 public class ArrayConceptQuery extends Query {
 
 	@NotEmpty
@@ -51,19 +52,14 @@ public class ArrayConceptQuery extends Query {
 	@JsonView(View.InternalCommunication.class)
 	protected DateAggregationMode resolvedDateAggregationMode;
 
-	public ArrayConceptQuery(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
-	public static ArrayConceptQuery createFromFeatures(List<CQElement> features, MetaStorage storage) {
+	public static ArrayConceptQuery createFromFeatures(List<CQElement> features) {
 		List<ConceptQuery> cqWraps = features.stream()
-											 .map(f -> new ConceptQuery(f, storage))
+											 .map(ConceptQuery::new)
 											 .collect(Collectors.toList());
-		return new ArrayConceptQuery(cqWraps, storage);
+		return new ArrayConceptQuery(cqWraps);
 	}
 
-	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, @NonNull DateAggregationMode dateAggregationMode, MetaStorage storage) {
-		this(storage);
+	public ArrayConceptQuery(@NonNull List<ConceptQuery> queries, @NonNull DateAggregationMode dateAggregationMode) {
 		if (queries == null) {
 			throw new IllegalArgumentException("No sub query list provided.");
 		}
@@ -71,8 +67,8 @@ public class ArrayConceptQuery extends Query {
 		this.dateAggregationMode = dateAggregationMode;
 	}
 
-	public ArrayConceptQuery(List<ConceptQuery> queries, MetaStorage storage) {
-		this(queries, DateAggregationMode.NONE, storage);
+	public ArrayConceptQuery(List<ConceptQuery> queries) {
+		this(queries, DateAggregationMode.NONE);
 	}
 
 	@Override

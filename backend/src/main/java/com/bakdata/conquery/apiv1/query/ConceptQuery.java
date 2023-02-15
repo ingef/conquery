@@ -11,7 +11,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
-import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -21,17 +20,17 @@ import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @Setter
 @CPSType(id = "CONCEPT_QUERY", base = QueryDescription.class)
+@NoArgsConstructor
 @Slf4j
 public class ConceptQuery extends Query {
 
@@ -46,19 +45,14 @@ public class ConceptQuery extends Query {
 	@JsonView(View.InternalCommunication.class)
 	protected DateAggregationMode resolvedDateAggregationMode;
 
-	public ConceptQuery(CQElement root, DateAggregationMode dateAggregationMode, MetaStorage storage) {
-		this(storage);
+
+	public ConceptQuery(CQElement root) {
+		this(root, DateAggregationMode.MERGE);
+	}
+
+	public ConceptQuery(CQElement root, DateAggregationMode dateAggregationMode) {
 		this.root = root;
 		this.dateAggregationMode = dateAggregationMode;
-	}
-
-	protected ConceptQuery(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
-		super(storage);
-	}
-
-	public ConceptQuery(CQElement root, MetaStorage storage) {
-		this(storage);
-		this.root = root;
 	}
 
 	@Override

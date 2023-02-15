@@ -14,6 +14,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -115,6 +116,7 @@ public abstract class ConqueryTestSpec {
 		);
 		final MutableInjectableValues injectableValues = (MutableInjectableValues) mapper.getInjectableValues();
 		injectableValues.add(ConqueryConfig.class, support.getConfig());
+		injectableValues.add(MetaStorage.class, support.getMetaStorage());
 
 		T result = mapper.readerFor(expectedType).readValue(node);
 

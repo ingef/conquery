@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
-import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -32,7 +31,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
@@ -58,15 +56,6 @@ public class FullExportForm extends Form {
 	@NotEmpty
 	private List<CQConcept> tables = ImmutableList.of();
 
-	@Inject
-	@JsonIgnore
-	private MetaStorage storage;
-
-
-	public FullExportForm(@NotNull @JacksonInject MetaStorage storage) {
-		super(storage);
-	}
-
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
@@ -75,11 +64,11 @@ public class FullExportForm extends Form {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
+	public Map<String, List<ManagedQuery>> createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset, MetaStorage storage) {
 
 		// Forms are sent as an array of standard queries containing AND/OR of CQConcepts, we ignore everything and just convert the CQConcepts into CQUnfiltered for export.
 
-		final TableExportQuery exportQuery = new TableExportQuery(getStorage(), queryGroup.getQuery());
+		final TableExportQuery exportQuery = new TableExportQuery(queryGroup.getQuery());
 		exportQuery.setDateRange(getDateRange());
 
 		exportQuery.setTables(tables);
@@ -111,7 +100,7 @@ public class FullExportForm extends Form {
 
 
 	@Override
-	public ManagedForm toManagedExecution(User user, Dataset submittedDataset) {
+	public ManagedForm toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
 		return new ManagedInternalForm<FullExportForm>(this, user, submittedDataset, storage);
 	}
 }
