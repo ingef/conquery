@@ -8,13 +8,11 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -50,7 +48,7 @@ public class ManagedForm<F extends Form> extends ManagedExecution {
 	}
 
 	@Override
-	protected void doInitExecutable(Namespace namespace, ConqueryConfig config) {
+	protected void doInitExecutable() {
 
 	}
 

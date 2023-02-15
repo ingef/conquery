@@ -33,7 +33,6 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.MoreCollectors;
-import lombok.NonNull;
 
 /**
  * Dedicated {@link ManagedExecution} to properly display/combine the two Queries submitted by {@link EntityPreviewForm}.
@@ -91,9 +90,9 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public void doInitExecutable(Namespace namespace, ConqueryConfig config) {
-		super.doInitExecutable(namespace, config);
-		previewConfig = namespace.getPreviewConfig();
+	public void doInitExecutable() {
+		super.doInitExecutable();
+		previewConfig = getNamespace().getPreviewConfig();
 	}
 
 	/**
@@ -102,22 +101,22 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	 * Most importantly to {@link EntityPreviewStatus#setInfos(List)} to for infos of entity.
 	 */
 	@Override
-	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Subject subject, Namespace namespace, ConqueryConfig config) {
+	public FullExecutionStatus buildStatusFull(Subject subject) {
 
-		initExecutable(namespace, config);
+		initExecutable(getNamespace(), getConfig());
 
 		final EntityPreviewStatus status = new EntityPreviewStatus();
-		setStatusFull(status, storage, subject, namespace);
+		setStatusFull(status, subject);
 		status.setQuery(getValuesQuery().getQuery());
 
-		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), namespace, config));
+		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), getNamespace(), getConfig()));
 
 		return status;
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, Namespace namespace) {
-		status.setColumnDescriptions(generateColumnDescriptions(namespace));
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+		status.setColumnDescriptions(generateColumnDescriptions());
 	}
 
 	@JsonIgnore
@@ -138,8 +137,8 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions(Namespace namespace) {
-		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(namespace);
+	public List<ColumnDescriptor> generateColumnDescriptions() {
+		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions();
 
 		for (ColumnDescriptor descriptor : descriptors) {
 			if (descriptor.getSemantics()

@@ -342,7 +342,7 @@ public class QueryProcessor {
 
 		query.initExecutable(namespace, config);
 
-		final FullExecutionStatus status = query.buildStatusFull(storage, subject, namespace, config);
+		final FullExecutionStatus status = query.buildStatusFull(subject);
 
 		if (query.isReadyToDownload() && subject.isPermitted(query.getDataset(), Ability.DOWNLOAD)) {
 			status.setResultUrls(getDownloadUrls(config.getResultProviders(), query, url, allProviders));
@@ -417,7 +417,7 @@ public class QueryProcessor {
 		}
 
 
-		FullExecutionStatus status = execution.buildStatusFull(storage, subject, namespace, config);
+		FullExecutionStatus status = execution.buildStatusFull(subject);
 		status.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, false));
 		return status;
 	}

@@ -5,12 +5,11 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface SingleTableResult {
 
-	List<ColumnDescriptor> generateColumnDescriptions(Namespace namespace);
+	List<ColumnDescriptor> generateColumnDescriptions();
 
 	@JsonIgnore
 	List<ResultInfo> getResultInfos();

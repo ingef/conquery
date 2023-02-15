@@ -90,7 +90,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	protected void doInitExecutable(Namespace namespace, ConqueryConfig config) {
+	protected void doInitExecutable() {
 		this.config = config;
 
 		this.namespace = namespace;
@@ -112,7 +112,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 		involvedWorkers.remove(result.getWorkerId());
 
-		getExecutionManager().addQueryResult(this, result.getResults());
+		getNamespace().getExecutionManager().addQueryResult(this, result.getResults());
 
 		if (involvedWorkers.isEmpty() && getState() == ExecutionState.RUNNING) {
 			finish(ExecutionState.DONE);
@@ -127,7 +127,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	public Stream<EntityResult> streamResults() {
-		return getExecutionManager().streamQueryResults(this);
+		return getNamespace().getExecutionManager().streamQueryResults(this);
 	}
 
 	@Override
@@ -159,10 +159,10 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, Namespace namespace) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, namespace);
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+		super.setAdditionalFieldsForStatusWithColumnDescription(subject, status);
 		if (columnDescriptions == null) {
-			columnDescriptions = generateColumnDescriptions(namespace);
+			columnDescriptions = generateColumnDescriptions();
 		}
 		status.setColumnDescriptions(columnDescriptions);
 	}
@@ -170,7 +170,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	/**
 	 * Generates a description of each column that will appear in the resulting csv.
 	 */
-	public List<ColumnDescriptor> generateColumnDescriptions(Namespace namespace) {
+	public List<ColumnDescriptor> generateColumnDescriptions() {
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 

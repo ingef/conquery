@@ -39,7 +39,6 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -110,7 +109,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private transient boolean initialized = false;
 
 	@JsonIgnore
-	private transient ExecutionManager executionManager;
+	private transient Namespace namespace;
+	@JsonIgnore
+	private transient ConqueryConfig config;
 
 	@JsonIgnore
 	@Getter(AccessLevel.PROTECTED)
@@ -132,6 +133,14 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 * Executed right before execution submission.
 	 */
 	public final void initExecutable(Namespace namespace, ConqueryConfig config) {
+		if (!namespace.getDataset().equals(dataset)) {
+			throw new IllegalStateException("Initial dataset does not match provided namespace. (Initial: '"
+											+ dataset.getId()
+											+ "', Provided: '"
+											+ namespace.getDataset().getId()
+											+ "' )");
+		}
+
 		synchronized (this) {
 			if (initialized) {
 				log.trace("Execution {} was already initialized", getId());
@@ -142,14 +151,15 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null));
 			}
 
-			executionManager = namespace.getExecutionManager();
+			this.namespace = namespace;
+			this.config = config;
 
-			doInitExecutable(namespace, config);
+			doInitExecutable();
 			initialized = true;
 		}
 	}
 
-	protected abstract void doInitExecutable(Namespace namespace, ConqueryConfig config);
+	protected abstract void doInitExecutable();
 
 
 	@Override
@@ -185,7 +195,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			startTime = LocalDateTime.now();
 
 			setState(ExecutionState.RUNNING);
-			getExecutionManager().clearQueryResults(this);
+			namespace.getExecutionManager().clearQueryResults(this);
 
 			execution = new CountDownLatch(1);
 		}
@@ -269,21 +279,21 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Subject subject, Namespace namespace, ConqueryConfig config) {
+	public FullExecutionStatus buildStatusFull(Subject subject) {
 
 		initExecutable(namespace, config);
 		FullExecutionStatus status = new FullExecutionStatus();
-		setStatusFull(status, storage, subject, namespace);
+		setStatusFull(status, subject);
 
 		return status;
 	}
 
-	public void setStatusFull(FullExecutionStatus status, MetaStorage storage, Subject subject, Namespace namespace) {
+	public void setStatusFull(FullExecutionStatus status, Subject subject) {
 		setStatusBase(subject, status);
 
-		setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, namespace);
+		setAdditionalFieldsForStatusWithColumnDescription(subject, status);
 		setAdditionalFieldsForStatusWithSource(subject, status);
-		setAdditionalFieldsForStatusWithGroups(storage, status);
+		setAdditionalFieldsForStatusWithGroups(status);
 		setAvailableSecondaryIds(status);
 		status.setProgress(progress);
 
@@ -302,7 +312,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setAvailableSecondaryIds(secondaryIdCollector.getIds());
 	}
 
-	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, FullExecutionStatus status) {
+	private void setAdditionalFieldsForStatusWithGroups(FullExecutionStatus status) {
 		/* Calculate which groups can see this query.
 		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
@@ -311,7 +321,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			for (Permission perm : group.getPermissions()) {
 				if (perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
-					continue;
 				}
 			}
 		}
@@ -319,7 +328,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, Namespace namespace) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		// Implementation specific
 	}
 
@@ -385,6 +394,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	public void reset() {
 		setState(ExecutionState.NEW);
 
-		executionManager.clearQueryResults(this);
+		namespace.getExecutionManager().clearQueryResults(this);
 	}
 }
