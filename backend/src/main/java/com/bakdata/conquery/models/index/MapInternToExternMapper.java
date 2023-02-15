@@ -74,6 +74,10 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 
 	@Override
 	public String external(String internalValue) {
+		if(!initialized()){
+			return internalValue;
+		}
+
 		return int2ext.getOrDefault(internalValue, internalValue);
 	}
 
