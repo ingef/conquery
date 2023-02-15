@@ -538,6 +538,21 @@ components:
               type: number
             max:
               type: number
+    filter-value-integer-range:
+      allOf:
+        - $ref: "#/components/schemas/filter-value-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "INTEGER_RANGE"
+        value:
+          type: object
+          properties:
+            min:
+              type: integer
+            max:
+              type: integer
 
     group-filter-value:
       allOf:
@@ -552,7 +567,7 @@ components:
       discriminator:
         propertyName: "type"
         mapping:
-          "INTEGER_RANGE": "#/components/schemas/filter-value-number-range"
+          "INTEGER_RANGE": "#/components/schemas/filter-value-integer-range"
           "REAL_RANGE": "#/components/schemas/filter-value-number-range"
           "MONEY_RANGE": "#/components/schemas/filter-value-number-range"
           "DECIMAL_RANGE": "#/components/schemas/filter-value-number-range"
