@@ -13,7 +13,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -41,7 +40,7 @@ public class AbsoluteMode extends Mode {
 	private ArrayConceptQuery resolvedFeatures;
 
 	@Override
-	public Query createSpecializedQuery(Namespace namespace, User user, Dataset submittedDataset) {
+	public Query createSpecializedQuery(Namespace namespace, User user) {
 
 		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments =
 				ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint());

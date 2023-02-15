@@ -11,7 +11,6 @@ import com.bakdata.conquery.apiv1.query.concept.specific.temporal.TemporalSample
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.export.RelExportGenerator;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.CalendarUnit;
@@ -47,7 +46,7 @@ public class RelativeMode extends Mode {
 	}
 
 	@Override
-	public RelativeFormQuery createSpecializedQuery(Namespace namespace, User user, Dataset submittedDataset) {
+	public RelativeFormQuery createSpecializedQuery(Namespace namespace, User user) {
 		return RelExportGenerator.generate(this);
 	}
 

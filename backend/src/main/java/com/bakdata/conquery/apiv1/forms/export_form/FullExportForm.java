@@ -24,7 +24,6 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -65,7 +64,7 @@ public class FullExportForm extends Form implements InternalForm {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, Dataset submittedDataset, MetaStorage storage) {
+	public Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, MetaStorage storage) {
 
 		// Forms are sent as an array of standard queries containing AND/OR of CQConcepts, we ignore everything and just convert the CQConcepts into CQUnfiltered for export.
 
@@ -74,7 +73,7 @@ public class FullExportForm extends Form implements InternalForm {
 
 		exportQuery.setTables(tables);
 
-		final ManagedQuery managedQuery = new ManagedQuery(exportQuery, user, submittedDataset, storage);
+		final ManagedQuery managedQuery = new ManagedQuery(exportQuery, user, namespace.getDataset(), storage);
 
 
 		return Map.of(
@@ -101,7 +100,7 @@ public class FullExportForm extends Form implements InternalForm {
 
 
 	@Override
-	public ManagedForm toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
+	public ManagedInternalForm<FullExportForm> toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
 		return new ManagedInternalForm<FullExportForm>(this, user, submittedDataset, storage);
 	}
 }

@@ -101,10 +101,10 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, Dataset submittedDataset, MetaStorage storage) {
+	public Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, MetaStorage storage) {
 		return Map.of(
-				VALUES_QUERY_NAME, List.of(getValuesQuery().toManagedExecution(user, submittedDataset, storage)),
-				INFOS_QUERY_NAME, List.of(getInfoCardQuery().toManagedExecution(user, submittedDataset, storage))
+				VALUES_QUERY_NAME, List.of(getValuesQuery().toManagedExecution(user, namespace.getDataset(), storage)),
+				INFOS_QUERY_NAME, List.of(getInfoCardQuery().toManagedExecution(user, namespace.getDataset(), storage))
 		);
 	}
 

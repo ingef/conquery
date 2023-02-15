@@ -5,12 +5,11 @@ import java.util.Map;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 
 public interface InternalForm {
 
-	Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, Dataset submittedDataset, MetaStorage storage);
+	Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, MetaStorage storage);
 
 }

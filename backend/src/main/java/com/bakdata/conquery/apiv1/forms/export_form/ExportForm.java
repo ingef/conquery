@@ -83,12 +83,12 @@ public class ExportForm extends Form implements InternalForm {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, Dataset submittedDataset, MetaStorage storage) {
+	public Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, MetaStorage storage) {
 		return Map.of(
 				ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
 				List.of(
-						timeMode.createSpecializedQuery(namespace, user, submittedDataset)
-								.toManagedExecution(user, submittedDataset, storage))
+						timeMode.createSpecializedQuery(namespace, user)
+								.toManagedExecution(user, namespace.getDataset(), storage))
 		);
 	}
 

@@ -14,7 +14,6 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.EntityDateQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -55,7 +54,7 @@ public class EntityDateMode extends Mode {
     }
 
 	@Override
-	public Query createSpecializedQuery(Namespace namespace, User user, Dataset submittedDataset) {
+	public Query createSpecializedQuery(Namespace namespace, User user) {
 		CDateRange dateRestriction = dateRange == null ? CDateRange.all() : CDateRange.of(dateRange);
 
 		return new EntityDateQuery(
