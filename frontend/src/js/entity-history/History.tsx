@@ -160,7 +160,7 @@ export const History = () => {
     [setEntityIdsStatus, setEntityStatusOptions, updateHistorySession],
   );
 
-  const { getIsOpen, toggleOpenYear, toggleOpenQuarter, closeAll } =
+  const { getIsOpen, toggleOpenYear, toggleOpenQuarter, closeAll, openAll } =
     useOpenCloseInteraction();
 
   return (
@@ -209,7 +209,7 @@ export const History = () => {
                     setDetailLevel={setDetailLevel}
                   />
                 )}
-                <InteractionControl onCloseAll={closeAll} />
+                <InteractionControl onCloseAll={closeAll} onOpenAll={openAll} />
                 <ContentControl
                   value={contentFilter}
                   onChange={setContentFilter}
@@ -392,10 +392,27 @@ const useOpenCloseInteraction = () => {
     setIsOpen({});
   }, []);
 
+  const openAll = useCallback(() => {
+    const lastYearsToUse = 20;
+    const currYear = new Date().getFullYear();
+    const years = [...Array(lastYearsToUse).keys()].map((i) => currYear - i);
+
+    const newIsOpen: Record<string, boolean> = {};
+
+    for (const year of years) {
+      for (const quarter of [1, 2, 3, 4]) {
+        newIsOpen[toId(year, quarter)] = true;
+      }
+    }
+
+    setIsOpen(newIsOpen);
+  }, [toId]);
+
   return {
     getIsOpen,
     toggleOpenYear,
     toggleOpenQuarter,
     closeAll,
+    openAll,
   };
 };

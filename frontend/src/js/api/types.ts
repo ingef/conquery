@@ -327,6 +327,10 @@ export type ColumnDescriptionKind =
   | "DATE_RANGE"
   | "LIST[DATE_RANGE]";
 
+export interface ColumnDescriptionSemanticColumn {
+  type: "COLUMN";
+  column: string;
+}
 export interface ColumnDescriptionSemanticConceptColumn {
   type: "CONCEPT_COLUMN";
   concept: string;
@@ -367,6 +371,7 @@ export type ColumnDescriptionSemantic =
   | ColumnDescriptionSemanticSecondaryId
   | ColumnDescriptionSemanticSelect
   | ColumnDescriptionSemanticConceptColumn
+  | ColumnDescriptionSemanticColumn // Probably won't be used by us
   | ColumnDescriptionSemanticEventDate
   | ColumnDescriptionSemanticSources
   | ColumnDescriptionSemanticCategorical // Probably won't be used by us

@@ -152,6 +152,23 @@ public class TableExportQuery extends Query {
 		resultInfos = createResultInfos(secondaryIdPositions);
 	}
 
+	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
+		Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
+
+		// SecondaryIds are pulled to the front and grouped over all tables
+		tables.stream()
+			  .flatMap(con -> con.getTables().stream())
+			  .flatMap(table -> Arrays.stream(table.getConnector().getTable().getColumns()))
+			  .map(Column::getSecondaryId)
+			  .filter(Objects::nonNull)
+			  .distinct()
+			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
+			  // Using for each and not a collector allows us to guarantee sorted insertion.
+			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
+
+		return secondaryIdPositions;
+	}
+
 	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
 		final Map<Column, Integer> positions = new HashMap<>();
 
@@ -184,23 +201,6 @@ public class TableExportQuery extends Query {
 		return positions;
 	}
 
-	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
-		Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
-
-		// SecondaryIds are pulled to the front and grouped over all tables
-		tables.stream()
-			  .flatMap(con -> con.getTables().stream())
-			  .flatMap(table -> Arrays.stream(table.getConnector().getTable().getColumns()))
-			  .map(Column::getSecondaryId)
-			  .filter(Objects::nonNull)
-			  .distinct()
-			  .sorted(Comparator.comparing(SecondaryIdDescription::getLabel))
-			  // Using for each and not a collector allows us to guarantee sorted insertion.
-			  .forEach(secondaryId -> secondaryIdPositions.put(secondaryId, currentPosition.getAndIncrement()));
-
-		return secondaryIdPositions;
-	}
-
 	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
 
 		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
@@ -209,6 +209,7 @@ public class TableExportQuery extends Query {
 
 		infos[0] = ConqueryConstants.DATES_INFO_HISTORY;
 		infos[1] = ConqueryConstants.SOURCE_INFO;
+
 
 		for (Map.Entry<SecondaryIdDescription, Integer> e : secondaryIdPositions.entrySet()) {
 			final SecondaryIdDescription desc = e.getKey();
@@ -242,13 +243,18 @@ public class TableExportQuery extends Query {
 
 		for (Map.Entry<Column, Integer> entry : positions.entrySet()) {
 
-			// 0 Position is date, already covered
 			final int position = entry.getValue();
 
 			final Column column = entry.getKey();
 
+			if(position == 0) {
+				continue;
+			}
+
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
-			if (position == 0 || column.getSecondaryId() != null) {
+			if (column.getSecondaryId() != null) {
+				infos[secondaryIdPositions.get(column.getSecondaryId())].getSemantics()
+																		.add(new SemanticType.ColumnT(column));
 				continue;
 			}
 

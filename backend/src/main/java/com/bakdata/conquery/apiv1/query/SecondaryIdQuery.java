@@ -85,7 +85,7 @@ public class SecondaryIdQuery extends Query {
 		}
 		final QueryResolveContext resolvedContext = context.withDateAggregationMode(resolvedDateAggregationMode);
 
-		this.query = new ConceptQuery(root);
+		query = new ConceptQuery(root);
 		query.resolve(resolvedContext);
 
 		withSecondaryId = new HashSet<>();
@@ -143,16 +143,9 @@ public class SecondaryIdQuery extends Query {
 
 	@Override
 	public List<ResultInfo> getResultInfos() {
-		List<ResultInfo> resultInfos = new ArrayList<>();
+		final List<ResultInfo> resultInfos = new ArrayList<>();
 
-		resultInfos.add(
-				new SimpleResultInfo(
-						secondaryId.getLabel(),
-						ResultType.StringT.INSTANCE,
-						secondaryId.getDescription(),
-						Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))
-				)
-		);
+		resultInfos.add(new SimpleResultInfo(secondaryId.getLabel(), ResultType.StringT.INSTANCE, secondaryId.getDescription(), Set.of(new SemanticType.SecondaryIdT(getSecondaryId()))));
 
 		resultInfos.addAll(query.getResultInfos());
 

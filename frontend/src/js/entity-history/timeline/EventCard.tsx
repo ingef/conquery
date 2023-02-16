@@ -35,30 +35,24 @@ const EventItemContent = styled("div")`
   margin-top: 5px;
   background-color: white;
   overflow: hidden;
-`;
-const MainContent = styled("div")`
-  display: grid;
-  grid-template-columns: 1.618fr 1fr;
-  gap: 6px;
-  padding: 15px 15px 12px 6px;
-  font-size: ${({ theme }) => theme.font.sm};
-`;
-const Col = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  > div {
+    &:first-of-type {
+      padding-top: 14px;
+    }
+  }
 `;
 
 const ColBucket = styled("div")`
   color: black;
   padding: 1px 4px;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  width: 100%;
+  grid-template-columns: 1fr 1fr 1fr;
   @media (min-width: 1800px) {
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
   }
   @media (min-width: 2500px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   }
   gap: 3px 10px;
 `;
@@ -67,6 +61,8 @@ const Flex = styled("div")`
   display: flex;
   align-items: flex-start;
   gap: 5px;
+  padding: 12px 15px 10px 6px;
+  font-size: ${({ theme }) => theme.font.sm};
 `;
 
 const SxRawDataBadge = styled(RawDataBadge)`
@@ -138,71 +134,32 @@ const EventCard = ({
       <RowDates dates={row.dates} />
       <SxRawDataBadge event={row} />
       <EventItemContent>
-        <MainContent>
-          <Col>
-            {contentFilter.money && applicableMoney.length > 0 && (
-              <Flex>
-                <WithTooltip text={moneyTooltip}>
-                  <span>
-                    <SxFaIcon icon="euro-sign" active large />
-                  </span>
-                </WithTooltip>
-                <ColBucket>
-                  {applicableMoney.map((column) => (
-                    <div key={column.label}>
-                      <TinyLabel>{column.defaultLabel}</TinyLabel>
-                      <code>
-                        <NumberFormat
-                          thousandSeparator={currencyConfig.thousandSeparator}
-                          decimalSeparator={currencyConfig.decimalSeparator}
-                          decimalScale={currencyConfig.decimalScale}
-                          suffix={currencyConfig.prefix}
-                          displayType="text"
-                          value={parseInt(row[column.label]) / 100}
-                        />
-                      </code>
-                    </div>
-                  ))}
-                </ColBucket>
-              </Flex>
-            )}
-            {contentFilter.rest && applicableRest.length > 0 && (
-              <Flex>
-                <WithTooltip text={restTooltip}>
-                  <span>
-                    <SxFaIcon icon="info" active large />
-                  </span>
-                </WithTooltip>
-                <ColBucket>
-                  {applicableRest.map((column) => (
-                    <div key={column.label}>
-                      <TinyLabel>{column.defaultLabel}</TinyLabel>
-                      <span>{row[column.label]}</span>
-                    </div>
-                  ))}
-                </ColBucket>
-              </Flex>
-            )}
-          </Col>
-
-          {contentFilter.groupId && applicableGroupableIds.length > 0 && (
-            <Flex>
-              <WithTooltip text={groupableIdsTooltip}>
-                <span>
-                  <SxFaIcon icon="fingerprint" active large />
-                </span>
-              </WithTooltip>
-              <ColBucket style={{ gridTemplateColumns: "1fr" }}>
-                {applicableGroupableIds.map((column) => (
-                  <div key={column.label}>
-                    <TinyLabel>{column.defaultLabel}</TinyLabel>
-                    {row[column.label]}
-                  </div>
-                ))}
-              </ColBucket>
-            </Flex>
-          )}
-        </MainContent>
+        {contentFilter.money && applicableMoney.length > 0 && (
+          <Flex>
+            <WithTooltip text={moneyTooltip}>
+              <span>
+                <SxFaIcon icon="euro-sign" active large />
+              </span>
+            </WithTooltip>
+            <ColBucket>
+              {applicableMoney.map((column) => (
+                <div key={column.label}>
+                  <TinyLabel>{column.defaultLabel}</TinyLabel>
+                  <code>
+                    <NumberFormat
+                      thousandSeparator={currencyConfig.thousandSeparator}
+                      decimalSeparator={currencyConfig.decimalSeparator}
+                      decimalScale={currencyConfig.decimalScale}
+                      suffix={currencyConfig.prefix}
+                      displayType="text"
+                      value={parseInt(row[column.label]) / 100}
+                    />
+                  </code>
+                </div>
+              ))}
+            </ColBucket>
+          </Flex>
+        )}
         {groupedRowsKeysWithDifferentValues && groupedRows && (
           <GroupedContent
             datasetId={datasetId}
@@ -215,6 +172,40 @@ const EventCard = ({
             currencyConfig={currencyConfig}
             rootConceptIdsByColumn={rootConceptIdsByColumn}
           />
+        )}
+        {contentFilter.rest && applicableRest.length > 0 && (
+          <Flex>
+            <WithTooltip text={restTooltip}>
+              <span>
+                <SxFaIcon icon="info" active large />
+              </span>
+            </WithTooltip>
+            <ColBucket>
+              {applicableRest.map((column) => (
+                <div key={column.label}>
+                  <TinyLabel>{column.defaultLabel}</TinyLabel>
+                  <span>{row[column.label]}</span>
+                </div>
+              ))}
+            </ColBucket>
+          </Flex>
+        )}
+        {contentFilter.groupId && applicableGroupableIds.length > 0 && (
+          <Flex>
+            <WithTooltip text={groupableIdsTooltip}>
+              <span>
+                <SxFaIcon icon="fingerprint" active large />
+              </span>
+            </WithTooltip>
+            <ColBucket>
+              {applicableGroupableIds.map((column) => (
+                <div key={column.label}>
+                  <TinyLabel>{column.defaultLabel}</TinyLabel>
+                  {row[column.label]}
+                </div>
+              ))}
+            </ColBucket>
+          </Flex>
         )}
       </EventItemContent>
     </Card>
