@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.forms.managed;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,7 +17,6 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.IdMap;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
@@ -29,7 +27,6 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FormShardResult;
-import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -155,21 +152,6 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		return new ExecuteForm(getId(), flatSubQueries.entrySet().stream()
 													  .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
 	}
-
-
-	@Override
-	public Set<NamespacedIdentifiable<?>> getUsedNamespacedIds() {
-		QueryUtils.NamespacedIdentifiableCollector collector = new QueryUtils.NamespacedIdentifiableCollector();
-
-		for (Map.Entry<String, List<ManagedQuery>> entry : subQueries.entrySet()) {
-			for (ManagedQuery subquery : entry.getValue()) {
-				subquery.getQuery().visit(collector);
-			}
-		}
-
-		return collector.getIdentifiables();
-	}
-
 
 	/**
 	 * Distribute the result to a sub query.

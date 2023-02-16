@@ -1,25 +1,23 @@
 package com.bakdata.conquery.models.execution;
 
-import java.util.Set;
-
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.results.ShardResult;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
+/**
+ * This interface must be implemented if a {@link ManagedExecution} requires direct computation using the query engine on the shard nodes.
+ *
+ * @param <R> The type of result, the execution assumes to be returned from the shards.
+ */
 public interface InternalExecution<R extends ShardResult> {
 
-
-	void addResult(R result);
-
+	/**
+	 * The message that is send to the shard nodes
+	 */
 	WorkerMessage createExecutionMessage();
 
 	/**
-	 * Gives all {@link NamespacedId}s that were required in the execution.
-	 *
-	 * @return A List of all {@link NamespacedId}s needed for the execution.
+	 * The callback for the results the shard nodes return.
+	 * Is called once per shard node
 	 */
-	@JsonIgnore
-	Set<NamespacedIdentifiable<?>> getUsedNamespacedIds();
+	void addResult(R result);
 }
