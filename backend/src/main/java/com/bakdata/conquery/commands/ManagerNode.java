@@ -308,12 +308,14 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
 				final ExecutionManager executionManager = new ExecutionManager(storage);
-				namespacesDone.add(Namespace.createAndRegister(
+				final Namespace namespace = Namespace.create(
 						executionManager,
 						namespaceStorage,
 						getConfig(),
 						this::createInternalObjectMapper
-				));
+				);
+				datasetRegistry.add(namespace);
+				namespacesDone.add(namespace);
 			});
 		}
 

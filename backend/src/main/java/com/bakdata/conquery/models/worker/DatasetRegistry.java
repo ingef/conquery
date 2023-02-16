@@ -81,7 +81,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		datasetStorage.close();
 
 
-		final Namespace namespace = Namespace.createAndRegister(
+		final Namespace namespace = Namespace.create(
 				new ExecutionManager(getMetaStorage()),
 				datasetStorage,
 				config,

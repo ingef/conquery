@@ -8,13 +8,18 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.With;
 
-@Data @RequiredArgsConstructor
+@Data
+@RequiredArgsConstructor
 public class QueryResolveContext {
-	private final Dataset submittedDataset;
+	private final Dataset dataset;
 	private final Namespace namespace;
 	private final ConqueryConfig config;
 	private final MetaStorage storage;
 
 	@With
 	private final DateAggregationMode dateAggregationMode;
+
+	public Dataset getDataset() {
+		return namespace.getDataset();
+	}
 }

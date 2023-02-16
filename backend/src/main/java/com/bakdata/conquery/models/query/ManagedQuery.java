@@ -26,7 +26,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
@@ -40,7 +39,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JacksonInject;
@@ -62,8 +60,6 @@ import lombok.extern.slf4j.Slf4j;
 public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution<ShardResult> {
 
 	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 70;
-	@JsonIgnore
-	protected transient Namespace namespace;
 	// Needs to be resolved externally before being executed
 	private Query query;
 	/**
@@ -74,9 +70,6 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	//TODO this can actually be known ahead and reduced to speedup queries.
 	@JsonIgnore
 	private transient Set<WorkerId> involvedWorkers;
-
-	@JsonIgnore
-	private transient ConqueryConfig config;
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
 
@@ -91,11 +84,8 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 	@Override
 	protected void doInitExecutable() {
-		this.config = config;
 
-		this.namespace = namespace;
-
-		query.resolve(new QueryResolveContext(getDataset(), namespace, config, getStorage(), null));
+		query.resolve(new QueryResolveContext(getDataset(), getNamespace(), getConfig(), getStorage(), null));
 
 	}
 
@@ -141,9 +131,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@Override
 	public void start() {
 		super.start();
-		involvedWorkers = Collections.synchronizedSet(namespace.getWorkers().stream()
-															   .map(WorkerInformation::getId)
-															   .collect(Collectors.toSet()));
+		involvedWorkers = Collections.synchronizedSet(getNamespace().getWorkers().stream()
+																	.map(WorkerInformation::getId)
+																	.collect(Collectors.toSet()));
 	}
 
 	@Override
@@ -176,12 +166,12 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(true, locale, namespace, config, null);
+		PrintSettings settings = new PrintSettings(true, locale, getNamespace(), getConfig(), null);
 
 		UniqueNamer uniqNamer = new UniqueNamer(settings);
 
 		// First add the id columns to the descriptor list. The are the first columns
-		for (ResultInfo header : config.getIdColumns().getIdResultInfos()) {
+		for (ResultInfo header : getConfig().getIdColumns().getIdResultInfos()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(uniqNamer.getUniqueName(header))
 												   .type(header.getType().typeInfo())
