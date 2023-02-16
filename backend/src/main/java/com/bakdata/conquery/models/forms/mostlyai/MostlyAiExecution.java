@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.apiv1.ExecutionStatus;
@@ -121,7 +122,7 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 
 
 		csvConfig = config.getCsv();
-		idResultInfos = config.getFrontend().getQueryUpload().getIdResultInfos();
+		idResultInfos = config.getIdColumns().getIdResultInfos();
 
 		final String[] idSubstitution = new String[idResultInfos.size()];
 		Arrays.fill(idSubstitution, "");
@@ -259,24 +260,25 @@ public class MostlyAiExecution extends ManagedForm implements ExternalResult {
 	 */
 	@Override
 	@JsonIgnore
-	public Pair<StreamingOutput, MediaType> getExternalResult(ExternalResultProcessor.ResultFileReference resultReference) {
+	public Pair<Response.ResponseBuilder, MediaType> getExternalResult(ExternalResultProcessor.ResultFileReference resultReference) {
 		final BiConsumer<UUID, Consumer<InputStream>> resultStreamProvider = resultUrls.get(resultReference);
 		if (resultStreamProvider == null) {
 			throw new BadRequestException("Unsupported result reference '" + resultReference + "'. The execution only supports: " + resultUrls.keySet());
 		}
 
+		final StreamingOutput streamingOutput = output -> resultStreamProvider.accept(jobId, (in) -> {
+			log.debug("BEGIN downloading data for {}", jobId);
+			final long bytesTransferred;
+			try {
+				bytesTransferred = in.transferTo(output);
+			}
+			catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+			log.debug("FINISHED downloading result from Mostly AI. Bytes transferred {}", FileUtils.byteCountToDisplaySize(bytesTransferred));
+		});
 		return Pair.of(
-				output -> resultStreamProvider.accept(jobId, (in) -> {
-					log.debug("BEGIN downloading data for {}", jobId);
-					final long bytesTransferred;
-					try {
-						bytesTransferred = in.transferTo(output);
-					}
-					catch (IOException e) {
-						throw new RuntimeException(e);
-					}
-					log.debug("FINISHED downloading result from Mostly AI. Bytes transferred {}", FileUtils.byteCountToDisplaySize(bytesTransferred));
-				}),
+				Response.ok(streamingOutput),
 				new MediaType("application", "zip")
 		);
 	}

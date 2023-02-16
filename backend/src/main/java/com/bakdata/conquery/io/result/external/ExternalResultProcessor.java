@@ -7,7 +7,6 @@ import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -47,7 +46,7 @@ public class ExternalResultProcessor {
 
 		T externalExecution = (T) execution;
 
-		Pair<StreamingOutput, MediaType> out = externalExecution.getExternalResult(new ResultFileReference(fileName, fileExtension));
+		Pair<Response.ResponseBuilder, MediaType> out = externalExecution.getExternalResult(new ResultFileReference(fileName, fileExtension));
 
 		return makeResponseWithFileName(out.key(), fileName, fileExtension, out.value(), ResultUtil.ContentDispositionOption.INLINE);
 	}

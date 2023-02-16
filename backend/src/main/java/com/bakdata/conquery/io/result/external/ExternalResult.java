@@ -3,7 +3,7 @@ package com.bakdata.conquery.io.result.external;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.unimi.dsi.fastutil.Pair;
@@ -24,5 +24,5 @@ public interface ExternalResult {
 	 * This usually opens a direct download from the external service that provides the result.
 	 */
 	@JsonIgnore
-	Pair<StreamingOutput, MediaType> getExternalResult(ExternalResultProcessor.ResultFileReference resultRef);
+	Pair<Response.ResponseBuilder, MediaType> getExternalResult(ExternalResultProcessor.ResultFileReference resultRef);
 }
