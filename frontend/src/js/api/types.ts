@@ -395,7 +395,7 @@ export interface ColumnDescription {
   userConceptLabel: string | null;
 }
 
-export interface ResultUrlsWithLabel {
+export interface ResultUrlWithLabel {
   label: string;
   url: string;
 }
@@ -405,7 +405,7 @@ export interface GetQueryResponseDoneT {
   status: "DONE" | "NEW"; // NEW might mean canceled (query not (yet) executed)
   label: string;
   numberOfResults: number | null;
-  resultUrls: ResultUrlsWithLabel[];
+  resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[] | null;
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   requiredTime: number; // In ms, unused at the moment
@@ -539,7 +539,7 @@ export interface EntityInfo {
 }
 
 export type GetEntityHistoryResponse = {
-  resultUrls: ResultUrlsWithLabel[];
+  resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[];
   infos: EntityInfo[];
 };

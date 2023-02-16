@@ -2,8 +2,9 @@ import styled from "@emotion/styled";
 import { IconName } from "@fortawesome/fontawesome-svg-core";
 import { ReactNode, useContext, forwardRef } from "react";
 
-import { ResultUrlsWithLabel } from "../api/types";
+import { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
+import { getEnding } from "../query-runner/DownloadResultsDropdownButton";
 
 import IconButton, { IconButtonPropsT } from "./IconButton";
 
@@ -29,8 +30,7 @@ function getFileIcon(label: string): IconName {
 
   // Forms
   if (label.includes(".")) {
-    const ext = label.split(".").pop()?.toLocaleUpperCase();
-    if (!ext) return "file-download";
+    const ext = getEnding(label);
     if (ext in fileTypeToIcon) {
       return fileTypeToIcon[ext];
     }
@@ -39,17 +39,17 @@ function getFileIcon(label: string): IconName {
 }
 
 interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
-  url: ResultUrlsWithLabel;
+  resultUrl: ResultUrlWithLabel;
   className?: string;
   children?: ReactNode;
   onClick?: () => void;
 }
 
 const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
-  ({ url, className, children, onClick, ...restProps }, ref) => {
+  ({ resultUrl, className, children, onClick, ...restProps }, ref) => {
     const { authToken } = useContext(AuthTokenContext);
 
-    const href = `${url.url}?access_token=${encodeURIComponent(
+    const href = `${resultUrl.url}?access_token=${encodeURIComponent(
       authToken,
     )}&charset=ISO_8859_1`;
 
@@ -57,7 +57,7 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
       <Link href={href} className={className} ref={ref}>
         <SxIconButton
           {...restProps}
-          icon={getFileIcon(url.label)}
+          icon={getFileIcon(resultUrl.label)}
           onClick={onClick}
         >
           {children}

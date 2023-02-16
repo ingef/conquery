@@ -1,6 +1,6 @@
 import { getType } from "typesafe-actions";
 
-import type { ColumnDescription, ResultUrlsWithLabel } from "../api/types";
+import type { ColumnDescription } from "../api/types";
 import { Action } from "../app/actions";
 
 import { openPreview, closePreview, loadCSVForPreview } from "./actions";
@@ -8,7 +8,7 @@ import { openPreview, closePreview, loadCSVForPreview } from "./actions";
 export type PreviewStateT = {
   isOpen: boolean;
   isLoading: boolean;
-  dataLoadedForResultUrl: ResultUrlsWithLabel | null;
+  dataLoadedForResultUrl: string | null;
   data: {
     csv: string[][] | null;
     resultColumns: ColumnDescription[] | null;

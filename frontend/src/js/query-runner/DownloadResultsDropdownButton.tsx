@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { memo, useEffect, useMemo, useState } from "react";
 
-import { ResultUrlsWithLabel } from "../api/types";
+import { ResultUrlWithLabel } from "../api/types";
 import DownloadButton from "../button/DownloadButton";
 import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
@@ -49,21 +49,36 @@ interface FileChoice {
   ending: string;
 }
 
-const getEnding = (url: string) => url.split(".").reverse()[0].toUpperCase();
+export const getEnding = (url: string) =>
+  url.split(".").reverse()[0].toUpperCase();
 
-const getInitialEndingChoice = (resultUrls: ResultUrlsWithLabel[]) => {
-  const { preferredDownloadFormat, preferredDownloadLabel } = getUserSettings();
-  const labelResult = resultUrls.find(
-    (url) => url.label === preferredDownloadLabel,
+function getResultUrl(
+  resultUrls: ResultUrlWithLabel[],
+  fileChoice: FileChoice,
+): ResultUrlWithLabel {
+  return (
+    resultUrls.find(({ label }) => label === fileChoice.label) ||
+    resultUrls.find(({ url }) => getEnding(url) === fileChoice.ending) ||
+    resultUrls[0]
   );
-  if (labelResult) {
-    return labelResult;
+}
+
+const getInitialEndingChoice = (resultUrls: ResultUrlWithLabel[]) => {
+  let {
+    preferredDownloadEnding: preferredDownloadFormat,
+    preferredDownloadLabel,
+  } = getUserSettings();
+  if (!preferredDownloadLabel) {
+    preferredDownloadLabel = "";
   }
-  const found = resultUrls.find(
-    (url) => getEnding(url.url) === preferredDownloadFormat,
-  );
+  if (!preferredDownloadFormat) {
+    return resultUrls[0];
+  }
 
-  return found ? found : resultUrls[0];
+  return getResultUrl(resultUrls, {
+    label: preferredDownloadLabel,
+    ending: preferredDownloadFormat,
+  });
 };
 
 const DownloadResultsDropdownButton = ({
@@ -71,7 +86,7 @@ const DownloadResultsDropdownButton = ({
   tiny,
   tooltip,
 }: {
-  resultUrls: ResultUrlsWithLabel[];
+  resultUrls: ResultUrlWithLabel[];
   tiny?: boolean;
   tooltip?: string;
 }) => {
@@ -82,38 +97,29 @@ const DownloadResultsDropdownButton = ({
 
   useEffect(() => {
     storeUserSettings({
-      preferredDownloadFormat: fileChoice.ending,
+      preferredDownloadEnding: fileChoice.ending,
       preferredDownloadLabel: fileChoice.label,
     });
   }, [fileChoice]);
 
   const urlChoice = useMemo(() => {
-    const labelResult = resultUrls.find(
-      (url) => url.label === fileChoice.label,
-    );
-    if (labelResult) {
-      return labelResult;
-    }
-    return (
-      resultUrls.find((url) => getEnding(url.url) === fileChoice.ending) ||
-      resultUrls[0]
-    );
+    return getResultUrl(resultUrls, fileChoice);
   }, [resultUrls, fileChoice]);
 
   const dropdown = useMemo(() => {
     return (
       <List>
-        {resultUrls.map((url) => {
-          const ending = getEnding(url.url);
+        {resultUrls.map((resultUrl) => {
+          const ending = getEnding(resultUrl.url);
 
           return (
             <SxDownloadButton
-              key={url.url}
-              url={url}
-              onClick={() => setFileChoice({ label: url.label, ending })}
+              key={resultUrl.url}
+              resultUrl={resultUrl}
+              onClick={() => setFileChoice({ label: resultUrl.label, ending })}
               bgHover
             >
-              {url.label}
+              {resultUrl.label}
             </SxDownloadButton>
           );
         })}
@@ -125,7 +131,7 @@ const DownloadResultsDropdownButton = ({
     <Frame noborder={tiny}>
       {!tiny && (
         <>
-          <SxDownloadButton bgHover url={urlChoice}>
+          <SxDownloadButton bgHover resultUrl={urlChoice}>
             {urlChoice.label}
           </SxDownloadButton>
           <Separator />

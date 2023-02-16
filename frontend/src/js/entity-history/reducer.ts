@@ -5,7 +5,7 @@ import type {
   ColumnDescriptionSemanticId,
   EntityInfo,
   HistorySources,
-  ResultUrlsWithLabel,
+  ResultUrlWithLabel,
 } from "../api/types";
 import type { Action } from "../app/actions";
 
@@ -40,13 +40,13 @@ export type EntityHistoryStateT = {
   isOpen: boolean;
   columns: Record<string, ColumnDescription>;
   columnDescriptions: ColumnDescription[];
-  resultUrls: ResultUrlsWithLabel[];
+  resultUrls: ResultUrlWithLabel[];
   label: string;
   entityIds: EntityId[];
   currentEntityUniqueSources: string[];
   currentEntityId: EntityId | null;
   currentEntityData: EntityEvent[];
-  currentEntityCsvUrl: ResultUrlsWithLabel | null;
+  currentEntityCsvUrl: string;
   currentEntityInfos: EntityInfo[];
 };
 
@@ -64,7 +64,7 @@ const initialState: EntityHistoryStateT = {
   currentEntityUniqueSources: [],
   currentEntityId: null,
   currentEntityData: [],
-  currentEntityCsvUrl: null,
+  currentEntityCsvUrl: "",
   currentEntityInfos: [],
 };
 
@@ -95,7 +95,7 @@ export default function reducer(
         ...state,
         currentEntityId: null,
         currentEntityData: [],
-        currentEntityCsvUrl: null,
+        currentEntityCsvUrl: "",
         currentEntityInfos: [],
       };
     case getType(resetHistory):
@@ -109,7 +109,7 @@ export default function reducer(
         currentEntityUniqueSources: [],
         currentEntityId: null,
         currentEntityData: [],
-        currentEntityCsvUrl: null,
+        currentEntityCsvUrl: "",
         currentEntityInfos: [],
       };
     case getType(openHistory):

@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "react-app",
-    "plugin:cypress/recommended"
-  ],
+  "extends": ["react-app", "plugin:cypress/recommended"],
   "rules": {
     "jsx-a11y/accessible-emoji": "off"
   }

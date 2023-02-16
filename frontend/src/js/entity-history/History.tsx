@@ -9,7 +9,7 @@ import SplitPane from "react-split-pane";
 import type {
   EntityInfo,
   HistorySources,
-  ResultUrlsWithLabel,
+  ResultUrlWithLabel,
   SelectOptionT,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -111,7 +111,7 @@ export const History = () => {
   const currentEntityInfos = useSelector<StateT, EntityInfo[]>(
     (state) => state.entityHistory.currentEntityInfos,
   );
-  const resultUrls = useSelector<StateT, ResultUrlsWithLabel[]>(
+  const resultUrls = useSelector<StateT, ResultUrlWithLabel[]>(
     (state) => state.entityHistory.resultUrls,
   );
 

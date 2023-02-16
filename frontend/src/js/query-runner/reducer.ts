@@ -4,7 +4,7 @@ import type {
   ColumnDescription,
   DatasetT,
   GetQueryResponseDoneT,
-  ResultUrlsWithLabel,
+  ResultUrlWithLabel,
 } from "../api/types";
 import type { Action } from "../app/actions";
 
@@ -30,7 +30,7 @@ interface QueryResultT extends APICallType {
   datasetId?: string;
   resultLabel?: string;
   resultCount?: number | null;
-  resultUrls?: ResultUrlsWithLabel[];
+  resultUrls?: ResultUrlWithLabel[];
   resultColumns?: ColumnDescription[] | null;
   queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
 }
