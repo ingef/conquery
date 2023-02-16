@@ -153,11 +153,11 @@ module.exports = function (app, port) {
               resultUrls: [
                 {
                   label: "XLSX",
-                  url: "http://localhost:8080/api/result/xlsx/mimic-iii-demo.51cd95fd-90b2-4573-aab5-11846126427b.xlsx",
+                  url: "/api/results/results.xlsx",
                 },
                 {
                   label: "CSV",
-                  url: "http://localhost:8080/api/result/csv/mimic-iii-demo.51cd95fd-90b2-4573-aab5-11846126427b.csv",
+                  url: "/api/results/results.csv",
                 },
               ],
               columnDescriptions: [

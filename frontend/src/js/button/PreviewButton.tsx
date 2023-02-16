@@ -3,7 +3,7 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
-import type { ColumnDescription, ResultUrlsWithLabel } from "../api/types";
+import type { ColumnDescription } from "../api/types";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
 import { openPreview, useLoadPreviewData } from "../preview/actions";
 
@@ -16,7 +16,7 @@ const Button = styled(TransparentButton)`
 
 interface PropsT {
   columns: ColumnDescription[];
-  url: ResultUrlsWithLabel;
+  url: string;
 }
 
 const PreviewButton: FC<PropsT> = ({ url, columns, ...restProps }) => {
@@ -29,10 +29,7 @@ const PreviewButton: FC<PropsT> = ({ url, columns, ...restProps }) => {
   return (
     <Button
       onClick={async () => {
-        await loadPreviewData(
-          { ...url, url: getAuthorizedUrl(url.url) },
-          columns,
-        );
+        await loadPreviewData(getAuthorizedUrl(url), columns);
         dispatch(openPreview());
       }}
       {...restProps}

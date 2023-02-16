@@ -215,7 +215,12 @@ const ProjectItem = forwardRef<
             </WithTooltip>
             {!isFormConfig(item) && item.resultUrls.length > 0 ? (
               <WithTooltip text={t("previousQuery.downloadResults")}>
-                <SxDownloadButton tight small bare url={item.resultUrls[0]}>
+                <SxDownloadButton
+                  tight
+                  small
+                  bare
+                  resultUrl={item.resultUrls[0]}
+                >
                   {topLeftLabel}
                 </SxDownloadButton>
               </WithTooltip>
