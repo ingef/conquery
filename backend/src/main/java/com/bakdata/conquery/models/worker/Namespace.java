@@ -80,7 +80,7 @@ public class Namespace extends IdResolveContext implements Closeable {
 	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
 	private final List<Injectable> injectables;
 
-	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, Function<Class<? extends View>, ObjectMapper> mapperCreator) {
+	public static Namespace createAndRegister(ExecutionManager executionManager, NamespaceStorage storage, ConqueryConfig config, Function<Class<? extends View>, ObjectMapper> mapperCreator) {
 
 		// Prepare namespace dependent Jackson injectables
 		List<Injectable> injectables = new ArrayList<>();
@@ -98,15 +98,12 @@ public class Namespace extends IdResolveContext implements Closeable {
 		storage.openStores(persistenceMapper);
 		storage.loadData();
 
-		ExecutionManager executionManager = new ExecutionManager(datasetRegistry);
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 
 		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getSearch());
 
 
 		final Namespace namespace = new Namespace(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, injectables);
-
-		datasetRegistry.add(namespace);
 
 
 		return namespace;

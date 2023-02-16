@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -81,11 +82,13 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 
 		final Namespace namespace = Namespace.createAndRegister(
-				this,
+				new ExecutionManager(getMetaStorage()),
 				datasetStorage,
 				config,
 				internalObjectMapperCreator
 		);
+
+		add(namespace);
 
 		// for now we just add one worker to every ShardNode
 		for (ShardNodeInformation node : getShardNodes().values()) {

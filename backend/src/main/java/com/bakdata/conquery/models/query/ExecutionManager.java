@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -32,10 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ExecutionManager {
 
-	/**
-	 * @implNote DatasetRegistry serves as handle for {@link MetaStorage} which is loaded after {@link ExecutionManager}. Loading MetaStore however relies on setup and linked Namespace&Storage, which also contain an {@link ExecutionManager}.
-	 */
-	private final DatasetRegistry datasetRegistry;
+	private final MetaStorage storage;
 
 	private final Cache<ManagedExecution, List<List<EntityResult>>> executionResults = CacheBuilder.newBuilder()
 																								   .softValues()
@@ -68,7 +64,6 @@ public class ExecutionManager {
 	}
 
 	public void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
-		final MetaStorage storage = datasetRegistry.getMetaStorage();
 		// Initialize the query / create subqueries
 		try {
 			execution.initExecutable(namespace, config);
@@ -102,12 +97,12 @@ public class ExecutionManager {
 
 	public ManagedExecution createQuery(Namespace namespace, QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution managed = query.toManagedExecution(user, submittedDataset, datasetRegistry.getMetaStorage());
+		ManagedExecution managed = query.toManagedExecution(user, submittedDataset, storage);
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
 
 		// Store the execution
-		datasetRegistry.getMetaStorage().addExecution(managed);
+		storage.addExecution(managed);
 
 		return managed;
 	}
@@ -120,9 +115,8 @@ public class ExecutionManager {
 	 */
 	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result) {
 
-		MetaStorage metaStorage = datasetRegistry.getMetaStorage();
 
-		final E query = (E) metaStorage.getExecution(result.getQueryId());
+		final E query = (E) storage.getExecution(result.getQueryId());
 
 		if (query.getState() != ExecutionState.RUNNING) {
 			return;
@@ -132,7 +126,7 @@ public class ExecutionManager {
 
 		// State changed to DONE or FAILED
 		if (query.getState() != ExecutionState.RUNNING) {
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(query.getOwner(), metaStorage).map(Group::getName).orElse("none");
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(query.getOwner(), storage).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
 			ExecutionMetrics.getQueryStateCounter(query.getState(), primaryGroupName).inc();

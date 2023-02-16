@@ -40,6 +40,7 @@ import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownShard;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
@@ -306,8 +307,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		final Collection<NamespaceStorage> namespaceStorages = config.getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
+				final ExecutionManager executionManager = new ExecutionManager(storage);
 				namespacesDone.add(Namespace.createAndRegister(
-						getDatasetRegistry(),
+						executionManager,
 						namespaceStorage,
 						getConfig(),
 						this::createInternalObjectMapper
