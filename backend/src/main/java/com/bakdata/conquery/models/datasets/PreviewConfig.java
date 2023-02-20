@@ -13,11 +13,11 @@ import javax.ws.rs.core.UriBuilder;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -74,13 +74,13 @@ public class PreviewConfig {
 	private Set<ConnectorId> defaultConnectors = Collections.emptySet();
 
 	/**
-	 * Link to a concept providing search capabilities for entities.
+	 * Link to list of Filters to provide search capabilities for entities.
 	 *
 	 * This looks weird at first, but allows reuse of available components instead of introducing duplicate behaviour.
 	 *
 	 * The Frontend will use the concepts filters to render a search for entity preview.
 	 */
-	private ConceptId searchConcept;
+	private Set<FilterId> searchFilters;
 
 	public boolean isGroupingColumn(SecondaryIdDescription desc) {
 		return getGrouping().contains(desc.getId());
@@ -158,14 +158,14 @@ public class PreviewConfig {
 								   .collect(Collectors.toList());
 	}
 
-	public Concept<?> resolveSearchConcept() {
-		if(searchConcept == null){
+	public List<Filter<?>> resolveSearchFilters() {
+		if(searchFilters == null){
 			return null;
 		}
 
-		return datasetRegistry.findRegistry(searchConcept.getDataset())
-							  .getOptional(searchConcept)
-							  // Since this entire object is intentionally non-dependent (ie not using NsIdRef), this might be null. But in practice rarely should.
-							  .orElse(null);
+		return searchFilters.stream()
+				.map(filter ->  datasetRegistry.findRegistry(filter.getDataset()).getOptional(filter))
+				.flatMap(Optional::stream)
+				.toList();
 	}
 }

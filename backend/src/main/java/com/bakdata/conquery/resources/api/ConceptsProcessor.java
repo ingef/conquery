@@ -163,7 +163,7 @@ public class ConceptsProcessor {
 							 .stream()
 							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
 							 .collect(Collectors.toSet()),
-				previewConfig.resolveSearchConcept()
+				previewConfig.resolveSearchFilters()
 		);
 	}
 
