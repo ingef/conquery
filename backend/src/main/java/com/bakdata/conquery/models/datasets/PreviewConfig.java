@@ -51,6 +51,9 @@ public class PreviewConfig {
 	@Valid
 	private List<InfoCardSelect> infoCardSelects = List.of();
 
+	@Valid
+	private List<TimebasedSelects> timebasedSelects = List.of();
+
 	/**
 	 * Columns that should not be displayed to users in entity preview.
 	 */
@@ -112,6 +115,14 @@ public class PreviewConfig {
 		private final SelectId select;
 
 	}
+
+
+
+	// TODO FK that is an awful name
+	public record TimebasedSelects(String name, List<InfoCardSelect> selects){
+
+	}
+
 
 
 	@JsonIgnore
