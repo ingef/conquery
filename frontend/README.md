@@ -129,7 +129,6 @@ Depending on the use-case, we're still calling the same concepts differently som
 ### State
 
 - We're using [typesafe-actions](https://github.com/piotrwitek/typesafe-actions) for redux actions.
-- We're moving away from redux-thunk (replaced mostly by hooks)
 - We've migrated from `redux-form` to `react-hook-form` recently.
 
 ### Browser support

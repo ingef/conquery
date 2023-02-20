@@ -74,7 +74,6 @@
     "react-window": "^1.8.6",
     "redux": "^4.1.2",
     "redux-devtools-extension": "^2.13.9",
-    "redux-thunk": "^2.4.1",
     "remark-gfm": "^3.0.1",
     "resize-observer-polyfill": "^1.5.1",
     "typesafe-actions": "^5.1.0"
@@ -104,7 +103,6 @@
     "@types/react-redux": "^7.1.22",
     "@types/react-router-dom": "^5.3.3",
     "@types/redux": "^3.6.0",
-    "@types/redux-thunk": "^2.1.0",
     "body-parser": "^1.19.1",
     "cors": "^2.8.5",
     "customize-cra": "^1.0.0",
