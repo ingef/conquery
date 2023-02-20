@@ -5,7 +5,7 @@
   "private": false,
   "license": "MIT",
   "engines": {
-    "node": ">=16.4",
+    "node": ">=18",
     "yarn": ">=1.22.0"
   },
   "scripts": {

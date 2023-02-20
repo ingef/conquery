@@ -9,6 +9,9 @@ jobs:
   end-to-end-test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        node-version: [18.x]
     steps:
       - name: Cache local Maven repository
         uses: actions/cache@v2
@@ -18,9 +21,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: true
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+          node-version: ${{ matrix.node-version }}
 
       - name: Set up JDK
         uses: actions/setup-java@v1
