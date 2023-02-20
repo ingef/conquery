@@ -115,13 +115,13 @@ export function useNewHistorySession() {
   const updateHistorySession = useUpdateHistorySession();
 
   return async (
-    resultUrl: string,
+    url: string,
     columns: ColumnDescription[],
     label: string,
   ) => {
     dispatch(loadHistoryData.request());
 
-    const result = await loadPreviewData(resultUrl, columns, {
+    const result = await loadPreviewData(url, columns, {
       noLoading: true,
     });
 

@@ -5,16 +5,12 @@
   "label": "Result list",
   "resultUrls": [
     {
-      "label": "Alle Dateien",
-      "url": "http://localhost:8080/api/results/all.zip"
+      "label": "XLSX",
+      "url": "/api/results/1234-123123123-123123-1231.xlsx"
     },
     {
-      "label": "Bericht.pdf",
-      "url": "http://localhost:8080/api/results/Bericht.pdf"
-    },
-    {
-      "label": "Statistik.xlsx",
-      "url": "http://localhost:8080/api/results/Statistik.xlsx"
+      "label": "CSV",
+      "url": "/api/results/1234-123123123-123123-1231.csv"
     }
   ],
   "createdAt": "2016-12-02T14:19:09Z",

@@ -71,21 +71,8 @@ function getResultUrl(
 }
 
 const getInitialEndingChoice = (resultUrls: ResultUrlWithLabel[]) => {
-  let {
-    preferredDownloadEnding: preferredDownloadFormat,
-    preferredDownloadLabel,
-  } = getUserSettings();
-  if (!preferredDownloadLabel) {
-    preferredDownloadLabel = "";
-  }
-  if (!preferredDownloadFormat) {
-    return resultUrls[0];
-  }
-
-  return getResultUrl(resultUrls, {
-    label: preferredDownloadLabel,
-    ending: preferredDownloadFormat,
-  });
+  const { preferredDownloadEnding: ending, preferredDownloadLabel : label} = getUserSettings();
+  return getResultUrl(resultUrls, { label: label || "", ending: ending || "" })
 };
 
 const DownloadResultsDropdownButton = ({
@@ -113,6 +100,11 @@ const DownloadResultsDropdownButton = ({
     return getResultUrl(resultUrls, fileChoice);
   }, [resultUrls, fileChoice]);
 
+  const truncChosenLabel = useMemo(() => {
+    const { label } = fileChoice;
+    return label.length > 40 ? `${label.slice(0, 37)}...` : label;
+  }, [fileChoice]);
+
   const dropdown = useMemo(() => {
     return (
       <List>
@@ -139,7 +131,7 @@ const DownloadResultsDropdownButton = ({
       {!tiny && (
         <>
           <SxDownloadButton bgHover resultUrl={urlChoice}>
-            {urlChoice.label}
+            {truncChosenLabel}
           </SxDownloadButton>
           <Separator />
         </>
