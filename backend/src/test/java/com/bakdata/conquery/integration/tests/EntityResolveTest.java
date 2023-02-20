@@ -8,7 +8,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -18,14 +17,12 @@ import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
-import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.DatasetQueryResource;
-import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -33,9 +30,7 @@ import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.description.LazyTextDescription;
 
-/**
- * Adapted from {@link com.bakdata.conquery.integration.tests.deletion.ImportDeletionTest}, tests {@link QueryResource#getEntityData(Subject, QueryResource.EntityPreview, HttpServletRequest)}.
- */
+
 @Slf4j
 public class EntityResolveTest implements ProgrammaticIntegrationTest {
 
@@ -90,7 +85,11 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 													  .request(MediaType.APPLICATION_JSON_TYPE)
 													  .header("Accept-Language", "en-Us")
 													  .post(Entity.json(
-															  new FilterValue[]{new FilterValue.CQMultiSelectFilter((Filter<String[]>) filter, new String[]{"A1"})}
+															  new FilterValue[]{
+																	  // Bit lazy, but this explicitly or's two filters
+																	  new FilterValue.CQMultiSelectFilter((Filter<String[]>) filter, new String[]{"A1"}),
+																	  new FilterValue.CQMultiSelectFilter((Filter<String[]>) filter, new String[]{"B2"})
+															  }
 													  ))) {
 
 			assertThat(allEntityDataResponse.getStatusInfo().getFamily())
@@ -101,7 +100,7 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 		}
 
 
-		assertThat(result).containsExactly(Map.of("ID", "1"));
+		assertThat(result).containsExactly(Map.of("ID", "1"), Map.of("ID", "4"));
 	}
 
 }
