@@ -71,8 +71,9 @@ function getResultUrl(
 }
 
 const getInitialEndingChoice = (resultUrls: ResultUrlWithLabel[]) => {
-  const { preferredDownloadEnding: ending, preferredDownloadLabel : label} = getUserSettings();
-  return getResultUrl(resultUrls, { label: label || "", ending: ending || "" })
+  const { preferredDownloadEnding: ending, preferredDownloadLabel: label } =
+    getUserSettings();
+  return getResultUrl(resultUrls, { label: label || "", ending: ending || "" });
 };
 
 const DownloadResultsDropdownButton = ({
