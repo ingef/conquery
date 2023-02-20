@@ -55,12 +55,17 @@ type MultiSelectFilter =
   | BigMultiSelectFilterWithValueType;
 
 const useFilterState = (table: TableT) => {
+  const allowlistedSearchFilters = useSelector<StateT, string[]>(
+    (state) => state.entityHistory.defaultParams.searchFilters,
+  );
   const [searchFilters, setSearchFilters] = useState<MultiSelectFilter[]>(
     resetFilters(
-      table.filters.filter(
-        (f): f is MultiSelectFilter =>
-          f.type === "BIG_MULTI_SELECT" || f.type === "MULTI_SELECT",
-      ),
+      table.filters
+        .filter((f) => allowlistedSearchFilters.includes(f.id))
+        .filter(
+          (f): f is MultiSelectFilter =>
+            f.type === "BIG_MULTI_SELECT" || f.type === "MULTI_SELECT",
+        ),
     ) as MultiSelectFilter[],
   );
 
@@ -233,6 +238,8 @@ export const SearchEntitiesComponent = ({
     searchFilters,
     onLoad,
   });
+
+  if (searchFilters.length === 0) return null;
 
   return (
     <Root>

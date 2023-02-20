@@ -137,6 +137,10 @@ export const History = () => {
     setCurrentEntityStatus,
   } = useEntityStatus({ currentEntityId: currentEntityId?.id || null });
 
+  const onResetEntityStatus = useCallback(() => {
+    setEntityIdsStatus({});
+  }, [setEntityIdsStatus]);
+
   const onLoadFromFile = useCallback(
     ({
       label,
@@ -174,6 +178,7 @@ export const History = () => {
           entityStatusOptions={entityStatusOptions}
           setEntityStatusOptions={setEntityStatusOptions}
           onLoadFromFile={onLoadFromFile}
+          onResetHistory={onResetEntityStatus}
         />
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Main>
