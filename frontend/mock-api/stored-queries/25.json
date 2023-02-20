@@ -2,6 +2,7 @@
   "id": 25,
   "status": "DONE",
   "numberOfResults": 5,
+  "label": "Result list",
   "resultUrls": [
     {
       "label": "Alle Dateien",

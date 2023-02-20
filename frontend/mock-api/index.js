@@ -110,7 +110,7 @@ module.exports = function (app, port) {
   );
 
   app.get("/api/queries/:id", mockAuthMiddleware, function response(req, res) {
-    if (req.params.id !== 1) {
+    if (req.params.id !== "1") {
       setTimeout(() => {
         res.sendFile(path.join(__dirname, "./stored-queries/25.json"));
       }, LONG_DELAY);
@@ -149,6 +149,7 @@ module.exports = function (app, port) {
             JSON.stringify({
               id: 1,
               status: "DONE",
+              label: "Test result",
               numberOfResults: 5,
               resultUrls: [
                 {
