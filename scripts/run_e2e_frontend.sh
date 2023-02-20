@@ -6,8 +6,7 @@ echo
 echo "Checking for frontend build"
 if [ ! -e ./frontend/build/index.html ]
 then
-    echo "Frontend build not found. Tying to install dependencies and build it."
-    ./scripts/install_frontend.sh
+    echo "Frontend build not found. Tying to build it."
     ./scripts/build_frontend.sh
 else
     echo "Frontend build found: ./frontend/build/index.html"
@@ -19,7 +18,7 @@ echo "Using frontend env variables from .env.e2e"
 	set -a
 	source .env.e2e
 	set +a
-	./scripts/replace-env-at-runtime.sh ./build/index.html 
+	./scripts/replace-env-at-runtime.sh ./build/index.html
 )
 
 echo
