@@ -468,6 +468,134 @@ components:
         - $ref: "#/components/schemas/semantic-secondaryId"
         - $ref: "#/components/schemas/semantic-select"
         - $ref: "#/components/schemas/semantic-sources"
+
+    filter-value-base:
+      type: object
+      properties:
+        filter:
+          $ref: "#/components/schemas/filterId"
+
+    filter-value-multi-select:
+      allOf:
+        - $ref: "#/components/schemas/filter-value-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "MULTI_SELECT"
+        value:
+          type: array
+          items:
+            type: string
+    filter-value-big-multi-select:
+      allOf:
+        - $ref: "#/components/schemas/filter-value-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "BIG_MULTI_SELECT"
+        value:
+          type: array
+          items:
+            type: string
+    filter-value-single-select:
+      allOf:
+        - $ref: "#/components/schemas/filter-value-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "SELECT"
+        value:
+          type: string
+    filter-value-string:
+      allOf:
+        - $ref: "#/components/schemas/filter-value-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "STRING"
+        value:
+          type: string
+
+    filter-value-integer:
+      allOf:
+        - $ref: "#/components/schemas/filter-value-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "INTEGER"
+        value:
+          type: integer
+    filter-value-number-range:
+      allOf:
+        - $ref: "#/components/schemas/filter-value-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "INTEGER_RANGE"
+            - "DECIMAL_RANGE"
+            - "MONEY_RANGE"
+            - "REAL_RANGE"
+        value:
+          type: object
+          properties:
+            min:
+              type: number
+            max:
+              type: number
+    filter-value-integer-range:
+      allOf:
+        - $ref: "#/components/schemas/filter-value-base"
+      properties:
+        type:
+          type: string
+          enum:
+            - "INTEGER_RANGE"
+        value:
+          type: object
+          properties:
+            min:
+              type: integer
+            max:
+              type: integer
+
+    group-filter-value:
+      allOf:
+        - $ref: "#/components/schemas/filter-value-base"
+      type: object
+      additionalProperties:
+        $ref: "#/components/schemas/filter-value"
+
+    filter-value:
+      description: Bundle of Filter and requested parameters.
+      type: object
+      discriminator:
+        propertyName: "type"
+        mapping:
+          "INTEGER_RANGE": "#/components/schemas/filter-value-integer-range"
+          "REAL_RANGE": "#/components/schemas/filter-value-number-range"
+          "MONEY_RANGE": "#/components/schemas/filter-value-number-range"
+          "DECIMAL_RANGE": "#/components/schemas/filter-value-number-range"
+          "INTEGER": "#/components/schemas/filter-value-integer"
+          "STRING": "#/components/schemas/filter-value-string"
+          "SELECT": "#/components/schemas/filter-value-single-select"
+          "BIG_MULTI_SELECT": "#/components/schemas/filter-value-multi-select"
+          "MULTI_SELECT": "#/components/schemas/filter-value-big-multi-select"
+      oneOf:
+        - $ref: "#/components/schemas/filter-value-number-range"
+        - $ref: "#/components/schemas/filter-value-number-range"
+        - $ref: "#/components/schemas/filter-value-number-range"
+        - $ref: "#/components/schemas/filter-value-number-range"
+        - $ref: "#/components/schemas/filter-value-integer"
+        - $ref: "#/components/schemas/filter-value-string"
+        - $ref: "#/components/schemas/filter-value-single-select"
+        - $ref: "#/components/schemas/filter-value-multi-select"
+        - $ref: "#/components/schemas/filter-value-big-multi-select"
     column-description:
       description: Metadata of a result column of a query.
       type: object
@@ -810,6 +938,32 @@ paths:
                 $ref: "#/components/schemas/full-execution-status"
         "401":
           $ref: "#/components/responses/unauthorized"
+  /datasets/{dataset}/queries/resolve-entities:
+    parameters:
+      - $ref: "#/components/parameters/dataset"
+    post:
+      tags:
+        - entity-preview
+      operationId: resolve-entities
+      summary: Search for a few entities, returning their ids.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/filter-value"
+      responses:
+        "200":
+          description: List of tuple of ids.
+          content:
+            application/json:
+              example: [ { "kind1": "id1", "kind2": "id2" }, { "kind1": "id3", "kind2": "id4" } ]
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+
 
   /datasets/{dataset}/queries/entity:
     parameters:

@@ -62,6 +62,7 @@ const DEFAULT_VALIDATION_BY_TYPE: Record<
   null | ((t: TFunction, value: any) => string | null)
 > = {
   STRING: null,
+  TEXTAREA: null,
   NUMBER: null,
   CHECKBOX: null,
   CONCEPT_LIST: null,

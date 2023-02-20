@@ -4,7 +4,10 @@ import type { ConceptIdT, SelectOptionT } from "../api/types";
 import { Action } from "../app/actions";
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
-import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
+import {
+  getConceptById,
+  getConceptsByIdsWithTablesAndSelects,
+} from "../concept-trees/globalTreeStoreHelper";
 import type { TreesT } from "../concept-trees/reducer";
 import { mergeFilterOptions } from "../model/filter";
 import { nodeIsConceptQueryNode } from "../model/node";
@@ -702,8 +705,13 @@ const onRemoveConceptFromNode = (
 
   if (!nodeIsConceptQueryNode(node)) return state;
 
+  const newIds = node.ids.filter((id) => id !== conceptId);
   return setElementProperties(state, andIdx, orIdx, {
-    ids: node.ids.filter((id) => id !== conceptId),
+    ids: newIds,
+    description:
+      newIds.length === 1
+        ? getConceptById(newIds[0])?.description
+        : node.description,
   });
 };
 

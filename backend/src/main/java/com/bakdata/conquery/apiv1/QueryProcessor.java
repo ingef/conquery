@@ -4,6 +4,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetA
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
@@ -31,7 +33,10 @@ import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
+import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -42,6 +47,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
@@ -51,9 +57,11 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
 import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
@@ -62,6 +70,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
+import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
 import lombok.AllArgsConstructor;
@@ -419,4 +428,77 @@ public class QueryProcessor {
 	}
 
 
+	/**
+	 * Execute a basic query on a single concept and return only the included entities Id's.
+	 */
+	public Stream<Map<String, String>> resolveEntities(Subject subject, List<FilterValue<?>> filters, Dataset dataset) {
+		if(filters.stream().map(fv ->  fv.getFilter().getConnector()).distinct().count() != 1){
+			throw new BadRequestException("Query exactly one connector at once.");
+		}
+
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
+
+		// Build query, assuming FilterValues are all of the same concept and connector.
+		final CQConcept cqConcept = new CQConcept();
+		cqConcept.setElements(List.of(filters.get(0).getFilter().getConnector().getConcept()));
+
+		final CQTable cqTable = new CQTable();
+		cqTable.setFilters(filters);
+		cqTable.setConnector(filters.get(0).getFilter().getConnector());
+		cqTable.setConcept(cqConcept);
+
+		cqConcept.setTables(List.of(cqTable));
+
+		final QueryDescription query = new ConceptQuery(cqConcept);
+
+		final ManagedExecution<?> execution = postQuery(dataset, query, subject, true);
+
+		if (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
+			log.warn("Still waiting for {} after 10 Seconds.", execution.getId());
+			throw new ConqueryError.ExecutionProcessingTimeoutError();
+		}
+
+		if (execution.getState() == ExecutionState.FAILED) {
+			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
+		}
+
+		final SingleTableResult result = (SingleTableResult) execution;
+
+
+		final List<ColumnConfig> ids = config.getIdColumns()
+											 .getIds().stream()
+											 // We're only interested in returning printable AND resolvable ids
+											 .filter(ColumnConfig::isPrint)
+											 .filter(ColumnConfig::isResolvable)
+											 .collect(Collectors.toList());
+
+
+		final Map<String, Integer> id2index = IntStream.range(0, ids.size())
+													   .boxed()
+													   .collect(Collectors.toMap(
+														 idx -> ids.get(idx).getName(),
+														 idx -> idx
+												 ));
+
+		final IdPrinter printer = IdColumnUtil.getIdPrinter(subject, execution, namespace, ids);
+
+		// For each included entity emit a Map of { Id-Name -> Id-Value }
+		return result.streamResults()
+				.map(printer::createId)
+				.map(entityPrintId -> {
+					final Map<String, String> out = new HashMap<>();
+
+					for (Map.Entry<String, Integer> entry : id2index.entrySet()) {
+						// Not all ExternalIds are expected to be set.
+						if (entityPrintId.getExternalId()[entry.getValue()] == null) {
+							continue;
+						}
+
+						out.put(entry.getKey(), entityPrintId.getExternalId()[entry.getValue()]);
+					}
+
+					return out;
+				})
+				.filter(Predicate.not(Map::isEmpty));
+	}
 }

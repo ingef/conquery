@@ -40,9 +40,16 @@ const Separator = styled("div")`
   background-color: ${({ theme }) => theme.col.gray};
 `;
 
-// Skidding makes Dropdown align the right edge with the button,
-// might need to adjust this when adding more content.
-const dropdownOffset: [number, number] = [-37, 8]; // [skidding, distance] / default [0, 10]
+const popperOptions = {
+  modifiers: [
+    {
+      name: "preventOverflow",
+      options: {
+        padding: 20,
+      },
+    },
+  ],
+};
 
 interface FileChoice {
   label: string;
@@ -143,7 +150,7 @@ const DownloadResultsDropdownButton = ({
           interactive
           arrow={false}
           trigger="click"
-          offset={dropdownOffset}
+          popperOptions={popperOptions}
         >
           <SxIconButton bgHover icon={tiny ? "download" : "caret-down"} />
         </WithTooltip>

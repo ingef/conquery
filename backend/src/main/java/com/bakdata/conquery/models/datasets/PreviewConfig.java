@@ -158,8 +158,7 @@ public class PreviewConfig {
 								   .collect(Collectors.toList());
 	}
 
-	@JsonIgnore
-	public Concept<?> getSearchConcept() {
+	public Concept<?> resolveSearchConcept() {
 		if(searchConcept == null){
 			return null;
 		}
