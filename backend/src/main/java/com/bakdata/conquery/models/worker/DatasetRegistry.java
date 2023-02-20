@@ -21,12 +21,10 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -72,14 +70,13 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	public Namespace createNamespace(Dataset dataset, Validator validator) throws IOException {
 		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
-		final ObjectMapper persistenceMapper = internalObjectMapperCreator.apply(View.Persistence.Manager.class);
-		datasetStorage.openStores(persistenceMapper);
-		datasetStorage.loadData();
-		datasetStorage.updateDataset(dataset);
-		datasetStorage.updateIdMapping(new EntityIdMap());
-		datasetStorage.setPreviewConfig(new PreviewConfig());
-		datasetStorage.close();
 
+
+		return createNamespace(datasetStorage);
+	}
+
+
+	public Namespace createNamespace(NamespaceStorage datasetStorage) {
 
 		final Namespace namespace = Namespace.create(
 				new ExecutionManager(getMetaStorage()),
@@ -92,13 +89,13 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 		// for now we just add one worker to every ShardNode
 		for (ShardNodeInformation node : getShardNodes().values()) {
-			node.send(new AddWorker(dataset));
+			node.send(new AddWorker(datasetStorage.getDataset()));
 		}
 
 		return namespace;
 	}
 
-	public void add(Namespace ns) {
+	private void add(Namespace ns) {
 		datasets.put(ns.getStorage().getDataset().getId(), ns);
 	}
 

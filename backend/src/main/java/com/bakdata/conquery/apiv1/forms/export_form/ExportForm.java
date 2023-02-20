@@ -33,7 +33,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -83,12 +82,10 @@ public class ExportForm extends Form implements InternalForm {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, MetaStorage storage) {
+	public Map<String, Query> createSubQueries() {
 		return Map.of(
 				ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
-				List.of(
-						timeMode.createSpecializedQuery(namespace, user)
-								.toManagedExecution(user, namespace.getDataset(), storage))
+				timeMode.createSpecializedQuery()
 		);
 	}
 

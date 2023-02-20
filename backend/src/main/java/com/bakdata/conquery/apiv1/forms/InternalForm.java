@@ -1,18 +1,17 @@
 package com.bakdata.conquery.apiv1.forms;
 
-import java.util.List;
 import java.util.Map;
 
-import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.apiv1.query.Query;
 
 /**
  * Interface for {@link Form}s that are executed as a {@link com.bakdata.conquery.models.forms.managed.ManagedInternalForm}.
+ * <p>
+ * {@link com.bakdata.conquery.models.forms.managed.ManagedInternalForm}s can consist of multiple sub queries which are generated from the api object.
  */
 public interface InternalForm {
 
-	Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, MetaStorage storage);
+
+	Map<String, Query> createSubQueries();
 
 }

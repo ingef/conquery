@@ -319,10 +319,11 @@ public class QueryProcessor {
 
 	public void reexecute(Subject subject, ManagedExecution query) {
 		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
-		final Namespace namespace = datasetRegistry.get(query.getDataset().getId());
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
-			datasetRegistry.get(query.getDataset().getId()).getExecutionManager().execute(namespace, query, config);
+			final Namespace namespace = query.getNamespace();
+
+			namespace.getExecutionManager().execute(namespace, query, config);
 		}
 	}
 

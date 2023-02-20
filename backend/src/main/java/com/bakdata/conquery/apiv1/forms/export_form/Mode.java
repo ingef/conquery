@@ -2,10 +2,8 @@ package com.bakdata.conquery.apiv1.forms.export_form;
 
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
@@ -22,5 +20,5 @@ public abstract class Mode implements Visitable {
 
 	public abstract void resolve(QueryResolveContext context);
 
-	public abstract Query createSpecializedQuery(Namespace namespace, User user);
+	public abstract Query createSpecializedQuery();
 }

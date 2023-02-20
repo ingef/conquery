@@ -134,11 +134,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 */
 	public final void initExecutable(Namespace namespace, ConqueryConfig config) {
 		if (!namespace.getDataset().equals(dataset)) {
-			throw new IllegalStateException("Initial dataset does not match provided namespace. (Initial: '"
-											+ dataset.getId()
-											+ "', Provided: '"
-											+ namespace.getDataset().getId()
-											+ "' )");
+			throw new IllegalStateException(String.format("Initial dataset does not match provided namespace. (Initial: '%s', Provided: '%s' )", dataset.getId(), namespace.getDataset()
+																																										   .getId()));
 		}
 
 		synchronized (this) {

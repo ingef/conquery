@@ -121,12 +121,12 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	@JsonIgnore
 	private ManagedQuery getInfoCardExecution() {
-		return getSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME).get(0);
+		return getSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME);
 	}
 
 	@JsonIgnore
 	private ManagedQuery getValuesQuery() {
-		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME).get(0);
+		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME);
 	}
 
 

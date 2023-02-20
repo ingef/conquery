@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.query.results.ShardResult;
 public interface InternalExecution<R extends ShardResult> {
 
 	/**
-	 * The message that is send to the shard nodes
+	 * The message sent to shard nodes, to execute the query
 	 */
 	WorkerMessage createExecutionMessage();
 

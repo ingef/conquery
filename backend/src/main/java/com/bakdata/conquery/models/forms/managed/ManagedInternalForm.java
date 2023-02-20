@@ -33,6 +33,7 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Execution type for simple forms, that are completely executed within Conquery and produce a single table as result.
@@ -48,7 +49,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	 * This is required by forms that have multiple results (CSVs) as output.
 	 */
 	@JsonIgnore
-	private Map<String, List<ManagedQuery>> subQueries;
+	private Map<String, ManagedQuery> subQueries;
 
 	/**
 	 * Subqueries that are send to the workers.
@@ -67,19 +68,30 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@Override
 	public void doInitExecutable() {
-		// init all subqueries
-		final F submittedForm = getSubmittedForm();
+		// Convert sub queries to sub executions
+		getSubmittedForm().resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
+		subQueries = createSubExecutions();
 
-		submittedForm.resolve(new QueryResolveContext(getDataset(), getNamespace(), getConfig(), getStorage(), null));
-		subQueries = submittedForm.createSubQueries(getNamespace(), super.getOwner(), getStorage());
-		subQueries.values().stream().flatMap(List::stream).forEach(mq -> mq.initExecutable(getNamespace(), getConfig()));
+		// Initialize sub executions
+		subQueries.values().forEach(mq -> mq.initExecutable(getNamespace(), getConfig()));
+	}
+
+	@NotNull
+	private Map<String, ManagedQuery> createSubExecutions() {
+		return getSubmittedForm().createSubQueries()
+								 .entrySet()
+								 .stream().collect(Collectors.toMap(
+						e -> e.getKey(),
+						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getStorage())
+
+				));
 	}
 
 
 	@Override
 	public void start() {
 		synchronized (this) {
-			subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
+			subQueries.values().stream().forEach(flatSubQueries::add);
 		}
 		flatSubQueries.values().forEach(ManagedQuery::start);
 		super.start();
@@ -87,7 +99,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@Override
 	public List<ColumnDescriptor> generateColumnDescriptions() {
-		return subQueries.values().iterator().next().get(0).generateColumnDescriptions();
+		return subQueries.values().iterator().next().generateColumnDescriptions();
 	}
 
 
@@ -97,7 +109,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		// Set the ColumnDescription if the Form only consits of a single subquery
 		if (subQueries == null) {
 			// If subqueries was not set the Execution was not initialized, do it manually
-			subQueries = getSubmittedForm().createSubQueries(getNamespace(), super.getOwner(), getStorage());
+			subQueries = createSubExecutions();
 		}
 		if (subQueries.size() != 1) {
 			// The sub-query size might also be zero if the backend just delegates the form further to another backend. Forms with more subqueries are not yet supported
@@ -107,17 +119,8 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 			);
 			return;
 		}
-		List<ManagedQuery> subQuery = subQueries.entrySet().iterator().next().getValue();
-		if (subQuery.isEmpty()) {
-			log.warn(
-					"The {} ({} from Form {}) does not have any subqueries after initialization. Not creating a column description.",
-					this.getClass().getSimpleName(),
-					getId(),
-					getSubmitted().getClass().getSimpleName()
-			);
-			return;
-		}
-		status.setColumnDescriptions(subQuery.get(0).generateColumnDescriptions());
+		ManagedQuery subQuery = subQueries.entrySet().iterator().next().getValue();
+		status.setColumnDescriptions(subQuery.generateColumnDescriptions());
 	}
 
 	@Override
@@ -126,7 +129,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		if (subQueries.size() != 1) {
 			throw new UnsupportedOperationException("Cannot gather result info when multiple tables are generated");
 		}
-		return subQueries.values().iterator().next().get(0).getResultInfos();
+		return subQueries.values().iterator().next().getResultInfos();
 	}
 
 	@Override
@@ -135,7 +138,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
 		}
-		return subQueries.values().iterator().next().stream().flatMap(ManagedQuery::streamResults);
+		return subQueries.values().iterator().next().streamResults();
 	}
 
 	@Override
@@ -144,7 +147,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 			// Get the query, only if there is only one query set in the whole execution
 			throw new UnsupportedOperationException("Cannot return the result query of a multi query form");
 		}
-		return subQueries.values().iterator().next().stream().findFirst().map(ManagedQuery::resultRowCount).orElseThrow();
+		return subQueries.values().iterator().next().resultRowCount();
 	}
 
 	@Override
@@ -192,12 +195,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	private boolean allSubQueriesDone() {
 		synchronized (this) {
-			for (ManagedQuery q : flatSubQueries.values()) {
-				if (!q.getState().equals(ExecutionState.DONE)) {
-					return false;
-				}
-			}
+			return flatSubQueries.values().stream().allMatch(q -> q.getState().equals(ExecutionState.DONE));
 		}
-		return true;
 	}
 }

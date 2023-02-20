@@ -5,8 +5,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,9 +38,7 @@ import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownShard;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
@@ -300,30 +296,22 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	public void loadNamespaces() {
 
 
-		Queue<Namespace> namespacesDone = new ConcurrentLinkedQueue<>();
 		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
 		final Collection<NamespaceStorage> namespaceStorages = config.getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				final ExecutionManager executionManager = new ExecutionManager(storage);
-				final Namespace namespace = Namespace.create(
-						executionManager,
-						namespaceStorage,
-						getConfig(),
-						this::createInternalObjectMapper
-				);
-				datasetRegistry.add(namespace);
-				namespacesDone.add(namespace);
+				datasetRegistry.createNamespace(namespaceStorage);
 			});
 		}
 
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", namespacesDone.size(), namespaceStorages.size()
-																															- namespacesDone.size());
+			final int coundLoaded = datasetRegistry.getDatasets().size();
+			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", coundLoaded, namespaceStorages.size()
+																												  - coundLoaded);
 		}
 	}
 

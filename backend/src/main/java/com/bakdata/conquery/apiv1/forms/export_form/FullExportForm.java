@@ -15,6 +15,7 @@ import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
+import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
@@ -30,7 +31,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
@@ -64,7 +64,7 @@ public class FullExportForm extends Form implements InternalForm {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, MetaStorage storage) {
+	public Map<String, Query> createSubQueries() {
 
 		// Forms are sent as an array of standard queries containing AND/OR of CQConcepts, we ignore everything and just convert the CQConcepts into CQUnfiltered for export.
 
@@ -73,12 +73,10 @@ public class FullExportForm extends Form implements InternalForm {
 
 		exportQuery.setTables(tables);
 
-		final ManagedQuery managedQuery = new ManagedQuery(exportQuery, user, namespace.getDataset(), storage);
-
 
 		return Map.of(
 				ConqueryConstants.SINGLE_RESULT_TABLE_NAME,
-				List.of(managedQuery)
+				exportQuery
 		);
 
 	}

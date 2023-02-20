@@ -11,7 +11,6 @@ import lombok.With;
 @Data
 @RequiredArgsConstructor
 public class QueryResolveContext {
-	private final Dataset dataset;
 	private final Namespace namespace;
 	private final ConqueryConfig config;
 	private final MetaStorage storage;

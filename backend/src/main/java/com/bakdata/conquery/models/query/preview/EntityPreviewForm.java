@@ -30,11 +30,9 @@ import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
@@ -101,10 +99,10 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>> createSubQueries(Namespace namespace, User user, MetaStorage storage) {
+	public Map<String, Query> createSubQueries() {
 		return Map.of(
-				VALUES_QUERY_NAME, List.of(getValuesQuery().toManagedExecution(user, namespace.getDataset(), storage)),
-				INFOS_QUERY_NAME, List.of(getInfoCardQuery().toManagedExecution(user, namespace.getDataset(), storage))
+				VALUES_QUERY_NAME, getValuesQuery(),
+				INFOS_QUERY_NAME, getInfoCardQuery()
 		);
 	}
 
