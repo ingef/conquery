@@ -21,10 +21,12 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -70,14 +72,20 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	public Namespace createNamespace(Dataset dataset, Validator validator) throws IOException {
 		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
+		final ObjectMapper persistenceMapper = internalObjectMapperCreator.apply(View.Persistence.Manager.class);
 
+		datasetStorage.openStores(persistenceMapper);
+		datasetStorage.loadData();
+		datasetStorage.updateDataset(dataset);
+		datasetStorage.updateIdMapping(new EntityIdMap());
+		datasetStorage.setPreviewConfig(new PreviewConfig());
+		datasetStorage.close();
 
 		return createNamespace(datasetStorage);
 	}
 
 
 	public Namespace createNamespace(NamespaceStorage datasetStorage) {
-
 		final Namespace namespace = Namespace.create(
 				new ExecutionManager(getMetaStorage()),
 				datasetStorage,

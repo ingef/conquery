@@ -118,6 +118,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// The validator is already injected at this point see Conquery.java
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize(), config, this::createInternalObjectMapper);
 		storage = new MetaStorage(config.getStorage(), datasetRegistry);
+		datasetRegistry.setMetaStorage(storage);
 
 
 		final ObjectMapper objectMapper = environment.getObjectMapper();
@@ -288,8 +289,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		log.info("Loading MetaStorage");
 		storage.loadData();
 		log.info("MetaStorage loaded {}", storage);
-
-		datasetRegistry.setMetaStorage(storage);
 	}
 
 	@SneakyThrows(InterruptedException.class)
