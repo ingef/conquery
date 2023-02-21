@@ -76,7 +76,7 @@ public class EntityPreviewForm extends Form {
 		return null; // will not be implemented.
 	}
 
-	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.TimebasedSelects> timebasedSelects) {
+	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.TimebasedSelects> timebasedSelects, DatasetRegistry datasetRegistry) {
 
 		// We use this query to filter for the single selected query.
 		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
@@ -93,7 +93,7 @@ public class EntityPreviewForm extends Form {
 																  ArrayConceptQuery.createFromFeatures(
 																				selects.selects().stream()
 																					   .map(PreviewConfig.InfoCardSelect::getSelect)
-																					   .map(id -> (Select) null)// TODO resolve
+																					   .map(id -> datasetRegistry.resolve(id))// TODO resolve optional?
 																					   .map(CQConcept::forSelect)
 																					   .collect(Collectors.toList())),
 																  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.YEARS, Alignment.YEAR), ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER))

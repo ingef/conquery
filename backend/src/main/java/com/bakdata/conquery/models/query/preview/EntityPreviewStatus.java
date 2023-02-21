@@ -27,7 +27,6 @@ public class EntityPreviewStatus extends FullExecutionStatus {
 
 
 	record TimebasedInfos(String label, List<ColumnDescriptor> columns, List<YearEntry> years) {
-		//TODO make values Map<String, Object>
 
 		record QuarterEntry(int quarter, Map<String, Object> values) {
 		}

@@ -100,6 +100,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 					new PreviewConfig.InfoCardSelect("Values", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))
 			));
 
+			previewConfig.setTimebasedSelects(List.of(new PreviewConfig.TimebasedSelects("Values in Time", List.of(new PreviewConfig.InfoCardSelect("Values", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))))));
+
 			previewConfig.setHidden(Set.of(ColumnId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "table1.column")));
 
 			try (Response response = conquery.getClient().target(setPreviewConfig)
@@ -126,7 +128,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		try (Response allEntityDataResponse = conquery.getClient().target(entityExport)
 													  .request(MediaType.APPLICATION_JSON_TYPE)
 													  .header("Accept-Language", "en-Us")
-													  .post(Entity.json(new EntityPreviewRequest("ID", "1", Range.atMost(LocalDate.of(2022, 11, 10)), allConnectors)))) {
+													  .post(Entity.json(new EntityPreviewRequest("ID", "1", Range.of(LocalDate.of(2020, 1, 11), LocalDate.of(2022, 12, 31)), allConnectors)))) {
 
 			assertThat(allEntityDataResponse.getStatusInfo().getFamily())
 					.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
@@ -134,6 +136,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 			result = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
 		}
+
+		log.info("{}", result.getTimebasedInfos());
 
 		assertThat(result.getInfos()).isEqualTo(List.of(
 				new EntityPreviewStatus.Info(
@@ -155,6 +159,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						)
 				)
 		));
+
 
 		assertThat(result.getColumnDescriptions())
 				.isNotNull()

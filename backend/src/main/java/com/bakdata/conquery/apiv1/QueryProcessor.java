@@ -402,7 +402,7 @@ public class QueryProcessor {
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
 		final PreviewConfig previewConfig = datasetRegistry.get(dataset.getId()).getPreviewConfig();
-		final EntityPreviewForm form = EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimebasedSelects());
+		final EntityPreviewForm form = EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimebasedSelects(), datasetRegistry);
 
 		// TODO make sure that subqueries are also system
 		// TODO do not persist system queries
