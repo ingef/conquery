@@ -1,14 +1,14 @@
 // ----------------------------------
 // PRODUCTION SERVER (see Dockerfile)
 // ----------------------------------
+import compression from "compression";
+import cors from "cors";
+import express from "express";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+import path from "path";
 
-const express = require("express");
 const app = express();
-const compression = require("compression");
-const helmet = require("helmet");
-const cors = require("cors");
-const path = require("path");
-const rateLimit = require('express-rate-limit');
 
 const PORT = process.env.PORT || 8000;
 // Maximum requests per minute
@@ -17,7 +17,7 @@ const requestsPerMinute = process.env.REQUESTS_PER_MINUTE || 1000;
 app.use(
   helmet({
     contentSecurityPolicy: false,
-  })
+  }),
 );
 app.disable("x-powered-by");
 app.use(compression());
@@ -27,13 +27,13 @@ app.use(cors());
 app.use(
   rateLimit({
     windowMs: 60 * 1000, // 1 minute
-    max: requestsPerMinute
-  })
+    max: Number(requestsPerMinute),
+  }),
 );
 
 app.use(express.static(path.resolve(__dirname, "build")));
 app.get("*", (req, res) =>
-  res.sendFile(path.join(__dirname, "build", "index.html"))
+  res.sendFile(path.join(__dirname, "build", "index.html")),
 );
 app.use((req, res, next) => {
   if (req.accepts(`html`)) {

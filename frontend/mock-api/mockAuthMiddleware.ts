@@ -1,4 +1,10 @@
-module.exports = (req, res, next) => {
+import { Request, Response, NextFunction } from "express";
+
+const mockAuthMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const authHeader = req.headers.authorization;
 
   if (authHeader) {
@@ -12,3 +18,5 @@ module.exports = (req, res, next) => {
 
   res.sendStatus(401);
 };
+
+export default mockAuthMiddleware;
