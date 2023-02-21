@@ -227,6 +227,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 			for (int column = 0; column < size; column++) {
 				final String columnName = columnNames[column];
 
+				//TODO probably have to rely on the TimebasedSelect itself, since we will be mapping labels?
 				if(columnName == null) {
 					continue;
 				}
