@@ -7,7 +7,25 @@ Originally, this library was only made for node.
 To make it work in the browser, 'events' has been installed.
 
 */
-import EventEmitter from "events";
+
+class EventEmitter {
+  callbacks: Record<string, Function[]>;
+  constructor() {
+    this.callbacks = {};
+  }
+
+  on(event: string, cb: Function) {
+    if (!this.callbacks[event]) this.callbacks[event] = [];
+    this.callbacks[event].push(cb);
+  }
+
+  emit(event: string, data: any) {
+    let cbs = this.callbacks[event];
+    if (cbs) {
+      cbs.forEach((cb) => cb(data));
+    }
+  }
+}
 
 function arrayMove(
   src: any[],
@@ -159,7 +177,7 @@ export class Sema {
     this.resumeFn = resumeFn;
     this.paused = false;
 
-    this.releaseEmitter.on("release", (token) => {
+    this.releaseEmitter.on("release", (token: string) => {
       const p = this.waiting.shift();
       if (p) {
         p.resolve(token);

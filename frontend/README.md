@@ -2,7 +2,7 @@
 
 ## Technologies
 
-- create-react-app
+- vite
 - typescript
 - react / redux
 - simple express.js server for a mock api
