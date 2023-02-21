@@ -7,9 +7,3 @@ module.exports = {
   },
   setupFiles: ["./src/test/setup.ts"],
 };
-
-// "isolatedModules": false
-
-// {
-//   useESM: true,
-// },
