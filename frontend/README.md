@@ -60,7 +60,7 @@ Commands analogoues to `start_production.sh` script.
 
 ```bash
 yarn
-yarn start
+yarn dev
 ```
 
 Adjust your local `.env` file as necessary to apply environment variables during development

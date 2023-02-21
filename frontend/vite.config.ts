@@ -7,6 +7,7 @@ export default defineConfig(({ command, mode }) => {
     envPrefix: "REACT_APP_",
     plugins: [
       react({
+        fastRefresh: process.env.NODE_ENV !== "test",
         jsxImportSource: "@emotion/react",
         babel: {
           plugins: ["@emotion/babel-plugin"],

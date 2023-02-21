@@ -52,6 +52,10 @@ const Content = ({ rightTabs }: ContentPropsT) => {
       <Root>
         {isHistoryOpen && <History />}
         {isPreviewOpen && <Preview />}
+        {/*
+          react-split-pane is not compatible with react 18 types,
+          TODO: Move to https://github.com/johnwalley/allotment
+          @ts-ignore */}
         <SplitPane
           split="vertical"
           allowResize={displayTooltip}
@@ -61,6 +65,10 @@ const Content = ({ rightTabs }: ContentPropsT) => {
           className={!displayTooltip ? "SplitPane--tooltip-fixed" : ""}
         >
           {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
+          {/*
+          react-split-pane is not compatible with react 18 types,
+          TODO: Move to https://github.com/johnwalley/allotment
+          @ts-ignore */}
           <SplitPane
             split="vertical"
             minSize={350}

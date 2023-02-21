@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { ReactNode } from "react";
 import { useDispatch } from "react-redux";
 
 import type { ConceptT } from "../api/types";
@@ -23,12 +23,15 @@ const getAdditionalInfos = (node: ConceptT): AdditionalInfosType => ({
   infos: node.additionalInfos,
 });
 
-interface Props {
+const AdditionalInfoHoverable = ({
+  node,
+  className,
+  children,
+}: {
+  children: ReactNode;
   node: ConceptT;
   className?: string;
-}
-
-const AdditionalInfoHoverable: FC<Props> = ({ node, className, children }) => {
+}) => {
   const dispatch = useDispatch();
 
   const onDisplayAdditionalInfos = () => {

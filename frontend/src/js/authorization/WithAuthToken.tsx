@@ -1,12 +1,12 @@
 import { useKeycloak } from "@react-keycloak-fork/web";
-import { FC, useContext, useEffect, useState } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { isLoginDisabled, isIDPEnabled } from "../environment";
 
 import { AuthTokenContext } from "./AuthTokenProvider";
 
-const WithAuthToken: FC = ({ children }) => {
+const WithAuthToken = ({ children }: { children: ReactNode }) => {
   const { initialized } = useKeycloak();
   const navigate = useNavigate();
   const { authToken } = useContext(AuthTokenContext);

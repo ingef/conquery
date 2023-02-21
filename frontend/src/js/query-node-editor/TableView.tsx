@@ -83,7 +83,14 @@ const TableView: FC<PropsT> = ({
   );
 
   const loadFilterSuggestions = useCallback(
-    (filterIdx, filterId, prefix, page, pageSize, config) =>
+    (
+      filterIdx: number,
+      filterId: string,
+      prefix: string,
+      page: number,
+      pageSize: number,
+      config?: { returnOnly?: boolean },
+    ) =>
       onLoadFilterSuggestions(
         {
           filterId,
@@ -100,7 +107,7 @@ const TableView: FC<PropsT> = ({
   );
 
   const selectTableSelects = useCallback(
-    (value) => onSelectTableSelects(tableIdx, value),
+    (value: SelectOptionT[]) => onSelectTableSelects(tableIdx, value),
     [onSelectTableSelects, tableIdx],
   );
 
