@@ -10,10 +10,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.apiv1.frontend.FrontendPreviewConfig;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -75,12 +75,15 @@ public class PreviewConfig {
 
 	/**
 	 * Link to list of Filters to provide search capabilities for entities.
-	 *
+	 * <p>
 	 * This looks weird at first, but allows reuse of available components instead of introducing duplicate behaviour.
-	 *
+	 * <p>
 	 * The Frontend will use the concepts filters to render a search for entity preview.
 	 */
 	private Set<FilterId> searchFilters;
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NotNull
+	private DatasetRegistry datasetRegistry;
 
 	public boolean isGroupingColumn(SecondaryIdDescription desc) {
 		return getGrouping().contains(desc.getId());
@@ -90,36 +93,11 @@ public class PreviewConfig {
 		return getHidden().contains(column.getId());
 	}
 
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NotNull
-	private DatasetRegistry datasetRegistry;
-
-	@Data
-	public static class InfoCardSelect {
-		@JsonCreator
-		public InfoCardSelect(String label, SelectId select) {
-			this.label = label;
-			this.select = select;
-		}
-
-		/**
-		 * User facing label of the select.
-		 */
-		private final String label;
-		/**
-		 * Id (without dataset) of the select.
-		 */
-		private final SelectId select;
-
-	}
-
-
 	@JsonIgnore
 	@ValidationMethod(message = "Default Connectors must also be available Connectors.")
 	public boolean isDefaultSubsetOfAvailable() {
 		return Sets.difference(getDefaultConnectors(), getAllConnectors()).isEmpty();
 	}
-
 
 	@JsonIgnore
 	@ValidationMethod(message = "Selects may be used only once.")
@@ -158,14 +136,35 @@ public class PreviewConfig {
 								   .collect(Collectors.toList());
 	}
 
-	public List<Filter<?>> resolveSearchFilters() {
-		if(searchFilters == null){
+	public List<FrontendPreviewConfig.SearchFilter> resolveSearchFilters() {
+		if (searchFilters == null) {
 			return null;
 		}
 
+
 		return searchFilters.stream()
-				.map(filter ->  datasetRegistry.findRegistry(filter.getDataset()).getOptional(filter))
-				.flatMap(Optional::stream)
-				.toList();
+							.map(filterId -> datasetRegistry.findRegistry(filterId.getDataset()).getOptional(filterId))
+							.flatMap(Optional::stream)
+							.map(filter -> new FrontendPreviewConfig.SearchFilter(filter.getConnector().getConcept(), filter))
+							.toList();
 	}
+
+	@Data
+	public static class InfoCardSelect {
+		/**
+		 * User facing label of the select.
+		 */
+		private final String label;
+		/**
+		 * Id (without dataset) of the select.
+		 */
+		private final SelectId select;
+		@JsonCreator
+		public InfoCardSelect(String label, SelectId select) {
+			this.label = label;
+			this.select = select;
+		}
+
+	}
+
 }
