@@ -19,7 +19,7 @@
     "checkformat": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css}\"",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "server": "nodemon -e ts,json,csv,text --watch mock-api --exec \"node --experimental-specifier-resolution=node --loader ts-node/esm mock-api/server\"",
-    "serve": "ts-node server",
+    "serve": "node --experimental-specifier-resolution=node --loader ts-node/esm server",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
