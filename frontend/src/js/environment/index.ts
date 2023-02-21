@@ -8,7 +8,7 @@ function runtimeVar(variable: string): string | null {
     : null;
 }
 
-// Needs to be explicit because weback statically replaces import.meta.env.XXX through DefinePlugin
+// Needs to be explicit import.meta.env.XXX
 const isProductionEnv = runtimeVar("NODE_ENV") || import.meta.env.NODE_ENV;
 const languageEnv =
   runtimeVar("REACT_APP_LANG") || import.meta.env.REACT_APP_LANG;

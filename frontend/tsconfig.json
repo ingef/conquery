@@ -15,7 +15,7 @@
     "esModuleInterop": true,
     "strict": true,
     "noEmit": true,
-    "module": "esnext",
+    "module": "ESNext",
     "target": "es6",
     "allowJs": true,
     "lib": [

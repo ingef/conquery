@@ -4,6 +4,10 @@ import { defineConfig, loadEnv } from "vite";
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => {
   return {
+    build: {
+      sourcemap: true,
+      minify: "terser",
+    },
     envPrefix: "REACT_APP_",
     plugins: [
       react({
