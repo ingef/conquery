@@ -1,8 +1,9 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig } from "vite";
+import eslint from "vite-plugin-eslint";
 
 // https://vitejs.dev/config/
-export default defineConfig(({ command, mode }) => {
+export default defineConfig(() => {
   return {
     build: {
       sourcemap: true,
@@ -10,6 +11,7 @@ export default defineConfig(({ command, mode }) => {
     },
     envPrefix: "REACT_APP_",
     plugins: [
+      eslint(),
       react({
         fastRefresh: process.env.NODE_ENV !== "test",
         jsxImportSource: "@emotion/react",
