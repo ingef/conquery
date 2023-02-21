@@ -12,7 +12,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const BUILD_FOLDER = "build";
+const BUILD_FOLDER = "dist";
 
 const PORT = process.env.PORT || 8000;
 // Maximum requests per minute
