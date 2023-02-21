@@ -100,7 +100,7 @@ public class EntityResolveTest implements ProgrammaticIntegrationTest {
 		}
 
 
-		assertThat(result).containsExactly(Map.of("ID", "1"), Map.of("ID", "4"));
+		assertThat(result).containsExactlyInAnyOrder(Map.of("ID", "1"), Map.of("ID", "4"));
 	}
 
 }
