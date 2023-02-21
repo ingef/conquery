@@ -10,10 +10,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.frontend.FrontendPreviewConfig;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
@@ -27,6 +28,7 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Sets;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
@@ -111,6 +113,13 @@ public class PreviewConfig {
 		return infoCardSelects.stream().map(InfoCardSelect::getLabel).distinct().count() == getInfoCardSelects().size();
 	}
 
+
+	@JsonIgnore
+	@ValidationMethod(message = "SearchFilters must be of same concept.")
+	public boolean isSearchFiltersOfSameConcept() {
+		return searchFilters.stream().map(id -> id.getConnector().getConcept()).distinct().count() <= 1;
+	}
+
 	/**
 	 * Used to map {@link SelectResultInfo} to {@link InfoCardSelect#getLabel()} via {@link PrintSettings#getColumnNamer()}.
 	 */
@@ -136,7 +145,18 @@ public class PreviewConfig {
 								   .collect(Collectors.toList());
 	}
 
-	public List<FrontendPreviewConfig.SearchFilter> resolveSearchFilters() {
+	public List<Filter<?>> resolveSearchFilters() {
+		if (searchFilters == null) {
+			return null;
+		}
+
+		return searchFilters.stream()
+							.map(filterId -> datasetRegistry.findRegistry(filterId.getDataset()).getOptional(filterId))
+							.flatMap(Optional::stream)
+							.toList();
+	}
+
+	public Concept<?> resolveSearchConcept() {
 		if (searchFilters == null) {
 			return null;
 		}
@@ -145,8 +165,9 @@ public class PreviewConfig {
 		return searchFilters.stream()
 							.map(filterId -> datasetRegistry.findRegistry(filterId.getDataset()).getOptional(filterId))
 							.flatMap(Optional::stream)
-							.map(filter -> new FrontendPreviewConfig.SearchFilter(filter.getConnector().getConcept(), filter))
-							.toList();
+							.map(filter -> filter.getConnector().getConcept())
+							.distinct()
+							.collect(MoreCollectors.onlyElement());
 	}
 
 	@Data
@@ -159,6 +180,7 @@ public class PreviewConfig {
 		 * Id (without dataset) of the select.
 		 */
 		private final SelectId select;
+
 		@JsonCreator
 		public InfoCardSelect(String label, SelectId select) {
 			this.label = label;
