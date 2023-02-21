@@ -47,6 +47,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -97,7 +98,7 @@ public class QueryProcessor {
 		// This maps works as long as we have query visitors that are not configured in anyway.
 		// So adding a visitor twice would replace the previous one but both would have yielded the same result.
 		// For the future a better data structure might be desired that also regards similar QueryVisitors of different configuration
-		ClassToInstanceMap<QueryVisitor> visitors = MutableClassToInstanceMap.create();
+		final ClassToInstanceMap<QueryVisitor> visitors = MutableClassToInstanceMap.create();
 		query.addVisitors(visitors);
 
 		// Initialize checks that need to traverse the query tree
@@ -185,7 +186,7 @@ public class QueryProcessor {
 			execution = newExecution;
 		}
 
-		ExecutionState state = execution.getState();
+		final ExecutionState state = execution.getState();
 		if (state.equals(ExecutionState.RUNNING)) {
 			log.trace("The Execution[{}] was already started and its state is: {}", execution.getId(), state);
 			return execution;
@@ -201,13 +202,13 @@ public class QueryProcessor {
 
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
-		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
+		final Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
 		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
 	}
 
 	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
-		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(subject, datasetRegistry);
+		final Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(subject, datasetRegistry);
 
 		return allQueries.stream()
 						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
@@ -219,7 +220,7 @@ public class QueryProcessor {
 						 .filter(q -> q.getState().equals(ExecutionState.DONE) || q.getState().equals(ExecutionState.NEW))
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
-							 OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
+							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
 							 if (mq.isReadyToDownload(datasetAbilities)) {
 								 status.setResultUrls(getDownloadUrls(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
@@ -307,11 +308,11 @@ public class QueryProcessor {
 
 		// TODO remove this, since we don't translate anymore
 		// Patch this query in other datasets
-		List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets();
+		final List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets();
 		remainingDatasets.remove(execution.getDataset());
 
 		for (Dataset dataset : remainingDatasets) {
-			ManagedExecutionId id = new ManagedExecutionId(dataset.getId(), execution.getQueryId());
+			final ManagedExecutionId id = new ManagedExecutionId(dataset.getId(), execution.getQueryId());
 			final ManagedExecution<?> otherExecution = storage.getExecution(id);
 			if (otherExecution == null) {
 				continue;
@@ -345,7 +346,7 @@ public class QueryProcessor {
 
 		query.initExecutable(datasetRegistry, config);
 
-		Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(subject, datasetRegistry);
+		final Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(subject, datasetRegistry);
 		final FullExecutionStatus status = query.buildStatusFull(storage, subject, datasetRegistry, config);
 
 		if (query.isReadyToDownload(datasetAbilities)) {
@@ -400,8 +401,8 @@ public class QueryProcessor {
 	 */
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
-		EntityPreviewForm form =
-				EntityPreviewForm.create(entity, idKind, dateRange, sources, datasetRegistry.get(dataset.getId()).getPreviewConfig().getSelects());
+		final PreviewConfig previewConfig = datasetRegistry.get(dataset.getId()).getPreviewConfig();
+		final EntityPreviewForm form = EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimebasedSelects());
 
 		// TODO make sure that subqueries are also system
 		// TODO do not persist system queries
@@ -419,7 +420,7 @@ public class QueryProcessor {
 		}
 
 
-		FullExecutionStatus status = execution.buildStatusFull(storage, subject, datasetRegistry, config);
+		final FullExecutionStatus status = execution.buildStatusFull(storage, subject, datasetRegistry, config);
 		status.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, false));
 		return status;
 	}
