@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
@@ -211,7 +212,13 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		final String[] columnNames = new String[size];
 
 		for (int index = 0; index < size; index++) {
-			columnNames[index] = namer.getUniqueName(resultInfos.get(index));
+			final ResultInfo resultInfo = resultInfos.get(index);
+
+			if (!(resultInfo instanceof SelectResultInfo)) {
+				continue;
+			}
+
+			columnNames[index] = namer.getUniqueName(resultInfo);
 		}
 
 		return line -> {
@@ -219,6 +226,10 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 			for (int column = 0; column < size; column++) {
 				final String columnName = columnNames[column];
+
+				if(columnName == null) {
+					continue;
+				}
 
 				final Object value = resultInfos.get(column).getType().printNullable(printSettings, line[column]);
 
