@@ -2,20 +2,20 @@ import Chance from "chance";
 import { Application } from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import packagejson from "../package.json" assert { type: "json" };
+import config from "./config.json" assert { type: "json" };
+import EXPORT_FORM_CONFIG from "./forms/export-form.json" assert { type: "json" };
+import mockAuthMiddleware from "./mockAuthMiddleware.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import packagejson from "../package.json" assert { type: "json" };
 const version = packagejson.version;
 
-import config from "./config.json" assert { type: "json" };
 config.version = version;
 
 const FRONTEND_CONFIG = config;
 
-import EXPORT_FORM_CONFIG from "./forms/export-form.json" assert { type: "json" };
-import mockAuthMiddleware from "./mockAuthMiddleware.js";
 
 const chance = new Chance();
 
@@ -40,7 +40,7 @@ const SHORT_DELAY = 300;
 const NO_DELAY = 10;
 
 // Simulate API
-export default function (app: Application) {
+export default function mockApi(app: Application) {
   /*
     QUERIES
   */
