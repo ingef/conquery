@@ -147,7 +147,7 @@ public class PreviewConfig {
 
 	public List<Filter<?>> resolveSearchFilters() {
 		if (searchFilters == null) {
-			return null;
+			return Collections.emptyList();
 		}
 
 		return searchFilters.stream()
