@@ -4,6 +4,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetA
 
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,7 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -62,6 +64,7 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
 import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
+import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -435,18 +438,25 @@ public class QueryProcessor {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
-		// Build query, assuming FilterValues are all of the same concept and connector.
-		final CQConcept cqConcept = new CQConcept();
-		cqConcept.setElements(List.of(filters.get(0).getFilter().getConnector().getConcept()));
+		final List<CQElement> queries = new ArrayList<>(filters.size());
 
-		final CQTable cqTable = new CQTable();
-		cqTable.setFilters(filters);
-		cqTable.setConnector(filters.get(0).getFilter().getConnector());
-		cqTable.setConcept(cqConcept);
+		for (FilterValue<?> filter : filters) {
+			final CQConcept cqConcept = new CQConcept();
+			cqConcept.setElements(List.of(filter.getFilter().getConnector().getConcept()));
 
-		cqConcept.setTables(List.of(cqTable));
+			final CQTable cqTable = new CQTable();
 
-		final QueryDescription query = new ConceptQuery(cqConcept);
+			cqTable.setFilters(List.of(filter));
+			cqTable.setConnector(filter.getFilter().getConnector());
+			cqTable.setConcept(cqConcept);
+
+			cqConcept.setTables(List.of(cqTable));
+
+			queries.add(cqConcept);
+		}
+
+
+		final QueryDescription query = new ConceptQuery(new CQOr(queries, Optional.of(false), DateAggregationAction.BLOCK));
 
 		final ManagedExecution<?> execution = postQuery(dataset, query, subject, true);
 
