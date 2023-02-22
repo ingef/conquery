@@ -2,6 +2,8 @@
 <#import "templates/table.html.ftl" as table>
 <#import "templates/accordion.html.ftl" as accordion>
 <#import "templates/infoCard.html.ftl" as infoCard>
+<#import "templates/editableText.html.ftl" as editableText>
+<#import "templates/breadcrumbs.html.ftl" as breadcrumbs>
 
 <#assign columnsMappers=["id", "initialized", "actions"]>
 <#assign columnsSearchIndices=["id", "actions"]>
@@ -26,6 +28,9 @@
 </#macro>
 
 <#macro label>
+  <@editableText.editableText text="${c.ds.label}" onChange="(label) => rest('/admin/datasets/${c.ds.id}/label',{ method: 'post', body: label}).then(function(res){if(res.ok)location.reload();})" />
+</#macro>
+<#macro labelold>
   <form method="post" enctype="multipart/form-data">
     <input id="newDatasetLabel" data-test-id="dataset-label-input" type="text" name="label" title="Label of the dataset" value="${c.ds.label}">
     <input type="submit" data-test-id="dataset-label-btn" onclick="event.preventDefault(); rest('/admin/datasets/${c.ds.id}/label',{ method: 'post', body: document.getElementById('newDatasetLabel').value}).then(function(res){if(res.ok)location.reload();});"/>
@@ -34,6 +39,10 @@
 <#macro idMapping><a href="./${c.ds.id}/mapping">Here</a></#macro>
 
 <@layout.layout>
+  <@breadcrumbs.breadcrumbs
+    labels=["Datasets", c.ds.label]
+    links=["/admin-ui/datasets"]
+  />
   <div class="d-flex justify-content-between mb-3">
     <div class="d-flex align-items-start">
       <@infoCard.infoCard

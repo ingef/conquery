@@ -8,7 +8,7 @@
     <div
       class="card-header d-inline-flex justify-content-between"
       style="user-select: none; cursor: pointer;"
-      onclick="$(this).next().collapse('toggle');"
+      onclick="if (!$(this).next().hasClass('show')) {location.hash = '${summary}'} $(this).next().collapse('toggle');"
     >
       <div>
         <h5 class="p-0 m-0">${summary}</h5>
@@ -17,10 +17,15 @@
         <div class="text-secondary">${infoText}</div>
       </div>
     </div>
-    <div class="collapse">
+    <div id="collapse-${summary}" class="collapse">
       <div class="card-body py-0">
         <#nested />
       </div>
     </div>
+    <script>
+      if (location.hash.replace('#', '') == '${summary}') {
+        $('#collapse-${summary}').addClass('show');
+      }
+    </script>
   </div>
 </#macro>
