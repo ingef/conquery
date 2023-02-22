@@ -82,7 +82,8 @@ public class PreviewConfig {
 	 * <p>
 	 * The Frontend will use the concepts filters to render a search for entity preview.
 	 */
-	private Set<FilterId> searchFilters;
+	private Set<FilterId> searchFilters = Collections.emptySet();
+
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
 	private DatasetRegistry datasetRegistry;
