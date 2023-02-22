@@ -713,17 +713,19 @@ components:
               type: boolean
             excludeFromTimeAggregation:
               type: boolean
+    temporal-sampler:
+      type: string
+      enum:
+        - EARLIEST
+        - LATEST
+        - RANDOM
     cq-sampled:
       type: object
       properties:
         child:
           $ref: "#/components/schemas/cq-element"
         sampler:
-          type: string
-          enum:
-            - EARLIEST
-            - LATEST
-            - RANDOM
+          $ref: "#/components/schemas/temporal-sampler"
     cq-days-before:
       type: object
       allOf:
@@ -818,7 +820,111 @@ components:
         - MERGE
         - INTERSECT
         - LOGICAL
-
+    table-export-query:
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/query"
+        dateRange:
+          $ref: "#/components/schemas/date-range"
+        tables:
+          type: array
+          items:
+            $ref: "#/components/schemas/cq-concept"
+        rawConceptValues:
+          type: boolean
+    secondaryId-query:
+      type: object
+      properties:
+        root:
+          $ref: "#/components/schemas/cq-element"
+        secondaryId:
+          $ref: "#/components/schemas/secondaryIdId"
+        dateAggregationMode:
+          $ref: "#/components/schemas/date-aggregation-mode"
+    resolution-and-alignment:
+      type: object
+      properties:
+        resolution:
+          type: string
+          enum:
+            - COMPLETE
+            - YEARS
+            - QUARTERS
+            - DAYS
+        alignment:
+          type: string
+          enum:
+            - NO_ALIGN
+            - DAY
+            - QUARTER
+            - YEAR
+    array-concept-query:
+      type: object
+      properties:
+        childQueries:
+          type: array
+          items:
+            $ref: "#/components/schemas/concept-query"
+        dateAggregationMode:
+          $ref: "#/components/schemas/date-aggregation-mode"
+    relative-form-query:
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/query"
+        features:
+          $ref: "#/components/schemas/array-concept-query"
+        indexSelector:
+          $ref: "#/components/schemas/temporal-sampler"
+        indexPlacement:
+          type: string
+          enum:
+            - BEFORE
+            - NEUTRAL
+            - AFTER
+        timeCountBefore:
+          type: integer
+        timeCountAfter:
+          type: integer
+        timeUnit:
+          type: string
+          enum:
+            - DAYS
+            - QUARTERS
+            - YEARS
+        resolutionsAndAlignmentMap:
+          type: array
+          items:
+            $ref: "#/components/schemas/resolution-and-alignment"
+    entity-date-query:
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/query"
+        features:
+          $ref: "#/components/schemas/array-concept-query"
+        resolutionsAndAlignments:
+          type: array
+          items:
+            $ref: "#/components/schemas/resolution-and-alignment"
+        dateRange:
+          $ref: "#/components/schemas/date-range"
+        dateAggregationMode:
+          $ref: "#/components/schemas/date-aggregation-mode"
+    absolute-form-query:
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/query"
+        features:
+          $ref: "#/components/schemas/array-concept-query"
+        resolutionsAndAlignmentMap:
+          type: array
+          items:
+            $ref: "#/components/schemas/resolution-and-alignment"
+        dateRange:
+          $ref: "#/components/schemas/date-range"
     concept-query:
       type: object
       properties:
