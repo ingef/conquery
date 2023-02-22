@@ -62,8 +62,12 @@ components:
       $ref: "#/components/schemas/id"
     selectId:
       $ref: "#/components/schemas/id"
-    conceptId:
+    validityDateId:
       $ref: "#/components/schemas/id"
+    conceptElementId:
+      $ref: "#/components/schemas/id"
+    conceptId:
+      $ref: "#/components/schemas/conceptElementId"
     connectorId:
       $ref: "#/components/schemas/id"
     secondaryIdId:
@@ -615,10 +619,215 @@ components:
           $ref: "#/components/schemas/date"
         max:
           $ref: "#/components/schemas/date"
+    cq-element-base:
+      type: object
+      properties:
+        label:
+          type: string
+
+    cq-date-restriction:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            dateRange:
+              $ref: "#/components/schemas/date-range"
+            child:
+              $ref: "#/components/schemas/cq-element"
+    cq-negation:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            child:
+              $ref: "#/components/schemas/cq-element"
+    cq-or:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            children:
+              type: array
+              items:
+                $ref: "#/components/schemas/cq-element"
+            createExists:
+              type: boolean
+    cq-and:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            children:
+              type: array
+              items:
+                $ref: "#/components/schemas/cq-element"
+            createExists:
+              type: boolean
+
+    cq-reused-query:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            queryId:
+              $ref: "#/components/schemas/executionId"
+            excludeFromSecondaryId:
+              type: boolean
+    cq-result-info-decorator:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            values:
+              type: object
+              additionalProperties:
+                type: string
+            child:
+              $ref: "#/components/schemas/cq-element"
+    cq-concept:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            ids:
+              $ref: "#/components/schemas/conceptElementId"
+            tables:
+              type: object
+              properties:
+                id:
+                  $ref: "#/components/schemas/connectorId"
+                dateColumn:
+                  type: object
+                  properties:
+                    value:
+                      $ref: "#/components/schemas/validityDateId"
+                filters:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/filter-value"
+                selects:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/selectId"
+            excludeFromSecondaryId:
+              type: boolean
+            excludeFromTimeAggregation:
+              type: boolean
+    cq-sampled:
+      type: object
+      properties:
+        child:
+          $ref: "#/components/schemas/cq-element"
+        sampler:
+          type: string
+          enum:
+            - EARLIEST
+            - LATEST
+            - RANDOM
+    cq-days-before:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            days:
+              type: object
+              properties:
+                min:
+                  type: integer
+                max:
+                  type: integer
+            index:
+              $ref: "#/components/schemas/cq-sampled"
+            preceding:
+              $ref: "#/components/schemas/cq-sampled"
+    cq-before-or-same:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            index:
+              $ref: "#/components/schemas/cq-sampled"
+            preceding:
+              $ref: "#/components/schemas/cq-sampled"
+    cq-days-before-or-never:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            days:
+              type: integer
+            index:
+              $ref: "#/components/schemas/cq-sampled"
+            preceding:
+              $ref: "#/components/schemas/cq-sampled"
+    cq-same:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            index:
+              $ref: "#/components/schemas/cq-sampled"
+            preceding:
+              $ref: "#/components/schemas/cq-sampled"
+    cq-before:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            index:
+              $ref: "#/components/schemas/cq-sampled"
+            preceding:
+              $ref: "#/components/schemas/cq-sampled"
+
+
+    cq-external:
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            format:
+              type: array
+              items:
+                anyOf:
+                  - type: string
+                  - type: string
+                    enum:
+                      - EXTRA
+                      - EVENT_DATE
+                      - START_DATE
+                      - END_DATE
+                      - DATE_RANGE
+                      - DATE_SET
+                      - ALL
+            values:
+              type: array
+              items:
+                type: array
+                items:
+                  type: string
+            onlySingles:
+              type: boolean
+
+    cq-element:
+      type: object
+
+    date-aggregation-mode:
+      type: string
+      enum:
+        - NONE
+        - MERGE
+        - INTERSECT
+        - LOGICAL
+
+    concept-query:
+      type: object
+      properties:
+        root:
+          $ref: "#/components/schemas/cq-element"
+        dateAggregationMode:
+          $ref: "#/components/schemas/date-aggregation-mode"
     query:
       type: object
-      additionalProperties: true
-      #TODO but in separate file
     error-info:
       description: Basic format of an error.
       type: object
