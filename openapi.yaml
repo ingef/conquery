@@ -624,7 +624,6 @@ components:
       properties:
         label:
           type: string
-
     cq-date-restriction:
       type: object
       allOf:
@@ -634,6 +633,10 @@ components:
               $ref: "#/components/schemas/date-range"
             child:
               $ref: "#/components/schemas/cq-element"
+            type:
+              type: string
+              enum:
+                - DATE_RESTRICTION
     cq-negation:
       type: object
       allOf:
@@ -641,6 +644,10 @@ components:
         - properties:
             child:
               $ref: "#/components/schemas/cq-element"
+            type:
+              type: string
+              enum:
+                - NEGATION
     cq-or:
       type: object
       allOf:
@@ -652,6 +659,11 @@ components:
                 $ref: "#/components/schemas/cq-element"
             createExists:
               type: boolean
+            type:
+              type: string
+              enum:
+                - OR
+
     cq-and:
       type: object
       allOf:
@@ -663,6 +675,10 @@ components:
                 $ref: "#/components/schemas/cq-element"
             createExists:
               type: boolean
+            type:
+              type: string
+              enum:
+                - AND
 
     cq-reused-query:
       type: object
@@ -673,6 +689,10 @@ components:
               $ref: "#/components/schemas/executionId"
             excludeFromSecondaryId:
               type: boolean
+            type:
+              type: string
+              enum:
+                - SAVED_QUERY
     cq-result-info-decorator:
       type: object
       allOf:
@@ -684,6 +704,10 @@ components:
                 type: string
             child:
               $ref: "#/components/schemas/cq-element"
+            type:
+              type: string
+              enum:
+                - RESULT_INFO_DECORATOR
     cq-concept:
       type: object
       allOf:
@@ -713,6 +737,10 @@ components:
               type: boolean
             excludeFromTimeAggregation:
               type: boolean
+            type:
+              type: string
+              enum:
+                - CONCEPT
     temporal-sampler:
       type: string
       enum:
@@ -742,6 +770,10 @@ components:
               $ref: "#/components/schemas/cq-sampled"
             preceding:
               $ref: "#/components/schemas/cq-sampled"
+            type:
+              type: string
+              enum:
+                - DAYS_BEFORE
     cq-before-or-same:
       type: object
       allOf:
@@ -751,6 +783,10 @@ components:
               $ref: "#/components/schemas/cq-sampled"
             preceding:
               $ref: "#/components/schemas/cq-sampled"
+            type:
+              type: string
+              enum:
+                - BEFORE_OR_SAME
     cq-days-before-or-never:
       type: object
       allOf:
@@ -762,6 +798,10 @@ components:
               $ref: "#/components/schemas/cq-sampled"
             preceding:
               $ref: "#/components/schemas/cq-sampled"
+            type:
+              type: string
+              enum:
+                - BEFORE_OR_NEVER
     cq-same:
       type: object
       allOf:
@@ -771,6 +811,10 @@ components:
               $ref: "#/components/schemas/cq-sampled"
             preceding:
               $ref: "#/components/schemas/cq-sampled"
+            type:
+              type: string
+              enum:
+                - SAME
     cq-before:
       type: object
       allOf:
@@ -780,8 +824,10 @@ components:
               $ref: "#/components/schemas/cq-sampled"
             preceding:
               $ref: "#/components/schemas/cq-sampled"
-
-
+            type:
+              type: string
+              enum:
+                - BEFORE
     cq-external:
       type: object
       allOf:
@@ -809,9 +855,43 @@ components:
                   type: string
             onlySingles:
               type: boolean
+            type:
+              type: string
+              enum:
+                - EXTERNAL
 
     cq-element:
       type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          AND: "#/components/schemas/cq-and"
+          BEFORE: "#/components/schemas/cq-before"
+          BEFORE_OR_NEVER: "#/components/schemas/cq-days-before-or-never"
+          BEFORE_OR_SAME: "#/components/schemas/cq-before-or-same"
+          CONCEPT: "#/components/schemas/cq-concept"
+          DATE_RESTRICTION: "#/components/schemas/cq-date-restriction"
+          DAYS_BEFORE: "#/components/schemas/cq-days-before"
+          EXTERNAL: "#/components/schemas/cq-external"
+          NEGATION: "#/components/schemas/cq-negation"
+          OR: "#/components/schemas/cq-or"
+          RESULT_INFO_DECORATOR: "#/components/schemas/cq-result-info-decorator"
+          SAME: "#/components/schemas/cq-same"
+          SAVED_QUERY: "#/components/schemas/cq-reused-query"
+      oneOf:
+        - $ref: "#/components/schemas/cq-and"
+        - $ref: "#/components/schemas/cq-before"
+        - $ref: "#/components/schemas/cq-days-before-or-never"
+        - $ref: "#/components/schemas/cq-before-or-same"
+        - $ref: "#/components/schemas/cq-concept"
+        - $ref: "#/components/schemas/cq-date-restriction"
+        - $ref: "#/components/schemas/cq-days-before"
+        - $ref: "#/components/schemas/cq-external"
+        - $ref: "#/components/schemas/cq-negation"
+        - $ref: "#/components/schemas/cq-or"
+        - $ref: "#/components/schemas/cq-result-info-decorator"
+        - $ref: "#/components/schemas/cq-same"
+        - $ref: "#/components/schemas/cq-reused-query"
 
     date-aggregation-mode:
       type: string
@@ -833,6 +913,10 @@ components:
             $ref: "#/components/schemas/cq-concept"
         rawConceptValues:
           type: boolean
+        type:
+          type: string
+          enum:
+            - TABLE_EXPORT
     secondaryId-query:
       type: object
       properties:
@@ -842,6 +926,10 @@ components:
           $ref: "#/components/schemas/secondaryIdId"
         dateAggregationMode:
           $ref: "#/components/schemas/date-aggregation-mode"
+        type:
+          type: string
+          enum:
+            - SECONDARY_ID_QUERY
     resolution-and-alignment:
       type: object
       properties:
@@ -868,6 +956,10 @@ components:
             $ref: "#/components/schemas/concept-query"
         dateAggregationMode:
           $ref: "#/components/schemas/date-aggregation-mode"
+        type:
+          type: string
+          enum:
+            - ARRAY_CONCEPT_QUERY
     relative-form-query:
       type: object
       properties:
@@ -897,6 +989,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/resolution-and-alignment"
+        type:
+          type: string
+          enum:
+            - RELATIVE_FORM_QUERY
     entity-date-query:
       type: object
       properties:
@@ -912,6 +1008,10 @@ components:
           $ref: "#/components/schemas/date-range"
         dateAggregationMode:
           $ref: "#/components/schemas/date-aggregation-mode"
+        type:
+          type: string
+          enum:
+            - ENTITY_DATE_QUERY
     absolute-form-query:
       type: object
       properties:
@@ -925,6 +1025,10 @@ components:
             $ref: "#/components/schemas/resolution-and-alignment"
         dateRange:
           $ref: "#/components/schemas/date-range"
+        type:
+          type: string
+          enum:
+            - ABSOLUTE_FORM_QUERY
     concept-query:
       type: object
       properties:
@@ -932,8 +1036,32 @@ components:
           $ref: "#/components/schemas/cq-element"
         dateAggregationMode:
           $ref: "#/components/schemas/date-aggregation-mode"
+        type:
+          type: string
+          enum:
+            - CONCEPT_QUERY
+
     query:
       type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          CONCEPT_QUERY: "#/components/schemas/concept-query"
+          ABSOLUTE_FORM_QUERY: "#/components/schemas/absolute-form-query"
+          ENTITY_DATE_QUERY: "#/components/schemas/entity-date-query"
+          RELATIVE_FORM_QUERY: "#/components/schemas/relative-form-query"
+          ARRAY_CONCEPT_QUERY: "#/components/schemas/array-concept-query"
+          SECONDARY_ID_QUERY: "#/components/schemas/secondary-id-query"
+          TABLE_EXPORT: "#/components/schemas/table-export-query"
+      oneOf:
+          - $ref: "#/components/schemas/concept-query"
+          - $ref: "#/components/schemas/absolute-form-query"
+          - $ref: "#/components/schemas/entity-date-query"
+          - $ref: "#/components/schemas/relative-form-query"
+          - $ref: "#/components/schemas/array-concept-query"
+          - $ref: "#/components/schemas/secondaryId-query"
+          - $ref: "#/components/schemas/table-export-query"
+
     error-info:
       description: Basic format of an error.
       type: object
