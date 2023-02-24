@@ -5,9 +5,9 @@ import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -40,17 +40,18 @@ public class ResultExcelResource {
 	@GET
 	@Path("{" + QUERY + "}.xlsx")
 	@Produces(AdditionalMediaTypes.EXCEL)
-	public <E extends ManagedExecution<?> & SingleTableResult> Response get(
+	public <E extends ManagedExecution & SingleTableResult> Response get(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution<?> execution,
+			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-			@QueryParam("pretty") Optional<Boolean> pretty) {
+			@QueryParam("pretty") @DefaultValue("true") boolean pretty) {
 		checkSingleTableResult(execution);
-		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset().getId(), subject.getId(), subject.getName());
-		return processor.createResult(subject, (E) execution, pretty.orElse(true));
+		log.info("Result for {} download on dataset {} by subject {} ({}).", execution.getId(), execution.getDataset()
+																										 .getId(), subject.getId(), subject.getName());
+		return processor.createResult(subject, (E) execution, pretty);
 	}
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
 				.path(ResultExcelResource.class)
 				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
