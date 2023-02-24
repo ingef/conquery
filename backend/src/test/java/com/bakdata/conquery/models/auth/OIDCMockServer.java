@@ -85,11 +85,12 @@ public class OIDCMockServer {
 			@Override
 			public HttpResponse handle(HttpRequest httpRequest) throws Exception {
 				log.error(
-						"{} on {}\n\t Headers: {}n\tBody {}",
+						"{} on {}\n\t Headers: {}\n\tBody {}",
 						httpRequest.getMethod(),
 						httpRequest.getPath(),
 						httpRequest.getHeaderList(),
-						httpRequest.getBodyAsString());
+						httpRequest.getBodyAsString()
+				);
 				fail("Trapped because request did not match. See log.");
 				return null;
 			}

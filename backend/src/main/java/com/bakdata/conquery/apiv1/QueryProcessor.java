@@ -1,11 +1,14 @@
 package com.bakdata.conquery.apiv1;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -242,9 +245,18 @@ public class QueryProcessor {
 	public static List<ResultAsset> getResultAssets(List<ResultRendererProvider> renderer, ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		return renderer.stream()
-					   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
+					   .map(r -> {
+						   try {
+							   return r.generateResultURLs(exec, uriBuilder.clone(), allProviders);
+						   }
+						   catch (MalformedURLException | URISyntaxException e) {
+							   log.error("Cannot generate result urls for execution '{}' with provider '{}'", exec.getId(), r.getClass().getName());
+							   return null;
+						   }
+					   })
+					   .filter(Objects::nonNull)
 					   .flatMap(Collection::stream)
-					   .collect(Collectors.toList());
+					   .toList();
 
 	}
 

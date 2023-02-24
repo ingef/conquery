@@ -5,7 +5,6 @@ import static com.bakdata.conquery.integration.common.LoadingUtil.importSecondar
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
-import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -174,14 +173,14 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				);
 
 
-		final Optional<URL> csvUrl = result.getResultUrls().stream()
+		final Optional<URI> csvUrl = result.getResultUrls().stream()
 										   .map(ResultAsset::url)
-										   .filter(url -> url.getFile().endsWith(".csv"))
+										   .filter(url -> url.getPath().endsWith(".csv"))
 										   .findFirst();
 
 		assertThat(csvUrl).isPresent();
 
-		try (Response resultLines = conquery.getClient().target(csvUrl.get().toURI())
+		try (Response resultLines = conquery.getClient().target(csvUrl.get())
 											.queryParam("pretty", false)
 											.request(AdditionalMediaTypes.CSV)
 											.header("Accept-Language", "en-Us")

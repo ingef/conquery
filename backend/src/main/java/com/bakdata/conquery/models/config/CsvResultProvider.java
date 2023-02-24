@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.config;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +19,6 @@ import com.bakdata.conquery.resources.api.ResultCsvResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
@@ -29,8 +29,8 @@ import org.glassfish.jersey.internal.inject.AbstractBinder;
 public class CsvResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
-	@SneakyThrows(MalformedURLException.class)
-	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
+			throws MalformedURLException, URISyntaxException {
 		if (!(exec instanceof SingleTableResult)) {
 			return Collections.emptyList();
 		}
@@ -39,7 +39,7 @@ public class CsvResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		return List.of(new ResultAsset("CSV", ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec)));
+		return List.of(new ResultAsset("CSV", ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec).toURI()));
 	}
 
 	@Override
