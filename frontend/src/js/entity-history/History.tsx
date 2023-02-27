@@ -137,6 +137,10 @@ export const History = () => {
     setCurrentEntityStatus,
   } = useEntityStatus({ currentEntityId: currentEntityId?.id || null });
 
+  const onResetEntityStatus = useCallback(() => {
+    setEntityIdsStatus({});
+  }, [setEntityIdsStatus]);
+
   const onLoadFromFile = useCallback(
     ({
       label,
@@ -166,9 +170,9 @@ export const History = () => {
           @ts-ignore */}
       <SplitPane
         split="vertical"
-        minSize={200}
-        maxSize={-300}
-        defaultSize="20%"
+        minSize={400}
+        maxSize={-500}
+        defaultSize="400px"
       >
         <SxNavigation
           entityIds={entityIds}
@@ -178,6 +182,7 @@ export const History = () => {
           entityStatusOptions={entityStatusOptions}
           setEntityStatusOptions={setEntityStatusOptions}
           onLoadFromFile={onLoadFromFile}
+          onResetHistory={onResetEntityStatus}
         />
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Main>
@@ -239,24 +244,32 @@ export const History = () => {
   );
 };
 
+export const useDefaultStatusOptions = () => {
+  const { t } = useTranslation();
+
+  return useMemo(
+    () => [
+      {
+        label: t("history.options.check"),
+        value: t("history.options.check") as string,
+      },
+      {
+        label: t("history.options.noCheck"),
+        value: t("history.options.noCheck") as string,
+      },
+    ],
+    [t],
+  );
+};
+
 const useEntityStatus = ({
   currentEntityId,
 }: {
   currentEntityId: string | null;
 }) => {
-  const { t } = useTranslation();
-  const [entityStatusOptions, setEntityStatusOptions] = useState<
-    SelectOptionT[]
-  >([
-    {
-      label: t("history.options.check"),
-      value: t("history.options.check") as string,
-    },
-    {
-      label: t("history.options.noCheck"),
-      value: t("history.options.noCheck") as string,
-    },
-  ]);
+  const defaultStatusOptions = useDefaultStatusOptions();
+  const [entityStatusOptions, setEntityStatusOptions] =
+    useState<SelectOptionT[]>(defaultStatusOptions);
 
   const [entityIdsStatus, setEntityIdsStatus] = useState<EntityIdsStatus>({});
   const setCurrentEntityStatus = useCallback(

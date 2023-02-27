@@ -22,12 +22,14 @@ export const ConfirmableTooltip = ({
   children,
   confirmationIcon,
   confirmationText,
+  placement,
   onConfirm,
   red,
 }: {
   children: ReactElement;
   confirmationText?: string;
   confirmationIcon?: IconName;
+  placement?: "top" | "bottom" | "left" | "right";
   onConfirm: () => void;
   red?: boolean;
 }) => {
@@ -52,6 +54,7 @@ export const ConfirmableTooltip = ({
     <WithTooltip
       html={dropdown}
       interactive
+      placement={placement}
       arrow={false}
       trigger="click"
       offset={offset}
