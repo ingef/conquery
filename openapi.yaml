@@ -1121,7 +1121,7 @@ components:
     concept-query:
       description: "The fundamental query of Conquery. Executes a query, where all fulfilling entities are included as a single line, 
       containing the aggregated validity-dates, as well as any requested selects. The first columns are unique ids of the entity, then the event-dates column, and then in unspecified order all select results.
-      A CONCEPT_QUERY can be understood as a tree of logically composed query elements, where the leafs are CONCEPT nodes, describing filtering and aggregation."
+      A CONCEPT_QUERY represents a tree of logically composed query elements, where the leafs are CONCEPT nodes, describing filtering and aggregation."
       type: object
       properties:
         root:
