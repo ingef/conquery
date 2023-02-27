@@ -6,12 +6,13 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -36,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @Slf4j @CPSBase
 public abstract class ConqueryTestSpec {
-	
+
 	@Getter
 	@Setter
 	private String label;
@@ -87,6 +88,9 @@ public abstract class ConqueryTestSpec {
 								om.addHandler(new DatasetPlaceHolderFiller(support))
 						)
 		);
+		final MutableInjectableValues injectableValues = (MutableInjectableValues) mapper.getInjectableValues();
+		injectableValues.add(ConqueryConfig.class, support.getConfig());
+		injectableValues.add(MetaStorage.class, support.getMetaStorage());
 
 		T result = mapper.readerFor(expectedType).readValue(node);
 
@@ -97,7 +101,7 @@ public abstract class ConqueryTestSpec {
 		ValidatorHelper.failOnError(log, support.getValidator().validate(result));
 		return result;
 	}
-	
+
 	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		final ObjectMapper om = Jackson.MAPPER.copy();
 		ObjectMapper mapper = support.getDataset().injectInto(
@@ -129,7 +133,7 @@ public abstract class ConqueryTestSpec {
 					throw e;
 				}
 			}
-			
+
 			if (modifierBeforeValidation != null) {
 				modifierBeforeValidation.accept(value);
 			}

@@ -25,6 +25,7 @@ const Row = styled("div")`
 `;
 
 const Textarea = styled("textarea")`
+  font-family: monospace;
   width: 100%;
 `;
 

@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
 
 import PaneTabNavigation from "./PaneTabNavigation";
 import { TabNavigationTab } from "./TabNavigation";
@@ -19,15 +18,16 @@ const Container = styled("div")`
   position: relative;
 `;
 
-interface PropsT {
+interface Props {
   tabs: TabNavigationTab[];
   right?: boolean;
   left?: boolean;
   className?: string;
   dataTestId: string;
+  children: React.ReactNode;
 }
 
-const Pane: FC<PropsT> = ({ tabs, left, children, className, dataTestId }) => {
+const Pane = ({ tabs, left, children, className, dataTestId }: Props) => {
   const paneType = left ? "left" : "right";
 
   return (

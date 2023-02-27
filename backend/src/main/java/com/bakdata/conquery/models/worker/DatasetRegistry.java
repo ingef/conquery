@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -72,6 +73,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		// Prepare empty storage
 		NamespaceStorage datasetStorage = new NamespaceStorage(config.getStorage(), "dataset_" + dataset.getName(), validator);
 		final ObjectMapper persistenceMapper = internalObjectMapperCreator.apply(View.Persistence.Manager.class);
+
 		datasetStorage.openStores(persistenceMapper);
 		datasetStorage.loadData();
 		datasetStorage.updateDataset(dataset);
@@ -79,23 +81,29 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		datasetStorage.setPreviewConfig(new PreviewConfig());
 		datasetStorage.close();
 
+		return createNamespace(datasetStorage);
+	}
 
-		final Namespace namespace = Namespace.createAndRegister(
-				this,
+
+	public Namespace createNamespace(NamespaceStorage datasetStorage) {
+		final Namespace namespace = Namespace.create(
+				new ExecutionManager(getMetaStorage()),
 				datasetStorage,
 				config,
 				internalObjectMapperCreator
 		);
 
+		add(namespace);
+
 		// for now we just add one worker to every ShardNode
 		for (ShardNodeInformation node : getShardNodes().values()) {
-			node.send(new AddWorker(dataset));
+			node.send(new AddWorker(datasetStorage.getDataset()));
 		}
 
 		return namespace;
 	}
 
-	public void add(Namespace ns) {
+	private void add(Namespace ns) {
 		datasets.put(ns.getStorage().getDataset().getId(), ns);
 	}
 

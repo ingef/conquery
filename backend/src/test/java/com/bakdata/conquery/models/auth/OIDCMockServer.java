@@ -1,5 +1,12 @@
 package com.bakdata.conquery.models.auth;
 
+import static org.junit.Assert.fail;
+import static org.mockserver.integration.ClientAndServer.startClientAndServer;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
+
+import java.util.function.Consumer;
+
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.mockserver.integration.ClientAndServer;
@@ -7,14 +14,6 @@ import org.mockserver.mock.action.ExpectationResponseCallback;
 import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.JsonBody;
-import org.mockserver.model.MediaType;
-
-import java.util.function.Consumer;
-
-import static org.junit.Assert.fail;
-import static org.mockserver.integration.ClientAndServer.startClientAndServer;
-import static org.mockserver.model.HttpRequest.request;
-import static org.mockserver.model.HttpResponse.response;
 
 @Slf4j
 public class OIDCMockServer {
@@ -42,7 +41,7 @@ public class OIDCMockServer {
 								JsonBody.json(
 										new Object() {
 											@Getter
-											final String issuer = MOCK_SERVER_URL + "/realms/EVA";
+											final String issuer = MOCK_SERVER_URL;
 											@Getter
 											final String authorization_endpoint = MOCK_SERVER_URL + "/realms/" + REALM_NAME + "/protocol/openid-connect/auth";
 											@Getter

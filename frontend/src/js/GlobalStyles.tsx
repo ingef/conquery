@@ -25,7 +25,8 @@ const globalStyles = (theme: Theme) => css`
 
   button,
   select,
-  input {
+  input,
+  textarea {
     font-family: "Roboto", "Arial", sans-serif;
   }
 

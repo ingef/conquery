@@ -3,12 +3,15 @@ package com.bakdata.conquery.resources.api;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -29,6 +32,7 @@ import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
 import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -62,6 +66,18 @@ public class DatasetQueryResource {
 		return processor.getSingleEntityExport(subject, uriBuilder, query.getIdKind(), query.getEntityId(), query.getSources(), dataset, query.getTime());
 	}
 
+
+	@POST
+	@Path("/resolve-entities")
+	public Stream<Map<String, String>> resolveEntities(@Auth Subject subject, @Valid @NotEmpty List<FilterValue<?>> container) {
+		subject.authorize(dataset, Ability.READ);
+		subject.authorize(dataset, Ability.PRESERVE_ID);
+
+		return processor.resolveEntities(subject, container, dataset);
+	}
+
+
+
 	@POST
 	@Path("/upload")
 	public ExternalUploadResult upload(@Auth Subject subject, @Valid ExternalUpload upload) {
@@ -85,7 +101,7 @@ public class DatasetQueryResource {
 
 		subject.authorize(dataset, Ability.READ);
 
-		final ManagedExecution<?> execution = processor.postQuery(dataset, query, subject, false);
+		final ManagedExecution execution = processor.postQuery(dataset, query, subject, false);
 
 		return Response.ok(processor.getQueryFullStatus(execution, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false)))
 					   .status(Response.Status.CREATED)
