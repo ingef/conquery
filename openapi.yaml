@@ -625,6 +625,7 @@ components:
         label:
           type: string
     cq-date-restriction:
+      description: "Restricts the events, downstream components receive to the specified absolute period. This node is fulfilled, if the downstream child is fulfilled."
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -638,6 +639,9 @@ components:
               enum:
                 - DATE_RESTRICTION
     cq-negation:
+      description: "Negates the result of its dowstream child: If downstream is fulfilled, this node is not fulfilled and vice versa.
+      By default, this node will block date-aggregation of downstream elements, as the results are mostly bogus.
+      In LOGICAL dateAggregation mode, it will deduct the observed period from infinity."
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -649,6 +653,7 @@ components:
               enum:
                 - NEGATION
     cq-or:
+      description: "Logically ors its downstream children: If any downstream element is fulfilled, this node is fulfilled."
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -658,6 +663,7 @@ components:
               items:
                 $ref: "#/components/schemas/cq-element"
             createExists:
+              description: "Allows the creation of a virtual select that reflects if this node is fulfilled or not. Useful for the creation of more complex concepts."
               type: boolean
             type:
               type: string
@@ -665,6 +671,7 @@ components:
                 - OR
 
     cq-and:
+      description: "Logically ands its downstream children: If all downstream element are fulfilled, this node is fulfilled."
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -674,6 +681,7 @@ components:
               items:
                 $ref: "#/components/schemas/cq-element"
             createExists:
+              description: "Allows the creation of a virtual select that reflects if this node is fulfilled or not. Useful for the creation of more complex concepts."
               type: boolean
             type:
               type: string
@@ -681,6 +689,7 @@ components:
                 - AND
 
     cq-reused-query:
+      description: "Allows the reuse of a previously built and executed query, by reference."
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -688,12 +697,14 @@ components:
             queryId:
               $ref: "#/components/schemas/executionId"
             excludeFromSecondaryId:
+              description: "If inside a SECONDARY_ID query, this query will not be automatically subsumed into secondaryId execution."
               type: boolean
             type:
               type: string
               enum:
                 - SAVED_QUERY
     cq-result-info-decorator:
+      #TODO del?
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -894,6 +905,11 @@ components:
         - $ref: "#/components/schemas/cq-reused-query"
 
     date-aggregation-mode:
+      description: "Can be used in some queries to alter the way dates are aggregated. Specifically for AND/OR/NEGATION nodes.
+      - NONE will disable date-aggregation, meaning no EVENT_DATES column will be created,
+      - MERGE will union all downstream dates,
+      - INTERSECT will intersect the downstream dates,
+      - LOGICAL depends on the respective nodes: AND will intersect, OR will merge, NEGATION will subtract the dates from ALL-time."
       type: string
       enum:
         - NONE
@@ -901,6 +917,10 @@ components:
         - INTERSECT
         - LOGICAL
     table-export-query:
+      description: "For all entities fulfilling the sub-query, export raw data of selected tables over the selected period.
+      The output format is in wide format, meaning all tables are concatenated, but only single rows are emitted with only the columns of the source table filled.
+      Columns of the same SecondaryId will be grouped and marked with SECONDARY_ID semantics. The source column will contain the id of the source table.
+      The CONCEPT nodes can be used for filtering single rows."
       type: object
       properties:
         query:
@@ -912,17 +932,21 @@ components:
           items:
             $ref: "#/components/schemas/cq-concept"
         rawConceptValues:
+          description: "If true, columns of concepts will be emitted as raw values. Else they will be emitted as resolved ids of the concept-elements."
           type: boolean
         type:
           type: string
           enum:
             - TABLE_EXPORT
     secondaryId-query:
+      description: "Executes concept-queries grouped by a secondary key - in addition to entities. Therefore, multiple columns are emitted per entity.
+      The secondary-ids are put into a column named after its label, tagged with SECONDARY_ID semantics."
       type: object
       properties:
         root:
           $ref: "#/components/schemas/cq-element"
         secondaryId:
+          description: "The secondaryId to group by."
           $ref: "#/components/schemas/secondaryIdId"
         dateAggregationMode:
           $ref: "#/components/schemas/date-aggregation-mode"
@@ -931,16 +955,27 @@ components:
           enum:
             - SECONDARY_ID_QUERY
     resolution-and-alignment:
+      description: "Grouping of algorithms used for subdividing and aligning of export-forms."
       type: object
       properties:
         resolution:
+          description: "Determines the unit to sub-divide by, starting at the start of the input date range.
+          - COMPLETE is identity,
+          - YEARS creates subdivisions for all covered years,
+          - QUARTERS creates subdivisions for all covered quarters,
+          - DAYS creates subdivisions per covered day."
           type: string
           enum:
             - COMPLETE
-            - YEARS
-            - QUARTERS
             - DAYS
+            - QUARTERS
+            - YEARS
         alignment:
+          description: "Aligns the date-ranges that are subdivided. This helps with more uniform output formats.
+          - NO_ALIGN will not alter the date-ranges,
+          - DAY aligns to days, effectively the same as NO_ALIGN,
+          - QUARTER will align to the start/end of the next quarter,
+          - YEAR will align to the start/end of the next year"
           type: string
           enum:
             - NO_ALIGN
@@ -948,6 +983,7 @@ components:
             - QUARTER
             - YEAR
     array-concept-query:
+      description: "Building block of export-forms: evaluates all queries independently, exporting their selects." #TODO tbh kP was genau die macht
       type: object
       properties:
         childQueries:
@@ -961,6 +997,11 @@ components:
           enum:
             - ARRAY_CONCEPT_QUERY
     relative-form-query:
+      description: "Export a set of features for all included entities. 
+      The periods to export are determined relative to the resulting event-dates per entity by sampling a single day. 
+      The parameters timeCountBefore/-After determine how many periods are exported.
+      The periods are numbered relative to the index date: The quarter before the index will have index=-1, the quarter before index=-1; the quarter after the index date, will have index=1 and so on."
+      #TODO glaube die Spalte heißt nicht index.
       type: object
       properties:
         query:
@@ -980,6 +1021,7 @@ components:
         timeCountAfter:
           type: integer
         timeUnit:
+          #TODO was macht timeUnit, was nicht schon resolutionAndAlignmentMap macht?
           type: string
           enum:
             - DAYS
@@ -994,6 +1036,8 @@ components:
           enum:
             - RELATIVE_FORM_QUERY
     entity-date-query:
+      description: "Export a set of features for all entities satisfying the query, over the query's result date. 
+      See absolute-form-query for comparison."
       type: object
       properties:
         query:
@@ -1013,6 +1057,10 @@ components:
           enum:
             - ENTITY_DATE_QUERY
     absolute-form-query:
+      description: "Export a set of features over a specified period for all entities the query is fulfilled. 
+                    Using resolutionsAndAlignmentMap the period can be subdivided into Years, Quarters and Months.
+                    The subdivisions can then be aligned to the years, months and quarters.
+                    Each subdivision is assigned an increasing index per resolution: The first quarter is index=1, the second quarter index=2, while the first year is index=1 and so on."
       type: object
       properties:
         query:
@@ -1030,6 +1078,9 @@ components:
           enum:
             - ABSOLUTE_FORM_QUERY
     concept-query:
+      description: "The fundamental query of Conquery. Executes a query, where all fulfilling entities are included as a single line, 
+      containing the aggregated validity-dates, as well as any requested selects. The first columns are unique ids of the entity, then the event-dates column, and then in unspecified order all select results.
+      A CONCEPT_QUERY can be understood as a tree of logically composed query elements, where the leafs are CONCEPT nodes, describing filtering and aggregation."
       type: object
       properties:
         root:
