@@ -146,9 +146,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		}
 	}
 
-	@Override
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(subject, status);
 		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions();
 		}

@@ -114,7 +114,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		return status;
 	}
 
-	@Override
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		status.setColumnDescriptions(generateColumnDescriptions());
 	}
