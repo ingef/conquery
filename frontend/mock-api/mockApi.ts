@@ -1,14 +1,27 @@
-const path = require("path");
-const version = require("../package.json").version;
-const EXPORT_FORM_CONFIG = require("./forms/export-form.json");
-const mockAuthMiddleware = require("./mockAuthMiddleware");
-const Chance = require("chance");
+import Chance from "chance";
+import { Application } from "express";
+import path from "path";
+import { fileURLToPath } from "url";
+import packagejson from "../package.json" assert { type: "json" };
+import config from "./config.json" assert { type: "json" };
+import EXPORT_FORM_CONFIG from "./forms/export-form.json" assert { type: "json" };
+import mockAuthMiddleware from "./mockAuthMiddleware.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const version = packagejson.version;
+
+config.version = version;
+
+const FRONTEND_CONFIG = config;
+
 
 const chance = new Chance();
 
 // Taken from:
 // http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
-function shuffleArray(array) {
+function shuffleArray<T>(array: T[]) {
   for (var i = array.length - 1; i > 0; i--) {
     var j = Math.floor(Math.random() * (i + 1));
     var temp = array[i];
@@ -27,14 +40,14 @@ const SHORT_DELAY = 300;
 const NO_DELAY = 10;
 
 // Simulate API
-module.exports = function (app, port) {
+export default function mockApi(app: Application) {
   /*
     QUERIES
   */
   app.post(
     "/api/datasets/:datasetId/queries",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       const dice = Math.random();
 
       setTimeout(() => {
@@ -53,7 +66,7 @@ module.exports = function (app, port) {
   app.post(
     "/api/queries/:id/cancel",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
         res.send(JSON.stringify({ id: 1 }));
@@ -64,8 +77,8 @@ module.exports = function (app, port) {
   app.post(
     "/api/datasets/:datasetId/queries/upload",
     mockAuthMiddleware,
-    function response(req, res) {
-      const unresolvedId = [];
+    function response(_, res) {
+      const unresolvedId: string[][] = [];
       for (let i = 0; i < 3000; i++) {
         unresolvedId.push(chance.sentence({ words: 3 }).split(" "));
       }
@@ -101,7 +114,7 @@ module.exports = function (app, port) {
   app.delete(
     "/api/queries/:id",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
         res.send(JSON.stringify({ id: 1 }));
@@ -178,7 +191,7 @@ module.exports = function (app, port) {
   /*
     DATASETS
   */
-  app.get("/api/datasets", mockAuthMiddleware, function response(req, res) {
+  app.get("/api/datasets", mockAuthMiddleware, function response(_, res) {
     res.setHeader("Content-Type", "application/json");
 
     res.send(
@@ -210,7 +223,7 @@ module.exports = function (app, port) {
   app.get(
     "/api/datasets/:id/concepts",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       res.sendFile(path.join(__dirname, "./concepts.json"));
     },
   );
@@ -225,11 +238,11 @@ module.exports = function (app, port) {
   app.get(
     "/api/datasets/:datasetId/queries",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       res.setHeader("Content-Type", "application/json");
 
       setTimeout(() => {
-        const ids = [];
+        const ids: unknown[] = [];
         const possibleTagsWithProbabilities = [
           ["research", 0.3],
           ["fun", 0.02],
@@ -294,7 +307,7 @@ module.exports = function (app, port) {
   app.patch(
     "/api/queries/:id",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       setTimeout(() => {
         res.send(JSON.stringify({}));
       }, LONG_DELAY);
@@ -304,7 +317,7 @@ module.exports = function (app, port) {
   app.delete(
     "/api/queries/:id",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
         res.send(JSON.stringify({ id: 1 }));
@@ -315,7 +328,7 @@ module.exports = function (app, port) {
   app.get(
     "/api/datasets/:datasetId/form-queries",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
         res.send(JSON.stringify(EXPORT_FORM_CONFIG));
@@ -326,7 +339,7 @@ module.exports = function (app, port) {
   app.post(
     "/api/datasets/:datasetId/import",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
         res.status(201);
@@ -351,7 +364,7 @@ module.exports = function (app, port) {
         const countriesRequested = req.params.filterId === "production_country";
         const wordsRequested = req.params.filterId === "words";
 
-        const storedValues = countriesRequested
+        const storedValues: string[] = countriesRequested
           ? require("./autocomplete/countries")
           : wordsRequested
           ? require("./autocomplete/words")
@@ -401,7 +414,7 @@ module.exports = function (app, port) {
   /*
     VERSION
   */
-  app.get("/api/version", function (req, res) {
+  app.get("/api/version", function (_, res) {
     res.setHeader("Content-Type", "application/json");
 
     res.send({
@@ -425,13 +438,13 @@ module.exports = function (app, port) {
         if (req.params.filterId !== "production_country") return null;
 
         const countries = require("./autocomplete/countries");
-        const unknownCodes = values.filter((val) => !countries.includes(val));
-        const resolvedValues = values.filter((val) => countries.includes(val));
+        const unknownCodes = (values as string[]).filter((val) => !countries.includes(val));
+        const resolvedValues = (values as string[]).filter((val) => countries.includes(val));
 
         res.send({
           unknownCodes: unknownCodes,
           resolvedFilter: {
-            tableId: req.params.tableId,
+            tableId: "some-tableId",
             filterId: req.params.filterId,
             value: resolvedValues.map((val) => ({ label: val, value: val })),
           },
@@ -440,14 +453,10 @@ module.exports = function (app, port) {
     },
   );
 
-  app.get("/api/config/frontend", mockAuthMiddleware, (req, res) => {
+  app.get("/api/config/frontend", mockAuthMiddleware, (_, res) => {
     res.setHeader("Content-Type", "application/json");
 
-    const config = require("./config.json");
-
-    config.version = version;
-
-    res.send(config);
+    res.send(FRONTEND_CONFIG);
   });
 
   app.post("/auth", function response(req, res) {
@@ -471,7 +480,7 @@ module.exports = function (app, port) {
     }, 500);
   });
 
-  app.get("/api/me", mockAuthMiddleware, (req, res) => {
+  app.get("/api/me", mockAuthMiddleware, (_, res) => {
     res.setHeader("Content-Type", "application/json");
 
     res.send({
@@ -489,7 +498,7 @@ module.exports = function (app, port) {
   app.post(
     "/api/datasets/:datasetId/form-configs",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
         res.status(201);
@@ -505,7 +514,7 @@ module.exports = function (app, port) {
   app.get(
     "/api/datasets/:datasetId/form-configs",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       res.setHeader("Content-Type", "application/json");
 
       function getFormConfigAttributes() {
@@ -525,7 +534,7 @@ module.exports = function (app, port) {
       }
 
       setTimeout(() => {
-        const configs = [];
+        const configs: unknown[] = [];
         const possibleTags = [
           "research",
           "fun",
@@ -559,7 +568,7 @@ module.exports = function (app, port) {
   app.get(
     "/api/form-configs/:id",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       setTimeout(() => {
         res.sendFile(path.join(__dirname, "./form-configs/testconf.json"));
       }, LONG_DELAY);
@@ -569,7 +578,7 @@ module.exports = function (app, port) {
   app.patch(
     "/api/form-configs/:id",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
         res.status(200).end();
@@ -580,7 +589,7 @@ module.exports = function (app, port) {
   app.delete(
     "/api/form-configs/:id",
     mockAuthMiddleware,
-    function response(req, res) {
+    function response(_, res) {
       setTimeout(() => {
         res.status(204).end();
       }, LONG_DELAY);

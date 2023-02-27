@@ -229,7 +229,7 @@ public class ReusedQueryTest implements ProgrammaticIntegrationTest {
 
 				ManagedExecutionId copyId = IntegrationUtils.assertQueryResult(conquery, reused, 4L, ExecutionState.DONE, shareHolder, 201);
 
-				ManagedExecution<?> copy = metaStorage.getExecution(copyId);
+				ManagedExecution copy = metaStorage.getExecution(copyId);
 
 
 				// Contentwise the label and tags should be the same

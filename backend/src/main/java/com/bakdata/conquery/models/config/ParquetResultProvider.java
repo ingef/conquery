@@ -28,7 +28,7 @@ public class ParquetResultProvider implements ResultRendererProvider {
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)
-	public Collection<ResultAsset> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 		if (!(exec instanceof SingleTableResult)) {
 			return Collections.emptyList();
 		}
@@ -38,7 +38,7 @@ public class ParquetResultProvider implements ResultRendererProvider {
 		}
 
 		return List.of(
-				new ResultAsset("PARQUET", ResultParquetResource.getDownloadURL(uriBuilder.clone(), (ManagedExecution<?> & SingleTableResult) exec))
+				new ResultAsset("PARQUET", ResultParquetResource.getDownloadURL(uriBuilder.clone(), (ManagedExecution & SingleTableResult) exec))
 		);
 	}
 

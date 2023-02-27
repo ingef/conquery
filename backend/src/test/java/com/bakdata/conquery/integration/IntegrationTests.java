@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -104,6 +103,7 @@ public class IntegrationTests {
 				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 											 .filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
 											 .filter(classInfo -> {
+												 // e.g. For the RestartTest: CONQUERY_TEST_PROGRAMMATIC_REGEX_FILTER=Restart.*
 												 String regexFilter = System.getenv(TestTags.TEST_PROGRAMMATIC_REGEX_FILTER);
 												 if (Strings.isNullOrEmpty(regexFilter)) {
 													 // No filter set: allow all tests

@@ -30,12 +30,13 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -113,17 +114,17 @@ public class FormTest extends ConqueryTestSpec {
 
 	@Override
 	public void executeTest(StandaloneSupport support) throws Exception {
-		DatasetRegistry namespaces = support.getDatasetRegistry();
+		Namespace namespace = support.getNamespace();
 
 		assertThat(support.getValidator().validate(form))
 				.describedAs("Form Validation Errors")
 				.isEmpty();
 
 
-		ManagedForm managedForm = (ManagedForm) support
+		ManagedInternalForm<?> managedForm = (ManagedInternalForm<?>) support
 				.getNamespace()
 				.getExecutionManager()
-				.runQuery(namespaces, form, support.getTestUser(), support.getDataset(), support.getConfig(), false);
+				.runQuery(namespace, form, support.getTestUser(), support.getDataset(), support.getConfig(), false);
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {
@@ -140,8 +141,7 @@ public class FormTest extends ConqueryTestSpec {
 		checkResults(support, managedForm, support.getTestUser());
 	}
 
-	private void checkResults(StandaloneSupport standaloneSupport, ManagedForm managedForm, User user) throws IOException {
-		Map<String, List<ManagedQuery>> managedMapping = managedForm.getSubQueries();
+	private void checkResults(StandaloneSupport standaloneSupport, ManagedInternalForm<?> managedForm, User user) throws IOException {
 
 		IdPrinter idPrinter = IdColumnUtil.getIdPrinter(
 				user,
@@ -156,17 +156,12 @@ public class FormTest extends ConqueryTestSpec {
 				new PrintSettings(
 						false,
 						Locale.ENGLISH,
-						standaloneSupport.getDatasetsProcessor().getDatasetRegistry(),
+						standaloneSupport.getNamespace(),
 						config,
 						idPrinter::createId
 				);
 
-		if (managedForm instanceof SingleTableResult) {
-			checkSingleResult((ManagedForm & SingleTableResult) managedForm, config, printSettings);
-		}
-		else {
-			checkMultipleResult(managedMapping, config, printSettings);
-		}
+		checkSingleResult(managedForm, config, printSettings);
 
 	}
 

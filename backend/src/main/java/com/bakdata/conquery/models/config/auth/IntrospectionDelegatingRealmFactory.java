@@ -1,22 +1,29 @@
-package com.bakdata.conquery.models.auth.oidc;
+package com.bakdata.conquery.models.config.auth;
+
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
+import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealm;
+import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakApi;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
+import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.servlets.tasks.Task;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.authorization.client.Configuration;
-
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -26,6 +33,14 @@ import java.util.Map;
 public class IntrospectionDelegatingRealmFactory extends Configuration {
 
 	public static final String CONFIDENTIAL_CREDENTIAL = "secret";
+
+	/**
+	 * Attribute of keycloak group object that holds the conquery group id to map to.
+	 * If it is blank, the group mapping will be skipped.
+	 */
+	@Getter
+	@Setter
+	public String groupIdAttribute = "";
 
 
 	private transient AuthzClient authClient;
@@ -39,7 +54,7 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 		authClient = getAuthClient(false);
 
 		// Register task to retrieve the idp client api, so the realm can be used, when the idp service is available.
-		if(managerNode != null && managerNode.getEnvironment().admin() != null) {
+		if (managerNode.getEnvironment().admin() != null) {
 			managerNode.getEnvironment().admin().addTask(new Task("keycloak-update-authz-client") {
 
 				@Override
@@ -49,7 +64,12 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 				}
 			});
 		}
-		return new IntrospectionDelegatingRealm(managerNode.getStorage(), this);
+
+		// Setup keycloak api
+		final Client client = new JerseyClientBuilder(managerNode.getEnvironment()).build("keycloak-api");
+		final KeycloakApi keycloakApi = new KeycloakApi(this, client);
+
+		return new IntrospectionDelegatingRealm(managerNode.getStorage(), this, keycloakApi);
 	}
 
 
@@ -68,12 +88,12 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 	}
 
 	@JsonIgnore
-	private String getClientId() {
+	public String getClientId() {
 		return getResource();
 	}
 
 	@JsonIgnore
-	private String getClientSecret() {
+	public String getClientSecret() {
 		return (String) credentials.get(CONFIDENTIAL_CREDENTIAL);
 	}
 
@@ -90,8 +110,7 @@ public class IntrospectionDelegatingRealmFactory extends Configuration {
 		}
 		try {
 			// This tries to contact the identity providers discovery endpoint and can possibly timeout
-			AuthzClient authzClient = AuthzClient.create(this);
-			return authzClient;
+			return AuthzClient.create(this);
 		} catch (RuntimeException e) {
 			log.warn("Unable to establish connection to auth server.", log.isTraceEnabled()? e : null );
 			if(exceptionOnFailedRetrieval) {

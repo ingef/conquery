@@ -33,7 +33,7 @@ public class ArrowResultProvider implements ResultRendererProvider {
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)
-	public Collection<ResultAsset> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 		if (!(exec instanceof SingleTableResult)) {
 			return Collections.emptyList();
 		}
@@ -43,8 +43,8 @@ public class ArrowResultProvider implements ResultRendererProvider {
 		}
 
 		return List.of(
-				new ResultAsset("Arrow File", ResultArrowResource.getFileDownloadURL(uriBuilder.clone(), (ManagedExecution<?> & SingleTableResult) exec)),
-				new ResultAsset("Arrow Stream", ResultArrowResource.getStreamDownloadURL(uriBuilder.clone(), (ManagedExecution<?> & SingleTableResult) exec))
+				new ResultAsset("Arrow File", ResultArrowResource.getFileDownloadURL(uriBuilder.clone(), (ManagedExecution & SingleTableResult) exec)),
+				new ResultAsset("Arrow Stream", ResultArrowResource.getStreamDownloadURL(uriBuilder.clone(), (ManagedExecution & SingleTableResult) exec))
 		);
 	}
 

@@ -5,7 +5,7 @@ import { IconName, library } from "@fortawesome/fontawesome-svg-core";
 import { far } from "@fortawesome/free-regular-svg-icons";
 import { fas } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { FC, forwardRef } from "react";
+import { forwardRef } from "react";
 
 library.add(fas, far);
 
@@ -43,6 +43,8 @@ const spin = keyframes`
 const shouldForwardProp = (prop: keyof FaIconPropsT) =>
   isPropValid(prop) || prop === "icon" || prop === "className";
 
+// TODO: Figure out how to avoid a type error with styled here
+// @ts-ignore
 export const Icon = styled(FontAwesomeIcon, {
   shouldForwardProp,
 })<IconStyleProps>`
@@ -73,11 +75,13 @@ export const Icon = styled(FontAwesomeIcon, {
   }
 `;
 
-const FaIcon: FC<FaIconPropsT> = forwardRef(
+const FaIcon = forwardRef<SVGSVGElement, FaIconPropsT>(
   ({ icon, regular, className, ...restProps }, ref) => {
     return (
       <Icon
-        forwardedRef={ref}
+        // TODO: ref is working, try fixing the type error
+        // @ts-ignore
+        ref={ref}
         className={`fa-fw ${className}`}
         icon={regular ? ["far", icon] : icon}
         {...restProps}

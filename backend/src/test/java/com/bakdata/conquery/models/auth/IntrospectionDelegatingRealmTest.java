@@ -1,7 +1,8 @@
 package com.bakdata.conquery.models.auth;
 
-import static com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory.CONFIDENTIAL_CREDENTIAL;
+import static com.bakdata.conquery.models.config.auth.IntrospectionDelegatingRealmFactory.CONFIDENTIAL_CREDENTIAL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 import static org.mockserver.model.Header.header;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
@@ -9,6 +10,8 @@ import static org.mockserver.model.Parameter.param;
 import static org.mockserver.model.ParameterBody.params;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.validation.Validator;
 
@@ -18,7 +21,9 @@ import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealm;
-import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory;
+import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakApi;
+import com.bakdata.conquery.models.auth.oidc.keycloak.KeycloakGroup;
+import com.bakdata.conquery.models.config.auth.IntrospectionDelegatingRealmFactory;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -40,39 +45,78 @@ public class IntrospectionDelegatingRealmTest {
 	private static final MetaStorage STORAGE = new NonPersistentStoreFactory().createMetaStorage();
 	private static final IntrospectionDelegatingRealmFactory CONFIG = new IntrospectionDelegatingRealmFactory();
 	private static final Validator VALIDATOR = BaseValidator.newValidator();
-	private static final TestRealm REALM = new TestRealm(STORAGE, CONFIG);
+
+	private static final String GROUP_ID_ATTRIBUTE = "group-id";
 
 	// User 1
 	private static final String USER_1_NAME = "test_name1";
-	private static User USER_1 = new User(USER_1_NAME, USER_1_NAME, STORAGE);
+	private static final User USER_1 = new User(USER_1_NAME, USER_1_NAME, STORAGE);
 	private static final String USER_1_PASSWORD = "test_password1";
-	private static final String USER_1_TOKEN = JWT.create().withClaim("name", USER_1_NAME).sign(Algorithm.HMAC256("secret"));;
+	public static final String BACKEND_AUD = "backend";
+	public static final String SOME_SECRET = "secret";
+	private static final String USER_1_TOKEN = JWT.create()
+												  .withSubject(USER_1_NAME)
+												  .withAudience(BACKEND_AUD)
+												  .withClaim("name", USER_1_NAME)
+												  .sign(Algorithm.HMAC256(SOME_SECRET));
 	private static final BearerToken USER1_TOKEN_WRAPPED = new BearerToken(USER_1_TOKEN);
 
 	// User 2
 	private static final String USER_2_NAME = "test_name2";
-	private static User USER_2 = new User(USER_2_NAME, USER_2_NAME, STORAGE);
+	private static final User USER_2 = new User(USER_2_NAME, USER_2_NAME, STORAGE);
 	private static final String USER_2_LABEL = "test_label2";
-	private static final String USER_2_TOKEN = JWT.create().withClaim("name", USER_2_NAME).sign(Algorithm.HMAC256("secret"));;
+	private static final String USER_2_TOKEN = JWT.create()
+												  .withSubject(USER_2_NAME)
+												  .withAudience(BACKEND_AUD)
+												  .withClaim("name", USER_2_LABEL)
+												  .sign(Algorithm.HMAC256(SOME_SECRET));
 	private static final BearerToken USER_2_TOKEN_WRAPPED = new BearerToken(USER_2_TOKEN);
 
 	// User 3 existing
 	private static final String USER_3_NAME = "test_name3";
-	private static User USER_3 = new User(USER_3_NAME, USER_3_NAME, STORAGE);
+	private static final User USER_3 = new User(USER_3_NAME, USER_3_NAME, STORAGE);
 	private static final String USER_3_LABEL = "test_label3";
-	private static final String USER_3_TOKEN = JWT.create().withClaim("name", USER_3_NAME).sign(Algorithm.HMAC256("secret"));;
+	private static final String USER_3_TOKEN = JWT.create()
+												  .withSubject(USER_3_NAME)
+												  .withAudience(BACKEND_AUD)
+												  .withClaim("name", USER_3_LABEL)
+												  .sign(Algorithm.HMAC256(SOME_SECRET));
 	private static final BearerToken USER_3_TOKEN_WRAPPED = new BearerToken(USER_3_TOKEN);
+
 	// Groups
 	private static final String GROUPNAME_1 = "group1";
 	private static final Group GROUP_1_EXISTING = new Group(GROUPNAME_1, GROUPNAME_1, STORAGE);
+	public static final KeycloakGroup
+			KEYCLOAK_GROUP_1 =
+			new KeycloakGroup(UUID.randomUUID().toString(), "Group1", "g1", Map.of(GROUP_ID_ATTRIBUTE, GROUP_1_EXISTING.getId().toString()), Set.of());
 	private static final String GROUPNAME_2 = "group2"; // Group is created during test
-	
+	public static final KeycloakGroup
+			KEYCLOAK_GROUP_2 =
+			new KeycloakGroup(UUID.randomUUID().toString(), "Group2", "g2", Map.of(GROUP_ID_ATTRIBUTE, new GroupId(GROUPNAME_2).toString()), Set.of());
+
 	private static OIDCMockServer OIDC_SERVER;
+	private static TestRealm REALM;
+
+	private static KeycloakApi KEYCLOAK_API;
 
 	@BeforeAll
 	public static void beforeAll() {
-		initRealmConfig();
+		KEYCLOAK_API = mock(KeycloakApi.class);
+		doAnswer(invocation -> Set.of(KEYCLOAK_GROUP_1, KEYCLOAK_GROUP_2)).when(KEYCLOAK_API)
+																		  .getGroupHierarchy();
+		doAnswer(
+				invocation -> {
+					final String userId = invocation.getArgument(0);
+					if (userId.equals(USER_2_NAME)) {
+						return Set.of(KEYCLOAK_GROUP_1, KEYCLOAK_GROUP_2);
+					}
+					return Set.of();
+				}
+		).when(KEYCLOAK_API).getUserGroups(any(String.class));
+
 		initOIDCServer();
+		initRealm();
+
 	}
 	
 	@BeforeEach
@@ -88,13 +132,16 @@ public class IntrospectionDelegatingRealmTest {
 	}
 
 
-	private static void initRealmConfig() {
+	private static void initRealm() {
 		CONFIG.setRealm(OIDCMockServer.REALM_NAME);
-		CONFIG.setResource("test_cred");
+		CONFIG.setResource("backend");
+		CONFIG.setGroupIdAttribute(GROUP_ID_ATTRIBUTE);
 		CONFIG.setCredentials(Map.of(CONFIDENTIAL_CREDENTIAL, "test_cred"));
 		CONFIG.setAuthServerUrl(OIDCMockServer.MOCK_SERVER_URL);
 
 		ValidatorHelper.failOnError(log, VALIDATOR.validate(CONFIG));
+
+		REALM = new TestRealm(STORAGE, CONFIG);
 	}
 
 	private static void initOIDCServer() {
@@ -133,12 +180,12 @@ public class IntrospectionDelegatingRealmTest {
 					.withBody("{\"username\" : \"" + USER_1_NAME + "\", \"active\": true}"));
 		// For USER 2
 		server.when(
-			request().withMethod("POST").withPath(String.format("/realms/%s/protocol/openid-connect/token/introspect", OIDCMockServer.REALM_NAME))
-				.withHeaders(header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"))
-				.withBody(params(param("token_type_hint", "access_token"), param("token", USER_2_TOKEN))))
-			.respond(
-				response().withContentType(MediaType.APPLICATION_JSON_UTF_8)
-					.withBody("{\"username\" : \"" + USER_2_NAME + "\",\"name\" : \"" + USER_2_LABEL + "\", \"active\": true, \"groups\":[\"" + GROUPNAME_1 + "\",\"" + GROUPNAME_2 + "\"]}"));
+					  request().withMethod("POST").withPath(String.format("/realms/%s/protocol/openid-connect/token/introspect", OIDCMockServer.REALM_NAME))
+							   .withHeaders(header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8"))
+							   .withBody(params(param("token_type_hint", "access_token"), param("token", USER_2_TOKEN))))
+			  .respond(
+					  response().withContentType(MediaType.APPLICATION_JSON_UTF_8)
+								.withBody("{\"username\" : \"" + USER_2_NAME + "\",\"name\" : \"" + USER_2_LABEL + "\", \"active\": true}"));
 		// For USER 3
 		server.when(
 			request().withMethod("POST").withPath(String.format("/realms/%s/protocol/openid-connect/token/introspect", OIDCMockServer.REALM_NAME))
@@ -218,7 +265,7 @@ public class IntrospectionDelegatingRealmTest {
 	private static class TestRealm extends IntrospectionDelegatingRealm {
 
 		public TestRealm(MetaStorage storage, IntrospectionDelegatingRealmFactory config) {
-			super(storage, config);
+			super(storage, config, KEYCLOAK_API);
 		}
 
 	}

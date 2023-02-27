@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
-import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
@@ -28,17 +28,18 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.MoreCollectors;
-import lombok.NonNull;
 
 /**
  * Dedicated {@link ManagedExecution} to properly display/combine the two Queries submitted by {@link EntityPreviewForm}.
  * This mostly delegates to {@link EntityPreviewForm#VALUES_QUERY_NAME}, but embeds the result of {@link EntityPreviewForm#INFOS_QUERY_NAME} into {@link EntityPreviewStatus#getInfos()}.
  */
 @CPSType(id = "ENTITY_PREVIEW_EXECUTION", base = ManagedExecution.class)
-public class EntityPreviewExecution extends ManagedForm implements SingleTableResult {
+public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewForm> implements SingleTableResult {
 
 	private PreviewConfig previewConfig;
 
@@ -48,15 +49,19 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		return true;
 	}
 
-	EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset) {
-		super(entityPreviewQuery, user, submittedDataset);
+	protected EntityPreviewExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		super(storage);
+	}
+
+	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
+		super(entityPreviewQuery, user, submittedDataset, storage);
 	}
 
 	/**
 	 * Takes a ManagedQuery, and transforms its result into a List of {@link EntityPreviewStatus.Info}.
 	 * The format of the query is an {@link AbsoluteFormQuery} containing a single line for one person. This should correspond to {@link EntityPreviewForm#VALUES_QUERY_NAME}.
 	 */
-	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, Namespace namespace, ConqueryConfig config) {
 
 
 		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
@@ -64,7 +69,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		final Object[] values = result.getValues().get(0);
 
 		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
-		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null, previewConfig::resolveSelectLabel);
+		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null, previewConfig::resolveSelectLabel);
 
 		// We are only interested in the Select results.
 		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
@@ -85,9 +90,9 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	}
 
 	@Override
-	public void doInitExecutable(@NonNull DatasetRegistry datasetRegistry, ConqueryConfig config) {
-		super.doInitExecutable(datasetRegistry, config);
-		previewConfig = datasetRegistry.get(getDataset().getId()).getPreviewConfig();
+	public void doInitExecutable() {
+		super.doInitExecutable();
+		previewConfig = getNamespace().getPreviewConfig();
 	}
 
 	/**
@@ -96,32 +101,31 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	 * Most importantly to {@link EntityPreviewStatus#setInfos(List)} to for infos of entity.
 	 */
 	@Override
-	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Subject subject, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public FullExecutionStatus buildStatusFull(Subject subject) {
 
-		initExecutable(datasetRegistry, config);
+		initExecutable(getNamespace(), getConfig());
 
 		final EntityPreviewStatus status = new EntityPreviewStatus();
-		setStatusFull(status, storage, subject, datasetRegistry);
+		setStatusFull(status, subject);
 		status.setQuery(getValuesQuery().getQuery());
 
-		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), datasetRegistry, config));
+		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), getNamespace(), getConfig()));
 
 		return status;
 	}
 
-	@Override
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
-		status.setColumnDescriptions(generateColumnDescriptions(datasetRegistry));
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
+		status.setColumnDescriptions(generateColumnDescriptions());
 	}
 
 	@JsonIgnore
 	private ManagedQuery getInfoCardExecution() {
-		return getSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME).get(0);
+		return getSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME);
 	}
 
 	@JsonIgnore
 	private ManagedQuery getValuesQuery() {
-		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME).get(0);
+		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME);
 	}
 
 
@@ -132,13 +136,14 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	}
 
 	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions(DatasetRegistry datasetRegistry) {
-		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions(datasetRegistry);
+	public List<ColumnDescriptor> generateColumnDescriptions() {
+		final List<ColumnDescriptor> descriptors = getValuesQuery().generateColumnDescriptions();
 
 		for (ColumnDescriptor descriptor : descriptors) {
 			if (descriptor.getSemantics()
 						  .stream()
-						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc && previewConfig.isGroupingColumn(desc.getSecondaryId()))) {
+						  .anyMatch(semanticType -> semanticType instanceof SemanticType.SecondaryIdT desc
+													&& previewConfig.isGroupingColumn(desc.getSecondaryId()))) {
 				descriptor.getSemantics().add(new SemanticType.GroupT());
 			}
 

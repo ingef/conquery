@@ -1,11 +1,11 @@
 // -----------
 // EXPRESS SETUP
 // -----------
-const path = require("path");
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const mountApi = require(".");
+import bodyParser from "body-parser";
+import cors from "cors";
+import express from "express";
+
+import mountApi from "./mockApi.js";
 
 const port = process.env.PORT || 8001;
 const app = express();
@@ -18,12 +18,8 @@ app.use(
   }),
 );
 
-mountApi(app, port);
+mountApi(app);
 
-app.listen(port, "0.0.0.0", function onStart(err) {
-  if (err) {
-    console.log(err);
-  }
-
+app.listen(Number(port), "0.0.0.0", () => {
   console.info("==> 🌎 Listening on port %s.", port);
 });

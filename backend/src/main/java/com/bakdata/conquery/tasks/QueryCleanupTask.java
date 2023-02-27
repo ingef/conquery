@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.QueryUtils;
 import io.dropwizard.servlets.tasks.Task;
@@ -73,17 +73,17 @@ public class QueryCleanupTask extends Task {
 		// Iterate for as long as no changes are needed (this is because queries can be referenced by other queries)
 		while (true) {
 			final QueryUtils.AllReusedFinder reusedChecker = new QueryUtils.AllReusedFinder();
-			Set<ManagedExecution<?>> toDelete = new HashSet<>();
+			Set<ManagedExecution> toDelete = new HashSet<>();
 
-			for (ManagedExecution<?> execution : storage.getAllExecutions()) {
+			for (ManagedExecution execution : storage.getAllExecutions()) {
 
 				// Gather all referenced queries via reused checker.
 				if (execution instanceof ManagedQuery) {
 					((ManagedQuery) execution).getQuery().visit(reusedChecker);
 				}
-				else if (execution instanceof ManagedForm) {
-					((ManagedForm) execution).getFlatSubQueries().values()
-											 .forEach(q -> q.getQuery().visit(reusedChecker));
+				else if (execution instanceof ManagedInternalForm<?> internalForm) {
+					internalForm.getFlatSubQueries().values()
+								.forEach(q -> q.getQuery().visit(reusedChecker));
 				}
 
 
@@ -121,7 +121,7 @@ public class QueryCleanupTask extends Task {
 			}
 
 			// remove all queries referenced in reused queries.
-			final Collection<ManagedExecution<?>> referenced =
+			final Collection<ManagedExecution> referenced =
 					reusedChecker.getReusedElements().stream()
 								 .map(CQReusedQuery::getQueryId)
 								 .map(storage::getExecution)
@@ -137,7 +137,7 @@ public class QueryCleanupTask extends Task {
 
 			log.info("Deleting {} Executions", toDelete.size());
 
-			for (ManagedExecution<?> execution : toDelete) {
+			for (ManagedExecution execution : toDelete) {
 				log.trace("Deleting Execution[{}]", execution.getId());
 				storage.removeExecution(execution.getId());
 			}
