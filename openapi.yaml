@@ -639,7 +639,7 @@ components:
               enum:
                 - DATE_RESTRICTION
     cq-negation:
-      description: "Negates the result of its dowstream child: If downstream is fulfilled, this node is not fulfilled and vice versa.
+      description: "Negates the result of its downstream child: If downstream is fulfilled, this node is not fulfilled and vice versa.
       By default, this node will block date-aggregation of downstream elements, as the results are mostly bogus.
       In LOGICAL dateAggregation mode, it will deduct the observed period from infinity."
       type: object
