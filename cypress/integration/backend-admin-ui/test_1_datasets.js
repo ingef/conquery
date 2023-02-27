@@ -32,6 +32,7 @@ context("Admin UI Datasets", () => {
 
         it("Can delete the test dataset", () => {
             cy.get(`[data-test-id="delete-btn-${testDSID}"]`).click({force: true});
+            cy.get(`[data-test-id="delete-btn-${testDSID}"]`).should('not.exist');
         });
     });
 });

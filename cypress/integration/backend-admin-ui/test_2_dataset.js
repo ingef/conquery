@@ -27,8 +27,9 @@ context("Admin UI Single Dataset", () => {
         });
 
         it("Can change the label", () => {
-            cy.get('[data-test-id="dataset-label-input"]').clear().type(`NEW ${testDSLabel}`);
-            cy.get('[data-test-id="dataset-label-btn"]').click();
+            cy.get('[data-test-id="editableText-btn"]').click();
+            cy.get('[data-test-id="editableText-input"]').clear().type(`NEW ${testDSLabel}`);
+            cy.get('[data-test-id="editableText-form"]').submit();
 
             cy.contains(`Dataset NEW ${testDSLabel}`);
         });
@@ -65,11 +66,13 @@ context("Admin UI Single Dataset", () => {
         it("Can delete test concept", () => {
             cy.get('[data-test-id="accordion-Concepts"]').click();
             cy.get(`[data-test-id="delete-btn-concept-${testDSID}.concept1"]`).click({force: true});
+            cy.get(`[data-test-id="delete-btn-${testDSID}.concept1"]`).should('not.exist');
         });
 
         it("Can delete test table", () => {
             cy.get('[data-test-id="accordion-Tables"]').click();
             cy.get(`[data-test-id="delete-btn-table-${testDSID}.table"]`).click({force: true});
+            cy.get(`[data-test-id="delete-btn-${testDSID}.table"]`).should('not.exist');
         });
 
     });
