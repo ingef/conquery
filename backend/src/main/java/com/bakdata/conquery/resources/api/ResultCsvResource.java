@@ -6,7 +6,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Optional;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -39,7 +38,7 @@ public class ResultCsvResource {
 
 	private final ResultCsvProcessor processor;
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder.path(ResultCsvResource.class)
 						 .path(ResultCsvResource.class, GET_RESULT_PATH_METHOD)
 						 .resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
@@ -50,9 +49,9 @@ public class ResultCsvResource {
 	@GET
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getAsCsv(
+	public <E extends ManagedExecution & SingleTableResult> Response getAsCsv(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution<?> execution,
+			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("charset") String queryCharset,
 			@QueryParam("pretty") @DefaultValue("true") boolean pretty) {

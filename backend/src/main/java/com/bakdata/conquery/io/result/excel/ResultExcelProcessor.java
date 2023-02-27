@@ -11,7 +11,6 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -39,8 +38,8 @@ public class ResultExcelProcessor {
 
 	private final ExcelConfig excelConfig;
 
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty) {
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty) {
 		ConqueryMDC.setLocation(subject.getName());
 
 		final Dataset dataset = exec.getDataset();
@@ -48,14 +47,12 @@ public class ResultExcelProcessor {
 		log.info("Downloading results for {}", exec.getId());
 
 		ResultUtil.authorizeExecutable(subject, exec);
-		ResultUtil.checkSingleTableResult(exec);
-		subject.authorize(dataset, Ability.DOWNLOAD);
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, conqueryConfig.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, datasetRegistry, conqueryConfig, idPrinter::createId);
+		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, conqueryConfig, idPrinter::createId);
 
 		final ExcelRenderer excelRenderer = new ExcelRenderer(excelConfig, settings);
 

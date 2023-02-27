@@ -242,8 +242,9 @@
                         }
                     ],
                     "tooltip": {
-						"de": "Outputs are for a pre- and post-observation period, depending on the index period of each person in the cohort."
-                    }
+						"de": "Die Ausgaben beziehen sich auf einen Vor- und Nachbeobachtungszeitraum, abhängig von dem Indexdatum jeder Person in der Versichertengruppe.",
+						"en": "Outputs are for a pre- and post-observation period, depending on the index period of each person in the cohort."
+					}
                 }
             ]
         },

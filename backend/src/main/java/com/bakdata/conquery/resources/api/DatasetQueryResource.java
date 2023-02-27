@@ -101,7 +101,7 @@ public class DatasetQueryResource {
 
 		subject.authorize(dataset, Ability.READ);
 
-		final ManagedExecution<?> execution = processor.postQuery(dataset, query, subject, false);
+		final ManagedExecution execution = processor.postQuery(dataset, query, subject, false);
 
 		return Response.ok(processor.getQueryFullStatus(execution, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders.orElse(false)))
 					   .status(Response.Status.CREATED)

@@ -46,7 +46,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)
-	public Collection<ResultAsset> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 		// We only support/produce xlsx files with one sheet for now
 		if (!(exec instanceof SingleTableResult singleExecution)) {
 			log.trace("Execution result is not a single table");
@@ -80,7 +80,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		final URL resultUrl = ResultExcelResource.getDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec);
+		final URL resultUrl = ResultExcelResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec);
 		log.trace("Generated URL: {}", resultUrl);
 
 		return List.of(new ResultAsset("XLSX", resultUrl));

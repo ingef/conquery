@@ -30,7 +30,7 @@ public class CsvResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
 	@SneakyThrows(MalformedURLException.class)
-	public Collection<ResultAsset> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 		if (!(exec instanceof SingleTableResult)) {
 			return Collections.emptyList();
 		}
@@ -39,7 +39,7 @@ public class CsvResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		return List.of(new ResultAsset("CSV", ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution<?> & SingleTableResult) exec)));
+		return List.of(new ResultAsset("CSV", ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec)));
 	}
 
 	@Override

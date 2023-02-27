@@ -75,13 +75,13 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @CPSType(id = "TABLE_EXPORT", base = QueryDescription.class)
-@RequiredArgsConstructor(onConstructor = @__({@JsonCreator}))
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class TableExportQuery extends Query {
 
 	@Valid
 	@NotNull
 	@NonNull
-	protected Query query;
+	protected final Query query;
 	@NotNull
 	private Range<LocalDate> dateRange = Range.all();
 

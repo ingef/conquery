@@ -22,10 +22,8 @@ import com.bakdata.conquery.models.config.ArrowConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
@@ -40,7 +38,6 @@ import org.apache.arrow.vector.dictionary.DictionaryProvider;
 import org.apache.arrow.vector.ipc.ArrowFileWriter;
 import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.ipc.ArrowWriter;
-import org.apache.http.HttpStatus;
 
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
@@ -56,11 +53,11 @@ public class ResultArrowProcessor {
 	private final ArrowConfig arrowConfig;
 
 
-	public Response createResultFile(Subject subject, ManagedExecution<?> exec, boolean pretty) {
+	public Response createResultFile(Subject subject, ManagedExecution exec, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowFileWriter(root, new DictionaryProvider.MapDictionaryProvider(), Channels.newChannel(output)),
 				subject,
-				(ManagedExecution<?> & SingleTableResult) exec,
+				(ManagedExecution & SingleTableResult) exec,
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_FILE,
@@ -70,11 +67,11 @@ public class ResultArrowProcessor {
 		);
 	}
 
-	public Response createResultStream(Subject subject, ManagedExecution<?> exec, boolean pretty) {
+	public Response createResultStream(Subject subject, ManagedExecution exec, boolean pretty) {
 		return getArrowResult(
 				(output) -> (root) -> new ArrowStreamWriter(root, new DictionaryProvider.MapDictionaryProvider(), output),
 				subject,
-				((ManagedExecution<?> & SingleTableResult) exec),
+				((ManagedExecution & SingleTableResult) exec),
 				datasetRegistry,
 				pretty,
 				FILE_EXTENTION_ARROW_STREAM,
@@ -84,7 +81,7 @@ public class ResultArrowProcessor {
 		);
 	}
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> Response getArrowResult(
+	public static <E extends ManagedExecution & SingleTableResult> Response getArrowResult(
 			Function<OutputStream, Function<VectorSchemaRoot, ArrowWriter>> writerProducer,
 			Subject subject,
 			E exec,
@@ -103,10 +100,6 @@ public class ResultArrowProcessor {
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
-		if (!(exec instanceof ManagedQuery || (exec instanceof ManagedForm && ((ManagedForm) exec).getSubQueries().size() == 1))) {
-			return Response.status(HttpStatus.SC_UNPROCESSABLE_ENTITY, "Execution result is not a single Table").build();
-		}
-
 		// Get the locale extracted by the LocaleFilter
 
 
@@ -116,7 +109,7 @@ public class ResultArrowProcessor {
 		PrintSettings settings = new PrintSettings(
 				pretty,
 				locale,
-				datasetRegistry,
+				namespace,
 				config,
 				idPrinter::createId
 		);

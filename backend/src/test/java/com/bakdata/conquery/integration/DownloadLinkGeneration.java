@@ -41,7 +41,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		test.importRequiredData(conquery);
 
 		// Create execution for download
-		ManagedQuery exec = new ManagedQuery(test.getQuery(), user, conquery.getDataset());
+		ManagedQuery exec = new ManagedQuery(test.getQuery(), user, conquery.getDataset(), storage);
 		exec.setLastResultCount(100L);
 
 		storage.addExecution(exec);
@@ -55,7 +55,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		}
 
 		{
-			// Thinker the state of the execution and try again: still not possible because of missing permissions
+			// Tinker the state of the execution and try again: still not possible because of missing permissions
 			exec.setState(ExecutionState.DONE);
 
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);

@@ -1,4 +1,4 @@
-/// <reference types="react-scripts" />
+/// <reference types="vite/client" />
 import "@emotion/react";
 
 import type { ConceptIdT, ConceptT } from "./js/api/types";

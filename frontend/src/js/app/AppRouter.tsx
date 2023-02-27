@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { ReactNode } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import {
@@ -17,7 +17,7 @@ interface PropsT {
   rightTabs: TabT[];
 }
 
-const ContextProviders: FC = ({ children }) => {
+const ContextProviders = ({ children }: { children: ReactNode }) => {
   const authTokenContextValue = useAuthTokenContextValue();
 
   return (

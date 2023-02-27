@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-
 import static com.bakdata.conquery.io.result.ResultUtil.checkSingleTableResult;
 import static com.bakdata.conquery.resources.ResourceConstants.FILE_EXTENTION_PARQUET;
 import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
@@ -38,7 +37,7 @@ public class ResultParquetResource {
 
 	private final ResultParquetProcessor processor;
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
 				.path(ResultParquetResource.class)
 				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
@@ -53,7 +52,7 @@ public class ResultParquetResource {
 	@Produces(PARQUET_MEDIA_TYPE_STRING)
 	public Response getFile(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution<?> execution,
+			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") @DefaultValue("false") boolean pretty) {
 

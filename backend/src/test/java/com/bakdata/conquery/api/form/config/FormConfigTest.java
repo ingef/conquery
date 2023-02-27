@@ -129,7 +129,7 @@ public class FormConfigTest {
 	@BeforeEach
 	public void setupTest() {
 
-		final ManagedQuery managedQuery = new ManagedQuery(null, null, dataset);
+		final ManagedQuery managedQuery = new ManagedQuery(null, null, dataset, null);
 		managedQuery.setQueryId(UUID.randomUUID());
 
 		form = new ExportForm();

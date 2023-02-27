@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { ConceptT, ConceptIdT } from "../api/types";
@@ -31,18 +30,7 @@ const Spinner = styled("span")`
   margin-right: 6px;
 `;
 
-interface PropsT {
-  tree: ConceptT | null;
-  conceptId: ConceptIdT;
-  label: string;
-  depth: number;
-  loading?: boolean;
-  error?: string;
-  search: SearchT;
-  onLoadTree: (conceptId: ConceptIdT) => void;
-}
-
-const ConceptTree: FC<PropsT> = ({
+const ConceptTree = ({
   depth,
   loading,
   label,
@@ -51,6 +39,15 @@ const ConceptTree: FC<PropsT> = ({
   conceptId,
   search,
   onLoadTree,
+}: {
+  tree: ConceptT | null;
+  conceptId: ConceptIdT;
+  label: string;
+  depth: number;
+  loading?: boolean;
+  error?: string;
+  search: SearchT;
+  onLoadTree: (conceptId: ConceptIdT) => void;
 }) => {
   const { t } = useTranslation();
 
