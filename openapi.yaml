@@ -1038,8 +1038,10 @@ components:
     relative-form-query:
       description: "Export a set of features for all included entities. 
       The periods to export are determined relative to the resulting event-dates per entity by sampling a single day. 
-      The parameters timeCountBefore/-After determine how many periods are exported.
-      The periods are numbered relative to the index date: The quarter before the index will have index=-1, the quarter before index=-1; the quarter after the index date, will have index=1 and so on."
+      The parameters timeCountBefore/-After determine how many consecutive periods are exported for the feature (before) and outcome (after) range.
+      The index date either belongs to the feature range (indexPlacement BEFORE), the outcome range (AFTER) or lies in between (NEUTRAL)
+      In the feature range, the period closest to the index date has the index=-1. Earlier periods have a decremented index in respect to their sequence.
+      Accordinly the period closest to the index date in the outcome range starts at index=1. Subsequent preriods have an incremented index.
       #TODO glaube die Spalte heißt nicht index.
       type: object
       properties:
