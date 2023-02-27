@@ -8,23 +8,26 @@ function runtimeVar(variable: string): string | null {
     : null;
 }
 
-// Needs to be explicit because weback statically replaces process.env.XXX through DefinePlugin
-const isProductionEnv = runtimeVar("NODE_ENV") || process.env.NODE_ENV;
-const languageEnv = runtimeVar("REACT_APP_LANG") || process.env.REACT_APP_LANG;
+// Needs to be explicit import.meta.env.XXX
+const isProductionEnv = runtimeVar("NODE_ENV") || import.meta.env.NODE_ENV;
+const languageEnv =
+  runtimeVar("REACT_APP_LANG") || import.meta.env.REACT_APP_LANG;
 const apiUrlEnv =
-  runtimeVar("REACT_APP_API_URL") || process.env.REACT_APP_API_URL;
+  runtimeVar("REACT_APP_API_URL") || import.meta.env.REACT_APP_API_URL;
 const disableLoginEnv =
-  runtimeVar("REACT_APP_DISABLE_LOGIN") || process.env.REACT_APP_DISABLE_LOGIN;
+  runtimeVar("REACT_APP_DISABLE_LOGIN") ||
+  import.meta.env.REACT_APP_DISABLE_LOGIN;
 const enableIDPEnv =
-  runtimeVar("REACT_APP_IDP_ENABLE") || process.env.REACT_APP_IDP_ENABLE;
+  runtimeVar("REACT_APP_IDP_ENABLE") || import.meta.env.REACT_APP_IDP_ENABLE;
 const basenameEnv =
-  runtimeVar("REACT_APP_BASENAME") || process.env.REACT_APP_BASENAME;
+  runtimeVar("REACT_APP_BASENAME") || import.meta.env.REACT_APP_BASENAME;
 const idpUrlEnv =
-  runtimeVar("REACT_APP_IDP_URL") || process.env.REACT_APP_IDP_URL;
+  runtimeVar("REACT_APP_IDP_URL") || import.meta.env.REACT_APP_IDP_URL;
 const idpRealmEnv =
-  runtimeVar("REACT_APP_IDP_REALM") || process.env.REACT_APP_IDP_REALM;
+  runtimeVar("REACT_APP_IDP_REALM") || import.meta.env.REACT_APP_IDP_REALM;
 const idpClientIdEnv =
-  runtimeVar("REACT_APP_IDP_CLIENT_ID") || process.env.REACT_APP_IDP_CLIENT_ID;
+  runtimeVar("REACT_APP_IDP_CLIENT_ID") ||
+  import.meta.env.REACT_APP_IDP_CLIENT_ID;
 
 export const isProduction = isProductionEnv === "production" || true;
 export const language = languageEnv === "de" ? "de" : "en";

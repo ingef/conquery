@@ -121,6 +121,10 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
         )}
       </Row>
       <FoldersAndQueries>
+        {/*
+          react-split-pane is not compatible with react 18 types,
+          TODO: Move to https://github.com/johnwalley/allotment
+          @ts-ignore */}
         <SplitPane
           split="vertical"
           allowResize={true}

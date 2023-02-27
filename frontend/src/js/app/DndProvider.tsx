@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { ReactNode } from "react";
 import { DndProvider as ReactDndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import {
@@ -63,7 +63,7 @@ const findItemWithAndHeight = (
   }
 };
 
-const DndPreview: FC = () => {
+const DndPreview = () => {
   const preview = usePreview<PossibleDroppableObject>();
 
   if (!preview.display) {
@@ -75,7 +75,7 @@ const DndPreview: FC = () => {
   return <PreviewItem width={width} height={height} style={preview.style} />;
 };
 
-const DndProvider: FC = ({ children }) => {
+const DndProvider = ({ children }: { children: ReactNode }) => {
   return (
     <ReactDndProvider backend={MultiBackend} options={CustomHTML5toTouch}>
       {children}

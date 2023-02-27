@@ -1,5 +1,4 @@
 import { ThemeProvider } from "@emotion/react";
-import { addDecorator } from "@storybook/react";
 import React from "react";
 
 import { theme } from "../src/app-theme";
@@ -21,13 +20,13 @@ export const parameters = {
   },
 };
 
-addDecorator((Story) => {
-  return (
+export const decorators = [
+  (Story) => (
     <ThemeProvider theme={theme}>
       <DndProvider>
         <GlobalStyles />
         <Story />
       </DndProvider>
     </ThemeProvider>
-  );
-});
+  ),
+];

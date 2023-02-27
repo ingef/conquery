@@ -160,6 +160,10 @@ export const History = () => {
 
   return (
     <FullScreen>
+      {/*
+          react-split-pane is not compatible with react 18 types,
+          TODO: Move to https://github.com/johnwalley/allotment
+          @ts-ignore */}
       <SplitPane
         split="vertical"
         minSize={200}
