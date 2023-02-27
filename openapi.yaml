@@ -409,7 +409,7 @@ components:
             column:
               $ref: "#/components/schemas/columnId"
     semantic-id:
-      description: Values are an entities id.
+      description: Values are an entity's id.
       properties:
         type:
           type: string
@@ -753,6 +753,10 @@ components:
               enum:
                 - CONCEPT
     temporal-sampler:
+      description: "Describes how a date-set should be sampled to reduce it to a single day.
+      - EARLIEST is the first day of the sets span
+      - LATEST is the last day of the sets span
+      - RANDOM samples is a single random day within the set."
       type: string
       enum:
         - EARLIEST
@@ -766,6 +770,8 @@ components:
         sampler:
           $ref: "#/components/schemas/temporal-sampler"
     cq-days-before:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
+      The result of `preceding` has to be within the `days` specified time range before the sampled of `index`."
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -786,6 +792,8 @@ components:
               enum:
                 - DAYS_BEFORE
     cq-before-or-same:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
+            The result of `preceding` has be at or before `index`' sampled day."
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -799,6 +807,8 @@ components:
               enum:
                 - BEFORE_OR_SAME
     cq-days-before-or-never:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
+      The result of `preceding` has be at least `days` before `index`' sampled day."
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -814,6 +824,8 @@ components:
               enum:
                 - BEFORE_OR_NEVER
     cq-same:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
+      The result of `preceding` has be the same as `index`' sampled day."
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -827,6 +839,8 @@ components:
               enum:
                 - SAME
     cq-before:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
+            The result of `preceding` has to be before `index`' sampled day."
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -840,6 +854,9 @@ components:
               enum:
                 - BEFORE
     cq-external:
+      description: "Allows uploading of external files. Primarily as a list of included entities, with additional options to specify durations or auxiliary virtual selects.
+      The data is uploaded as array of rows as rows of strings. The rows are required to have the same length. The first row is always skipped. As header.
+      Produces an error, when no entities can be resolved. "
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
@@ -849,7 +866,19 @@ components:
               items:
                 anyOf:
                   - type: string
+                    description: "Name of an ID-kind, described in `GET /frontend/config#upload`, will be used to resolve the entity to an already imported/existent entity"
                   - type: string
+                    description: "When EXTRA supplies auxiliary data to be emitted as a column named after the columns header.
+                      Otherwise describes schemes to do date aggregation on one or multiple columns:
+                      - EVENT_DATE selects a single column as the source of the selected date
+                      - START_DATE selects a column as the start of a date-range 
+                      - END_DATE selects a column as the end of a date-range
+                      - DATE_RANGE selects a column as a full date-range
+                      - DATE_SET selects a column as containing a date-set
+                      - ALL placeholder, to aggregate infinite/all dateset
+                      
+                      Combining multiple of the date aggregations is possible but except for START_DATE/END_DATE will create bogus results. 
+                      "
                     enum:
                       - EXTRA
                       - EVENT_DATE
@@ -865,6 +894,7 @@ components:
                 items:
                   type: string
             onlySingles:
+              description: "If true, throw an error when an entity is resolved multiple times. Additionally, the result of EXTRA columns will be STRING instead of LIST[STRING]"
               type: boolean
             type:
               type: string
@@ -946,7 +976,6 @@ components:
         root:
           $ref: "#/components/schemas/cq-element"
         secondaryId:
-          description: "The secondaryId to group by."
           $ref: "#/components/schemas/secondaryIdId"
         dateAggregationMode:
           $ref: "#/components/schemas/date-aggregation-mode"
@@ -1105,13 +1134,13 @@ components:
           SECONDARY_ID_QUERY: "#/components/schemas/secondary-id-query"
           TABLE_EXPORT: "#/components/schemas/table-export-query"
       oneOf:
-          - $ref: "#/components/schemas/concept-query"
-          - $ref: "#/components/schemas/absolute-form-query"
-          - $ref: "#/components/schemas/entity-date-query"
-          - $ref: "#/components/schemas/relative-form-query"
-          - $ref: "#/components/schemas/array-concept-query"
-          - $ref: "#/components/schemas/secondaryId-query"
-          - $ref: "#/components/schemas/table-export-query"
+        - $ref: "#/components/schemas/concept-query"
+        - $ref: "#/components/schemas/absolute-form-query"
+        - $ref: "#/components/schemas/entity-date-query"
+        - $ref: "#/components/schemas/relative-form-query"
+        - $ref: "#/components/schemas/array-concept-query"
+        - $ref: "#/components/schemas/secondaryId-query"
+        - $ref: "#/components/schemas/table-export-query"
 
     error-info:
       description: Basic format of an error.
