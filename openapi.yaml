@@ -689,7 +689,7 @@ components:
                 - AND
 
     cq-reused-query:
-      description: "Allows the reuse of a previously built and executed query, by reference."
+      description: "Allows the reuse of an existing query, by referencing execution of that query by its id."
       type: object
       allOf:
         - $ref: "#/components/schemas/cq-element-base"
