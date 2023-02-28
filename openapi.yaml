@@ -56,6 +56,8 @@ components:
       type: string
     tableId:
       $ref: "#/components/schemas/id"
+    mappingId:
+      $ref: "#/components/schemas/id"
     datasetId:
       $ref: "#/components/schemas/id"
     filterId:
@@ -299,7 +301,7 @@ components:
           description: Available result urls of the query.
           type: array
           items:
-            type: string #TODO url?
+            type: string
             format: url
 
     labeled:
@@ -309,6 +311,308 @@ components:
           type: string
         label:
           type: string
+
+    concept-condition:
+      type: object # TODO
+
+    concept-tree-child:
+      allOf:
+        - $ref: "#/components/schemas/labeled"
+        - properties:
+            children:
+              type: array
+              items:
+                $ref: "#/components/schemas/concept-tree-child"
+            condition:
+              $ref: "#/components/schemas/concept-condition"
+            description:
+              type: string
+            additionalInfos:
+              type: array
+              items:
+                properties:
+                  key:
+                    type: string
+                  value:
+                    type: string
+    select:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          CONCEPT_COLUMN: "#/components/schemas/ConceptColumnSelect"
+          COUNT: "#/components/schemas/CountSelect"
+          COUNT_QUARTERS: "#/components/schemas/CountQuartersSelect"
+          DATE_DISTANCE: "#/components/schemas/DateDistanceSelect"
+          DATE_UNION: "#/components/schemas/DateUnionSelect"
+          DISTINCT: "#/components/schemas/DistinctSelect"
+          DURATION_SUM: "#/components/schemas/DurationSumSelect"
+          EVENT_DATE_UNION: "#/components/schemas/EventDateUnionSelect"
+          EVENT_DURATION_SUM: "#/components/schemas/EventDurationSumSelect"
+          EXISTS: "#/components/schemas/ExistsSelect"
+          FIRST: "#/components/schemas/FirstValueSelect"
+          FLAGS: "#/components/schemas/FlagSelect"
+          LAST: "#/components/schemas/LastValueSelect"
+          QUARTER: "#/components/schemas/QuarterSelect"
+          QUARTERS_IN_YEAR: "#/components/schemas/QuartersInYearSelect"
+          RANDOM: "#/components/schemas/RandomValueSelect"
+          SUM: "#/components/schemas/SumSelect"
+      oneOf:
+        - $ref: "#/components/schemas/ConceptColumnSelect"
+        - $ref: "#/components/schemas/CountSelect"
+        - $ref: "#/components/schemas/CountQuartersSelect"
+        - $ref: "#/components/schemas/DateDistanceSelect"
+        - $ref: "#/components/schemas/DateUnionSelect"
+        - $ref: "#/components/schemas/DistinctSelect"
+        - $ref: "#/components/schemas/DurationSumSelect"
+        - $ref: "#/components/schemas/EventDateUnionSelect"
+        - $ref: "#/components/schemas/EventDurationSumSelect"
+        - $ref: "#/components/schemas/ExistsSelect"
+        - $ref: "#/components/schemas/FirstValueSelect"
+        - $ref: "#/components/schemas/FlagSelect"
+        - $ref: "#/components/schemas/LastValueSelect"
+        - $ref: "#/components/schemas/QuarterSelect"
+        - $ref: "#/components/schemas/QuartersInYearSelect"
+        - $ref: "#/components/schemas/RandomValueSelect"
+        - $ref: "#/components/schemas/SumSelect"
+
+
+    ExistsSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            type:
+              type: string
+              enum: [EXISTS]
+    ConceptColumnSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            type:
+              type: string
+              enum: [ CONCEPT_COLUMN ]
+    EventDateUnionSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            type:
+              type: string
+              enum: [ EVENT_DATE_UNION ]
+    EventDurationSumSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            type:
+              type: string
+              enum: [ EVENT_DURATION_SUM ]
+    QuarterSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            sample:
+              $ref: "#/components/schemas/temporal-sampler"
+            type:
+              type: string
+              enum: [ QUARTER ]
+    DurationSumSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            column:
+              $ref: "#/components/schemas/columnId"
+            type:
+              type: string
+              enum: [ DURATION_SUM ]
+    CountSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            distinct:
+              type: boolean
+            type:
+              type: string
+              enum: [ COUNT ]
+        - oneOf:
+            - properties:
+                column:
+                  $ref: "#/components/schemas/columnId"
+            - properties:
+                distinctByColumn:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/columnId"
+    CountQuartersSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            column:
+              $ref: "#/components/schemas/columnId"
+            type:
+              type: string
+              enum: [ COUNT_QUARTERS ]
+    DateUnionSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            column:
+              $ref: "#/components/schemas/columnId"
+            type:
+              type: string
+              enum: [ DATE_UNION ]
+    DateDistanceSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            column:
+              $ref: "#/components/schemas/columnId"
+            timeUnit:
+              type: string
+              enum: [ YEARS, DAYS, MONTHS, WEEKS, HOURS ]
+            type:
+              type: string
+              enum: [ DATE_DISTANCE ]
+    QuartersInYearSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            column:
+              $ref: "#/components/schemas/columnId"
+            type:
+              type: string
+              enum: [ QUARTERS_IN_YEAR ]
+    FlagSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            flags:
+              type: object
+              additionalProperties:
+                $ref: "#/components/schemas/columnId"
+            type:
+              type: string
+              enum: [ FLAGS ]
+    SumSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            distinct:
+              type: boolean
+            column:
+              $ref: "#/components/schemas/columnId"
+            subtractColumn:
+              $ref: "#/components/schemas/columnId"
+            distinctByColumn:
+              type: array
+              items:
+                $ref: "#/components/schemas/columnId"
+            type:
+              type: string
+              enum: [ SUM ]
+    DistinctSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            column:
+              $ref: "#/components/schemas/columnId"
+            mapping:
+              $ref: "#/components/schemas/mappingId"
+            type:
+              type: string
+              enum: [ DISTINCT ]
+    FirstValueSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            column:
+              $ref: "#/components/schemas/columnId"
+            mapping:
+              $ref: "#/components/schemas/mappingId"
+            type:
+              type: string
+              enum: [ FIRST ]
+    LastValueSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            column:
+              $ref: "#/components/schemas/columnId"
+            mapping:
+              $ref: "#/components/schemas/mappingId"
+            type:
+              type: string
+              enum: [ LAST ]
+    RandomValueSelect:
+      allOf:
+        - $ref: "#/components/schemas/select-base"
+        - properties:
+            column:
+              $ref: "#/components/schemas/columnId"
+            mapping:
+              $ref: "#/components/schemas/mappingId"
+            type:
+              type: string
+              enum: [ RANDOM ]
+    select-base:
+      allOf:
+        - $ref: "#/components/schemas/labeled"
+        - properties:
+            description:
+              type: string
+            default:
+              type: boolean
+
+    universal-select:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          CONCEPT_COLUMN: "#/components/schemas/ConceptColumnSelect"
+          COUNT_QUARTERS: "#/components/schemas/CountQuartersSelect"
+          EVENT_DATE_UNION: "#/components/schemas/EventDateUnionSelect"
+          EVENT_DURATION_SUM: "#/components/schemas/EventDurationSumSelect"
+          EXISTS: "#/components/schemas/ExistsSelect"
+          QUARTER: "#/components/schemas/QuarterSelect"
+      oneOf:
+        - $ref: "#/components/schemas/ConceptColumnSelect"
+        - $ref: "#/components/schemas/CountQuartersSelect"
+        - $ref: "#/components/schemas/EventDateUnionSelect"
+        - $ref: "#/components/schemas/EventDurationSumSelect"
+        - $ref: "#/components/schemas/ExistsSelect"
+        - $ref: "#/components/schemas/QuarterSelect"
+
+    filter:
+      properties:
+        label:
+          type: string
+
+    concept:
+      allOf:
+        - $ref: "#/components/schemas/labeled"
+        - properties:
+            children:
+              type: array
+              items:
+                $ref: "#/components/schemas/concept-tree-child"
+            selects:
+              type: array
+              items:
+                $ref: "#/components/schemas/universal-select"
+            hidden:
+              type: boolean
+            description:
+              type: string
+            additionalInfos:
+              type: array
+              items:
+                properties:
+                  key:
+                    type: string
+                  value:
+                    type: string
+
+
+
+
     column-type:
       description: Available types for input and output of conquery. Additionally list, which is a nested type of column-type.
       oneOf:
@@ -323,7 +627,6 @@ components:
             - DATE_RANGE
         - type: string
           pattern: "LIST\\[.*\\]"
-
     semantic-event-date:
       description: Values contain the primary date of a row.
       allOf:
@@ -429,6 +732,7 @@ components:
           properties:
             secondaryId:
               $ref: "#/components/schemas/secondaryIdId"
+
     semantic-base:
       type: object
       properties:
