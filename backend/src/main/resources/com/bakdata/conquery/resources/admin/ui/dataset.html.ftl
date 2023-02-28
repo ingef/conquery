@@ -39,6 +39,10 @@
 <#macro idMapping><a href="./${c.ds.id}/mapping">Here</a></#macro>
 
 <@layout.layout>
+  <!-- Javascript -->
+  <script><#include "scripts/dataset.js" /></script>
+
+  <!-- Dataset page -->
   <@breadcrumbs.breadcrumbs
     labels=["Datasets", c.ds.label]
     links=["/admin-ui/datasets"]
@@ -59,7 +63,7 @@
             <select
               class="custom-select"
               data-test-id="upload-select"
-              onchange="let x = {mapping: {name: 'mapping', uri: 'internToExtern', accept: '*.mapping.json'}, table: {name: 'table_schema', uri: 'tables', accept: '*.table.json'}, concept: {name: 'concept_schema', uri: 'concepts', accept: '*.concept.json'}, structure: {name: 'structure_schema', uri: 'structure', accept: 'structure.json'}}; let data = x[this.value]; let fi = $(this).next(); fi.value = ''; fi.attr('accept', data.accept); fi.attr('name', data.name); $(this).parent().attr('onsubmit', 'postFile(event, \'/admin/datasets/${c.ds.id}/' + data.uri + '\')');"
+              onchange="updateDatasetUploadForm(this)"
               required
             >
               <option value="mapping" selected>Mapping JSON</option>

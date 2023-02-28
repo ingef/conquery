@@ -30,6 +30,8 @@
                                     <td class="text-right">
                                         <#if deleteButton?is_macro>
                                             <@deleteButton id="${item.id}"/>
+                                        <#else>
+                                            <#stop "Expected macro for deleteButton">
                                         </#if>
                                     </td>
                                 <#else>
