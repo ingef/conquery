@@ -11,7 +11,7 @@ const SxFaIcon = styled(FaIcon)`
 
 const Root = styled("div")<{ active?: boolean; special?: boolean }>`
   display: inline-flex;
-  align-items: flex-start;
+  align-items: center;
   padding: 2px 7px;
   border-radius: ${({ theme }) => theme.borderRadius};
   font-size: ${({ theme }) => theme.font.sm};

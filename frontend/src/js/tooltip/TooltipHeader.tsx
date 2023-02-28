@@ -25,12 +25,10 @@ const Header = styled("h2")`
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
-  padding: 6px 15px;
-  top: 46px;
+  top: 40px;
+  height: 39px;
   right: 0;
-  border-right: 0;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  border-radius: 0;
 `;
 
 export const TooltipHeader = memo(() => {
@@ -42,7 +40,7 @@ export const TooltipHeader = memo(() => {
   return (
     <>
       <StyledIconButton
-        frame
+        bgHover
         onClick={onToggleDisplayTooltip}
         icon="angle-left"
       />

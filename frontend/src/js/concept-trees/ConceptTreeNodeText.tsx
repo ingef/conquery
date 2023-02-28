@@ -52,10 +52,11 @@ const noShrink = css`
 
 const DashIconContainer = styled("span")`
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
   width: 34px;
   text-align: left;
   padding-left: 14px;
-  ${noShrink};
 `;
 
 const FolderIconContainer = styled("span")`
