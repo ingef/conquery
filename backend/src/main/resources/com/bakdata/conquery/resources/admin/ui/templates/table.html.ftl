@@ -5,7 +5,11 @@
                 <thead>
                     <tr>
                         <#list columns as column>
+                          <#if column == "actions">
+                            <th class="text-right" scope="col">${column}</th>
+                          <#else>
                             <th scope="col">${column}</th>
+                          </#if>
                         </#list>
                     </tr>
                 </thead>
@@ -23,7 +27,7 @@
                                 <#elseif column == "initialized">
                                     <td> <#if item.initialized() ><i class="fas fa-check" alt="In use"></i><#else><i class="fas fa-moon" alt="Not used by any select"></i></i></#if> </td>
                                 <#elseif column == "actions">
-                                    <td>
+                                    <td class="text-right">
                                         <#if deleteButton?is_macro>
                                             <@deleteButton id="${item.id}"/>
                                         </#if>

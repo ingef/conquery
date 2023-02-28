@@ -82,18 +82,20 @@
       </div>
     </div>
     <!-- Dataset Actions -->
-    <div>
+    <div class="d-flex flex-column" style="gap: 0.5rem;">
       <button 
-        type="button" class="btn" data-toggle="tooltip" data-placement="bottom" title="Update Matching Stats"
+        type="button"
+        class="btn btn-secondary"
         onclick="rest('/admin/datasets/${c.ds.id}/update-matching-stats',{method: 'post'})"
       >
-        <i class="fa fa-sync"></i>
+        Update Matching Stats
       </button>
       <button
-        type="button" class="btn" data-toggle="tooltip" data-placement="bottom" title="Clear Mapping Cache"
+        type="button"
+        class="btn btn-danger"
         onclick="rest('/admin/datasets/${c.ds.id}/clear-internToExtern-cache',{method: 'post'})"
       >
-        <i class="fa fa-eraser"></i>
+        Clear Mapping Cache
       </button>
     </div>
   </div>
