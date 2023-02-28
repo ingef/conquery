@@ -13,7 +13,7 @@ const Header = styled("h2")`
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
   margin: 0;
   padding: 0 20px;
   font-size: ${({ theme }) => theme.font.sm};
