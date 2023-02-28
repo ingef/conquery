@@ -66,7 +66,7 @@ const ConceptTreeNode: FC<PropsT> = ({
   });
 
   function toggleOpen() {
-    if (!data.children) return;
+    if (data.children?.length === 0) return;
 
     onToggleOpen();
   }
