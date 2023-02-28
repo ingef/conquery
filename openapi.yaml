@@ -1041,7 +1041,7 @@ components:
       The parameters timeCountBefore/-After determine how many consecutive periods are exported for the feature (before) and outcome (after) range.
       The index date either belongs to the feature range (indexPlacement BEFORE), the outcome range (AFTER) or lies in between (NEUTRAL)
       In the feature range, the period closest to the index date has the index=-1. Earlier periods have a decremented index in respect to their sequence.
-      Accordingly, the period closest to the index date in the outcome range starts at index=1. Subsequent preriods have an incremented index."
+      Accordingly, the period closest to the index date in the outcome range starts at index=1. Subsequent periods have an incremented index."
       type: object
       properties:
         query:
