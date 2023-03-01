@@ -512,7 +512,7 @@ components:
               type: string
               enum: [ EVENT_DURATION_SUM ]
     QuarterSelect:
-      description: "Emits the sampled quarter in `YYY\QQQ` format."
+      description: "Emits the sampled quarter in `2020Q1` format."
       allOf:
         - $ref: "#/components/schemas/SelectBase"
         - properties:
