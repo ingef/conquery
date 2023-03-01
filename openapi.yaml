@@ -246,7 +246,7 @@ components:
                 $ref: "#/components/schemas/id"
               label:
                 type: string
-    query-status:
+    QueryStatus:
       description: Status of an executing or executed query.
       type: object
       properties:
@@ -317,7 +317,7 @@ components:
     NotCondition:
       properties:
         condition:
-          $ref: "#/components/schemas/concept-condition"
+          $ref: "#/components/schemas/ConceptCondition"
         type:
           type: string
           enum: [ NOT ]
@@ -343,7 +343,7 @@ components:
         conditions:
           type: array
           items:
-            $ref: "#/components/schemas/concept-condition"
+            $ref: "#/components/schemas/ConceptCondition"
         type:
           type: string
           enum: [ OR ]
@@ -362,7 +362,7 @@ components:
         conditions:
           type: array
           items:
-            $ref: "#/components/schemas/concept-condition"
+            $ref: "#/components/schemas/ConceptCondition"
         type:
           type: string
           enum: [ AND ]
@@ -396,7 +396,7 @@ components:
         type:
           type: string
           enum: [ EQUAL ]
-    concept-condition:
+    ConceptCondition:
       type: object
       discriminator:
         propertyName: type
@@ -430,7 +430,7 @@ components:
               items:
                 $ref: "#/components/schemas/ConceptTreeChild"
             condition:
-              $ref: "#/components/schemas/concept-condition"
+              $ref: "#/components/schemas/ConceptCondition"
             description:
               type: string
             additionalInfos:
@@ -475,8 +475,6 @@ components:
         - $ref: "#/components/schemas/QuartersInYearSelect"
         - $ref: "#/components/schemas/RandomValueSelect"
         - $ref: "#/components/schemas/SumSelect"
-
-
     ExistsSelect:
       description: "Emits a boolean: True, if its holder is fulfilled, false otherwise."
       allOf:
@@ -686,6 +684,12 @@ components:
               type: string
             default:
               type: boolean
+    Searchable:
+      properties:
+        searchMinSuffixLength:
+          type: integer
+        generateSearchSuffixes:
+          type: boolean
 
     UniversalSelect:
       description: "Selects that can be used both on Concept and Connector level."
@@ -708,6 +712,7 @@ components:
         - $ref: "#/components/schemas/QuarterSelect"
 
     SumFilter:
+      description: "Filters entities to having the sum over a set of columns to be within a user defined range. See SumSelect for more info."
       allOf:
         - $ref: "#/components/schemas/FilterBase"
         - properties:
@@ -725,6 +730,7 @@ components:
               type: string
               enum: [ SUM ]
     CountFilter:
+      description: "Filters entities to having a specific number of events. See CountSelect for more info."
       allOf:
         - $ref: "#/components/schemas/FilterBase"
         - properties:
@@ -743,6 +749,7 @@ components:
                   items:
                     $ref: "#/components/schemas/columnId"
     FlagFilter:
+      description: "Filters events to have `true` values in the user selected columns."
       allOf:
         - $ref: "#/components/schemas/FilterBase"
         - properties:
@@ -763,6 +770,7 @@ components:
               type: string
               enum: [ COUNT_QUARTERS ]
     SelectFilterBase:
+      description: "Filters events for a user defined list of values in a specific column."
       allOf:
         - $ref: "#/components/schemas/FilterBase"
         - $ref: "#/components/schemas/Searchable"
@@ -785,12 +793,6 @@ components:
             type:
               type: string
               enum: [ SINGLE_SELECT ]
-    Searchable:
-      properties:
-        searchMinSuffixLength:
-          type: integer
-        generateSearchSuffixes:
-          type: boolean
     BigMultiSelectFilter:
       allOf:
         - $ref: "#/components/schemas/SelectFilterBase"
@@ -815,6 +817,7 @@ components:
               type: string
               enum: [ DURATION_SUM ]
     QuartersInYearFilter:
+      description: "Filters for entities having events in a specific number of quarters. See QuartersInYearSelect for a more in depth description."
       allOf:
         - $ref: "#/components/schemas/FilterBase"
         - properties:
@@ -824,6 +827,7 @@ components:
               type: string
               enum: [ QUARTERS_IN_YEAR ]
     NumberFilter:
+      description: "Filters events to be within a certain numerical range."
       allOf:
         - $ref: "#/components/schemas/FilterBase"
         - properties:
@@ -833,6 +837,8 @@ components:
               type: string
               enum: [ NUMBER ]
     DateDistanceFilter:
+      description: "Filters events to be within a certain time period, relative to today in a predefined unit, or the last day of an available DateRestriction.
+      Usually used to filter for the age of entities, by setting `timeUnit=YEARS`."
       allOf:
         - $ref: "#/components/schemas/FilterBase"
         - properties:
@@ -910,7 +916,7 @@ components:
             condition:
               allOf:
                 - description: "Allows filtering of events for the tree. Useful to separate out events from a larger table for a very niche concept."
-                - $ref: "#/components/schemas/concept-condition"
+                - $ref: "#/components/schemas/ConceptCondition"
             filters:
               description: "Definition of filters available in for querying this connector."
               type: array
@@ -933,6 +939,11 @@ components:
               type: boolean
 
     Concept:
+      description: "Describes a collection of filters and aggregations from multiple source tables.
+      If `children` is set, events of the connectors will be matched according to conditions defined in the children. Each event may only map to a single child.
+      The structure of the children describes a directed tree: Querying for a non-leaf node, always includes its sub-tree.
+      
+      Using multiple connectors allows funneling of different source tables into a single tree."
       allOf:
         - $ref: "#/components/schemas/labeled"
         - properties:
@@ -941,18 +952,23 @@ components:
               items:
                 $ref: "#/components/schemas/Connector"
             children:
+              description: "The children describing the tree to structure events onto. May be empty, if the concept only defines filters and selects."
               type: array
               items:
                 $ref: "#/components/schemas/ConceptTreeChild"
             selects:
+              description: "Selects able to be applied to all events, irrespective of source table."
               type: array
               items:
                 $ref: "#/components/schemas/UniversalSelect"
             hidden:
+              description: "If true, the concept is not visible in the API or the frontend."
               type: boolean
             description:
+              description: "A textual description of the concept. May include markdown text."
               type: string
             additionalInfos:
+              description: "A list of key value pairs of additional information. Displayed to the user in a side pane. May contain markdown text."
               type: array
               items:
                 properties:
@@ -1868,7 +1884,7 @@ components:
                       $ref: "#/components/schemas/semantics"
     full-execution-status:
       allOf:
-        - $ref: "#/components/schemas/query-status"
+        - $ref: "#/components/schemas/QueryStatus"
         - type: object
           properties:
             progress:
@@ -2014,7 +2030,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/query-status"
+                  $ref: "#/components/schemas/QueryStatus"
         "401":
           $ref: "#/components/responses/unauthorized"
     post:
@@ -2044,7 +2060,7 @@ paths:
     get:
       tags:
         - query
-      operationId: get-query-status
+      operationId: get-QueryStatus
       summary: Get Status and metadata of Query
       responses:
         "200":
