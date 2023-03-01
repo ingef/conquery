@@ -18,17 +18,19 @@ interface PropsT {
 
 const Input = styled("input")`
   font-size: ${({ theme }) => theme.font.sm};
-  padding: 4px 8px;
+  padding: 0 8px;
+  height: 28px;
+  border: 1px solid ${({ theme }) => theme.col.gray};
+  border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
 const Form = styled("form")`
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
 `;
 
 const SxIconButton = styled(IconButton)`
-  padding: 4px 10px;
+  padding: 6px 10px;
   margin-left: 3px;
 `;
 

@@ -529,7 +529,10 @@ export interface HistorySources {
   default: { label: string; name: TableT["id"] }[];
 }
 
-export type GetEntityHistoryDefaultParamsResponse = HistorySources;
+export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
+  searchConcept: string | null; // concept id
+  searchFilters?: string[]; // allowlisted filter ids within the searchConcept
+};
 
 export interface EntityInfo {
   label: string;
@@ -542,4 +545,8 @@ export type GetEntityHistoryResponse = {
   resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[];
   infos: EntityInfo[];
-};
+}
+
+export type PostResolveEntitiesResponse = {
+  [idKind: string]: string; // idKind is the key, the value is the resolved ID
+}[];
