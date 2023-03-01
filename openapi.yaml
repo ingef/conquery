@@ -395,7 +395,7 @@ components:
             uniqueItems: true
         type:
           type: string
-          enum: [EQUAL]
+          enum: [ EQUAL ]
     concept-condition:
       type: object
       discriminator:
@@ -840,7 +840,7 @@ components:
               $ref: "#/components/schemas/columnId"
             timeUnit:
               type: string
-              enum: [] # TODO
+              enum: [ YEARS, MONTHS, DAYS, HOURS ]
             type:
               type: string
               enum: [ DATE_DISTANCE ]
