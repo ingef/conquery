@@ -908,8 +908,9 @@ components:
                   $ref: "#/components/schemas/columnId"
         - properties:
             condition:
-              description: "Allows filtering of events for the tree. Useful to separate out events from a larger table for a very niche concept."
-              $ref: "#/components/schemas/concept-condition"
+              allOf:
+                - description: "Allows filtering of events for the tree. Useful to separate out events from a larger table for a very niche concept."
+                - $ref: "#/components/schemas/concept-condition"
             filters:
               description: "Definition of filters available in for querying this connector."
               type: array
