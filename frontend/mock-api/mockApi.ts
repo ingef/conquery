@@ -173,6 +173,10 @@ export default function mockApi(app: Application) {
                   label: "CSV",
                   url: "/api/results/results.csv",
                 },
+                {
+                  label: "Some File with a long label and an exotic file type, which the frontend probably never heard of",
+                  url: "http://localhost:8080/api/result/csv/51cd95fd-90b2-4573-aab5-11846126427b.blobby",
+                },
               ],
               columnDescriptions: [
                 {
@@ -281,11 +285,15 @@ export default function mockApi(app: Application) {
               : [
                   {
                     label: "XLSX",
-                    url: "http://localhost:8080/api/result/xlsx/mimic-iii-demo.51cd95fd-90b2-4573-aab5-11846126427b.xlsx",
+                    url: "http://localhost:8080/api/result/xlsx/51cd95fd-90b2-4573-aab5-11846126427b.xlsx",
                   },
                   {
                     label: "CSV",
-                    url: "http://localhost:8080/api/result/csv/mimic-iii-demo.51cd95fd-90b2-4573-aab5-11846126427b.csv",
+                    url: "http://localhost:8080/api/result/csv/51cd95fd-90b2-4573-aab5-11846126427b.csv",
+                  },
+                  {
+                    label: "Some File with a long name and an exotic file type",
+                    url: "http://localhost:8080/api/result/csv/51cd95fd-90b2-4573-aab5-11846126427b.blobby",
                   },
                 ],
 
