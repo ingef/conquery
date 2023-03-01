@@ -545,7 +545,7 @@ export type GetEntityHistoryResponse = {
   resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[];
   infos: EntityInfo[];
-}
+};
 
 export type PostResolveEntitiesResponse = {
   [idKind: string]: string; // idKind is the key, the value is the resolved ID
