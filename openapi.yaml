@@ -62,8 +62,12 @@ components:
       $ref: "#/components/schemas/id"
     selectId:
       $ref: "#/components/schemas/id"
-    conceptId:
+    validityDateId:
       $ref: "#/components/schemas/id"
+    conceptElementId:
+      $ref: "#/components/schemas/id"
+    conceptId:
+      $ref: "#/components/schemas/conceptElementId"
     connectorId:
       $ref: "#/components/schemas/id"
     secondaryIdId:
@@ -405,7 +409,7 @@ components:
             column:
               $ref: "#/components/schemas/columnId"
     semantic-id:
-      description: Values are an entities id.
+      description: Values are an entity's id.
       properties:
         type:
           type: string
@@ -615,10 +619,541 @@ components:
           $ref: "#/components/schemas/date"
         max:
           $ref: "#/components/schemas/date"
+    cq-element-base:
+      type: object
+      properties:
+        label:
+          type: string
+    cq-date-restriction:
+      description: "Restricts the events, downstream components receive to the specified absolute period. This node is fulfilled, if the downstream child is fulfilled."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            dateRange:
+              $ref: "#/components/schemas/date-range"
+            child:
+              $ref: "#/components/schemas/cq-element"
+            type:
+              type: string
+              enum:
+                - DATE_RESTRICTION
+    cq-negation:
+      description: "Negates the result of its downstream child: If downstream is fulfilled, this node is not fulfilled and vice versa.
+      By default, this node will block date-aggregation of downstream elements, as the results are mostly bogus.
+      In LOGICAL dateAggregation mode, it will deduct the observed period from infinity."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            child:
+              $ref: "#/components/schemas/cq-element"
+            type:
+              type: string
+              enum:
+                - NEGATION
+    cq-or:
+      description: "Logically ors its downstream children: If any downstream element is fulfilled, this node is fulfilled."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            children:
+              type: array
+              items:
+                $ref: "#/components/schemas/cq-element"
+            createExists:
+              description: "Allows the creation of a virtual select that reflects if this node is fulfilled or not. Useful for the creation of more complex concepts."
+              type: boolean
+            type:
+              type: string
+              enum:
+                - OR
+
+    cq-and:
+      description: "Logically ands its downstream children: If all downstream element are fulfilled, this node is fulfilled."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            children:
+              type: array
+              items:
+                $ref: "#/components/schemas/cq-element"
+            createExists:
+              description: "Allows the creation of a virtual select that reflects if this node is fulfilled or not. Useful for the creation of more complex concepts."
+              type: boolean
+            type:
+              type: string
+              enum:
+                - AND
+
+    cq-reused-query:
+      description: "Allows the reuse of an existing query, by referencing execution of that query by its id."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            queryId:
+              $ref: "#/components/schemas/executionId"
+            excludeFromSecondaryId:
+              description: "If the query is reused within a SECONDARY_ID query, it will not be executed with the secondary-id set."
+              type: boolean
+            type:
+              type: string
+              enum:
+                - SAVED_QUERY
+    cq-result-info-decorator:
+      #TODO del?
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            values:
+              type: object
+              additionalProperties:
+                type: string
+            child:
+              $ref: "#/components/schemas/cq-element"
+            type:
+              type: string
+              enum:
+                - RESULT_INFO_DECORATOR
+    cq-concept:
+      description: "The fundamental query-element. Contains definitions for filtering and aggregation based on concept defined filters and selects.
+      `ids` contains a list of concept element ids of the same concept, which should be filtered for.
+      `tables` contains one or more description of filters and selects from a specific connector.
+      Filters can be grouped into event-filters and aggregation-filters, where event filters, filter rows, while aggregation-filters aggregate those filtered rows.
+      Selects calculate aggregations on the filtered rows.
+      
+      The filters are logically and-ed, meaning this node is only fulfilled if all its filters are fulfilled."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            ids:
+              $ref: "#/components/schemas/conceptElementId"
+            tables:
+              type: object
+              properties:
+                id:
+                  $ref: "#/components/schemas/connectorId"
+                dateColumn:
+                  description: "Allows the selection of one of pre-defined date for date-restrictions."
+                  type: object
+                  properties:
+                    value:
+                      $ref: "#/components/schemas/validityDateId"
+                filters:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/filter-value"
+                selects:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/selectId"
+            excludeFromSecondaryId:
+              description: If true, this node is not grouped by a secondaryId even if the referenced tables contain the secondaryId.
+              type: boolean
+            excludeFromTimeAggregation:
+              description: If true, do not aggregate time for this node.
+              type: boolean
+            type:
+              type: string
+              enum:
+                - CONCEPT
+    temporal-sampler:
+      description: "Describes how a date-set should be sampled to reduce it to a single day.
+      - EARLIEST is the first day of the sets span
+      - LATEST is the last day of the sets span
+      - RANDOM samples is a single random day within the set."
+      type: string
+      enum:
+        - EARLIEST
+        - LATEST
+        - RANDOM
+    cq-sampled:
+      type: object
+      properties:
+        child:
+          $ref: "#/components/schemas/cq-element"
+        sampler:
+          $ref: "#/components/schemas/temporal-sampler"
+    cq-days-before:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
+      The result of `preceding` has to be within `days` specified time range before the sampled day of `index`."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            days:
+              type: object
+              properties:
+                min:
+                  type: integer
+                max:
+                  type: integer
+            index:
+              $ref: "#/components/schemas/cq-sampled"
+            preceding:
+              $ref: "#/components/schemas/cq-sampled"
+            type:
+              type: string
+              enum:
+                - DAYS_BEFORE
+    cq-before-or-same:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+            The result of `preceding` has be at or before the sampled day of `index`."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            index:
+              $ref: "#/components/schemas/cq-sampled"
+            preceding:
+              $ref: "#/components/schemas/cq-sampled"
+            type:
+              type: string
+              enum:
+                - BEFORE_OR_SAME
+    cq-days-before-or-never:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+      The result of `preceding` has be at least `days` before the sampled day of `index`."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            days:
+              type: integer
+            index:
+              $ref: "#/components/schemas/cq-sampled"
+            preceding:
+              $ref: "#/components/schemas/cq-sampled"
+            type:
+              type: string
+              enum:
+                - BEFORE_OR_NEVER
+    cq-same:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+      The result of `preceding` has be the same as the sampled day `index`."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            index:
+              $ref: "#/components/schemas/cq-sampled"
+            preceding:
+              $ref: "#/components/schemas/cq-sampled"
+            type:
+              type: string
+              enum:
+                - SAME
+    cq-before:
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+            The result of `preceding` has to be before the sampled day `index`."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            index:
+              $ref: "#/components/schemas/cq-sampled"
+            preceding:
+              $ref: "#/components/schemas/cq-sampled"
+            type:
+              type: string
+              enum:
+                - BEFORE
+    cq-external:
+      description: "Allows uploading of externally defined cohorts, with additional data. As a list of included entities, with additional options to specify durations or auxiliary virtual selects.
+      The data is uploaded as array of rows as rows of strings. The rows are required to have the same length. The first row is always skipped. As header.
+      Produces an error, when no entities can be resolved. "
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/cq-element-base"
+        - properties:
+            format:
+              type: array
+              items:
+                anyOf:
+                  - type: string
+                    description: "Name of an ID-kind, described in `GET /frontend/config#upload`, will be used to resolve the entity to an already imported/existent entity"
+                  - type: string
+                    description: "EXTRA columns supply auxiliary data to be emitted as columns named after each columns header.
+                      Otherwise describes schemes to do date aggregation on one or multiple columns:
+                      - EVENT_DATE selects a single column as the source of the selected date
+                      - START_DATE selects a column as the start of a date-range 
+                      - END_DATE selects a column as the end of a date-range
+                      - DATE_RANGE selects a column as a full date-range
+                      - DATE_SET selects a column as containing a date-set
+                      - ALL placeholder, to aggregate infinite/all dateset
+                      
+                      Combining multiple of the date aggregations is possible but except for START_DATE/END_DATE will create bogus results. 
+                      "
+                    enum:
+                      - EXTRA
+                      - EVENT_DATE
+                      - START_DATE
+                      - END_DATE
+                      - DATE_RANGE
+                      - DATE_SET
+                      - ALL
+            values:
+              type: array
+              items:
+                type: array
+                items:
+                  type: string
+            onlySingles:
+              description: "If true, throw an error when an entity is resolved multiple times.
+              Additionally, in a result table EXTRA columns will be emitted as STRING instead of LIST[STRING]"
+              type: boolean
+            type:
+              type: string
+              enum:
+                - EXTERNAL
+
+    cq-element:
+      type: object
+      discriminator:
+        propertyName: type
+        mapping:
+          AND: "#/components/schemas/cq-and"
+          BEFORE: "#/components/schemas/cq-before"
+          BEFORE_OR_NEVER: "#/components/schemas/cq-days-before-or-never"
+          BEFORE_OR_SAME: "#/components/schemas/cq-before-or-same"
+          CONCEPT: "#/components/schemas/cq-concept"
+          DATE_RESTRICTION: "#/components/schemas/cq-date-restriction"
+          DAYS_BEFORE: "#/components/schemas/cq-days-before"
+          EXTERNAL: "#/components/schemas/cq-external"
+          NEGATION: "#/components/schemas/cq-negation"
+          OR: "#/components/schemas/cq-or"
+          RESULT_INFO_DECORATOR: "#/components/schemas/cq-result-info-decorator"
+          SAME: "#/components/schemas/cq-same"
+          SAVED_QUERY: "#/components/schemas/cq-reused-query"
+      oneOf:
+        - $ref: "#/components/schemas/cq-and"
+        - $ref: "#/components/schemas/cq-before"
+        - $ref: "#/components/schemas/cq-days-before-or-never"
+        - $ref: "#/components/schemas/cq-before-or-same"
+        - $ref: "#/components/schemas/cq-concept"
+        - $ref: "#/components/schemas/cq-date-restriction"
+        - $ref: "#/components/schemas/cq-days-before"
+        - $ref: "#/components/schemas/cq-external"
+        - $ref: "#/components/schemas/cq-negation"
+        - $ref: "#/components/schemas/cq-or"
+        - $ref: "#/components/schemas/cq-result-info-decorator"
+        - $ref: "#/components/schemas/cq-same"
+        - $ref: "#/components/schemas/cq-reused-query"
+
+    date-aggregation-mode:
+      description: "Can be used in some queries to alter the way dates are aggregated. Specifically for AND/OR/NEGATION nodes.
+      - NONE will disable date-aggregation, meaning no EVENT_DATES column will be created,
+      - MERGE will union all downstream dates,
+      - INTERSECT will intersect the downstream dates,
+      - LOGICAL depends on the respective nodes: AND will intersect, OR will merge, NEGATION will subtract the dates from ALL-time."
+      type: string
+      enum:
+        - NONE
+        - MERGE
+        - INTERSECT
+        - LOGICAL
+    table-export-query:
+      description: "For all entities fulfilling the sub-query, export raw data of selected tables over the selected period.
+      The output format is in wide format, meaning all tables are concatenated, but only single rows are emitted with only the columns of the source table filled.
+      Columns of the same SecondaryId will be grouped and marked with SECONDARY_ID semantics. The source column will contain the id of the source table.
+      The CONCEPT nodes can be used for filtering single rows."
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/query"
+        dateRange:
+          $ref: "#/components/schemas/date-range"
+        tables:
+          type: array
+          items:
+            $ref: "#/components/schemas/cq-concept"
+        rawConceptValues:
+          description: "If true, columns of concepts will be emitted as raw values. Else they will be emitted as resolved ids of the concept-elements."
+          type: boolean
+        type:
+          type: string
+          enum:
+            - TABLE_EXPORT
+    secondaryId-query:
+      description: "Executes concept-queries grouped by a secondary key - in addition to entities. Therefore, multiple columns are emitted per entity.
+      The secondary-ids are put into a column named after its label, tagged with SECONDARY_ID semantics."
+      type: object
+      properties:
+        root:
+          $ref: "#/components/schemas/cq-element"
+        secondaryId:
+          $ref: "#/components/schemas/secondaryIdId"
+        dateAggregationMode:
+          $ref: "#/components/schemas/date-aggregation-mode"
+        type:
+          type: string
+          enum:
+            - SECONDARY_ID_QUERY
+    resolution-and-alignment:
+      description: "Grouping of algorithms used for subdividing and aligning of export-forms."
+      type: object
+      properties:
+        resolution:
+          description: "Determines the unit to sub-divide by, starting at the start of the input date range.
+          - COMPLETE is identity,
+          - YEARS creates subdivisions for all covered years,
+          - QUARTERS creates subdivisions for all covered quarters,
+          - DAYS creates subdivisions per covered day."
+          type: string
+          enum:
+            - COMPLETE
+            - DAYS
+            - QUARTERS
+            - YEARS
+        alignment:
+          description: "Aligns the date-ranges that are subdivided. This helps with more uniform output formats.
+          - NO_ALIGN will not alter the date-ranges,
+          - DAY aligns to days, effectively the same as NO_ALIGN,
+          - QUARTER will align to the start/end of the next quarter,
+          - YEAR will align to the start/end of the next year"
+          type: string
+          enum:
+            - NO_ALIGN
+            - DAY
+            - QUARTER
+            - YEAR
+    array-concept-query:
+      description: "Building block of export-forms: evaluates all queries independently, exporting their selects." #TODO tbh kP was genau die macht
+      type: object
+      properties:
+        childQueries:
+          type: array
+          items:
+            $ref: "#/components/schemas/concept-query"
+        dateAggregationMode:
+          $ref: "#/components/schemas/date-aggregation-mode"
+        type:
+          type: string
+          enum:
+            - ARRAY_CONCEPT_QUERY
+    relative-form-query:
+      description: "Export a set of features for all included entities. 
+      The periods to export are determined relative to the resulting event-dates per entity by sampling a single day. 
+      The parameters timeCountBefore/-After determine how many consecutive periods are exported for the feature (before) and outcome (after) range.
+      The index date either belongs to the feature range (indexPlacement BEFORE), the outcome range (AFTER) or lies in between (NEUTRAL)
+      In the feature range, the period closest to the index date has the index=-1. Earlier periods have a decremented index in respect to their sequence.
+      Accordingly, the period closest to the index date in the outcome range starts at index=1. Subsequent periods have an incremented index."
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/query"
+        features:
+          $ref: "#/components/schemas/array-concept-query"
+        indexSelector:
+          $ref: "#/components/schemas/temporal-sampler"
+        indexPlacement:
+          type: string
+          enum:
+            - BEFORE
+            - NEUTRAL
+            - AFTER
+        timeCountBefore:
+          type: integer
+        timeCountAfter:
+          type: integer
+        timeUnit:
+          #TODO was macht timeUnit, was nicht schon resolutionAndAlignmentMap macht?
+          type: string
+          enum:
+            - DAYS
+            - QUARTERS
+            - YEARS
+        resolutionsAndAlignmentMap:
+          type: array
+          items:
+            $ref: "#/components/schemas/resolution-and-alignment"
+        type:
+          type: string
+          enum:
+            - RELATIVE_FORM_QUERY
+    entity-date-query:
+      description: "Export a set of features for all entities satisfying the query, over the query's result date. 
+      See absolute-form-query for comparison."
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/query"
+        features:
+          $ref: "#/components/schemas/array-concept-query"
+        resolutionsAndAlignments:
+          type: array
+          items:
+            $ref: "#/components/schemas/resolution-and-alignment"
+        dateRange:
+          $ref: "#/components/schemas/date-range"
+        dateAggregationMode:
+          $ref: "#/components/schemas/date-aggregation-mode"
+        type:
+          type: string
+          enum:
+            - ENTITY_DATE_QUERY
+    absolute-form-query:
+      description: "Export a set of features over a specified period for all entities the query is fulfilled. 
+                    Using resolutionsAndAlignmentMap the period can be subdivided into Years, Quarters and Months.
+                    The subdivisions can then be aligned to the years, months and quarters.
+                    Each subdivision is assigned an increasing index per resolution: The first quarter is index=1, the second quarter index=2, while the first year is index=1 and so on."
+      type: object
+      properties:
+        query:
+          $ref: "#/components/schemas/query"
+        features:
+          $ref: "#/components/schemas/array-concept-query"
+        resolutionsAndAlignmentMap:
+          type: array
+          items:
+            $ref: "#/components/schemas/resolution-and-alignment"
+        dateRange:
+          $ref: "#/components/schemas/date-range"
+        type:
+          type: string
+          enum:
+            - ABSOLUTE_FORM_QUERY
+    concept-query:
+      description: "The fundamental query of Conquery. Executes a query, where all fulfilling entities are included as a single line, 
+      containing the aggregated validity-dates, as well as any requested selects. The first columns are unique ids of the entity, then the event-dates column, and then in unspecified order all select results.
+      A CONCEPT_QUERY represents a tree of logically composed query elements, where the leafs are CONCEPT nodes, describing filtering and aggregation."
+      type: object
+      properties:
+        root:
+          $ref: "#/components/schemas/cq-element"
+        dateAggregationMode:
+          $ref: "#/components/schemas/date-aggregation-mode"
+        type:
+          type: string
+          enum:
+            - CONCEPT_QUERY
+
     query:
       type: object
-      additionalProperties: true
-      #TODO but in separate file
+      discriminator:
+        propertyName: type
+        mapping:
+          CONCEPT_QUERY: "#/components/schemas/concept-query"
+          ABSOLUTE_FORM_QUERY: "#/components/schemas/absolute-form-query"
+          ENTITY_DATE_QUERY: "#/components/schemas/entity-date-query"
+          RELATIVE_FORM_QUERY: "#/components/schemas/relative-form-query"
+          ARRAY_CONCEPT_QUERY: "#/components/schemas/array-concept-query"
+          SECONDARY_ID_QUERY: "#/components/schemas/secondary-id-query"
+          TABLE_EXPORT: "#/components/schemas/table-export-query"
+      oneOf:
+        - $ref: "#/components/schemas/concept-query"
+        - $ref: "#/components/schemas/absolute-form-query"
+        - $ref: "#/components/schemas/entity-date-query"
+        - $ref: "#/components/schemas/relative-form-query"
+        - $ref: "#/components/schemas/array-concept-query"
+        - $ref: "#/components/schemas/secondaryId-query"
+        - $ref: "#/components/schemas/table-export-query"
+
     error-info:
       description: Basic format of an error.
       type: object
