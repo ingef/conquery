@@ -164,7 +164,7 @@ export default function mockApi(app: Application) {
               status: "DONE",
               label: "Test result",
               numberOfResults: 5,
-              resultUrls: [
+              resultUrls: (dice > 0.85) ? [
                 {
                   label: "XLSX",
                   url: "/api/results/results.xlsx",
@@ -172,15 +172,16 @@ export default function mockApi(app: Application) {
                 {
                   label: "CSV",
                   url: "/api/results/results.csv",
-                },
+                }
+              ] : [
                 {
                   label: "Some File with a long label and an exotic file type, which the frontend probably never heard of",
                   url: "http://localhost:8080/api/result/csv/51cd95fd-90b2-4573-aab5-11846126427b.blobby",
-                },
+                }
               ],
               columnDescriptions: [
                 {
-                  label: "Money Range",
+                  label: "Money Range", 
                   selectId: null,
                   type: "MONEY",
                 },
