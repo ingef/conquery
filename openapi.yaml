@@ -904,7 +904,7 @@ components:
                 items:
                   type: string
             onlySingles:
-              description: "If true, throw an error when an entity is resolved multiple times. Additionally, the result of EXTRA columns will be STRING instead of LIST[STRING]"
+              description: "If true, throw an error when an entity is resolved multiple times. Additionally, in a result table EXTRA columns will be emitted as STRING instead of LIST[STRING]"
               type: boolean
             type:
               type: string
