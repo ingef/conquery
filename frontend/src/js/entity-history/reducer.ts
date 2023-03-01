@@ -5,6 +5,7 @@ import type {
   ColumnDescriptionSemanticId,
   EntityInfo,
   HistorySources,
+  ResultUrlWithLabel,
 } from "../api/types";
 import type { Action } from "../app/actions";
 
@@ -39,7 +40,7 @@ export type EntityHistoryStateT = {
   isOpen: boolean;
   columns: Record<string, ColumnDescription>;
   columnDescriptions: ColumnDescription[];
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   label: string;
   entityIds: EntityId[];
   currentEntityUniqueSources: string[];

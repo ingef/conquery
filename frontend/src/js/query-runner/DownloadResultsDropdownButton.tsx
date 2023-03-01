@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { memo, useEffect, useMemo, useState } from "react";
 
+import { ResultUrlWithLabel } from "../api/types";
 import DownloadButton from "../button/DownloadButton";
 import IconButton from "../button/IconButton";
 import WithTooltip from "../tooltip/WithTooltip";
@@ -39,20 +40,40 @@ const Separator = styled("div")`
   background-color: ${({ theme }) => theme.col.gray};
 `;
 
-// Skidding makes Dropdown align the right edge with the button,
-// might need to adjust this when adding more content.
-const dropdownOffset: [number, number] = [-37, 8]; // [skidding, distance] / default [0, 10]
+const popperOptions = {
+  modifiers: [
+    {
+      name: "preventOverflow",
+      options: {
+        padding: 20,
+      },
+    },
+  ],
+};
 
-const getEnding = (url: string) => url.split(".").reverse()[0].toUpperCase();
+interface FileChoice {
+  label: string;
+  ending: string;
+}
 
-const getInitialEndingChoice = (resultUrls: string[]) => {
-  const { preferredDownloadFormat } = getUserSettings();
+export const getEnding = (url: string) =>
+  url.split(".").reverse()[0].toUpperCase();
 
-  const found = resultUrls.find(
-    (url) => getEnding(url) === preferredDownloadFormat,
+function getResultUrl(
+  resultUrls: ResultUrlWithLabel[],
+  fileChoice: FileChoice,
+): ResultUrlWithLabel {
+  return (
+    resultUrls.find(({ label }) => label === fileChoice.label) ||
+    resultUrls.find(({ url }) => getEnding(url) === fileChoice.ending) ||
+    resultUrls[0]
   );
+}
 
-  return found ? getEnding(found) : getEnding(resultUrls[0]);
+const getInitialEndingChoice = (resultUrls: ResultUrlWithLabel[]) => {
+  const { preferredDownloadEnding: ending, preferredDownloadLabel: label } =
+    getUserSettings();
+  return getResultUrl(resultUrls, { label: label || "", ending: ending || "" });
 };
 
 const DownloadResultsDropdownButton = ({
@@ -60,39 +81,45 @@ const DownloadResultsDropdownButton = ({
   tiny,
   tooltip,
 }: {
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   tiny?: boolean;
   tooltip?: string;
 }) => {
-  const [endingChoice, setEndingChoice] = useState(
-    getInitialEndingChoice(resultUrls),
-  );
+  const [fileChoice, setFileChoice] = useState<FileChoice>(() => {
+    const initial = getInitialEndingChoice(resultUrls);
+    return { label: initial.label, ending: getEnding(initial.url) };
+  });
 
   useEffect(() => {
-    storeUserSettings({ preferredDownloadFormat: endingChoice });
-  }, [endingChoice]);
+    storeUserSettings({
+      preferredDownloadEnding: fileChoice.ending,
+      preferredDownloadLabel: fileChoice.label,
+    });
+  }, [fileChoice]);
 
-  const urlChoice = useMemo(
-    () =>
-      resultUrls.find((url) => getEnding(url) === endingChoice) ||
-      resultUrls[0],
-    [resultUrls, endingChoice],
-  );
+  const urlChoice = useMemo(() => {
+    return getResultUrl(resultUrls, fileChoice);
+  }, [resultUrls, fileChoice]);
+
+  const truncChosenLabel = useMemo(() => {
+    const { label } = fileChoice;
+    return label.length > 40 ? `${label.slice(0, 37)}...` : label;
+  }, [fileChoice]);
 
   const dropdown = useMemo(() => {
     return (
       <List>
-        {resultUrls.map((url) => {
-          const ending = getEnding(url);
+        {resultUrls.map((resultUrl) => {
+          const ending = getEnding(resultUrl.url);
 
           return (
             <SxDownloadButton
-              key={url}
-              url={url}
-              onClick={() => setEndingChoice(ending)}
+              key={resultUrl.url}
+              resultUrl={resultUrl}
+              onClick={() => setFileChoice({ label: resultUrl.label, ending })}
               bgHover
             >
-              {ending}
+              {resultUrl.label}
             </SxDownloadButton>
           );
         })}
@@ -104,8 +131,8 @@ const DownloadResultsDropdownButton = ({
     <Frame noborder={tiny}>
       {!tiny && (
         <>
-          <SxDownloadButton bgHover url={urlChoice}>
-            {endingChoice}
+          <SxDownloadButton bgHover resultUrl={urlChoice}>
+            {truncChosenLabel}
           </SxDownloadButton>
           <Separator />
         </>
@@ -116,7 +143,7 @@ const DownloadResultsDropdownButton = ({
           interactive
           arrow={false}
           trigger="click"
-          offset={dropdownOffset}
+          popperOptions={popperOptions}
         >
           <SxIconButton bgHover icon={tiny ? "download" : "caret-down"} />
         </WithTooltip>

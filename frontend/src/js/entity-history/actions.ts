@@ -11,6 +11,7 @@ import type {
   DatasetT,
   EntityInfo,
   HistorySources,
+  ResultUrlWithLabel,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
@@ -78,7 +79,7 @@ export const loadHistoryData = createAsyncAction(
     currentEntityInfos: EntityInfo[];
     currentEntityId: EntityId;
     currentEntityUniqueSources: string[];
-    resultUrls?: string[];
+    resultUrls?: ResultUrlWithLabel[];
     entityIds?: EntityId[];
     label?: string;
     columns?: Record<string, ColumnDescription>;
@@ -116,7 +117,9 @@ export function useNewHistorySession() {
   return async (url: string, columns: ColumnDescription[], label: string) => {
     dispatch(loadHistoryData.request());
 
-    const result = await loadPreviewData(url, columns, { noLoading: true });
+    const result = await loadPreviewData(url, columns, {
+      noLoading: true,
+    });
 
     if (!result) {
       dispatch(
@@ -195,13 +198,13 @@ export function useUpdateHistorySession() {
             defaultEntityHistoryParams.sources,
           );
 
-        const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
+        const csvUrl = resultUrls.find(({ url }) => url.endsWith("csv"));
 
         if (!csvUrl) {
           throw new Error("No CSV URL found");
         }
 
-        const authorizedCSVUrl = getAuthorizedUrl(csvUrl);
+        const authorizedCSVUrl = getAuthorizedUrl(csvUrl.url);
         const csv = await loadCSV(authorizedCSVUrl, { english: true });
         const currentEntityData = await parseCSVWithHeaderToObj(
           csv.data.map((r) => r.join(";")).join("\n"),
@@ -227,7 +230,7 @@ export function useUpdateHistorySession() {
 
         dispatch(
           loadHistoryData.success({
-            currentEntityCsvUrl: csvUrl,
+            currentEntityCsvUrl: csvUrl.url,
             currentEntityData: currentEntityDataProcessed,
             currentEntityId: entityId,
             currentEntityInfos: nonEmptyInfos,

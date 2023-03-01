@@ -69,7 +69,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
 			// This Url is missing the `/api` path part, because we use the standard UriBuilder here
 			assertThat(status.getResultUrls()).contains(new ResultAsset("CSV", new URL(String.format("%s/result/csv/%s.csv", conquery.defaultApiURIBuilder()
-																																	 .toString(), exec.getId()))));
+																																 .toString(), exec.getId()))));
 		}
 	}
 
