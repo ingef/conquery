@@ -7,6 +7,8 @@ info:
     #TODO find a fitting license
     name: TODO
     url: http://TODO/
+servers:
+  - url: "http://localhost:8081"
 tags:
   - name: dataset
   - name: concept
