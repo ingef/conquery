@@ -21,6 +21,7 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -121,13 +122,13 @@ public class CQExternal extends CQElement {
 											 .toArray(String[]::new);
 
 		if (onlySingles) {
-			return createExternalNodeOnlySingle(context, plan, extraHeaders);
+			return createExternalNodeOnlySingle(context, plan, extraHeaders, context.getDateRestriction());
 		}
-		return createExternalNodeForList(context, plan, extraHeaders);
+		return createExternalNodeForList(context, plan, extraHeaders, context.getDateRestriction());
 
 	}
 
-	private ExternalNode<String> createExternalNodeOnlySingle(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
+	private ExternalNode<String> createExternalNodeOnlySingle(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders, CDateRange dateRestriction) {
 		// Remove zero element Lists and substitute one element Lists by containing String
 		final Map<Integer, Map<String, String>> extraFlat = extra.entrySet().stream()
 																 .collect(Collectors.toMap(
@@ -151,10 +152,10 @@ public class CQExternal extends CQElement {
 
 		}
 
-		return new ExternalNode<>(context.getStorage().getDataset().getAllIdsTable(), valuesResolved, extraFlat, extraHeaders, extraAggregators);
+		return new ExternalNode<>(context.getStorage().getDataset().getAllIdsTable(), valuesResolved, extraFlat, extraHeaders, extraAggregators, dateRestriction);
 	}
 
-	private ExternalNode<List<String>> createExternalNodeForList(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders) {
+	private ExternalNode<List<String>> createExternalNodeForList(QueryPlanContext context, ConceptQueryPlan plan, String[] extraHeaders, CDateRange dateRestriction) {
 		final Map<String, ConstantValueAggregator<List<String>>> extraAggregators = new HashMap<>(extraHeaders.length);
 		for (String extraHeader : extraHeaders) {
 			// Just allocating, the result type is irrelevant here
@@ -168,7 +169,8 @@ public class CQExternal extends CQElement {
 				valuesResolved,
 				extra,
 				extraHeaders,
-				extraAggregators
+				extraAggregators,
+				dateRestriction
 		);
 	}
 

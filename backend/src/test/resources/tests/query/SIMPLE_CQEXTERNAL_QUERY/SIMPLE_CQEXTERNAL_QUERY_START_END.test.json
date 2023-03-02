@@ -5,29 +5,41 @@
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "type": "EXTERNAL",
-      "format": [
-        "ID",
-        "START_DATE",
-        "END_DATE"
-      ],
-      "values": [
-        [
-          "result",
-          "start",
-          "end"
+      "type": "DATE_RESTRICTION",
+      "dateRange": {
+        "min": "2012-01-01",
+        "max": "2013-12-31"
+      },
+      "child": {
+        "type": "EXTERNAL",
+        "format": [
+          "ID",
+          "START_DATE",
+          "END_DATE"
         ],
-        [
-          1,
-          "2012-01-01",
-          "2012-01-10"
-        ],
-        [
-          3,
-          "2013-11-10",
-          "2013-11-20"
+        "values": [
+          [
+            "result",
+            "start",
+            "end"
+          ],
+          [
+            1,
+            "2012-01-01",
+            "2012-01-10"
+          ],
+          [
+            3,
+            "2013-11-10",
+            "2013-11-20"
+          ],
+          [
+            4,
+            "2014-11-10",
+            "2014-11-20"
+          ]
         ]
-      ]
+      }
     }
   },
   "concepts": [

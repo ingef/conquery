@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -39,6 +40,8 @@ public class ExternalNode<T> extends QPNode {
 	private CDateSet contained;
 	private final Map<String, ConstantValueAggregator<T>> extraAggregators;
 
+	private final CDateRange dateRestriction;
+
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
@@ -69,7 +72,7 @@ public class ExternalNode<T> extends QPNode {
 
 		if (table.equals(currentTable) && contained != null){
 			dateUnion.addAll(contained);
-			dateUnion.retainAll(ctx.getDateRestriction());
+			dateUnion.retainAll(dateRestriction);
 		}
 	}
 
@@ -80,7 +83,7 @@ public class ExternalNode<T> extends QPNode {
 
 	@Override
 	public boolean isContained() {
-		return contained != null;
+		return contained != null && !dateUnion.isEmpty();
 	}
 
 	@Override
