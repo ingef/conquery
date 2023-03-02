@@ -7,7 +7,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 	<!-- Bootstrap CSS -->
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.0/css/bootstrap.min.css" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/solid.css" integrity="sha384-v2Tw72dyUXeU3y4aM2Y0tBJQkGfplr39mxZqlTBDUZAb9BGoC40+rdFCG0m10lXk" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/fontawesome.css" integrity="sha384-q3jl8XQu1OpdLgGFvNRnPdj5VIlCvgsDQTQB6owSOHWlAurxul7f+JpUOVdAiJ5P" crossorigin="anonymous">
 	<style>
@@ -31,10 +31,10 @@
 	<title>Conquery Admin UI</title>
   </head>
   <body>
-  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
-	
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
+  <script>$(function () {$('[data-toggle="tooltip"]').tooltip()})</script>
 	<nav class="navbar navbar-expand-lg navbar-light bg-light" style="margin-bottom:30px">
 	  <a class="navbar-brand" href="/admin-ui">Conquery Admin</a>
 	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -93,8 +93,19 @@
 	<div class="container">
 		<#nested/>
 	</div>
+
+	<div aria-live="polite" aria-atomic="true">
+		<div id="toast-container" style="position: fixed; bottom: 10px; right: 10px; z-index: 9999; float: right"/>
+	</div>
 	
 	<script type="application/javascript">
+		const ToastTypes = {
+			INFO: "badge-info",
+			SUCCESS: "badge-success",
+			WARNING: "badge-warning",
+			ERROR: "badge-danger"
+		};
+
 <#noparse>
 		async function rest (url, options) {
 			var res = await fetch(
@@ -108,13 +119,56 @@
 					...options
 				}
 			);
-			var body = await res.json();
-			if(!res.ok) {
-			    alert(`Error\nSTATUS: ${res.status}\nBODY: ${JSON.stringify(body)}`)
-			}
+			showMessageForResponse(res);
 			return res;
 		}
+
+		function getToast(type, title, text, smalltext = "") {
+			if(!type) type = ToastTypes.INFO;
+
+			let toast = document.createElement("div");
+			toast.classList.add("toast");
+			toast.setAttribute("role", "alert");
+			toast.setAttribute("aria-live", "assertive");
+			toast.setAttribute("aria-atomic", "true");
+			toast.setAttribute("style", "width: 500px; max-width: none");
+			toast.innerHTML = `
+				<div class="toast-header">
+					<strong class="mr-auto badge badge-pill ${type}" style="font-size: 1rem;">${title}</strong>
+					${smalltext ? '<small class="text-muted">' + smalltext + '</small>' : ''}
+					<button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="toast-body" style="white-space: normal; overflow-x: auto;">
+					${text.trim()}
+				</div>
+			`;
+			return toast;
+		}
 </#noparse>
+
+		function showToastMessage(type, title, text, smalltext = "") {
+			let toastContainer = document.getElementById("toast-container");
+			let toast = getToast(type, title, text, smalltext);
+			toastContainer.appendChild(toast);
+			$(toast).toast({delay: 10000});
+			$(toast).toast('show');
+		}
+
+		async function showMessageForResponse(response){
+			if(response){
+				try {
+					let body = await response.json();
+					if(!response.ok){
+						showToastMessage(ToastTypes.ERROR, "Error", "The send request came back with the following error: " + JSON.stringify(body), "Status " + response.status);
+					}
+				} catch (e) {
+					// ignore, because some responses don't have a body
+				}
+			}
+		}
+
 		function logout(){
 			event.preventDefault();
 			rest('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/logout')
@@ -141,15 +195,14 @@
 					}})
 						.then(function(response){
 							if (response.ok) {
-								setTimeout(location.reload, 2000);
-							}
-							else {
-								let message = 'Status ' + response.status + ': ' + JSON.stringify(response.json());
-	        					console.log(message);
-	        					alert(message);
+								setTimeout(() => location.reload(), 2000);
+								showToastMessage(ToastTypes.SUCCESS, "Success", "The file has been posted successfully");
+							} else {
+								showMessageForResponse(response);
 							}
 						})
 						.catch(function(error) {
+							showToastMessage(ToastTypes.ERROR, "Error", "There has been a problem with posting a file: " + error.message);
 							console.log('There has been a problem with posting a file', error.message);
 						});
 				};

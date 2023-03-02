@@ -97,7 +97,7 @@ public class User extends PermissionOwner<UserId> implements Principal, RoleOwne
 	}
 
 	@Override
-	protected void updateStorage() {
+	public void updateStorage() {
 		storage.updateUser(this);
 	}
 

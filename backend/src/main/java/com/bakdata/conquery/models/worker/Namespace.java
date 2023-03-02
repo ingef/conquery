@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -21,6 +22,7 @@ import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -49,7 +51,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class Namespace implements Closeable {
+public class Namespace extends IdResolveContext implements Closeable {
 
 	private final ObjectMapper preprocessMapper;
 	private final ObjectMapper communicationMapper;
@@ -78,7 +80,7 @@ public class Namespace implements Closeable {
 	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
 	private final List<Injectable> injectables;
 
-	public static Namespace createAndRegister(DatasetRegistry datasetRegistry, NamespaceStorage storage, ConqueryConfig config, Function<Class<? extends View>, ObjectMapper> mapperCreator) {
+	public static Namespace create(ExecutionManager executionManager, NamespaceStorage storage, ConqueryConfig config, Function<Class<? extends View>, ObjectMapper> mapperCreator) {
 
 		// Prepare namespace dependent Jackson injectables
 		List<Injectable> injectables = new ArrayList<>();
@@ -96,15 +98,12 @@ public class Namespace implements Closeable {
 		storage.openStores(persistenceMapper);
 		storage.loadData();
 
-		ExecutionManager executionManager = new ExecutionManager(datasetRegistry);
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 
 		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getSearch());
 
 
 		final Namespace namespace = new Namespace(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, injectables);
-
-		datasetRegistry.add(namespace);
 
 
 		return namespace;
@@ -283,5 +282,18 @@ public class Namespace implements Closeable {
 
 	public PreviewConfig getPreviewConfig() {
 		return getStorage().getPreviewConfig();
+	}
+
+	@Override
+	public CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException {
+		if (!this.getDataset().getId().equals(dataset)) {
+			throw new NoSuchElementException("Wrong dataset: '" + dataset + "' (expected: '" + this.getDataset().getId() + "')");
+		}
+		return storage.getCentralRegistry();
+	}
+
+	@Override
+	public CentralRegistry getMetaRegistry() {
+		throw new UnsupportedOperationException();
 	}
 }

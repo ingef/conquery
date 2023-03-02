@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -40,16 +41,16 @@ public class ResultArrowResource {
 	@Produces(AdditionalMediaTypes.ARROW_FILE)
 	public Response getFile(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution<?> query,
+			@PathParam(QUERY) ManagedExecution query,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
-			@QueryParam("pretty") Optional<Boolean> pretty) {
+			@QueryParam("pretty") @DefaultValue("false") boolean pretty) {
 
 		checkSingleTableResult(query);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", query.getId(), query.getDataset().getId(), subject.getId(), subject.getName());
-		return processor.createResultFile(subject, query, pretty.orElse(false));
+		return processor.createResultFile(subject, query, pretty);
 	}
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getFileDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
 				.path(ResultArrowResource.class)
 				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
@@ -60,7 +61,7 @@ public class ResultArrowResource {
 	}
 
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> URL getStreamDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getStreamDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder
 				.path(ResultArrowResource.class)
 				.resolveTemplate(ResourceConstants.DATASET, exec.getDataset().getName())
@@ -75,7 +76,7 @@ public class ResultArrowResource {
 	@Produces(AdditionalMediaTypes.ARROW_STREAM)
 	public Response getStream(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution<?> execution,
+			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("pretty") Optional<Boolean> pretty) {
 		checkSingleTableResult(execution);

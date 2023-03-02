@@ -63,6 +63,7 @@ public class SecondaryIdQuery extends Query {
 	@JsonView(View.InternalCommunication.class)
 	private Set<Table> withoutSecondaryId;
 
+
 	@Override
 	public SecondaryIdQueryPlan createQueryPlan(QueryPlanContext context) {
 

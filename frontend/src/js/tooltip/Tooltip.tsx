@@ -27,7 +27,7 @@ const Root = styled("div")`
 `;
 
 const Content = styled("div")`
-  padding: 12px 20px 10px;
+  padding: 18px 20px 10px;
   width: 100%;
   flex-grow: 1;
   overflow-y: auto;
@@ -66,7 +66,7 @@ const Label = styled("span")`
 const Description = styled("p")`
   margin: 5px 0 2px;
   font-size: ${({ theme }) => theme.font.xs};
-  line-height: 1;
+  line-height: 1.3;
   text-transform: uppercase;
 `;
 

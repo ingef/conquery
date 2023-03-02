@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -12,13 +11,8 @@ import DropzoneWithFileInput, {
 } from "../ui-components/DropzoneWithFileInput";
 
 import type { EntityIdsStatus } from "./History";
-import { DEFAULT_ID_KIND } from "./actions";
 import { EntityId } from "./reducer";
 import { useLoadHistory } from "./saveAndLoad";
-
-const ImportButtonSpacer = styled("div")`
-  height: 30px;
-`;
 
 const acceptedDropTypes = [NativeTypes.FILE];
 
@@ -61,31 +55,14 @@ export const LoadHistoryDropzone = ({
     loadHistory({ label: file.name, data });
   };
 
-  const onImportLines = (lines: string[]) => {
-    const data = lines.map((line) => line.split(";"));
-
-    loadHistory({ label: t("importModal.pasted"), data });
-  };
-
   return (
     <DropzoneWithFileInput
       className={className}
       acceptedDropTypes={acceptedDropTypes}
       onDrop={onDrop}
       disableClick
-      showImportButton
-      onImportLines={onImportLines}
-      importPlaceholder={t("history.load.importPlaceholder", {
-        idkind: DEFAULT_ID_KIND,
-      })}
-      importDescription={t("history.load.importDescription")}
     >
-      {() => (
-        <>
-          <ImportButtonSpacer />
-          {children}
-        </>
-      )}
+      {() => children}
     </DropzoneWithFileInput>
   );
 };

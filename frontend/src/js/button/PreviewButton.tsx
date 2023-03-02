@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 
@@ -14,12 +13,14 @@ const Button = styled(TransparentButton)`
   height: 35px;
 `;
 
-interface PropsT {
+const PreviewButton = ({
+  url,
+  columns,
+  ...restProps
+}: {
   columns: ColumnDescription[];
   url: string;
-}
-
-const PreviewButton: FC<PropsT> = ({ url, columns, ...restProps }) => {
+}) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
 

@@ -42,9 +42,9 @@ public class SerializingStoreDumpTest {
 	private ObjectMapper objectMapper;
 
 	// Test data
-	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"));
+	private final ManagedQuery managedQuery = new ManagedQuery(null, null, new Dataset("dataset"), STORAGE);
 	private final ConceptQuery cQuery = new ConceptQuery(
-		new CQReusedQuery(managedQuery.getId()));
+			new CQReusedQuery(managedQuery.getId()));
 	private final User user = new User("username", "userlabel", STORAGE);
 
 	@BeforeEach

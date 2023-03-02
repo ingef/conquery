@@ -419,7 +419,7 @@ components:
         - $ref: "#/components/schemas/PrefixCondition"
         - $ref: "#/components/schemas/PrefixRangeCondition"
         - $ref: "#/components/schemas/IsPresentCondition"
-    
+
     ConceptTreeChild:
       description: "See documentation for Concept."
       allOf:
@@ -1457,7 +1457,7 @@ components:
           $ref: "#/components/schemas/TemporalSampler"
     CQDaysBefore:
       description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
-      The result of `preceding` has to be within the `days` specified time range before the sampled of `index`."
+      The result of `preceding` has to be within `days` specified time range before the sampled day of `index`."
       type: object
       allOf:
         - $ref: "#/components/schemas/CQElementBase"
@@ -1478,8 +1478,8 @@ components:
               enum:
                 - DAYS_BEFORE
     CQBeforeOrSame:
-      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
-            The result of `preceding` has be at or before `index`' sampled day."
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+            The result of `preceding` has be at or before the sampled day of `index`."
       type: object
       allOf:
         - $ref: "#/components/schemas/CQElementBase"
@@ -1493,8 +1493,8 @@ components:
               enum:
                 - BEFORE_OR_SAME
     CQDaysBeforeOrNever:
-      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
-      The result of `preceding` has be at least `days` before `index`' sampled day."
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+      The result of `preceding` has be at least `days` before the sampled day of `index`."
       type: object
       allOf:
         - $ref: "#/components/schemas/CQElementBase"
@@ -1510,8 +1510,8 @@ components:
               enum:
                 - BEFORE_OR_NEVER
     CQSame:
-      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
-      The result of `preceding` has be the same as `index`' sampled day."
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+      The result of `preceding` has be the same as the sampled day `index`."
       type: object
       allOf:
         - $ref: "#/components/schemas/CQElementBase"
@@ -1525,8 +1525,8 @@ components:
               enum:
                 - SAME
     CQBefore:
-      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex events.
-            The result of `preceding` has to be before `index`' sampled day."
+      description: "Used within CONCEPT_QUERY to describe relative temporal relationships between complex event arrangements.
+            The result of `preceding` has to be before the sampled day `index`."
       type: object
       allOf:
         - $ref: "#/components/schemas/CQElementBase"
@@ -1540,7 +1540,7 @@ components:
               enum:
                 - BEFORE
     CQExternal:
-      description: "Allows uploading of external files. Primarily as a list of included entities, with additional options to specify durations or auxiliary virtual selects.
+      description: "Allows uploading of externally defined cohorts, with additional data. As a list of included entities, with additional options to specify durations or auxiliary virtual selects.
       The data is uploaded as array of rows as rows of strings. The rows are required to have the same length. The first row is always skipped. As header.
       Produces an error, when no entities can be resolved. "
       type: object
@@ -1554,7 +1554,7 @@ components:
                   - type: string
                     description: "Name of an ID-kind, described in `GET /frontend/config#upload`, will be used to resolve the entity to an already imported/existent entity"
                   - type: string
-                    description: "When EXTRA supplies auxiliary data to be emitted as a column named after the columns header.
+                    description: "EXTRA columns supply auxiliary data to be emitted as columns named after each columns header.
                       Otherwise describes schemes to do date aggregation on one or multiple columns:
                       - EVENT_DATE selects a single column as the source of the selected date
                       - START_DATE selects a column as the start of a DateRange 
@@ -1580,7 +1580,8 @@ components:
                 items:
                   type: string
             onlySingles:
-              description: "If true, throw an error when an entity is resolved multiple times. Additionally, the result of EXTRA columns will be STRING instead of LIST[STRING]"
+              description: "If true, throw an error when an entity is resolved multiple times.
+              Additionally, in a result table EXTRA columns will be emitted as STRING instead of LIST[STRING]"
               type: boolean
             type:
               type: string
@@ -1698,7 +1699,7 @@ components:
             - QUARTER
             - YEAR
     ArrayConceptQuery:
-      description: "Building block of export-forms: evaluates all queries independently, exporting their selects." 
+      description: "Building block of export-forms: evaluates all queries independently, exporting their selects."
       type: object
       properties:
         childQueries:

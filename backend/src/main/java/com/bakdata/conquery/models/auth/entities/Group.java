@@ -46,7 +46,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	@Override
-	protected void updateStorage() {
+	public void updateStorage() {
 		storage.updateGroup(this);
 	}
 

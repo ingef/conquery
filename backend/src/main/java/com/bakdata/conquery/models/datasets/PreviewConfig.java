@@ -14,10 +14,11 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -27,6 +28,7 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Sets;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
@@ -74,13 +76,17 @@ public class PreviewConfig {
 	private Set<ConnectorId> defaultConnectors = Collections.emptySet();
 
 	/**
-	 * Link to a concept providing search capabilities for entities.
-	 *
+	 * Link to list of Filters to provide search capabilities for entities.
+	 * <p>
 	 * This looks weird at first, but allows reuse of available components instead of introducing duplicate behaviour.
-	 *
+	 * <p>
 	 * The Frontend will use the concepts filters to render a search for entity preview.
 	 */
-	private ConceptId searchConcept;
+	private Set<FilterId> searchFilters = Collections.emptySet();
+
+	@JacksonInject(useInput = OptBoolean.FALSE)
+	@NotNull
+	private DatasetRegistry datasetRegistry;
 
 	public boolean isGroupingColumn(SecondaryIdDescription desc) {
 		return getGrouping().contains(desc.getId());
@@ -90,36 +96,11 @@ public class PreviewConfig {
 		return getHidden().contains(column.getId());
 	}
 
-	@JacksonInject(useInput = OptBoolean.FALSE)
-	@NotNull
-	private DatasetRegistry datasetRegistry;
-
-	@Data
-	public static class InfoCardSelect {
-		@JsonCreator
-		public InfoCardSelect(String label, SelectId select) {
-			this.label = label;
-			this.select = select;
-		}
-
-		/**
-		 * User facing label of the select.
-		 */
-		private final String label;
-		/**
-		 * Id (without dataset) of the select.
-		 */
-		private final SelectId select;
-
-	}
-
-
 	@JsonIgnore
 	@ValidationMethod(message = "Default Connectors must also be available Connectors.")
 	public boolean isDefaultSubsetOfAvailable() {
 		return Sets.difference(getDefaultConnectors(), getAllConnectors()).isEmpty();
 	}
-
 
 	@JsonIgnore
 	@ValidationMethod(message = "Selects may be used only once.")
@@ -131,6 +112,13 @@ public class PreviewConfig {
 	@ValidationMethod(message = "Select Labels must be unique.")
 	public boolean isSelectsLabelsDistinct() {
 		return infoCardSelects.stream().map(InfoCardSelect::getLabel).distinct().count() == getInfoCardSelects().size();
+	}
+
+
+	@JsonIgnore
+	@ValidationMethod(message = "SearchFilters must be of same concept.")
+	public boolean isSearchFiltersOfSameConcept() {
+		return searchFilters.stream().map(id -> id.getConnector().getConcept()).distinct().count() <= 1;
 	}
 
 	/**
@@ -158,14 +146,48 @@ public class PreviewConfig {
 								   .collect(Collectors.toList());
 	}
 
+	public List<Filter<?>> resolveSearchFilters() {
+		if (searchFilters == null) {
+			return Collections.emptyList();
+		}
+
+		return searchFilters.stream()
+							.map(filterId -> datasetRegistry.findRegistry(filterId.getDataset()).getOptional(filterId))
+							.flatMap(Optional::stream)
+							.toList();
+	}
+
 	public Concept<?> resolveSearchConcept() {
-		if(searchConcept == null){
+		if (searchFilters == null) {
 			return null;
 		}
 
-		return datasetRegistry.findRegistry(searchConcept.getDataset())
-							  .getOptional(searchConcept)
-							  // Since this entire object is intentionally non-dependent (ie not using NsIdRef), this might be null. But in practice rarely should.
-							  .orElse(null);
+
+		return searchFilters.stream()
+							.map(filterId -> datasetRegistry.findRegistry(filterId.getDataset()).getOptional(filterId))
+							.flatMap(Optional::stream)
+							.map(filter -> filter.getConnector().getConcept())
+							.distinct()
+							.collect(MoreCollectors.onlyElement());
 	}
+
+	@Data
+	public static class InfoCardSelect {
+		/**
+		 * User facing label of the select.
+		 */
+		private final String label;
+		/**
+		 * Id (without dataset) of the select.
+		 */
+		private final SelectId select;
+
+		@JsonCreator
+		public InfoCardSelect(String label, SelectId select) {
+			this.label = label;
+			this.select = select;
+		}
+
+	}
+
 }

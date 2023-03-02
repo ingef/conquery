@@ -35,7 +35,7 @@ const Headline = styled("h2")`
   line-height: 1.3;
 `;
 
-const Row = styled("p")`
+const Row = styled("div")`
   display: flex;
   gap: 30px;
   align-items: center;

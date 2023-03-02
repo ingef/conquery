@@ -6,7 +6,6 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -38,27 +37,22 @@ import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.error.ConqueryErrorInfo;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.results.ShardResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
+import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -71,9 +65,8 @@ import org.apache.shiro.authz.Permission;
 @ToString
 @Slf4j
 @CPSBase
-@NoArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
+public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
 	 * Some unusual suffix. Its not too bad if someone actually uses this.
@@ -116,10 +109,22 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	private transient boolean initialized = false;
 
 	@JsonIgnore
-	private transient ExecutionManager executionManager;
+	private transient Namespace namespace;
+	@JsonIgnore
+	private transient ConqueryConfig config;
+
+	@JsonIgnore
+	@Getter(AccessLevel.PROTECTED)
+	@NotNull
+	private final MetaStorage storage;
+
+	protected ManagedExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
+		this.storage = storage;
+	}
 
 
-	public ManagedExecution(User owner, Dataset dataset) {
+	public ManagedExecution(User owner, Dataset dataset, MetaStorage storage) {
+		this(storage);
 		this.owner = owner;
 		this.dataset = dataset;
 	}
@@ -127,7 +132,12 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Executed right before execution submission.
 	 */
-	public final void initExecutable(DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public final void initExecutable(Namespace namespace, ConqueryConfig config) {
+		if (!namespace.getDataset().equals(dataset)) {
+			throw new IllegalStateException(String.format("Initial dataset does not match provided namespace. (Initial: '%s', Provided: '%s' )", dataset.getId(), namespace.getDataset()
+																																										   .getId()));
+		}
+
 		synchronized (this) {
 			if (initialized) {
 				log.trace("Execution {} was already initialized", getId());
@@ -135,24 +145,18 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			}
 			if (label == null) {
 				// IdMapper is not necessary here
-				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), datasetRegistry, config, null));
+				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null));
 			}
 
-			executionManager = datasetRegistry.get(getDataset().getId()).getExecutionManager();
+			this.namespace = namespace;
+			this.config = config;
 
-			doInitExecutable(datasetRegistry, config);
+			doInitExecutable();
 			initialized = true;
 		}
 	}
 
-	protected abstract void doInitExecutable(DatasetRegistry namespaces, ConqueryConfig config);
-
-	/**
-	 * Returns the set of namespaces, this execution needs to be executed on.
-	 * The {@link ExecutionManager} then submits the queries to these namespaces.
-	 */
-	@JsonIgnore
-	public abstract Set<Namespace> getRequiredDatasets();
+	protected abstract void doInitExecutable();
 
 
 	@Override
@@ -166,7 +170,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	/**
 	 * Fails the execution and log the occurred error.
 	 */
-	protected void fail(MetaStorage storage, ConqueryErrorInfo error) {
+	protected void fail(ConqueryErrorInfo error) {
 		if (this.error != null && !this.error.equalsRegardingCodeAndMessage(error)) {
 			// Warn only again if the error is different (failed might by called per collected result)
 			log.warn("The execution [{}] failed again with:\n\t{}\n\tThe previous error was: {}", getId(), this.error, error);
@@ -177,23 +181,24 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			log.warn("The execution [{}] failed with:\n\t{}", this.getId(), this.error);
 		}
 
-		finish(storage, ExecutionState.FAILED);
+		finish(ExecutionState.FAILED);
 	}
 
 	public void start() {
 		synchronized (this) {
 			Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
+			Preconditions.checkArgument(getState() != ExecutionState.RUNNING);
 
 			startTime = LocalDateTime.now();
 
 			setState(ExecutionState.RUNNING);
-			getExecutionManager().clearQueryResults(this);
+			namespace.getExecutionManager().clearQueryResults(this);
 
 			execution = new CountDownLatch(1);
 		}
 	}
 
-	protected void finish(MetaStorage storage, ExecutionState executionState) {
+	protected void finish(ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW) {
 			log.error("Query[{}] was never run.", getId());
 		}
@@ -208,11 +213,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 			// No need to persist failed queries. (As they are most likely invalid)
 			if (getState() == ExecutionState.DONE) {
-				if (storage == null) {
-					log.warn("Not saving successful execution {} because no storage was provided", getId());
-					return;
-				}
-				storage.updateExecution(this);
+				getStorage().updateExecution(this);
 			}
 		}
 
@@ -275,21 +276,21 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * Renders an extensive status of this query (see {@link FullExecutionStatus}. The rendering can be computation intensive and can produce a large
 	 * object. The use  of the full status is only intended if a client requested specific information about this execution.
 	 */
-	public FullExecutionStatus buildStatusFull(@NonNull MetaStorage storage, Subject subject, DatasetRegistry datasetRegistry, ConqueryConfig config) {
+	public FullExecutionStatus buildStatusFull(Subject subject) {
 
-		initExecutable(datasetRegistry, config);
+		initExecutable(namespace, config);
 		FullExecutionStatus status = new FullExecutionStatus();
-		setStatusFull(status, storage, subject, datasetRegistry);
+		setStatusFull(status, subject);
 
 		return status;
 	}
 
-	public void setStatusFull(FullExecutionStatus status, MetaStorage storage, Subject subject, DatasetRegistry datasetRegistry) {
+	public void setStatusFull(FullExecutionStatus status, Subject subject) {
 		setStatusBase(subject, status);
 
-		setAdditionalFieldsForStatusWithColumnDescription(storage, subject, status, datasetRegistry);
+		setAdditionalFieldsForStatusWithColumnDescription(subject, status);
 		setAdditionalFieldsForStatusWithSource(subject, status);
-		setAdditionalFieldsForStatusWithGroups(storage, status);
+		setAdditionalFieldsForStatusWithGroups(status);
 		setAvailableSecondaryIds(status);
 		status.setProgress(progress);
 
@@ -308,7 +309,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setAvailableSecondaryIds(secondaryIdCollector.getIds());
 	}
 
-	private void setAdditionalFieldsForStatusWithGroups(@NonNull MetaStorage storage, FullExecutionStatus status) {
+	private void setAdditionalFieldsForStatusWithGroups(FullExecutionStatus status) {
 		/* Calculate which groups can see this query.
 		 * This usually is usually not done very often and should be reasonable fast, so don't cache this.
 		 */
@@ -317,7 +318,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 			for (Permission perm : group.getPermissions()) {
 				if (perm.implies(createPermission(Ability.READ.asSet()))) {
 					permittedGroups.add(group.getId());
-					continue;
 				}
 			}
 		}
@@ -325,7 +325,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setGroups(permittedGroups);
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(@NonNull MetaStorage storage, Subject subject, FullExecutionStatus status, DatasetRegistry datasetRegistry) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		// Implementation specific
 	}
 
@@ -350,34 +350,10 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		status.setQuery(canExpand ? getSubmitted() : null);
 	}
 
-	public boolean isReadyToDownload(Map<DatasetId, Set<Ability>> datasetAbilities) {
-		if (getState() != ExecutionState.DONE) {
-			// No url for unfinished executions, quick return
-			return false;
-		}
-
-		//TODO this is no longer the case.
-
-		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
-		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
-		 */
-
-		return getUsedNamespacedIds().stream()
-									 .map(NamespacedIdentifiable::getDataset)
-									 .distinct()
-									 .allMatch((id) -> datasetAbilities.get(id.getId()).contains(Ability.DOWNLOAD));
-	}
-
-	/**
-	 * Gives all {@link NamespacedId}s that were required in the execution.
-	 *
-	 * @return A List of all {@link NamespacedId}s needed for the execution.
-	 */
 	@JsonIgnore
-	public abstract Set<NamespacedIdentifiable<?>> getUsedNamespacedIds();
-
-
-	public abstract void addResult(@NonNull MetaStorage storage, R result);
+	public boolean isReadyToDownload() {
+		return getState() == ExecutionState.DONE;
+	}
 
 	/**
 	 * Returns the {@link QueryDescription} that caused this {@link ManagedExecution}.
@@ -412,11 +388,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return ExecutionPermission.onInstance(abilities, getId());
 	}
 
-	public abstract WorkerMessage createExecutionMessage();
-
 	public void reset() {
 		setState(ExecutionState.NEW);
 
-		executionManager.clearQueryResults(this);
+		namespace.getExecutionManager().clearQueryResults(this);
 	}
 }

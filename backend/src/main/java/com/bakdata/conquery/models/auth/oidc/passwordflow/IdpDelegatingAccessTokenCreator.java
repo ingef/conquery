@@ -1,8 +1,17 @@
 package com.bakdata.conquery.models.auth.oidc.passwordflow;
 
+import java.net.URI;
+
+import javax.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.models.auth.basic.AccessTokenCreator;
-import com.bakdata.conquery.models.auth.oidc.IntrospectionDelegatingRealmFactory;
-import com.nimbusds.oauth2.sdk.*;
+import com.bakdata.conquery.models.config.auth.IntrospectionDelegatingRealmFactory;
+import com.nimbusds.oauth2.sdk.AccessTokenResponse;
+import com.nimbusds.oauth2.sdk.AuthorizationGrant;
+import com.nimbusds.oauth2.sdk.ResourceOwnerPasswordCredentialsGrant;
+import com.nimbusds.oauth2.sdk.Scope;
+import com.nimbusds.oauth2.sdk.TokenRequest;
+import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
@@ -11,9 +20,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
 
 
 @Slf4j

@@ -20,10 +20,8 @@ import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Preconditions;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,8 +30,8 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @CPSType(id = "CONCEPT_QUERY", base = QueryDescription.class)
+@NoArgsConstructor
 @Slf4j
-@NoArgsConstructor(access = AccessLevel.PRIVATE, onConstructor = @__(@JsonCreator))
 public class ConceptQuery extends Query {
 
 	@Valid
@@ -47,13 +45,14 @@ public class ConceptQuery extends Query {
 	@JsonView(View.InternalCommunication.class)
 	protected DateAggregationMode resolvedDateAggregationMode;
 
-	public ConceptQuery(CQElement root, DateAggregationMode dateAggregationMode) {
-		this(root);
-		this.dateAggregationMode = dateAggregationMode;
-	}
 
 	public ConceptQuery(CQElement root) {
+		this(root, DateAggregationMode.MERGE);
+	}
+
+	public ConceptQuery(CQElement root, DateAggregationMode dateAggregationMode) {
 		this.root = root;
+		this.dateAggregationMode = dateAggregationMode;
 	}
 
 	@Override

@@ -13,7 +13,7 @@ const Header = styled("h2")`
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
   margin: 0;
   padding: 0 20px;
   font-size: ${({ theme }) => theme.font.sm};
@@ -25,12 +25,10 @@ const Header = styled("h2")`
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
-  padding: 6px 15px;
-  top: 46px;
+  top: 40px;
+  height: 39px;
   right: 0;
-  border-right: 0;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  border-radius: 0;
 `;
 
 export const TooltipHeader = memo(() => {
@@ -42,7 +40,7 @@ export const TooltipHeader = memo(() => {
   return (
     <>
       <StyledIconButton
-        frame
+        bgHover
         onClick={onToggleDisplayTooltip}
         icon="angle-left"
       />

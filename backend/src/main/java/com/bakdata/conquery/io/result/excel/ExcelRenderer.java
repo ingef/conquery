@@ -68,7 +68,7 @@ public class ExcelRenderer {
 		void writeCell(ResultInfo info, PrintSettings settings, Cell cell, Object value, Map<String, CellStyle> styles);
 	}
 
-	public <E extends ManagedExecution<?> & SingleTableResult> void renderToStream(
+	public <E extends ManagedExecution & SingleTableResult> void renderToStream(
 			List<ResultInfo> idHeaders,
 			E exec,
 			OutputStream outputStream) throws IOException {
@@ -100,7 +100,7 @@ public class ExcelRenderer {
 	/**
 	 * Include meta data in the xlsx such as the title, owner/author, tag and the name of this instance.
 	 */
-	private <E extends ManagedExecution<?> & SingleTableResult> void setMetaData(E exec) {
+	private <E extends ManagedExecution & SingleTableResult> void setMetaData(E exec) {
 		final POIXMLProperties.CoreProperties coreProperties = workbook.getXSSFWorkbook().getProperties().getCoreProperties();
 		coreProperties.setTitle(exec.getLabelWithoutAutoLabelSuffix());
 
@@ -137,7 +137,7 @@ public class ExcelRenderer {
 	 * Create a table environment, which improves mainly the visuals of the produced table.
 	 */
 	@NotNull
-	private XSSFTable createTableEnvironment(ManagedExecution<?> exec, SXSSFSheet sheet) {
+	private XSSFTable createTableEnvironment(ManagedExecution exec, SXSSFSheet sheet) {
 		XSSFTable table = sheet.getWorkbook().getXSSFWorkbook().getSheet(sheet.getSheetName()).createTable(null);
 
 		CTTable cttable = table.getCTTable();
