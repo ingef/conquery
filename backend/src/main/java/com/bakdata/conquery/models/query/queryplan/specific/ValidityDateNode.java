@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.google.common.base.Preconditions;
 import lombok.ToString;
 
 @ToString(of = "validityDateColumn", callSuper = true)
@@ -24,6 +25,7 @@ public class ValidityDateNode extends QPChainNode {
 
 	public ValidityDateNode(Column validityDateColumn, QPNode child) {
 		super(child);
+		Preconditions.checkNotNull(validityDateColumn, this.getClass().getSimpleName() + " needs a validityDateColumn");
 		this.validityDateColumn = validityDateColumn;
 	}
 

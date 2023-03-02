@@ -186,11 +186,11 @@ public class CQExternal extends CQElement {
 											 .collect(Collectors.toList());
 
 
-		// If no format provided, put empty dates into output.
+		// If no format provided, put full dates into output.
 		if (dateFormats.stream().allMatch(Objects::isNull)) {
 			// Initialize empty
 			for (int row = 0; row < values.length; row++) {
-				out[row] = CDateSet.create();
+				out[row] = CDateSet.createFull();
 			}
 			return out;
 		}
