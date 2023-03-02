@@ -80,7 +80,7 @@ public class ExternalNode<T> extends QPNode {
 
 	@Override
 	public boolean isContained() {
-		return contained != null;
+		return contained != null && !dateUnion.isEmpty();
 	}
 
 	@Override
