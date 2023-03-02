@@ -1234,7 +1234,8 @@ components:
         $ref: "#/components/schemas/filter-value"
 
     filter-value:
-      description: Bundle of Filter and requested parameters.
+      description: "Reference to a filter, and parameters for filtering with it.
+      Note that the filter is included by reference, and its actual logic is described in the defining concept."
       type: object
       discriminator:
         propertyName: "type"
@@ -1417,9 +1418,15 @@ components:
                   items:
                     $ref: "#/components/schemas/filter-value"
                 selects:
+                  description: "References to Selects to evaluate while querying."
                   type: array
                   items:
                     $ref: "#/components/schemas/selectId"
+            selects:
+              description: "References to UniversalSelects to evaluate while querying."
+              type: array
+              items:
+                $ref: "#/components/schemas/selectId"
             excludeFromSecondaryId:
               description: If true, this node is not grouped by a secondaryId even if the referenced tables contain the secondaryId.
               type: boolean
