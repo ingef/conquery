@@ -74,6 +74,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	private MetaStorage metaStorage;
 
 
+	private Map<DatasetId, CountDownLatch> addLatches = new HashMap<>();
 	private Map<DatasetId, CountDownLatch> deletionLatches = new HashMap<>();
 
 
@@ -101,7 +102,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 				internalObjectMapperCreator
 		);
 
-		add(namespace);
+		datasets.put(namespace.getStorage().getDataset().getId(), namespace);
 
 		// for now we just add one worker to every ShardNode
 		for (ShardNodeInformation node : getShardNodes().values()) {
@@ -109,10 +110,6 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		}
 
 		return namespace;
-	}
-
-	private void add(Namespace ns) {
-		datasets.put(ns.getStorage().getDataset().getId(), ns);
 	}
 
 	public Namespace get(DatasetId dataset) {
@@ -123,12 +120,12 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		Preconditions.checkNotNull(deletionLatches.get(workerId.getDataset())).countDown();
 	}
 
-	public synchronized void removeNamespace(DatasetId id) throws InterruptedException {
+	public void removeNamespace(DatasetId id) throws InterruptedException {
 		Namespace removed = datasets.remove(id);
 
 		final CountDownLatch oldLatch = deletionLatches.get(id);
-		if (oldLatch != null || oldLatch.getCount() > 0) {
-			log.error("There exists a deletion latch, so a deletion is in progress. Skipping");
+		if (oldLatch != null && oldLatch.getCount() > 0) {
+			log.error("There exists a deletion latch. A deletion is in progress. Skipping");
 			return;
 		}
 
