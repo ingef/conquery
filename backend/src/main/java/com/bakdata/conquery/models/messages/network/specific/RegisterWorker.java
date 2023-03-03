@@ -32,7 +32,7 @@ public class RegisterWorker extends MessageToManagerNode {
 			.until(()->getShardNode(context) != null);
 		
 		if(node == null) {
-			throw new IllegalStateException("Could not find the slave "+context.getRemoteAddress()+" to register worker "+info.getId());
+			throw new IllegalStateException("Could not find the shard " + context.getRemoteAddress() + " to register worker " + info.getId());
 		}
 
 		info.setConnectedShardNode(node);

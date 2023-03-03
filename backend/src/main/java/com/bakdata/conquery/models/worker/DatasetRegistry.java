@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -74,8 +73,8 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	private MetaStorage metaStorage;
 
 
-	private Map<DatasetId, CountDownLatch> addLatches = new HashMap<>();
-	private Map<DatasetId, CountDownLatch> deletionLatches = new HashMap<>();
+	private final Map<DatasetId, CountDownLatch> addLatches = new ConcurrentHashMap<>();
+	private final Map<DatasetId, CountDownLatch> deletionLatches = new ConcurrentHashMap<>();
 
 
 	public Namespace createNamespace(Dataset dataset, Validator validator) throws IOException {
@@ -95,6 +94,8 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 
 	public Namespace createNamespace(NamespaceStorage datasetStorage) {
+
+
 		final Namespace namespace = Namespace.create(
 				new ExecutionManager(getMetaStorage()),
 				datasetStorage,
@@ -102,14 +103,44 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 				internalObjectMapperCreator
 		);
 
-		datasets.put(namespace.getStorage().getDataset().getId(), namespace);
+		final DatasetId datasetId = namespace.getStorage().getDataset().getId();
 
-		// for now we just add one worker to every ShardNode
-		for (ShardNodeInformation node : getShardNodes().values()) {
-			node.send(new AddWorker(datasetStorage.getDataset()));
+		datasets.put(datasetId, namespace);
+
+		CountDownLatch latch = addLatches.get(datasetId);
+		synchronized (this) {
+			if (latch != null && latch.getCount() > 0) {
+				throw new IllegalStateException(String.format("There exists a adding latch. A adding of a namespace '%s' is in progress. Skipping", datasetId));
+			}
+
+			// Size the countdown to the number of shards/workers
+			latch = new CountDownLatch(getShardNodes().size());
+			addLatches.put(datasetId, latch);
+
+			// for now we just add one worker to every ShardNode
+			for (ShardNodeInformation node : getShardNodes().values()) {
+				node.send(new AddWorker(datasetStorage.getDataset()));
+			}
 		}
 
+		try {
+
+			// Wait till all adding reports are in
+			if (latch.await(2, TimeUnit.MINUTES)) {
+				log.info("Creation of namespace {} successful", namespace);
+				return namespace;
+			}
+		}
+		catch (InterruptedException e) {
+			throw new IllegalStateException(String.format("Was interrupted while waiting for creation of workers for dataset: '%s'", datasetId));
+		}
+
+		log.warn("Ran into timeout. Adding takes longer than expected.");
 		return namespace;
+	}
+
+	public void acknowledgeWorkerCreation(WorkerId workerId) {
+		Preconditions.checkNotNull(addLatches.get(workerId.getDataset())).countDown();
 	}
 
 	public Namespace get(DatasetId dataset) {
@@ -120,36 +151,44 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		Preconditions.checkNotNull(deletionLatches.get(workerId.getDataset())).countDown();
 	}
 
-	public void removeNamespace(DatasetId id) throws InterruptedException {
-		Namespace removed = datasets.remove(id);
+	public void removeNamespace(DatasetId datasetId) throws InterruptedException {
+		Namespace removed = datasets.remove(datasetId);
 
-		final CountDownLatch oldLatch = deletionLatches.get(id);
-		if (oldLatch != null && oldLatch.getCount() > 0) {
-			log.error("There exists a deletion latch. A deletion is in progress. Skipping");
+
+		if (removed == null) {
+			log.info("Dataset '{}' was already removed", datasetId);
 			return;
 		}
 
-		if (removed != null) {
-			metaStorage.getCentralRegistry().remove(removed.getDataset());
-
-			// Size the countdown to the number of workers
-			final CountDownLatch latch = new CountDownLatch(removed.getWorkers().size());
-			deletionLatches.put(id, latch);
-
-			// Trigger deletion of workers
-			getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(removed.getDataset())));
-
-			workers.keySet().removeIf(w -> w.getDataset().equals(id));
-			removed.remove();
-
-			// Wait till all remove reports are in
-			if (latch.await(2, TimeUnit.MINUTES)) {
-				log.info("Deletion of namespace {} successful", removed);
+		CountDownLatch latch = deletionLatches.get(datasetId);
+		synchronized (this) {
+			if (latch != null && latch.getCount() > 0) {
+				log.error("There exists a deletion latch. A deletion is in progress for dataset '{}'. Skipping", datasetId);
 				return;
 			}
 
-			log.warn("Ran into Timeout. Deletion takes longer than expected.");
+			// Size the countdown to the number of workers
+			latch = new CountDownLatch(removed.getWorkers().size());
+			deletionLatches.put(datasetId, latch);
 		}
+
+
+		metaStorage.getCentralRegistry().remove(removed.getDataset());
+
+		// Trigger deletion of workers
+		getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(removed.getDataset())));
+
+		workers.keySet().removeIf(w -> w.getDataset().equals(datasetId));
+		removed.remove();
+
+		// Wait till all remove reports are in
+		if (latch.await(2, TimeUnit.MINUTES)) {
+			log.info("Deletion of namespace {} successful", removed);
+			return;
+		}
+
+		log.warn("Ran into timeout. Deletion takes longer than expected.");
+
 	}
 
 	@Override
@@ -183,6 +222,9 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 					"Trying to register a worker for unknown dataset '" + info.getDataset() + "'. I only know " + datasets.keySet());
 		}
 		ns.addWorker(info);
+
+		// There might be no latch because the dataset is not new but loaded from a store
+		addLatches.computeIfAbsent(info.getDataset(), (_k) -> new CountDownLatch(0)).countDown();
 	}
 
 	public List<Dataset> getAllDatasets() {
