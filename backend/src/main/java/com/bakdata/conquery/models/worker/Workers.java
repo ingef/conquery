@@ -27,12 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * {@link com.bakdata.conquery.commands.ShardNode} container of {@link Worker}.
- *
+ * <p>
  * Each Shard contains one {@link Worker} per {@link Dataset}.
  */
 @Slf4j
 public class Workers extends IdResolveContext {
-	@Getter @Setter
+	@Getter
+	@Setter
 	private AtomicInteger nextWorker = new AtomicInteger(0);
 	@Getter
 	private ConcurrentHashMap<WorkerId, Worker> workers = new ConcurrentHashMap<>();
@@ -50,7 +51,7 @@ public class Workers extends IdResolveContext {
 
 	private final int entityBucketSize;
 
-	
+
 	public Workers(ThreadPoolDefinition queryThreadPoolDefinition, Supplier<ObjectMapper> persistenceMapperSupplier, Supplier<ObjectMapper> communicationMapperSupplier, int entityBucketSize) {
 		this.queryThreadPoolDefinition = queryThreadPoolDefinition;
 
@@ -135,19 +136,20 @@ public class Workers extends IdResolveContext {
 			return null;
 		}
 
-		workers.remove(removed.getInfo().getId());
+		final WorkerId id = removed.getInfo().getId();
+		workers.remove(id);
 		try {
 			removed.remove();
 		}
-		catch(Exception e) {
-			log.error("Failed to remove storage "+removed, e);
+		catch (Exception e) {
+			log.error("Failed to remove storage " + removed, e);
 		}
-		return removed.getInfo().getId();
+		return id;
 	}
-	
+
 	public boolean isBusy() {
-		for( Worker worker : workers.values()) {
-			if(worker.isBusy()) {
+		for (Worker worker : workers.values()) {
+			if (worker.isBusy()) {
 				return true;
 			}
 		}
