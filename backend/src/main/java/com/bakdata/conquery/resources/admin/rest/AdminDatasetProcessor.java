@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.Validator;
 import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -109,7 +110,12 @@ public class AdminDatasetProcessor {
 			);
 		}
 
-		datasetRegistry.removeNamespace(dataset.getId());
+		try {
+			datasetRegistry.removeNamespace(dataset.getId());
+		}
+		catch (InterruptedException e) {
+			throw new InternalServerErrorException(e);
+		}
 
 	}
 

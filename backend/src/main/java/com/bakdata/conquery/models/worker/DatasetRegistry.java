@@ -4,10 +4,14 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -32,6 +36,7 @@ import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -39,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Holds the necessary information about all datasets on the {@link ManagerNode}.
- * This includes meta data of each dataset (not to confuse with {@link MetaStorage}) as well as informations about the 
+ * This includes meta data of each dataset (not to confuse with {@link MetaStorage}) as well as informations about the
  * distributed query engine.
  */
 @Slf4j
@@ -67,6 +72,9 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	@Getter
 	@Setter
 	private MetaStorage metaStorage;
+
+
+	private Map<DatasetId, CountDownLatch> deletionLatches = new HashMap<>();
 
 
 	public Namespace createNamespace(Dataset dataset, Validator validator) throws IOException {
@@ -110,17 +118,40 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	public Namespace get(DatasetId dataset) {
 		return datasets.get(dataset);
 	}
-	
-	public void removeNamespace(DatasetId id) {
+
+	public void acknowledgeWorkerDeletion(WorkerId workerId) {
+		Preconditions.checkNotNull(deletionLatches.get(workerId.getDataset())).countDown();
+	}
+
+	public synchronized void removeNamespace(DatasetId id) throws InterruptedException {
 		Namespace removed = datasets.remove(id);
 
-		if(removed != null) {
+		final CountDownLatch oldLatch = deletionLatches.get(id);
+		if (oldLatch != null || oldLatch.getCount() > 0) {
+			log.error("There exists a deletion latch, so a deletion is in progress. Skipping");
+			return;
+		}
+
+		if (removed != null) {
 			metaStorage.getCentralRegistry().remove(removed.getDataset());
 
+			// Size the countdown to the number of workers
+			final CountDownLatch latch = new CountDownLatch(removed.getWorkers().size());
+			deletionLatches.put(id, latch);
+
+			// Trigger deletion of workers
 			getShardNodes().values().forEach(shardNode -> shardNode.send(new RemoveWorker(removed.getDataset())));
 
-			workers.keySet().removeIf(w->w.getDataset().equals(id));
+			workers.keySet().removeIf(w -> w.getDataset().equals(id));
 			removed.remove();
+
+			// Wait till all remove reports are in
+			if (latch.await(2, TimeUnit.MINUTES)) {
+				log.info("Deletion of namespace {} successful", removed);
+				return;
+			}
+
+			log.warn("Ran into Timeout. Deletion takes longer than expected.");
 		}
 	}
 
@@ -132,7 +163,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 
 		return datasets.get(dataset).getStorage().getCentralRegistry();
 	}
-	
+
 	@Override
 	public CentralRegistry getMetaRegistry() {
 		return metaStorage.getCentralRegistry();
@@ -152,7 +183,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 		Namespace ns = datasets.get(info.getDataset());
 		if (ns == null) {
 			throw new NoSuchElementException(
-				"Trying to register a worker for unknown dataset '" + info.getDataset() + "'. I only know " + datasets.keySet());
+					"Trying to register a worker for unknown dataset '" + info.getDataset() + "'. I only know " + datasets.keySet());
 		}
 		ns.addWorker(info);
 	}
@@ -164,7 +195,7 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	public Collection<Namespace> getDatasets() {
 		return datasets.values();
 	}
-	
+
 	public void close() {
 		for (Namespace namespace : datasets.values()) {
 			try {
@@ -180,6 +211,6 @@ public class DatasetRegistry extends IdResolveContext implements Closeable {
 	public MutableInjectableValues inject(MutableInjectableValues values) {
 		// Make this class also availiable under DatasetRegistry
 		return super.inject(values)
-			 .add(DatasetRegistry.class, this);
+					.add(DatasetRegistry.class, this);
 	}
 }

@@ -80,6 +80,7 @@ public class Namespace extends IdResolveContext implements Closeable {
 	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
 	private final List<Injectable> injectables;
 
+
 	public static Namespace create(ExecutionManager executionManager, NamespaceStorage storage, ConqueryConfig config, Function<Class<? extends View>, ObjectMapper> mapperCreator) {
 
 		// Prepare namespace dependent Jackson injectables
@@ -182,7 +183,7 @@ public class Namespace extends IdResolveContext implements Closeable {
 		}
 	}
 
-	public void remove() {
+	public synchronized void remove() {
 		try {
 			jobManager.close();
 		}

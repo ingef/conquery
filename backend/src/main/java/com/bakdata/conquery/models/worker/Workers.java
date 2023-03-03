@@ -121,7 +121,7 @@ public class Workers extends IdResolveContext {
 		return null; // Workers simply have no MetaRegistry.
 	}
 
-	public void removeWorkerFor(DatasetId dataset) {
+	public WorkerId removeWorkerFor(DatasetId dataset) {
 		final Worker worker = dataset2Worker.get(dataset);
 
 		/*
@@ -132,7 +132,7 @@ public class Workers extends IdResolveContext {
 
 		Worker removed = dataset2Worker.remove(dataset);
 		if (removed == null) {
-			return;
+			return null;
 		}
 
 		workers.remove(removed.getInfo().getId());
@@ -142,6 +142,7 @@ public class Workers extends IdResolveContext {
 		catch(Exception e) {
 			log.error("Failed to remove storage "+removed, e);
 		}
+		return removed.getInfo().getId();
 	}
 	
 	public boolean isBusy() {

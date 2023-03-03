@@ -52,12 +52,12 @@ public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> e
 	@Getter
 	public static class ManagerNodeNetworkContext extends NetworkMessageContext<MessageToShardNode> {
 
-		private final DatasetRegistry namespaces;
+		private final DatasetRegistry datasetRegistry;
 
 
-		public ManagerNodeNetworkContext(NetworkSession session, DatasetRegistry namespaces, int backpressure) {
+		public ManagerNodeNetworkContext(NetworkSession session, DatasetRegistry datasetRegistry, int backpressure) {
 			super(session, backpressure);
-			this.namespaces = namespaces;
+			this.datasetRegistry = datasetRegistry;
 		}
 	}
 }

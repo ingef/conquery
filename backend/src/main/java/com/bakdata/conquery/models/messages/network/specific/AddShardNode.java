@@ -26,7 +26,7 @@ public class AddShardNode extends MessageToManagerNode {
 				context.getBackpressure()
 		);
 
-		context.getNamespaces().getShardNodes().put(context.getRemoteAddress(), nodeInformation);
+		context.getDatasetRegistry().getShardNodes().put(context.getRemoteAddress(), nodeInformation);
 
 		log.info("ShardNode `{}` registered.", context.getRemoteAddress());
 	}
