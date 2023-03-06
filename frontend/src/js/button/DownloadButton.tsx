@@ -22,15 +22,10 @@ const fileTypeToIcon: Record<string, IconName> = {
   PDF: "file-pdf",
   CSV: "file-csv",
 };
-function getFileIcon(label: string): IconName {
-  // Editor Requests
-  if (label in fileTypeToIcon) {
-    return fileTypeToIcon[label];
-  }
-
+function getFileIcon(url: string): IconName {
   // Forms
-  if (label.includes(".")) {
-    const ext = getEnding(label);
+  if (url.includes(".")) {
+    const ext = getEnding(url);
     if (ext in fileTypeToIcon) {
       return fileTypeToIcon[ext];
     }
@@ -57,7 +52,7 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
       <Link href={href} className={className} ref={ref}>
         <SxIconButton
           {...restProps}
-          icon={getFileIcon(resultUrl.label)}
+          icon={getFileIcon(resultUrl.url)}
           onClick={onClick}
         >
           {children}
