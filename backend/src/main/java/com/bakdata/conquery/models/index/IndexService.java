@@ -45,7 +45,7 @@ public class IndexService implements Injectable {
 
 			final CsvParser csvParser = new CsvParser(csvParserSettings);
 
-			try (InputStream inputStream = key.getCsv().openStream()) {
+			try (InputStream inputStream = key.getCsv().toURL().openStream()) {
 
 				final IterableResult<Record, ParsingContext> records = csvParser.iterateRecords(inputStream);
 

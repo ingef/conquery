@@ -360,7 +360,7 @@ public class ImportJob extends Job {
 	/**
 	 * - remap Entity-Ids to global
 	 * - calculate per-Entity regions of Bucklet (start/end)
-	 * - split stores
+	 * - searchSplitChars stores
 	 */
 	private Bucket selectBucket(Map<Integer, Integer> localStarts, Map<Integer, Integer> localLengths, ColumnStore[] stores, DictionaryMapping primaryMapping, Import imp, int bucketId, List<Integer> localEntities) {
 

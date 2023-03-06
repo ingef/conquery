@@ -9,6 +9,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.commands.ManagerNode;
+import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.io.jackson.serializer.FormatedDateDeserializer;
@@ -36,7 +38,7 @@ import lombok.With;
 @AllArgsConstructor
 @NoArgsConstructor
 @With
-public class ConqueryConfig extends Configuration {
+public class ConqueryConfig extends Configuration implements Injectable {
 
 	@Valid
 	@NotNull
@@ -83,7 +85,7 @@ public class ConqueryConfig extends Configuration {
 
 	@NotNull
 	@Valid
-	private SearchConfig search = new SearchConfig();
+	private IndexConfig index = new IndexConfig();
 
 	private ConqueryMetricsConfig metricsConfig = new ConqueryMetricsConfig();
 
@@ -126,6 +128,11 @@ public class ConqueryConfig extends Configuration {
 
 	public ObjectMapper configureObjectMapper(ObjectMapper objectMapper) {
 		return objectMapper.registerModule(new ConqueryConfig.ConfiguredModule(this));
+	}
+
+	@Override
+	public MutableInjectableValues inject(MutableInjectableValues values) {
+		return values.add(ConqueryConfig.class, this);
 	}
 
 	public static class ConfiguredModule extends SimpleModule {
