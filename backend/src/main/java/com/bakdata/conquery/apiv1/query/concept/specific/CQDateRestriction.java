@@ -39,7 +39,7 @@ public class CQDateRestriction extends CQElement {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		QPNode childQueryPlan = child.createQueryPlan(context.withDateRestriction(CDateRange.of(dateRange)), plan);
+		QPNode childQueryPlan = child.createQueryPlan(context, plan);
 
 		return new DateRestrictingNode(
 				CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
