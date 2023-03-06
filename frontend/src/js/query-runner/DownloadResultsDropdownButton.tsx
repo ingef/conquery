@@ -71,7 +71,7 @@ function getResultUrl(
 }
 
 function truncate(label: string) {
-  return label.length > 40 ? `${label.slice(0, 37)}...` : label;
+  return label.length > 40 ? `${label.slice(0, 37)}…` : label;
 }
 
 const getInitialEndingChoice = (resultUrls: ResultUrlWithLabel[]) => {
