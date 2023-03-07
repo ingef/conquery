@@ -186,18 +186,23 @@ public class CQExternal extends CQElement {
 											 .collect(Collectors.toList());
 
 
-		// If no format provided, put full dates into output.
+		/*
+		 If no format is provided, put empty dates into output.
+		 This indicates that no date context was provided and
+		 the entries are not restricted by any date restriction,
+		 but can also don't contribute to any date aggregation.
+		 */
 		if (dateFormats.stream().allMatch(Objects::isNull)) {
 			// Initialize empty
 			for (int row = 0; row < values.length; row++) {
-				out[row] = CDateSet.createFull();
+				out[row] = CDateSet.createEmpty();
 			}
 			return out;
 		}
 
 		for (int row = 1; row < values.length; row++) {
 			try {
-				final CDateSet dates = CDateSet.create();
+				final CDateSet dates = CDateSet.createEmpty();
 
 				// Collect all specified dates into a single set.
 				for (int col = 0; col < dateFormats.size(); col++) {
@@ -214,7 +219,7 @@ public class CQExternal extends CQElement {
 				}
 
 				if (out[row] == null) {
-					out[row] = CDateSet.create();
+					out[row] = CDateSet.createEmpty();
 				}
 
 				out[row].addAll(dates);

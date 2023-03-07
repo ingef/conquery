@@ -25,7 +25,7 @@ public class EventDateUnionAggregator extends Aggregator<CDateSet> {
 
 	private final Set<Table> requiredTables;
 	private Column validityDateColumn;
-	private CDateSet set = CDateSet.create();
+	private CDateSet set = CDateSet.createEmpty();
 	private CDateSet dateRestriction;
 
 	@Override

@@ -65,7 +65,7 @@ public class CQDateRestriction extends CQElement {
 
 	@Override
 	public RequiredEntities collectRequiredEntities(QueryExecutionContext context) {
-		final CDateSet restriction = CDateSet.create();
+		final CDateSet restriction = CDateSet.createEmpty();
 		restriction.maskedAdd(CDateRange.of(dateRange), context.getDateRestriction());
 
 		return getChild().collectRequiredEntities(context.withDateRestriction(restriction));
