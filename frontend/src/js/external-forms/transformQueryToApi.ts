@@ -46,7 +46,7 @@ function transformFieldToApiEntries(
     case "TEXTAREA":
     case "STRING":
     case "NUMBER":
-      return [[fieldConfig.name, formValue || null]];
+      return [[fieldConfig.name, formValue !== undefined ? formValue : null]];
     case "DATASET_SELECT":
     case "SELECT":
       return [
