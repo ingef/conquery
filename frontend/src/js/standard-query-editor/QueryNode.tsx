@@ -20,7 +20,7 @@ import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 import QueryNodeActions from "./QueryNodeActions";
 import QueryNodeContent from "./QueryNodeContent";
 import { getRootNodeLabel } from "./helper";
-import { StandardQueryNodeT } from "./types";
+import { DragItemConceptTreeNode, StandardQueryNodeT } from "./types";
 
 const FlexHoverNavigatable = styled(HoverNavigatable)`
   display: flex;
@@ -187,7 +187,18 @@ const QueryNode = ({
       : undefined;
 
   const QueryNodeRoot = (
-    <FlexHoverNavigatable triggerNavigate={onClick}>
+    <FlexHoverNavigatable
+      triggerNavigate={onClick}
+      canDrop={(item) => {
+        if (item.type !== "CONCEPT_TREE_NODE") return false;
+        const nodeCast = node as DragItemConceptTreeNode;
+        const conceptId = (item as DragItemConceptTreeNode).ids[0];
+        return (
+          item.tree === nodeCast.tree &&
+          !nodeCast.ids.some((id) => id === conceptId)
+        );
+      }}
+    >
       <Root
         ref={(instance) => {
           ref.current = instance;
