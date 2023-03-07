@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.Sets;
@@ -97,29 +96,17 @@ public class PreviewConfig {
 	@NotNull
 	private DatasetRegistry datasetRegistry;
 
-	@Data
-	public static class InfoCardSelect {
-		@JsonCreator
-		public InfoCardSelect(String label, SelectId select) {
-			this.label = label;
-			this.select = select;
-		}
-
-		/**
-		 * User facing label of the select.
-		 */
-		private final String label;
-		/**
-		 * Id (without dataset) of the select.
-		 */
-		private final SelectId select;
-
+	/**
+	 * @param label  User facing label of the select.
+	 * @param select Id (without dataset) of the select.
+	 */
+	public record InfoCardSelect(String label, SelectId select, String description) {
 	}
 
 
 
 	// TODO FK that is an awful name
-	public record TimebasedSelects(String name, List<InfoCardSelect> selects){
+	public record TimebasedSelects(String name, String description, List<InfoCardSelect> selects){
 
 	}
 
@@ -135,22 +122,22 @@ public class PreviewConfig {
 	@JsonIgnore
 	@ValidationMethod(message = "Selects may be used only once.")
 	public boolean isSelectsDistinct() {
-		return infoCardSelects.stream().map(InfoCardSelect::getSelect).distinct().count() == getInfoCardSelects().size();
+		return infoCardSelects.stream().map(InfoCardSelect::select).distinct().count() == getInfoCardSelects().size();
 	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "Select Labels must be unique.")
 	public boolean isSelectsLabelsDistinct() {
-		return infoCardSelects.stream().map(InfoCardSelect::getLabel).distinct().count() == getInfoCardSelects().size();
+		return infoCardSelects.stream().map(InfoCardSelect::label).distinct().count() == getInfoCardSelects().size();
 	}
 
 	/**
-	 * Used to map {@link SelectResultInfo} to {@link InfoCardSelect#getLabel()} via {@link PrintSettings#getColumnNamer()}.
+	 * Used to map {@link SelectResultInfo} to {@link InfoCardSelect#label()} via {@link PrintSettings#getColumnNamer()}.
 	 */
 	public String resolveSelectLabel(SelectResultInfo info) {
 		for (InfoCardSelect infoCardSelect : getInfoCardSelects()) {
-			if (infoCardSelect.getSelect().equals(info.getSelect().getId())) {
-				return infoCardSelect.getLabel();
+			if (infoCardSelect.select().equals(info.getSelect().getId())) {
+				return infoCardSelect.label();
 			}
 		}
 
@@ -163,7 +150,7 @@ public class PreviewConfig {
 	@JsonIgnore
 	public List<Select> getSelects() {
 		return getInfoCardSelects().stream()
-								   .map(InfoCardSelect::getSelect)
+								   .map(InfoCardSelect::select)
 								   .map(id -> datasetRegistry.findRegistry(id.getDataset()).getOptional(id))
 								   .flatMap(Optional::stream)
 								   .collect(Collectors.toList());

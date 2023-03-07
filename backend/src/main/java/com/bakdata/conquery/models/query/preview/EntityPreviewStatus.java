@@ -26,12 +26,12 @@ public class EntityPreviewStatus extends FullExecutionStatus {
 	}
 
 
-	record TimebasedInfos(String label, List<ColumnDescriptor> columns, List<YearEntry> years) {
+	public record TimebasedInfos(String label, String description, List<ColumnDescriptor> columns, List<YearEntry> years) {
 
-		record QuarterEntry(int quarter, Map<String, Object> values) {
+		public record QuarterEntry(int quarter, Map<String, Object> values) {
 		}
 
-		record YearEntry(int year, Map<String, Object> values, List<QuarterEntry> quarters) {
+		public record YearEntry(int year, Map<String, Object> values, List<QuarterEntry> quarters) {
 		}
 	}
 }

@@ -92,7 +92,7 @@ public class EntityPreviewForm extends Form {
 			final AbsoluteFormQuery query = new AbsoluteFormQuery(entitySelectQuery, dateRange,
 																  ArrayConceptQuery.createFromFeatures(
 																				selects.selects().stream()
-																					   .map(PreviewConfig.InfoCardSelect::getSelect)
+																					   .map(PreviewConfig.InfoCardSelect::select)
 																					   .map(id -> datasetRegistry.resolve(id))// TODO resolve optional?
 																					   .map(CQConcept::forSelect)
 																					   .collect(Collectors.toList())),

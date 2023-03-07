@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
@@ -34,7 +35,6 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.SemanticType;
@@ -87,7 +87,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), printSettings));
 
-		status.setTimebasedInfos(transformTimeBasedInfos(datasetRegistry, getSubQueries(), printSettings));
+		status.setTimebasedInfos(transformTimeBasedInfos(previewConfig, getSubQueries(), printSettings));
 
 		return status;
 	}
@@ -134,21 +134,16 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	}
 
 	@NotNull
-	private static List<EntityPreviewStatus.TimebasedInfos> transformTimeBasedInfos(DatasetRegistry datasetRegistry, Map<String, List<ManagedQuery>> subQueries, PrintSettings printSettings) {
+	private static List<EntityPreviewStatus.TimebasedInfos> transformTimeBasedInfos(PreviewConfig previewConfig, Map<String, List<ManagedQuery>> subQueries, PrintSettings printSettings) {
 		final List<EntityPreviewStatus.TimebasedInfos> timebasedInfos = new ArrayList<>();
 
-		for (Map.Entry<String, List<ManagedQuery>> result : subQueries.entrySet()) {
-
-			if (result.getKey().equals(EntityPreviewForm.INFOS_QUERY_NAME)) {
-				continue;
-			}
-
-			if (result.getKey().equals(EntityPreviewForm.VALUES_QUERY_NAME)) {
-				continue;
-			}
-
-			final ManagedQuery query = result.getValue().get(0);
+		for (PreviewConfig.TimebasedSelects description : previewConfig.getTimebasedSelects()) {
+			final ManagedQuery query = subQueries.get(description.name()).get(0);
 			final EntityResult entityResult = query.streamResults().collect(MoreCollectors.onlyElement());
+
+			final Map<SelectId, PreviewConfig.InfoCardSelect> select2desc =
+					description.selects().stream()
+							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
 			final int resolutionInfoIdx = 0;
 			final int timeIdx = 2;
@@ -157,22 +152,9 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 			final Map<Integer, Object[]> yearLines = new HashMap<>();
 			final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
 
-			for (Object[] line : entityResult.listResultLines()) {
+			groupLinesForResolutions(entityResult, resolutionInfoIdx, timeIdx, yearLines, quarterLines);
 
-				// Since we know the dates are always aligned we need to only respect their starts.
-				final LocalDate date = CDate.toLocalDate(((List<Integer>) line[timeIdx]).get(0));
-
-				final int year = date.getYear();
-				final int quarter = QuarterUtils.getQuarter(date);
-
-				switch (Resolution.valueOf((String) line[resolutionInfoIdx])) {
-					case YEARS -> yearLines.put(year, line);
-					case QUARTERS -> quarterLines.computeIfAbsent(year, HashMap::new).put(quarter, line);
-					default -> throw new IllegalStateException("Query may only have modes for Quarter and/or Year.");
-				}
-			}
-
-			final Function<Object[], Map<String, Object>> lineTransformer = createLineTransformer(query.getResultInfos(), printSettings);
+			final Function<Object[], Map<String, Object>> lineTransformer = createLineTransformer(query.getResultInfos(), select2desc, printSettings);
 
 			final List<EntityPreviewStatus.TimebasedInfos.YearEntry> yearEntries = new ArrayList<>();
 
@@ -190,10 +172,10 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 			yearEntries.sort(Comparator.comparingInt(EntityPreviewStatus.TimebasedInfos.YearEntry::year));
 
-			//TODO probably need to have more than just label (ie descriptions)?
-			final EntityPreviewStatus.TimebasedInfos infos =
-					new EntityPreviewStatus.TimebasedInfos(result.getKey(), query.generateColumnDescriptions(datasetRegistry), yearEntries);
+			// get descriptions, but drop everything that isn't a select result as the rest is already structured
+			final List<ColumnDescriptor> columnDescriptors = generateColumnDescriptors(query, select2desc);
 
+			final EntityPreviewStatus.TimebasedInfos infos = new EntityPreviewStatus.TimebasedInfos(description.name(), description.description(), columnDescriptors, yearEntries);
 
 			timebasedInfos.add(infos);
 		}
@@ -201,12 +183,29 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		return timebasedInfos;
 	}
 
+	private static void groupLinesForResolutions(EntityResult entityResult, int resolutionInfoIdx, int timeIdx, Map<Integer, Object[]> yearLines, Map<Integer, Map<Integer, Object[]>> quarterLines) {
+		for (Object[] line : entityResult.listResultLines()) {
+
+			// Since we know the dates are always aligned we need to only respect their starts.
+			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[timeIdx]).get(0));
+
+			final int year = date.getYear();
+			final int quarter = QuarterUtils.getQuarter(date);
+
+			switch (Resolution.valueOf((String) line[resolutionInfoIdx])) {
+				case YEARS -> yearLines.put(year, line);
+				case QUARTERS -> quarterLines.computeIfAbsent(year, HashMap::new).put(quarter, line);
+				default -> throw new IllegalStateException("Query may only have modes for Quarter and/or Year.");
+			}
+		}
+	}
+
 	/**
 	 * Creates a transformer printing lines, transformed into a Map of label->value.
 	 * Null values are omitted.
 	 */
-	private static Function<Object[], Map<String, Object>> createLineTransformer(List<ResultInfo> resultInfos, PrintSettings printSettings) {
-		final UniqueNamer namer = new UniqueNamer(printSettings);
+	private static Function<Object[], Map<String, Object>> createLineTransformer(List<ResultInfo> resultInfos, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings) {
+
 
 		final int size = resultInfos.size();
 		final String[] columnNames = new String[size];
@@ -214,11 +213,9 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		for (int index = 0; index < size; index++) {
 			final ResultInfo resultInfo = resultInfos.get(index);
 
-			if (!(resultInfo instanceof SelectResultInfo)) {
-				continue;
+			if (resultInfo instanceof SelectResultInfo selectResultInfo) {
+				columnNames[index] = select2desc.get(selectResultInfo.getSelect().getId()).label();
 			}
-
-			columnNames[index] = namer.getUniqueName(resultInfo);
 		}
 
 		return line -> {
@@ -227,8 +224,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 			for (int column = 0; column < size; column++) {
 				final String columnName = columnNames[column];
 
-				//TODO probably have to rely on the TimebasedSelect itself, since we will be mapping labels?
-				if(columnName == null) {
+				if (columnName == null) {
 					continue;
 				}
 
@@ -243,6 +239,31 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 			return out;
 		};
+	}
+
+	@NotNull
+	private static List<ColumnDescriptor> generateColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
+
+		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
+
+		for (ResultInfo info : query.getResultInfos()) {
+			if (info instanceof SelectResultInfo selectResultInfo) {
+				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
+
+				columnDescriptions.add(
+						ColumnDescriptor.builder()
+										.label(desc.label())
+										.defaultLabel(desc.label())
+										.type(info.getType().typeInfo())
+										.semantics(info.getSemantics())
+										.description(desc.description())
+										.build()
+				);
+			}
+		}
+
+
+		return columnDescriptions;
 	}
 
 	@Override
