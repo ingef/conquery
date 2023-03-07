@@ -40,7 +40,7 @@ public class UpdateFilterSearchJob extends Job {
 	private final IndexConfig indexConfig;
 
 	@NonNull
-	private final Object2LongMap<SelectFilter<?>> totals;
+	private final Object2LongMap<Searchable> totals;
 
 	@Override
 	public void execute() throws Exception {
@@ -121,17 +121,18 @@ public class UpdateFilterSearchJob extends Job {
 
 		// Precompute totals as that can be slow when doing it on-demand.
 		totals.putAll(
-				allSelectFilters.parallelStream()
-								.collect(Collectors.toMap(
-										Functions.identity(),
-										filter -> filter.getSearchReferences().stream()
-														.map(searchCache::get)
-														.filter(Objects::nonNull) // Failed or disabled searches are null
-														.flatMap(TrieSearch::stream)
-														.mapToInt(FrontendValue::hashCode)
-														.distinct()
-														.count()
-								))
+				synchronizedResult.keySet()
+								  .parallelStream()
+								  .collect(Collectors.toMap(
+										  Functions.identity(),
+										  filter -> filter.getSearchReferences().stream()
+														  .map(searchCache::get)
+														  .filter(Objects::nonNull) // Failed or disabled searches are null
+														  .flatMap(TrieSearch::stream)
+														  .mapToInt(FrontendValue::hashCode)
+														  .distinct()
+														  .count()
+								  ))
 		);
 
 

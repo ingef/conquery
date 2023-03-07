@@ -41,7 +41,7 @@ public class FilterSearch {
 	 */
 	@JsonIgnore
 	private final Map<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
-	private Object2LongMap<SelectFilter<?>> totals = Object2LongMaps.emptyMap();
+	private Object2LongMap<Searchable> totals = Object2LongMaps.emptyMap();
 
 	/**
 	 * From a given {@link FrontendValue} extract all relevant keywords.
@@ -62,14 +62,14 @@ public class FilterSearch {
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
-	public List<TrieSearch<FrontendValue>> getSearchesFor(SelectFilter<?> filter) {
+	public List<TrieSearch<FrontendValue>> getSearchesFor(Searchable filter) {
 		return filter.getSearchReferences().stream()
 					 .map(searchCache::get)
 					 .filter(Objects::nonNull)
 					 .collect(Collectors.toList());
 	}
 
-	public long getTotal(SelectFilter<?> filter) {
+	public long getTotal(Searchable filter) {
 		return totals.getOrDefault(filter, 0);
 	}
 

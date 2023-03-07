@@ -23,8 +23,6 @@ import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -50,9 +48,10 @@ public class FilterResource extends HAuthorized {
 		subject.isPermitted(filter.getDataset(), Ability.READ);
 		subject.isPermitted(filter.getConnector().findConcept(), Ability.READ);
 
-		return processor.resolveFilterValues((SelectFilter<?>) filter, filterValues.getValues());
+		return processor.resolveFilterValues((SelectFilter<?>) filter, filterValues.values());
 	}
 
+	//TODO migrate from filter to searchable
 	@POST
 	@Path("autocomplete")
 	public ConceptsProcessor.AutoCompleteResult autocompleteTextFilter(@Valid FilterResource.AutocompleteRequest request) {
@@ -65,27 +64,16 @@ public class FilterResource extends HAuthorized {
 
 
 		try {
-			return processor.autocompleteTextFilter((SelectFilter<?>) filter, request.getText(), request.getPage(), request.getPageSize());
+			return processor.autocompleteTextFilter((SelectFilter<?>) filter, request.text(), request.page(), request.pageSize());
 		}
 		catch (IllegalArgumentException e) {
 			throw new BadRequestException(e);
 		}
 	}
 
-	@Data
-	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-	public static class FilterValues {
-		private final List<String> values;
+	public record FilterValues(List<String> values) {
 	}
 
-	@Data
-	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
-	public static class AutocompleteRequest {
-		@NonNull
-		private final Optional<String> text;
-		@NonNull
-		private final OptionalInt page;
-		@NonNull
-		private final OptionalInt pageSize;
+	public record AutocompleteRequest(@NonNull Optional<String> text, @NonNull OptionalInt page, @NonNull OptionalInt pageSize) {
 	}
 }

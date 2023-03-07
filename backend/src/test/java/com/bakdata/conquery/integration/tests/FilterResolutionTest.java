@@ -116,8 +116,8 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 
 			//check the resolved values
 			// "aaa" is hit by "a" and "aaa" therefore should be first
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FrontendValue::getValue)).containsExactly("aaa", "a");
-			assertThat(resolved.getUnknownCodes()).containsExactly("unknown");
+			assertThat(resolved.resolvedFilter().value().stream().map(FrontendValue::getValue)).containsExactly("aaa", "a");
+			assertThat(resolved.unknownCodes()).containsExactly("unknown");
 		}
 
 		// from column values
@@ -129,8 +129,8 @@ public class FilterResolutionTest extends IntegrationTest.Simple implements Prog
 			ResolvedConceptsResult resolved = fromCsvResponse.readEntity(ResolvedConceptsResult.class);
 
 			//check the resolved values
-			assertThat(resolved.getResolvedFilter().getValue().stream().map(FrontendValue::getValue)).contains("f");
-			assertThat(resolved.getUnknownCodes()).containsExactly("unknown");
+			assertThat(resolved.resolvedFilter().value().stream().map(FrontendValue::getValue)).contains("f");
+			assertThat(resolved.unknownCodes()).containsExactly("unknown");
 		}
 	}
 }

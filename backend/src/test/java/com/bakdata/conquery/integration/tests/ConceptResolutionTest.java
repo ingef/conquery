@@ -76,8 +76,8 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 		ResolvedConceptsResult resolved = response.readEntity(ResolvedConceptsResult.class);
 		//check the resolved values
 		assertThat(resolved).isNotNull();
-		assertThat(resolved.getResolvedConcepts().stream().map(Id::toString)).containsExactlyInAnyOrder("ConceptResolutionTest.test_tree.test_child1");
-		assertThat(resolved.getUnknownCodes()).containsExactlyInAnyOrder("unknown");
+		assertThat(resolved.resolvedConcepts().stream().map(Id::toString)).containsExactlyInAnyOrder("ConceptResolutionTest.test_tree.test_child1");
+		assertThat(resolved.unknownCodes()).containsExactlyInAnyOrder("unknown");
 
 	}
 }
