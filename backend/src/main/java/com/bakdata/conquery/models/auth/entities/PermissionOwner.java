@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.auth.entities;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import com.google.common.collect.ImmutableSet;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -59,9 +58,8 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	protected String label;
 
 	@ToString.Exclude
-	@Getter(AccessLevel.PRIVATE) // So only Jackson can use this to deserialize
 	@NotNull
-	private Set<ConqueryPermission> permissions = new HashSet<>();
+	private final Set<ConqueryPermission> permissions = ConcurrentHashMap.newKeySet();
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
@@ -83,20 +81,12 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return Returns the added Permission
 	 */
 	public synchronized void addPermissions(Set<ConqueryPermission> permissions) {
-		this.permissions = ImmutableSet
-				.<ConqueryPermission>builder()
-				.addAll(this.permissions)
-				.addAll(permissions)
-				.build();
+		this.permissions.addAll(permissions);
 		updateStorage();
 	}
 
 	public synchronized void addPermission(ConqueryPermission permission) {
-		this.permissions = ImmutableSet
-				.<ConqueryPermission>builder()
-				.addAll(this.permissions)
-				.add(permission)
-				.build();
+		permissions.add(permission);
 		updateStorage();
 	}
 
@@ -107,24 +97,16 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return Returns the added Permission
 	 */
 	public boolean removePermissions(Set<ConqueryPermission> permissions) {
-		boolean ret = false;
-		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions);
-			ret = newSet.removeAll(permissions);
-			this.permissions = newSet;
-			updateStorage();
-		}
+		boolean ret = this.permissions.removeAll(permissions);
+		updateStorage();
+
 		return ret;
 	}
 
 	public boolean removePermission(Permission permission) {
-		boolean ret = false;
-		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(this.permissions);
-			ret = newSet.remove(permission);
-			this.permissions = newSet;
-			updateStorage();
-		}
+		boolean ret = permissions.remove(permission);
+		updateStorage();
+
 		return ret;
 	}
 
@@ -154,9 +136,8 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 
 	public void updatePermissions(Set<ConqueryPermission> permissionsNew) {
 		synchronized (this) {
-			Set<ConqueryPermission> newSet = new HashSet<>(permissionsNew.size());
-			newSet.addAll(permissionsNew);
-			this.permissions = newSet;
+			permissions.clear();
+			permissions.addAll(permissionsNew);
 			updateStorage();
 		}
 	}

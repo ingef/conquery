@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.auth.entities;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -23,9 +23,9 @@ import lombok.extern.slf4j.Slf4j;
 public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
 	@JsonProperty
-	private Set<UserId> members = Collections.synchronizedSet(new HashSet<>());
+	private final Set<UserId> members = ConcurrentHashMap.newKeySet();
 	@JsonProperty
-	private Set<RoleId> roles = Collections.synchronizedSet(new HashSet<>());
+	private final Set<RoleId> roles = ConcurrentHashMap.newKeySet();
 
 	@JsonCreator
 	private Group(String name, String label) {
