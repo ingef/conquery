@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 
@@ -100,14 +101,24 @@ public class PreviewConfig {
 	 * @param label  User facing label of the select.
 	 * @param select Id (without dataset) of the select.
 	 */
-	public record InfoCardSelect(String label, SelectId select, String description) {
+	public record InfoCardSelect(@NotNull String label, SelectId select, String description) {
 	}
 
 
 
 	// TODO FK that is an awful name
-	public record TimebasedSelects(String name, String description, List<InfoCardSelect> selects){
+	public record TimebasedSelects(@NotNull String name, String description, @NotEmpty List<InfoCardSelect> selects){
+		@ValidationMethod(message = "Selects may be referenced only once.")
+		@JsonIgnore
+		public boolean isSelectsUnique() {
+			return selects().stream().map(InfoCardSelect::select).distinct().count() == selects().size();
+		}
 
+		@ValidationMethod(message = "Labels must be unique.")
+		@JsonIgnore
+		public boolean isLabelsUnique() {
+			return selects().stream().map(InfoCardSelect::label).distinct().count() == selects().size();
+		}
 	}
 
 

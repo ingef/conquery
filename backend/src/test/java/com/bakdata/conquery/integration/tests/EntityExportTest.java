@@ -71,6 +71,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 
 		// Manually import data, so we can do our own work.
+		final SelectId valuesSelectId = SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values");
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
@@ -100,14 +101,14 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 			previewConfig.setInfoCardSelects(List.of(
 					new PreviewConfig.InfoCardSelect("Age", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"), null),
-					new PreviewConfig.InfoCardSelect("Values", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"), null)
+					new PreviewConfig.InfoCardSelect("Values", valuesSelectId, null)
 			));
 
 			previewConfig.setTimebasedSelects(List.of(new PreviewConfig.TimebasedSelects(
 					"Values in Time", "Description",
 					List.of(new PreviewConfig.InfoCardSelect(
 							"Values",
-							SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"),
+							valuesSelectId,
 							"Description"
 					))
 			)));
@@ -154,6 +155,16 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		assertThat(infos.years()).hasSize(13);
 
+		assertThat(infos.columns()).containsExactly(
+				new ColumnDescriptor(
+						"Values", "Description", "Values", "LIST[STRING]",
+						Set.of(new SemanticType.SelectResultT(
+								conquery.getNamespace().getCentralRegistry().resolve(valuesSelectId)
+						))
+				)
+		);
+
+
 		// assert only 2010 as the other years are empty
 		assertThat(infos.years().get(0))
 				.isEqualTo(new EntityPreviewStatus.TimebasedInfos.YearEntry(
@@ -183,7 +194,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						"This is a column",
 						Set.of(
 								new SemanticType.SelectResultT(conquery.getDatasetRegistry()
-																	   .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values")))
+																	   .resolve(valuesSelectId))
 						)
 				)
 		));

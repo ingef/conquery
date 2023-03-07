@@ -145,6 +145,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 					description.selects().stream()
 							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
+			//TODO make constants of AbsoluteExportForm
 			final int resolutionInfoIdx = 0;
 			final int timeIdx = 2;
 
@@ -173,7 +174,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 			yearEntries.sort(Comparator.comparingInt(EntityPreviewStatus.TimebasedInfos.YearEntry::year));
 
 			// get descriptions, but drop everything that isn't a select result as the rest is already structured
-			final List<ColumnDescriptor> columnDescriptors = generateColumnDescriptors(query, select2desc);
+			final List<ColumnDescriptor> columnDescriptors = timebasedColumnDescriptors(query, select2desc);
 
 			final EntityPreviewStatus.TimebasedInfos infos = new EntityPreviewStatus.TimebasedInfos(description.name(), description.description(), columnDescriptors, yearEntries);
 
@@ -241,8 +242,9 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 		};
 	}
 
+
 	@NotNull
-	private static List<ColumnDescriptor> generateColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
+	private static List<ColumnDescriptor> timebasedColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
 
 		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
@@ -250,6 +252,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 			if (info instanceof SelectResultInfo selectResultInfo) {
 				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
 
+				// We build these by hand because they are quite labeled and described by config.
 				columnDescriptions.add(
 						ColumnDescriptor.builder()
 										.label(desc.label())
