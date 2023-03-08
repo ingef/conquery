@@ -81,6 +81,7 @@ const ConceptTreeFolder: FC<PropsT> = ({
           additionalInfos: tree.additionalInfos,
           children: tree.children,
         }}
+        parent=""
         conceptId={conceptId}
         isStructFolder
         open={open || false}

@@ -22,6 +22,7 @@ export type AdditionalInfosType = {
   matchingEntities: number | null;
   dateRange?: DateRangeT;
   infos?: InfoType[];
+  parent?: string | null;
 };
 
 export type TooltipStateT = {

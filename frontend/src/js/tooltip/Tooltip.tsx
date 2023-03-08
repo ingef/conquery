@@ -136,6 +136,7 @@ const Tooltip = () => {
     matchingEntries,
     matchingEntities,
     dateRange,
+    parent,
   } = additionalInfos;
 
   const searchHighlight = (text: string) => {
@@ -159,9 +160,13 @@ const Tooltip = () => {
         />
         <Head>
           <PinnedLabel>
-            <TypeIcon icon={isFolder ? "folder" : "minus"} />
+            <TypeIcon icon={isFolder || parent != label ? "folder" : "minus"} />
             <Label>
-              {label ? searchHighlight(label) : t("tooltip.placeholder")}
+              {parent
+                ? searchHighlight(parent)
+                : label
+                ? searchHighlight(label)
+                : t("tooltip.placeholder")}
             </Label>
             {toggleAdditionalInfos && (
               <TackIconButton
@@ -172,6 +177,14 @@ const Tooltip = () => {
               />
             )}
           </PinnedLabel>
+          {parent != label && parent ? (
+            <PinnedLabel>
+              <TypeIcon icon={isFolder ? "folder" : "minus"} />
+              <Label>
+                {label ? searchHighlight(label) : t("tooltip.placeholder")}
+              </Label>
+            </PinnedLabel>
+          ) : null}
           {description && (
             <Description>{searchHighlight(description)}</Description>
           )}

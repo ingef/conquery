@@ -16,6 +16,7 @@ import type { SearchT } from "./reducer";
 
 interface PropsT {
   node: ConceptT;
+  parent: string;
   conceptId: ConceptIdT;
   open: boolean;
   depth: number;
@@ -52,6 +53,7 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
   onTextClick,
   isStructFolder,
   createQueryElement,
+  parent,
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -89,7 +91,7 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
   });
 
   return (
-    <AdditionalInfoHoverable node={node}>
+    <AdditionalInfoHoverable node={node} parent={parent}>
       <ConceptTreeNodeText
         ref={(instance) => {
           ref.current = instance;
