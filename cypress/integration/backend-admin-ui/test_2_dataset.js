@@ -56,25 +56,28 @@ context("Admin UI Single Dataset", () => {
             cy.wait(3000).reload();
         });
 
+        // it("Can replace test concept", () => {
+        //   cy.get('[data-test-id="upload-select"]').select('Concept JSON');
+        //   cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.concept.json');
+        //   cy.get('[data-test-id="upload-btn"]').click();
+        //   cy.wait(1000);
+        //   cy.get(`[data-test-id="toast-custom-button"]`).click();
+        //   cy.wait(1000);
+        //   cy.get('[data-test-id="toast"]').contains('The file has been posted successfully');
+        // });
+
         it("Is new concept visible", () => {
             cy.get('[data-test-id="accordion-Concepts"]').contains('td', `${testDSID}.concept1`);
         });
     });
 
     describe("Can delete test table and concept", () => {
-
-        it("Can delete test concept", () => {
-            cy.get('[data-test-id="accordion-Concepts"]').click();
-            cy.get(`[data-test-id="delete-btn-concept-${testDSID}.concept1"]`).click({force: true});
-            cy.get(`[data-test-id="delete-btn-${testDSID}.concept1"]`).should('not.exist');
+        it("Can force delete test table", () => {
+          cy.get('[data-test-id="accordion-Tables"]').click();
+          cy.get(`[data-test-id="delete-btn-table-${testDSID}.table"]`).click({force: true});
+          cy.get(`[data-test-id="toast-custom-button"]`).click();
+          cy.get(`[data-test-id="delete-btn-table-${testDSID}.table"]`).should('not.exist');
         });
-
-        it("Can delete test table", () => {
-            cy.get('[data-test-id="accordion-Tables"]').click();
-            cy.get(`[data-test-id="delete-btn-table-${testDSID}.table"]`).click({force: true});
-            cy.get(`[data-test-id="delete-btn-${testDSID}.table"]`).should('not.exist');
-        });
-
     });
 
     describe("Delete the test dataset", () => {

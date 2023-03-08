@@ -107,6 +107,15 @@
 		};
 
 <#noparse>
+  function createCustomButton(text) {
+      const customButton = document.createElement('button');
+      customButton.setAttribute('type', 'button');
+      customButton.setAttribute('data-test-id', 'toast-custom-button');
+      customButton.classList = 'mt-3 btn btn-danger';
+      customButton.innerText = text;
+      return customButton;
+  }
+
 		async function rest (url, options) {
 			var res = await fetch(
 				url,
@@ -119,11 +128,18 @@
 					...options
 				}
 			);
-			showMessageForResponse(res);
+      // force button in case of 409 status
+      const forceURL = new URL(url, window.location);
+      forceURL.searchParams.append('force', true);
+      const customButton = createCustomButton('Löschen erzwingen');
+      customButton.onclick = () => rest(forceURL, options).then((res) => {
+        res.ok && location.reload();
+      });
+			showMessageForResponse(res, customButton);
 			return res;
 		}
 
-		function getToast(type, title, text, smalltext = "") {
+		function getToast(type, title, text, smalltext = "", customButton) {
 			if(!type) type = ToastTypes.INFO;
 
 			let toast = document.createElement("div");
@@ -132,6 +148,7 @@
 			toast.setAttribute("aria-live", "assertive");
 			toast.setAttribute("aria-atomic", "true");
 			toast.setAttribute("style", "width: 500px; max-width: none");
+      toast.setAttribute('data-test-id', 'toast');
 			toast.innerHTML = `
 				<div class="toast-header">
 					<strong class="mr-auto badge badge-pill ${type}" style="font-size: 1rem;">${title}</strong>
@@ -140,28 +157,39 @@
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
-				<div class="toast-body" style="white-space: normal; overflow-x: auto;">
-					${text.trim()}
+				<div class="toast-body">
+          <div style="white-space: normal; overflow-x: auto;">
+					  ${text.trim()}
+          </div>
 				</div>
 			`;
+      if (customButton) {
+        toast.querySelector('.toast-body').appendChild(customButton);
+      }
 			return toast;
 		}
 </#noparse>
 
-		function showToastMessage(type, title, text, smalltext = "") {
+		function showToastMessage(type, title, text, smalltext = "", customButton) {
 			let toastContainer = document.getElementById("toast-container");
-			let toast = getToast(type, title, text, smalltext);
+			let toast = getToast(type, title, text, smalltext, customButton);
 			toastContainer.appendChild(toast);
 			$(toast).toast({delay: 10000});
 			$(toast).toast('show');
 		}
 
-		async function showMessageForResponse(response){
+		async function showMessageForResponse(response, customButton) {
 			if(response){
 				try {
 					let body = await response.json();
 					if(!response.ok){
-						showToastMessage(ToastTypes.ERROR, "Error", "The send request came back with the following error: " + JSON.stringify(body), "Status " + response.status);
+						showToastMessage(
+              ToastTypes.ERROR,
+              "Error",
+              "The send request came back with the following error: " + JSON.stringify(body),
+              "Status " + response.status,
+              response.status == 409 ? customButton : undefined
+            );
 					}
 				} catch (e) {
 					// ignore, because some responses don't have a body
@@ -169,7 +197,7 @@
 			}
 		}
 
-		function logout(){
+		function logout() {
 			event.preventDefault();
 			rest('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/logout')
 			    .then(function () { location.reload() });

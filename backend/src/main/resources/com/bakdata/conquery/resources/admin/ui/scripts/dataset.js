@@ -1,23 +1,23 @@
-function updateDatasetUploadForm(select) {
-  const uploadFormMapping = {
-    mapping: {
-      name: "mapping",
-      uri: "internToExtern",
-      accept: "*.mapping.json",
-    },
-    table: { name: "table_schema", uri: "tables", accept: "*.table.json" },
-    concept: {
-      name: "concept_schema",
-      uri: "concepts",
-      accept: "*.concept.json",
-    },
-    structure: {
-      name: "structure_schema",
-      uri: "structure",
-      accept: "structure.json",
-    },
-  };
+const uploadFormMapping = {
+  mapping: {
+    name: "mapping",
+    uri: "internToExtern",
+    accept: "*.mapping.json",
+  },
+  table: { name: "table_schema", uri: "tables", accept: "*.table.json" },
+  concept: {
+    name: "concept_schema",
+    uri: "concepts",
+    accept: "*.concept.json",
+  },
+  structure: {
+    name: "structure_schema",
+    uri: "structure",
+    accept: "structure.json",
+  },
+};
 
+function updateDatasetUploadForm(select) {
   const data = uploadFormMapping[select.value];
   const fileInput = $(select).next();
   fileInput.value = "";
