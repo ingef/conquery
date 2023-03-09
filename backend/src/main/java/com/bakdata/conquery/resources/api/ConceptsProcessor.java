@@ -36,8 +36,6 @@ import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -75,18 +73,18 @@ public class ConceptsProcessor {
 	/**
 	 * Cache of all search results on SelectFilters.
 	 */
-	private final LoadingCache<Pair<Searchable, String>, List<FrontendValue>>
+	private final LoadingCache<Pair<Searchable<?>, String>, List<FrontendValue>>
 			searchResults =
 			CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
 
 				@Override
-				public List<FrontendValue> load(Pair<Searchable, String> filterAndSearch) {
+				public List<FrontendValue> load(Pair<Searchable<?>, String> filterAndSearch) {
 					final String searchTerm = filterAndSearch.getValue();
-					final Searchable filter = filterAndSearch.getKey();
+					final Searchable<?> searchable = filterAndSearch.getKey();
 
-					log.trace("Calculating a new search cache for the term \"{}\" on filter[{}]", searchTerm, filter.getId());
+					log.trace("Calculating a new search cache for the term \"{}\" on Searchable[{}]", searchTerm, searchable.getId());
 
-					return autocompleteTextFilter(filter, searchTerm);
+					return autocompleteTextFilter(searchable, searchTerm);
 				}
 
 			});
@@ -94,11 +92,11 @@ public class ConceptsProcessor {
 	 * Cache of raw listing of values on a filter.
 	 * We use Cursor here to reduce strain on memory and increase response time.
 	 */
-	private final LoadingCache<Searchable, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
+	private final LoadingCache<Searchable<?>, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
 		@Override
-		public CursorAndLength load(Searchable filter) {
-			log.debug("Creating cursor for `{}`", filter.getId());
-			return new CursorAndLength(listAllValues(filter), countAllValues(filter));
+		public CursorAndLength load(Searchable<?> searchable) {
+			log.debug("Creating cursor for `{}`", searchable.getId());
+			return new CursorAndLength(listAllValues(searchable), countAllValues(searchable));
 		}
 
 	});
@@ -156,16 +154,16 @@ public class ConceptsProcessor {
 	 * Search for all search terms at once, with stricter scoring.
 	 * The user will upload a file and expect only well-corresponding resolutions.
 	 */
-	public ResolvedConceptsResult resolveFilterValues(Searchable filter, List<String> searchTerms) {
+	public ResolvedConceptsResult resolveFilterValues(Searchable<?> searchable, List<String> searchTerms) {
 
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
 
-		final Namespace namespace = namespaces.get(filter.getDataset().getId());
+		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
 
 		final List<FrontendValue> out = new ArrayList<>();
 
-		for (TrieSearch<FrontendValue> search : namespace.getFilterSearch().getSearchesFor(filter)) {
+		for (TrieSearch<FrontendValue> search : namespace.getFilterSearch().getSearchesFor(searchable)) {
 			for (final Iterator<String> iterator = openSearchTerms.iterator(); iterator.hasNext(); ) {
 
 				final String searchTerm = iterator.next();
@@ -180,21 +178,20 @@ public class ConceptsProcessor {
 			}
 		}
 
-		final ConnectorId connectorId = filter instanceof Filter asFilter ? asFilter.getConnector().getId() : null;
-		final Id<?> id = ((Identifiable<?>) filter).getId();
+		// Not all Searchables are children of Connectors.
+		final ConnectorId connectorId = searchable instanceof Filter asFilter ? asFilter.getConnector().getId() : null;
 
-
-		return new ResolvedConceptsResult(null, new ResolvedFilterResult(connectorId, id.toString(), out), openSearchTerms);
+		return new ResolvedConceptsResult(null, new ResolvedFilterResult(connectorId, searchable.getId().toString(), out), openSearchTerms);
 	}
 
-	public <T extends Searchable & Identifiable<?>> AutoCompleteResult autocompleteTextFilter(T filter, Optional<String> maybeText, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
+	public AutoCompleteResult autocompleteTextFilter(Searchable<?> searchable, Optional<String> maybeText, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
 		final int pageNumber = pageNumberOpt.orElse(0);
 		final int itemsPerPage = itemsPerPageOpt.orElse(50);
 
 		Preconditions.checkArgument(pageNumber >= 0, "Page number must be 0 or a positive integer.");
 		Preconditions.checkArgument(itemsPerPage > 1, "Must at least have one item per page.");
 
-		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, filter.getId(), pageNumber, itemsPerPage);
+		log.trace("Searching for for  `{}` in `{}`. (Page = {}, Items = {})", maybeText, searchable.getId(), pageNumber, itemsPerPage);
 
 		final int startIncl = itemsPerPage * pageNumber;
 		final int endExcl = startIncl + itemsPerPage;
@@ -203,13 +200,13 @@ public class ConceptsProcessor {
 
 			// If we have none or a blank query string we list all values.
 			if (maybeText.isEmpty() || maybeText.get().isBlank()) {
-				final CursorAndLength cursorAndLength = listResults.get(filter);
+				final CursorAndLength cursorAndLength = listResults.get(searchable);
 				final Cursor<FrontendValue> cursor = cursorAndLength.values();
 
 				return new AutoCompleteResult(cursor.get(startIncl, endExcl), cursorAndLength.size());
 			}
 
-			final List<FrontendValue> fullResult = searchResults.get(Pair.of(filter, maybeText.get()));
+			final List<FrontendValue> fullResult = searchResults.get(Pair.of(searchable, maybeText.get()));
 
 			if (startIncl >= fullResult.size()) {
 				return new AutoCompleteResult(Collections.emptyList(), fullResult.size());
@@ -223,8 +220,8 @@ public class ConceptsProcessor {
 		}
 	}
 
-	private Cursor<FrontendValue> listAllValues(Searchable filter) {
-		final Namespace namespace = namespaces.get(filter.getDataset().getId());
+	private Cursor<FrontendValue> listAllValues(Searchable<?> searchable) {
+		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
 		/*
 		Don't worry, I am as confused as you are!
 		For some reason, flatMapped streams in conjunction with distinct will be evaluated full before further operation.
@@ -235,7 +232,7 @@ public class ConceptsProcessor {
 
 		final Iterator<FrontendValue>
 				iterators =
-				Iterators.concat(Iterators.transform(namespace.getFilterSearch().getSearchesFor(filter).iterator(), TrieSearch::iterator));
+				Iterators.concat(Iterators.transform(namespace.getFilterSearch().getSearchesFor(searchable).iterator(), TrieSearch::iterator));
 
 		// Use Set to accomplish distinct values
 		final Set<FrontendValue> seen = new HashSet<>();
@@ -243,19 +240,19 @@ public class ConceptsProcessor {
 		return new Cursor<>(Iterators.filter(iterators, seen::add));
 	}
 
-	private long countAllValues(Searchable filter) {
-		final Namespace namespace = namespaces.get(filter.getDataset().getId());
+	private long countAllValues(Searchable<?> searchable) {
+		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
 
 
-		return namespace.getFilterSearch().getTotal(filter);
+		return namespace.getFilterSearch().getTotal(searchable);
 	}
 
 	/**
 	 * Autocompletion for search terms. For values of {@link SelectFilter <?>}.
 	 * Is used by the serach cache to load missing items
 	 */
-	private List<FrontendValue> autocompleteTextFilter(Searchable filter, String text) {
-		final Namespace namespace = namespaces.get(filter.getDataset().getId());
+	private List<FrontendValue> autocompleteTextFilter(Searchable<?> searchable, String text) {
+		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
 
 		// Note that FEValues is equals/hashcode only on value:
 		// The different sources might contain duplicate FEValue#values which we want to avoid as
@@ -263,7 +260,7 @@ public class ConceptsProcessor {
 
 		// Also note: currently we are still issuing large search requests, but much smaller allocations at once, and querying only when the past is not sufficient
 		return namespace.getFilterSearch()
-						.getSearchesFor(filter)
+						.getSearchesFor(searchable)
 						.stream()
 						.map(search -> createSourceSearchResult(search, Collections.singletonList(text), OptionalInt.empty()))
 						.flatMap(Collection::stream)
