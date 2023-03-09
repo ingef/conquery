@@ -89,8 +89,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	private boolean generateSearchSuffixes = true;
 
 	@Override
-	public List<Searchable> getSearchReferences() {
-		final List<Searchable> out = new ArrayList<>();
+	public List<Searchable<?>> getSearchReferences() {
+		final List<Searchable<?>> out = new ArrayList<>();
 
 		if (getTemplate() != null) {
 			out.add(getTemplate());

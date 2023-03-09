@@ -40,14 +40,14 @@ public class FilterSearch {
 	 * In the code below, the keys of this map will usually be called "reference".
 	 */
 	@JsonIgnore
-	private final Map<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
-	private Object2LongMap<Searchable> totals = Object2LongMaps.emptyMap();
+	private final Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
+	private Object2LongMap<Searchable<?>> totals = Object2LongMaps.emptyMap();
 
 	/**
 	 * From a given {@link FrontendValue} extract all relevant keywords.
 	 */
 	public static List<String> extractKeywords(FrontendValue value) {
-		List<String> keywords = new ArrayList<>(3);
+		final List<String> keywords = new ArrayList<>(3);
 
 		keywords.add(value.getLabel());
 		keywords.add(value.getValue());

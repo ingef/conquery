@@ -34,7 +34,7 @@ public interface Searchable<ID extends Id<? extends Identifiable<? extends ID>>>
 	 * @implSpec The order of objects returned is used to also sort search results from different sources.
 	 */
 	@JsonIgnore
-	default List<Searchable> getSearchReferences() {
+	default List<Searchable<?>> getSearchReferences() {
 		//Hopefully the only candidate will be Column
 		return List.of(this);
 	}

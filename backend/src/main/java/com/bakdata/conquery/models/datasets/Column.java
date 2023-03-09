@@ -170,7 +170,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	}
 
 	@Override
-	public List<Searchable> getSearchReferences() {
+	public List<Searchable<?>> getSearchReferences() {
 		return List.of(this);
 	}
 
