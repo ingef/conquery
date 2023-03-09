@@ -3,7 +3,7 @@ import { visitAdminUI } from "../../integration-helpers/visitAdminUI";
 
 context("Admin UI Single Dataset", () => {
     const testDSLabel = "TestDatasetName";
-    const testDSID = "TestDatasetID";
+    const testDSID = "TestDatasetID2";
 
     describe("Create a new dataset", () => {
         before(() => { visitAdminUI('datasets'); });

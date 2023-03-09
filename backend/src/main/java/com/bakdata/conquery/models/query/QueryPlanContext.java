@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query;
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -20,9 +19,6 @@ public class QueryPlanContext {
 
 	@Getter(AccessLevel.NONE)
 	private final Worker worker;
-
-	private CDateRange dateRestriction = CDateRange.all();
-
 
 	/**
 	 * Set if in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the query-active {@link SecondaryIdDescriptionId}.
