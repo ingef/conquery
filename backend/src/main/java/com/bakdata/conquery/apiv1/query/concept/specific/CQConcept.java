@@ -199,11 +199,13 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 						  .filter(Objects::nonNull)
 						  .anyMatch(o -> Objects.equals(context.getSelectedSecondaryId(), o));
 
+
+			// Only if a validityDateColumn exists, capsule children in ValidityDateNode
 			final Column validityDateColumn = selectValidityDateColumn(table);
+			final QPNode child = validityDateColumn != null ? new ValidityDateNode(validityDateColumn, filtersNode) : filtersNode;
 
 			final ConceptNode node = new ConceptNode(
-					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
-					new ValidityDateNode(validityDateColumn, filtersNode),
+					child,
 					elements,
 					table,
 					// if the node is excluded, don't pass it into the Node.
