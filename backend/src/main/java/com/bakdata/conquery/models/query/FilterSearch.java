@@ -62,15 +62,15 @@ public class FilterSearch {
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
-	public List<TrieSearch<FrontendValue>> getSearchesFor(Searchable filter) {
-		return filter.getSearchReferences().stream()
+	public List<TrieSearch<FrontendValue>> getSearchesFor(Searchable<?> searchable) {
+		return searchable.getSearchReferences().stream()
 					 .map(searchCache::get)
 					 .filter(Objects::nonNull)
 					 .collect(Collectors.toList());
 	}
 
-	public long getTotal(Searchable filter) {
-		return totals.getOrDefault(filter, 0);
+	public long getTotal(Searchable<?> searchable) {
+		return totals.getOrDefault(searchable, 0);
 	}
 
 
