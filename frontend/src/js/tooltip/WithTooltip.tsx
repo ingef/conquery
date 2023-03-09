@@ -66,6 +66,7 @@ interface Props {
   arrow?: TippyProps["arrow"];
   offset?: TippyProps["offset"];
   hideOnClick?: TippyProps["hideOnClick"];
+  popperOptions?: TippyProps["popperOptions"];
 
   // Some others are possible in @tippyjs/react, but those should be enough
   // default: "auto"
@@ -90,6 +91,7 @@ const WithTooltip = forwardRef<HTMLElement, Props>(
       arrow,
       offset,
       hideOnClick,
+      popperOptions,
     },
     ref,
   ) => {
@@ -128,6 +130,7 @@ const WithTooltip = forwardRef<HTMLElement, Props>(
         offset={offset}
         ref={ref}
         zIndex={9999}
+        popperOptions={popperOptions}
         hideOnClick={hideOnClick}
       >
         {children}

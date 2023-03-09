@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import c10n.C10N;
-import com.bakdata.conquery.apiv1.ExecutionStatus;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
@@ -146,9 +146,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		}
 	}
 
-	@Override
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
-		super.setAdditionalFieldsForStatusWithColumnDescription(subject, status);
 		if (columnDescriptions == null) {
 			columnDescriptions = generateColumnDescriptions();
 		}

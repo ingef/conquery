@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -174,6 +175,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 
 		final Optional<URL> csvUrl = result.getResultUrls().stream()
+										   .map(ResultAsset::url)
 										   .filter(url -> url.getFile().endsWith(".csv"))
 										   .findFirst();
 

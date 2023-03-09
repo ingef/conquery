@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Path("result/")
+@Path("result/arrow")
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultArrowResource {
 

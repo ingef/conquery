@@ -20,4 +20,5 @@ public interface InternalExecution<R extends ShardResult> {
 	 * Is called once per shard node
 	 */
 	void addResult(R result);
+
 }

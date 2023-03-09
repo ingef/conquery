@@ -395,12 +395,17 @@ export interface ColumnDescription {
   userConceptLabel: string | null;
 }
 
+export interface ResultUrlWithLabel {
+  label: string;
+  url: string;
+}
+
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields
 export interface GetQueryResponseDoneT {
   status: "DONE" | "NEW"; // NEW might mean canceled (query not (yet) executed)
   label: string;
   numberOfResults: number | null;
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[] | null;
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   requiredTime: number; // In ms, unused at the moment
@@ -536,11 +541,11 @@ export interface EntityInfo {
   semantics: ColumnDescriptionSemantic[];
 }
 
-export interface GetEntityHistoryResponse {
-  resultUrls: string[];
+export type GetEntityHistoryResponse = {
+  resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[];
   infos: EntityInfo[];
-}
+};
 
 export type PostResolveEntitiesResponse = {
   [idKind: string]: string; // idKind is the key, the value is the resolved ID

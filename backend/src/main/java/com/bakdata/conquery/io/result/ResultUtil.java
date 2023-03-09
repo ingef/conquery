@@ -35,12 +35,12 @@ public class ResultUtil {
 	}
 
 
-	public static Response makeResponseWithFileName(Response.ResponseBuilder response, String label, String fileExtension, MediaType mediaType, ContentDispositionOption disposition) {
+	public static Response makeResponseWithFileName(Response.ResponseBuilder response, String filename, MediaType mediaType, ContentDispositionOption disposition) {
 		response.header(HttpHeaders.CONTENT_TYPE, mediaType);
-		if (!(Strings.isNullOrEmpty(label) || label.isBlank())) {
-			// Set filename from label if the label was set, otherwise the browser will name the file according to the request path
+		if (!(Strings.isNullOrEmpty(filename) || filename.isBlank())) {
+			// Set filename from filename if the filename was set, otherwise the browser will name the file according to the request path
 			response.header("Content-Disposition", String.format(
-					"%s; filename=\"%s\"", disposition.getHeaderValue(), FileUtil.makeSafeFileName(label, fileExtension)));
+					"%s; filename=\"%s\"", disposition.getHeaderValue(), FileUtil.makeSafeFileName(filename)));
 		}
 		return response.build();
 	}
