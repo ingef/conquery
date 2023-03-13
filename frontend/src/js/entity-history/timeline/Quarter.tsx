@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -115,7 +116,7 @@ const Quarter = ({
     <QuarterGroup key={quarter}>
       <QuarterHead empty={totalEventsPerQuarter === 0}>
         <InlineGrid onClick={() => toggleOpenQuarter(year, quarter)}>
-          <FaIcon large gray icon={isOpen ? "caret-down" : "caret-right"} />
+          <FaIcon large gray icon={isOpen ? faCaretDown : faCaretRight} />
           <SxSmallHeading>Q{quarter} </SxSmallHeading>
           <span>
             – {totalEventsPerQuarter}{" "}

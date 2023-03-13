@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -23,10 +24,10 @@ const ResetAllSettingsButton: FC<Props> = ({ compact, onClick }) => {
   const button = useMemo(() => {
     return compact ? (
       <SxWithTooltip text={text}>
-        <IconButton icon="trash" active />
+        <IconButton icon={faTrash} active />
       </SxWithTooltip>
     ) : (
-      <IconButton icon="trash" active>
+      <IconButton icon={faTrash} active>
         {text}
       </IconButton>
     );

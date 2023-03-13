@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -55,7 +56,7 @@ const QueryResults: FC<PropsT> = ({
     <Root>
       {isEmpty(resultCount) ? (
         <Text>
-          <FaIcon icon="check" left />
+          <FaIcon icon={faCheck} left />
           {t("queryRunner.endSuccess")}
         </Text>
       ) : (

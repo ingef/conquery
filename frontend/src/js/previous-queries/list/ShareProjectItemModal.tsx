@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -163,7 +164,7 @@ const ShareProjectItemModal = ({ item, onClose }: PropsT) => {
               type="submit"
               frame
               disabled={buttonDisabled}
-              icon={loading ? "spinner" : "check"}
+              icon={loading ? faSpinner : faCheck}
             />
           </WithTooltip>
         </Row>

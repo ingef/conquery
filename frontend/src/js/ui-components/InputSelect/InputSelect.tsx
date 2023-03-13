@@ -1,3 +1,4 @@
+import { faChevronDown, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useCombobox } from "downshift";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -284,7 +285,7 @@ const InputSelect = ({
         </ItemsInputContainer>
         {clearable && (inputValue.length > 0 || exists(selectedItem)) && (
           <ResetButton
-            icon="times"
+            icon={faTimes}
             disabled={disabled}
             onClick={() => {
               resetComboboxState();
@@ -297,7 +298,7 @@ const InputSelect = ({
         <VerticalSeparator />
         <DropdownToggleButton
           disabled={disabled}
-          icon="chevron-down"
+          icon={faChevronDown}
           {...getToggleButtonProps()}
         />
       </Control>

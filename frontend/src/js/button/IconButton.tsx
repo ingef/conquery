@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { forwardRef, memo, useMemo } from "react";
 
 import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
@@ -82,8 +82,7 @@ export interface IconButtonPropsT extends BasicButtonProps {
   active?: boolean;
   large?: boolean;
   small?: boolean;
-  icon: IconName;
-  regular?: boolean;
+  icon: IconProp;
   secondary?: boolean;
   tight?: boolean;
   red?: boolean;
@@ -103,7 +102,6 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       active,
       red,
       large,
-      regular,
       left,
       children,
       tight,
@@ -122,7 +120,6 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
         <SxFaIcon
           main
           left={left}
-          regular={regular}
           large={large}
           active={active}
           red={red}
@@ -148,7 +145,6 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       active,
       red,
       large,
-      regular,
       left,
       children,
       tight,
