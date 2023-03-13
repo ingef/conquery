@@ -69,8 +69,9 @@ export const useLoadDatasets = () => {
   }, [dispatch, getDatasets, loadDefaultHistoryParams, loadTrees, t]);
 };
 
-export const selectDatasetInput =
-  createAction("dataset/SELECT")<{ id: DatasetT["id"] | null }>();
+export const selectDatasetInput = createAction("dataset/SELECT")<{
+  id: DatasetT["id"] | null;
+}>();
 
 export const saveQuery = createAction("dataset/SAVE_QUERY")<{
   query: StandardQueryStateT;

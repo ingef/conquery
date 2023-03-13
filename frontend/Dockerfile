@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:16 AS builder
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 COPY ./package.json ./yarn.lock ./
@@ -26,7 +26,7 @@ ENV REACT_APP_IDP_REALM=$REACT_APP_IDP_REALM
 ENV REACT_APP_IDP_CLIENT_ID=$REACT_APP_IDP_CLIENT_ID
 
 # Copy the build artifacts from the builder phase
-COPY --from=builder /app/build /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy the env replacer
 COPY ./scripts/replace-env-at-runtime.sh /
 

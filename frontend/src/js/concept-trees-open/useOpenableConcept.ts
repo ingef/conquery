@@ -17,7 +17,7 @@ export const useOpenableConcept = ({
   const conceptOpen = useSelector<StateT, boolean>(
     (state) => state.conceptTreesOpen[conceptId],
   );
-  const open = conceptOpen == null ? openInitially : conceptOpen;
+  const open = conceptOpen ?? openInitially;
 
   const dispatch = useDispatch();
   const onToggleOpen = () =>

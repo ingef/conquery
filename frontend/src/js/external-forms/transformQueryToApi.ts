@@ -43,6 +43,7 @@ function transformFieldToApiEntries(
   switch (fieldConfig.type) {
     case "CHECKBOX":
       return [[fieldConfig.name, formValue || false]];
+    case "TEXTAREA":
     case "STRING":
     case "NUMBER":
       return [[fieldConfig.name, formValue || null]];

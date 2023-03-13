@@ -15,10 +15,10 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -31,27 +31,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ExecutionManager {
 
-	/**
-	 * @implNote DatasetRegistry serves as handle for {@link MetaStorage} which is loaded after {@link ExecutionManager}. Loading MetaStore however relies on setup and linked Namespace&Storage, which also contain an {@link ExecutionManager}.
-	 */
-	private final DatasetRegistry datasetRegistry;
+	private final MetaStorage storage;
 
-	private final Cache<ManagedExecution<?>, List<List<EntityResult>>> executionResults = CacheBuilder.newBuilder()
-																									  .softValues()
-																									  .removalListener(this::executionRemoved)
-																									  .build();
+	private final Cache<ManagedExecution, List<List<EntityResult>>> executionResults = CacheBuilder.newBuilder()
+																								   .softValues()
+																								   .removalListener(this::executionRemoved)
+																								   .build();
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
-	private void executionRemoved(RemovalNotification<ManagedExecution<?>, List<?>> removalNotification) {
+	private void executionRemoved(RemovalNotification<ManagedExecution, List<?>> removalNotification) {
 
 		// If removal was done manually we assume it was also handled properly
 		if (!removalNotification.wasEvicted()) {
 			return;
 		}
 
-		final ManagedExecution<?> execution = removalNotification.getKey();
+		final ManagedExecution execution = removalNotification.getKey();
 
 		log.warn("Evicted Results for Query[{}] (Reason: {})", execution.getId(), removalNotification.getCause());
 
@@ -59,52 +56,53 @@ public class ExecutionManager {
 	}
 
 
-	public ManagedExecution<?> runQuery(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
-		final ManagedExecution<?> execution = createExecution(datasets, query, user, submittedDataset, system);
-		execute(datasets, execution, config);
+	public ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
+		final ManagedExecution execution = createExecution(namespace, query, user, submittedDataset, system);
+		execute(namespace, execution, config);
 
 		return execution;
 	}
 
-	public void execute(DatasetRegistry datasets, ManagedExecution<?> execution, ConqueryConfig config) {
+	public void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
 		// Initialize the query / create subqueries
 		try {
-			execution.initExecutable(datasets, config);
+			execution.initExecutable(namespace, config);
 		}
 		catch (Exception e) {
 			log.error("Failed to initialize Query[{}]", execution.getId(), e);
 
 			//TODO we don't want to store completely faulty queries but is that right like this?
-			datasets.getMetaStorage().removeExecution(execution.getId());
+			storage.removeExecution(execution.getId());
 			throw e;
 		}
 
-		log.info("Executing Query[{}] in Datasets[{}]", execution.getQueryId(), execution.getRequiredDatasets());
+		log.info("Starting execution[{}]", execution.getQueryId());
 
 		execution.start();
 
-		final MetaStorage storage = datasets.getMetaStorage();
+
 		final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(execution.getOwner(), storage).map(Group::getName).orElse("none");
 		ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).inc();
 
-		for (Namespace namespace : execution.getRequiredDatasets()) {
-			namespace.sendToAll(execution.createExecutionMessage());
+		if (execution instanceof InternalExecution<?> internalExecution) {
+			log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), namespace.getDataset().getId());
+			namespace.sendToAll(internalExecution.createExecutionMessage());
 		}
 	}
 
-	public ManagedExecution<?> createExecution(DatasetRegistry datasets, QueryDescription query, User user, Dataset submittedDataset, boolean system) {
-		return createQuery(datasets, query, UUID.randomUUID(), user, submittedDataset, system);
+	public ManagedExecution createExecution(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, boolean system) {
+		return createQuery(namespace, query, UUID.randomUUID(), user, submittedDataset, system);
 	}
 
 
-	public ManagedExecution<?> createQuery(DatasetRegistry datasets, QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
+	public ManagedExecution createQuery(Namespace namespace, QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution<?> managed = query.toManagedExecution(user, submittedDataset);
+		ManagedExecution managed = query.toManagedExecution(user, submittedDataset, storage);
 		managed.setSystem(system);
 		managed.setQueryId(queryId);
 
 		// Store the execution
-		datasets.getMetaStorage().addExecution(managed);
+		storage.addExecution(managed);
 
 		return managed;
 	}
@@ -115,21 +113,20 @@ public class ExecutionManager {
 	 *
 	 * @param result
 	 */
-	public <R extends ShardResult, E extends ManagedExecution<R>> void handleQueryResult(R result) {
+	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result) {
 
-		MetaStorage metaStorage = datasetRegistry.getMetaStorage();
 
-		final E query = (E) metaStorage.getExecution(result.getQueryId());
+		final E query = (E) storage.getExecution(result.getQueryId());
 
 		if (query.getState() != ExecutionState.RUNNING) {
 			return;
 		}
 
-		query.addResult(metaStorage, result);
+		query.addResult(result);
 
 		// State changed to DONE or FAILED
 		if (query.getState() != ExecutionState.RUNNING) {
-			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(query.getOwner(), metaStorage).map(Group::getName).orElse("none");
+			final String primaryGroupName = AuthorizationHelper.getPrimaryGroup(query.getOwner(), storage).map(Group::getName).orElse("none");
 
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
 			ExecutionMetrics.getQueryStateCounter(query.getState(), primaryGroupName).inc();
@@ -142,7 +139,7 @@ public class ExecutionManager {
 	 * Register another result for the execution.
 	 */
 	@SneakyThrows(ExecutionException.class) // can only occur if ArrayList::new fails which is unlikely and would have other problems also
-	public void addQueryResult(ManagedExecution<?> execution, List<EntityResult> queryResults) {
+	public void addQueryResult(ManagedExecution execution, List<EntityResult> queryResults) {
 		// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
 		executionResults.get(execution, ArrayList::new)
 						.add(queryResults);
@@ -151,14 +148,14 @@ public class ExecutionManager {
 	/**
 	 * Discard the query's results.
 	 */
-	public void clearQueryResults(ManagedExecution<?> execution) {
+	public void clearQueryResults(ManagedExecution execution) {
 		executionResults.invalidate(execution);
 	}
 
 	/**
 	 * Stream the results of the query, if available.
 	 */
-	public Stream<EntityResult> streamQueryResults(ManagedExecution<?> execution) {
+	public Stream<EntityResult> streamQueryResults(ManagedExecution execution) {
 		final List<List<EntityResult>> resultParts = executionResults.getIfPresent(execution);
 
 		return resultParts == null

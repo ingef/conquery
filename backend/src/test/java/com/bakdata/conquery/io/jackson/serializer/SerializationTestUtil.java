@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Validator;
@@ -37,9 +39,17 @@ public class SerializationTestUtil<T> {
 	/**
 	 * These don't seem to behave well in combination with recursiveComparison.
 	 */
-	private static final Class<?>[]
+	public static final Class<?>[]
 			TYPES_TO_IGNORE =
-			new Class[]{User.ShiroUserAdapter.class, AtomicInteger.class, Double.class, ThreadLocal.class, Validator.class};
+			new Class[]{
+					AtomicInteger.class,
+					Double.class,
+					SoftReference.class,
+					ThreadLocal.class,
+					User.ShiroUserAdapter.class,
+					Validator.class,
+					WeakReference.class
+			};
 
 	private final JavaType type;
 	private final Validator validator = Validators.newValidator();

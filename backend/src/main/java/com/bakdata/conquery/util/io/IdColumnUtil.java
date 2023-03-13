@@ -44,7 +44,7 @@ public class IdColumnUtil {
 	/**
 	 * Try to create a {@link FullIdPrinter} for user if they are allowed. If not allowed to read ids, they will receive a pseudomized result instead.
 	 */
-	public static IdPrinter getIdPrinter(Subject owner, ManagedExecution<?> execution, Namespace namespace, List<ColumnConfig> ids) {
+	public static IdPrinter getIdPrinter(Subject owner, ManagedExecution execution, Namespace namespace, List<ColumnConfig> ids) {
 		final int size = (int) ids.stream().filter(ColumnConfig::isPrint).count();
 
 		final int pos = IntStream.range(0, ids.size())

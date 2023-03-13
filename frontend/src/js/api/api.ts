@@ -32,6 +32,7 @@ import type {
   GetEntityHistoryDefaultParamsResponse,
   DatasetT,
   HistorySources,
+  PostResolveEntitiesResponse,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
@@ -375,6 +376,27 @@ export const useGetEntityHistory = () => {
           time,
           sources: sources.all.map((s) => s.name),
         },
+      }),
+    [api],
+  );
+};
+
+export const usePostResolveEntities = () => {
+  const api = useApi<PostResolveEntitiesResponse>();
+
+  return useCallback(
+    (
+      datasetId: DatasetT["id"],
+      filterValues: {
+        filter: string; // id
+        type: "MULTI_SELECT" | "BIG_MULTI_SELECT";
+        value: string[];
+      }[],
+    ) =>
+      api({
+        url: getProtectedUrl(`/datasets/${datasetId}/queries/resolve-entities`),
+        method: "POST",
+        data: filterValues,
       }),
     [api],
   );

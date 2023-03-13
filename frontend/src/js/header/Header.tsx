@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import preval from "preval.macro";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -74,7 +73,9 @@ const useVersion = () => {
     (state) => state.startup.config.version,
   );
 
-  const frontendDateTimeStamp = preval`module.exports = new Date().toISOString();`;
+  // TODO GET THIS WORKING AGAIN WITH VITE
+  // const frontendDateTimeStamp = preval`module.exports = new Date().toISOString();`;
+
   // TODO: GET THIS TO WORK WHEN BUILDING INSIDE A DODCKER CONTAINER
   // const frontendGitCommit = preval`
   //   const { execSync } = require('child_process');
@@ -84,7 +85,8 @@ const useVersion = () => {
   //   const { execSync } = require('child_process');
   //   module.exports = execSync('git describe --all --exact-match \`git rev-parse HEAD\`').toString();
   // `;
-  const frontendVersion = `${frontendDateTimeStamp}`;
+  // const frontendVersion = `${frontendDateTimeStamp}`;
+  const frontendVersion = `TIMESTAMP_COMING_SOON`;
 
   return {
     backendVersion,

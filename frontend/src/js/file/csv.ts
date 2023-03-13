@@ -15,7 +15,7 @@ export function loadCSV(
   url: string,
   { english }: { english?: boolean } = {},
 ): Promise<ParseResult<string[]>> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const downloadRequestHeaders = english
       ? {
           downloadRequestHeaders: {
@@ -31,6 +31,7 @@ export function loadCSV(
       delimiter: ";",
       skipEmptyLines: true,
       complete: (results) => resolve(results),
+      error: reject,
     });
   });
 }

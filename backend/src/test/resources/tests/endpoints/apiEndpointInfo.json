@@ -30,6 +30,11 @@
     "clazz": "DatasetQueryResource"
   },
   {
+    "method": "POST",
+    "path": "/datasets/{dataset}/queries/resolve-entities",
+    "clazz": "DatasetQueryResource"
+  },
+  {
     "method": "GET",
     "path": "/queries/{query}",
     "clazz": "QueryResource"
