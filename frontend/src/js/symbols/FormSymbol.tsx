@@ -1,4 +1,5 @@
 import { faChartColumn } from "@fortawesome/free-solid-svg-icons";
+
 import FaIcon from "../icon/FaIcon";
 
 import { InABox } from "./InABox";
