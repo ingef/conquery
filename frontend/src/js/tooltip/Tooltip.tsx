@@ -160,7 +160,9 @@ const Tooltip = () => {
         />
         <Head>
           <PinnedLabel>
-            <TypeIcon icon={isFolder || parent != label ? "folder" : "minus"} />
+            <TypeIcon
+              icon={isFolder || parent !== label ? "folder" : "minus"}
+            />
             <Label>
               {parent
                 ? searchHighlight(parent)
@@ -177,7 +179,7 @@ const Tooltip = () => {
               />
             )}
           </PinnedLabel>
-          {parent != label && parent ? (
+          {parent !== label && parent ? (
             <PinnedLabel>
               <TypeIcon icon={isFolder ? "folder" : "minus"} />
               <Label>
