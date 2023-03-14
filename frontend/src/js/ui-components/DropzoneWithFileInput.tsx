@@ -1,5 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
+import { faFileImport } from "@fortawesome/free-solid-svg-icons";
 import {
   useRef,
   ReactNode,
@@ -160,7 +161,7 @@ const DropzoneWithFileInput = <
               outside={importButtonOutside}
               onClick={() => setImportModalOpen(true)}
             >
-              <SxFaIcon icon="file-import" gray />
+              <SxFaIcon icon={faFileImport} gray />
               {t("common.import")}
             </SxSelectFileButton>
           )}

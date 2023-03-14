@@ -58,7 +58,7 @@ class TemporalSamplerFactoryTest {
 				.hasValue(ofLocalDate(LocalDate.of(2011, 1, 10)));
 
 		{
-			assertThat(RANDOM.sampler(0).sample(CDateSet.create())).isEmpty();
+			assertThat(RANDOM.sampler(0).sample(CDateSet.createEmpty())).isEmpty();
 		}
 
 		{

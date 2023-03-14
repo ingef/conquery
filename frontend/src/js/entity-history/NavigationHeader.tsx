@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faSliders } from "@fortawesome/free-solid-svg-icons";
 import { Dispatch, memo, SetStateAction, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -98,7 +99,7 @@ export const NavigationHeader = memo(
           </div>
           <WithTooltip text={t("history.settings.headline")}>
             <IconButton
-              icon="sliders"
+              icon={faSliders}
               onClick={() => setSettingsModalOpen(true)}
             />
           </WithTooltip>

@@ -1,4 +1,11 @@
 import styled from "@emotion/styled";
+import {
+  faArrowDown,
+  faArrowUp,
+  faChevronLeft,
+  faDownload,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { Dispatch, memo, SetStateAction, useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -151,7 +158,7 @@ export const Navigation = memo(
           <WithTooltip text={backButtonWarning}>
             <ContainedIconButton
               frame
-              icon="chevron-left"
+              icon={faChevronLeft}
               onClick={onCloseHistory}
             >
               {t("common.back")}
@@ -163,7 +170,7 @@ export const Navigation = memo(
               placement="bottom"
               confirmationText={t("history.settings.resetConfirm")}
             >
-              <ContainedIconButton frame icon="trash">
+              <ContainedIconButton frame icon={faTrash}>
                 {t("history.settings.reset")}
               </ContainedIconButton>
             </ConfirmableTooltip>
@@ -184,7 +191,7 @@ export const Navigation = memo(
                 text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
                 lazy
               >
-                <SxIconButton icon="arrow-up" onClick={goToPrev} />
+                <SxIconButton icon={faArrowUp} onClick={goToPrev} />
               </ButtonWithTooltip>
             </TopActions>
           )}
@@ -206,7 +213,7 @@ export const Navigation = memo(
                   text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
                   lazy
                 >
-                  <SxIconButton icon="arrow-down" onClick={goToNext} />
+                  <SxIconButton icon={faArrowDown} onClick={goToNext} />
                 </ButtonWithTooltip>
               </BottomActions>
               <BottomActions style={{ marginTop: "10px" }}>
@@ -214,7 +221,7 @@ export const Navigation = memo(
                   <SxIconButton
                     style={{ backgroundColor: "white" }}
                     frame
-                    icon="download"
+                    icon={faDownload}
                     onClick={onDownload}
                   >
                     CSV

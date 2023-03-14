@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faFile, faPaste } from "@fortawesome/free-solid-svg-icons";
 import { ChangeEvent, MouseEvent, useEffect, useRef, useState } from "react";
 import { NativeTypes } from "react-dnd-html5-backend";
 import { createPortal } from "react-dom";
@@ -167,11 +168,11 @@ export const ImportModal = ({
           )}
         </DropzoneWithFileInput>
         <Row>
-          <IconButton icon="file" onClick={onOpenFileDialog}>
+          <IconButton icon={faFile} onClick={onOpenFileDialog}>
             {t("common.openFileDialog")}
           </IconButton>
           {canReadClipboard && (
-            <IconButton icon="paste" onClick={onPasteClick}>
+            <IconButton icon={faPaste} onClick={onPasteClick}>
               {t("importModal.paste")}
             </IconButton>
           )}

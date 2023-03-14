@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { FC, memo, useCallback, useEffect, useMemo } from "react";
+import { faMicroscope } from "@fortawesome/free-solid-svg-icons";
+import { FC, memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -51,6 +52,13 @@ const SecondaryIdSelector: FC = () => {
     [dispatch],
   );
 
+  // The following is slightly complicated memoization.
+  // The reason: `query` is changing frequently, e.g. with every filter change in every table.
+  // but most of the changes likely won't affect the availableSecondaryIds.
+  // So we only want to trigger rerenders of the selector UI
+  // when the `availableSecondaryId` actually change, i.e. when a secondary id
+  // is added or removed due to a change in the query,
+  // e.g. when certain concepts or queries are added or removed
   const availableSecondaryIds = useMemo(
     () =>
       Array.from(
@@ -74,20 +82,30 @@ const SecondaryIdSelector: FC = () => {
     [query, loadedSecondaryIds],
   );
 
+  const availableSecondaryIdsRef = useRef(availableSecondaryIds);
+  availableSecondaryIdsRef.current = availableSecondaryIds;
+
   const availableSecondaryIdsString = JSON.stringify(availableSecondaryIds);
 
-  useEffect(() => {
-    const activeSecondaryIdNotFound =
-      !!selectedSecondaryId &&
-      (availableSecondaryIds.length === 0 ||
-        !availableSecondaryIds
-          .map((id) => id.id)
-          .includes(selectedSecondaryId));
+  useEffect(
+    function unselectSecondaryId() {
+      const activeSecondaryIdNotFound =
+        !!selectedSecondaryId &&
+        (availableSecondaryIdsRef.current.length === 0 ||
+          !availableSecondaryIdsRef.current
+            .map((id) => id.id)
+            .includes(selectedSecondaryId));
 
-    if (activeSecondaryIdNotFound) {
-      onSetSelectedSecondaryId(null);
-    }
-  }, [availableSecondaryIdsString, onSetSelectedSecondaryId]);
+      if (activeSecondaryIdNotFound) {
+        onSetSelectedSecondaryId(null);
+      }
+    },
+    [
+      availableSecondaryIdsString,
+      onSetSelectedSecondaryId,
+      selectedSecondaryId,
+    ],
+  );
 
   const options = useMemo(
     () => [
@@ -95,12 +113,15 @@ const SecondaryIdSelector: FC = () => {
         value: "standard",
         label: t("queryEditor.secondaryIdStandard") as string,
       },
-      ...availableSecondaryIds.map((id) => ({
+      ...availableSecondaryIdsRef.current.map((id) => ({
         label: id.label,
         value: id.id,
         description: id.description,
       })),
     ],
+    // We DO want to recompute this when the availableSecondaryIds change,
+    // see explanation above
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [availableSecondaryIdsString, t],
   );
 
@@ -132,7 +153,7 @@ const SecondaryIdSelectorUI = memo(
     return (
       <div>
         <Headline active={!!value}>
-          <SxFaIcon active={!!value} left icon="microscope" />
+          <SxFaIcon active={!!value} left icon={faMicroscope} />
           {t("queryEditor.secondaryId")}
         </Headline>
         <ToggleButton

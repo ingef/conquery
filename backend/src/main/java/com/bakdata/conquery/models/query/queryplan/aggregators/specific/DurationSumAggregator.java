@@ -18,7 +18,7 @@ import lombok.ToString;
 @ToString(callSuper = true, onlyExplicitlyIncluded = true)
 public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 
-	private CDateSet set = CDateSet.create();
+	private CDateSet set = CDateSet.createEmpty();
 	private CDateSet dateRestriction;
 
 	private int realUpperBound;

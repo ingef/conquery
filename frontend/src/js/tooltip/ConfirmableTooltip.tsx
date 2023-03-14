@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { ReactElement, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -28,7 +29,7 @@ export const ConfirmableTooltip = ({
 }: {
   children: ReactElement;
   confirmationText?: string;
-  confirmationIcon?: IconName;
+  confirmationIcon?: IconProp;
   placement?: "top" | "bottom" | "left" | "right";
   onConfirm: () => void;
   red?: boolean;
@@ -38,7 +39,7 @@ export const ConfirmableTooltip = ({
     return (
       <List>
         <SxIconButton
-          icon={confirmationIcon || "check"}
+          icon={confirmationIcon || faCheck}
           onClick={onConfirm}
           small
           bgHover

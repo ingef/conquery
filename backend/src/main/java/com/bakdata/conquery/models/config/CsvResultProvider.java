@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.config;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
@@ -30,7 +30,7 @@ public class CsvResultProvider implements ResultRendererProvider {
 	private boolean hidden = false;
 
 	@SneakyThrows(MalformedURLException.class)
-	public Collection<URL> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 		if (!(exec instanceof SingleTableResult)) {
 			return Collections.emptyList();
 		}
@@ -39,7 +39,7 @@ public class CsvResultProvider implements ResultRendererProvider {
 			return Collections.emptyList();
 		}
 
-		return List.of(ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec));
+		return List.of(new ResultAsset("CSV", ResultCsvResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec)));
 	}
 
 	@Override

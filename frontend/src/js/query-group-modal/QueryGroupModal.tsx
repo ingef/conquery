@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faUndo } from "@fortawesome/free-solid-svg-icons";
 import { Fragment, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -93,7 +94,7 @@ const QueryGroupModal = ({
 
   const labelSuffix = useMemo(() => {
     return hasActiveDate ? (
-      <ResetAll bare onClick={onResetAllDates} icon="undo">
+      <ResetAll bare onClick={onResetAllDates} icon={faUndo}>
         {t("queryNodeEditor.reset")}
       </ResetAll>
     ) : null;

@@ -12,7 +12,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
@@ -126,9 +126,9 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@Override
-	public List<TrieSearch<FrontendValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
+	public List<TrieSearch<FrontendValue>> getSearches(IndexConfig config, NamespaceStorage storage) {
 
-		TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSuffixLength(), config.getSplit());
+		TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSearchSuffixLength(), config.getSearchSplitChars());
 		labels.entrySet()
 			  .stream()
 			  .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))

@@ -96,7 +96,7 @@ public class ResultArrowProcessor {
 
 		final Dataset dataset = exec.getDataset();
 
-		log.info("Downloading results for {} on dataset {}", exec, dataset);
+		log.info("Downloading results for {}", exec.getId());
 
 		ResultUtil.authorizeExecutable(subject, exec);
 
@@ -135,7 +135,7 @@ public class ResultArrowProcessor {
 			}
 		};
 
-		return makeResponseWithFileName(Response.ok(out), exec.getLabelWithoutAutoLabelSuffix(), fileExtension, mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), fileExtension), mediaType, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 

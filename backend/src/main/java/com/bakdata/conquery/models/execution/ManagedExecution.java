@@ -16,9 +16,9 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.ExecutionStatus;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
-import com.bakdata.conquery.apiv1.OverviewExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;

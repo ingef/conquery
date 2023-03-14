@@ -1,19 +1,19 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import com.bakdata.conquery.models.common.CDateSet;
-
 import java.util.Iterator;
 import java.util.Set;
+
+import com.bakdata.conquery.models.common.CDateSet;
 
 /**
  * The action that is used in certain nodes of the query plan to combine {@link CDateSet}s collected from lower
  * levels of the query plan.
  */
 public enum DateAggregationAction {
-    /**
-     * Not propagate dates from lower levels to higher.
-     */
-    BLOCK() {
+	/**
+	 * Not propagate dates from lower levels to higher.
+	 */
+	BLOCK() {
         @Override
         public CDateSet aggregate(Set<CDateSet> all) {
             return null;
@@ -25,7 +25,7 @@ public enum DateAggregationAction {
     MERGE() {
         @Override
         public CDateSet aggregate(Set<CDateSet> all) {
-            CDateSet combined = CDateSet.create();
+			CDateSet combined = CDateSet.createEmpty();
             all.forEach(combined::addAll);
             return combined;
         }
@@ -37,7 +37,7 @@ public enum DateAggregationAction {
         @Override
         public CDateSet aggregate(Set<CDateSet> all) {
             if (all.size() < 1) {
-                return CDateSet.create();
+				return CDateSet.createEmpty();
             }
 
             Iterator<CDateSet> it = all.iterator();
