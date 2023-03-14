@@ -100,7 +100,7 @@ public class Namespace extends IdResolveContext implements Closeable {
 
 		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
 
-		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getSearch());
+		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getIndex());
 
 
 		final Namespace namespace = new Namespace(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, injectables);

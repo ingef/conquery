@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.util.search.TrieSearch;
@@ -37,7 +37,7 @@ public class UpdateFilterSearchJob extends Job {
 	private final Map<Searchable, TrieSearch<FrontendValue>> searchCache;
 
 	@NonNull
-	private final SearchConfig searchConfig;
+	private final IndexConfig indexConfig;
 
 	@NonNull
 	private final Object2LongMap<SelectFilter<?>> totals;
@@ -85,7 +85,7 @@ public class UpdateFilterSearchJob extends Job {
 				log.info("BEGIN collecting entries for `{}`", searchable);
 
 				try {
-					final List<TrieSearch<FrontendValue>> values = searchable.getSearches(searchConfig, storage);
+					final List<TrieSearch<FrontendValue>> values = searchable.getSearches(indexConfig, storage);
 
 					for (TrieSearch<FrontendValue> search : values) {
 						synchronizedResult.put(searchable, search);
