@@ -61,7 +61,7 @@
     "react-error-boundary": "^3.1.4",
     "react-highlight-words": "^0.17.0",
     "react-hook-form": "^7.43.5",
-    "react-hotkeys-hook": "^3.4.6",
+    "react-hotkeys-hook": "^4.3.8",
     "react-i18next": "^11.16.1",
     "react-list": "^0.8.16",
     "react-markdown": "^8.0.0",
