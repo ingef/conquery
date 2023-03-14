@@ -1,4 +1,9 @@
 import styled from "@emotion/styled";
+import {
+  faChevronDown,
+  faSpinner,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { useCombobox, useMultipleSelection } from "downshift";
 import { Fragment, memo, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -324,10 +329,10 @@ const InputMultiSelect = ({
             }}
           />
         </ItemsInputContainer>
-        {loading && <SxFaIcon icon="spinner" />}
+        {loading && <SxFaIcon icon={faSpinner} />}
         {!loading && (inputValue.length > 0 || selectedItems.length > 0) && (
           <ResetButton
-            icon="times"
+            icon={faTimes}
             disabled={disabled}
             onClick={() => {
               setInputValue("");
@@ -339,7 +344,7 @@ const InputMultiSelect = ({
         <VerticalSeparator />
         <DropdownToggleButton
           disabled={disabled}
-          icon="chevron-down"
+          icon={faChevronDown}
           {...getToggleButtonProps()}
         />
       </Control>

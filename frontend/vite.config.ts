@@ -24,5 +24,12 @@ export default defineConfig(() => {
       port: 8000,
       open: true,
     },
+    define: {
+      __BUILD_TIMESTAMP__: new Date()
+        .toISOString()
+        .split(".")[0]
+        .split("T")
+        .join(" "),
+    },
   };
 });

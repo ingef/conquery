@@ -1,4 +1,11 @@
 import styled from "@emotion/styled";
+import { faUser as faUserRegular } from "@fortawesome/free-regular-svg-icons";
+import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
+import {
+  faFolder,
+  faMicroscope,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 import { parseISO } from "date-fns";
 import { forwardRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -204,8 +211,7 @@ const ProjectItem = forwardRef<
               }
             >
               <FoldersButton
-                icon={"folder"}
-                regular={folders.length === 0}
+                icon={folders.length === 0 ? faFolderRegular : faFolder}
                 tight
                 small
                 bare
@@ -236,7 +242,7 @@ const ProjectItem = forwardRef<
                 <WithTooltip
                   text={`${t("queryEditor.secondaryId")}: ${secondaryId.label}`}
                 >
-                  <IconButton icon="microscope" bare onClick={() => {}} />
+                  <IconButton icon={faMicroscope} bare onClick={() => {}} />
                 </WithTooltip>
               )}
             {item.own && (
@@ -248,8 +254,7 @@ const ProjectItem = forwardRef<
                 }
               >
                 <IconButton
-                  icon="user"
-                  regular={!isShared}
+                  icon={isShared ? faUser : faUserRegular}
                   bare
                   onClick={onIndicateShare}
                 />

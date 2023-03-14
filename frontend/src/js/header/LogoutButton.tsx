@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { useKeycloak } from "@react-keycloak-fork/web";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
@@ -45,7 +46,7 @@ const LogoutButton: FC<PropsT> = ({ className }) => {
 
   return (
     <WithTooltip className={className} text={t("common.logout")}>
-      <SxIconButton frame icon="sign-out-alt" onClick={onLogout} />
+      <SxIconButton frame icon={faSignOutAlt} onClick={onLogout} />
     </WithTooltip>
   );
 };

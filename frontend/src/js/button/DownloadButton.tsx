@@ -1,5 +1,12 @@
 import styled from "@emotion/styled";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import {
+  faFileArchive,
+  faFileCsv,
+  faFileDownload,
+  faFileExcel,
+  faFilePdf,
+} from "@fortawesome/free-solid-svg-icons";
 import { ReactNode, useContext, forwardRef } from "react";
 
 import { ResultUrlWithLabel } from "../api/types";
@@ -16,13 +23,13 @@ const Link = styled("a")`
   line-height: 1;
 `;
 
-const fileTypeToIcon: Record<string, IconName> = {
-  ZIP: "file-archive",
-  XLSX: "file-excel",
-  PDF: "file-pdf",
-  CSV: "file-csv",
+const fileTypeToIcon: Record<string, IconProp> = {
+  ZIP: faFileArchive,
+  XLSX: faFileExcel,
+  PDF: faFilePdf,
+  CSV: faFileCsv,
 };
-function getFileIcon(url: string): IconName {
+function getFileIcon(url: string): IconProp {
   // Forms
   if (url.includes(".")) {
     const ext = getEnding(url);
@@ -30,7 +37,7 @@ function getFileIcon(url: string): IconName {
       return fileTypeToIcon[ext];
     }
   }
-  return "file-download";
+  return faFileDownload;
 }
 
 interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {

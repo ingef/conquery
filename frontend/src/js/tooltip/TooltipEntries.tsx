@@ -1,4 +1,9 @@
 import styled from "@emotion/styled";
+import {
+  faArrowsLeftRightToLine,
+  faHashtag,
+  faUser,
+} from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import type { DateRangeT } from "../api/types";
@@ -100,7 +105,7 @@ const TooltipEntries = (props: Props) => {
 
   return (
     <Root>
-      <StyledFaIcon icon="hashtag" />
+      <StyledFaIcon icon={faHashtag} />
       <Info>
         <Number zero={isZero}>
           {exists(matchingEntries) ? (
@@ -118,7 +123,7 @@ const TooltipEntries = (props: Props) => {
           )}
         </Text>
       </Info>
-      <StyledFaIcon icon="user" />
+      <StyledFaIcon icon={faUser} />
       <Info>
         <Number zero={isZeroEntities}>
           {exists(matchingEntities) ? (
@@ -136,7 +141,7 @@ const TooltipEntries = (props: Props) => {
           )}
         </Text>
       </Info>
-      <StyledFaIcon icon="arrows-left-right-to-line" />
+      <StyledFaIcon icon={faArrowsLeftRightToLine} />
       <Info>
         <Date>
           {fromDate}

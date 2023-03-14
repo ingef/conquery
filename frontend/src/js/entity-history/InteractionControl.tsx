@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faChevronRight, faHome } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -23,10 +24,10 @@ const InteractionControl = ({
   return (
     <Root>
       <WithTooltip text={t("history.closeAll")}>
-        <IconButton onClick={onCloseAll} icon="home" />
+        <IconButton onClick={onCloseAll} icon={faHome} />
       </WithTooltip>
       <WithTooltip text={t("history.openAll")}>
-        <IconButton onClick={onOpenAll} icon="chevron-right" />
+        <IconButton onClick={onOpenAll} icon={faChevronRight} />
       </WithTooltip>
     </Root>
   );
