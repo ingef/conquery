@@ -117,7 +117,7 @@ export const History = () => {
 
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
 
-  useHotkeys("shift+option+h", () => {
+  useHotkeys("shift+alt+h", () => {
     setShowAdvancedControls((v) => !v);
   });
 
