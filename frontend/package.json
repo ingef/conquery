@@ -42,7 +42,7 @@
     "chance": "^1.1.11",
     "compression": "^1.7.4",
     "date-fns": "^2.28.0",
-    "downshift": "^6.1.7",
+    "downshift": "^7.4.1",
     "express-rate-limit": "^6.7.0",
     "file-saver": "^2.0.5",
     "helmet": "^6.0.1",

@@ -91,7 +91,6 @@ const InputSelect = ({
     getLabelProps,
     getMenuProps,
     getInputProps,
-    getComboboxProps,
     getItemProps,
     highlightedIndex,
     setHighlightedIndex,
@@ -163,7 +162,6 @@ const InputSelect = ({
 
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
   const { ref: inputPropsRef, ...inputProps } = getInputProps();
-  const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
   const labelProps = getLabelProps();
 
   const handleBlur = useCallback(() => {
@@ -243,13 +241,7 @@ const InputSelect = ({
       className={exists(label) ? undefined : className}
       data-test-id={dataTestId}
     >
-      <Control
-        {...comboboxProps}
-        disabled={disabled}
-        ref={(instance) => {
-          comboboxRef(instance);
-        }}
-      >
+      <Control disabled={disabled}>
         <ItemsInputContainer>
           <Input
             {...inputProps}
@@ -269,15 +261,11 @@ const InputSelect = ({
               e.target.select();
             }}
             onClick={(e) => {
-              if (inputProps.onClick) {
-                inputProps.onClick(e);
-              }
+              inputProps.onClick?.(e);
               toggleMenu();
             }}
             onChange={(e) => {
-              if (inputProps.onChange) {
-                inputProps.onChange(e);
-              }
+              inputProps.onChange?.(e);
               setInputValue(e.target.value);
             }}
           />

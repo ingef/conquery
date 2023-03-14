@@ -145,7 +145,6 @@ const InputMultiSelect = ({
     getLabelProps,
     getMenuProps,
     getInputProps,
-    getComboboxProps,
     getItemProps,
     highlightedIndex,
     setHighlightedIndex,
@@ -236,7 +235,6 @@ const InputMultiSelect = ({
   const { ref: inputPropsRef, ...inputProps } = getInputProps(
     getDropdownProps({ autoFocus }),
   );
-  const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
   const labelProps = getLabelProps({});
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -283,13 +281,7 @@ const InputMultiSelect = ({
         }
       }}
     >
-      <Control
-        {...comboboxProps}
-        disabled={disabled}
-        ref={(instance) => {
-          comboboxRef(instance);
-        }}
-      >
+      <Control disabled={disabled}>
         <ItemsInputContainer>
           {selectedItems.map((option, index) => {
             return (
@@ -307,11 +299,6 @@ const InputMultiSelect = ({
           <Input
             type="text"
             value={inputValue}
-            onFocus={() => {
-              if (inputRef.current) {
-                inputRef.current.select();
-              }
-            }}
             {...inputProps}
             ref={(instance) => {
               inputRef.current = instance;
@@ -329,15 +316,10 @@ const InputMultiSelect = ({
                 : t("inputSelect.placeholder")
             }
             onClick={(e) => {
-              if (inputProps.onClick) {
-                inputProps.onClick(e);
-              }
-              toggleMenu();
+              inputProps.onClick?.(e);
             }}
             onChange={(e) => {
-              if (inputProps.onChange) {
-                inputProps.onChange(e);
-              }
+              inputProps.onChange?.(e);
               setInputValue(e.target.value);
             }}
           />
