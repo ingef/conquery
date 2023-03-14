@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { useMemo } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
@@ -15,7 +16,6 @@ import TooltipEntries from "./TooltipEntries";
 import { TooltipHeader } from "./TooltipHeader";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import type { AdditionalInfosType } from "./reducer";
-import { useMemo } from "react";
 
 const Root = styled("div")`
   width: 100%;
@@ -142,7 +142,9 @@ const Tooltip = () => {
     parent,
   } = additionalInfos;
 
-  const hasChild = useMemo(()=>{return parent !== label && parent}, [parent, label]);
+  const hasChild = useMemo(() => {
+    return parent !== label && parent;
+  }, [parent, label]);
 
   if (!displayTooltip) return <ActivateTooltip />;
   const searchHighlight = (text: string) => {
@@ -167,7 +169,13 @@ const Tooltip = () => {
         <Head>
           <PinnedLabel>
             <TypeIcon
-              icon={isFolder || parent !== label ? (hasChild ? "folder-open" : "folder") : "minus"}
+              icon={
+                isFolder || parent !== label
+                  ? hasChild
+                    ? "folder-open"
+                    : "folder"
+                  : "minus"
+              }
             />
             <Label>
               {parent
