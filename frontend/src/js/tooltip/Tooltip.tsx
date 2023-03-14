@@ -50,7 +50,7 @@ const TackIconButton = styled(IconButton)`
   margin-left: 5px;
 `;
 const TypeIcon = styled(StyledFaIcon)`
-  margin-right: 10px;
+  margin-right: 5px;
 `;
 const PinnedLabel = styled("p")`
   display: flex;
@@ -73,6 +73,10 @@ const Description = styled("p")`
 const Infos = styled("div")`
   width: 100%;
   overflow-x: auto;
+`;
+
+const IndentRoot = styled("div")<{ depth: number }>`
+  padding-left: ${({ depth }) => depth * 15 + "px"};
 `;
 
 const PieceOfInfo = styled("div")`
@@ -161,7 +165,7 @@ const Tooltip = () => {
         <Head>
           <PinnedLabel>
             <TypeIcon
-              icon={isFolder || parent !== label ? "folder" : "minus"}
+              icon={isFolder || parent !== label ? "folder-open" : "minus"}
             />
             <Label>
               {parent
@@ -180,12 +184,15 @@ const Tooltip = () => {
             )}
           </PinnedLabel>
           {parent !== label && parent ? (
-            <PinnedLabel>
-              <TypeIcon icon={isFolder ? "folder" : "minus"} />
-              <Label>
-                {label ? searchHighlight(label) : t("tooltip.placeholder")}
-              </Label>
-            </PinnedLabel>
+            <IndentRoot depth={1}>
+              <PinnedLabel>
+                <TypeIcon icon="caret-right" />
+                <TypeIcon icon={isFolder ? "folder-open" : "minus"} />
+                <Label>
+                  {label ? searchHighlight(label) : t("tooltip.placeholder")}
+                </Label>
+              </PinnedLabel>
+            </IndentRoot>
           ) : null}
           {description && (
             <Description>{searchHighlight(description)}</Description>
