@@ -21,7 +21,6 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
-import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +43,7 @@ public class FilterResource extends HAuthorized {
 
 	@POST
 	@Path("resolve")
-	public ResolvedConceptsResult resolveFilterValues(FilterValues filterValues) {
+	public ConceptsProcessor.ResolvedFilterValues resolveFilterValues(FilterValues filterValues) {
 		subject.isPermitted(filter.getDataset(), Ability.READ);
 		subject.isPermitted(filter.getConnector().findConcept(), Ability.READ);
 

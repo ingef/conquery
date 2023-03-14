@@ -154,7 +154,7 @@ public class ConceptsProcessor {
 	 * Search for all search terms at once, with stricter scoring.
 	 * The user will upload a file and expect only well-corresponding resolutions.
 	 */
-	public ResolvedConceptsResult resolveFilterValues(Searchable<?> searchable, List<String> searchTerms) {
+	public ResolvedFilterValues resolveFilterValues(Searchable<?> searchable, List<String> searchTerms) {
 
 		// search in the full text engine
 		final Set<String> openSearchTerms = new HashSet<>(searchTerms);
@@ -181,7 +181,7 @@ public class ConceptsProcessor {
 		// Not all Searchables are children of Connectors.
 		final ConnectorId connectorId = searchable instanceof Filter asFilter ? asFilter.getConnector().getId() : null;
 
-		return new ResolvedConceptsResult(null, new ResolvedFilterResult(connectorId, searchable.getId().toString(), out), openSearchTerms);
+		return new ResolvedFilterValues(new ResolvedFilterResult(connectorId, searchable.getId().toString(), out), openSearchTerms);
 	}
 
 	public AutoCompleteResult autocompleteTextFilter(Searchable<?> searchable, Optional<String> maybeText, OptionalInt pageNumberOpt, OptionalInt itemsPerPageOpt) {
@@ -309,7 +309,7 @@ public class ConceptsProcessor {
 				log.error("Error while trying to resolve `{}`", conceptCode, e);
 			}
 		}
-		return new ResolvedConceptsResult(resolvedCodes, null, unknownCodes);
+		return new ResolvedConceptsResult(resolvedCodes,  unknownCodes);
 	}
 
 	/**
@@ -325,6 +325,10 @@ public class ConceptsProcessor {
 		//TODO FK filterId as Id causes issues with IdUtil createParser, should investigate this
 	}
 
-	public record ResolvedConceptsResult(Set<ConceptElementId<?>> resolvedConcepts, ResolvedFilterResult resolvedFilter, Collection<String> unknownCodes) {
+	public record ResolvedFilterValues(ResolvedFilterResult resolvedFilter, Collection<String> unknownCodes) {
+
+	}
+
+	public record ResolvedConceptsResult(Set<ConceptElementId<?>> resolvedConcepts, Collection<String> unknownCodes) {
 	}
 }
