@@ -65,7 +65,7 @@
     "react-i18next": "^12.2.0",
     "react-list": "^0.8.16",
     "react-markdown": "^8.0.0",
-    "react-number-format": "^4.9.1",
+    "react-number-format": "^5.1.4",
     "react-redux": "^8.0.5",
     "react-router-dom": "^6.9.0",
     "react-split-pane": "^0.1.92",

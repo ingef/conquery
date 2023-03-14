@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
-import NumberFormat from "react-number-format";
+import { NumericFormat } from "react-number-format";
 
 import type {
   ColumnDescription,
@@ -149,7 +149,7 @@ const EventCard = ({
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
                   <code>
-                    <NumberFormat
+                    <NumericFormat
                       thousandSeparator={currencyConfig.thousandSeparator}
                       decimalSeparator={currencyConfig.decimalSeparator}
                       decimalScale={currencyConfig.decimalScale}
