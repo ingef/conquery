@@ -15,6 +15,7 @@ import TooltipEntries from "./TooltipEntries";
 import { TooltipHeader } from "./TooltipHeader";
 import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import type { AdditionalInfosType } from "./reducer";
+import { useMemo } from "react";
 
 const Root = styled("div")`
   width: 100%;
@@ -130,8 +131,6 @@ const Tooltip = () => {
   const dispatch = useDispatch();
   const onToggleAdditionalInfos = () => dispatch(toggleInfos());
 
-  if (!displayTooltip) return <ActivateTooltip />;
-
   const {
     label,
     description,
@@ -143,6 +142,9 @@ const Tooltip = () => {
     parent,
   } = additionalInfos;
 
+  const hasChild = useMemo(()=>{return parent !== label && parent}, [parent, label]);
+
+  if (!displayTooltip) return <ActivateTooltip />;
   const searchHighlight = (text: string) => {
     return (
       <Highlighter
@@ -165,7 +167,7 @@ const Tooltip = () => {
         <Head>
           <PinnedLabel>
             <TypeIcon
-              icon={isFolder || parent !== label ? "folder-open" : "minus"}
+              icon={isFolder || parent !== label ? (hasChild ? "folder-open" : "folder") : "minus"}
             />
             <Label>
               {parent
@@ -183,11 +185,11 @@ const Tooltip = () => {
               />
             )}
           </PinnedLabel>
-          {parent !== label && parent ? (
+          {hasChild ? (
             <IndentRoot depth={1}>
               <PinnedLabel>
                 <TypeIcon icon="caret-right" />
-                <TypeIcon icon={isFolder ? "folder-open" : "minus"} />
+                <TypeIcon icon={isFolder ? "folder" : "minus"} />
                 <Label>
                   {label ? searchHighlight(label) : t("tooltip.placeholder")}
                 </Label>
