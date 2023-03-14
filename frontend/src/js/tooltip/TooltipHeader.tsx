@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faAngleLeft } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -42,7 +43,7 @@ export const TooltipHeader = memo(() => {
       <StyledIconButton
         bgHover
         onClick={onToggleDisplayTooltip}
-        icon="angle-left"
+        icon={faAngleLeft}
       />
       <Header>{t("tooltip.headline")}</Header>
     </>

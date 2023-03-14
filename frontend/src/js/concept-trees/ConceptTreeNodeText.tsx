@@ -1,5 +1,17 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
+import {
+  faFolderOpen as faFolderOpenRegular,
+  faFolder as faFolderRegular,
+} from "@fortawesome/free-regular-svg-icons";
+import {
+  faCaretDown,
+  faCaretRight,
+  faFolderOpen,
+  faFolder,
+  faEllipsisH,
+  faMinus,
+} from "@fortawesome/free-solid-svg-icons";
 import { forwardRef } from "react";
 import Highlighter from "react-highlight-words";
 
@@ -131,15 +143,22 @@ const ConceptTreeNodeText = forwardRef<HTMLDivElement, PropsT>(
               <FaIcon
                 disabled={disabled}
                 active
-                icon={!!isOpen ? "caret-down" : "caret-right"}
+                icon={!!isOpen ? faCaretDown : faCaretRight}
               />
             </CaretIconContainer>
             <FolderIconContainer>
               <FaIcon
                 active
                 disabled={disabled}
-                regular={!!isStructFolder}
-                icon={!!isOpen ? "folder-open" : "folder"}
+                icon={
+                  !!isOpen
+                    ? isStructFolder
+                      ? faFolderOpenRegular
+                      : faFolderOpen
+                    : isStructFolder
+                    ? faFolderRegular
+                    : faFolder
+                }
               />
             </FolderIconContainer>
           </>
@@ -150,7 +169,7 @@ const ConceptTreeNodeText = forwardRef<HTMLDivElement, PropsT>(
               disabled={disabled}
               large
               active
-              icon={disabled ? "ellipsis-h" : "minus"}
+              icon={disabled ? faEllipsisH : faMinus}
             />
           </DashIconContainer>
         )}

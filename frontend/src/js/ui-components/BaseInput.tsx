@@ -1,4 +1,9 @@
 import styled from "@emotion/styled";
+import {
+  faCheck,
+  faExclamationTriangle,
+  faTimes,
+} from "@fortawesome/free-solid-svg-icons";
 import { FocusEvent, forwardRef, KeyboardEvent, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -181,17 +186,17 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
         )}
         {exists(value) && !isEmpty(value) && (
           <>
-            {valid && !invalid && <GreenIcon icon="check" large={large} />}
+            {valid && !invalid && <GreenIcon icon={faCheck} large={large} />}
             {invalid && (
               <WithTooltip text={invalidText}>
                 <AbsoluteWrap>
-                  <RedIcon icon="exclamation-triangle" large={large} />
+                  <RedIcon icon={faExclamationTriangle} large={large} />
                 </AbsoluteWrap>
               </WithTooltip>
             )}
             <ClearZoneIconButton
               tiny
-              icon="times"
+              icon={faTimes}
               tabIndex={-1}
               title={t("common.clearValue")}
               aria-label={t("common.clearValue")}
