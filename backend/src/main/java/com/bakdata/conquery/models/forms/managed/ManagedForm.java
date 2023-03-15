@@ -38,7 +38,7 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 	 * the object inspection of Jackson to look at the actual <code>type</code> member of the object (see {@link com.bakdata.conquery.io.cps.CPSTypeIdResolver#typeFromId(DatabindContext, String)}).
 	 * This causes a problem, when the object uses types with {@link com.bakdata.conquery.io.cps.SubTyped},
 	 * as the subtype is only added to the {@link com.fasterxml.jackson.databind.DeserializationContext}, when the
-	 * type is derived from the <pre>type</pre> member not when Jackson can just infere the deserializer from the type of
+	 * type is derived from the <pre>type</pre> member not when Jackson can just infer the deserializer from the type of
 	 * this property.
 	 */
 	@Getter
