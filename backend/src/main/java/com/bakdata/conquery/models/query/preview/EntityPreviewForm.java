@@ -62,8 +62,6 @@ public class EntityPreviewForm extends Form {
 	public static final String INFOS_QUERY_NAME = "INFOS";
 	public static final String VALUES_QUERY_NAME = "VALUES";
 
-	public static final String TIME_SELECTS = "TIME_SELECTS_";
-
 
 	private final AbsoluteFormQuery infoCardQuery;
 	private final TableExportQuery valuesQuery;
@@ -76,7 +74,7 @@ public class EntityPreviewForm extends Form {
 		return null; // will not be implemented.
 	}
 
-	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.TimebasedSelects> timebasedSelects, DatasetRegistry datasetRegistry) {
+	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.ChronoSelects> chronoSelects, DatasetRegistry datasetRegistry) {
 
 		// We use this query to filter for the single selected query.
 		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
@@ -87,7 +85,7 @@ public class EntityPreviewForm extends Form {
 
 		final Map<String, AbsoluteFormQuery> timeQueries = new HashMap<>();
 
-		for (PreviewConfig.TimebasedSelects selects : timebasedSelects) {
+		for (PreviewConfig.ChronoSelects selects : chronoSelects) {
 
 			final AbsoluteFormQuery query = new AbsoluteFormQuery(entitySelectQuery, dateRange,
 																  ArrayConceptQuery.createFromFeatures(

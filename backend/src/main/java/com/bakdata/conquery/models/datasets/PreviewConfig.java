@@ -52,7 +52,7 @@ public class PreviewConfig {
 	private List<InfoCardSelect> infoCardSelects = List.of();
 
 	@Valid
-	private List<TimebasedSelects> timebasedSelects = List.of();
+	private List<ChronoSelects> chronoSelects = List.of();
 
 	/**
 	 * Columns that should not be displayed to users in entity preview.
@@ -107,7 +107,7 @@ public class PreviewConfig {
 
 
 	// TODO FK that is an awful name
-	public record TimebasedSelects(@NotNull String name, String description, @NotEmpty List<InfoCardSelect> selects){
+	public record ChronoSelects(@NotNull String name, String description, @NotEmpty List<InfoCardSelect> selects){
 		@ValidationMethod(message = "Selects may be referenced only once.")
 		@JsonIgnore
 		public boolean isSelectsUnique() {

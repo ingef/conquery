@@ -104,7 +104,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 					new PreviewConfig.InfoCardSelect("Values", valuesSelectId, null)
 			));
 
-			previewConfig.setTimebasedSelects(List.of(new PreviewConfig.TimebasedSelects(
+			previewConfig.setChronoSelects(List.of(new PreviewConfig.ChronoSelects(
 					"Values in Time", "Description",
 					List.of(new PreviewConfig.InfoCardSelect(
 							"Values",
@@ -148,7 +148,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			result = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
 		}
 
-		final EntityPreviewStatus.TimebasedInfos infos = result.getTimebasedInfos().get(0);
+		final EntityPreviewStatus.ChronoInfos infos = result.getChronoInfos().get(0);
 
 		assertThat(infos.description()).isEqualTo("Description");
 		assertThat(infos.label()).isEqualTo("Values in Time");
@@ -167,13 +167,13 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		// assert only 2010 as the other years are empty
 		assertThat(infos.years().get(0))
-				.isEqualTo(new EntityPreviewStatus.TimebasedInfos.YearEntry(
+				.isEqualTo(new EntityPreviewStatus.YearEntry(
 						2010, Map.of("Values", "B2"),
 						List.of(
-								new EntityPreviewStatus.TimebasedInfos.QuarterEntry(1, Map.of("Values", "")),
-								new EntityPreviewStatus.TimebasedInfos.QuarterEntry(2, Map.of("Values", "")),
-								new EntityPreviewStatus.TimebasedInfos.QuarterEntry(3, Map.of("Values", "B2")),
-								new EntityPreviewStatus.TimebasedInfos.QuarterEntry(4, Map.of("Values", ""))
+								new EntityPreviewStatus.QuarterEntry(1, Map.of("Values", "")),
+								new EntityPreviewStatus.QuarterEntry(2, Map.of("Values", "")),
+								new EntityPreviewStatus.QuarterEntry(3, Map.of("Values", "B2")),
+								new EntityPreviewStatus.QuarterEntry(4, Map.of("Values", ""))
 						)
 				));
 

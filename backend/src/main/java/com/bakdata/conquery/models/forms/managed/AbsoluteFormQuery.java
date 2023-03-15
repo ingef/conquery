@@ -36,6 +36,16 @@ import lombok.RequiredArgsConstructor;
 public class AbsoluteFormQuery extends Query {
 
 	/**
+	 * Index of the column, where the Resolutions name will be placed.
+	 */
+	public static final int RESOLUTION_INDEX = 0;
+
+	/**
+	 * Indef of the column, where the time periods will be placed.
+	 */
+	public static final int TIME_INDEX = 0;
+
+	/**
 	 * see {@linkplain this#getResultInfos()}.
 	 */
 	public static final int FEATURES_OFFSET = 3;

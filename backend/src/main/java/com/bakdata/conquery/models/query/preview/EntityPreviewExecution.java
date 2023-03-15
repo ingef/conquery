@@ -42,6 +42,7 @@ import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
 import lombok.NonNull;
+import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -87,7 +88,7 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), printSettings));
 
-		status.setTimebasedInfos(transformTimeBasedInfos(previewConfig, getSubQueries(), printSettings));
+		status.setChronoInfos(toChronoInfos(previewConfig, getSubQueries(), printSettings));
 
 		return status;
 	}
@@ -116,13 +117,8 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 			final String printed = resultInfo.getType().printNullable(printSettings, values[index]);
 
-			extraInfos.add(new EntityPreviewStatus.Info(
-					resultInfo.userColumnName(printSettings),
-					printed,
-					resultInfo.getType().typeInfo(),
-					resultInfo.getDescription(),
-					resultInfo.getSemantics()
-			));
+			extraInfos.add(new EntityPreviewStatus.Info(resultInfo.userColumnName(printSettings), printed, resultInfo.getType()
+																													 .typeInfo(), resultInfo.getDescription(), resultInfo.getSemantics()));
 		}
 
 		return extraInfos;
@@ -134,68 +130,70 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	}
 
 	@NotNull
-	private static List<EntityPreviewStatus.TimebasedInfos> transformTimeBasedInfos(PreviewConfig previewConfig, Map<String, List<ManagedQuery>> subQueries, PrintSettings printSettings) {
-		final List<EntityPreviewStatus.TimebasedInfos> timebasedInfos = new ArrayList<>();
+	private static List<EntityPreviewStatus.ChronoInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, List<ManagedQuery>> subQueries, PrintSettings printSettings) {
+		final List<EntityPreviewStatus.ChronoInfos> chronoInfos = new ArrayList<>();
 
-		for (PreviewConfig.TimebasedSelects description : previewConfig.getTimebasedSelects()) {
+		for (PreviewConfig.ChronoSelects description : previewConfig.getChronoSelects()) {
 			final ManagedQuery query = subQueries.get(description.name()).get(0);
 			final EntityResult entityResult = query.streamResults().collect(MoreCollectors.onlyElement());
 
-			final Map<SelectId, PreviewConfig.InfoCardSelect> select2desc =
-					description.selects().stream()
-							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
+			final Map<SelectId, PreviewConfig.InfoCardSelect>
+					select2desc =
+					description.selects().stream().collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
-			//TODO make constants of AbsoluteExportForm
-			final int resolutionInfoIdx = 0;
-			final int timeIdx = 2;
 
 			// Group lines by quarter, year and resolution.
 			final Map<Integer, Object[]> yearLines = new HashMap<>();
 			final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
 
-			groupLinesForResolutions(entityResult, resolutionInfoIdx, timeIdx, yearLines, quarterLines);
+			groupLinesForResolutions(entityResult, yearLines, quarterLines);
 
 			final Function<Object[], Map<String, Object>> lineTransformer = createLineTransformer(query.getResultInfos(), select2desc, printSettings);
 
-			final List<EntityPreviewStatus.TimebasedInfos.YearEntry> yearEntries = new ArrayList<>();
+			final List<EntityPreviewStatus.YearEntry> yearEntries = new ArrayList<>();
 
 			yearLines.forEach((year, yearLine) -> {
 
-				final List<EntityPreviewStatus.TimebasedInfos.QuarterEntry> quarterEntries = new ArrayList<>();
+				final List<EntityPreviewStatus.QuarterEntry> quarterEntries = new ArrayList<>();
 				quarterLines.getOrDefault(year, Collections.emptyMap())
-							.forEach((quarter, line) -> quarterEntries.add(new EntityPreviewStatus.TimebasedInfos.QuarterEntry(quarter, lineTransformer.apply(line))));
+							.forEach((quarter, line) -> quarterEntries.add(new EntityPreviewStatus.QuarterEntry(quarter, lineTransformer.apply(line))));
 
-				quarterEntries.sort(Comparator.comparingInt(EntityPreviewStatus.TimebasedInfos.QuarterEntry::quarter));
+				quarterEntries.sort(Comparator.comparingInt(EntityPreviewStatus.QuarterEntry::quarter));
 
 
-				yearEntries.add(new EntityPreviewStatus.TimebasedInfos.YearEntry(year, lineTransformer.apply(yearLine), quarterEntries));
+				yearEntries.add(new EntityPreviewStatus.YearEntry(year, lineTransformer.apply(yearLine), quarterEntries));
 			});
 
-			yearEntries.sort(Comparator.comparingInt(EntityPreviewStatus.TimebasedInfos.YearEntry::year));
+			yearEntries.sort(Comparator.comparingInt(EntityPreviewStatus.YearEntry::year));
 
 			// get descriptions, but drop everything that isn't a select result as the rest is already structured
-			final List<ColumnDescriptor> columnDescriptors = timebasedColumnDescriptors(query, select2desc);
+			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
 
-			final EntityPreviewStatus.TimebasedInfos infos = new EntityPreviewStatus.TimebasedInfos(description.name(), description.description(), columnDescriptors, yearEntries);
+			final EntityPreviewStatus.ChronoInfos
+					infos =
+					new EntityPreviewStatus.ChronoInfos(description.name(), description.description(), columnDescriptors, yearEntries);
 
-			timebasedInfos.add(infos);
+			chronoInfos.add(infos);
 		}
 
-		return timebasedInfos;
+		return chronoInfos;
 	}
 
-	private static void groupLinesForResolutions(EntityResult entityResult, int resolutionInfoIdx, int timeIdx, Map<Integer, Object[]> yearLines, Map<Integer, Map<Integer, Object[]>> quarterLines) {
+	/**
+	 * Query contains both YEARS and QUARTERS lines: Group them.
+	 */
+	private static void groupLinesForResolutions(EntityResult entityResult, Map<Integer, Object[]> yearLines, Map<Integer, Map<Integer, Object[]>> quarterLines) {
 		for (Object[] line : entityResult.listResultLines()) {
 
 			// Since we know the dates are always aligned we need to only respect their starts.
-			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[timeIdx]).get(0));
+			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
 
 			final int year = date.getYear();
 			final int quarter = QuarterUtils.getQuarter(date);
 
-			switch (Resolution.valueOf((String) line[resolutionInfoIdx])) {
+			switch (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX])) {
 				case YEARS -> yearLines.put(year, line);
-				case QUARTERS -> quarterLines.computeIfAbsent(year, HashMap::new).put(quarter, line);
+				case QUARTERS -> quarterLines.computeIfAbsent(year, (ignored) -> new HashMap<>(4)).put(quarter, line);
 				default -> throw new IllegalStateException("Query may only have modes for Quarter and/or Year.");
 			}
 		}
@@ -229,9 +227,9 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 					continue;
 				}
 
-				final Object value = resultInfos.get(column).getType().printNullable(printSettings, line[column]);
+				final String value = resultInfos.get(column).getType().printNullable(printSettings, line[column]);
 
-				if (value == null) {
+				if (value == null || Strings.isBlank(value)) {
 					continue;
 				}
 
@@ -243,8 +241,11 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 	}
 
 
+	/**
+	 * For the selects in result infos, build ColumnDescriptors using definitions (label and description) from PreviewConfig.
+	 */
 	@NotNull
-	private static List<ColumnDescriptor> timebasedColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
+	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
 
 		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
@@ -253,15 +254,13 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
 
 				// We build these by hand because they are quite labeled and described by config.
-				columnDescriptions.add(
-						ColumnDescriptor.builder()
-										.label(desc.label())
-										.defaultLabel(desc.label())
-										.type(info.getType().typeInfo())
-										.semantics(info.getSemantics())
-										.description(desc.description())
-										.build()
-				);
+				columnDescriptions.add(ColumnDescriptor.builder()
+													   .label(desc.label())
+													   .defaultLabel(desc.label())
+													   .type(info.getType().typeInfo())
+													   .semantics(info.getSemantics())
+													   .description(desc.description())
+													   .build());
 			}
 		}
 
@@ -301,7 +300,8 @@ public class EntityPreviewExecution extends ManagedForm implements SingleTableRe
 
 	@Override
 	public WorkerMessage createExecutionMessage() {
-		return new ExecuteForm(getId(), getFlatSubQueries().entrySet().stream()
+		return new ExecuteForm(getId(), getFlatSubQueries().entrySet()
+														   .stream()
 														   .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getQuery())));
 	}
 
