@@ -13,6 +13,7 @@ i18next
       de: { translation: {} },
       en: { translation: {} },
     },
+    returnNull: false,
   });
 
 export default i18next;

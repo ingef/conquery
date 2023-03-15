@@ -1,6 +1,6 @@
-import { TFunction } from "react-i18next";
-
 // See index.html for an inject marker, that we use to inject env vars
+import { TFunction } from "i18next";
+
 // at container runtime
 function runtimeVar(variable: string): string | null {
   return window.env && window.env[variable] !== "null"
