@@ -131,7 +131,7 @@
       // force button in case of 409 status
       const forceURL = new URL(url, window.location);
       forceURL.searchParams.append('force', true);
-      const customButton = createCustomButton('Löschen erzwingen');
+      const customButton = createCustomButton('Force delete');
       customButton.onclick = () => rest(forceURL, options).then((res) => {
         res.ok && location.reload();
       });
@@ -226,7 +226,16 @@
 								setTimeout(() => location.reload(), 2000);
 								showToastMessage(ToastTypes.SUCCESS, "Success", "The file has been posted successfully");
 							} else {
-								showMessageForResponse(response);
+                let customButton;
+                // force button in case of 409 status
+                const forceURL = new URL(url, window.location);
+                // only apply for concept uploads
+                if (forceURL.pathname.includes('/concepts')) {
+                  forceURL.searchParams.append('force', true);
+                  customButton = createCustomButton('Replace file');
+                  customButton.onclick = () => postFile(event, forceURL);
+                }
+								showMessageForResponse(response, customButton);
 							}
 						})
 						.catch(function(error) {
