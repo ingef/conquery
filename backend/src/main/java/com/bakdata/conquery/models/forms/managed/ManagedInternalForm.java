@@ -41,6 +41,7 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "INTERNAL_FORM")
 @Getter
+@EqualsAndHashCode(callSuper = true)
 public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedForm<F> implements SingleTableResult, InternalExecution<FormShardResult> {
 
 
@@ -49,10 +50,11 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	 * This is required by forms that have multiple results (CSVs) as output.
 	 */
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private Map<String, ManagedQuery> subQueries;
 
 	/**
-	 * Subqueries that are send to the workers.
+	 * Subqueries that are sent to the workers.
 	 */
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
@@ -69,7 +71,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	@Override
 	public void doInitExecutable() {
 		// Convert sub queries to sub executions
-		getSubmittedForm().resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
+		getSubmitted().resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
 		subQueries = createSubExecutions();
 
 		// Initialize sub executions
@@ -78,9 +80,9 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 
 	@NotNull
 	private Map<String, ManagedQuery> createSubExecutions() {
-		return getSubmittedForm().createSubQueries()
-								 .entrySet()
-								 .stream().collect(Collectors.toMap(
+		return getSubmitted().createSubQueries()
+							 .entrySet()
+							 .stream().collect(Collectors.toMap(
 						e -> e.getKey(),
 						e -> e.getValue().toManagedExecution(getOwner(), getDataset(), getStorage())
 

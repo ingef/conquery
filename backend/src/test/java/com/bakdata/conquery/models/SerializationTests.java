@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models;
 
+import static com.bakdata.conquery.models.types.SerialisationObjectsUtil.*;
+
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -23,6 +25,7 @@ import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
@@ -46,7 +49,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -65,6 +67,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
+import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -282,60 +285,11 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void treeConcept() throws IOException, JSONException {
-		Dataset dataset = new Dataset();
-		dataset.setName("datasetName");
-
-		TreeConcept concept = new TreeConcept();
-		concept.setDataset(dataset);
-		concept.setLabel("conceptLabel");
-		concept.setName("conceptName");
-
-		Table table = new Table();
-
-		Column column = new Column();
-		column.setLabel("colLabel");
-		column.setName("colName");
-		column.setType(MajorTypeId.STRING);
-		column.setTable(table);
-
-		Column dateColumn = new Column();
-		dateColumn.setLabel("colLabel2");
-		dateColumn.setName("colName2");
-		dateColumn.setType(MajorTypeId.DATE);
-		dateColumn.setTable(table);
-
-
-		table.setColumns(new Column[]{column, dateColumn});
-		table.setDataset(dataset);
-		table.setLabel("tableLabel");
-		table.setName("tableName");
-
-		column.setTable(table);
-
-		ConceptTreeConnector connector = new ConceptTreeConnector();
-		connector.setConcept(concept);
-		connector.setLabel("connLabel");
-		connector.setName("connName");
-		connector.setColumn(column);
-
-		concept.setConnectors(List.of(connector));
-
-		ValidityDate valDate = new ValidityDate();
-		valDate.setColumn(dateColumn);
-		valDate.setConnector(connector);
-		valDate.setLabel("valLabel");
-		valDate.setName("valName");
-		connector.setValidityDates(List.of(valDate));
 
 		CentralRegistry registry = getMetaStorage().getCentralRegistry();
+		Dataset dataset = createDataset(registry);
 
-		registry.register(dataset);
-		registry.register(concept);
-		registry.register(column);
-		registry.register(dateColumn);
-		registry.register(table);
-		registry.register(connector);
-		registry.register(valDate);
+		TreeConcept concept = createConcept(registry, dataset);
 
 		SerializationTestUtil
 				.forType(TreeConcept.class)
@@ -343,6 +297,7 @@ public class SerializationTests extends AbstractSerializationTest {
 				.registry(registry)
 				.test(concept);
 	}
+
 
 	@Test
 	public void persistentIdMap() throws JSONException, IOException {
@@ -356,9 +311,7 @@ public class SerializationTests extends AbstractSerializationTest {
 	public void formConfig() throws JSONException, IOException {
 		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 
-		final Dataset dataset = new Dataset("test-dataset");
-
-		registry.register(dataset);
+		final Dataset dataset = createDataset(registry);
 
 		ExportForm form = new ExportForm();
 		AbsoluteMode mode = new AbsoluteMode();
@@ -392,6 +345,45 @@ public class SerializationTests extends AbstractSerializationTest {
 		getMetaStorage().updateUser(user);
 
 		ManagedQuery execution = new ManagedQuery(null, user, dataset, getMetaStorage());
+		execution.setTags(new String[]{"test-tag"});
+
+		SerializationTestUtil.forType(ManagedExecution.class)
+							 .objectMappers(getManagerInternalMapper(), getApiMapper())
+							 .registry(registry)
+							 .test(execution);
+	}
+
+	@Test
+	public void testExportForm() throws JSONException, IOException {
+
+		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
+
+		final Dataset dataset = createDataset(registry);
+
+
+		registry.register(dataset);
+
+		final ExportForm exportForm = createExportForm(registry, dataset);
+
+		SerializationTestUtil.forType(QueryDescription.class)
+							 .objectMappers(getManagerInternalMapper(), getApiMapper())
+							 .registry(registry)
+							 .checkHashCode()
+							 .test(exportForm);
+	}
+
+	@Test
+	public void managedForm() throws JSONException, IOException {
+
+		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
+
+		final Dataset dataset = createDataset(registry);
+
+		final User user = createUser(registry, getMetaStorage());
+
+		final ExportForm exportForm = createExportForm(registry, dataset);
+
+		ManagedInternalForm<ExportForm> execution = new ManagedInternalForm<>(exportForm, user, dataset, getMetaStorage());
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)

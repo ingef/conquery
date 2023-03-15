@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -42,6 +43,7 @@ import lombok.ToString;
 @ToString(of = {"connectors"})
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 public abstract class Concept<CONNECTOR extends Connector> extends ConceptElement<ConceptId> implements Authorized {
 
 	/**

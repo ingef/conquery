@@ -13,7 +13,7 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = false, doNotUseGetters = true)
 public class ManagedExecutionId extends Id<ManagedExecution> {
 
 	private final DatasetId dataset;

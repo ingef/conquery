@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,7 @@ import org.jetbrains.annotations.NotNull;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 @Slf4j
+@EqualsAndHashCode(callSuper = true)
 public abstract class Select extends Labeled<SelectId> implements NamespacedIdentifiable<SelectId> {
 
 	@JsonBackReference @Getter @Setter
