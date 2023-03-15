@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import com.fasterxml.jackson.databind.DatabindContext;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -29,8 +30,19 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "MANAGED_FORM", base = ManagedExecution.class)
 public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 
+	/**
+	 * The submitted form for this execution.
+	 *
+	 * @implNote We use the type {@link Form} here rather than the type parameter F.
+	 * Using F causes the class to have a concrete type at runtime which in turn skips
+	 * the object inspection of Jackson to look at the actual <code>type</code> member of the object (see {@link com.bakdata.conquery.io.cps.CPSTypeIdResolver#typeFromId(DatabindContext, String)}).
+	 * This causes a problem, when the object uses types with {@link com.bakdata.conquery.io.cps.SubTyped},
+	 * as the subtype is only added to the {@link com.fasterxml.jackson.databind.DeserializationContext}, when the
+	 * type is derived from the <pre>type</pre> member not when Jackson can just infere the deserializer from the type of
+	 * this property.
+	 */
 	@Getter
-	private F submittedForm;
+	private Form submittedForm;
 
 	protected ManagedForm(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
 		super(storage);
@@ -70,7 +82,7 @@ public abstract class ManagedForm<F extends Form> extends ManagedExecution {
 	@Override
 	@JsonIgnore
 	public F getSubmitted() {
-		return submittedForm;
+		return (F) submittedForm;
 	}
 
 
