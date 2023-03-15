@@ -6,7 +6,6 @@ import {
   faFolderOpen,
   faCaretRight,
 } from "@fortawesome/free-solid-svg-icons";
-import { useMemo } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
@@ -83,8 +82,8 @@ const Infos = styled("div")`
   overflow-x: auto;
 `;
 
-const IndentRoot = styled("div")<{ depth: number }>`
-  padding-left: ${({ depth }) => depth * 15 + "px"};
+const IndentRoot = styled("div")`
+  padding-left: 15px;
 `;
 
 const PieceOfInfo = styled("div")`
@@ -149,11 +148,8 @@ const Tooltip = () => {
     parent,
   } = additionalInfos;
 
-  const hasChild = useMemo(() => {
-    return parent !== label && parent;
-  }, [parent, label]);
-
   if (!displayTooltip) return <ActivateTooltip />;
+
   const searchHighlight = (text: string) => {
     return (
       <Highlighter
@@ -177,8 +173,10 @@ const Tooltip = () => {
           <PinnedLabel>
             <TypeIcon
               icon={
+                // Parent is not element tooltipped or tooltip is a folder
                 isFolder || parent !== label
-                  ? hasChild
+                  ? // If the parent exists we show the folder icon
+                    parent
                     ? faFolderOpen
                     : faFolder
                   : faMinus
@@ -200,8 +198,8 @@ const Tooltip = () => {
               />
             )}
           </PinnedLabel>
-          {hasChild ? (
-            <IndentRoot depth={1}>
+          {parent !== label && parent ? (
+            <IndentRoot>
               <PinnedLabel>
                 <TypeIcon icon={faCaretRight} />
                 <TypeIcon icon={isFolder ? faFolder : faMinus} />

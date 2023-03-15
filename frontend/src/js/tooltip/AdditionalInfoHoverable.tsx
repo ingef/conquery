@@ -4,7 +4,6 @@ import { useDispatch } from "react-redux";
 
 import type { ConceptT } from "../api/types";
 import { isEmpty } from "../common/helpers/commonHelper";
-import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 
 import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";
 import { AdditionalInfosType } from "./reducer";
@@ -16,7 +15,6 @@ const Root = styled("div")`
 // Allowlist the data we pass (especially: don't pass all children)
 const getAdditionalInfos = (
   node: ConceptT,
-  parent?: string,
 ): AdditionalInfosType => ({
   label: node.label,
   description: node.description,
@@ -25,7 +23,6 @@ const getAdditionalInfos = (
   matchingEntities: node.matchingEntities,
   dateRange: node.dateRange,
   infos: node.additionalInfos,
-  parent: parent ? getConceptById(parent)?.label : null,
 });
 
 const AdditionalInfoHoverable = ({
@@ -45,7 +42,10 @@ const AdditionalInfoHoverable = ({
     if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
     dispatch(
       displayAdditionalInfos({
-        additionalInfos: getAdditionalInfos(node, parent),
+        additionalInfos: {
+          ...getAdditionalInfos(node),
+          parent,
+        },
       }),
     );
   };
@@ -56,7 +56,10 @@ const AdditionalInfoHoverable = ({
     dispatch(toggleAdditionalInfos());
     dispatch(
       displayAdditionalInfos({
-        additionalInfos: getAdditionalInfos(node, parent),
+        additionalInfos: {
+          ...getAdditionalInfos(node),
+          parent,
+        },
       }),
     );
   };
