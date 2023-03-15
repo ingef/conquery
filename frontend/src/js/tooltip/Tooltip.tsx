@@ -1,10 +1,12 @@
 import styled from "@emotion/styled";
-import { useMemo } from "react";
 import {
   faFolder,
   faMinus,
   faThumbtack,
+  faFolderOpen,
+  faCaretRight,
 } from "@fortawesome/free-solid-svg-icons";
+import { useMemo } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
@@ -173,7 +175,15 @@ const Tooltip = () => {
         />
         <Head>
           <PinnedLabel>
-            <TypeIcon icon={isFolder ? faFolder : faMinus} />
+            <TypeIcon
+              icon={
+                isFolder || parent !== label
+                  ? hasChild
+                    ? faFolderOpen
+                    : faFolder
+                  : faMinus
+              }
+            />
             <Label>
               {parent
                 ? searchHighlight(parent)
@@ -193,8 +203,8 @@ const Tooltip = () => {
           {hasChild ? (
             <IndentRoot depth={1}>
               <PinnedLabel>
-                <TypeIcon icon="caret-right" />
-                <TypeIcon icon={isFolder ? "folder" : "minus"} />
+                <TypeIcon icon={faCaretRight} />
+                <TypeIcon icon={isFolder ? faFolder : faMinus} />
                 <Label>
                   {label ? searchHighlight(label) : t("tooltip.placeholder")}
                 </Label>
