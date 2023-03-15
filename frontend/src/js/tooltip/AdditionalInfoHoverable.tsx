@@ -13,9 +13,7 @@ const Root = styled("div")`
 `;
 
 // Allowlist the data we pass (especially: don't pass all children)
-const getAdditionalInfos = (
-  node: ConceptT,
-): AdditionalInfosType => ({
+const getAdditionalInfos = (node: ConceptT): AdditionalInfosType => ({
   label: node.label,
   description: node.description,
   isFolder: !!node.children && node.children.length > 0,
