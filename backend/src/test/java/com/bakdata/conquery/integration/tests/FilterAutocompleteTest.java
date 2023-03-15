@@ -120,7 +120,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 													 ), MediaType.APPLICATION_JSON_TYPE));
 
 			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
-			assertThat(resolvedFromCsv.getValues().stream().map(FrontendValue::getValue)).containsExactly("a", "aaa", "aab", "baaa");
+			assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue)).containsExactly("a", "aaa", "aab", "baaa");
 		}
 
 
@@ -137,7 +137,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 			final ConceptsProcessor.AutoCompleteResult resolvedFromValues = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 
 			//check the resolved values
-			assertThat(resolvedFromValues.getValues().stream().map(FrontendValue::getValue))
+			assertThat(resolvedFromValues.values().stream().map(FrontendValue::getValue))
 					.containsExactly("f", "fm");
 		}
 	}
