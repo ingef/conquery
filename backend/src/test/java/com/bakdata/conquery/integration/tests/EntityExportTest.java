@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,6 +20,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.integration.common.LoadingUtil;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
@@ -170,10 +172,10 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				.isEqualTo(new EntityPreviewStatus.YearEntry(
 						2010, Map.of("Values", "B2"),
 						List.of(
-								new EntityPreviewStatus.QuarterEntry(1, Map.of("Values", "")),
-								new EntityPreviewStatus.QuarterEntry(2, Map.of("Values", "")),
+								new EntityPreviewStatus.QuarterEntry(1, Collections.emptyMap()),
+								new EntityPreviewStatus.QuarterEntry(2, Collections.emptyMap()),
 								new EntityPreviewStatus.QuarterEntry(3, Map.of("Values", "B2")),
-								new EntityPreviewStatus.QuarterEntry(4, Map.of("Values", ""))
+								new EntityPreviewStatus.QuarterEntry(4, Collections.emptyMap())
 						)
 				));
 
@@ -183,7 +185,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						"Age",
 						"9",
 						ResultType.IntegerT.INSTANCE.typeInfo(),
-						"",
+						null,
 						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
 																	  .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
 				),
@@ -191,7 +193,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						"Values",
 						"A1 ; B2",
 						new ResultType.ListT(ResultType.StringT.INSTANCE).typeInfo(),
-						"This is a column",
+						null,
 						Set.of(
 								new SemanticType.SelectResultT(conquery.getDatasetRegistry()
 																	   .resolve(valuesSelectId))
@@ -218,6 +220,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 
 		final Optional<URL> csvUrl = result.getResultUrls().stream()
+										   .map(ResultAsset::url)
 										   .filter(url -> url.getFile().endsWith(".csv"))
 										   .findFirst();
 

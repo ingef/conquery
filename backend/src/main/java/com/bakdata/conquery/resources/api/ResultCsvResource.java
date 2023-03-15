@@ -6,9 +6,9 @@ import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Optional;
 
 import javax.inject.Inject;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Path("result/")
+@Path("result/csv")
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ResultCsvResource {
 
@@ -38,7 +38,7 @@ public class ResultCsvResource {
 
 	private final ResultCsvProcessor processor;
 
-	public static <E extends ManagedExecution<?> & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
+	public static <E extends ManagedExecution & SingleTableResult> URL getDownloadURL(UriBuilder uriBuilder, E exec) throws MalformedURLException {
 		return uriBuilder.path(ResultCsvResource.class)
 						 .path(ResultCsvResource.class, GET_RESULT_PATH_METHOD)
 						 .resolveTemplate(ResourceConstants.QUERY, exec.getId().toString())
@@ -49,16 +49,16 @@ public class ResultCsvResource {
 	@GET
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
-	public <E extends ManagedExecution<?> & SingleTableResult> Response getAsCsv(
+	public <E extends ManagedExecution & SingleTableResult> Response getAsCsv(
 			@Auth Subject subject,
-			@PathParam(QUERY) ManagedExecution<?> execution,
+			@PathParam(QUERY) ManagedExecution execution,
 			@HeaderParam(HttpHeaders.USER_AGENT) String userAgent,
 			@QueryParam("charset") String queryCharset,
-			@QueryParam("pretty") Optional<Boolean> pretty) {
+			@QueryParam("pretty") @DefaultValue("true") boolean pretty) {
 
 		checkSingleTableResult(execution);
 		log.info("Result for {} download on dataset {} by subject {} ({}).", execution, execution.getDataset().getId(), subject.getId(), subject.getName());
 
-		return processor.createResult(subject, (E) execution, pretty.orElse(Boolean.TRUE), determineCharset(userAgent, queryCharset));
+		return processor.createResult(subject, (E) execution, pretty, determineCharset(userAgent, queryCharset));
 	}
 }

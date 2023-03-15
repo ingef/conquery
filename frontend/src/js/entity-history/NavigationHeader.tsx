@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faSliders } from "@fortawesome/free-solid-svg-icons";
 import { Dispatch, memo, SetStateAction, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -14,10 +15,10 @@ import { SettingsModal } from "./SettingsModal";
 
 const Root = styled("div")`
   display: grid;
-  gap: 15px;
+  gap: 8px;
   background-color: white;
   box-shadow: 1px 1px 5px 0px rgba(0, 0, 0, 0.2);
-  padding: 10px;
+  padding: 14px;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
@@ -98,7 +99,7 @@ export const NavigationHeader = memo(
           </div>
           <WithTooltip text={t("history.settings.headline")}>
             <IconButton
-              icon="sliders"
+              icon={faSliders}
               onClick={() => setSettingsModalOpen(true)}
             />
           </WithTooltip>

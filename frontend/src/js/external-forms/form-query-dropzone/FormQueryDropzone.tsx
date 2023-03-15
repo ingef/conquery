@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
+import { FC, useCallback, useRef } from "react";
 
 import { DNDType } from "../../common/constants/dndTypes";
 import { exists } from "../../common/helpers/exists";
@@ -43,13 +43,19 @@ const FormQueryDropzone: FC<PropsT> = ({
     onChange(item);
   };
 
-  const onInvalid = () => {
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  const onInvalid = useCallback(() => {
     // It would be better to call `setError` to register an error for the field,
     // but that error won't persist when another `useController` call is made for that field
     // during field registration, so we have to do something here that
     // makes the field not pass the `validate` rule.
-    onChange(null);
-  };
+    onChangeRef.current(null);
+  }, []);
+  const onDelete = useCallback(() => {
+    onChangeRef.current(null);
+  }, []);
 
   return (
     <div className={className}>
@@ -67,7 +73,7 @@ const FormQueryDropzone: FC<PropsT> = ({
             placeholder={dropzoneText}
             queryResult={value || undefined}
             onInvalid={onInvalid}
-            onDelete={() => onChange(null)}
+            onDelete={onDelete}
           />
         )}
       </SxDropzone>

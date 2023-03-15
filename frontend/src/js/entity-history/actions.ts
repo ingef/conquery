@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 
@@ -10,7 +11,9 @@ import type {
   ColumnDescription,
   DatasetT,
   EntityInfo,
+  GetEntityHistoryDefaultParamsResponse,
   HistorySources,
+  ResultUrlWithLabel,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
@@ -23,6 +26,8 @@ import { exists } from "../common/helpers/exists";
 import { useDatasetId } from "../dataset/selectors";
 import { loadCSV, parseCSVWithHeaderToObj } from "../file/csv";
 import { useLoadPreviewData } from "../preview/actions";
+import { setMessage } from "../snack-message/actions";
+import { SnackMessageType } from "../snack-message/reducer";
 
 import { EntityEvent, EntityId } from "./reducer";
 
@@ -40,7 +45,7 @@ export const closeHistory = createAction("history/CLOSE")();
 
 export const loadDefaultHistoryParamsSuccess = createAction(
   "history/LOAD_DEFAULT_HISTORY_PARAMS_SUCCESS",
-)<{ sources: HistorySources }>();
+)<GetEntityHistoryDefaultParamsResponse>();
 
 export const useLoadDefaultHistoryParams = () => {
   const dispatch = useDispatch();
@@ -51,7 +56,7 @@ export const useLoadDefaultHistoryParams = () => {
       try {
         const result = await getEntityHistoryDefaultParams(datasetId);
 
-        dispatch(loadDefaultHistoryParamsSuccess({ sources: result }));
+        dispatch(loadDefaultHistoryParamsSuccess(result));
       } catch (error) {
         // TODO: Fail without noticing user, maybe change this later if required
         console.error(error);
@@ -78,7 +83,7 @@ export const loadHistoryData = createAsyncAction(
     currentEntityInfos: EntityInfo[];
     currentEntityId: EntityId;
     currentEntityUniqueSources: string[];
-    resultUrls?: string[];
+    resultUrls?: ResultUrlWithLabel[];
     entityIds?: EntityId[];
     label?: string;
     columns?: Record<string, ColumnDescription>;
@@ -116,7 +121,9 @@ export function useNewHistorySession() {
   return async (url: string, columns: ColumnDescription[], label: string) => {
     dispatch(loadHistoryData.request());
 
-    const result = await loadPreviewData(url, columns, { noLoading: true });
+    const result = await loadPreviewData(url, columns, {
+      noLoading: true,
+    });
 
     if (!result) {
       dispatch(
@@ -166,6 +173,7 @@ export function useUpdateHistorySession() {
   const datasetId = useDatasetId();
   const getEntityHistory = useGetEntityHistory();
   const getAuthorizedUrl = useGetAuthorizedUrl();
+  const { t } = useTranslation();
 
   const defaultEntityHistoryParams = useSelector<
     StateT,
@@ -195,13 +203,13 @@ export function useUpdateHistorySession() {
             defaultEntityHistoryParams.sources,
           );
 
-        const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
+        const csvUrl = resultUrls.find(({ url }) => url.endsWith("csv"));
 
         if (!csvUrl) {
           throw new Error("No CSV URL found");
         }
 
-        const authorizedCSVUrl = getAuthorizedUrl(csvUrl);
+        const authorizedCSVUrl = getAuthorizedUrl(csvUrl.url);
         const csv = await loadCSV(authorizedCSVUrl, { english: true });
         const currentEntityData = await parseCSVWithHeaderToObj(
           csv.data.map((r) => r.join(";")).join("\n"),
@@ -227,7 +235,7 @@ export function useUpdateHistorySession() {
 
         dispatch(
           loadHistoryData.success({
-            currentEntityCsvUrl: csvUrl,
+            currentEntityCsvUrl: csvUrl.url,
             currentEntityData: currentEntityDataProcessed,
             currentEntityId: entityId,
             currentEntityInfos: nonEmptyInfos,
@@ -241,9 +249,16 @@ export function useUpdateHistorySession() {
         );
       } catch (e) {
         dispatch(loadHistoryData.failure(errorPayload(e as Error, {})));
+        dispatch(
+          setMessage({
+            message: t("history.error"),
+            type: SnackMessageType.ERROR,
+          }),
+        );
       }
     },
     [
+      t,
       datasetId,
       defaultEntityHistoryParams.sources,
       dispatch,

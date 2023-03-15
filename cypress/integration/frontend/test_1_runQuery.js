@@ -1,5 +1,5 @@
 /// <reference types="cypress" />
-import { visitWithToken } from "../integration-helpers/visitWithToken";
+import { visitWithToken } from "../../integration-helpers/visitWithToken";
 
 const USER_TOKEN_WITH_PERMISSIONS = "user.user2";
 

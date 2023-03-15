@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
-import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -32,7 +32,7 @@ public class FilterSearch {
 	private final NamespaceStorage storage;
 	private final JobManager jobManager;
 	private final CSVConfig parserConfig;
-	private final SearchConfig searchConfig;
+	private final IndexConfig indexConfig;
 
 	/**
 	 * We tag our searches based on references collected in getSearchReferences. We do not mash them all together to allow for sharing and prioritising different sources.
@@ -81,7 +81,7 @@ public class FilterSearch {
 
 		totals = new Object2LongOpenHashMap<>();
 
-		jobManager.addSlowJob(new UpdateFilterSearchJob(storage, searchCache, searchConfig, totals));
+		jobManager.addSlowJob(new UpdateFilterSearchJob(storage, searchCache, indexConfig, totals));
 	}
 
 }

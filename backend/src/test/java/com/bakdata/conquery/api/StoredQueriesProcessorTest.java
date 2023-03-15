@@ -3,7 +3,6 @@ package com.bakdata.conquery.api;
 import static com.bakdata.conquery.models.execution.ExecutionState.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -14,9 +13,10 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.ExecutionStatus;
-import com.bakdata.conquery.apiv1.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.QueryProcessor;
+import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -48,10 +48,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.resources.api.ResultArrowResource;
-import com.bakdata.conquery.resources.api.ResultCsvResource;
-import com.bakdata.conquery.resources.api.ResultExcelResource;
-import com.bakdata.conquery.resources.api.ResultParquetResource;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
@@ -102,7 +98,7 @@ public class StoredQueriesProcessorTest {
 			mockUser(1, List.of(QUERY_ID_3, QUERY_ID_4))
 	};
 
-	private static final List<ManagedExecution<?>> queries = ImmutableList.of(
+	private static final List<ManagedExecution> queries = ImmutableList.of(
 			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_0, NEW, DATASET_0, 100L),            // included
 			mockManagedConceptQueryFrontEnd(USERS[0], QUERY_ID_1, NEW, DATASET_1, 100L),            // not included: wrong dataset
 			mockManagedForm(USERS[0], QUERY_ID_2, NEW, DATASET_0),                            // not included: not a ManagedQuery
@@ -151,7 +147,7 @@ public class StoredQueriesProcessorTest {
 	}
 
 	private static ManagedForm mockManagedForm(User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset){
-		return new ManagedInternalForm(new ExportForm(), user, dataset) {
+		return new ManagedInternalForm(new ExportForm(), user, dataset, STORAGE) {
 			{
 				setState(execState);
 				setCreationTime(LocalDateTime.MIN);
@@ -186,7 +182,7 @@ public class StoredQueriesProcessorTest {
 
 
 	private static ManagedQuery mockManagedQuery(Query queryDescription, User user, ManagedExecutionId id, ExecutionState execState, final Dataset dataset, final long resultCount) {
-		return new ManagedQuery(queryDescription, user, dataset) {
+		return new ManagedQuery(queryDescription, user, dataset, STORAGE) {
 			{
 				setState(execState);
 				setCreationTime(LocalDateTime.MIN);
@@ -207,9 +203,8 @@ public class StoredQueriesProcessorTest {
 	private static ExecutionStatus makeState(ManagedExecutionId id, User owner, User callingUser, ExecutionState state, String typeLabel, SecondaryIdDescriptionId secondaryId, Long resultCount) {
 		OverviewExecutionStatus status = new OverviewExecutionStatus();
 
-		final ManagedQuery execMock = new ManagedQuery() {
+		final ManagedQuery execMock = new ManagedQuery(null, owner, DATASET_0, STORAGE) {
 			{
-				setDataset(DATASET_0);
 				setQueryId(id.getExecution());
 				setLastResultCount(resultCount);
 			}
@@ -233,7 +228,7 @@ public class StoredQueriesProcessorTest {
 		status.setNumberOfResults(resultCount);
 		status.setSecondaryId(secondaryId); // This is probably not interesting on the overview (only if there is an filter for the search)
 		if(state.equals(DONE)) {
-			List<URL> resultUrls = new ArrayList<>();
+			List<ResultAsset> resultUrls = new ArrayList<>();
 			resultUrls.addAll(EXCEL_RESULT_PROVIDER.generateResultURLs(execMock, URI_BUILDER.clone(), true));
 			resultUrls.addAll(CSV_RESULT_PROVIDER.generateResultURLs(execMock, URI_BUILDER.clone(), true));
 			resultUrls.addAll(ARROW_RESULT_PROVIDER.generateResultURLs(execMock, URI_BUILDER.clone(), true));

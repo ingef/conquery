@@ -111,7 +111,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void passwordCredential() throws IOException, JSONException {
-		PasswordCredential credential = new PasswordCredential(new String("testPassword").toCharArray());
+		PasswordCredential credential = new PasswordCredential("testPassword".toCharArray());
 
 		SerializationTestUtil
 				.forType(PasswordCredential.class)
@@ -391,7 +391,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 		getMetaStorage().updateUser(user);
 
-		ManagedQuery execution = new ManagedQuery(null, user, dataset);
+		ManagedQuery execution = new ManagedQuery(null, user, dataset, getMetaStorage());
 		execution.setTags(new String[]{"test-tag"});
 
 		SerializationTestUtil.forType(ManagedExecution.class)

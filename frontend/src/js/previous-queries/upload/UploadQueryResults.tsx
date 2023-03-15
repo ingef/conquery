@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -81,7 +82,7 @@ const UploadQueryResults = ({ className, datasetId }: PropsT) => {
       <WithTooltip text={t("uploadQueryResults.uploadResults")}>
         <SxIconButton
           frame
-          icon="upload"
+          icon={faUpload}
           onClick={() => setIsModalOpen(true)}
         />
       </WithTooltip>

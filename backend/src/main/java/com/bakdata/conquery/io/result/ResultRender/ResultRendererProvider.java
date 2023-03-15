@@ -1,10 +1,10 @@
 package com.bakdata.conquery.io.result.ResultRender;
 
-import java.net.URL;
 import java.util.Collection;
 
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -24,7 +24,7 @@ public interface ResultRendererProvider {
 	 * @param allProviders A flag that should override internal "hide-this-url" flags.
 	 * @return An Optional with the url or an empty optional.
 	 */
-	Collection<URL> generateResultURLs(ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders);
+	Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders);
 
 	void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager);
 }

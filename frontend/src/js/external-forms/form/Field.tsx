@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import type { SelectOptionT } from "../../api/types";
 import type { DateStringMinMax } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
+import { useDatasetId } from "../../dataset/selectors";
 import type { Language } from "../../localization/useActiveLang";
 import { nodeIsInvalid } from "../../model/node";
 import type { DragItemQuery } from "../../standard-query-editor/types";
@@ -149,6 +150,7 @@ const setValueConfig = {
 };
 
 const Field = ({ field, ...commonProps }: PropsT) => {
+  const datasetId = useDatasetId();
   const { formType, optional, locale, availableDatasets, setValue, control } =
     commonProps;
   const { t } = useTranslation();
@@ -335,7 +337,10 @@ const Field = ({ field, ...commonProps }: PropsT) => {
       );
     case "DATASET_SELECT":
       const datasetDefaultValue =
-        availableDatasets.length > 0 ? availableDatasets[0] : null;
+        availableDatasets.length > 0
+          ? availableDatasets.find((opt) => opt.value === datasetId) ||
+            availableDatasets[0]
+          : null;
 
       return (
         <ConnectedField

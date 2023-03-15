@@ -5,8 +5,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -41,7 +39,6 @@ import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownShard;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
@@ -112,6 +109,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	public void run(ConqueryConfig config, Environment environment) throws InterruptedException {
 		this.environment = environment;
+		this.config = config;
 		validator = environment.getValidator();
 
 		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
@@ -121,6 +119,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		// The validator is already injected at this point see Conquery.java
 		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize(), config, this::createInternalObjectMapper);
 		storage = new MetaStorage(config.getStorage(), datasetRegistry);
+		datasetRegistry.setMetaStorage(storage);
 
 
 		final ObjectMapper objectMapper = environment.getObjectMapper();
@@ -133,7 +132,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		formScanner = new FormScanner(config);
 
 
-		this.config = config;
 		config.initialize(this);
 
 
@@ -247,6 +245,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 		getDatasetRegistry().injectInto(objectMapper);
 		getStorage().injectInto(objectMapper);
+		getConfig().injectInto(objectMapper);
 	}
 
 	/**
@@ -264,6 +263,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		injectableValues.add(Validator.class, getValidator());
 		getDatasetRegistry().injectInto(objectMapper);
 		getStorage().injectInto(objectMapper);
+		getConfig().injectInto(objectMapper);
 
 
 		if (viewClass != null) {
@@ -291,35 +291,28 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		log.info("Loading MetaStorage");
 		storage.loadData();
 		log.info("MetaStorage loaded {}", storage);
-
-		datasetRegistry.setMetaStorage(storage);
 	}
 
 	@SneakyThrows(InterruptedException.class)
 	public void loadNamespaces() {
 
 
-		Queue<Namespace> namespacesDone = new ConcurrentLinkedQueue<>();
 		ExecutorService loaders = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
 		// Namespaces load their storage themselves, so they can inject Namespace relevant objects into stored objects
 		final Collection<NamespaceStorage> namespaceStorages = config.getStorage().discoverNamespaceStorages();
 		for (NamespaceStorage namespaceStorage : namespaceStorages) {
 			loaders.submit(() -> {
-				namespacesDone.add(Namespace.createAndRegister(
-						getDatasetRegistry(),
-						namespaceStorage,
-						getConfig(),
-						this::createInternalObjectMapper
-				));
+				datasetRegistry.createNamespace(namespaceStorage);
 			});
 		}
 
 
 		loaders.shutdown();
 		while (!loaders.awaitTermination(1, TimeUnit.MINUTES)) {
-			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", namespacesDone.size(), namespaceStorages.size()
-																															- namespacesDone.size());
+			final int coundLoaded = datasetRegistry.getDatasets().size();
+			log.debug("Waiting for Worker namespaces to load. {} are already finished. {} pending.", coundLoaded, namespaceStorages.size()
+																												  - coundLoaded);
 		}
 	}
 

@@ -95,7 +95,7 @@ const mergeMultiSelectFilter = ({
       };
     }): MultiSelectFilterWithValueType | BigMultiSelectFilterWithValueType => {
   const fixedFilterType = {
-    type: savedFilter.type as typeof matchingFilter["type"], // matchingFilter.type is sometimes wrongly saying MULTI_SELECT
+    type: savedFilter.type as (typeof matchingFilter)["type"], // matchingFilter.type is sometimes wrongly saying MULTI_SELECT
   };
 
   const basicFilter = {

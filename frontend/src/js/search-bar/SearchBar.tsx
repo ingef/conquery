@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faSearch } from "@fortawesome/free-solid-svg-icons";
 import { memo, useEffect, useState } from "react";
 
 import IconButton from "../button/IconButton";
@@ -81,7 +82,7 @@ const SearchBar = ({
       {exists(localSearchTerm) && (
         <Right>
           <StyledIconButton
-            icon="search"
+            icon={faSearch}
             aria-hidden="true"
             onClick={() => onSearch(localSearchTerm)}
           />

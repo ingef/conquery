@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faListUl } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
@@ -35,7 +36,7 @@ const Headline = styled("h2")`
   line-height: 1.3;
 `;
 
-const Row = styled("p")`
+const Row = styled("div")`
   display: flex;
   gap: 30px;
   align-items: center;
@@ -59,7 +60,7 @@ export const TimelineEmptyPlaceholder = () => {
   return (
     <Root>
       <Row>
-        <BigIcon icon="list-ul" />
+        <BigIcon icon={faListUl} />
         <div>
           <Headline>{t("history.emptyTimeline.headline")}</Headline>
           <Description>{t("history.emptyTimeline.description")}</Description>

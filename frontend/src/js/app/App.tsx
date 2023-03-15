@@ -7,6 +7,7 @@ import Header from "../header/Header";
 import SnackMessage from "../snack-message/SnackMessage";
 import { useStartup } from "../startup/useStartup";
 
+import { About } from "./About";
 import Content, { ContentPropsT } from "./Content";
 
 const Root = styled("div")`
@@ -42,6 +43,7 @@ const App = (props: ContentPropsT) => {
 
   return (
     <Root>
+      <About />
       <Header />
       <Content {...props} />
       <SnackMessage />

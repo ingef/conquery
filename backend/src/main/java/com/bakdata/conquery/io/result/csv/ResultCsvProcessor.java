@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import lombok.RequiredArgsConstructor;
@@ -38,16 +39,16 @@ public class ResultCsvProcessor {
 	private final ConqueryConfig config;
 	private final DatasetRegistry datasetRegistry;
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, Charset charset) {
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty, Charset charset) {
 
 		final Dataset dataset = exec.getDataset();
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
 		ConqueryMDC.setLocation(subject.getName());
-		log.info("Downloading results for {} on dataset {}", exec, dataset);
+		log.info("Downloading results for {}", exec.getId());
 
-		ResultUtil.authorizeExecutable(subject, exec, dataset);
+		ResultUtil.authorizeExecutable(subject, exec);
 
 		// Check if subject is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(subject, exec);
@@ -56,7 +57,7 @@ public class ResultCsvProcessor {
 
 		// Get the locale extracted by the LocaleFilter
 		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, datasetRegistry, config, idPrinter::createId);
+		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, config, idPrinter::createId);
 
 		final StreamingOutput out = os -> {
 			try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, charset))) {
@@ -74,7 +75,12 @@ public class ResultCsvProcessor {
 			}
 		};
 
-		return makeResponseWithFileName(Response.ok(out), exec.getLabelWithoutAutoLabelSuffix(), "csv", new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(
+				Response.ok(out),
+				String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV),
+				new MediaType("text", "csv", charset.toString()),
+				ResultUtil.ContentDispositionOption.ATTACHMENT
+		);
 
 	}
 }

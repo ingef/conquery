@@ -5,6 +5,7 @@ import type {
   ColumnDescriptionSemanticId,
   EntityInfo,
   HistorySources,
+  ResultUrlWithLabel,
 } from "../api/types";
 import type { Action } from "../app/actions";
 
@@ -34,12 +35,14 @@ export interface EntityId {
 export type EntityHistoryStateT = {
   defaultParams: {
     sources: HistorySources;
+    searchConcept: string | null;
+    searchFilters: string[];
   };
   isLoading: boolean;
   isOpen: boolean;
   columns: Record<string, ColumnDescription>;
   columnDescriptions: ColumnDescription[];
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   label: string;
   entityIds: EntityId[];
   currentEntityUniqueSources: string[];
@@ -52,6 +55,8 @@ export type EntityHistoryStateT = {
 const initialState: EntityHistoryStateT = {
   defaultParams: {
     sources: { all: [], default: [] },
+    searchConcept: null,
+    searchFilters: [],
   },
   label: "",
   columns: {},
@@ -76,7 +81,9 @@ export default function reducer(
       return {
         ...state,
         defaultParams: {
-          sources: action.payload.sources,
+          sources: { all: action.payload.all, default: action.payload.default },
+          searchConcept: action.payload.searchConcept,
+          searchFilters: action.payload.searchFilters || [],
         },
       };
     case getType(loadHistoryData.request):

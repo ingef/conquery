@@ -6,7 +6,12 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
-import type { EntityInfo, HistorySources, SelectOptionT } from "../api/types";
+import type {
+  EntityInfo,
+  HistorySources,
+  ResultUrlWithLabel,
+  SelectOptionT,
+} from "../api/types";
 import type { StateT } from "../app/reducers";
 import ErrorFallback from "../error-fallback/ErrorFallback";
 import DownloadResultsDropdownButton from "../query-runner/DownloadResultsDropdownButton";
@@ -106,13 +111,13 @@ export const History = () => {
   const currentEntityInfos = useSelector<StateT, EntityInfo[]>(
     (state) => state.entityHistory.currentEntityInfos,
   );
-  const resultUrls = useSelector<StateT, string[]>(
+  const resultUrls = useSelector<StateT, ResultUrlWithLabel[]>(
     (state) => state.entityHistory.resultUrls,
   );
 
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
 
-  useHotkeys("shift+option+h", () => {
+  useHotkeys("shift+alt+h", () => {
     setShowAdvancedControls((v) => !v);
   });
 
@@ -137,6 +142,10 @@ export const History = () => {
     setCurrentEntityStatus,
   } = useEntityStatus({ currentEntityId: currentEntityId?.id || null });
 
+  const onResetEntityStatus = useCallback(() => {
+    setEntityIdsStatus({});
+  }, [setEntityIdsStatus]);
+
   const onLoadFromFile = useCallback(
     ({
       label,
@@ -160,11 +169,15 @@ export const History = () => {
 
   return (
     <FullScreen>
+      {/*
+          react-split-pane is not compatible with react 18 types,
+          TODO: Move to https://github.com/johnwalley/allotment
+          @ts-ignore */}
       <SplitPane
         split="vertical"
-        minSize={200}
-        maxSize={-300}
-        defaultSize="20%"
+        minSize={400}
+        maxSize={-500}
+        defaultSize="400px"
       >
         <SxNavigation
           entityIds={entityIds}
@@ -174,6 +187,7 @@ export const History = () => {
           entityStatusOptions={entityStatusOptions}
           setEntityStatusOptions={setEntityStatusOptions}
           onLoadFromFile={onLoadFromFile}
+          onResetHistory={onResetEntityStatus}
         />
         <ErrorBoundary FallbackComponent={ErrorFallback}>
           <Main>
@@ -235,24 +249,32 @@ export const History = () => {
   );
 };
 
+export const useDefaultStatusOptions = () => {
+  const { t } = useTranslation();
+
+  return useMemo(
+    () => [
+      {
+        label: t("history.options.check"),
+        value: t("history.options.check") as string,
+      },
+      {
+        label: t("history.options.noCheck"),
+        value: t("history.options.noCheck") as string,
+      },
+    ],
+    [t],
+  );
+};
+
 const useEntityStatus = ({
   currentEntityId,
 }: {
   currentEntityId: string | null;
 }) => {
-  const { t } = useTranslation();
-  const [entityStatusOptions, setEntityStatusOptions] = useState<
-    SelectOptionT[]
-  >([
-    {
-      label: t("history.options.check"),
-      value: t("history.options.check") as string,
-    },
-    {
-      label: t("history.options.noCheck"),
-      value: t("history.options.noCheck") as string,
-    },
-  ]);
+  const defaultStatusOptions = useDefaultStatusOptions();
+  const [entityStatusOptions, setEntityStatusOptions] =
+    useState<SelectOptionT[]>(defaultStatusOptions);
 
   const [entityIdsStatus, setEntityIdsStatus] = useState<EntityIdsStatus>({});
   const setCurrentEntityStatus = useCallback(

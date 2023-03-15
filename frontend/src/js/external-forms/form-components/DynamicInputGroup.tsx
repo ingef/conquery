@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import type { ReactNode } from "react";
 
 import IconButton from "../../button/IconButton";
@@ -51,18 +52,18 @@ const DynamicInputGroup = ({
           {item}
           {/*
             No need to display the remove button, when limit is 1.
-            Assumes that this component is always nested within another container 
+            Assumes that this component is always nested within another container
             that allows to remove that item.
 
             In case you stumble accross this and you're not sure,
             you can also just delete the following constraint:
            */}
           {limit !== 1 && (
-            <RemoveBtn tiny icon="times" onClick={() => onRemoveClick(idx)} />
+            <RemoveBtn tiny icon={faTimes} onClick={() => onRemoveClick(idx)} />
           )}
         </GroupItem>
       ))}
-      {limitNotReached && <AddBtn icon="plus" tiny onClick={onAddClick} />}
+      {limitNotReached && <AddBtn icon={faPlus} tiny onClick={onAddClick} />}
     </Container>
   );
 };

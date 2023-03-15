@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { forwardRef, memo } from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -54,7 +55,7 @@ const SelectedItem = forwardRef<
       <Container ref={ref} {...selectedItemProps}>
         <ReactMarkdown>{String(label)}</ReactMarkdown>
         <SxIconButton
-          icon="times"
+          icon={faTimes}
           disabled={disabled}
           onClick={() => removeSelectedItem(option)}
         />

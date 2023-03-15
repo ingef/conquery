@@ -1,15 +1,12 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.buildDatasetAbilityMap;
-
-import java.net.URL;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -23,6 +20,10 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
@@ -34,6 +35,7 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
@@ -53,7 +55,6 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
@@ -63,6 +64,7 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
 import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
+import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -91,7 +93,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ManagedExecution<?> postQuery(Dataset dataset, QueryDescription query, Subject subject, boolean system) {
+	public ManagedExecution postQuery(Dataset dataset, QueryDescription query, Subject subject, boolean system) {
 
 		log.info("Query posted on Dataset[{}] by User[{{}].", dataset.getId(), subject.getId());
 
@@ -135,9 +137,9 @@ public class QueryProcessor {
 		{
 			final Optional<ManagedExecutionId> executionId = visitors.getInstance(QueryUtils.OnlyReusingChecker.class).getOnlyReused();
 
-			final Optional<ManagedExecution<?>>
+			final Optional<ManagedExecution>
 					execution =
-					executionId.map(id -> tryReuse(query, id, datasetRegistry, config, executionManager, subject.getUser()));
+					executionId.map(id -> tryReuse(query, id, namespace, config, executionManager, subject.getUser()));
 
 			if (execution.isPresent()) {
 				return execution.get();
@@ -145,15 +147,15 @@ public class QueryProcessor {
 		}
 
 		// Execute the query
-		return executionManager.runQuery(datasetRegistry, query, subject.getUser(), dataset, config, system);
+		return executionManager.runQuery(namespace, query, subject.getUser(), dataset, config, system);
 	}
 
 	/**
 	 * Determine if the submitted query does reuse ONLY another query and restart that instead of creating another one.
 	 */
-	private ManagedExecution<?> tryReuse(QueryDescription query, ManagedExecutionId executionId, DatasetRegistry datasetRegistry, ConqueryConfig config, ExecutionManager executionManager, User user) {
+	private ManagedExecution tryReuse(QueryDescription query, ManagedExecutionId executionId, Namespace namespace, ConqueryConfig config, ExecutionManager executionManager, User user) {
 
-		ManagedExecution<?> execution = datasetRegistry.getMetaRegistry().resolve(executionId);
+		ManagedExecution execution = storage.getExecution(executionId);
 
 		if (execution == null) {
 			return null;
@@ -177,9 +179,9 @@ public class QueryProcessor {
 
 		// If the user is not the owner of the execution, we definitely create a new Execution, so the owner can cancel it
 		if (!user.isOwner(execution)) {
-			final ManagedExecution<?>
+			final ManagedExecution
 					newExecution =
-					executionManager.createExecution(datasetRegistry, execution.getSubmitted(), user, execution.getDataset(), false);
+					executionManager.createExecution(namespace, execution.getSubmitted(), user, execution.getDataset(), false);
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
 			storage.updateExecution(newExecution);
@@ -194,7 +196,7 @@ public class QueryProcessor {
 
 		log.trace("Re-executing Query {}", execution);
 
-		executionManager.execute(datasetRegistry, execution, config);
+		executionManager.execute(namespace, execution, config);
 
 		return execution;
 
@@ -202,13 +204,12 @@ public class QueryProcessor {
 
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
-		final Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
+		final Collection<ManagedExecution> allQueries = storage.getAllExecutions();
 
 		return getQueriesFiltered(dataset, RequestAwareUriBuilder.fromRequest(req), subject, allQueries, allProviders);
 	}
 
-	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution<?>> allQueries, boolean allProviders) {
-		final Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(subject, datasetRegistry);
+	public Stream<ExecutionStatus> getQueriesFiltered(Dataset datasetId, UriBuilder uriBuilder, Subject subject, Collection<ManagedExecution> allQueries, boolean allProviders) {
 
 		return allQueries.stream()
 						 // The following only checks the dataset, under which the query was submitted, but a query can target more that
@@ -221,8 +222,8 @@ public class QueryProcessor {
 						 .filter(q -> subject.isPermitted(q, Ability.READ))
 						 .map(mq -> {
 							 final OverviewExecutionStatus status = mq.buildStatusOverview(uriBuilder.clone(), subject);
-							 if (mq.isReadyToDownload(datasetAbilities)) {
-								 status.setResultUrls(getDownloadUrls(config.getResultProviders(), mq, uriBuilder, allProviders));
+							 if (mq.isReadyToDownload()) {
+								 status.setResultUrls(getResultAssets(config.getResultProviders(), mq, uriBuilder, allProviders));
 							 }
 							 return status;
 						 });
@@ -239,7 +240,7 @@ public class QueryProcessor {
 	 * @param allProviders If true, forces {@link ResultRendererProvider} to return an URL if possible.
 	 * @return The modified status
 	 */
-	public static List<URL> getDownloadUrls(List<ResultRendererProvider> renderer, ManagedExecution<?> exec, UriBuilder uriBuilder, boolean allProviders) {
+	public static List<ResultAsset> getResultAssets(List<ResultRendererProvider> renderer, ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 
 		return renderer.stream()
 					   .map(r -> r.generateResultURLs(exec, uriBuilder.clone(), allProviders))
@@ -252,7 +253,7 @@ public class QueryProcessor {
 	/**
 	 * Test if the query is structured in a way the Frontend can render it.
 	 */
-	private static boolean canFrontendRender(ManagedExecution<?> q) {
+	private static boolean canFrontendRender(ManagedExecution q) {
 		//TODO FK: should this be used to fill into canExpand instead of hiding the Executions?
 		if (!(q instanceof ManagedQuery)) {
 			return false;
@@ -283,7 +284,7 @@ public class QueryProcessor {
 	/**
 	 * Cancel a running query: Sending cancellation to shards, which will cause them to stop executing them, results are not sent back, and incoming results will be discarded.
 	 */
-	public void cancel(Subject subject, Dataset dataset, ManagedExecution<?> query) {
+	public void cancel(Subject subject, Dataset dataset, ManagedExecution query) {
 
 		// Does not make sense to cancel a query that isn't running.
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
@@ -299,7 +300,7 @@ public class QueryProcessor {
 		namespace.sendToAll(new CancelQuery(query.getId()));
 	}
 
-	public void patchQuery(Subject subject, ManagedExecution<?> execution, MetaDataPatch patch) {
+	public void patchQuery(Subject subject, ManagedExecution execution, MetaDataPatch patch) {
 
 		log.info("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
 
@@ -313,7 +314,7 @@ public class QueryProcessor {
 
 		for (Dataset dataset : remainingDatasets) {
 			final ManagedExecutionId id = new ManagedExecutionId(dataset.getId(), execution.getQueryId());
-			final ManagedExecution<?> otherExecution = storage.getExecution(id);
+			final ManagedExecution otherExecution = storage.getExecution(id);
 			if (otherExecution == null) {
 				continue;
 			}
@@ -323,16 +324,18 @@ public class QueryProcessor {
 		}
 	}
 
-	public void reexecute(Subject subject, ManagedExecution<?> query) {
+	public void reexecute(Subject subject, ManagedExecution query) {
 		log.info("User[{}] reexecuted Query[{}]", subject.getId(), query);
 
 		if (!query.getState().equals(ExecutionState.RUNNING)) {
-			datasetRegistry.get(query.getDataset().getId()).getExecutionManager().execute(datasetRegistry, query, config);
+			final Namespace namespace = query.getNamespace();
+
+			namespace.getExecutionManager().execute(namespace, query, config);
 		}
 	}
 
 
-	public void deleteQuery(Subject subject, ManagedExecution<?> execution) {
+	public void deleteQuery(Subject subject, ManagedExecution execution) {
 		log.info("User[{}] deleted Query[{}]", subject.getId(), execution.getId());
 
 		datasetRegistry.get(execution.getDataset().getId())
@@ -342,15 +345,15 @@ public class QueryProcessor {
 		storage.removeExecution(execution.getId());
 	}
 
-	public FullExecutionStatus getQueryFullStatus(ManagedExecution<?> query, Subject subject, UriBuilder url, Boolean allProviders) {
+	public FullExecutionStatus getQueryFullStatus(ManagedExecution query, Subject subject, UriBuilder url, Boolean allProviders) {
+		final Namespace namespace = datasetRegistry.get(query.getDataset().getId());
 
-		query.initExecutable(datasetRegistry, config);
+		query.initExecutable(namespace, config);
 
-		final Map<DatasetId, Set<Ability>> datasetAbilities = buildDatasetAbilityMap(subject, datasetRegistry);
-		final FullExecutionStatus status = query.buildStatusFull(storage, subject, datasetRegistry, config);
+		final FullExecutionStatus status = query.buildStatusFull(subject);
 
-		if (query.isReadyToDownload(datasetAbilities)) {
-			status.setResultUrls(getDownloadUrls(config.getResultProviders(), query, url, allProviders));
+		if (query.isReadyToDownload() && subject.isPermitted(query.getDataset(), Ability.DOWNLOAD)) {
+			status.setResultUrls(getResultAssets(config.getResultProviders(), query, url, allProviders));
 		}
 		return status;
 	}
@@ -360,12 +363,13 @@ public class QueryProcessor {
 	 */
 	public ExternalUploadResult uploadEntities(Subject subject, Dataset dataset, ExternalUpload upload) {
 
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		final CQExternal.ResolveStatistic
 				statistic =
-				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(), datasetRegistry.get(dataset.getId())
-																								  .getStorage()
-																								  .getIdMapping(), config.getIdColumns(), config.getLocale()
-																																				.getDateReader(), upload.isOneRowPerEntity()
+				CQExternal.resolveEntities(upload.getValues(), upload.getFormat(), namespace
+						.getStorage()
+						.getIdMapping(), config.getIdColumns(), config.getLocale()
+																	  .getDateReader(), upload.isOneRowPerEntity()
 
 				);
 
@@ -381,9 +385,9 @@ public class QueryProcessor {
 		// We only create the Query, really no need to execute it as it's only useful for composition.
 		final ManagedQuery
 				execution =
-				((ManagedQuery) datasetRegistry.get(dataset.getId())
-											   .getExecutionManager()
-											   .createExecution(datasetRegistry, query, subject.getUser(), dataset, false));
+				((ManagedQuery) namespace
+						.getExecutionManager()
+						.createExecution(namespace, query, subject.getUser(), dataset, false));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 
@@ -391,7 +395,7 @@ public class QueryProcessor {
 			execution.setLabel(upload.getLabel());
 		}
 
-		execution.initExecutable(datasetRegistry, config);
+		execution.initExecutable(namespace, config);
 
 		return new ExternalUploadResult(execution.getId(), statistic.getResolved().size(), statistic.getUnresolvedId(), statistic.getUnreadableDate());
 	}
@@ -401,6 +405,7 @@ public class QueryProcessor {
 	 */
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		final PreviewConfig previewConfig = datasetRegistry.get(dataset.getId()).getPreviewConfig();
 		final EntityPreviewForm form = EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getChronoSelects(), datasetRegistry);
 
@@ -420,8 +425,8 @@ public class QueryProcessor {
 		}
 
 
-		final FullExecutionStatus status = execution.buildStatusFull(storage, subject, datasetRegistry, config);
-		status.setResultUrls(getDownloadUrls(config.getResultProviders(), execution, uriBuilder, false));
+		final FullExecutionStatus status = execution.buildStatusFull(subject);
+		status.setResultUrls(getResultAssets(config.getResultProviders(), execution, uriBuilder, false));
 		return status;
 	}
 
@@ -436,20 +441,27 @@ public class QueryProcessor {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 
-		// Build query, assuming FilterValues are all of the same concept and connector.
-		final CQConcept cqConcept = new CQConcept();
-		cqConcept.setElements(List.of(filters.get(0).getFilter().getConnector().getConcept()));
+		final List<CQElement> queries = new ArrayList<>(filters.size());
 
-		final CQTable cqTable = new CQTable();
-		cqTable.setFilters(filters);
-		cqTable.setConnector(filters.get(0).getFilter().getConnector());
-		cqTable.setConcept(cqConcept);
+		for (FilterValue<?> filter : filters) {
+			final CQConcept cqConcept = new CQConcept();
+			cqConcept.setElements(List.of(filter.getFilter().getConnector().getConcept()));
 
-		cqConcept.setTables(List.of(cqTable));
+			final CQTable cqTable = new CQTable();
 
-		final QueryDescription query = new ConceptQuery(cqConcept);
+			cqTable.setFilters(List.of(filter));
+			cqTable.setConnector(filter.getFilter().getConnector());
+			cqTable.setConcept(cqConcept);
 
-		final ManagedExecution<?> execution = postQuery(dataset, query, subject, true);
+			cqConcept.setTables(List.of(cqTable));
+
+			queries.add(cqConcept);
+		}
+
+
+		final QueryDescription query = new ConceptQuery(new CQOr(queries, Optional.of(false), DateAggregationAction.BLOCK));
+
+		final ManagedExecution execution = postQuery(dataset, query, subject, true);
 
 		if (execution.awaitDone(10, TimeUnit.SECONDS) == ExecutionState.RUNNING) {
 			log.warn("Still waiting for {} after 10 Seconds.", execution.getId());

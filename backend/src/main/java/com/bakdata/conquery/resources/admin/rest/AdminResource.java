@@ -23,7 +23,7 @@ import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -123,7 +123,7 @@ public class AdminResource {
 					  .limit(limit)
 					  .map(t -> {
 						  try {
-							  return t.buildStatusFull(storage, currentUser, datasetRegistry, processor.getConfig());
+							  return t.buildStatusFull(currentUser);
 						  }
 						  catch (ConqueryError e) {
 							  // Initialization of execution probably failed, so we construct a status based on the overview status

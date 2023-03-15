@@ -395,12 +395,17 @@ export interface ColumnDescription {
   userConceptLabel: string | null;
 }
 
+export interface ResultUrlWithLabel {
+  label: string;
+  url: string;
+}
+
 // TODO: This actually returns GETQueryResponseT => a lot of unused fields
 export interface GetQueryResponseDoneT {
   status: "DONE" | "NEW"; // NEW might mean canceled (query not (yet) executed)
   label: string;
   numberOfResults: number | null;
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[] | null;
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   requiredTime: number; // In ms, unused at the moment
@@ -524,7 +529,10 @@ export interface HistorySources {
   default: { label: string; name: TableT["id"] }[];
 }
 
-export type GetEntityHistoryDefaultParamsResponse = HistorySources;
+export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
+  searchConcept: string | null; // concept id
+  searchFilters?: string[]; // allowlisted filter ids within the searchConcept
+};
 
 export interface EntityInfo {
   label: string;
@@ -534,7 +542,11 @@ export interface EntityInfo {
 }
 
 export type GetEntityHistoryResponse = {
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[];
   infos: EntityInfo[];
 };
+
+export type PostResolveEntitiesResponse = {
+  [idKind: string]: string; // idKind is the key, the value is the resolved ID
+}[];

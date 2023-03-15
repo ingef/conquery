@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
+import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
-import type { ColumnDescription } from "../api/types";
+import type { ColumnDescription, ResultUrlWithLabel } from "../api/types";
 import PreviewButton from "../button/PreviewButton";
 import { QueryResultHistoryButton } from "../button/QueryResultHistoryButton";
 import { isEmpty } from "../common/helpers/commonHelper";
@@ -35,7 +36,7 @@ const Bold = styled("span")`
 
 interface PropsT {
   resultLabel: string;
-  resultUrls: string[];
+  resultUrls: ResultUrlWithLabel[];
   resultCount?: number | null; // For forms, won't usually have a count
   resultColumns?: ColumnDescription[] | null; // For forms, won't usually have resultColumns
   queryType?: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
@@ -49,13 +50,13 @@ const QueryResults: FC<PropsT> = ({
   queryType,
 }) => {
   const { t } = useTranslation();
-  const csvUrl = resultUrls.find((url) => url.endsWith("csv"));
+  const csvUrl = resultUrls.find((ru) => ru.url.endsWith("csv"));
 
   return (
     <Root>
       {isEmpty(resultCount) ? (
         <Text>
-          <FaIcon icon="check" left />
+          <FaIcon icon={faCheck} left />
           {t("queryRunner.endSuccess")}
         </Text>
       ) : (
@@ -68,10 +69,10 @@ const QueryResults: FC<PropsT> = ({
       )}
       {!!csvUrl && exists(resultColumns) && (
         <>
-          <PreviewButton columns={resultColumns} url={csvUrl} />
+          <PreviewButton columns={resultColumns} url={csvUrl.url} />
           <QueryResultHistoryButton
             columns={resultColumns}
-            url={csvUrl}
+            url={csvUrl.url}
             label={resultLabel}
           />
         </>

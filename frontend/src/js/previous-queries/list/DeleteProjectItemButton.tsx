@@ -1,3 +1,4 @@
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -38,7 +39,7 @@ export const DeleteProjectItemButton = ({ item }: { item: ProjectItemT }) => {
     >
       <WithTooltip text={t("common.delete")}>
         <IconButton
-          icon="times"
+          icon={faTimes}
           bare
           data-test-id="project-item-delete-button"
         />

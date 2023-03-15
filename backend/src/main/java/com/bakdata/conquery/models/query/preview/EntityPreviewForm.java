@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.forms.Form;
+import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
@@ -32,15 +33,16 @@ import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,8 +58,9 @@ import org.jetbrains.annotations.Nullable;
  * 2) While infoCardQuery will be transformed and stored in {@link EntityPreviewStatus#getInfos()}.
  */
 @CPSType(id = "ENTITY_PREVIEW", base = QueryDescription.class)
-@Data
-public class EntityPreviewForm extends Form {
+@Getter
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+public class EntityPreviewForm extends Form implements InternalForm {
 
 	public static final String INFOS_QUERY_NAME = "INFOS";
 	public static final String VALUES_QUERY_NAME = "VALUES";
@@ -65,6 +68,7 @@ public class EntityPreviewForm extends Form {
 
 	private final AbsoluteFormQuery infoCardQuery;
 	private final TableExportQuery valuesQuery;
+
 
 	private final Map<String, AbsoluteFormQuery> timeOverViews;
 
@@ -111,7 +115,8 @@ public class EntityPreviewForm extends Form {
 									  ArrayConceptQuery.createFromFeatures(
 											  infos.stream()
 												   .map(CQConcept::forSelect)
-												   .collect(Collectors.toList())),
+												   .collect(Collectors.toList())
+									  ),
 									  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
 				);
 		return infoCardQuery;
@@ -130,15 +135,13 @@ public class EntityPreviewForm extends Form {
 
 
 	@Override
-	public Map<String, List<ManagedQuery>>
-	createSubQueries(DatasetRegistry datasets, User user, Dataset submittedDataset) {
-		final Map<String, List<ManagedQuery>> subQueries = new HashMap<>();
-		subQueries.put(VALUES_QUERY_NAME, List.of(getValuesQuery().toManagedExecution(user, submittedDataset)));
-		subQueries.put(INFOS_QUERY_NAME, List.of(getInfoCardQuery().toManagedExecution(user, submittedDataset)));
+	public Map<String, Query>
+	createSubQueries() {
+		final Map<String, Query> subQueries = new HashMap<>();
+		subQueries.put(VALUES_QUERY_NAME, getValuesQuery());
+		subQueries.put(INFOS_QUERY_NAME, getInfoCardQuery());
 
-		for (Map.Entry<String, AbsoluteFormQuery> entry : getTimeOverViews().entrySet()) {
-			subQueries.put(entry.getKey(), List.of(entry.getValue().toManagedExecution(user, submittedDataset)));
-		}
+		subQueries.putAll(getTimeOverViews());
 
 		return subQueries;
 	}
@@ -155,8 +158,8 @@ public class EntityPreviewForm extends Form {
 	}
 
 	@Override
-	public ManagedExecution<?> toManagedExecution(User user, Dataset submittedDataset) {
-		return new EntityPreviewExecution(this, user, submittedDataset);
+	public ManagedExecution toManagedExecution(User user, Dataset submittedDataset, MetaStorage storage) {
+		return new EntityPreviewExecution(this, user, submittedDataset, storage);
 	}
 
 	@Override

@@ -46,7 +46,7 @@ const ValidatedFormQueryResult = ({
 
       loadAndValidateQuery();
     },
-    [queryResult, getQuery],
+    [queryResult, getQuery, t, onInvalid],
   );
 
   const error = localError ? t("previousQuery.loadError") : undefined;

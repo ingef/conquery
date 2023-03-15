@@ -11,7 +11,6 @@ import javax.ws.rs.core.StreamingOutput;
 
 import com.bakdata.conquery.io.result.ResultUtil;
 import com.bakdata.conquery.models.auth.entities.Subject;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.ExcelConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -22,6 +21,7 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import lombok.RequiredArgsConstructor;
@@ -38,23 +38,21 @@ public class ResultExcelProcessor {
 
 	private final ExcelConfig excelConfig;
 
+	public <E extends ManagedExecution & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty) {
 
-	public <E extends ManagedExecution<?> & SingleTableResult> Response createResult(Subject subject, E exec, boolean pretty) {
 		ConqueryMDC.setLocation(subject.getName());
 
 		final Dataset dataset = exec.getDataset();
 
-		log.info("Downloading results for {} on dataset {}", exec, dataset);
+		log.info("Downloading results for {}", exec.getId());
 
-		ResultUtil.authorizeExecutable(subject, exec, dataset);
-		ResultUtil.checkSingleTableResult(exec);
-		subject.authorize(dataset, Ability.DOWNLOAD);
+		ResultUtil.authorizeExecutable(subject, exec);
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(subject, exec, namespace, conqueryConfig.getIdColumns().getIds());
 
 		final Locale locale = I18n.LOCALE.get();
-		final PrintSettings settings = new PrintSettings(pretty, locale, datasetRegistry, conqueryConfig, idPrinter::createId);
+		final PrintSettings settings = new PrintSettings(pretty, locale, namespace, conqueryConfig, idPrinter::createId);
 
 		final ExcelRenderer excelRenderer = new ExcelRenderer(excelConfig, settings);
 
@@ -63,7 +61,7 @@ public class ResultExcelProcessor {
 			log.trace("FINISHED downloading {}", exec.getId());
 		};
 
-		return makeResponseWithFileName(Response.ok(out), exec.getLabelWithoutAutoLabelSuffix(), "xlsx", MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
+		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_XLSX), MEDIA_TYPE, ResultUtil.ContentDispositionOption.ATTACHMENT);
 	}
 
 

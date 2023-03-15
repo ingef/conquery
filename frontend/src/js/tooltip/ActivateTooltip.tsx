@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch } from "react-redux";
 
 import IconButton from "../button/IconButton";
@@ -12,12 +13,14 @@ const Root = styled("div")`
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
-  top: 45px;
-  padding: 7px 10px;
+  width: 100%;
+  top: 40px;
+  bottom: 0;
   right: 0;
-  border-right: 0;
-  border-top-right-radius: 0;
-  border-bottom-right-radius: 0;
+  padding: 12px 12px;
+  border-radius: 0;
+  display: flex;
+  align-items: flex-start;
 `;
 
 const ActivateTooltip = () => {
@@ -26,12 +29,7 @@ const ActivateTooltip = () => {
 
   return (
     <Root>
-      <StyledIconButton
-        small
-        frame
-        icon="angle-right"
-        onClick={onToggleTooltip}
-      />
+      <StyledIconButton bgHover icon={faAngleRight} onClick={onToggleTooltip} />
     </Root>
   );
 };

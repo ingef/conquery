@@ -19,7 +19,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -75,13 +75,13 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @CPSType(id = "TABLE_EXPORT", base = QueryDescription.class)
-@RequiredArgsConstructor(onConstructor = @__({@JsonCreator}))
+@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class TableExportQuery extends Query {
 
 	@Valid
 	@NotNull
 	@NonNull
-	protected Query query;
+	protected final Query query;
 	@NotNull
 	private Range<LocalDate> dateRange = Range.all();
 

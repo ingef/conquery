@@ -5,7 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URL;
 import java.util.Set;
 
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -40,7 +41,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		test.importRequiredData(conquery);
 
 		// Create execution for download
-		ManagedQuery exec = new ManagedQuery(test.getQuery(), user, conquery.getDataset());
+		ManagedQuery exec = new ManagedQuery(test.getQuery(), user, conquery.getDataset(), storage);
 		exec.setLastResultCount(100L);
 
 		storage.addExecution(exec);
@@ -54,7 +55,7 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 		}
 
 		{
-			// Thinker the state of the execution and try again: still not possible because of missing permissions
+			// Tinker the state of the execution and try again: still not possible because of missing permissions
 			exec.setState(ExecutionState.DONE);
 
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
@@ -67,7 +68,8 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
 			// This Url is missing the `/api` path part, because we use the standard UriBuilder here
-			assertThat(status.getResultUrls()).contains(new URL(String.format("%s/result/%s.csv", conquery.defaultApiURIBuilder().toString(), exec.getId())));
+			assertThat(status.getResultUrls()).contains(new ResultAsset("CSV", new URL(String.format("%s/result/csv/%s.csv", conquery.defaultApiURIBuilder()
+																																 .toString(), exec.getId()))));
 		}
 	}
 

@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import React, { FC, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -8,10 +8,6 @@ import { clickPaneTab } from "../pane/actions";
 import type { TabT } from "../pane/types";
 
 import type { StateT } from "./reducers";
-
-interface PropsT {
-  tabs: TabT[];
-}
 
 const Tab = styled("div")<{ isActive: boolean }>`
   height: 100%;
@@ -25,7 +21,7 @@ const SxPane = styled(Pane)`
   background-color: ${({ theme }) => theme.col.bgAlt};
 `;
 
-const RightPane: FC<PropsT> = ({ tabs }) => {
+const RightPane = ({ tabs }: { tabs: TabT[] }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const activeTab = useSelector<StateT, string | null>(

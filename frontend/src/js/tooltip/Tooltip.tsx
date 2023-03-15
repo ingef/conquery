@@ -1,4 +1,9 @@
 import styled from "@emotion/styled";
+import {
+  faFolder,
+  faMinus,
+  faThumbtack,
+} from "@fortawesome/free-solid-svg-icons";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
@@ -27,7 +32,7 @@ const Root = styled("div")`
 `;
 
 const Content = styled("div")`
-  padding: 12px 20px 10px;
+  padding: 18px 20px 10px;
   width: 100%;
   flex-grow: 1;
   overflow-y: auto;
@@ -66,7 +71,7 @@ const Label = styled("span")`
 const Description = styled("p")`
   margin: 5px 0 2px;
   font-size: ${({ theme }) => theme.font.xs};
-  line-height: 1;
+  line-height: 1.3;
   text-transform: uppercase;
 `;
 
@@ -159,7 +164,7 @@ const Tooltip = () => {
         />
         <Head>
           <PinnedLabel>
-            <TypeIcon icon={isFolder ? "folder" : "minus"} />
+            <TypeIcon icon={isFolder ? faFolder : faMinus} />
             <Label>
               {label ? searchHighlight(label) : t("tooltip.placeholder")}
             </Label>
@@ -168,7 +173,7 @@ const Tooltip = () => {
                 bare
                 active
                 onClick={onToggleAdditionalInfos}
-                icon="thumbtack"
+                icon={faThumbtack}
               />
             )}
           </PinnedLabel>

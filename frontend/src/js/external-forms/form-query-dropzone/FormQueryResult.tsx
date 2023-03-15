@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 
 import IconButton from "../../button/IconButton";
 import { exists } from "../../common/helpers/exists";
@@ -39,7 +40,7 @@ const FormQueryResult = ({
       ) : queryResult ? (
         queryResult.label || queryResult.id
       ) : null}
-      {onDelete && <IconButton tiny icon="times" onClick={onDelete} />}
+      {onDelete && <IconButton tiny icon={faTimes} onClick={onDelete} />}
     </Root>
   );
 };

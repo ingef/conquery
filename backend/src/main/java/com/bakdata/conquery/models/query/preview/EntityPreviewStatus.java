@@ -6,10 +6,11 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
 public class EntityPreviewStatus extends FullExecutionStatus {
@@ -20,7 +21,7 @@ public class EntityPreviewStatus extends FullExecutionStatus {
 	/**
 	 * Bundles ColumnDescriptor immediately with a value for EntityPreview.
 	 */
-	@Data
+	@EqualsAndHashCode(callSuper = true)
 	public static class Info extends ColumnDescriptor {
 
 		private final Object value;

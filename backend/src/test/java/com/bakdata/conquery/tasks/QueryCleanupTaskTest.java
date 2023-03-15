@@ -34,7 +34,7 @@ class QueryCleanupTaskTest {
 
 		ConceptQuery query = new ConceptQuery(root);
 
-		final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"));
+		final ManagedQuery managedQuery = new ManagedQuery(query, null, new Dataset("test"), STORAGE);
 
 		managedQuery.setCreationTime(LocalDateTime.now().minus(queryExpiration).minusDays(1));
 

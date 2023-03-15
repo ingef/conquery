@@ -1,4 +1,11 @@
 import styled from "@emotion/styled";
+import {
+  faArrowDown,
+  faArrowUp,
+  faChevronLeft,
+  faDownload,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { Dispatch, memo, SetStateAction, useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -14,6 +21,7 @@ import { EntityIdsList } from "./EntityIdsList";
 import type { EntityIdsStatus } from "./History";
 import { LoadHistoryDropzone, LoadingPayload } from "./LoadHistoryDropzone";
 import { NavigationHeader } from "./NavigationHeader";
+import { SearchEntites } from "./SearchEntities";
 import { closeHistory, resetHistory, useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
 import { saveHistory } from "./saveAndLoad";
@@ -25,9 +33,15 @@ const Root = styled("div")`
   background-color: ${({ theme }) => theme.col.bg};
 `;
 
+const Row = styled("div")`
+  margin: 0 10px 0 20px;
+  display: flex;
+  gap: 10px;
+`;
+
 const EntityIdNav = styled("div")`
-  display: grid;
-  grid-template-rows: auto 12fr auto auto;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   padding: 0 10px 0 20px;
 `;
@@ -41,6 +55,7 @@ const SxNavigationHeader = styled(NavigationHeader)`
 
 const SxLoadHistoryDropzone = styled(LoadHistoryDropzone)`
   height: 100%;
+  flex-grow: 1;
   overflow-y: auto;
   padding: 2px;
   display: block;
@@ -51,7 +66,7 @@ const BottomActions = styled("div")`
 `;
 
 const ContainedIconButton = styled(IconButton)`
-  margin: 0 10px 0 20px;
+  flex-grow: 1;
   justify-content: center;
 `;
 
@@ -60,7 +75,7 @@ const SxIconButton = styled(IconButton)`
   justify-content: center;
 `;
 
-const SxWithTooltip = styled(WithTooltip)`
+const ButtonWithTooltip = styled(WithTooltip)`
   color: black;
   flex-shrink: 0;
   width: 100%;
@@ -76,6 +91,7 @@ export const Navigation = memo(
     entityStatusOptions,
     setEntityStatusOptions,
     onLoadFromFile,
+    onResetHistory,
   }: {
     className?: string;
     entityIds: EntityId[];
@@ -85,6 +101,7 @@ export const Navigation = memo(
     entityStatusOptions: SelectOptionT[];
     setEntityStatusOptions: Dispatch<SetStateAction<SelectOptionT[]>>;
     onLoadFromFile: (payload: LoadingPayload) => void;
+    onResetHistory: () => void;
   }) => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
@@ -113,8 +130,9 @@ export const Navigation = memo(
     }, [entityIds, entityIdsStatus]);
 
     const onReset = useCallback(() => {
+      onResetHistory();
       dispatch(resetHistory());
-    }, [dispatch]);
+    }, [dispatch, onResetHistory]);
 
     useHotkeys("shift+up", goToPrev, [goToPrev]);
     useHotkeys("shift+down", goToNext, [goToNext]);
@@ -127,52 +145,60 @@ export const Navigation = memo(
     const backButtonWarning =
       markedCount > 0 ? t("history.backButtonWarning") : "";
 
-    const showResetButton = ids.length > 0;
+    const empty = ids.length === 0;
 
     return (
       <Root
         className={className}
         style={{
-          gridTemplateRows: showResetButton
-            ? "auto auto auto 1fr"
-            : "auto auto 1fr",
+          gridTemplateRows: empty ? "auto 1fr" : "auto auto 1fr",
         }}
       >
-        <WithTooltip text={backButtonWarning}>
-          <ContainedIconButton
-            frame
-            icon="chevron-left"
-            onClick={onCloseHistory}
-          >
-            {t("common.back")}
-          </ContainedIconButton>
-        </WithTooltip>
-        {ids.length > 0 && (
-          <ConfirmableTooltip
-            onConfirm={onReset}
-            confirmationText={t("history.settings.resetConfirm")}
-          >
-            <ContainedIconButton frame icon="trash">
-              {t("history.settings.reset")}
-            </ContainedIconButton>
-          </ConfirmableTooltip>
-        )}
-        <SxNavigationHeader
-          markedCount={markedCount}
-          idsCount={entityIds.length}
-          entityStatusOptions={entityStatusOptions}
-          setEntityStatusOptions={setEntityStatusOptions}
-        />
-        <EntityIdNav>
-          <TopActions>
-            <SxWithTooltip
-              text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
-              lazy
+        <Row>
+          <WithTooltip text={backButtonWarning}>
+            <ContainedIconButton
+              frame
+              icon={faChevronLeft}
+              onClick={onCloseHistory}
             >
-              <SxIconButton icon="arrow-up" onClick={goToPrev} />
-            </SxWithTooltip>
-          </TopActions>
+              {t("common.back")}
+            </ContainedIconButton>
+          </WithTooltip>
+          {!empty && (
+            <ConfirmableTooltip
+              onConfirm={onReset}
+              placement="bottom"
+              confirmationText={t("history.settings.resetConfirm")}
+            >
+              <ContainedIconButton frame icon={faTrash}>
+                {t("history.settings.reset")}
+              </ContainedIconButton>
+            </ConfirmableTooltip>
+          )}
+        </Row>
+        {!empty && (
+          <SxNavigationHeader
+            markedCount={markedCount}
+            idsCount={entityIds.length}
+            entityStatusOptions={entityStatusOptions}
+            setEntityStatusOptions={setEntityStatusOptions}
+          />
+        )}
+        <EntityIdNav>
+          {!empty && (
+            <TopActions>
+              <ButtonWithTooltip
+                text={`${t("history.prevButtonLabel")} (shift + ⬆)`}
+                lazy
+              >
+                <SxIconButton icon={faArrowUp} onClick={goToPrev} />
+              </ButtonWithTooltip>
+            </TopActions>
+          )}
           <SxLoadHistoryDropzone onLoadFromFile={onLoadFromFile}>
+            {entityIds.length === 0 && (
+              <SearchEntites onLoad={onLoadFromFile} />
+            )}
             <EntityIdsList
               currentEntityId={currentEntityId}
               entityIds={entityIds}
@@ -180,26 +206,30 @@ export const Navigation = memo(
               entityIdsStatus={entityIdsStatus}
             />
           </SxLoadHistoryDropzone>
-          <BottomActions>
-            <SxWithTooltip
-              text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
-              lazy
-            >
-              <SxIconButton icon="arrow-down" onClick={goToNext} />
-            </SxWithTooltip>
-          </BottomActions>
-          <BottomActions style={{ marginTop: "10px" }}>
-            <SxWithTooltip text={t("history.downloadButtonLabel")}>
-              <SxIconButton
-                style={{ backgroundColor: "white" }}
-                frame
-                icon="download"
-                onClick={onDownload}
-              >
-                CSV
-              </SxIconButton>
-            </SxWithTooltip>
-          </BottomActions>
+          {!empty && (
+            <>
+              <BottomActions>
+                <ButtonWithTooltip
+                  text={`${t("history.nextButtonLabel")} (shift + ⬇)`}
+                  lazy
+                >
+                  <SxIconButton icon={faArrowDown} onClick={goToNext} />
+                </ButtonWithTooltip>
+              </BottomActions>
+              <BottomActions style={{ marginTop: "10px" }}>
+                <ButtonWithTooltip text={t("history.downloadButtonLabel")}>
+                  <SxIconButton
+                    style={{ backgroundColor: "white" }}
+                    frame
+                    icon={faDownload}
+                    onClick={onDownload}
+                  >
+                    CSV
+                  </SxIconButton>
+                </ButtonWithTooltip>
+              </BottomActions>
+            </>
+          )}
         </EntityIdNav>
       </Root>
     );

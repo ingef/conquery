@@ -1,6 +1,11 @@
 import styled from "@emotion/styled";
+import {
+  faEuroSign,
+  faFingerprint,
+  faInfo,
+} from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-import NumberFormat from "react-number-format";
+import { NumericFormat } from "react-number-format";
 
 import type {
   ColumnDescription,
@@ -141,7 +146,7 @@ const EventCard = ({
           <Flex>
             <WithTooltip text={moneyTooltip}>
               <span>
-                <SxFaIcon icon="euro-sign" active large />
+                <SxFaIcon icon={faEuroSign} active large />
               </span>
             </WithTooltip>
             <ColBucket>
@@ -149,7 +154,7 @@ const EventCard = ({
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
                   <code>
-                    <NumberFormat
+                    <NumericFormat
                       thousandSeparator={currencyConfig.thousandSeparator}
                       decimalSeparator={currencyConfig.decimalSeparator}
                       decimalScale={currencyConfig.decimalScale}
@@ -180,7 +185,7 @@ const EventCard = ({
           <Flex>
             <WithTooltip text={restTooltip}>
               <span>
-                <SxFaIcon icon="info" active large />
+                <SxFaIcon icon={faInfo} active large />
               </span>
             </WithTooltip>
             <ColBucket>
@@ -197,7 +202,7 @@ const EventCard = ({
           <Flex>
             <WithTooltip text={groupableIdsTooltip}>
               <span>
-                <SxFaIcon icon="fingerprint" active large />
+                <SxFaIcon icon={faFingerprint} active large />
               </span>
             </WithTooltip>
             <ColBucket>

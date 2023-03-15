@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faCheck, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useContext, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -131,7 +132,7 @@ const LoginPage = () => {
             }}
           />
           <SxPrimaryButton disabled={!user || !password} large type="submit">
-            <SxFaIcon large white icon={loading ? "spinner" : "check"} />
+            <SxFaIcon large white icon={loading ? faSpinner : faCheck} />
             {t("login.submit")}
           </SxPrimaryButton>
         </Form>

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.index;
 
+import java.net.URI;
 import java.net.URL;
 
 import lombok.Data;
@@ -11,6 +12,6 @@ import lombok.Data;
  */
 @Data
 public abstract class AbstractIndexKey<I extends Index<? extends IndexKey<I>>> implements IndexKey<I> {
-	private final URL csv;
+	private final URI csv;
 	private final String internalColumn;
 }
