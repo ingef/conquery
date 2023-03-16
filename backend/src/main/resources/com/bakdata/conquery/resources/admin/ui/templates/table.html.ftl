@@ -1,8 +1,8 @@
-<#macro table columns items deleteButton="" link="">
+<#macro table columns items deleteButton="" link="" renderers={}>
     <div class="row">
         <div class="col m-0 table-responsive">
-            <table class="table table-sm table-striped">
-                <thead>
+            <table class="table table-sm table-striped text-break">
+                <thead class="text-nowrap">
                     <tr>
                         <#list columns as column>
                           <#if column == "actions">
@@ -22,7 +22,9 @@
                     <#list items as item>
                         <tr>
                             <#list columns as column>
-                                <#if column == "id" && link?has_content>
+                                <#if renderers?keys?seq_contains(column)>
+                                    <td scope="row"><@renderers[column] id="${item.id}" /></td>
+                                <#elseif column == "id" && link?has_content>
                                     <td scope="row"><a href="${link}${item.id}">${item.id}</a></td>
                                 <#elseif column == "initialized">
                                     <td> <#if item.initialized() ><i class="fas fa-check" alt="In use"></i><#else><i class="fas fa-moon" alt="Not used by any select"></i></i></#if> </td>
