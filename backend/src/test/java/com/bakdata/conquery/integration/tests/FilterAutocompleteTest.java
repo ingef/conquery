@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.api.AutocompleteResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.FilterResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
@@ -113,7 +114,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		{
 			final Response fromCsvResponse = conquery.getClient().target(autocompleteUri)
 													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.AutocompleteRequest(
+													 .post(Entity.entity(new AutocompleteResource.AutocompleteRequest(
 															 Optional.of("a"),
 															 OptionalInt.empty(),
 															 OptionalInt.empty()
@@ -128,7 +129,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		{
 			final Response fromCsvResponse = conquery.getClient().target(autocompleteUri)
 													 .request(MediaType.APPLICATION_JSON_TYPE)
-													 .post(Entity.entity(new FilterResource.AutocompleteRequest(
+													 .post(Entity.entity(new AutocompleteResource.AutocompleteRequest(
 															 Optional.of("f"),
 															 OptionalInt.empty(),
 															 OptionalInt.empty()

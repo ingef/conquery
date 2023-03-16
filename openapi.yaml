@@ -27,6 +27,15 @@ components:
       type: http
       scheme: bearer
   parameters:
+    Searchable:
+      in: path
+      name: searchable
+      required: true
+      schema:
+        oneOf:
+          - $ref: "#/components/schemas/FilterId"
+          - $ref: "#/components/schemas/ColumnId"
+          - $ref: "#/components/schemas/FilterTemplateId"
     Dataset:
       in: path
       name: dataset
@@ -61,6 +70,8 @@ components:
     MappingId:
       $ref: "#/components/schemas/Id"
     DatasetId:
+      $ref: "#/components/schemas/Id"
+    FilterTemplateId:
       $ref: "#/components/schemas/Id"
     FilterId:
       $ref: "#/components/schemas/Id"
@@ -2174,6 +2185,61 @@ paths:
                 type: object
                 additionalProperties:
                   type: string
+
+  /filters/{searchable}/autocomplete:
+    parameters:
+      - $ref: "#/components/parameters/Searchable"
+    post:
+      tags:
+        - dataset
+        - concept
+      operationId: autocomplete-text
+      summary: "Submit an autocomplete query. Primarily for SelectFilters, but can be used to query FilterTemplates directly."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  nullable: true
+                  description: String to query for. If not set, lists all values of the Searchable in no specific order.
+                page:
+                  type: integer
+                  nullable: true
+                pageSize:
+                  type: integer
+                  nullable: true
+
+      responses:
+        "200":
+          description: "If text is set, values are ordered by relevance to the search query. Otherwise, no sorting is guaranteed."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    minimum: 0
+                  value:
+                    description: List of resolved filter values.
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          description: Actual value - can be treated as the Id of the value. To be used when querying the Filter.
+                          type: string
+                        label:
+                          description: Verbose description of the value.
+                          type: string
+                        optionValue:
+                          description: Less verbose description of the value.
+                          type: string
+
+
 
 
   /datasets/{dataset}/queries/entity:

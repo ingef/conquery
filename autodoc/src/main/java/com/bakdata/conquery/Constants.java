@@ -71,6 +71,7 @@ import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
+import com.bakdata.conquery.resources.api.AutocompleteResource;
 import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConfigResource;
@@ -167,7 +168,7 @@ public class Constants {
 				 .otherClass(MetaDataPatch.class)
 				 .otherClass(FrontendConfig.CurrencyConfig.class)
 				 .otherClass(ConceptsProcessor.ResolvedFilterResult.class)
-				 .otherClass(FilterResource.AutocompleteRequest.class)
+				 .otherClass(AutocompleteResource.AutocompleteRequest.class)
 				 .otherClass(ExecutionStatus.class)
 				 .otherClass(ConceptsProcessor.ResolvedConceptsResult.class)
 				 .otherClass(ConceptResource.ConceptCodeList.class)
