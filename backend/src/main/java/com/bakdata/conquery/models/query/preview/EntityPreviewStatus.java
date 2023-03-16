@@ -11,6 +11,8 @@ import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.types.SemanticType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 @Data
 public class EntityPreviewStatus extends FullExecutionStatus {
@@ -22,6 +24,8 @@ public class EntityPreviewStatus extends FullExecutionStatus {
 	 * Bundles ColumnDescriptor immediately with a value for EntityPreview.
 	 */
 	@EqualsAndHashCode(callSuper = true)
+	@ToString(callSuper = true)
+	@Getter
 	public static class Info extends ColumnDescriptor {
 
 		private final Object value;

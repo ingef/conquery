@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -38,7 +37,6 @@ import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.types.SemanticType;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -69,38 +67,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		super(entityPreviewQuery, user, submittedDataset, storage);
 	}
 
-	/**
-	 * Takes a ManagedQuery, and transforms its result into a List of {@link EntityPreviewStatus.Info}.
-	 * The format of the query is an {@link AbsoluteFormQuery} containing a single line for one person. This should correspond to {@link EntityPreviewForm#VALUES_QUERY_NAME}.
-	 */
-	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, Namespace namespace, ConqueryConfig config) {
-
-
-		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
-		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
-		final Object[] values = result.getValues().get(0);
-
-		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
-		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null, previewConfig::resolveSelectLabel);
-
-		// We are only interested in the Select results.
-		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
-			final ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
-
-			final String printed = resultInfo.getType().printNullable(printSettings, values[index]);
-
-			extraInfos.add(new EntityPreviewStatus.Info(
-					resultInfo.userColumnName(printSettings),
-					printed,
-					resultInfo.getType().typeInfo(),
-					resultInfo.getDescription(),
-					resultInfo.getSemantics()
-			));
-		}
-
-		return extraInfos;
-	}
-
 	@Override
 	public void doInitExecutable() {
 		super.doInitExecutable();
@@ -123,7 +89,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
 
-		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), getNamespace(), getConfig()));
+		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), printSettings));
 
 		status.setChronoInfos(toChronoInfos(previewConfig, getSubQueries(), printSettings));
 
@@ -153,8 +119,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 			final String printed = resultInfo.getType().printNullable(printSettings, values[index]);
 
-			extraInfos.add(new EntityPreviewStatus.Info(resultInfo.userColumnName(printSettings), printed, resultInfo.getType()
-																													 .typeInfo(), resultInfo.getDescription(), resultInfo.getSemantics()));
+			extraInfos.add(new EntityPreviewStatus.Info(
+					resultInfo.userColumnName(printSettings),
+					printed,
+					resultInfo.getType().typeInfo(),
+					resultInfo.getDescription(),
+					resultInfo.getSemantics()
+			));
 		}
 
 		return extraInfos;

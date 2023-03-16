@@ -180,14 +180,13 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 				));
 
 
-		assertThat(result.getInfos()).isEqualTo(List.of(
+		assertThat(result.getInfos()).containsExactly(
 				new EntityPreviewStatus.Info(
 						"Age",
 						"9",
 						ResultType.IntegerT.INSTANCE.typeInfo(),
 						null,
-						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
-																	  .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
+						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
 				),
 				new EntityPreviewStatus.Info(
 						"Values",
@@ -195,11 +194,10 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						new ResultType.ListT(ResultType.StringT.INSTANCE).typeInfo(),
 						null,
 						Set.of(
-								new SemanticType.SelectResultT(conquery.getDatasetRegistry()
-																	   .resolve(valuesSelectId))
+								new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(valuesSelectId))
 						)
 				)
-		));
+		);
 
 
 		assertThat(result.getColumnDescriptions())
