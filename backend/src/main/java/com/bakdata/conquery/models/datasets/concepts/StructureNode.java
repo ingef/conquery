@@ -7,15 +7,15 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.apiv1.KeyValue;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -32,6 +32,7 @@ public class StructureNode extends Labeled<StructureNodeId> {
 	@Valid @JsonManagedReference(MANAGED_STRUCTURE_STRUCTURE)
 	private List<StructureNode> children = Collections.emptyList();
 	@JsonBackReference(MANAGED_STRUCTURE_STRUCTURE)
+	@EqualsAndHashCode.Exclude
 	private StructureNode parent;
 	@Getter
 	private LinkedHashSet<ConceptId> containedRoots = new LinkedHashSet<>();

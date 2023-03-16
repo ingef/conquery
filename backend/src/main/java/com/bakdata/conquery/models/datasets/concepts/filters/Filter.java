@@ -39,6 +39,7 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 	@JsonAlias("description")
 	private String tooltip;
 	@JsonBackReference
+	@EqualsAndHashCode.Exclude
 	private Connector connector;
 	private String pattern;
 	private Boolean allowDropFile;
