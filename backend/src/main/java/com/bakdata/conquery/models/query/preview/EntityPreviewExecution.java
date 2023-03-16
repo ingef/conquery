@@ -146,8 +146,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 			final EntityResult entityResult = query.streamResults().collect(MoreCollectors.onlyElement());
 
-			final Map<SelectId, PreviewConfig.InfoCardSelect>
-					select2desc =
+			final Map<SelectId, PreviewConfig.InfoCardSelect> select2desc =
 					description.selects().stream().collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
 
@@ -178,8 +177,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			// get descriptions, but drop everything that isn't a select result as the rest is already structured
 			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
 
-			final EntityPreviewStatus.ChronoInfos
-					infos =
+			final EntityPreviewStatus.ChronoInfos infos =
 					new EntityPreviewStatus.ChronoInfos(description.name(), description.description(), columnDescriptors, yearEntries);
 
 			chronoInfos.add(infos);
@@ -267,7 +265,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			if (info instanceof SelectResultInfo selectResultInfo) {
 				final PreviewConfig.InfoCardSelect desc = select2desc.get(selectResultInfo.getSelect().getId());
 
-				// We build these by hand because they are quite labeled and described by config.
+				// We build these by hand because they are labeled and described by config.
 				columnDescriptions.add(ColumnDescriptor.builder()
 													   .label(desc.label())
 													   .defaultLabel(desc.label())
@@ -284,7 +282,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	@Override
 	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
-		//TODO status.setColumnDescriptions(generateColumnDescriptions(datasetRegistry));
+		status.setColumnDescriptions(generateColumnDescriptions());
 	}
 
 
