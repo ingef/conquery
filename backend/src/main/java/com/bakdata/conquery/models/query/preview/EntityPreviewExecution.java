@@ -41,6 +41,7 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.MoreCollectors;
+import lombok.ToString;
 import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,8 +50,10 @@ import org.jetbrains.annotations.NotNull;
  * This mostly delegates to {@link EntityPreviewForm#VALUES_QUERY_NAME}, but embeds the result of {@link EntityPreviewForm#INFOS_QUERY_NAME} into {@link EntityPreviewStatus#getInfos()}.
  */
 @CPSType(id = "ENTITY_PREVIEW_EXECUTION", base = ManagedExecution.class)
+@ToString
 public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewForm> {
 
+	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
 	@Override
