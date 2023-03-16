@@ -1899,10 +1899,44 @@ components:
                     type: string
                   value:
                     type: string
-                  Semantics:
+                  semantics:
                     type: array
                     items:
                       $ref: "#/components/schemas/Semantics"
+            chronoInfos:
+              type: array
+              items:
+                type: object
+                properties:
+                  label:
+                    type: string
+                  description:
+                    type: string
+                  columns:
+                    $ref: "#/components/schemas/ColumnDescription"
+                  years:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        year:
+                          type: integer
+                        values:
+                          type: object
+                          additionalProperties: true
+                        quarters:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              quarter:
+                                type: int
+                                minimum: 1
+                                maximum: 4
+                              values:
+                                type: object
+                                additionalProperties: true
+
     FullExecutionStatus:
       allOf:
         - $ref: "#/components/schemas/QueryStatus"
