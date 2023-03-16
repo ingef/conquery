@@ -61,7 +61,29 @@ context("Admin UI Single Dataset", () => {
         });
     });
 
+    describe("Can visit tableinfo page", () => {
+      before(() => { visitAdminUI(`datasets/${testDSID}/tables/${testDSID}.table`); });
+
+      it("Can use page components", () => {
+        cy.contains('Table table');
+        cy.get('[data-test-id="accordion-Tags"]').click();
+        cy.get('[data-test-id="accordion-Concepts"]').click();
+        cy.get('[data-test-id="accordion-Columns"]').click();
+      });
+    });
+
+    describe("Can visit conceptinfo page", () => {
+      before(() => { visitAdminUI(`datasets/${testDSID}/concepts/${testDSID}.concept1`); });
+
+      it("Can use page components", () => {
+        cy.contains('Concept Concept1');
+        cy.get('[data-test-id="accordion-Selects"]').first().click();
+        cy.get('[data-test-id="accordion-Connectors"]').click();
+      });
+    });
+
     describe("Can delete test table and concept", () => {
+        before(() => { visitAdminUI(`datasets/${testDSID}`); });
 
         it("Can delete test concept", () => {
             cy.get('[data-test-id="accordion-Concepts"]').click();
