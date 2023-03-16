@@ -7,6 +7,9 @@ import javax.validation.constraints.Min;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -16,7 +19,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * <p>
  * Searchable classes describe how a search should be constructed, and provide the values with getSearchValues.
  */
-public interface Searchable {
+public interface Searchable<ID extends Id<? extends Identifiable<? extends ID>>> extends Identifiable<ID> {
+
+	public Dataset getDataset();
+
 	/**
 	 * All available {@link FrontendValue}s for searching in a {@link TrieSearch}.
 	 */
@@ -28,7 +34,7 @@ public interface Searchable {
 	 * @implSpec The order of objects returned is used to also sort search results from different sources.
 	 */
 	@JsonIgnore
-	default List<Searchable> getSearchReferences() {
+	default List<Searchable<?>> getSearchReferences() {
 		//Hopefully the only candidate will be Column
 		return List.of(this);
 	}

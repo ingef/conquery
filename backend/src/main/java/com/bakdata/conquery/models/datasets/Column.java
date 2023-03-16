@@ -36,7 +36,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @Setter
 @NoArgsConstructor
 @Slf4j
-public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable {
+public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<ColumnId>, Searchable<ColumnId> {
 
 	public static final int UNKNOWN_POSITION = -1;
 
@@ -170,7 +170,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	}
 
 	@Override
-	public List<Searchable> getSearchReferences() {
+	public List<Searchable<?>> getSearchReferences() {
 		return List.of(this);
 	}
 

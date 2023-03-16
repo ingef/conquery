@@ -34,13 +34,13 @@ public class UpdateFilterSearchJob extends Job {
 	private final NamespaceStorage storage;
 
 	@NonNull
-	private final Map<Searchable, TrieSearch<FrontendValue>> searchCache;
+	private final Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache;
 
 	@NonNull
 	private final IndexConfig indexConfig;
 
 	@NonNull
-	private final Object2LongMap<SelectFilter<?>> totals;
+	private final Object2LongMap<Searchable<?>> totals;
 
 	@Override
 	public void execute() throws Exception {
@@ -58,7 +58,7 @@ public class UpdateFilterSearchJob extends Job {
 					   .collect(Collectors.toList());
 
 
-		final Set<Searchable> collectedSearchables =
+		final Set<Searchable<?>> collectedSearchables =
 				allSelectFilters.stream()
 								.map(SelectFilter::getSearchReferences)
 								.flatMap(Collection::stream)
@@ -71,12 +71,12 @@ public class UpdateFilterSearchJob extends Job {
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		final ExecutorService service = Executors.newCachedThreadPool();
 
-		final Map<Searchable, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
+		final Map<Searchable<?>, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
 
 		log.debug("Found {} searchable Objects.", collectedSearchables.size());
 
 
-		for (Searchable searchable : collectedSearchables) {
+		for (Searchable<?> searchable : collectedSearchables) {
 
 			service.submit(() -> {
 
@@ -121,17 +121,18 @@ public class UpdateFilterSearchJob extends Job {
 
 		// Precompute totals as that can be slow when doing it on-demand.
 		totals.putAll(
-				allSelectFilters.parallelStream()
-								.collect(Collectors.toMap(
-										Functions.identity(),
-										filter -> filter.getSearchReferences().stream()
-														.map(searchCache::get)
-														.filter(Objects::nonNull) // Failed or disabled searches are null
-														.flatMap(TrieSearch::stream)
-														.mapToInt(FrontendValue::hashCode)
-														.distinct()
-														.count()
-								))
+				synchronizedResult.keySet()
+								  .parallelStream()
+								  .collect(Collectors.toMap(
+										  Functions.identity(),
+										  filter -> filter.getSearchReferences().stream()
+														  .map(searchCache::get)
+														  .filter(Objects::nonNull) // Failed or disabled searches are null
+														  .flatMap(TrieSearch::stream)
+														  .mapToInt(FrontendValue::hashCode)
+														  .distinct()
+														  .count()
+								  ))
 		);
 
 
