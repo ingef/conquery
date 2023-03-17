@@ -49,6 +49,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -59,6 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "CONCEPT", base = CQElement.class)
 @Slf4j
 @ToString
+@EqualsAndHashCode(callSuper = true, doNotUseGetters = true)
 public class CQConcept extends CQElement implements NamespacedIdentifiableHolding, ExportForm.DefaultSelectSettable {
 
 	/**

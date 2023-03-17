@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset.Entry;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements SelectHo
 	private List<ValidityDate> validityDates = new ArrayList<>();
 
 	@JsonBackReference
+	@EqualsAndHashCode.Exclude
 	private Concept<?> concept;
 
 	@JsonIgnore
