@@ -42,7 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 @Valid
 @Slf4j
 @JsonIgnoreProperties({"defaultForEntityPreview"})
-@EqualsAndHashCode(callSuper = true)
 public abstract class Connector extends Labeled<ConnectorId> implements SelectHolder<Select>, NamespacedIdentifiable<ConnectorId> {
 
 	public static final int[] NOT_CONTAINED = new int[]{-1};

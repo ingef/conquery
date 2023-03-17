@@ -124,14 +124,17 @@ public class SerializationTestUtil<T> {
 		ValidatorHelper.failOnError(log, validator.validate(copy));
 
 		//because IdentifiableImp cashes the hash
-		if (value instanceof IdentifiableImpl || forceHashCodeEqual) {
+		if (forceHashCodeEqual) {
 			assertThat(copy.hashCode()).isEqualTo(value.hashCode());
+		}
+
+		if (value instanceof IdentifiableImpl identifiableValue) {
+			assertThat(((IdentifiableImpl<?>) copy).getId()).as("the serialized value").isEqualTo(identifiableValue.getId());
 		}
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
 				.as("Unequal after copy.")
 				.usingRecursiveComparison().ignoringFieldsOfTypes(TYPES_TO_IGNORE);
-
 
 		ass.isEqualTo(expected);
 	}
