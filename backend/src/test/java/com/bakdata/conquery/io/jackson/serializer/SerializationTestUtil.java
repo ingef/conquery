@@ -123,11 +123,11 @@ public class SerializationTestUtil<T> {
 		}
 		ValidatorHelper.failOnError(log, validator.validate(copy));
 
-		//because IdentifiableImp cashes the hash
 		if (forceHashCodeEqual) {
 			assertThat(copy.hashCode()).isEqualTo(value.hashCode());
 		}
 
+		// Preliminary check that ids of identifiables are equal
 		if (value instanceof IdentifiableImpl identifiableValue) {
 			assertThat(((IdentifiableImpl<?>) copy).getId()).as("the serialized value").isEqualTo(identifiableValue.getId());
 		}
