@@ -87,10 +87,7 @@ context("Admin UI Single Dataset", () => {
         before(() => { visitAdminUI('datasets'); });
 
         it("Can delete the test dataset", () => {
-            cy.get(`[data-test-id="delete-btn-${testDSID}"]`)
-                .should($el => {
-                    expect(Cypress.dom.isDetached($el)).to.eq(false)
-                }).click();
+            cy.get(`[data-test-id="delete-btn-${testDSID}"]`).click();
         });
     });
 });
