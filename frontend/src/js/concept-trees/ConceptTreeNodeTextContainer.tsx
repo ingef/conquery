@@ -94,7 +94,9 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
   return (
     <AdditionalInfoHoverable
       node={node}
-      parent={parentId ? getConceptById(parentId, parentId) : null}
+      parent={
+        parentId ? (getConceptById(parentId, parentId) ?? undefined) : undefined
+      }
     >
       <ConceptTreeNodeText
         ref={(instance) => {

@@ -15,7 +15,7 @@ const Root = styled("div")`
 // Allowlist the data we pass (especially: don't pass all children)
 const getAdditionalInfos = (
   node: ConceptT,
-  parent?: ConceptT | null,
+  parent?: ConceptT,
 ): AdditionalInfosType => ({
   label: node.label,
   description: node.description,
@@ -36,7 +36,7 @@ const AdditionalInfoHoverable = ({
   children: ReactNode;
   node: ConceptT;
   className?: string;
-  parent?: ConceptT | null;
+  parent?: ConceptT;
 }) => {
   const dispatch = useDispatch();
 
@@ -44,9 +44,7 @@ const AdditionalInfoHoverable = ({
     if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
     dispatch(
       displayAdditionalInfos({
-        additionalInfos: {
-          ...getAdditionalInfos(node, parent),
-        },
+        additionalInfos: getAdditionalInfos(node, parent),
       }),
     );
   };
@@ -57,9 +55,7 @@ const AdditionalInfoHoverable = ({
     dispatch(toggleAdditionalInfos());
     dispatch(
       displayAdditionalInfos({
-        additionalInfos: {
-          ...getAdditionalInfos(node, parent),
-        },
+        additionalInfos: getAdditionalInfos(node, parent),
       }),
     );
   };

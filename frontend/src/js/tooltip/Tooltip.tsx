@@ -198,7 +198,7 @@ const Tooltip = () => {
               />
             )}
           </PinnedLabel>
-          {parent?.label !== label && parent?.label ? (
+          {parent?.label !== label && parent?.label && (
             <IndentRoot>
               <PinnedLabel>
                 <TypeIcon icon={isFolder ? faFolder : faMinus} />
@@ -207,7 +207,7 @@ const Tooltip = () => {
                 </Label>
               </PinnedLabel>
             </IndentRoot>
-          ) : null}
+          )}
           {description && (
             <Description>{searchHighlight(description)}</Description>
           )}
