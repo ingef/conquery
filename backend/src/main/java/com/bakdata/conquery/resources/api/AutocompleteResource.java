@@ -27,7 +27,7 @@ import lombok.ToString;
 @Setter
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-// It allows for more than filters but that's not interesting from an API perspective so we keep it at /filters/
+// It allows for resolving more than filters but that's not interesting from an API perspective so we keep it at /filters/
 @Path("filters/{" + FILTER + "}/autocomplete")
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 @ToString
