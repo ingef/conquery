@@ -42,5 +42,6 @@ async function restOptionalForce(url, options) {
     });
 
     showMessageForResponse(res, customButton);
-  })
+    return res;
+  });
 }

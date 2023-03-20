@@ -117,7 +117,7 @@
           }
 
             async function rest (url, options, showResponse = true) {
-              const res = await fetch(
+              var res = await fetch(
                 url,
                 {
                   method: 'get',
