@@ -65,13 +65,19 @@ context("Admin UI Single Dataset", () => {
 
         it("Can delete test concept", () => {
             cy.get('[data-test-id="accordion-Concepts"]').click();
-            cy.get(`[data-test-id="delete-btn-concept-${testDSID}.concept1"]`).click({force: true});
+            cy.get(`[data-test-id="delete-btn-concept-${testDSID}.concept1"]`)
+                .should($el => {
+                    expect(Cypress.dom.isDetached($el)).to.eq(false)
+                }).click();
             cy.get(`[data-test-id="delete-btn-${testDSID}.concept1"]`).should('not.exist');
         });
 
         it("Can delete test table", () => {
             cy.get('[data-test-id="accordion-Tables"]').click();
-            cy.get(`[data-test-id="delete-btn-table-${testDSID}.table"]`).click({force: true});
+            cy.get(`[data-test-id="delete-btn-table-${testDSID}.table"]`)
+                .should($el => {
+                    expect(Cypress.dom.isDetached($el)).to.eq(false)
+                }).click();
             cy.get(`[data-test-id="delete-btn-${testDSID}.table"]`).should('not.exist');
         });
 
@@ -81,7 +87,10 @@ context("Admin UI Single Dataset", () => {
         before(() => { visitAdminUI('datasets'); });
 
         it("Can delete the test dataset", () => {
-            cy.get(`[data-test-id="delete-btn-${testDSID}"]`).click({force: true});
+            cy.get(`[data-test-id="delete-btn-${testDSID}"]`)
+                .should($el => {
+                    expect(Cypress.dom.isDetached($el)).to.eq(false)
+                }).click();
         });
     });
 });
