@@ -1,6 +1,6 @@
 import { ActionType, getType } from "typesafe-actions";
 
-import type { DateRangeT } from "../api/types";
+import type { ConceptT, DateRangeT } from "../api/types";
 import type { Action } from "../app/actions";
 
 import {
@@ -22,7 +22,7 @@ export type AdditionalInfosType = {
   matchingEntities: number | null;
   dateRange?: DateRangeT;
   infos?: InfoType[];
-  parent?: string;
+  parent?: ConceptT | null;
 };
 
 export type TooltipStateT = {

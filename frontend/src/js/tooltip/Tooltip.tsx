@@ -1,10 +1,9 @@
 import styled from "@emotion/styled";
+import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
 import {
   faFolder,
   faMinus,
   faThumbtack,
-  faFolderOpen,
-  faCaretRight,
 } from "@fortawesome/free-solid-svg-icons";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
@@ -57,7 +56,7 @@ const TackIconButton = styled(IconButton)`
   margin-left: 5px;
 `;
 const TypeIcon = styled(StyledFaIcon)`
-  margin-right: 5px;
+  margin-right: 6px;
 `;
 const PinnedLabel = styled("p")`
   display: flex;
@@ -84,6 +83,7 @@ const Infos = styled("div")`
 
 const IndentRoot = styled("div")`
   padding-left: 15px;
+  margin: 3px 0 8px;
 `;
 
 const PieceOfInfo = styled("div")`
@@ -173,18 +173,18 @@ const Tooltip = () => {
           <PinnedLabel>
             <TypeIcon
               icon={
-                // Parent is not element tooltipped or tooltip is a folder
-                isFolder || parent !== label
-                  ? // If the parent exists we show the folder icon
-                    parent
-                    ? faFolderOpen
+                // parent?.label is not element tooltipped or tooltip is a folder
+                isFolder || parent?.label !== label
+                  ? // If the parent is a struct folder, we show the regular folder icon
+                    !parent?.detailsAvailable
+                    ? faFolderRegular
                     : faFolder
                   : faMinus
               }
             />
             <Label>
-              {parent
-                ? searchHighlight(parent)
+              {parent?.label
+                ? searchHighlight(parent?.label)
                 : label
                 ? searchHighlight(label)
                 : t("tooltip.placeholder")}
@@ -198,10 +198,9 @@ const Tooltip = () => {
               />
             )}
           </PinnedLabel>
-          {parent !== label && parent ? (
+          {parent?.label !== label && parent?.label ? (
             <IndentRoot>
               <PinnedLabel>
-                <TypeIcon icon={faCaretRight} />
                 <TypeIcon icon={isFolder ? faFolder : faMinus} />
                 <Label>
                   {label ? searchHighlight(label) : t("tooltip.placeholder")}
