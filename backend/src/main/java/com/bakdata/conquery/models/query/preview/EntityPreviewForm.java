@@ -78,7 +78,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 		return null; // will not be implemented.
 	}
 
-	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.ChronoSelects> chronoSelects, DatasetRegistry datasetRegistry) {
+	public static EntityPreviewForm create(String entity, String idKind, Range<LocalDate> dateRange, List<Connector> sources, List<Select> infos, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry datasetRegistry) {
 
 		// We use this query to filter for the single selected query.
 		final Query entitySelectQuery = new ConceptQuery(new CQExternal(List.of(idKind), new String[][]{{"HEAD"}, {entity}}, true));
@@ -89,13 +89,13 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 		final Map<String, AbsoluteFormQuery> timeQueries = new HashMap<>();
 
-		for (PreviewConfig.ChronoSelects selects : chronoSelects) {
+		for (PreviewConfig.TimeStratifiedSelects selects : timeStratifiedSelects) {
 
 			final AbsoluteFormQuery query = new AbsoluteFormQuery(entitySelectQuery, dateRange,
 																  ArrayConceptQuery.createFromFeatures(
 																				selects.selects().stream()
 																					   .map(PreviewConfig.InfoCardSelect::select)
-																					   .map(id -> datasetRegistry.resolve(id))// TODO resolve optional?
+																					   .map(datasetRegistry::resolve)
 																					   .map(CQConcept::forSelect)
 																					   .collect(Collectors.toList())),
 																  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.YEARS, Alignment.YEAR), ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER))

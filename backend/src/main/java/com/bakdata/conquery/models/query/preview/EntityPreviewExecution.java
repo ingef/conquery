@@ -94,7 +94,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), printSettings));
 
-		status.setChronoInfos(toChronoInfos(previewConfig, getSubQueries(), printSettings));
+		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), printSettings));
 
 		return status;
 	}
@@ -141,10 +141,10 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@NotNull
-	private List<EntityPreviewStatus.ChronoInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, ManagedQuery> subQueries, PrintSettings printSettings) {
-		final List<EntityPreviewStatus.ChronoInfos> chronoInfos = new ArrayList<>();
+	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, ManagedQuery> subQueries, PrintSettings printSettings) {
+		final List<EntityPreviewStatus.TimeStratifiedInfos> timeStratifiedInfos = new ArrayList<>();
 
-		for (PreviewConfig.ChronoSelects description : previewConfig.getChronoSelects()) {
+		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
 			final ManagedQuery query = subQueries.get(description.name());
 
 			final EntityResult entityResult = query.streamResults().collect(MoreCollectors.onlyElement());
@@ -159,13 +159,13 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			// get descriptions, but drop everything that isn't a select result as the rest is already structured
 			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
 
-			final EntityPreviewStatus.ChronoInfos infos =
-					new EntityPreviewStatus.ChronoInfos(description.name(), description.description(), columnDescriptors, yearEntries);
+			final EntityPreviewStatus.TimeStratifiedInfos infos =
+					new EntityPreviewStatus.TimeStratifiedInfos(description.name(), description.description(), columnDescriptors, yearEntries);
 
-			chronoInfos.add(infos);
+			timeStratifiedInfos.add(infos);
 		}
 
-		return chronoInfos;
+		return timeStratifiedInfos;
 	}
 
 	@NotNull

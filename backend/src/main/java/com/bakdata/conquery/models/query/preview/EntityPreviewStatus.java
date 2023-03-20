@@ -17,7 +17,7 @@ import lombok.ToString;
 @Data
 public class EntityPreviewStatus extends FullExecutionStatus {
 	private List<Info> infos;
-	private List<ChronoInfos> chronoInfos;
+	private List<TimeStratifiedInfos> timeStratifiedInfos;
 
 
 	/**
@@ -46,7 +46,7 @@ public class EntityPreviewStatus extends FullExecutionStatus {
 	 * @param columns Typed description of the infos.
 	 * @param years Structured results, also contains QuarterEntries.
 	 */
-	public record ChronoInfos(String label, String description, List<ColumnDescriptor> columns, List<EntityPreviewStatus.YearEntry> years) {
+	public record TimeStratifiedInfos(String label, String description, List<ColumnDescriptor> columns, List<EntityPreviewStatus.YearEntry> years) {
 	}
 
 	public record QuarterEntry(int quarter, Map<String, Object> values) {

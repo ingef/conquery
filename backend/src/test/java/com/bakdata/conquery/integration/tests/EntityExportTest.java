@@ -106,7 +106,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 					new PreviewConfig.InfoCardSelect("Values", valuesSelectId, null)
 			));
 
-			previewConfig.setChronoSelects(List.of(new PreviewConfig.ChronoSelects(
+			previewConfig.setTimeStratifiedSelects(List.of(new PreviewConfig.TimeStratifiedSelects(
 					"Values in Time", "Description",
 					List.of(new PreviewConfig.InfoCardSelect(
 							"Values",
@@ -150,7 +150,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			result = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
 		}
 
-		final EntityPreviewStatus.ChronoInfos infos = result.getChronoInfos().get(0);
+		final EntityPreviewStatus.TimeStratifiedInfos infos = result.getTimeStratifiedInfos().get(0);
 
 		assertThat(infos.description()).isEqualTo("Description");
 		assertThat(infos.label()).isEqualTo("Values in Time");

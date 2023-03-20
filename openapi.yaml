@@ -1903,7 +1903,7 @@ components:
                     type: array
                     items:
                       $ref: "#/components/schemas/Semantics"
-            chronoInfos:
+            timeStratifiedInfos:
               type: array
               items:
                 type: object

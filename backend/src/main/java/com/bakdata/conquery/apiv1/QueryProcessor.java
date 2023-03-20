@@ -407,7 +407,7 @@ public class QueryProcessor {
 
 		final Namespace namespace = datasetRegistry.get(dataset.getId());
 		final PreviewConfig previewConfig = datasetRegistry.get(dataset.getId()).getPreviewConfig();
-		final EntityPreviewForm form = EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getChronoSelects(), datasetRegistry);
+		final EntityPreviewForm form = EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimeStratifiedSelects(), datasetRegistry);
 
 		// TODO make sure that subqueries are also system
 		// TODO do not persist system queries
