@@ -225,6 +225,7 @@ const ProjectItem = forwardRef<
                   tight
                   small
                   bare
+                  simpleIcon
                   resultUrl={item.resultUrls[0]}
                 >
                   {topLeftLabel}

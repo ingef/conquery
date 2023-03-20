@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
+  faDownload,
   faFileArchive,
   faFileCsv,
   faFileDownload,
@@ -44,11 +45,15 @@ interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
   resultUrl: ResultUrlWithLabel;
   className?: string;
   children?: ReactNode;
+  simpleIcon?: boolean;
   onClick?: () => void;
 }
 
 const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
-  ({ resultUrl, className, children, onClick, ...restProps }, ref) => {
+  (
+    { simpleIcon, resultUrl, className, children, onClick, ...restProps },
+    ref,
+  ) => {
     const { authToken } = useContext(AuthTokenContext);
 
     const href = `${resultUrl.url}?access_token=${encodeURIComponent(
@@ -59,7 +64,7 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
       <Link href={href} className={className} ref={ref}>
         <SxIconButton
           {...restProps}
-          icon={getFileIcon(resultUrl.url)}
+          icon={simpleIcon ? faDownload : getFileIcon(resultUrl.url)}
           onClick={onClick}
         >
           {children}
