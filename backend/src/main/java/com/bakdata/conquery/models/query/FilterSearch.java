@@ -40,14 +40,14 @@ public class FilterSearch {
 	 * In the code below, the keys of this map will usually be called "reference".
 	 */
 	@JsonIgnore
-	private final Map<Searchable, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
-	private Object2LongMap<SelectFilter<?>> totals = Object2LongMaps.emptyMap();
+	private final Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
+	private Object2LongMap<Searchable<?>> totals = Object2LongMaps.emptyMap();
 
 	/**
 	 * From a given {@link FrontendValue} extract all relevant keywords.
 	 */
 	public static List<String> extractKeywords(FrontendValue value) {
-		List<String> keywords = new ArrayList<>(3);
+		final List<String> keywords = new ArrayList<>(3);
 
 		keywords.add(value.getLabel());
 		keywords.add(value.getValue());
@@ -62,15 +62,15 @@ public class FilterSearch {
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
-	public List<TrieSearch<FrontendValue>> getSearchesFor(SelectFilter<?> filter) {
-		return filter.getSearchReferences().stream()
+	public List<TrieSearch<FrontendValue>> getSearchesFor(Searchable<?> searchable) {
+		return searchable.getSearchReferences().stream()
 					 .map(searchCache::get)
 					 .filter(Objects::nonNull)
 					 .collect(Collectors.toList());
 	}
 
-	public long getTotal(SelectFilter<?> filter) {
-		return totals.getOrDefault(filter, 0);
+	public long getTotal(Searchable<?> searchable) {
+		return totals.getOrDefault(searchable, 0);
 	}
 
 
