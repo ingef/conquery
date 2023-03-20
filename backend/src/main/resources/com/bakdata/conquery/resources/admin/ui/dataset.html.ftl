@@ -12,7 +12,7 @@
 <#assign columnsSecondaryIds=["id", "label"]>
 
 <#macro deleteButton id contentPath testId="">
-	 <a href="" onclick="event.preventDefault(); rest('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/datasets/${c.ds.id}/${contentPath}/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});" data-test-id="${testId}">
+	 <a href="" onclick="event.preventDefault(); restOptionalForce('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/datasets/${c.ds.id}/${contentPath}/${id}',{method: 'delete'}).then(function(res){if(res.ok)location.reload();});" data-test-id="${testId}">
     <i class="fas fa-trash-alt text-danger"></i>
   </a>
 </#macro>

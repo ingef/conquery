@@ -116,8 +116,8 @@
               return customButton;
           }
 
-            async function rest (url, options) {
-              var res = await fetch(
+            async function rest (url, options, showResponse = true) {
+              const res = await fetch(
                 url,
                 {
                   method: 'get',
@@ -128,14 +128,10 @@
                   ...options
                 }
               );
-              // force button in case of 409 status
-              const forceURL = new URL(url, window.location);
-              forceURL.searchParams.append('force', true);
-              const customButton = createCustomButton('Force delete');
-              customButton.onclick = () => rest(forceURL, options).then((res) => {
-                res.ok && location.reload();
-              });
-              showMessageForResponse(res, customButton);
+              
+              if (showResponse) {
+                showMessageForResponse(res);
+              }
               return res;
             }
 
