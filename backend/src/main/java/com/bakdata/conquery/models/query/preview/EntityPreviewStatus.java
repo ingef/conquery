@@ -21,13 +21,16 @@ public class EntityPreviewStatus extends FullExecutionStatus {
 
 
 	/**
-	 * Bundles ColumnDescriptor immediately with a value for EntityPreview.
+	 * Bundles ColumnDescriptor immediately with a result value for EntityPreview.
 	 */
 	@EqualsAndHashCode(callSuper = true)
 	@ToString(callSuper = true)
 	@Getter
 	public static class Info extends ColumnDescriptor {
 
+		/**
+		 * The result of the InfoCardSelect.
+		 */
 		private final Object value;
 
 		public Info(String label, Object value, String typeInfo, String description, Set<SemanticType> semantics) {

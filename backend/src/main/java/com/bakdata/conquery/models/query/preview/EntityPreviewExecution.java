@@ -56,18 +56,18 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	@ToString.Exclude
 	private PreviewConfig previewConfig;
 
-	@Override
-	public boolean isSystem() {
-		// This Form should NEVER be started manually. Nor persisted
-		return true;
-	}
-
 	protected EntityPreviewExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
 		super(storage);
 	}
 
 	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
 		super(entityPreviewQuery, user, submittedDataset, storage);
+	}
+
+	@Override
+	public boolean isSystem() {
+		// This Form should NEVER be started manually. Nor persisted
+		return true;
 	}
 
 	@Override
@@ -99,8 +99,9 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		return status;
 	}
 
-	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
-		status.setColumnDescriptions(generateColumnDescriptions());
+	@JsonIgnore
+	private ManagedQuery getValuesQuery() {
+		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME);
 	}
 
 	/**
@@ -146,36 +147,14 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		for (PreviewConfig.ChronoSelects description : previewConfig.getChronoSelects()) {
 			final ManagedQuery query = subQueries.get(description.name());
 
-
 			final EntityResult entityResult = query.streamResults().collect(MoreCollectors.onlyElement());
 
 			final Map<SelectId, PreviewConfig.InfoCardSelect> select2desc =
-					description.selects().stream().collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
+					description.selects().stream()
+							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
-
-			// Group lines by quarter, year and resolution.
-			final Map<Integer, Object[]> yearLines = new HashMap<>();
-			final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
-
-			groupLinesForResolutions(entityResult, yearLines, quarterLines);
-
-			final Function<Object[], Map<String, Object>> lineTransformer = createLineTransformer(query.getResultInfos(), select2desc, printSettings);
-
-			final List<EntityPreviewStatus.YearEntry> yearEntries = new ArrayList<>();
-
-			yearLines.forEach((year, yearLine) -> {
-
-				final List<EntityPreviewStatus.QuarterEntry> quarterEntries = new ArrayList<>();
-				quarterLines.getOrDefault(year, Collections.emptyMap())
-							.forEach((quarter, line) -> quarterEntries.add(new EntityPreviewStatus.QuarterEntry(quarter, lineTransformer.apply(line))));
-
-				quarterEntries.sort(Comparator.comparingInt(EntityPreviewStatus.QuarterEntry::quarter));
-
-
-				yearEntries.add(new EntityPreviewStatus.YearEntry(year, lineTransformer.apply(yearLine), quarterEntries));
-			});
-
-			yearEntries.sort(Comparator.comparingInt(EntityPreviewStatus.YearEntry::year));
+			// Group lines by year and quarter.
+			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, query.getResultInfos(), printSettings, select2desc);
 
 			// get descriptions, but drop everything that isn't a select result as the rest is already structured
 			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
@@ -187,6 +166,33 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		}
 
 		return chronoInfos;
+	}
+
+	@NotNull
+	private List<EntityPreviewStatus.YearEntry> createYearEntries(EntityResult entityResult, List<ResultInfo> resultInfos, PrintSettings printSettings, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
+		final Map<Integer, Object[]> yearLines = new HashMap<>();
+		final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
+
+		groupLinesForResolutions(entityResult, yearLines, quarterLines);
+
+		final Function<Object[], Map<String, Object>> lineTransformer = createLineTransformer(resultInfos, select2desc, printSettings);
+
+		final List<EntityPreviewStatus.YearEntry> yearEntries = new ArrayList<>();
+
+		yearLines.forEach((year, yearLine) -> {
+
+			final List<EntityPreviewStatus.QuarterEntry> quarterEntries = new ArrayList<>();
+			quarterLines.getOrDefault(year, Collections.emptyMap())
+						.forEach((quarter, line) -> quarterEntries.add(new EntityPreviewStatus.QuarterEntry(quarter, lineTransformer.apply(line))));
+
+			quarterEntries.sort(Comparator.comparingInt(EntityPreviewStatus.QuarterEntry::quarter));
+
+			yearEntries.add(new EntityPreviewStatus.YearEntry(year, lineTransformer.apply(yearLine), quarterEntries));
+		});
+
+		yearEntries.sort(Comparator.comparingInt(EntityPreviewStatus.YearEntry::year));
+
+		return yearEntries;
 	}
 
 	/**
@@ -239,7 +245,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 				final String value = resultInfos.get(column).getType().printNullable(printSettings, line[column]);
 
-				if (value == null || Strings.isBlank(value)) {
+				if (Strings.isBlank(value)) {
 					continue;
 				}
 
@@ -250,16 +256,9 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		};
 	}
 
-	@JsonIgnore
-	private ManagedQuery getValuesQuery() {
-		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME);
-	}
-
-
 	/**
 	 * For the selects in result infos, build ColumnDescriptors using definitions (label and description) from PreviewConfig.
 	 */
-	@NotNull
 	private static List<ColumnDescriptor> createChronoColumnDescriptors(SingleTableResult query, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
 
 		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
@@ -283,11 +282,9 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		return columnDescriptions;
 	}
 
-	@Override
-	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
+	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		status.setColumnDescriptions(generateColumnDescriptions());
 	}
-
 
 	@Override
 	public List<ColumnDescriptor> generateColumnDescriptions() {
@@ -312,6 +309,11 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 
 		return descriptors;
+	}
+
+	@Override
+	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
+		status.setColumnDescriptions(generateColumnDescriptions());
 	}
 
 	@Override
