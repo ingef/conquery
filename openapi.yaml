@@ -1930,7 +1930,7 @@ components:
                             type: object
                             properties:
                               quarter:
-                                type: int
+                                type: integer
                                 minimum: 1
                                 maximum: 4
                               values:
