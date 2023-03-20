@@ -934,6 +934,9 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Filter"
+            validityDatesDescription:
+              description: "Further information about the available validity dates."
+              type: string
             validityDates:
               description: "Definitions of relevant date columns for this connector.
               e.g.: The publishing date of a movie, and its production period."
