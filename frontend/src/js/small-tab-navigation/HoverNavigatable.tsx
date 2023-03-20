@@ -22,7 +22,7 @@ const Root = styled("div")<{
   background-color: ${({ theme, isOver, isDroppable }) =>
     isOver && isDroppable ? `${theme.col.grayVeryLight}` : "inherit"};
   position: relative;
-  border-radius: 3px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   display: inline-flex;
 `;
 

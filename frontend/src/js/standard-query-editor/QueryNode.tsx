@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import type { QueryT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
+import { DNDType } from "../common/constants/dndTypes";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import {
   nodeHasNonDefaultSettings,
@@ -16,6 +17,7 @@ import {
 import { isQueryExpandable } from "../model/query";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
+import { PossibleDroppableObject } from "../ui-components/Dropzone";
 
 import QueryNodeActions from "./QueryNodeActions";
 import QueryNodeContent from "./QueryNodeContent";
@@ -83,6 +85,12 @@ const nodeHasActiveSecondaryId = (
       node.availableSecondaryIds.includes(activeSecondaryId)
     );
   }
+};
+
+export const draggableObjectIsConceptTreeNode = (
+  node: PossibleDroppableObject,
+): node is DragItemConceptTreeNode => {
+  return node.type === DNDType.CONCEPT_TREE_NODE;
 };
 
 const QueryNode = ({
@@ -189,14 +197,15 @@ const QueryNode = ({
   const QueryNodeRoot = (
     <FlexHoverNavigatable
       triggerNavigate={onClick}
-      canDrop={(item) => {
-        if (item.type !== "CONCEPT_TREE_NODE") return false;
-        const nodeCast = node as DragItemConceptTreeNode;
-        const conceptId = (item as DragItemConceptTreeNode).ids[0];
-        return (
-          item.tree === nodeCast.tree &&
-          !nodeCast.ids.some((id) => id === conceptId)
-        );
+      canDrop={(item: PossibleDroppableObject) => {
+        if (draggableObjectIsConceptTreeNode(item)) {
+          if (!nodeIsConceptQueryNode(node)) return false;
+          const conceptId = item.ids[0];
+          return (
+            item.tree === node.tree && !node.ids.includes(conceptId)
+          );
+        }
+        return false;
       }}
     >
       <Root
