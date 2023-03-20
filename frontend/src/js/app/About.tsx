@@ -37,7 +37,7 @@ const useVersion = () => {
   // `;
 
   // THIS IS GETTING STATICALLY REPLACED USING "VITE DEFINE"
-  const frontendVersion = `__BUILD_TIMESTAMP__`;
+  const frontendVersion = `__BUILD_TIMESTAMP__`.replace(/"/g, "");
 
   return {
     backendVersion,

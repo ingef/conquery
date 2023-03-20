@@ -25,11 +25,9 @@ export default defineConfig(() => {
       open: true,
     },
     define: {
-      __BUILD_TIMESTAMP__: new Date()
-        .toISOString()
-        .split(".")[0]
-        .split("T")
-        .join(" "),
+      __BUILD_TIMESTAMP__: JSON.stringify(
+        new Date().toISOString().split(".")[0].split("T").join(" "),
+      ),
     },
   };
 });
