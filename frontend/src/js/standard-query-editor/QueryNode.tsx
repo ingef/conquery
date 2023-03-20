@@ -201,9 +201,7 @@ const QueryNode = ({
         if (draggableObjectIsConceptTreeNode(item)) {
           if (!nodeIsConceptQueryNode(node)) return false;
           const conceptId = item.ids[0];
-          return (
-            item.tree === node.tree && !node.ids.includes(conceptId)
-          );
+          return item.tree === node.tree && !node.ids.includes(conceptId);
         }
         return false;
       }}
