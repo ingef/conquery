@@ -1,6 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.List;
 
 import javax.validation.constraints.NotEmpty;
@@ -10,7 +10,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.SearchConfig;
+import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.index.FrontendValueIndex;
 import com.bakdata.conquery.models.index.FrontendValueIndexKey;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.index.search.SearchIndex;
+import com.bakdata.conquery.util.io.FileUtil;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -40,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 @Slf4j
 @CPSType(id = "CSV_TEMPLATE", base = SearchIndex.class)
-public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable, SearchIndex {
+public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements Searchable<SearchIndexId>, SearchIndex {
 
 	private static final long serialVersionUID = 1L;
 
@@ -55,7 +56,7 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	 * Path to CSV File.
 	 */
 	@NotNull
-	private final URL filePath;
+	private final URI filePath;
 
 	/**
 	 * Value to be sent for filtering.
@@ -90,15 +91,18 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 		return false;
 	}
 
-	public List<TrieSearch<FrontendValue>> getSearches(SearchConfig config, NamespaceStorage storage) {
+	public List<TrieSearch<FrontendValue>> getSearches(IndexConfig config, NamespaceStorage storage) {
+
+		final URI resolvedURI = FileUtil.getResolvedUri(config.getBaseUrl(), getFilePath());
+		log.trace("Resolved filter template reference url for search '{}': {}", this.getId(), resolvedURI);
 
 		FrontendValueIndex search = indexService.getIndex(new FrontendValueIndexKey(
-				filePath,
+				resolvedURI,
 				columnValue,
 				value,
 				optionValue,
 				isGenerateSuffixes() ? getMinSuffixLength() : Integer.MAX_VALUE,
-				config.getSplit()
+				config.getSearchSplitChars()
 		));
 
 		return List.of(search);

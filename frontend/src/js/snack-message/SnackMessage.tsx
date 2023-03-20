@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useRef, memo, FC } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -68,7 +69,7 @@ const SnackMessage: FC = memo(function SnackMessageComponent() {
           <Relative>
             <div dangerouslySetInnerHTML={{ __html: message }} />
             <ClearZone onClick={resetMessage}>
-              <FaIcon white large icon="times" />
+              <FaIcon white large icon={faTimes} />
             </ClearZone>
           </Relative>
         </Root>

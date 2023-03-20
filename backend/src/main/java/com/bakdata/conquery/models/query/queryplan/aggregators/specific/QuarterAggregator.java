@@ -28,7 +28,7 @@ public class QuarterAggregator extends Aggregator<String> {
 	private final TemporalSamplerFactory samplerFactory;
 	private TemporalSamplerFactory.Sampler sampler;
 
-	private CDateSet set = CDateSet.create();
+	private CDateSet set = CDateSet.createEmpty();
 	private CDateSet dateRestriction;
 
 	private Column column;

@@ -1,13 +1,13 @@
 package com.bakdata.conquery.models.config;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
@@ -28,7 +28,7 @@ public class ParquetResultProvider implements ResultRendererProvider {
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)
-	public Collection<URL> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
 		if (!(exec instanceof SingleTableResult)) {
 			return Collections.emptyList();
 		}
@@ -38,7 +38,7 @@ public class ParquetResultProvider implements ResultRendererProvider {
 		}
 
 		return List.of(
-				ResultParquetResource.getDownloadURL(uriBuilder.clone(), (ManagedExecution & SingleTableResult) exec)
+				new ResultAsset("PARQUET", ResultParquetResource.getDownloadURL(uriBuilder.clone(), (ManagedExecution & SingleTableResult) exec))
 		);
 	}
 

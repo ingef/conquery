@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faListUl, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -32,7 +33,7 @@ export const QueryResultHistoryButton = ({ url, label, columns }: PropsT) => {
 
   return (
     <SxIconButton
-      icon={isLoading ? "spinner" : "list-ul"}
+      icon={isLoading ? faSpinner : faListUl}
       frame
       onClick={async () => {
         await newHistorySession(getAuthorizedUrl(url), columns, label);

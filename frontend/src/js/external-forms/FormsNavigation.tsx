@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTrashAlt } from "@fortawesome/free-regular-svg-icons";
 import { useTranslation } from "react-i18next";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -98,7 +99,7 @@ const FormsNavigation = ({ reset }: Props) => {
           confirmationText={t("externalForms.common.clearConfirm")}
         >
           <WithTooltip text={t("externalForms.common.clear")}>
-            <SxIconButton frame regular icon="trash-alt" />
+            <SxIconButton frame icon={faTrashAlt} />
           </WithTooltip>
         </ConfirmableTooltip>
       </Row>

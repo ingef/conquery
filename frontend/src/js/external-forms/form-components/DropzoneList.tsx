@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { ReactNode, forwardRef, Ref, ReactElement, ForwardedRef } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
@@ -87,7 +88,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
         <div>
           {items.map((item, i) => (
             <ListItem key={i}>
-              <StyledIconButton icon="times" onClick={() => onDelete(i)} />
+              <StyledIconButton icon={faTimes} onClick={() => onDelete(i)} />
               {item}
             </ListItem>
           ))}

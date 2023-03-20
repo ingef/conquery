@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { DetailedHTMLProps, forwardRef, TextareaHTMLAttributes } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -83,7 +84,7 @@ export const InputTextarea = forwardRef<
           {props.value && (
             <ClearZoneIconButton
               tiny
-              icon="times"
+              icon={faTimes}
               tabIndex={-1}
               title={t("common.clearValue")}
               aria-label={t("common.clearValue")}

@@ -21,7 +21,7 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 public class EventDurationSumAggregator extends Aggregator<Long> {
 
-	private final CDateSet set = CDateSet.create();
+	private final CDateSet set = CDateSet.createEmpty();
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 	@CheckForNull
 	private CDateSet dateRestriction;

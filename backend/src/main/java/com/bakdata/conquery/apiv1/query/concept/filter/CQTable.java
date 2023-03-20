@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -25,6 +26,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString(exclude = "concept")
+@EqualsAndHashCode
 public class CQTable {
 	@Valid
 	@NotNull
@@ -35,6 +37,7 @@ public class CQTable {
 	private List<Select> selects = Collections.emptyList();
 
 	@JsonBackReference
+	@EqualsAndHashCode.Exclude
 	private CQConcept concept;
 
 	@NsIdRef

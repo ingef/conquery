@@ -23,7 +23,6 @@ public class QueryPlanContext {
 
 	private CDateRange dateRestriction = CDateRange.all();
 
-
 	/**
 	 * Set if in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the query-active {@link SecondaryIdDescriptionId}.
 	 */

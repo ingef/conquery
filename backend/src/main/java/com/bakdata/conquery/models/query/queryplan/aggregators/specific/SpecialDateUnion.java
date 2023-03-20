@@ -18,7 +18,7 @@ import lombok.ToString;
 @ToString(onlyExplicitlyIncluded = true)
 public class SpecialDateUnion extends Aggregator<CDateSet> {
 
-	private CDateSet set = CDateSet.create();
+	private CDateSet set = CDateSet.createEmpty();
 
 	private Column currentColumn;
 	private CDateSet dateRestriction;

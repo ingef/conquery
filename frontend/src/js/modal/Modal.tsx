@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useRef, ReactNode } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -108,7 +109,7 @@ const Modal = ({
           {closeIcon && (
             <WithTooltip text={t("common.closeEsc")}>
               <TransparentButton small onClick={onClose}>
-                <FaIcon icon="times" />
+                <FaIcon icon={faTimes} />
               </TransparentButton>
             </WithTooltip>
           )}
