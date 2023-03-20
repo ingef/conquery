@@ -20,7 +20,7 @@ const Root = styled("div")<{
   isDroppable?: boolean;
 }>`
   background-color: ${({ theme, isOver, isDroppable }) =>
-    isOver && isDroppable ? `${theme.col.grayVeryLight}` : isOver && !isDroppable ? `${theme.col.orange}` : "inherit"};
+    isOver && isDroppable ? `${theme.col.grayVeryLight}` : "inherit"};
   position: relative;
   border-radius: 3px;
   display: inline-flex;
