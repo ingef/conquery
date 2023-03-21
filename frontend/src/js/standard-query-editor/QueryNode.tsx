@@ -87,7 +87,7 @@ const nodeHasActiveSecondaryId = (
   }
 };
 
-export const draggableObjectIsConceptTreeNode = (
+export const droppableObjectIsConceptTreeNode = (
   node: PossibleDroppableObject,
 ): node is DragItemConceptTreeNode => {
   return node.type === DNDType.CONCEPT_TREE_NODE;
@@ -198,12 +198,16 @@ const QueryNode = ({
     <FlexHoverNavigatable
       triggerNavigate={onClick}
       canDrop={(item: PossibleDroppableObject) => {
-        if (draggableObjectIsConceptTreeNode(item)) {
-          if (!nodeIsConceptQueryNode(node)) return false;
-          const conceptId = item.ids[0];
-          return item.tree === node.tree && !node.ids.includes(conceptId);
+        if (
+          !droppableObjectIsConceptTreeNode(item) ||
+          !nodeIsConceptQueryNode(node)
+        ) {
+          return false;
         }
-        return false;
+        const conceptId = item.ids[0];
+        const itemAlreadyInNode = node.ids.includes(conceptId);
+        const itemHasConceptRoot = item.tree === node.tree;
+        return itemHasConceptRoot && !itemAlreadyInNode;
       }}
     >
       <Root
