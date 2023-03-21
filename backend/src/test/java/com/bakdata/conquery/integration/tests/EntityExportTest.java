@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -68,7 +69,11 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 		final QueryTest test = JsonIntegrationTest.readJson(dataset, testJson);
 
+		final Range<LocalDate> dateRange = Range.of(LocalDate.of(2010, 1, 11), LocalDate.of(2022, 12, 31));
+
+
 		// Manually import data, so we can do our own work.
+		final SelectId valuesSelectId = SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values");
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
@@ -97,9 +102,18 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			final PreviewConfig previewConfig = new PreviewConfig();
 
 			previewConfig.setInfoCardSelects(List.of(
-					new PreviewConfig.InfoCardSelect("Age", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age")),
-					new PreviewConfig.InfoCardSelect("Values", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values"))
+					new PreviewConfig.InfoCardSelect("Age", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"), null),
+					new PreviewConfig.InfoCardSelect("Values", valuesSelectId, null)
 			));
+
+			previewConfig.setTimeStratifiedSelects(List.of(new PreviewConfig.TimeStratifiedSelects(
+					"Values in Time", "Description",
+					List.of(new PreviewConfig.InfoCardSelect(
+							"Values",
+							valuesSelectId,
+							"Description"
+					))
+			)));
 
 			previewConfig.setHidden(Set.of(ColumnId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "table1.column")));
 
@@ -127,7 +141,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		try (Response allEntityDataResponse = conquery.getClient().target(entityExport)
 													  .request(MediaType.APPLICATION_JSON_TYPE)
 													  .header("Accept-Language", "en-Us")
-													  .post(Entity.json(new EntityPreviewRequest("ID", "1", Range.atMost(LocalDate.of(2022, 11, 10)), allConnectors)))) {
+													  .post(Entity.json(new EntityPreviewRequest("ID", "1", dateRange, allConnectors)))) {
 
 			assertThat(allEntityDataResponse.getStatusInfo().getFamily())
 					.describedAs(new LazyTextDescription(() -> allEntityDataResponse.readEntity(String.class)))
@@ -136,26 +150,55 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 			result = allEntityDataResponse.readEntity(EntityPreviewStatus.class);
 		}
 
-		assertThat(result.getInfos()).isEqualTo(List.of(
+		final EntityPreviewStatus.TimeStratifiedInfos infos = result.getTimeStratifiedInfos().get(0);
+
+		assertThat(infos.description()).isEqualTo("Description");
+		assertThat(infos.label()).isEqualTo("Values in Time");
+
+		assertThat(infos.years()).hasSize(13);
+
+		assertThat(infos.columns()).containsExactly(
+				new ColumnDescriptor(
+						"Values", "Description", "Values", "LIST[STRING]",
+						Set.of(new SemanticType.SelectResultT(
+								conquery.getNamespace().getCentralRegistry().resolve(valuesSelectId)
+						))
+				)
+		);
+
+
+		// assert only 2010 as the other years are empty
+		assertThat(infos.years().get(0))
+				.isEqualTo(new EntityPreviewStatus.YearEntry(
+						2010, Map.of("Values", "B2"),
+						List.of(
+								new EntityPreviewStatus.QuarterEntry(1, Collections.emptyMap()),
+								new EntityPreviewStatus.QuarterEntry(2, Collections.emptyMap()),
+								new EntityPreviewStatus.QuarterEntry(3, Map.of("Values", "B2")),
+								new EntityPreviewStatus.QuarterEntry(4, Collections.emptyMap())
+						)
+				));
+
+
+		assertThat(result.getInfos()).containsExactly(
 				new EntityPreviewStatus.Info(
 						"Age",
 						"9",
 						ResultType.IntegerT.INSTANCE.typeInfo(),
-						"",
-						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry()
-																	  .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
+						null,
+						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
 				),
 				new EntityPreviewStatus.Info(
 						"Values",
 						"A1 ; B2",
 						new ResultType.ListT(ResultType.StringT.INSTANCE).typeInfo(),
-						"This is a column",
+						null,
 						Set.of(
-								new SemanticType.SelectResultT(conquery.getDatasetRegistry()
-																	   .resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree2.connector.values")))
+								new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(valuesSelectId))
 						)
 				)
-		));
+		);
+
 
 		assertThat(result.getColumnDescriptions())
 				.isNotNull()
@@ -201,8 +244,6 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 					);
 		}
-
-
 	}
 
 }
