@@ -109,7 +109,7 @@ public class PreviewConfig {
 
 
 
-	public record TimeStratifiedSelects(@NotNull String name, String description, @NotEmpty List<InfoCardSelect> selects){
+	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects){
 		@ValidationMethod(message = "Selects may be referenced only once.")
 		@JsonIgnore
 		public boolean isSelectsUnique() {
@@ -141,6 +141,12 @@ public class PreviewConfig {
 	@ValidationMethod(message = "Select Labels must be unique.")
 	public boolean isSelectsLabelsDistinct() {
 		return infoCardSelects.stream().map(InfoCardSelect::label).distinct().count() == getInfoCardSelects().size();
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "timeStratifiedSelects' labels must be unique.")
+	public boolean isStratifiedInfosUnique() {
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::label).distinct().count() == timeStratifiedSelects.size();
 	}
 
 

@@ -101,7 +101,7 @@ public class EntityPreviewForm extends Form implements InternalForm {
 																  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.YEARS, Alignment.YEAR), ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER))
 			);
 
-			timeQueries.put(selects.name(), query);
+			timeQueries.put(selects.label(), query);
 		}
 
 		return new EntityPreviewForm(infoCardQuery, exportQuery, timeQueries);

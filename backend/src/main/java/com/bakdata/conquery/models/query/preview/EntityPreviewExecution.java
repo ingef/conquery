@@ -145,7 +145,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		final List<EntityPreviewStatus.TimeStratifiedInfos> timeStratifiedInfos = new ArrayList<>();
 
 		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
-			final ManagedQuery query = subQueries.get(description.name());
+			final ManagedQuery query = subQueries.get(description.label());
 
 			final EntityResult entityResult = query.streamResults().collect(MoreCollectors.onlyElement());
 
@@ -160,7 +160,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
 
 			final EntityPreviewStatus.TimeStratifiedInfos infos =
-					new EntityPreviewStatus.TimeStratifiedInfos(description.name(), description.description(), columnDescriptors, yearEntries);
+					new EntityPreviewStatus.TimeStratifiedInfos(description.label(), description.description(), columnDescriptors, yearEntries);
 
 			timeStratifiedInfos.add(infos);
 		}
