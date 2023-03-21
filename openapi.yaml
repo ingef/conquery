@@ -1909,10 +1909,10 @@ components:
                   properties:
                     selectId:
                       $ref: "#/components/schemas/SelectId"
-                      description:
-                        type: string
-                      label:
-                        type: string
+                    description:
+                      type: string
+                    label:
+                      type: string
         hidden:
           type: array
           items:
