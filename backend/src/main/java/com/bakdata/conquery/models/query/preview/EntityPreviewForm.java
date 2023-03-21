@@ -87,8 +87,16 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 		final AbsoluteFormQuery infoCardQuery = createInfoCardQuery(dateRange, infos, entitySelectQuery);
 
+		final Map<String, AbsoluteFormQuery> timeQueries = createTimeStratifiedQueries(dateRange, timeStratifiedSelects, datasetRegistry, entitySelectQuery);
+
+		return new EntityPreviewForm(infoCardQuery, exportQuery, timeQueries);
+	}
+
+	@NotNull
+	private static Map<String, AbsoluteFormQuery> createTimeStratifiedQueries(Range<LocalDate> dateRange, List<PreviewConfig.TimeStratifiedSelects> timeStratifiedSelects, DatasetRegistry datasetRegistry, Query entitySelectQuery) {
 		final Map<String, AbsoluteFormQuery> timeQueries = new HashMap<>();
 
+		// per group create an AbsoluteFormQuery on years and quarters.
 		for (PreviewConfig.TimeStratifiedSelects selects : timeStratifiedSelects) {
 
 			final AbsoluteFormQuery query = new AbsoluteFormQuery(entitySelectQuery, dateRange,
@@ -103,23 +111,20 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 			timeQueries.put(selects.label(), query);
 		}
-
-		return new EntityPreviewForm(infoCardQuery, exportQuery, timeQueries);
+		return timeQueries;
 	}
 
 	@NotNull
 	private static AbsoluteFormQuery createInfoCardQuery(Range<LocalDate> dateRange, List<Select> infos, Query entitySelectQuery) {
 		// Query exporting a few additional infos on the entity.
-		final AbsoluteFormQuery infoCardQuery =
-				new AbsoluteFormQuery(entitySelectQuery, dateRange,
-									  ArrayConceptQuery.createFromFeatures(
-											  infos.stream()
-												   .map(CQConcept::forSelect)
-												   .collect(Collectors.toList())
-									  ),
-									  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
-				);
-		return infoCardQuery;
+		return new AbsoluteFormQuery(entitySelectQuery, dateRange,
+							 ArrayConceptQuery.createFromFeatures(
+									  infos.stream()
+										   .map(CQConcept::forSelect)
+										   .collect(Collectors.toList())
+							  ),
+							 List.of(ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN))
+		);
 	}
 
 	@NotNull
@@ -135,8 +140,8 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 
 	@Override
-	public Map<String, Query>
-	createSubQueries() {
+	public Map<String, Query> createSubQueries() {
+
 		final Map<String, Query> subQueries = new HashMap<>();
 		subQueries.put(VALUES_QUERY_NAME, getValuesQuery());
 		subQueries.put(INFOS_QUERY_NAME, getInfoCardQuery());

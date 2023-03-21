@@ -108,7 +108,9 @@ public class PreviewConfig {
 	}
 
 
-
+	/**
+	 * Defines a group of selects that will be evaluated per quarter and year in the requested period of the entity-preview.
+	 */
 	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects){
 		@ValidationMethod(message = "Selects may be referenced only once.")
 		@JsonIgnore
@@ -122,8 +124,6 @@ public class PreviewConfig {
 			return selects().stream().map(InfoCardSelect::label).distinct().count() == selects().size();
 		}
 	}
-
-
 
 	@JsonIgnore
 	@ValidationMethod(message = "Default Connectors must also be available Connectors.")
