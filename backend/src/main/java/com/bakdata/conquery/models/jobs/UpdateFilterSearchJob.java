@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -75,7 +76,6 @@ public class UpdateFilterSearchJob extends Job {
 
 		log.debug("Found {} searchable Objects.", collectedSearchables.size());
 
-
 		for (Searchable<?> searchable : collectedSearchables) {
 
 			service.submit(() -> {
@@ -121,18 +121,20 @@ public class UpdateFilterSearchJob extends Job {
 
 		// Precompute totals as that can be slow when doing it on-demand.
 		totals.putAll(
-				synchronizedResult.keySet()
-								  .parallelStream()
-								  .collect(Collectors.toMap(
-										  Functions.identity(),
-										  filter -> filter.getSearchReferences().stream()
-														  .map(searchCache::get)
-														  .filter(Objects::nonNull) // Failed or disabled searches are null
-														  .flatMap(TrieSearch::stream)
-														  .mapToInt(FrontendValue::hashCode)
-														  .distinct()
-														  .count()
-								  ))
+				Stream.concat(
+							  allSelectFilters.parallelStream(),
+							  synchronizedResult.keySet().parallelStream()
+					  )
+					  .collect(Collectors.toMap(
+							  Functions.identity(),
+							  filter -> filter.getSearchReferences().stream()
+											  .map(searchCache::get)
+											  .filter(Objects::nonNull) // Failed or disabled searches are null
+											  .flatMap(TrieSearch::stream)
+											  .mapToInt(FrontendValue::hashCode)
+											  .distinct()
+											  .count()
+					  ))
 		);
 
 
