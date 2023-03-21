@@ -56,7 +56,7 @@ export const About = memo(() => {
     setIsOpen(false);
   };
 
-  useHotkeys("shift+alt+i", () => setIsOpen((open) => !open));
+  useHotkeys("shift+?", () => setIsOpen((open) => !open));
 
   if (!isOpen) return null;
 
