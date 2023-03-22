@@ -64,9 +64,9 @@ public class FilterSearch {
 	 */
 	public List<TrieSearch<FrontendValue>> getSearchesFor(Searchable<?> searchable) {
 		return searchable.getSearchReferences().stream()
-					 .map(searchCache::get)
-					 .filter(Objects::nonNull)
-					 .collect(Collectors.toList());
+						 .map(searchCache::get)
+						 .filter(Objects::nonNull)
+						 .collect(Collectors.toList());
 	}
 
 	public long getTotal(Searchable<?> searchable) {
