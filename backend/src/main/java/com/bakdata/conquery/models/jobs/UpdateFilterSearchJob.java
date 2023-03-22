@@ -122,8 +122,10 @@ public class UpdateFilterSearchJob extends Job {
 		// Precompute totals as that can be slow when doing it on-demand.
 		totals.putAll(
 				Stream.concat(
+							  // SelectFilters without their own labels are not "real" Searchables and therefore not in collectedSearchables
+							  // We however want the real totals of ALL Searchables (and especially SelectFilters), which is why we include them here explicitly
 							  allSelectFilters.parallelStream(),
-							  synchronizedResult.keySet().parallelStream()
+							  collectedSearchables.parallelStream()
 					  )
 					  .collect(Collectors.toMap(
 							  Functions.identity(),
