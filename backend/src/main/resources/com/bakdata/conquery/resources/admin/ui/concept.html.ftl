@@ -4,6 +4,17 @@
 <#import "templates/accordion.html.ftl" as accordion>
 <#import "templates/table.html.ftl" as table>
 
+<#function prepareTableConnectorItems connectorItems>
+  <#return connectorItems
+    ?sort_by("name")
+    ?map(x -> {
+      "${idHeader}": x.id,
+      "${labelHeader}": x.label,
+      "${requiredColumnsHeader}": x.requiredColumns?sort_by("name")?join(', ')
+    })
+  />
+</#function>
+
 <@layout.layout>
   <@breadcrumbs.breadcrumbs
     labels=["Datasets", c.dataset.label, "Concepts", c.label]
@@ -29,29 +40,29 @@
     </@accordion.accordion>
     <@accordion.accordion summary="Connectors" infoText="${c.connectors?size} entries">
 	    <#list c.connectors as connector>
-        <div class="d-flex flex-row align-items-start my-3" style="gap: 0.5rem;">
-          <@infoCard.infoCard
-            labels=["ID", "Label", "Validity Dates", "Table"]
-            values=[connector.id, connector.label, connector.validityDates?join(', '), connector.table.name]
-            gridTemplateColumns="auto"
-            style="flex-basis: 22rem; flex-shrink: 0;"
-            links={"Table": "/admin-ui/datasets/${c.dataset.id}/tables/${connector.table.id}"}
-          />
-          <@accordion.accordionGroup style="flex-grow: 1; margin-top: 0 !important;">
-            <@accordion.accordion summary="Filters" infoText="${connector.collectAllFilters()?size} entries">
-              <@table.table
-                columns=["id", "label", "simpleName", "requiredColumns"]
-                items=connector.collectAllFilters()?sort_by("name")?map(x -> {"id": x.id, "label": x.label, "simpleName": x.class.simpleName, "requiredColumns": x.requiredColumns?sort_by("name")?join(', ')})
-              />
-            </@accordion.accordion>
-            <@accordion.accordion summary="Selects" infoText="${connector.selects?size} entries">
-              <@table.table
-                columns=["id", "label", "simpleName", "requiredColumns"]
-                items=connector.selects?sort_by("name")?map(x -> {"id": x.id, "label": x.label, "simpleName": x.class.simpleName, "requiredColumns": x.requiredColumns?sort_by("name")?join(', ')})
-              />
-            </@accordion.accordion>
-          </@accordion.accordionGroup>
-        </div>
+        <@infoCard.infoCard
+          class="d-inline-flex mt-2"
+          labels=["ID", "Label", "Validity Dates", "Table"]
+          values=[connector.id, connector.label, connector.validityDates?join(', '), connector.table.name]
+          links={"Table": "/admin-ui/datasets/${c.dataset.id}/tables/${connector.table.id}"}
+        />
+        <@accordion.accordionGroup>
+          <#assign idHeader = "id">
+          <#assign labelHeader = "label">
+          <#assign requiredColumnsHeader = "requiredColumns">
+          <@accordion.accordion summary="Filters" infoText="${connector.collectAllFilters()?size} entries">
+            <@table.table
+              columns=[idHeader, labelHeader, requiredColumnsHeader]
+              items=prepareTableConnectorItems(connector.collectAllFilters())
+            />
+          </@accordion.accordion>
+          <@accordion.accordion summary="Selects" infoText="${connector.selects?size} entries">
+            <@table.table
+              columns=[idHeader, labelHeader, requiredColumnsHeader]
+              items=prepareTableConnectorItems(connector.selects)
+            />
+          </@accordion.accordion>
+        </@accordion.accordionGroup>
       </#list>
     </@accordion.accordion>
   </@accordion.accordionGroup>
