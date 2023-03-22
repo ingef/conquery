@@ -116,54 +116,57 @@
               return customButton;
           }
 
-            async function rest (url, options, showResponse = true) {
-              var res = await fetch(
-                url,
-                {
-                  method: 'get',
-                  credentials: 'same-origin',
-                  headers: {
-                        'Content-Type': 'application/json'
-                  },
-                  ...options
-                }
-              );
-              
-              if (showResponse) {
-                showMessageForResponse(res);
-              }
-              return res;
-            }
+          function toForceURL(url) {
+            const forceURL = new URL(url, window.location);
+            forceURL.searchParams.append('force', true);
+            return forceURL;
+          }
 
-            function getToast(type, title, text, smalltext = "", customButton) {
-              if(!type) type = ToastTypes.INFO;
-
-              let toast = document.createElement("div");
-              toast.classList.add("toast");
-              toast.setAttribute("role", "alert");
-              toast.setAttribute("aria-live", "assertive");
-              toast.setAttribute("aria-atomic", "true");
-              toast.setAttribute("style", "width: 500px; max-width: none");
-              toast.setAttribute('data-test-id', 'toast');
-              toast.innerHTML = `
-                <div class="toast-header">
-                  <strong class="mr-auto badge badge-pill ${type}" style="font-size: 1rem;">${title}</strong>
-                  ${smalltext ? '<small class="text-muted">' + smalltext + '</small>' : ''}
-                  <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="toast-body">
-                  <div style="white-space: normal; overflow-x: auto;">
-                    ${text.trim()}
-                  </div>
-                </div>
-              `;
-              if (customButton) {
-                toast.querySelector('.toast-body').appendChild(customButton);
+          async function rest (url, options) {
+            var res = await fetch(
+              url,
+              {
+                method: 'get',
+                credentials: 'same-origin',
+                headers: {
+                      'Content-Type': 'application/json'
+                },
+                ...options
               }
-              return toast;
+            );
+            
+            return res;
+          }
+
+          function getToast(type, title, text, smalltext = "", customButton) {
+            if(!type) type = ToastTypes.INFO;
+
+            let toast = document.createElement("div");
+            toast.classList.add("toast");
+            toast.setAttribute("role", "alert");
+            toast.setAttribute("aria-live", "assertive");
+            toast.setAttribute("aria-atomic", "true");
+            toast.setAttribute("style", "width: 500px; max-width: none");
+            toast.setAttribute('data-test-id', 'toast');
+            toast.innerHTML = `
+              <div class="toast-header">
+                <strong class="mr-auto badge badge-pill ${type}" style="font-size: 1rem;">${title}</strong>
+                ${smalltext ? '<small class="text-muted">' + smalltext + '</small>' : ''}
+                <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="toast-body">
+                <div style="white-space: normal; overflow-x: auto;">
+                  ${text.trim()}
+                </div>
+              </div>
+            `;
+            if (customButton) {
+              toast.querySelector('.toast-body').appendChild(customButton);
             }
+            return toast;
+          }
         </#noparse>
 
         function showToastMessage(type, title, text, smalltext = "", customButton) {
@@ -222,14 +225,12 @@
                     setTimeout(() => location.reload(), 2000);
                     showToastMessage(ToastTypes.SUCCESS, "Success", "The file has been posted successfully");
                   } else {
-                    let customButton;
                     // force button in case of 409 status
-                    const forceURL = new URL(url, window.location);
+                    let customButton;
                     // only apply for concept uploads
-                    if (forceURL.pathname.includes('/concepts')) {
-                      forceURL.searchParams.append('force', true);
+                    if (toForceURL(url).pathname.includes('/concepts')) {
                       customButton = createCustomButton('Replace file');
-                      customButton.onclick = () => postFile(event, forceURL);
+                      customButton.onclick = () => postFile(event, toForceURL(url));
                     }
                     showMessageForResponse(response, customButton);
                   }

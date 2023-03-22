@@ -32,12 +32,10 @@ function updateDatasetUploadForm(select) {
 }
 
 async function restOptionalForce(url, options) {
-  return rest(url, options, false).then((res) => {
+  return rest(url, options).then((res) => {
     // force button in case of 409 status
-    const forceURL = new URL(url, window.location);
-    forceURL.searchParams.append('force', true);
     const customButton = createCustomButton('Force delete');
-    customButton.onclick = () => rest(forceURL, options).then((res) => {
+    customButton.onclick = () => rest(toForceURL(url), options).then((res) => {
       res.ok && location.reload();
     });
 
