@@ -127,6 +127,7 @@ public class UpdateFilterSearchJob extends Job {
 							  allSelectFilters.parallelStream(),
 							  collectedSearchables.parallelStream()
 					  )
+					  .distinct()
 					  .collect(Collectors.toMap(
 							  Functions.identity(),
 							  filter -> filter.getSearchReferences().stream()
