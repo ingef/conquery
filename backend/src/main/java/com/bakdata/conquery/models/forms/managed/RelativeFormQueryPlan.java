@@ -26,11 +26,13 @@ import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.google.common.collect.ImmutableList;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Getter
 @RequiredArgsConstructor
+@ToString
 public class RelativeFormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	// Position of fixed columns in the result. (This is without identifier column[s], they are added upon result rendering)

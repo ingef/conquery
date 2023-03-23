@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.forms.util.Resolution;
@@ -19,8 +18,10 @@ import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
+@ToString
 public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final List<DateContext> dateContexts;

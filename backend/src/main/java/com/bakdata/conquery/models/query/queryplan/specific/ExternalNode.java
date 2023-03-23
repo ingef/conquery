@@ -39,6 +39,11 @@ public class ExternalNode<T> extends QPNode {
 	private CDateSet contained;
 	private final Map<String, ConstantValueAggregator<T>> extraAggregators;
 
+	@ToString.Include
+	public Set<Integer> getEntities() {
+		return includedEntities.keySet();
+	}
+
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
