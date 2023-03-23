@@ -1864,6 +1864,8 @@ components:
       description: Frontend configuration for the entity-preview.
       type: object
       properties:
+        observationPeriod:
+          $ref: "#/components/schemas/DateRange"
         all:
           description: For frontend, list of sources to show the user. Usually a list of sources that have been tidied up.
           type: array
@@ -1886,6 +1888,9 @@ components:
       description: "Configuration to customize and integrate a Conquery instance."
       type: object
       properties:
+        observationStart:
+          type: string
+          description: "Default start date of entity-preview."
         infoCardSelects:
           type: array
           items:

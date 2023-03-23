@@ -101,6 +101,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 
 			final PreviewConfig previewConfig = new PreviewConfig();
 
+			previewConfig.setObservationStart(LocalDate.of(2010,1,1));
+
 			previewConfig.setInfoCardSelects(List.of(
 					new PreviewConfig.InfoCardSelect("Age", SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"), null),
 					new PreviewConfig.InfoCardSelect("Values", valuesSelectId, null)

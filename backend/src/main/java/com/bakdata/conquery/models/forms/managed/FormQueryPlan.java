@@ -19,9 +19,11 @@ import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
 @Getter
 @ToString
+@Slf4j
 public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	private final List<DateContext> dateContexts;
@@ -38,7 +40,8 @@ public class FormQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 
 		if (dateContexts.size() <= 0) {
-			// There is nothing to do for this FormQueryPlan but we will return an empty result when its executed
+			// There is nothing to do for this FormQueryPlan, but we will return an empty result when its executed
+			log.warn("dateContexts are empty. Will not produce a result.");
 			constantCount = 3;
 			withRelativeEventDate = false;
 			return;
