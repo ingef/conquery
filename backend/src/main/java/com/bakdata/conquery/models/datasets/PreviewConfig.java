@@ -46,6 +46,10 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 public class PreviewConfig {
 
+	/**
+	 * Default start-date for EntityPreview, end date will always be LocalDate.now()
+	 */
+	@NotNull
 	private LocalDate observationStart;
 
 	/**

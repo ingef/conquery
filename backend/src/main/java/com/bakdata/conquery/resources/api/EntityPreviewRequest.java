@@ -19,10 +19,10 @@ public class EntityPreviewRequest {
 	@NsIdRefCollection
 	private final List<Connector> sources;
 
-	//TODO I will not merge this now, since this would break preview completely for now
-//	@ValidationMethod(message = "Time must be closed.")
-//	@JsonIgnore
-//	public boolean isTimeClosed() {
-//		return !time.isOpen();
-//	}
+	//TODO uncomment, when frontend is adapted to support this
+	//	@ValidationMethod(message = "Time must be closed.")
+	//	@JsonIgnore
+	//	public boolean isTimeClosed() {
+	//		return !time.isOpen();
+	//	}
 }

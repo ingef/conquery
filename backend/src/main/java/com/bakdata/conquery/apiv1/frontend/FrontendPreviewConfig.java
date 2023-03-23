@@ -19,7 +19,7 @@ public class FrontendPreviewConfig {
 		private final String label;
 	}
 
-	private final CDateRange observationPeriod;
+	private final CDateRange observationPeriodDefault;
 
 	private final Collection<Labelled> all;
 	@JsonProperty("default")
