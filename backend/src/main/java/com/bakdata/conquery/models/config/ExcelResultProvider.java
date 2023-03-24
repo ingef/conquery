@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.config;
 
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,7 +47,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 
 	@Override
 	@SneakyThrows(MalformedURLException.class)
-	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) {
+	public Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders) throws URISyntaxException {
 		// We only support/produce xlsx files with one sheet for now
 		if (!(exec instanceof SingleTableResult singleExecution)) {
 			log.trace("Execution result is not a single table");
@@ -83,7 +84,7 @@ public class ExcelResultProvider implements ResultRendererProvider {
 		final URL resultUrl = ResultExcelResource.getDownloadURL(uriBuilder, (ManagedExecution & SingleTableResult) exec);
 		log.trace("Generated URL: {}", resultUrl);
 
-		return List.of(new ResultAsset("XLSX", resultUrl));
+		return List.of(new ResultAsset("XLSX", resultUrl.toURI()));
 	}
 
 	@Override

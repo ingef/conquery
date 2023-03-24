@@ -56,16 +56,6 @@ public class IntegrationUtils {
 	}
 
 
-	public static void clearAuthStorage(MetaStorage storage, Role[] roles, RequiredUser[] rUsers) {
-		// Clear MetaStorage
-		for (Role mandator : roles) {
-			storage.removeRole(mandator.getId());
-		}
-		for (RequiredUser rUser : rUsers) {
-			storage.removeUser(rUser.getUser().getId());
-		}
-	}
-
 	public static Query parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
 		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class);
 	}
@@ -114,12 +104,12 @@ public class IntegrationUtils {
 	 *
 	 * @return
 	 */
-	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Query query, long expectedSize, ExecutionState expectedState, User user, int expectedResponseCode) {
+	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, long expectedSize, ExecutionState expectedState, User user, int expectedResponseCode) {
 		final URI postQueryURI = getPostQueryURI(conquery);
 
 		final String userToken = conquery.getAuthorizationController()
-											.getConqueryTokenRealm()
-											.createTokenForUser(user.getId());
+										 .getConqueryTokenRealm()
+										 .createTokenForUser(user.getId());
 
 		// Submit Query
 		Response response = conquery.getClient()

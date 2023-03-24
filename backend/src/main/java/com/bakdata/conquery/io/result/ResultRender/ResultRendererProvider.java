@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.result.ResultRender;
 
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.Collection;
 
 import javax.ws.rs.core.UriBuilder;
@@ -24,7 +26,8 @@ public interface ResultRendererProvider {
 	 * @param allProviders A flag that should override internal "hide-this-url" flags.
 	 * @return An Optional with the url or an empty optional.
 	 */
-	Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders);
+	Collection<ResultAsset> generateResultURLs(ManagedExecution exec, UriBuilder uriBuilder, boolean allProviders)
+			throws MalformedURLException, URISyntaxException;
 
 	void registerResultResource(DropwizardResourceConfig environment, ManagerNode manager);
 }

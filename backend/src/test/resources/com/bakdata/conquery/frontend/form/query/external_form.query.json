@@ -1,0 +1,15 @@
+{
+  "type": "SOME_EXTERNAL_FORM",
+  "test_prop": [
+    {
+      "label": {
+        "en": "Cohort",
+        "de": "Kohorte"
+      },
+      "style": {
+        "size": "h1"
+      },
+      "type": "HEADLINE"
+    }
+  ]
+}
