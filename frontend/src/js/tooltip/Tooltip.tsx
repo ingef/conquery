@@ -161,11 +161,11 @@ const Tooltip = () => {
   };
   const chooseIcon = () => {
     const parentProvided = parent?.label !== label;
-    if(!isFolder && !parentProvided) return faMinus
+    if (!isFolder && !parentProvided) return faMinus;
 
     const isStructNode = !parent?.detailsAvailable;
-    return isStructNode ?  faFolderRegular : faFolder
-  }
+    return isStructNode ? faFolderRegular : faFolder;
+  };
   return (
     <Root>
       <TooltipHeader />
@@ -177,11 +177,7 @@ const Tooltip = () => {
         />
         <Head>
           <PinnedLabel>
-            <TypeIcon
-              icon={
-                chooseIcon()
-              }
-            />
+            <TypeIcon icon={chooseIcon()} />
             <Label>
               {parent?.label
                 ? searchHighlight(parent?.label)
