@@ -12,10 +12,12 @@ import type {
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
+import { getConceptById } from "./globalTreeStoreHelper";
 import type { SearchT } from "./reducer";
 
 interface PropsT {
   node: ConceptT;
+  parentId?: string;
   conceptId: ConceptIdT;
   open: boolean;
   depth: number;
@@ -52,6 +54,7 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
   onTextClick,
   isStructFolder,
   createQueryElement,
+  parentId,
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -89,7 +92,12 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
   });
 
   return (
-    <AdditionalInfoHoverable node={node}>
+    <AdditionalInfoHoverable
+      node={node}
+      parent={
+        parentId ? getConceptById(parentId, parentId) ?? undefined : undefined
+      }
+    >
       <ConceptTreeNodeText
         ref={(instance) => {
           ref.current = instance;

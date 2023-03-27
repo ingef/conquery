@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
 import {
   faFolder,
   faMinus,
@@ -55,7 +56,7 @@ const TackIconButton = styled(IconButton)`
   margin-left: 5px;
 `;
 const TypeIcon = styled(StyledFaIcon)`
-  margin-right: 10px;
+  margin-right: 6px;
 `;
 const PinnedLabel = styled("p")`
   display: flex;
@@ -78,6 +79,11 @@ const Description = styled("p")`
 const Infos = styled("div")`
   width: 100%;
   overflow-x: auto;
+`;
+
+const IndentRoot = styled("div")`
+  padding-left: 15px;
+  margin: 3px 0 8px;
 `;
 
 const PieceOfInfo = styled("div")`
@@ -131,8 +137,6 @@ const Tooltip = () => {
   const dispatch = useDispatch();
   const onToggleAdditionalInfos = () => dispatch(toggleInfos());
 
-  if (!displayTooltip) return <ActivateTooltip />;
-
   const {
     label,
     description,
@@ -141,7 +145,10 @@ const Tooltip = () => {
     matchingEntries,
     matchingEntities,
     dateRange,
+    parent,
   } = additionalInfos;
+
+  if (!displayTooltip) return <ActivateTooltip />;
 
   const searchHighlight = (text: string) => {
     return (
@@ -152,7 +159,13 @@ const Tooltip = () => {
       />
     );
   };
+  const chooseIcon = () => {
+    const parentProvided = parent?.label !== label;
+    if (!isFolder && !parentProvided) return faMinus;
 
+    const isStructNode = !parent?.detailsAvailable;
+    return isStructNode ? faFolderRegular : faFolder;
+  };
   return (
     <Root>
       <TooltipHeader />
@@ -164,9 +177,13 @@ const Tooltip = () => {
         />
         <Head>
           <PinnedLabel>
-            <TypeIcon icon={isFolder ? faFolder : faMinus} />
+            <TypeIcon icon={chooseIcon()} />
             <Label>
-              {label ? searchHighlight(label) : t("tooltip.placeholder")}
+              {parent?.label
+                ? searchHighlight(parent?.label)
+                : label
+                ? searchHighlight(label)
+                : t("tooltip.placeholder")}
             </Label>
             {toggleAdditionalInfos && (
               <TackIconButton
@@ -177,6 +194,16 @@ const Tooltip = () => {
               />
             )}
           </PinnedLabel>
+          {parent?.label !== label && parent?.label && (
+            <IndentRoot>
+              <PinnedLabel>
+                <TypeIcon icon={isFolder ? faFolder : faMinus} />
+                <Label>
+                  {label ? searchHighlight(label) : t("tooltip.placeholder")}
+                </Label>
+              </PinnedLabel>
+            </IndentRoot>
+          )}
           {description && (
             <Description>{searchHighlight(description)}</Description>
           )}

@@ -93,6 +93,7 @@ const ConceptTreeNode: FC<PropsT> = ({
 
           children: data.children,
         }}
+        parentId={rootConceptId}
         conceptId={conceptId}
         createQueryElement={(): ConceptQueryNodeType => {
           const concept = getConceptById(

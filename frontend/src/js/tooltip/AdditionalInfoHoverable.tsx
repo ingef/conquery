@@ -13,7 +13,10 @@ const Root = styled("div")`
 `;
 
 // Allowlist the data we pass (especially: don't pass all children)
-const getAdditionalInfos = (node: ConceptT): AdditionalInfosType => ({
+const getAdditionalInfos = (
+  node: ConceptT,
+  parent?: ConceptT,
+): AdditionalInfosType => ({
   label: node.label,
   description: node.description,
   isFolder: !!node.children && node.children.length > 0,
@@ -21,24 +24,28 @@ const getAdditionalInfos = (node: ConceptT): AdditionalInfosType => ({
   matchingEntities: node.matchingEntities,
   dateRange: node.dateRange,
   infos: node.additionalInfos,
+  parent: parent,
 });
 
 const AdditionalInfoHoverable = ({
   node,
   className,
   children,
+  parent,
 }: {
   children: ReactNode;
   node: ConceptT;
   className?: string;
+  parent?: ConceptT;
 }) => {
   const dispatch = useDispatch();
 
   const onDisplayAdditionalInfos = () => {
     if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
-
     dispatch(
-      displayAdditionalInfos({ additionalInfos: getAdditionalInfos(node) }),
+      displayAdditionalInfos({
+        additionalInfos: getAdditionalInfos(node, parent),
+      }),
     );
   };
 
@@ -47,7 +54,9 @@ const AdditionalInfoHoverable = ({
 
     dispatch(toggleAdditionalInfos());
     dispatch(
-      displayAdditionalInfos({ additionalInfos: getAdditionalInfos(node) }),
+      displayAdditionalInfos({
+        additionalInfos: getAdditionalInfos(node, parent),
+      }),
     );
   };
 
