@@ -159,7 +159,13 @@ const Tooltip = () => {
       />
     );
   };
+  const chooseIcon = () => {
+    const parentProvided = parent?.label !== label;
+    if(!isFolder && !parentProvided) return faMinus
 
+    const isStructNode = !parent?.detailsAvailable;
+    return isStructNode ?  faFolderRegular : faFolder
+  }
   return (
     <Root>
       <TooltipHeader />
@@ -173,13 +179,7 @@ const Tooltip = () => {
           <PinnedLabel>
             <TypeIcon
               icon={
-                // parent?.label is not element tooltipped or tooltip is a folder
-                isFolder || parent?.label !== label
-                  ? // If the parent is a struct folder, we show the regular folder icon
-                    !parent?.detailsAvailable
-                    ? faFolderRegular
-                    : faFolder
-                  : faMinus
+                chooseIcon()
               }
             />
             <Label>
