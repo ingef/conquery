@@ -71,6 +71,38 @@ async function showMessageForResponse(response) {
 	}
 }
 
+
+function loginClickHandler(){
+	event.preventDefault();
+	fetch(
+		'/auth',
+		{
+			method: 'POST',
+			headers: {'Content-Type': 'application/json'},
+			body: JSON.stringify({
+				user: document.getElementById("inputEmail").value,
+				password: document.getElementById("inputPassword").value
+			})
+		})
+		.then((response) => {
+			if(!response.ok) {
+				throw new Error("Error fetching token");
+			}
+			return response.json();
+		})
+		.then( (json) => {
+			window.location = '${c}?access_token='+json.access_token;
+		}
+		)
+		.catch(function(error) {
+			var p = document.createElement('p');
+			p.appendChild(
+				document.createTextNode('Error: ' + error.message)
+			);
+			document.body.insertBefore(p, myImage);
+		});
+}
+
 function logout() {
 	event.preventDefault();
 	rest('/${ctx.staticUriElem.ADMIN_SERVLET_PATH}/logout')

@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+	<head>
 	<meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
@@ -25,49 +26,15 @@
 				<label for="inputPassword">Password</label>
 				<input type="password" id="inputPassword" autocomplete="current-password" class="form-control" placeholder="Enter password" required>
 			  </div>
-			  <button id="button-login" class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+			  <button id="button-login" class="btn btn-lg btn-primary btn-block" type="submit" onclick="loginClickHandler()">Sign in</button>
 		  </form>
 	  </div>
 
     <div class="col"></div>
     </div>
     <script src="/assets/jquery-3.3.1/jquery.min.js"></script>
-		<script src="/assets/bootstrap-4.3.1/js/bootstrap.min.js"></script>
-
-        <script>
-            function loginClickHandler(){
-                event.preventDefault();
-                fetch(
-                    '/auth',
-                    {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            user: document.getElementById("inputEmail").value,
-                            password: document.getElementById("inputPassword").value
-                        })
-                    })
-                    .then((response) => {
-                        if(!response.ok) {
-                            throw new Error("Error fetching token");
-                        }
-                        return response.json();
-                    })
-                    .then( (json) => {
-                        window.location = '${c}?access_token='+json.access_token;
-                    }
-                    )
-                    .catch(function(error) {
-                        var p = document.createElement('p');
-                        p.appendChild(
-                            document.createTextNode('Error: ' + error.message)
-                        );
-                        document.body.insertBefore(p, myImage);
-                    });                    
-            }
-
-            document.getElementById("button-login").addEventListener("click",loginClickHandler)
-        </script>
+	<script src="/assets/bootstrap-4.3.1/js/bootstrap.min.js"></script>
+	<script src="/assets/custom/js/script.js"></script>
     </body>
 
 </html>
