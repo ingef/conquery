@@ -1,8 +1,8 @@
 package com.bakdata.conquery.resources.admin;
 
-import static com.bakdata.conquery.resources.ResourceConstants.ADMIN_SERVLET_PATH;
-import static com.bakdata.conquery.resources.ResourceConstants.ADMIN_UI_SERVLET_PATH;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import javax.validation.Validator;
@@ -41,6 +41,8 @@ import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.admin.ui.UserUIResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
+import io.dropwizard.servlets.assets.AssetServlet;
+import io.dropwizard.setup.AdminEnvironment;
 import io.dropwizard.views.ViewMessageBodyWriter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -70,8 +72,12 @@ public class AdminServlet {
 
 		RESTServer.configure(manager.getConfig(), jerseyConfig);
 
-		manager.getEnvironment().admin().addServlet(ADMIN_SERVLET_PATH, new ServletContainer(jerseyConfig)).addMapping("/" + ADMIN_SERVLET_PATH + "/*");
-		manager.getEnvironment().admin().addServlet(ADMIN_UI_SERVLET_PATH, new ServletContainer(jerseyConfigUI)).addMapping("/" + ADMIN_UI_SERVLET_PATH + "/*");
+		final AdminEnvironment admin = manager.getEnvironment().admin();
+		admin.addServlet(ADMIN_SERVLET_PATH, new ServletContainer(jerseyConfig)).addMapping("/" + ADMIN_SERVLET_PATH + "/*");
+		admin.addServlet(ADMIN_UI_SERVLET_PATH, new ServletContainer(jerseyConfigUI)).addMapping("/" + ADMIN_UI_SERVLET_PATH + "/*");
+		// Register static asset servlet for admin end
+		admin.addServlet(ADMIN_ASSETS_PATH, new AssetServlet(ADMIN_ASSETS_PATH, "/" + ADMIN_ASSETS_PATH, null, StandardCharsets.UTF_8))
+			 .addMapping("/" + ADMIN_ASSETS_PATH + "/*");
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
 		// freemarker support
