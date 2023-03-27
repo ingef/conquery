@@ -93,9 +93,7 @@ interface PropsT {
 
 const ProjectItemsTab = ({ datasetId }: PropsT) => {
   const { t } = useTranslation();
-  const hasPermissionToUpload = useSelector<StateT, boolean>((state) =>
-    canUploadResult(state),
-  );
+  const hasPermissionToUpload = useSelector<StateT, boolean>(canUploadResult);
 
   const areFoldersOpen = useSelector<StateT, boolean>(
     (state) => state.previousQueriesFolderFilter.areFoldersOpen,

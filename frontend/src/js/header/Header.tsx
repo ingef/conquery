@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import type { StateT } from "../app/reducers";
 import { HistoryButton } from "../button/HistoryButton";
 import DatasetSelector from "../dataset/DatasetSelector";
-import { useHideLogoutButton } from "../user/selectors";
+import { canUploadResult, useHideLogoutButton } from "../user/selectors";
 
 import { HelpMenu } from "./HelpMenu";
 import LogoutButton from "./LogoutButton";
@@ -70,6 +70,7 @@ const Headline = styled("h1")`
 
 const Header: FC = () => {
   const { t } = useTranslation();
+  const canUpload = useSelector<StateT, boolean>(canUploadResult);
   const hideLogoutButton = useHideLogoutButton();
   const { manualUrl, contactEmail } = useSelector<
     StateT,
@@ -85,7 +86,7 @@ const Header: FC = () => {
       </OverflowHidden>
       <Right>
         <DatasetSelector />
-        <HistoryButton />
+        {canUpload && <HistoryButton />}
         {(manualUrl || contactEmail) && (
           <HelpMenu manualUrl={manualUrl} contactEmail={contactEmail} />
         )}
