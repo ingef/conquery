@@ -98,6 +98,7 @@ export interface DateColumnT {
   options: SelectOptionT[];
   defaultValue: string | null;
   value?: string;
+  tooltip: string | null; // TODO: Would be better to use undefined instead of null
 }
 
 export type FilterT =
