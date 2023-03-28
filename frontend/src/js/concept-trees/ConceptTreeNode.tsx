@@ -79,6 +79,11 @@ const ConceptTreeNode: FC<PropsT> = ({
 
   const isOpen = open || search.allOpen;
 
+  const root = getConceptById(
+    rootConceptId,
+    rootConceptId, // To optimize lookup
+  ) as ConceptElementT;
+
   return (
     <Root>
       <ConceptTreeNodeTextContainer
@@ -93,14 +98,9 @@ const ConceptTreeNode: FC<PropsT> = ({
 
           children: data.children,
         }}
-        parentId={rootConceptId}
+        root={root}
         conceptId={conceptId}
         createQueryElement={(): ConceptQueryNodeType => {
-          const concept = getConceptById(
-            rootConceptId,
-            rootConceptId, // To optimize lookup
-          ) as ConceptElementT | null;
-
           const description = data.description
             ? { description: data.description }
             : {};
@@ -109,11 +109,11 @@ const ConceptTreeNode: FC<PropsT> = ({
             ids: [conceptId],
             ...description,
             label: data.label,
-            tables: concept?.tables
-              ? resetTables(concept.tables, { useDefaults: true })
+            tables: root?.tables
+              ? resetTables(root.tables, { useDefaults: true })
               : [],
-            selects: concept?.selects
-              ? resetSelects(concept.selects, { useDefaults: true })
+            selects: root?.selects
+              ? resetSelects(root.selects, { useDefaults: true })
               : [],
 
             additionalInfos: data.additionalInfos,

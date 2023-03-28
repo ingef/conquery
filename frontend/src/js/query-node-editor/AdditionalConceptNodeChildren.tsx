@@ -3,7 +3,6 @@ import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { ConceptBaseT, ConceptIdT } from "../api/types";
-import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { Heading4 } from "../headings/Headings";
 import { DragItemConceptTreeNode } from "../standard-query-editor/types";
 
@@ -56,8 +55,8 @@ const AdditionalConceptNodeChildren = ({
           {sortedNodeIds.map((conceptId) => (
             <ConceptEntry
               key={conceptId}
-              node={getConceptById(conceptId)}
               conceptId={conceptId}
+              root={rootConcept}
               canRemoveConcepts={node.ids.length > 1}
               onRemoveConcept={onRemoveConcept}
             />

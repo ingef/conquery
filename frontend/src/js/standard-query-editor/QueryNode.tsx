@@ -245,11 +245,12 @@ const QueryNode = ({
   );
 
   if (nodeIsConceptQueryNode(node)) {
-    const conceptById = getConceptById(node.ids[0]);
+    const conceptById = getConceptById(node.ids[0], node.tree);
+    const root = getConceptById(node.tree, node.tree);
 
-    if (conceptById) {
+    if (conceptById && root) {
       return (
-        <AdditionalInfoHoverable node={conceptById}>
+        <AdditionalInfoHoverable node={conceptById} root={root}>
           {QueryNodeRoot}
         </AdditionalInfoHoverable>
       );

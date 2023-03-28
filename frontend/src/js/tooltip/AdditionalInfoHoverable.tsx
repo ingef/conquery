@@ -4,6 +4,7 @@ import { useDispatch } from "react-redux";
 
 import type { ConceptT } from "../api/types";
 import { isEmpty } from "../common/helpers/commonHelper";
+import { getNodeIcon } from "../model/node";
 
 import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";
 import { AdditionalInfosType } from "./reducer";
@@ -15,28 +16,31 @@ const Root = styled("div")`
 // Allowlist the data we pass (especially: don't pass all children)
 const getAdditionalInfos = (
   node: ConceptT,
-  parent?: ConceptT,
+  root?: ConceptT,
 ): AdditionalInfosType => ({
   label: node.label,
   description: node.description,
-  isFolder: !!node.children && node.children.length > 0,
   matchingEntries: node.matchingEntries,
   matchingEntities: node.matchingEntities,
   dateRange: node.dateRange,
   infos: node.additionalInfos,
-  parent: parent,
+  icon: getNodeIcon(node, {
+    isStructNode: !root?.detailsAvailable,
+  }),
+  rootLabel: root?.label,
+  rootIcon: root ? getNodeIcon(root) : undefined,
 });
 
 const AdditionalInfoHoverable = ({
   node,
   className,
   children,
-  parent,
+  root,
 }: {
   children: ReactNode;
-  node: ConceptT;
   className?: string;
-  parent?: ConceptT;
+  node: ConceptT;
+  root: ConceptT;
 }) => {
   const dispatch = useDispatch();
 
@@ -44,7 +48,7 @@ const AdditionalInfoHoverable = ({
     if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
     dispatch(
       displayAdditionalInfos({
-        additionalInfos: getAdditionalInfos(node, parent),
+        additionalInfos: getAdditionalInfos(node, root),
       }),
     );
   };
@@ -55,7 +59,7 @@ const AdditionalInfoHoverable = ({
     dispatch(toggleAdditionalInfos());
     dispatch(
       displayAdditionalInfos({
-        additionalInfos: getAdditionalInfos(node, parent),
+        additionalInfos: getAdditionalInfos(node, root),
       }),
     );
   };
