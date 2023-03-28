@@ -18,13 +18,14 @@ export const getHeadlineFieldAs = (headline: HeadlineField) => {
 export const Headline = styled("h3")<{ size?: "h1" | "h2" | "h3" }>`
   font-size: ${({ theme, size }) =>
     size === "h3"
-      ? theme.font.xs
-      : size === "h2"
       ? theme.font.sm
-      : theme.font.md};
+      : size === "h2"
+      ? theme.font.md
+      : theme.font.lg};
   color: ${({ theme }) => theme.col.black};
   margin-top: ${({ size }) =>
-    size === "h3" ? "12px" : size === "h2" ? "14px" : "18px"};
+    size === "h3" ? "14px" : size === "h2" ? "16px" : "20px"};
   margin-bottom: 5px;
-  font-weight: 700;
+  margin-left: 10px;
+  font-weight: ${({ size }) => (size === "h3" ? "700" : "400")};
 `;
