@@ -3,9 +3,12 @@ import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
+import FormsTab from "../external-forms/FormsTab";
 import Pane from "../pane/Pane";
 import { clickPaneTab } from "../pane/actions";
-import type { TabT } from "../pane/types";
+import { TabT } from "../pane/types";
+import StandardQueryEditorTab from "../standard-query-editor/StandardQueryEditorTab";
+import TimebasedQueryEditorTab from "../timebased-query-editor/TimebasedQueryEditorTab";
 
 import type { StateT } from "./reducers";
 
@@ -21,7 +24,28 @@ const SxPane = styled(Pane)`
   background-color: ${({ theme }) => theme.col.bgAlt};
 `;
 
-const RightPane = ({ tabs }: { tabs: TabT[] }) => {
+const tabs: TabT[] = [
+  {
+    key: "queryEditor",
+    labelKey: "rightPane.queryEditor",
+    tooltipKey: "help.tabQueryEditor",
+    component: StandardQueryEditorTab,
+  },
+  {
+    key: "timebasedQueryEditor",
+    labelKey: "rightPane.timebasedQueryEditor",
+    tooltipKey: "help.tabTimebasedEditor",
+    component: TimebasedQueryEditorTab,
+  },
+  {
+    key: "externalForms",
+    labelKey: "rightPane.externalForms",
+    tooltipKey: "help.tabFormEditor",
+    component: FormsTab,
+  },
+];
+
+const RightPane = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const activeTab = useSelector<StateT, string | null>(
@@ -30,7 +54,7 @@ const RightPane = ({ tabs }: { tabs: TabT[] }) => {
 
   useEffect(() => {
     dispatch(clickPaneTab({ paneType: "right", tab: tabs[0].key }));
-  }, [dispatch, tabs]);
+  }, [dispatch]);
 
   return (
     <SxPane

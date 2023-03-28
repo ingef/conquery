@@ -8,7 +8,7 @@ import SnackMessage from "../snack-message/SnackMessage";
 import { useStartup } from "../startup/useStartup";
 
 import { About } from "./About";
-import Content, { ContentPropsT } from "./Content";
+import Content from "./Content";
 
 const Root = styled("div")`
   height: 100vh;
@@ -36,7 +36,7 @@ const useCacheClear = () => {
   return cacheReady;
 };
 
-const App = (props: ContentPropsT) => {
+const App = () => {
   const cacheReady = useCacheClear();
 
   useStartup({ ready: cacheReady });
@@ -45,7 +45,7 @@ const App = (props: ContentPropsT) => {
     <Root>
       <About />
       <Header />
-      <Content {...props} />
+      <Content />
       <SnackMessage />
     </Root>
   );
