@@ -1,3 +1,13 @@
+import {
+  faFolder as faFolderRegular,
+  faFolderOpen as faFolderOpenRegular,
+} from "@fortawesome/free-regular-svg-icons";
+import {
+  faFolder,
+  faFolderOpen,
+  faMinus,
+} from "@fortawesome/free-solid-svg-icons";
+
 import { ConceptElementT, ConceptT } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
 import type {
@@ -95,4 +105,24 @@ export function nodeIsAllowlisted(
 
 export function nodeIsElement(node: ConceptT): node is ConceptElementT {
   return "tables" in node;
+}
+
+export function getNodeIcon(
+  node: ConceptT,
+  config?: {
+    isStructNode?: boolean;
+    open?: boolean;
+  },
+) {
+  const hasChildren = node.children && node.children?.length > 0;
+
+  if (!hasChildren) {
+    return faMinus;
+  }
+
+  if (config?.open) {
+    return config?.isStructNode ? faFolderOpenRegular : faFolderOpen;
+  }
+
+  return config?.isStructNode ? faFolderRegular : faFolder;
 }

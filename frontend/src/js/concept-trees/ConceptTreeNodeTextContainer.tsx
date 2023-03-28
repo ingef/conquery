@@ -5,6 +5,7 @@ import type { ConceptIdT, ConceptT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
 import { DNDType } from "../common/constants/dndTypes";
 import { exists } from "../common/helpers/exists";
+import { getNodeIcon } from "../model/node";
 import type {
   ConceptQueryNodeType,
   DragItemConceptTreeNode,
@@ -12,13 +13,12 @@ import type {
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
-import { getConceptById } from "./globalTreeStoreHelper";
 import type { SearchT } from "./reducer";
 
 interface PropsT {
-  node: ConceptT;
-  parentId?: string;
   conceptId: ConceptIdT;
+  node: ConceptT;
+  root: ConceptT;
   open: boolean;
   depth: number;
   active?: boolean;
@@ -45,8 +45,9 @@ function getResultCount(
 }
 
 const ConceptTreeNodeTextContainer: FC<PropsT> = ({
-  node,
   conceptId,
+  node,
+  root,
   depth,
   search,
   active,
@@ -54,7 +55,6 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
   onTextClick,
   isStructFolder,
   createQueryElement,
-  parentId,
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -91,13 +91,13 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
     }),
   });
 
+  const icon = getNodeIcon(node, {
+    isStructNode: isStructFolder || active === false,
+    open,
+  });
+
   return (
-    <AdditionalInfoHoverable
-      node={node}
-      parent={
-        parentId ? getConceptById(parentId, parentId) ?? undefined : undefined
-      }
-    >
+    <AdditionalInfoHoverable node={node} root={root}>
       <ConceptTreeNodeText
         ref={(instance) => {
           ref.current = instance;
@@ -114,7 +114,7 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
         searchWords={search.words}
         hasChildren={hasChildren}
         isOpen={open}
-        isStructFolder={isStructFolder || active === false}
+        icon={icon}
         red={red}
         onClick={onTextClick}
       />

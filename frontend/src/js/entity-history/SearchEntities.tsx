@@ -32,11 +32,11 @@ export const SearchEntites = ({
 }: {
   onLoad: (payload: LoadingPayload) => void;
 }) => {
-  const searchConcept = useSelector<StateT, ConceptT | null>((state) =>
-    state.entityHistory.defaultParams.searchConcept
-      ? getConceptById(state.entityHistory.defaultParams.searchConcept)
-      : null,
-  );
+  const searchConcept = useSelector<StateT, ConceptT | undefined>((state) => {
+    const searchConceptId = state.entityHistory.defaultParams.searchConcept;
+
+    return searchConceptId ? getConceptById(searchConceptId) : undefined;
+  });
 
   if (
     !searchConcept ||
