@@ -24,9 +24,19 @@
   />
 
   <@accordion.accordion summary="Columns" infoText="${c.imp.columns?size} entries" class="my-3">
+    <#assign idHeader="id" />
+    <#assign sizeHeader="size" />
+    <#assign typeHeader="type" />
     <@table.table
-      columns=["id", "size", "type"]
-      items=c.imp.columns?map(x -> {"id": x.id, "size": layout.si(x.getMemorySizeBytes())+"B", "type": x.typeDescription})
+      columns=[idHeader, sizeHeader, typeHeader]
+      items=c.imp.columns
+        ?map( x ->
+          {
+            "${idHeader}": x.id,
+            "${sizeHeader}": layout.si(x.getMemorySizeBytes())+"B",
+            "${typeHeader}": x.typeDescription
+          }
+        )
     />
   </@accordion.accordion>
 </@layout.layout>
