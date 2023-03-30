@@ -46,7 +46,7 @@ context("Admin UI Single Dataset", () => {
         });
 
         it("Is new table visible", () => {
-            cy.get('[data-test-id="accordion-Tables"]').contains('td', `${testDSID}.table`);
+            cy.get('[data-test-id="accordion-Tables"]').contains('td', `table`);
         });
 
         it("Can upload concept table", () => {
@@ -57,7 +57,7 @@ context("Admin UI Single Dataset", () => {
         });
 
         it("Is new concept visible", () => {
-            cy.get('[data-test-id="accordion-Concepts"]').contains('td', `${testDSID}.concept1`);
+            cy.get('[data-test-id="accordion-Concepts"]').contains('td', `concept1`);
         });
     });
 

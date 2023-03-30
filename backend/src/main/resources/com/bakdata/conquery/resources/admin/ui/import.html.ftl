@@ -33,6 +33,7 @@
         ?map( x ->
           {
             "${idHeader}": x.id,
+            "name": x.name,
             "${sizeHeader}": layout.si(x.getMemorySizeBytes())+"B",
             "${typeHeader}": x.typeDescription
           }

@@ -1,0 +1,11 @@
+;FFMETADATA1
+[CHAPTER]
+TIMEBASE=1/1000
+START=1918
+END=3205
+title=Run query Can execute query and see it in the queries tab
+[CHAPTER]
+TIMEBASE=1/1000
+START=0
+END=null
+title=Run query Can see the executed query in the queries tab

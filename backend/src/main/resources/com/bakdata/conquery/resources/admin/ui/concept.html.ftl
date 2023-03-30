@@ -10,6 +10,7 @@
     ?map( x -> 
       {
         "${idHeader}": x.id,
+        "name": x.name,
         "${labelHeader}": x.label,
         "${requiredColumnsHeader}": x.requiredColumns?sort_by("name")?join(', ')
       }
@@ -46,6 +47,7 @@
           ?map( x ->
             {
               "${idHeader}": x.id,
+              "name": x.name,
               "${labelHeader}": x.label,
               "${simpleNameHeader}": x.class.simpleName,
               "${descriptionHeader}": x.description!""
