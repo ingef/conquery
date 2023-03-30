@@ -1,4 +1,9 @@
 import styled from "@emotion/styled";
+import {
+  faCheckCircle,
+  faExclamationCircle,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -71,10 +76,10 @@ const UploadFilterListModal: FC<PropsT> = ({
       headline={t("uploadFilterListModal.headline")}
     >
       <Root>
-        {loading && <CenteredIcon icon="spinner" />}
+        {loading && <CenteredIcon icon={faSpinner} />}
         {error && (
           <p>
-            <ErrorIcon icon="exclamation-circle" />
+            <ErrorIcon icon={faExclamationCircle} />
             {t("uploadConceptListModal.error")}
           </p>
         )}
@@ -82,7 +87,7 @@ const UploadFilterListModal: FC<PropsT> = ({
           <Section>
             {hasResolvedItems && (
               <Msg>
-                <SuccessIcon icon="check-circle" />
+                <SuccessIcon icon={faCheckCircle} />
                 {t("uploadConceptListModal.resolvedCodes", {
                   count: resolvedItemsCount,
                 })}
@@ -91,7 +96,7 @@ const UploadFilterListModal: FC<PropsT> = ({
             {hasUnresolvedItems && (
               <>
                 <Msg>
-                  <ErrorIcon icon="exclamation-circle" />
+                  <ErrorIcon icon={faExclamationCircle} />
                   <span
                     dangerouslySetInnerHTML={{
                       __html: t("uploadConceptListModal.unknownCodes", {

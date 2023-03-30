@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faPen } from "@fortawesome/free-solid-svg-icons";
 import Highlighter from "react-highlight-words";
 
 import IconButton from "../button/IconButton";
@@ -66,7 +67,7 @@ const EditableText = ({
       <WithTooltip text={tooltip}>
         <SxIconButton
           bare
-          icon="pen"
+          icon={faPen}
           onClick={onToggleEdit}
           small
           large={large}

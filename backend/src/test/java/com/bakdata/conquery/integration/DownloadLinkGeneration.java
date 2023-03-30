@@ -2,7 +2,7 @@ package com.bakdata.conquery.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.net.URL;
+import java.net.URI;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
@@ -68,8 +68,8 @@ public class DownloadLinkGeneration extends IntegrationTest.Simple implements Pr
 
 			FullExecutionStatus status = IntegrationUtils.getExecutionStatus(conquery, exec.getId(), user, 200);
 			// This Url is missing the `/api` path part, because we use the standard UriBuilder here
-			assertThat(status.getResultUrls()).contains(new ResultAsset("CSV", new URL(String.format("%s/result/csv/%s.csv", conquery.defaultApiURIBuilder()
-																																 .toString(), exec.getId()))));
+			assertThat(status.getResultUrls()).contains(new ResultAsset("CSV", new URI(String.format("%s/result/csv/%s.csv", conquery.defaultApiURIBuilder()
+																																	 .toString(), exec.getId()))));
 		}
 	}
 

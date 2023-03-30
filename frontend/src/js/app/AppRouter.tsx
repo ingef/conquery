@@ -9,13 +9,8 @@ import KeycloakProvider from "../authorization/KeycloakProvider";
 import LoginPage from "../authorization/LoginPage";
 import WithAuthToken from "../authorization/WithAuthToken";
 import { basename } from "../environment";
-import type { TabT } from "../pane/types";
 
 import App from "./App";
-
-interface PropsT {
-  rightTabs: TabT[];
-}
 
 const ContextProviders = ({ children }: { children: ReactNode }) => {
   const authTokenContextValue = useAuthTokenContextValue();
@@ -27,7 +22,7 @@ const ContextProviders = ({ children }: { children: ReactNode }) => {
   );
 };
 
-const AppRouter = (props: PropsT) => {
+const AppRouter = () => {
   return (
     <Router basename={basename}>
       <ContextProviders>
@@ -37,7 +32,7 @@ const AppRouter = (props: PropsT) => {
             path="/*"
             element={
               <WithAuthToken>
-                <App {...props} />
+                <App />
               </WithAuthToken>
             }
           />

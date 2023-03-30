@@ -1,3 +1,4 @@
+import { faChevronDown, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useCombobox } from "downshift";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
@@ -91,7 +92,6 @@ const InputSelect = ({
     getLabelProps,
     getMenuProps,
     getInputProps,
-    getComboboxProps,
     getItemProps,
     highlightedIndex,
     setHighlightedIndex,
@@ -163,7 +163,6 @@ const InputSelect = ({
 
   const { ref: menuPropsRef, ...menuProps } = getMenuProps();
   const { ref: inputPropsRef, ...inputProps } = getInputProps();
-  const { ref: comboboxRef, ...comboboxProps } = getComboboxProps();
   const labelProps = getLabelProps();
 
   const handleBlur = useCallback(() => {
@@ -243,13 +242,7 @@ const InputSelect = ({
       className={exists(label) ? undefined : className}
       data-test-id={dataTestId}
     >
-      <Control
-        {...comboboxProps}
-        disabled={disabled}
-        ref={(instance) => {
-          comboboxRef(instance);
-        }}
-      >
+      <Control disabled={disabled}>
         <ItemsInputContainer>
           <Input
             {...inputProps}
@@ -269,22 +262,18 @@ const InputSelect = ({
               e.target.select();
             }}
             onClick={(e) => {
-              if (inputProps.onClick) {
-                inputProps.onClick(e);
-              }
+              inputProps.onClick?.(e);
               toggleMenu();
             }}
             onChange={(e) => {
-              if (inputProps.onChange) {
-                inputProps.onChange(e);
-              }
+              inputProps.onChange?.(e);
               setInputValue(e.target.value);
             }}
           />
         </ItemsInputContainer>
         {clearable && (inputValue.length > 0 || exists(selectedItem)) && (
           <ResetButton
-            icon="times"
+            icon={faTimes}
             disabled={disabled}
             onClick={() => {
               resetComboboxState();
@@ -297,7 +286,7 @@ const InputSelect = ({
         <VerticalSeparator />
         <DropdownToggleButton
           disabled={disabled}
-          icon="chevron-down"
+          icon={faChevronDown}
           {...getToggleButtonProps()}
         />
       </Control>

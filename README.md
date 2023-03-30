@@ -72,6 +72,7 @@ To run the end-to-end test locally:
 For further informations on this and other tests, please refer to the corresponding [CI configuration](https://github.com/bakdata/conquery/tree/develop/.github/workflows).
 
 ### Data Integration
+
 To make you own data (in form of CSVs) availiable to conquery some steps are necessary:
 
 1. Describe your data table structure with meta data, by generating Import- and Table-JSONs.
@@ -81,10 +82,16 @@ To make you own data (in form of CSVs) availiable to conquery some steps are nec
 
 To get a better impression of the single steps, take a look at the [Tutorials](./tutorial/mimic_iii_demo/README.md)
 
+### Custom Forms
+
+It is possible to extend the analytic capabilities by adding custom forms.
+Custom forms provide an easy way for a user to perform standardized analyses.
+For more informations, take a look at the [guide](./docs/custom_forms.md)
 
 ## Acknowledgements
 
-This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com) and [Kai Rollmann](https://kairollmann.de/).
+This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in
+cooperation with [bakdata GmbH](http://www.bakdata.com) and [Kai Rollmann](https://kairollmann.de/).
 
 [<img alt="InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH" src="images/ingef_logo.svg" height=50 align="top">](http://www.ingef.de/)
 &emsp;

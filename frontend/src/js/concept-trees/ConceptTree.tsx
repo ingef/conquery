@@ -1,4 +1,9 @@
 import styled from "@emotion/styled";
+import {
+  faEllipsisH,
+  faRedo,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import type { ConceptT, ConceptIdT } from "../api/types";
@@ -40,7 +45,7 @@ const ConceptTree = ({
   search,
   onLoadTree,
 }: {
-  tree: ConceptT | null;
+  tree?: ConceptT;
   conceptId: ConceptIdT;
   label: string;
   depth: number;
@@ -55,7 +60,7 @@ const ConceptTree = ({
     return (
       <LoadingTree style={{ paddingLeft: 24 + depth * 15 }}>
         <Spinner>
-          <FaIcon icon="spinner" />
+          <FaIcon icon={faSpinner} />
         </Spinner>
         <span>{label}</span>
       </LoadingTree>
@@ -63,7 +68,7 @@ const ConceptTree = ({
   else if (error)
     return (
       <ErrorMessage style={{ paddingLeft: 12 + depth * 15 }}>
-        <ReloadButton red icon="redo" onClick={() => onLoadTree(conceptId)} />
+        <ReloadButton red icon={faRedo} onClick={() => onLoadTree(conceptId)} />
         {t("conceptTreeList.error", { tree: label })}
       </ErrorMessage>
     );
@@ -77,7 +82,15 @@ const ConceptTree = ({
         search={search}
       />
     );
-  else return <ConceptTreeNodeText disabled label={label} depth={depth} />;
+  else
+    return (
+      <ConceptTreeNodeText
+        disabled
+        icon={faEllipsisH}
+        label={label}
+        depth={depth}
+      />
+    );
 };
 
 export default ConceptTree;

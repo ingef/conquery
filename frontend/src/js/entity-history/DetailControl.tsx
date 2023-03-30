@@ -1,5 +1,10 @@
 import styled from "@emotion/styled";
-import { IconName } from "@fortawesome/fontawesome-svg-core";
+import { IconProp } from "@fortawesome/fontawesome-svg-core";
+import {
+  faBullseye,
+  faCircle,
+  faCircleDot,
+} from "@fortawesome/free-solid-svg-icons";
 import { Dispatch, memo, SetStateAction, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -24,22 +29,22 @@ const useButtonConfig = () => {
   const { t } = useTranslation();
   return useMemo(
     (): {
-      icon: IconName;
+      icon: IconProp;
       value: string;
       tooltip: string;
     }[] => [
       {
-        icon: "circle",
+        icon: faCircle,
         value: "summary",
         tooltip: t("history.detail.summary"),
       },
       {
-        icon: "circle-dot",
+        icon: faCircleDot,
         value: "detail",
         tooltip: t("history.detail.detail"),
       },
       {
-        icon: "bullseye",
+        icon: faBullseye,
         value: "full",
         tooltip: t("history.detail.full"),
       },

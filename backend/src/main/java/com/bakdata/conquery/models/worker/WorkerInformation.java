@@ -13,10 +13,13 @@ import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
+@EqualsAndHashCode(callSuper = true)
 public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSender.Transforming<WorkerMessage, MessageToShardNode> {
 	@NotNull
 	private DatasetId dataset;

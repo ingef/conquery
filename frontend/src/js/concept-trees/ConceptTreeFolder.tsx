@@ -82,6 +82,7 @@ const ConceptTreeFolder: FC<PropsT> = ({
           children: tree.children,
         }}
         conceptId={conceptId}
+        root={tree}
         isStructFolder
         open={open || false}
         depth={depth}

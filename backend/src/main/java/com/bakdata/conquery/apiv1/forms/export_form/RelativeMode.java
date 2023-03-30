@@ -17,11 +17,13 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JsonView;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-@CPSType(id="RELATIVE", base=Mode.class)
+@CPSType(id = "RELATIVE", base = Mode.class)
+@EqualsAndHashCode(callSuper = true)
 public class RelativeMode extends Mode {
 	@NotNull
 	private CalendarUnit timeUnit;
@@ -36,6 +38,7 @@ public class RelativeMode extends Mode {
 
 
 	@JsonView(View.InternalCommunication.class)
+	@EqualsAndHashCode.Exclude
 	private ArrayConceptQuery resolvedFeatures;
 
 	@Override

@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faMicroscope } from "@fortawesome/free-solid-svg-icons";
 import { FC, memo, useCallback, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -152,7 +153,7 @@ const SecondaryIdSelectorUI = memo(
     return (
       <div>
         <Headline active={!!value}>
-          <SxFaIcon active={!!value} left icon="microscope" />
+          <SxFaIcon active={!!value} left icon={faMicroscope} />
           {t("queryEditor.secondaryId")}
         </Headline>
         <ToggleButton

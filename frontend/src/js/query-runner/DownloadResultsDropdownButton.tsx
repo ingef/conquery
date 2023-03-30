@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faCaretDown, faDownload } from "@fortawesome/free-solid-svg-icons";
 import { memo, useEffect, useMemo, useState } from "react";
 
 import { ResultUrlWithLabel } from "../api/types";
@@ -148,7 +149,7 @@ const DownloadResultsDropdownButton = ({
           trigger="click"
           popperOptions={popperOptions}
         >
-          <SxIconButton bgHover icon={tiny ? "download" : "caret-down"} />
+          <SxIconButton bgHover icon={tiny ? faDownload : faCaretDown} />
         </WithTooltip>
       </WithTooltip>
     </Frame>
