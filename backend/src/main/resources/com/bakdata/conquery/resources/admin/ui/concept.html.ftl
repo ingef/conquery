@@ -44,7 +44,16 @@
     <@accordion.accordion summary="Connectors" infoText="${c.connectors?size} entries">
       <@table.table
         columns=["id", "label", "simpleName", "description"]
-        items=c.connectors?sort_by("name")?map(x -> {"id": x.id, "label": x.label, "simpleName": x.class.simpleName, "description": x.description!""})
+        items=c.connectors
+          ?sort_by("name")
+          ?map( x ->
+            {
+              "id": x.id,
+              "label": x.label,
+              "simpleName": x.class.simpleName,
+              "description": x.description!""
+            }
+          )
         link="/admin-ui/datasets/${c.dataset.id}/connectors/"
       />
     </@accordion.accordion>
