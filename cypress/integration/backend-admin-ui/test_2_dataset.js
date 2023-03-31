@@ -61,7 +61,7 @@ context("Admin UI Single Dataset", () => {
         });
     });
 
-    describe("Can visit tableinfo page", () => {
+    describe("Can visit table info page", () => {
         before(() => { visitAdminUI(`datasets/${testDSID}/tables/${testDSID}.table`); });
 
         it("Can use page components", () => {
@@ -72,7 +72,7 @@ context("Admin UI Single Dataset", () => {
         });
     });
 
-    describe("Can visit conceptinfo page", () => {
+    describe("Can visit concept info page", () => {
         before(() => { visitAdminUI(`datasets/${testDSID}/concepts/${testDSID}.concept1`); });
 
         it("Can use page components", () => {
@@ -83,9 +83,9 @@ context("Admin UI Single Dataset", () => {
     });
 
     describe("Can visit connector info page", () => {
-        before(() => { visitAdminUI(`datasets/${testDSID}/concepts/${testDSID}.concept1`); });
 
         it("Can use page components", () => {
+            visitAdminUI(`datasets/${testDSID}/concepts/${testDSID}.concept1`);
             cy.get('[data-test-id="accordion-Connectors"]').click();
             cy.get('[data-test-id="accordion-Connectors"]').get('tr > :nth-child(1) > a').click();
 
@@ -93,6 +93,7 @@ context("Admin UI Single Dataset", () => {
         });
 
         it("Counts are right", () => {
+            visitAdminUI(`datasets/${testDSID}/connectors/${testDSID}.concept1.column`);
             cy.get('[data-test-id="accordion-Filters"] > .card-header').contains("20 entries")
             cy.get('[data-test-id="accordion-Selects"] > .card-header').contains("16 entries")
         })
