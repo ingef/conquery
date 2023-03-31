@@ -8,8 +8,9 @@ import freemarker.template.TemplateModelException;
 public class ResourceConstants {
 
 	public static final String DATASET	=	"dataset";
-	public static final String CONCEPT	=	"concept";
-	public static final String TABLE	=	"table";
+	public static final String CONCEPT = "concept";
+	public static final String CONNECTOR = "connector";
+	public static final String TABLE = "table";
 	public static final String FILTER	=	"filter";
 	public static final String QUERY	=	"query";
 	public static final String QUERIES_MONITOR_PATH_ELEMENT	=	"queries";

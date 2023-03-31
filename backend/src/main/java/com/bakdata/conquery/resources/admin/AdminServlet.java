@@ -39,6 +39,7 @@ import com.bakdata.conquery.resources.admin.ui.GroupUIResource;
 import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.admin.ui.UserUIResource;
+import com.bakdata.conquery.resources.admin.ui.model.ConnectorUIResource;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.views.ViewMessageBodyWriter;
@@ -156,6 +157,7 @@ public class AdminServlet {
 				.register(DatasetsUIResource.class)
 				.register(TablesUIResource.class)
 				.register(ConceptsUIResource.class)
+				.register(ConnectorUIResource.class)
 				.register(AuthOverviewUIResource.class);
 
 	}
