@@ -22,9 +22,23 @@
 
   <@accordion.accordionGroup class="mt-3">
     <@accordion.accordion summary="Selects" infoText="${c.selects?size} entries">
+      <#assign idHeader = "id" />
+      <#assign labelHeader = "label" />
+      <#assign simpleNameHeader = "simpleName" />
+      <#assign descriptionHeader = "description" />
       <@table.table
-        columns=["id", "label", "simpleName", "description"]
-        items=c.selects?sort_by("name")?map(x -> {"id": x.id, "label": x.label, "simpleName": x.class.simpleName, "description": x.description!""})
+        columns=[idHeader, labelHeader, simpleNameHeader, descriptionHeader]
+        items=c.selects
+          ?sort_by("name")
+          ?map( x ->
+            {
+              "${idHeader}": x.id,
+              "name": x.name,
+              "${labelHeader}": x.label,
+              "${simpleNameHeader}": x.class.simpleName,
+              "${descriptionHeader}": x.description!""
+            }
+          )
       />
     </@accordion.accordion>
     <@accordion.accordion summary="Connectors" infoText="${c.connectors?size} entries">

@@ -934,6 +934,9 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/Filter"
+            validityDatesDescription:
+              description: "Further information about the available validity dates."
+              type: string
             validityDates:
               description: "Definitions of relevant date columns for this connector.
               e.g.: The publishing date of a movie, and its production period."
@@ -1861,6 +1864,8 @@ components:
       description: Frontend configuration for the entity-preview.
       type: object
       properties:
+        observationPeriod:
+          $ref: "#/components/schemas/DateRange"
         all:
           description: For frontend, list of sources to show the user. Usually a list of sources that have been tidied up.
           type: array
@@ -1879,8 +1884,66 @@ components:
                 type: string
               label:
                 type: string
+    PreviewConfig:
+      description: "Configuration to customize and integrate a Conquery instance."
+      type: object
+      properties:
+        observationStart:
+          type: string
+          description: "Default start date of entity-preview."
+        infoCardSelects:
+          type: array
+          items:
+            type: object
+            properties:
+              selectId:
+                $ref: "#/components/schemas/SelectId"
+              description:
+                type: string
+              label:
+                type: string
+
+        timeStratifiedSelects:
+          type: array
+          items:
+            properties:
+              description:
+                type: string
+              label:
+                type: string
+              selects:
+                type: array
+                items:
+                  properties:
+                    selectId:
+                      $ref: "#/components/schemas/SelectId"
+                    description:
+                      type: string
+                    label:
+                      type: string
+        hidden:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColumnId"
+        grouping:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColumnId"
+        allConnectors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConnectorId"
+        defaultConnectors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConnectorId"
+        searchFilters:
+          type: array
+          items:
+            $ref: "#/components/schemas/FilterId"
+
     EntityHistoryExecutionStatus:
-      description: Specific execution info for a entity-preview, containing additional information for the entity.
+      description: "Specific execution info for a entity-preview, containing additional information for the entity."
       allOf:
         - $ref: "#/components/schemas/FullExecutionStatus"
         - type: object
@@ -1899,10 +1962,54 @@ components:
                     type: string
                   value:
                     type: string
-                  Semantics:
+                  semantics:
                     type: array
                     items:
                       $ref: "#/components/schemas/Semantics"
+            timeStratifiedInfos:
+              description: "Results stratified in time for every year and quarter for selects defined in PreviewConfig.timeStratifiedSelects of queried time."
+              type: array
+              items:
+                type: object
+                properties:
+                  label:
+                    description: "Display label of the group of Selects."
+                    type: string
+                  description:
+                    description: "Detailed description of the selects."
+                    type: string
+                  columns:
+                    allOf:
+                      - $ref: "#/components/schemas/ColumnDescription"
+                      - description: "Description of the columns of years and quarters."
+                  years:
+                    description: "One entry for each year, containing the values aggregated for each year and its quarters."
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        year:
+                          description: "The year of the entries."
+                          type: integer
+                        values:
+                          description: "Aggregated values for the whole year."
+                          type: object
+                          additionalProperties: true
+                        quarters:
+                          description: "For each contained quarter an entry also containing the aggregated values."
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              quarter:
+                                type: integer
+                                minimum: 1
+                                maximum: 4
+                              values:
+                                description: "Aggregated values for the quarter."
+                                type: object
+                                additionalProperties: true
+
     FullExecutionStatus:
       allOf:
         - $ref: "#/components/schemas/QueryStatus"

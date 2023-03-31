@@ -9,7 +9,10 @@
 </#macro>
 
 <#macro columnInfoRender id>
-  <#assign element = c.table.columns?filter(x -> x.id == id)?first />
+  <#assign element = c.table.columns
+    ?filter( x -> x.id == id )
+    ?first
+  />
   <ul>
       <#if element.sharedDictionary??>
           <li style="display: inline;">Shared Dictionary  ${("<code>"?no_esc+element.sharedDictionary+"</code>"?no_esc)!}</li>

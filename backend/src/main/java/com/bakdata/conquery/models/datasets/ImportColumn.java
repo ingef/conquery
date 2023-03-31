@@ -11,13 +11,16 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 @Data
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 public class ImportColumn extends NamedImpl<ImportColumnId> implements NamespacedIdentifiable<ImportColumnId> {
 	// TODO reduce usage of this class, it does nothing except hold a description
-	@JsonBackReference @NotNull
+	@JsonBackReference
+	@NotNull
+	@EqualsAndHashCode.Exclude
 	private final Import parent;
 
 	// Only used on ManagerNode for com.bakdata.conquery.models.datasets.concepts.filters.specific.AbstractSelectFilter.addImport

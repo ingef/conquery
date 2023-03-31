@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import type { QueryT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
+import { DNDType } from "../common/constants/dndTypes";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import {
   nodeHasNonDefaultSettings,
@@ -16,11 +17,12 @@ import {
 import { isQueryExpandable } from "../model/query";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
+import { PossibleDroppableObject } from "../ui-components/Dropzone";
 
 import QueryNodeActions from "./QueryNodeActions";
 import QueryNodeContent from "./QueryNodeContent";
 import { getRootNodeLabel } from "./helper";
-import { StandardQueryNodeT } from "./types";
+import { DragItemConceptTreeNode, StandardQueryNodeT } from "./types";
 
 const FlexHoverNavigatable = styled(HoverNavigatable)`
   display: flex;
@@ -83,6 +85,12 @@ const nodeHasActiveSecondaryId = (
       node.availableSecondaryIds.includes(activeSecondaryId)
     );
   }
+};
+
+export const droppableObjectIsConceptTreeNode = (
+  node: PossibleDroppableObject,
+): node is DragItemConceptTreeNode => {
+  return node.type === DNDType.CONCEPT_TREE_NODE;
 };
 
 const QueryNode = ({
@@ -187,7 +195,21 @@ const QueryNode = ({
       : undefined;
 
   const QueryNodeRoot = (
-    <FlexHoverNavigatable triggerNavigate={onClick}>
+    <FlexHoverNavigatable
+      triggerNavigate={onClick}
+      canDrop={(item: PossibleDroppableObject) => {
+        if (
+          !droppableObjectIsConceptTreeNode(item) ||
+          !nodeIsConceptQueryNode(node)
+        ) {
+          return false;
+        }
+        const conceptId = item.ids[0];
+        const itemAlreadyInNode = node.ids.includes(conceptId);
+        const itemHasConceptRoot = item.tree === node.tree;
+        return itemHasConceptRoot && !itemAlreadyInNode;
+      }}
+    >
       <Root
         ref={(instance) => {
           ref.current = instance;
@@ -223,11 +245,12 @@ const QueryNode = ({
   );
 
   if (nodeIsConceptQueryNode(node)) {
-    const conceptById = getConceptById(node.ids[0]);
+    const conceptById = getConceptById(node.ids[0], node.tree);
+    const root = getConceptById(node.tree, node.tree);
 
-    if (conceptById) {
+    if (conceptById && root) {
       return (
-        <AdditionalInfoHoverable node={conceptById}>
+        <AdditionalInfoHoverable node={conceptById} root={root}>
           {QueryNodeRoot}
         </AdditionalInfoHoverable>
       );

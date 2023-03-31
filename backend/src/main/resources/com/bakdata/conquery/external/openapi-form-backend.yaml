@@ -1,0 +1,281 @@
+openapi: 3.0.0
+info:
+  title: Form Backend
+  version: 1.0.0
+  description: |
+    API for generic external form backends in [Conquery](https://github.com/ingef/conquery).
+    
+    An external form backend implements this API as a server.
+    A Conquery instance is then configured to act as a client. The configuration might look like this:
+    ```json
+    {
+      ...,
+      "plugins": [
+        ...,
+        {
+          "type": "FORM_BACKEND",
+          "id": "some_form_backend",
+          "baseURI": "http://localhost:8000",
+          "conqueryApiUrl": "http://localhost:8080",
+          "authentication": {
+            "type": "API_KEY",
+            "apiKey": "secret_api_key"
+          }
+        }
+      ]
+    }
+    ```
+    
+    It is possible to override every path in this spec. The overrides must be configured in the above configuration accordingly (see [backend class](https://github.com/ingef/conquery/blob/develop/backend/src/main/java/com/bakdata/conquery/models/config/FormBackendConfig.java)).
+    
+    Caution: The examples in this spec are used by a mock server in the ExternalFormBackendTest. Changes here might fail that test.
+servers:
+  - url: "{protocol}://{serverAndPort}:{port}/{basePath}"
+    variables:
+      protocol:
+        default: https
+        description: HTTP Protocol to use
+        enum:
+          - http
+          - https
+      serverAndPort:
+        default: localhost
+        description: Server address and optional port if it differs from the protocol's default
+      basePath:
+        default: ""
+tags:
+  - name: Form Configuration
+  - name: Task
+  - name: Operation
+paths:
+  /form-config:
+    get:
+      summary: Retrieves the list of frontend form configurations
+      operationId: getFormConfigs
+      security:
+        - ApiKeyAuth: [ ]
+        - { }
+      tags:
+        - Form Configuration
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/formConfig"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  /task:
+    post:
+      summary: Create a new form task
+      operationId: newFormTask
+      security:
+        - ApiKeyAuth: [ ]
+        - { }
+      tags:
+        - Task
+
+      requestBody:
+        description: Represents the form that should be executed
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/form"
+      responses:
+        '201':
+          description: Form task was successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/taskState"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  /task/{id}:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          $ref: "#/components/schemas/taskId"
+        required: true
+        description: The task id
+    get:
+      summary: Request the state of a task
+      operationId: getTaskState
+      security:
+        - ApiKeyAuth: [ ]
+        - { }
+      tags:
+        - Task
+      responses:
+        "200":
+          description: State of existing task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/taskState"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  /health:
+    get:
+      summary: Request health State
+      operationId: healthCheck
+      # Cannot do gobal auth and local overrides yet with mocker-server: https://github.com/mock-server/mockserver/issues/1315
+      tags:
+        - Operation
+      responses:
+        "200":
+          description: State of service health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/health"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+components:
+  schemas:
+    formConfig:
+      type: object
+      properties:
+        title:
+          type: object
+          example:
+            "en": "External Form"
+            "de": "External Form"
+        type:
+          type: string
+          example: SOME_EXTERNAL_FORM
+        fields:
+          type: array
+          items:
+            type: object
+
+      required:
+        - type
+        - title
+      additionalProperties: true
+      example:
+        "title":
+          "en": "External Form"
+          "de": "External Form"
+        "type": "SOME_EXTERNAL_FORM"
+        "fields":
+          - "label":
+              "en": "Cohort"
+              "de": "Kohorte"
+            "style":
+              "size": "h1"
+            "type": "HEADLINE"
+    taskId:
+      type: string
+      format: uuid
+
+    form:
+      type: object
+      properties:
+        type:
+          type: string
+          example: "SOME_EXTERNAL_FORM"
+      additionalProperties: true
+      required:
+        - type
+    taskState:
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/taskId"
+        status:
+          $ref: "#/components/schemas/taskStatus"
+        progress:
+          type: number
+          nullable: true
+          minimum: 0
+          maximum: 1
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/resultAsset"
+        error:
+          $ref: "#/components/schemas/error"
+      example:
+        "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        "status": "SUCCESS"
+        "progress": 1.0
+        "results":
+          - label: "Result"
+            url: "/result.txt"
+          - label: "Another Result"
+            url: "/another_result.txt"
+
+    taskStatus:
+      type: string
+      enum:
+        - RUNNING
+        - FAILURE
+        - SUCCESS
+    resultAsset:
+      type: object
+      properties:
+        label:
+          type: string
+          minLength: 1
+        url:
+          type: string
+          format: url
+      example:
+        label: "Result"
+        url: "/result.txt"
+    error:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
+        message:
+          type: string
+        context:
+          type: object
+      example:
+        id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        code: "SOME_ERROR"
+        message: "This is a default template message, for a fallback. Use a template variable from the context like this: ${temp_var}"
+        context:
+          temp_var: "resolved variable"
+    health:
+      type: object
+      properties:
+        healthy:
+          type: boolean
+        message:
+          type: string
+          example: I'm good
+      required:
+        - healthy
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      name: X-API-KEY
+      in: header

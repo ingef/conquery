@@ -46,7 +46,7 @@ context("Admin UI Single Dataset", () => {
         });
 
         it("Is new table visible", () => {
-            cy.get('[data-test-id="accordion-Tables"]').contains('td', `${testDSID}.table`);
+            cy.get('[data-test-id="accordion-Tables"]').contains('td', `table`);
         });
 
         it("Can upload concept table", () => {
@@ -57,7 +57,7 @@ context("Admin UI Single Dataset", () => {
         });
 
         it("Is new concept visible", () => {
-            cy.get('[data-test-id="accordion-Concepts"]').contains('td', `${testDSID}.concept1`);
+            cy.get('[data-test-id="accordion-Concepts"]').contains('td', `concept1`);
         });
     });
 
@@ -127,8 +127,8 @@ context("Admin UI Single Dataset", () => {
         });
     });
 
-    describe("Can delete test table and concept", () => {
-        before(() => { visitAdminUI(`datasets/${testDSID}`); });
+    describe("Can delete test concept and table", () => {
+        beforeEach(() => visitAdminUI(`datasets/${testDSID}`));
 
         it("Can delete test concept", () => {
             cy.get('[data-test-id="accordion-Concepts"]').click();
@@ -141,7 +141,6 @@ context("Admin UI Single Dataset", () => {
             cy.get(`[data-test-id="delete-btn-table-${testDSID}.table"]`).click({ force: true });
             cy.get(`[data-test-id="delete-btn-${testDSID}.table"]`).should('not.exist');
         });
-
     });
 
     describe("Delete the test dataset", () => {

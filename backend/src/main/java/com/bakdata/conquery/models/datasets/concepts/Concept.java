@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
@@ -25,9 +26,11 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
+import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -40,6 +43,7 @@ import lombok.ToString;
 @ToString(of = {"connectors"})
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 public abstract class Concept<CONNECTOR extends Connector> extends ConceptElement<ConceptId> implements Authorized {
 
 	/**
@@ -86,11 +90,12 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	/**
 	 * Allows concepts to create their own altered FiltersNode if necessary.
 	 */
-	public QPNode createConceptQuery(QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators) {
-		if (filters.isEmpty() && aggregators.isEmpty()) {
-			return new Leaf();
-		}
-		return FiltersNode.create(filters, aggregators, eventDateAggregators);
+	public QPNode createConceptQuery(QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators, Column validityDateColumn) {
+		QPNode child = filters.isEmpty() && aggregators.isEmpty() ? new Leaf() : FiltersNode.create(filters, aggregators, eventDateAggregators);
+
+
+		// Only if a validityDateColumn exists, capsule children in ValidityDateNode
+		return validityDateColumn != null ? new ValidityDateNode(validityDateColumn, child) : child;
 	}
 
 	@Override

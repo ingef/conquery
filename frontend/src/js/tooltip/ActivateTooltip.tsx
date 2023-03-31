@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faAngleRight } from "@fortawesome/free-solid-svg-icons";
 import { useDispatch } from "react-redux";
 
 import IconButton from "../button/IconButton";
@@ -28,7 +29,7 @@ const ActivateTooltip = () => {
 
   return (
     <Root>
-      <StyledIconButton bgHover icon="angle-right" onClick={onToggleTooltip} />
+      <StyledIconButton bgHover icon={faAngleRight} onClick={onToggleTooltip} />
     </Root>
   );
 };

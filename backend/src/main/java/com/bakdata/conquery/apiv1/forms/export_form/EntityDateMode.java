@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JsonView;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -43,6 +44,7 @@ public class EntityDateMode extends Mode {
 
 
 	@JsonView(View.InternalCommunication.class)
+	@EqualsAndHashCode.Exclude
 	private ArrayConceptQuery resolvedFeatures;
 
 	@Override

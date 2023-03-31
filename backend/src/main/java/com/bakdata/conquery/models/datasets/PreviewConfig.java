@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.datasets;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -7,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 
@@ -25,7 +27,6 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.fasterxml.jackson.annotation.JacksonInject;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.collect.MoreCollectors;
@@ -44,6 +45,13 @@ import lombok.extern.slf4j.Slf4j;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PreviewConfig {
+
+	/**
+	 * Default start-date for EntityPreview, end date will always be LocalDate.now()
+	 */
+	@NotNull
+	private LocalDate observationStart;
+
 	/**
 	 * Selects to be used in {@link com.bakdata.conquery.apiv1.QueryProcessor#getSingleEntityExport(Subject, UriBuilder, String, String, List, Dataset, Range)}.
 	 * To be displayed as additional infos.
@@ -52,6 +60,9 @@ public class PreviewConfig {
 	 */
 	@Valid
 	private List<InfoCardSelect> infoCardSelects = List.of();
+
+	@Valid
+	private List<TimeStratifiedSelects> timeStratifiedSelects = List.of();
 
 	/**
 	 * Columns that should not be displayed to users in entity preview.
@@ -96,6 +107,32 @@ public class PreviewConfig {
 		return getHidden().contains(column.getId());
 	}
 
+
+	/**
+	 * @param label  User facing label of the select.
+	 * @param select Id (without dataset) of the select.
+	 */
+	public record InfoCardSelect(@NotNull String label, SelectId select, String description) {
+	}
+
+
+	/**
+	 * Defines a group of selects that will be evaluated per quarter and year in the requested period of the entity-preview.
+	 */
+	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects){
+		@ValidationMethod(message = "Selects may be referenced only once.")
+		@JsonIgnore
+		public boolean isSelectsUnique() {
+			return selects().stream().map(InfoCardSelect::select).distinct().count() == selects().size();
+		}
+
+		@ValidationMethod(message = "Labels must be unique.")
+		@JsonIgnore
+		public boolean isLabelsUnique() {
+			return selects().stream().map(InfoCardSelect::label).distinct().count() == selects().size();
+		}
+	}
+
 	@JsonIgnore
 	@ValidationMethod(message = "Default Connectors must also be available Connectors.")
 	public boolean isDefaultSubsetOfAvailable() {
@@ -105,13 +142,19 @@ public class PreviewConfig {
 	@JsonIgnore
 	@ValidationMethod(message = "Selects may be used only once.")
 	public boolean isSelectsDistinct() {
-		return infoCardSelects.stream().map(InfoCardSelect::getSelect).distinct().count() == getInfoCardSelects().size();
+		return infoCardSelects.stream().map(InfoCardSelect::select).distinct().count() == getInfoCardSelects().size();
 	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "Select Labels must be unique.")
 	public boolean isSelectsLabelsDistinct() {
-		return infoCardSelects.stream().map(InfoCardSelect::getLabel).distinct().count() == getInfoCardSelects().size();
+		return infoCardSelects.stream().map(InfoCardSelect::label).distinct().count() == getInfoCardSelects().size();
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "timeStratifiedSelects' labels must be unique.")
+	public boolean isStratifiedInfosUnique() {
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::label).distinct().count() == timeStratifiedSelects.size();
 	}
 
 
@@ -122,12 +165,12 @@ public class PreviewConfig {
 	}
 
 	/**
-	 * Used to map {@link SelectResultInfo} to {@link InfoCardSelect#getLabel()} via {@link PrintSettings#getColumnNamer()}.
+	 * Used to map {@link SelectResultInfo} to {@link InfoCardSelect#label()} via {@link PrintSettings#getColumnNamer()}.
 	 */
 	public String resolveSelectLabel(SelectResultInfo info) {
 		for (InfoCardSelect infoCardSelect : getInfoCardSelects()) {
-			if (infoCardSelect.getSelect().equals(info.getSelect().getId())) {
-				return infoCardSelect.getLabel();
+			if (infoCardSelect.select().equals(info.getSelect().getId())) {
+				return infoCardSelect.label();
 			}
 		}
 
@@ -140,7 +183,7 @@ public class PreviewConfig {
 	@JsonIgnore
 	public List<Select> getSelects() {
 		return getInfoCardSelects().stream()
-								   .map(InfoCardSelect::getSelect)
+								   .map(InfoCardSelect::select)
 								   .map(id -> datasetRegistry.findRegistry(id.getDataset()).getOptional(id))
 								   .flatMap(Optional::stream)
 								   .collect(Collectors.toList());
@@ -171,23 +214,6 @@ public class PreviewConfig {
 							.collect(MoreCollectors.onlyElement());
 	}
 
-	@Data
-	public static class InfoCardSelect {
-		/**
-		 * User facing label of the select.
-		 */
-		private final String label;
-		/**
-		 * Id (without dataset) of the select.
-		 */
-		private final SelectId select;
 
-		@JsonCreator
-		public InfoCardSelect(String label, SelectId select) {
-			this.label = label;
-			this.select = select;
-		}
-
-	}
 
 }

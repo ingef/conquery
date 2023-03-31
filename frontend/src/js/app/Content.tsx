@@ -4,7 +4,6 @@ import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
 import { History } from "../entity-history/History";
-import type { TabT } from "../pane/types";
 import Preview from "../preview/Preview";
 import ActivateTooltip from "../tooltip/ActivateTooltip";
 import Tooltip from "../tooltip/Tooltip";
@@ -30,11 +29,7 @@ const Root = styled("div")`
   ${reactSplitPaneSafariFix};
 `;
 
-export interface ContentPropsT {
-  rightTabs: TabT[];
-}
-
-const Content = ({ rightTabs }: ContentPropsT) => {
+const Content = () => {
   const displayTooltip = useSelector<StateT, boolean>(
     (state) => state.tooltip.displayTooltip,
   );
@@ -76,7 +71,7 @@ const Content = ({ rightTabs }: ContentPropsT) => {
             defaultSize="42%"
           >
             <LeftPane />
-            <RightPane tabs={rightTabs} />
+            <RightPane />
           </SplitPane>
         </SplitPane>
       </Root>

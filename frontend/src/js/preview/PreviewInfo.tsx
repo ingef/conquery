@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -97,7 +98,7 @@ const PreviewInfo: FC<PropsT> = ({
       <TopRow>
         <div>
           <StdRow>
-            <SxIconButton frame icon="chevron-left" onClick={onClose}>
+            <SxIconButton frame icon={faChevronLeft} onClick={onClose}>
               {t("common.back")}
             </SxIconButton>
             <HeadInfo>

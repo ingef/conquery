@@ -1,4 +1,4 @@
-<#macro infoCard labels values title="" subtitle="" links={} class="" style="" gridTemplateColumns="auto auto">
+<#macro infoCard labels values title="" subtitle="" links={} class="" style="">
   <div class="card ${class}" style="${style}">
     <div class="card-body">
       <#if title?has_content>
@@ -7,10 +7,10 @@
       <#if subtitle?has_content>
         <h6 class="card-subtitle text-muted mb-2">${title}</h6>
       </#if>
-      <div class="card-text text-break" style="display: grid; grid-template-columns: ${gridTemplateColumns}; gap: 1rem 3rem;">
+      <div class="card-text text-break">
         <#list values as value>
           <#if value?is_macro || value?has_content>
-            <div>
+            <div class="d-inline-flex flex-column m-2">
               <#if (value?index < labels?size)>
                 <div class="text-secondary">${labels[value?index]}</div>
               </#if>

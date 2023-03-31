@@ -71,3 +71,7 @@ hs_err_pid*
 tutorial/mimic_iii_demo/data/**
 
 /node_modules
+
+# cypress fails
+/cypress/screenshots/*
+/cypress/videos/*

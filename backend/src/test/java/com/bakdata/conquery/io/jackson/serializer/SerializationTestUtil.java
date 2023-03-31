@@ -59,6 +59,8 @@ public class SerializationTestUtil<T> {
 	@NonNull
 	private Injectable[] injectables = {};
 
+	private boolean forceHashCodeEqual = false;
+
 	public static <T> SerializationTestUtil<T> forType(TypeReference<T> type) {
 		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
 	}
@@ -74,6 +76,11 @@ public class SerializationTestUtil<T> {
 
 	public SerializationTestUtil<T> injectables(Injectable... injectables) {
 		this.injectables = injectables;
+		return this;
+	}
+
+	public SerializationTestUtil<T> checkHashCode() {
+		this.forceHashCodeEqual = true;
 		return this;
 	}
 
@@ -116,15 +123,18 @@ public class SerializationTestUtil<T> {
 		}
 		ValidatorHelper.failOnError(log, validator.validate(copy));
 
-		//because IdentifiableImp cashes the hash
-		if (value instanceof IdentifiableImpl) {
+		if (forceHashCodeEqual) {
 			assertThat(copy.hashCode()).isEqualTo(value.hashCode());
+		}
+
+		// Preliminary check that ids of identifiables are equal
+		if (value instanceof IdentifiableImpl identifiableValue) {
+			assertThat(((IdentifiableImpl<?>) copy).getId()).as("the serialized value").isEqualTo(identifiableValue.getId());
 		}
 
 		RecursiveComparisonAssert<?> ass = assertThat(copy)
 				.as("Unequal after copy.")
 				.usingRecursiveComparison().ignoringFieldsOfTypes(TYPES_TO_IGNORE);
-
 
 		ass.isEqualTo(expected);
 	}

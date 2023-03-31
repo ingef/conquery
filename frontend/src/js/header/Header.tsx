@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import type { StateT } from "../app/reducers";
 import { HistoryButton } from "../button/HistoryButton";
 import DatasetSelector from "../dataset/DatasetSelector";
-import { useHideLogoutButton } from "../user/selectors";
+import { canUploadResult, useHideLogoutButton } from "../user/selectors";
 
 import { HelpMenu } from "./HelpMenu";
 import LogoutButton from "./LogoutButton";
@@ -68,59 +68,25 @@ const Headline = styled("h1")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-const useVersion = () => {
-  const backendVersion = useSelector<StateT, string>(
-    (state) => state.startup.config.version,
-  );
-
-  // TODO GET THIS WORKING AGAIN WITH VITE
-  // const frontendDateTimeStamp = preval`module.exports = new Date().toISOString();`;
-
-  // TODO: GET THIS TO WORK WHEN BUILDING INSIDE A DODCKER CONTAINER
-  // const frontendGitCommit = preval`
-  //   const { execSync } = require('child_process');
-  //   module.exports = execSync('git rev-parse --short HEAD').toString();
-  // `;
-  // const frontendGitTag = preval`
-  //   const { execSync } = require('child_process');
-  //   module.exports = execSync('git describe --all --exact-match \`git rev-parse HEAD\`').toString();
-  // `;
-  // const frontendVersion = `${frontendDateTimeStamp}`;
-  const frontendVersion = `TIMESTAMP_COMING_SOON`;
-
-  return {
-    backendVersion,
-    frontendVersion,
-  };
-};
-
 const Header: FC = () => {
   const { t } = useTranslation();
-  const { backendVersion, frontendVersion } = useVersion();
+  const canUpload = useSelector<StateT, boolean>(canUploadResult);
   const hideLogoutButton = useHideLogoutButton();
   const { manualUrl, contactEmail } = useSelector<
     StateT,
     StateT["startup"]["config"]
   >((state) => state.startup.config);
 
-  const versionString = `BE: ${backendVersion}, FE: ${frontendVersion}`;
-
-  const copyVersionToClipboard = () => {
-    navigator.clipboard.writeText(
-      `BE: ${backendVersion} FE: ${frontendVersion}`,
-    );
-  };
-
   return (
     <Root>
       <OverflowHidden>
-        <Logo title={versionString} onClick={copyVersionToClipboard} />
+        <Logo />
         <Spacer />
         <Headline>{t("headline")}</Headline>
       </OverflowHidden>
       <Right>
         <DatasetSelector />
-        <HistoryButton />
+        {canUpload && <HistoryButton />}
         {(manualUrl || contactEmail) && (
           <HelpMenu manualUrl={manualUrl} contactEmail={contactEmail} />
         )}

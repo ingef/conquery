@@ -8,7 +8,7 @@
     <div
       class="card-header d-inline-flex justify-content-between"
       style="user-select: none; cursor: pointer;"
-      onclick="if (!$(this).next().hasClass('show')) {location.hash = '${summary}'} $(this).next().collapse('toggle');"
+      onclick="if (!$(this).next().hasClass('show')) {history.replaceState(null, '', '#${summary}')} $(this).next().collapse('toggle');"
     >
       <div>
         <h5 class="p-0 m-0">${summary}</h5>
