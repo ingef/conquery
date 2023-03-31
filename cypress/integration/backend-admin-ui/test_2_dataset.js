@@ -86,8 +86,10 @@ context("Admin UI Single Dataset", () => {
 
         it("Can use page components", () => {
             visitAdminUI(`datasets/${testDSID}/concepts/${testDSID}.concept1`);
-            cy.get('[data-test-id="accordion-Connectors"]').click();
-            cy.get('[data-test-id="accordion-Connectors"]').get('tr > :nth-child(1) > a').click();
+            cy.get('[data-test-id="accordion-Connectors"]')
+                .click()
+                .get('.d-flex > :nth-child(1) > a')
+                .click();
 
             cy.location('pathname').should('equal', `/admin-ui/datasets/${testDSID}/connectors/${testDSID}.concept1.column`);
         });
