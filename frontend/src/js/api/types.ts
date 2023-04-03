@@ -98,6 +98,7 @@ export interface DateColumnT {
   options: SelectOptionT[];
   defaultValue: string | null;
   value?: string;
+  tooltip: string | null; // TODO: Would be better to use undefined instead of null
 }
 
 export type FilterT =
@@ -532,6 +533,7 @@ export interface HistorySources {
 export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
   searchConcept: string | null; // concept id
   searchFilters?: string[]; // allowlisted filter ids within the searchConcept
+  observationPeriodMin: string; // yyyy-MM-dd
 };
 
 export interface EntityInfo {

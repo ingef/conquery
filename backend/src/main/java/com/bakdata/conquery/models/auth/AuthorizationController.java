@@ -9,9 +9,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.commands.ManagerNode;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
-import com.bakdata.conquery.models.auth.apitoken.ApiTokenRealm;
 import com.bakdata.conquery.models.auth.basic.JWTokenHandler;
 import com.bakdata.conquery.models.auth.conquerytoken.ConqueryTokenRealm;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -23,13 +21,12 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import io.dropwizard.jersey.validation.Validators;
 import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.util.Strings;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.pam.FirstSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
@@ -165,7 +162,7 @@ public final class AuthorizationController implements Managed{
 	public static User flatCopyUser(@NonNull User originUser, String namePrefix, @NonNull MetaStorage storage) {
 		final UserId originUserId = originUser.getId();
 
-		if(Strings.isNullOrEmpty(namePrefix)) {
+		if (Strings.isBlank(namePrefix)) {
 			throw new IllegalArgumentException("There must be a prefix");
 		}
 
@@ -180,6 +177,7 @@ public final class AuthorizationController implements Managed{
 		// Copy inherited permissions
 		Set<ConqueryPermission> copiedPermission = new HashSet<>();
 
+		// This collects all permissions from the user, its groups and inherited roles
 		copiedPermission.addAll(originUser.getEffectivePermissions());
 
 		// Give read permission to all executions the original user owned

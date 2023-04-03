@@ -18,4 +18,11 @@ public class EntityPreviewRequest {
 	private final Range<LocalDate> time;
 	@NsIdRefCollection
 	private final List<Connector> sources;
+
+	//TODO uncomment, when frontend is adapted to support this
+	//	@ValidationMethod(message = "Time must be closed.")
+	//	@JsonIgnore
+	//	public boolean isTimeClosed() {
+	//		return !time.isOpen();
+	//	}
 }

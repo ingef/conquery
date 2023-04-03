@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -75,7 +76,6 @@ public class UpdateFilterSearchJob extends Job {
 
 		log.debug("Found {} searchable Objects.", collectedSearchables.size());
 
-
 		for (Searchable<?> searchable : collectedSearchables) {
 
 			service.submit(() -> {
@@ -121,18 +121,23 @@ public class UpdateFilterSearchJob extends Job {
 
 		// Precompute totals as that can be slow when doing it on-demand.
 		totals.putAll(
-				synchronizedResult.keySet()
-								  .parallelStream()
-								  .collect(Collectors.toMap(
-										  Functions.identity(),
-										  filter -> filter.getSearchReferences().stream()
-														  .map(searchCache::get)
-														  .filter(Objects::nonNull) // Failed or disabled searches are null
-														  .flatMap(TrieSearch::stream)
-														  .mapToInt(FrontendValue::hashCode)
-														  .distinct()
-														  .count()
-								  ))
+				Stream.concat(
+							  // SelectFilters without their own labels are not "real" Searchables and therefore not in collectedSearchables
+							  // We however want the real totals of ALL Searchables (and especially SelectFilters), which is why we include them here explicitly
+							  allSelectFilters.parallelStream(),
+							  collectedSearchables.parallelStream()
+					  )
+					  .distinct()
+					  .collect(Collectors.toMap(
+							  Functions.identity(),
+							  filter -> filter.getSearchReferences().stream()
+											  .map(searchCache::get)
+											  .filter(Objects::nonNull) // Failed or disabled searches are null
+											  .flatMap(TrieSearch::stream)
+											  .mapToInt(FrontendValue::hashCode)
+											  .distinct()
+											  .count()
+					  ))
 		);
 
 

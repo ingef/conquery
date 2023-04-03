@@ -2,8 +2,11 @@ package com.bakdata.conquery.models.config;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -21,12 +24,16 @@ import com.bakdata.conquery.models.config.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.config.auth.AuthenticationRealmFactory;
 import com.bakdata.conquery.models.config.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.config.auth.DevelopmentAuthorizationConfig;
+import com.bakdata.conquery.models.config.auth.MultiInstancePlugin;
 import com.bakdata.conquery.util.DateReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.MoreCollectors;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -51,7 +58,7 @@ public class ConqueryConfig extends Configuration implements Injectable {
 	private CSVConfig csv = new CSVConfig();
 
 	/**
-	 * The order of this lists determines the ordner of the generated result urls in a query status.
+	 * The order of this list determines the order of the generated result urls in a query status.
 	 */
 	@Valid
 	@NotNull
@@ -59,7 +66,8 @@ public class ConqueryConfig extends Configuration implements Injectable {
 			new ExcelResultProvider(),
 			new CsvResultProvider(),
 			new ArrowResultProvider(),
-			new ParquetResultProvider()
+			new ParquetResultProvider(),
+			new ExternalResultProvider()
 	);
 	@Valid
 	@NotNull
@@ -115,6 +123,28 @@ public class ConqueryConfig extends Configuration implements Injectable {
 
 	private boolean failOnError = false;
 
+	@ValidationMethod(message = "Plugins are not unique")
+	boolean isPluginUnique() {
+		// Normal plugins only exist once per class
+		Set<Class<? extends PluginConfig>> singleInstanceClasses = new HashSet<>();
+		// MultiInstance plugins have a distinct id among their class
+		Multimap<Class<? extends MultiInstancePlugin>, String> multiInstanceClasses = MultimapBuilder.hashKeys().hashSetValues().build();
+
+		for (PluginConfig plugin : plugins) {
+			if (plugin instanceof MultiInstancePlugin mu) {
+				if (!multiInstanceClasses.put(mu.getClass(), mu.getId())) {
+					return false;
+				}
+				continue;
+			}
+
+			if (!singleInstanceClasses.add(plugin.getClass())) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public void initialize(ManagerNode node) {
 		plugins.forEach(config -> config.initialize((node)));
 	}
@@ -124,6 +154,13 @@ public class ConqueryConfig extends Configuration implements Injectable {
 					  .filter(c -> type.isAssignableFrom(c.getClass()))
 					  .map(type::cast)
 					  .collect(MoreCollectors.toOptional());
+	}
+
+	public <T extends PluginConfig> Stream<T> getPluginConfigs(Class<T> type) {
+		return plugins.stream()
+					  .filter(c -> type.isAssignableFrom(c.getClass()))
+					  .filter(c -> MultiInstancePlugin.class.isAssignableFrom(c.getClass()))
+					  .map(type::cast);
 	}
 
 	public ObjectMapper configureObjectMapper(ObjectMapper objectMapper) {

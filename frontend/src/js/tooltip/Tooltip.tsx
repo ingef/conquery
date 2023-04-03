@@ -1,9 +1,6 @@
 import styled from "@emotion/styled";
-import {
-  faFolder,
-  faMinus,
-  faThumbtack,
-} from "@fortawesome/free-solid-svg-icons";
+import { faThumbtack, IconDefinition } from "@fortawesome/free-solid-svg-icons";
+import { ReactNode } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
@@ -12,7 +9,6 @@ import remarkGfm from "remark-gfm";
 
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
-import type { SearchT } from "../concept-trees/reducer";
 import FaIcon from "../icon/FaIcon";
 
 import ActivateTooltip from "./ActivateTooltip";
@@ -55,7 +51,7 @@ const TackIconButton = styled(IconButton)`
   margin-left: 5px;
 `;
 const TypeIcon = styled(StyledFaIcon)`
-  margin-right: 10px;
+  margin-right: 6px;
 `;
 const PinnedLabel = styled("p")`
   display: flex;
@@ -78,6 +74,11 @@ const Description = styled("p")`
 const Infos = styled("div")`
   width: 100%;
   overflow-x: auto;
+`;
+
+const IndentRoot = styled("div")`
+  padding-left: 15px;
+  margin: 5px 0 12px;
 `;
 
 const PieceOfInfo = styled("div")`
@@ -112,10 +113,66 @@ const InfoHeadline = styled("h4")`
   line-height: 1.3;
 `;
 
-const Tooltip = () => {
+const HighlightedText = ({
+  text,
+  words = [],
+}: {
+  words: string[];
+  text: string;
+}) => {
+  return (
+    <Highlighter
+      searchWords={words}
+      autoEscape={true}
+      textToHighlight={text || ""}
+    />
+  );
+};
+
+const ConceptLabel = ({
+  label,
+  conceptIcon,
+  tackIcon,
+}: {
+  label?: string;
+  conceptIcon?: IconDefinition;
+  tackIcon?: ReactNode;
+}) => {
+  const words = useSelector<StateT, string[]>(
+    (state) => state.conceptTrees.search.words || [],
+  );
   const { t } = useTranslation();
 
-  const additionalInfos = useSelector<StateT, AdditionalInfosType>(
+  return (
+    <PinnedLabel>
+      {conceptIcon && <TypeIcon icon={conceptIcon} />}
+      <Label>
+        {label ? (
+          <HighlightedText words={words} text={label} />
+        ) : (
+          t("tooltip.placeholder")
+        )}
+      </Label>
+      {tackIcon}
+    </PinnedLabel>
+  );
+};
+
+const Tooltip = () => {
+  const words = useSelector<StateT, string[]>(
+    (state) => state.conceptTrees.search.words || [],
+  );
+  const {
+    label,
+    description,
+    infos,
+    matchingEntries,
+    matchingEntities,
+    dateRange,
+    icon,
+    rootLabel,
+    rootIcon,
+  } = useSelector<StateT, AdditionalInfosType>(
     (state) => state.tooltip.additionalInfos,
   );
   const displayTooltip = useSelector<StateT, boolean>(
@@ -124,34 +181,16 @@ const Tooltip = () => {
   const toggleAdditionalInfos = useSelector<StateT, boolean>(
     (state) => state.tooltip.toggleAdditionalInfos,
   );
-  const search = useSelector<StateT, SearchT>(
-    (state) => state.conceptTrees.search,
-  );
 
   const dispatch = useDispatch();
   const onToggleAdditionalInfos = () => dispatch(toggleInfos());
 
   if (!displayTooltip) return <ActivateTooltip />;
 
-  const {
-    label,
-    description,
-    isFolder,
-    infos,
-    matchingEntries,
-    matchingEntities,
-    dateRange,
-  } = additionalInfos;
+  const mainLabel = rootLabel || label;
+  const mainIcon = rootIcon || icon;
 
-  const searchHighlight = (text: string) => {
-    return (
-      <Highlighter
-        searchWords={search.words || []}
-        autoEscape={true}
-        textToHighlight={text || ""}
-      />
-    );
-  };
+  const differentRootLabel = !!rootLabel && rootLabel !== label;
 
   return (
     <Root>
@@ -163,29 +202,38 @@ const Tooltip = () => {
           dateRange={dateRange}
         />
         <Head>
-          <PinnedLabel>
-            <TypeIcon icon={isFolder ? faFolder : faMinus} />
-            <Label>
-              {label ? searchHighlight(label) : t("tooltip.placeholder")}
-            </Label>
-            {toggleAdditionalInfos && (
-              <TackIconButton
-                bare
-                active
-                onClick={onToggleAdditionalInfos}
-                icon={faThumbtack}
-              />
-            )}
-          </PinnedLabel>
+          <ConceptLabel
+            label={mainLabel}
+            conceptIcon={mainIcon}
+            tackIcon={
+              toggleAdditionalInfos && (
+                <TackIconButton
+                  bare
+                  active
+                  onClick={onToggleAdditionalInfos}
+                  icon={faThumbtack}
+                />
+              )
+            }
+          />
+          {differentRootLabel && (
+            <IndentRoot>
+              <ConceptLabel label={label} conceptIcon={icon} />
+            </IndentRoot>
+          )}
           {description && (
-            <Description>{searchHighlight(description)}</Description>
+            <Description>
+              <HighlightedText words={words} text={description} />
+            </Description>
           )}
         </Head>
         <Infos>
           {infos &&
             infos.map((info, i) => (
               <PieceOfInfo key={info.key + i}>
-                <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
+                <InfoHeadline>
+                  <HighlightedText words={words} text={info.key} />
+                </InfoHeadline>
                 <Markdown
                   remarkPlugins={[remarkGfm]}
                   components={

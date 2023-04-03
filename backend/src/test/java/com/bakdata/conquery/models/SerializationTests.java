@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models;
 
 import static com.bakdata.conquery.models.types.SerialisationObjectsUtil.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -21,6 +22,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.apiv1.MeProcessor;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
+import com.bakdata.conquery.apiv1.forms.ExternalForm;
 import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.apiv1.forms.export_form.ExportForm;
 import com.bakdata.conquery.apiv1.query.ArrayConceptQuery;
@@ -45,6 +47,7 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.ExecutionPermission;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.FormBackendConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
@@ -67,6 +70,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormConfigProcessor;
 import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
+import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
@@ -81,11 +85,16 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.bakdata.conquery.util.SerialisationObjectsUtil;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
 import com.bakdata.conquery.util.dict.SuccinctTrieTest;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.github.powerlibraries.io.In;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -390,6 +399,31 @@ public class SerializationTests extends AbstractSerializationTest {
 							 .objectMappers(getManagerInternalMapper(), getApiMapper())
 							 .registry(registry)
 							 .test(execution);
+	}
+
+
+	@Test
+	public void testExternalExecution() throws IOException, JSONException {
+
+		final CentralRegistry centralRegistry = getMetaStorage().getCentralRegistry();
+
+		final String subType = "test-type";
+		JsonNodeFactory factory = new JsonNodeFactory(false);
+		ObjectNode node = new ObjectNode(factory, Map.of(
+				"some-other-member", new TextNode("some-other-value")
+		));
+
+		ExternalForm form = new ExternalForm(node, subType);
+		final Dataset dataset = SerialisationObjectsUtil.createDataset(centralRegistry);
+		final User user = SerialisationObjectsUtil.createUser(centralRegistry, getMetaStorage());
+
+		final ExternalExecution execution = new ExternalExecution(form, user, dataset, getMetaStorage());
+
+		SerializationTestUtil.forType(ManagedExecution.class)
+							 .objectMappers(getManagerInternalMapper())
+							 .registry(centralRegistry)
+							 .test(execution);
+
 	}
 
 	@Test
@@ -719,6 +753,100 @@ public class SerializationTests extends AbstractSerializationTest {
 		SerializationTestUtil.forType(Locale[].class)
 							 .objectMappers(getApiMapper(), getManagerInternalMapper())
 							 .test(new Locale[]{Locale.GERMANY, Locale.ROOT, Locale.ENGLISH, Locale.US, Locale.UK});
+	}
+
+	/**
+	 * Tests if the type id prefix for external forms is correctly removed before a form is forwarded to a form backend.
+	 */
+	@Test
+	public void externalForm() throws IOException, JSONException {
+
+		final String externalFormString = """
+				{
+					"type": "EXTERNAL_FORM@SOME_SUB_TYPE",
+					"title": "Test Form",
+					"members": {
+						"val1": [0,1,2,3],
+						"val2": "hello"
+					}
+				}
+				""";
+
+		ExternalForm externalForm = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString);
+		SerializationTestUtil.forType(QueryDescription.class)
+							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .test(externalForm);
+	}
+
+	/**
+	 * Extra nesting test because {@link ExternalForm} uses a custom deserializer.
+	 */
+	@Test
+	public void externalFormArray() throws IOException, JSONException {
+
+		final String externalFormString = """
+				{
+					"type": "EXTERNAL_FORM@SOME_SUB_TYPE",
+					"title": "Test Form",
+					"members": {
+						"val1": [0,1,2,3],
+						"val2": "hello"
+					}
+				}
+				""";
+
+		final String externalFormString2 = """
+				{
+					"type": "EXTERNAL_FORM@SOME_SUB_TYPE2",
+					"title": "Test Form",
+					"members": {
+						"val1": [0,1,2,3],
+						"val2": "hello"
+					}
+				}
+				""";
+
+		ExternalForm externalForm = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString);
+		ExternalForm externalForm2 = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString2);
+		SerializationTestUtil.forType(QueryDescription[].class)
+							 .objectMappers(getApiMapper(), getManagerInternalMapper())
+							 .test(new QueryDescription[]{externalForm, externalForm2});
+	}
+
+
+	/**
+	 * Tests if the type id prefix for external forms is correctly removed before a form is forwarded to a form backend.
+	 */
+	@Test
+	public void externalFormToFormBackend() throws JsonProcessingException {
+
+		final String externalFormString = """
+				{
+					"type": "EXTERNAL_FORM@SOME_SUB_TYPE",
+					"title": "Test Form",
+					"members": {
+						"val1": [0,1,2,3],
+						"val2": "hello"
+					}
+				}
+				""";
+
+		ExternalForm externalForm = getApiMapper().readerFor(QueryDescription.class).readValue(externalFormString);
+
+		final ObjectMapper objectMapper = FormBackendConfig.configureObjectMapper(getApiMapper().copy());
+		final String actual = objectMapper.writer().writeValueAsString(externalForm);
+
+		final String expected = """
+				{
+					"type":"SOME_SUB_TYPE",
+					"title":"Test Form",
+					"members":{
+						"val1":[0,1,2,3],
+						"val2":"hello"
+					}
+				}
+				""".replaceAll("[\\n\\t]", "");
+		assertThat(actual).as("Result of mixin for form backend").isEqualTo(expected);
 	}
 
 }

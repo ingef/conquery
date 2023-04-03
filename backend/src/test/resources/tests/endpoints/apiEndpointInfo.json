@@ -76,6 +76,11 @@
 	},
   {
     "method": "GET",
+    "path": "/result/external/{query}/{filename}",
+    "clazz": "ResultExternalResource"
+  },
+  {
+    "method": "GET",
     "path": "/datasets/{dataset}/queries",
     "clazz": "DatasetQueryResource"
   },

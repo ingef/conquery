@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1.frontend;
 
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 
@@ -17,6 +18,8 @@ public class FrontendPreviewConfig {
 		private final String name;
 		private final String label;
 	}
+
+	private final LocalDate observationPeriodMin;
 
 	private final Collection<Labelled> all;
 	@JsonProperty("default")

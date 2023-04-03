@@ -27,6 +27,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.ArrayUtils;
 
 /**
@@ -40,6 +41,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @RequiredArgsConstructor
 @Getter
 @Setter
+@ToString
 public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 	public static final int VALIDITY_DATE_POSITION = ConceptQueryPlan.VALIDITY_DATE_POSITION + 1;

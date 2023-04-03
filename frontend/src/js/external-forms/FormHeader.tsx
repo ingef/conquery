@@ -12,7 +12,7 @@ const Root = styled("div")`
 `;
 
 const Description = styled("p")`
-  margin: 0;
+  margin: 0 10px;
   font-size: ${({ theme }) => theme.font.md};
 `;
 

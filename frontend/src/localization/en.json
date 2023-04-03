@@ -265,7 +265,7 @@
   },
   "externalForms": {
     "manualButton": "Go to manual",
-    "forms": "Forms",
+    "forms": "Form",
     "formValidation": {
       "mustBePositiveNumber": "Must be a positive number",
       "isRequired": "Required",
