@@ -177,7 +177,7 @@ export function useUpdateHistorySession() {
 
   const defaultEntityHistoryParams = useSelector<
     StateT,
-    { sources: HistorySources }
+    StateT["entityHistory"]["defaultParams"]
   >((state) => state.entityHistory.defaultParams);
 
   return useCallback(
@@ -201,6 +201,10 @@ export function useUpdateHistorySession() {
             datasetId,
             entityId,
             defaultEntityHistoryParams.sources,
+            {
+              min: defaultEntityHistoryParams.observationPeriodMin,
+              max: formatStdDate(new Date()),
+            },
           );
 
         const csvUrl = resultUrls.find(({ url }) => url.endsWith("csv"));
