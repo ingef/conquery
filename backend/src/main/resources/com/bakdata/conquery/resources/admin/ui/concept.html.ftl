@@ -4,20 +4,6 @@
 <#import "templates/accordion.html.ftl" as accordion>
 <#import "templates/table.html.ftl" as table>
 
-<#function prepareTableConnectorItems connectorItems>
-  <#return connectorItems
-    ?sort_by("name")
-    ?map( x -> 
-      {
-        "${idHeader}": x.id,
-        "name": x.name,
-        "${labelHeader}": x.label,
-        "${requiredColumnsHeader}": x.requiredColumns?sort_by("name")?join(', ')
-      }
-    )
-  />
-</#function>
-
 <@layout.layout>
   <@breadcrumbs.breadcrumbs
     labels=["Datasets", c.dataset.label, "Concepts", c.label]
@@ -56,31 +42,24 @@
       />
     </@accordion.accordion>
     <@accordion.accordion summary="Connectors" infoText="${c.connectors?size} entries">
-	    <#list c.connectors as connector>
-        <@infoCard.infoCard
-          class="d-inline-flex mt-2"
-          labels=["ID", "Label", "Validity Dates", "Table"]
-          values=[connector.id, connector.label, connector.validityDates?join(', '), connector.table.name]
-          links={"Table": "/admin-ui/datasets/${c.dataset.id}/tables/${connector.table.id}"}
-        />
-        <@accordion.accordionGroup>
-          <#assign idHeader = "id" />
-          <#assign labelHeader = "label" />
-          <#assign requiredColumnsHeader = "requiredColumns" />
-          <@accordion.accordion summary="Filters" infoText="${connector.collectAllFilters()?size} entries">
-            <@table.table
-              columns=[idHeader, labelHeader, requiredColumnsHeader]
-              items=prepareTableConnectorItems(connector.collectAllFilters())
-            />
-          </@accordion.accordion>
-          <@accordion.accordion summary="Selects" infoText="${connector.selects?size} entries">
-            <@table.table
-              columns=[idHeader, labelHeader, requiredColumnsHeader]
-              items=prepareTableConnectorItems(connector.selects)
-            />
-          </@accordion.accordion>
-        </@accordion.accordionGroup>
-      </#list>
+      <#assign idHeader = "id" />
+      <#assign labelHeader = "label" />
+      <#assign simpleNameHeader = "simpleName" />
+      <#assign descriptionHeader = "description" />
+      <@table.table
+        columns=[idHeader, labelHeader, simpleNameHeader, descriptionHeader]
+        items=c.connectors
+          ?sort_by("name")
+          ?map( x ->
+            {
+              "${idHeader}": x.id,
+              "${labelHeader}": x.label,
+              "${simpleNameHeader}": x.class.simpleName,
+              "${descriptionHeader}": x.description!""
+            }
+          )
+        link="/admin-ui/datasets/${c.dataset.id}/connectors/"
+      />
     </@accordion.accordion>
   </@accordion.accordionGroup>
 </@layout.layout>
