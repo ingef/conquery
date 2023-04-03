@@ -7,7 +7,7 @@ import type { DragItemQuery } from "../standard-query-editor/types";
 import type { Form, GeneralField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 import type { DynamicFormValues } from "./form/Form";
-import { isFormField } from "./helper";
+import { collectAllFormFields, isFormField } from "./helper";
 
 function transformElementGroupsToApi(elementGroups: FormConceptGroupT[]) {
   const elementGroupsWithAtLeastOneElement = elementGroups
@@ -117,10 +117,19 @@ function transformFieldsToApi(
 const transformQueryToApi = (
   formConfig: Form,
   formValues: DynamicFormValues,
-) => ({
-  type: formConfig.type,
-  values: formValues,
-  ...transformFieldsToApi(formConfig.fields, formValues),
-});
+) => {
+  const formFields = collectAllFormFields(formConfig.fields);
+  const formSpecificValuesToSave = Object.fromEntries(
+    Object.entries(formValues).filter(([k]) =>
+      formFields.some((f) => f.type !== "GROUP" && f.name === k),
+    ),
+  );
+
+  return {
+    type: formConfig.type,
+    values: formSpecificValuesToSave,
+    ...transformFieldsToApi(formConfig.fields, formValues),
+  };
+};
 
 export default transformQueryToApi;

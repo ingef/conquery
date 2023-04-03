@@ -95,7 +95,7 @@ const ConnectedField = <T extends Object>({
     rules: {
       validate: (value) => getErrorForField(t, formField, value) || true,
     },
-    shouldUnregister: true,
+    shouldUnregister: false,
   });
 
   // TODO: REFINE COLORS
