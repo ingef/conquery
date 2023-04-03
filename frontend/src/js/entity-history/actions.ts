@@ -12,7 +12,6 @@ import type {
   DatasetT,
   EntityInfo,
   GetEntityHistoryDefaultParamsResponse,
-  HistorySources,
   ResultUrlWithLabel,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
@@ -264,7 +263,7 @@ export function useUpdateHistorySession() {
     [
       t,
       datasetId,
-      defaultEntityHistoryParams.sources,
+      defaultEntityHistoryParams,
       dispatch,
       getAuthorizedUrl,
       getEntityHistory,
