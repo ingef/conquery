@@ -89,7 +89,6 @@ const FormsNavigation = ({ reset }: Props) => {
           value={options.find((o) => o.value === activeForm) || null}
           onChange={(value) => {
             if (value) {
-              reset();
               onChangeToForm(value.value as string);
             }
           }}
