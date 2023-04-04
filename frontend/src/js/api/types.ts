@@ -543,10 +543,39 @@ export interface EntityInfo {
   semantics: ColumnDescriptionSemantic[];
 }
 
+export interface TimeStratifiedInfoQuarter {
+  quarter: number;
+  values: {
+    [label: string]: string;
+  };
+}
+
+export interface TimeStratifiedInfoYear {
+  year: number;
+  values: {
+    [label: string]: string;
+  };
+  quarters: TimeStratifiedInfoQuarter[];
+}
+
+export interface TimeStratifiedInfo {
+  label: string;
+  description: string | null;
+  columns: {
+    label: string; // Matches `label` with `year.values` and `year.quarters[].values`
+    defaultLabel: string; // Probably not used by us
+    description: string | null;
+    type: ColumnDescriptionKind; // Relevant to show e.g. € for money
+    semantics: ColumnDescriptionSemantic[]; // Probably not used by us
+  }[];
+  years: TimeStratifiedInfoYear[];
+}
+
 export type GetEntityHistoryResponse = {
   resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[];
   infos: EntityInfo[];
+  timeStratifiedInfos: TimeStratifiedInfo[];
 };
 
 export type PostResolveEntitiesResponse = {
