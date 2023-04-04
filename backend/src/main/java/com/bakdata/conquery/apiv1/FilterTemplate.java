@@ -74,6 +74,8 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	@NotEmpty
 	private final String optionValue;
 
+	private final String emptyLabel;
+
 	private int minSuffixLength = 3;
 	private boolean generateSuffixes = true;
 
@@ -102,7 +104,8 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 				value,
 				optionValue,
 				isGenerateSuffixes() ? getMinSuffixLength() : Integer.MAX_VALUE,
-				config.getSearchSplitChars()
+				config.getSearchSplitChars(),
+				emptyLabel
 		));
 
 		return List.of(search);

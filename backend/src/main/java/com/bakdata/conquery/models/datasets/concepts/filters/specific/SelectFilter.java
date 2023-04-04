@@ -39,7 +39,7 @@ import org.jetbrains.annotations.NotNull;
 public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> implements Searchable<FilterId> {
 
 	/**
-	 * user given mapping from the values in the CSVs to shown labels
+	 * user given mapping from the values in the columns to shown labels
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 
@@ -65,6 +65,7 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		f.setCreatable(getSearchReferences().stream().noneMatch(Predicate.not(Searchable::isSearchDisabled)));
 
 		f.setOptions(collectLabels());
+		//TODO FK add empty label
 	}
 
 	@NotNull
