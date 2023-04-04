@@ -180,7 +180,7 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						)
 				));
 
-		assertThat(result.getTimeStratifiedInfos().get(0).complete()).isEqualTo(
+		assertThat(result.getTimeStratifiedInfos().get(0).totals()).isEqualTo(
 				Map.of("Values", "A1 ; B2")
 		);
 
