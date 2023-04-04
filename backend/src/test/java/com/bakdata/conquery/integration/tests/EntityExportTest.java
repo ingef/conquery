@@ -180,6 +180,10 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						)
 				));
 
+		assertThat(result.getTimeStratifiedInfos().get(0).complete()).isEqualTo(
+				Map.of("Values", "A1 ; B2")
+		);
+
 
 		assertThat(result.getInfos()).containsExactly(
 				new EntityPreviewStatus.Info(
@@ -199,6 +203,8 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 						)
 				)
 		);
+
+
 
 
 		assertThat(result.getColumnDescriptions())
