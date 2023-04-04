@@ -39,8 +39,6 @@ import { getErrorForField } from "../validators";
 
 import type { DynamicFormValues } from "./Form";
 
-const BOTTOM_MARGIN = 7;
-
 // TODO: REFINE COLORS
 // const useColorByField = (fieldType: FormField["type"]) => {
 //   const theme = useTheme();
@@ -72,7 +70,6 @@ type Props<T> = T & {
   noLabel?: boolean;
 };
 const FieldContainer = styled("div")<{ noLabel?: boolean }>`
-  margin: 0 0 ${BOTTOM_MARGIN}px;
   padding: ${({ noLabel }) => (noLabel ? "7px 10px" : "2px 10px 7px")};
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -115,7 +112,7 @@ const SxToggleButton = styled(ToggleButton)`
 `;
 
 const Spacer = styled("div")`
-  margin-bottom: ${BOTTOM_MARGIN * 2}px;
+  height: 14px;
 `;
 
 const Group = styled("div")`
@@ -125,11 +122,13 @@ const Group = styled("div")`
 `;
 
 const NestedFields = styled("div")`
-  padding: 12px 10px 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 10px 12px;
   background-color: ${({ theme }) => theme.col.bg};
-  border: 1px solid ${({ theme }) => theme.col.grayLight};
+  border: 1px solid ${({ theme }) => theme.col.gray};
   border-radius: ${({ theme }) => theme.borderRadius};
-  margin-bottom: ${BOTTOM_MARGIN * 2}px;
 `;
 
 interface PropsT {
@@ -374,7 +373,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           <Group
             style={{
               display: (field.style && field.style.display) || "flex",
-              gap: field.style?.display === "grid" ? "0 12px" : "0 8px",
+              gap: field.style?.display === "grid" ? "7px 12px" : "7px 8px",
               gridTemplateColumns: `repeat(${
                 field.style?.gridColumns || 1
               }, 1fr)`,

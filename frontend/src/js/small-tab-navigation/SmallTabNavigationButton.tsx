@@ -21,10 +21,10 @@ const Button = styled("button")<{
   border: 0;
   background-color: transparent;
   margin: 0 2px;
-  height: 26px;
+  height: ${({ size }) => (size === "L" ? "30px" : "26px")};
   padding: ${({ size }) => (size === "L" ? "0px 6px" : "0px 3px")};
   font-size: ${({ theme, size }) =>
-    size === "L" ? theme.font.sm : theme.font.xs};
+    size === "L" ? theme.font.md : theme.font.xs};
 
   ${({ size }) =>
     size === "M" &&

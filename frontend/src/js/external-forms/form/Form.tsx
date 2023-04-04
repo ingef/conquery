@@ -12,6 +12,9 @@ import Field from "./Field";
 
 const FormContent = styled("div")`
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 `;
 
 const SxFormHeader = styled(FormHeader)`

@@ -4,7 +4,7 @@ import type { ComponentProps } from "react";
 import SmallTabNavigation from "../../small-tab-navigation/SmallTabNavigation";
 
 const SxSmallTabNavigation = styled(SmallTabNavigation)`
-  padding-top: 3px;
+  padding-top: 8px;
   padding-left: 10px;
 `;
 
