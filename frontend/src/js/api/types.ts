@@ -564,7 +564,7 @@ export interface TimeStratifiedInfo {
     label: string; // Matches `label` with `year.values` and `year.quarters[].values`
     defaultLabel: string; // Probably not used by us
     description: string | null;
-    type: ColumnDescriptionKind; // Probably not used by us
+    type: ColumnDescriptionKind; // Relevant to show e.g. € for money
     semantics: ColumnDescriptionSemantic[]; // Probably not used by us
   }[];
   years: TimeStratifiedInfoYear[];
