@@ -162,14 +162,26 @@ export default function mockApi(app: Application) {
             JSON.stringify({
               id: 1,
               status: "DONE",
+              label: "Test result",
               numberOfResults: 5,
-              resultUrls: [
-                `/api/results/results.xlsx`,
-                `/api/results/results.csv`,
+              resultUrls: (dice > 0.85) ? [
+                {
+                  label: "XLSX",
+                  url: "/api/results/results.xlsx",
+                },
+                {
+                  label: "CSV",
+                  url: "/api/results/results.csv",
+                }
+              ] : [
+                {
+                  label: "Some File with a long label and an exotic file type, which the frontend probably never heard of",
+                  url: "http://localhost:8080/api/result/csv/51cd95fd-90b2-4573-aab5-11846126427b.blobby",
+                }
               ],
               columnDescriptions: [
                 {
-                  label: "Money Range",
+                  label: "Money Range", 
                   selectId: null,
                   type: "MONEY",
                 },
@@ -271,7 +283,21 @@ export default function mockApi(app: Application) {
             shared: Math.random() < 0.8,
             resultUrls: notExecuted
               ? []
-              : [`/api/results/results.xlsx`, `/api/results/results.csv`],
+              : [
+                  {
+                    label: "XLSX",
+                    url: "http://localhost:8080/api/result/xlsx/51cd95fd-90b2-4573-aab5-11846126427b.xlsx",
+                  },
+                  {
+                    label: "CSV",
+                    url: "http://localhost:8080/api/result/csv/51cd95fd-90b2-4573-aab5-11846126427b.csv",
+                  },
+                  {
+                    label: "Some File with a long name and an exotic file type",
+                    url: "http://localhost:8080/api/result/csv/51cd95fd-90b2-4573-aab5-11846126427b.blobby",
+                  },
+                ],
+
             ownerName: "System",
             ...(Math.random() > 0.2
               ? { queryType: "CONCEPT_QUERY" }

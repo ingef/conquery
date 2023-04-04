@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ExternalNode<T> extends QPNode {
 
 	private final Table table;
-	private final CDateSet dateUnion = CDateSet.create();
+	private final CDateSet dateUnion = CDateSet.createEmpty();
 
 	@NotEmpty
 	@NonNull
@@ -38,6 +38,11 @@ public class ExternalNode<T> extends QPNode {
 
 	private CDateSet contained;
 	private final Map<String, ConstantValueAggregator<T>> extraAggregators;
+
+	@ToString.Include
+	public Set<Integer> getEntities() {
+		return includedEntities.keySet();
+	}
 
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
@@ -80,7 +85,12 @@ public class ExternalNode<T> extends QPNode {
 
 	@Override
 	public boolean isContained() {
-		return contained != null;
+		/*
+		If the intersection 'dateUnion' is not empty its contained. Otherwise
+		it is only contained, if the initial date set 'contained' was also empty,
+		which means that no date context was provided anyway.
+		 */
+		return !dateUnion.isEmpty() || contained.isEmpty();
 	}
 
 	@Override

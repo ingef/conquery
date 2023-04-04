@@ -8,7 +8,6 @@ import AppRoot from "./AppRoot";
 import GlobalStyles from "./GlobalStyles";
 import type { StateT } from "./app/reducers";
 import { initializeEnvironment, CustomEnvironment } from "./environment";
-import { TabT } from "./pane/types";
 import { makeStore } from "./store";
 
 // TODO: OG image required?
@@ -20,7 +19,7 @@ let store: Store<StateT>;
 const initialState = {};
 
 // Render the App including Hot Module Replacement
-const renderRoot = (tabs: TabT[], theme: Theme) => {
+const renderRoot = (theme: Theme) => {
   store = store || makeStore(initialState);
 
   const root = createRoot(document.getElementById("root")!);
@@ -28,20 +27,18 @@ const renderRoot = (tabs: TabT[], theme: Theme) => {
   return root.render(
     <ThemeProvider theme={theme}>
       <GlobalStyles />
-      <AppRoot store={store} rightTabs={tabs} />
+      <AppRoot store={store} />
     </ThemeProvider>,
   );
 };
 
 export default function conquery({
   theme,
-  tabs,
   customEnvironment,
 }: {
   theme: Theme; // React-Emotion theme, will at some point completely replace sass
-  tabs: TabT[];
   customEnvironment: CustomEnvironment;
 }) {
   initializeEnvironment(customEnvironment);
-  renderRoot(tabs, theme);
+  renderRoot(theme);
 }

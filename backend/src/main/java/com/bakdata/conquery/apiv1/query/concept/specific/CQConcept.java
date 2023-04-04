@@ -42,7 +42,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAg
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
-import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -50,6 +49,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -60,6 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "CONCEPT", base = CQElement.class)
 @Slf4j
 @ToString
+@EqualsAndHashCode(callSuper = true, doNotUseGetters = true)
 public class CQConcept extends CQElement implements NamespacedIdentifiableHolding, ExportForm.DefaultSelectSettable {
 
 	/**
@@ -187,10 +188,12 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			aggregators.addAll(eventDateUnionAggregators);
 
-			final QPNode filtersNode = getConcept().createConceptQuery(context, filters, aggregators, eventDateUnionAggregators);
+			final QPNode
+					conceptSpecificNode =
+					getConcept().createConceptQuery(context, filters, aggregators, eventDateUnionAggregators, selectValidityDateColumn(table));
 
 			// Link up the ExistsAggregators to the node
-			existsAggregators.forEach(agg -> agg.setReference(filtersNode));
+			existsAggregators.forEach(agg -> agg.setReference(conceptSpecificNode));
 
 			// Select if matching secondaryId available
 			final boolean hasSelectedSecondaryId =
@@ -199,11 +202,10 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 						  .filter(Objects::nonNull)
 						  .anyMatch(o -> Objects.equals(context.getSelectedSecondaryId(), o));
 
-			final Column validityDateColumn = selectValidityDateColumn(table);
+
 
 			final ConceptNode node = new ConceptNode(
-					// TODO Don't set validity node, when no validity column exists. See workaround for this and remove it: https://github.com/bakdata/conquery/pull/1362
-					new ValidityDateNode(validityDateColumn, filtersNode),
+					conceptSpecificNode,
 					elements,
 					table,
 					// if the node is excluded, don't pass it into the Node.

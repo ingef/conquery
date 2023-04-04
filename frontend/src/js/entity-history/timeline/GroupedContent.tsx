@@ -2,7 +2,7 @@ import { css, Theme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import NumberFormat from "react-number-format";
+import { NumericFormat } from "react-number-format";
 
 import {
   ColumnDescription,
@@ -137,7 +137,7 @@ const CellWrap = styled("span")`
 const SxConceptName = styled(ConceptName)`
   ${({ theme }) => cellStyles(theme)};
 `;
-const SxNumberFormat = styled(NumberFormat)`
+const SxNumericFormat = styled(NumericFormat)`
   ${({ theme }) => cellStyles(theme)};
 `;
 const Cell = memo(
@@ -177,7 +177,7 @@ const Cell = memo(
 
     if (isMoneyColumn(columnDescription)) {
       return (
-        <SxNumberFormat
+        <SxNumericFormat
           {...currencyConfig}
           displayType="text"
           value={parseInt(cell) / 100}

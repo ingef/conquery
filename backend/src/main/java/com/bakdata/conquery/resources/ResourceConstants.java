@@ -31,11 +31,17 @@ public class ResourceConstants {
 	public static final String SEARCH_INDEX_ID = "searchIndexId";
 	public static final String ADMIN_SERVLET_PATH = "admin";
 	public static final String ADMIN_UI_SERVLET_PATH = "admin-ui";
+	public static final String ADMIN_ASSETS_PATH = "assets";
 
 	public static final String FILE_EXTENTION_ARROW_FILE = "arrf";
 	public static final String FILE_EXTENTION_ARROW_STREAM = "arrs";
 	public static final String FILE_EXTENTION_PARQUET = "parquet";
-	
+
+	public static final String FILE_EXTENTION_CSV = "csv";
+
+	public static final String FILE_EXTENTION_XLSX = "xlsx";
+
+
 	/**
 	 * Method to generate a data-model of this class's static members so that they
 	 * are accessible from within a freemarker template.

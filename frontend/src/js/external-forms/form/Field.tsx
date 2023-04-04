@@ -12,6 +12,7 @@ import { useTranslation } from "react-i18next";
 import type { SelectOptionT } from "../../api/types";
 import type { DateStringMinMax } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
+import { useDatasetId } from "../../dataset/selectors";
 import type { Language } from "../../localization/useActiveLang";
 import { nodeIsInvalid } from "../../model/node";
 import type { DragItemQuery } from "../../standard-query-editor/types";
@@ -73,9 +74,9 @@ type Props<T> = T & {
 const FieldContainer = styled("div")<{ noLabel?: boolean }>`
   margin: 0 0 ${BOTTOM_MARGIN}px;
   padding: ${({ noLabel }) => (noLabel ? "7px 10px" : "2px 10px 7px")};
-  background-color: ${({ theme }) => theme.col.bg};
-  border-radius: 3px;
-  box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.2);
+  background-color: white;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  border: 1px solid ${({ theme }) => theme.col.grayLight};
 `;
 const ConnectedField = <T extends Object>({
   children,
@@ -125,9 +126,9 @@ const Group = styled("div")`
 
 const NestedFields = styled("div")`
   padding: 12px 10px 5px;
-  box-shadow: inset 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
   background-color: ${({ theme }) => theme.col.bg};
-  border-radius: 5px;
+  border: 1px solid ${({ theme }) => theme.col.grayLight};
+  border-radius: ${({ theme }) => theme.borderRadius};
   margin-bottom: ${BOTTOM_MARGIN * 2}px;
 `;
 
@@ -149,6 +150,7 @@ const setValueConfig = {
 };
 
 const Field = ({ field, ...commonProps }: PropsT) => {
+  const datasetId = useDatasetId();
   const { formType, optional, locale, availableDatasets, setValue, control } =
     commonProps;
   const { t } = useTranslation();
@@ -335,7 +337,10 @@ const Field = ({ field, ...commonProps }: PropsT) => {
       );
     case "DATASET_SELECT":
       const datasetDefaultValue =
-        availableDatasets.length > 0 ? availableDatasets[0] : null;
+        availableDatasets.length > 0
+          ? availableDatasets.find((opt) => opt.value === datasetId) ||
+            availableDatasets[0]
+          : null;
 
       return (
         <ConnectedField

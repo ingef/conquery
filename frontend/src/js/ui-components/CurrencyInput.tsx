@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
 import { FC, useState, useEffect } from "react";
-import NumberFormat from "react-number-format";
+import { NumericFormat } from "react-number-format";
 
 import type { CurrencyConfigT } from "../api/types";
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
 
-const SxNumberFormat = styled(NumberFormat)<{ large?: boolean }>`
+const SxNumberFormat = styled(NumericFormat)<{ large?: boolean }>`
   outline: 0;
   min-width: 170px;
 

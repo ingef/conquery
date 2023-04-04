@@ -6,7 +6,12 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
-import type { EntityInfo, HistorySources, SelectOptionT } from "../api/types";
+import type {
+  EntityInfo,
+  HistorySources,
+  ResultUrlWithLabel,
+  SelectOptionT,
+} from "../api/types";
 import type { StateT } from "../app/reducers";
 import ErrorFallback from "../error-fallback/ErrorFallback";
 import DownloadResultsDropdownButton from "../query-runner/DownloadResultsDropdownButton";
@@ -106,13 +111,13 @@ export const History = () => {
   const currentEntityInfos = useSelector<StateT, EntityInfo[]>(
     (state) => state.entityHistory.currentEntityInfos,
   );
-  const resultUrls = useSelector<StateT, string[]>(
+  const resultUrls = useSelector<StateT, ResultUrlWithLabel[]>(
     (state) => state.entityHistory.resultUrls,
   );
 
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
 
-  useHotkeys("shift+option+h", () => {
+  useHotkeys("shift+alt+h", () => {
     setShowAdvancedControls((v) => !v);
   });
 

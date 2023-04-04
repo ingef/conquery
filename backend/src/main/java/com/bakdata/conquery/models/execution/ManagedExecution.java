@@ -16,9 +16,9 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.ExecutionStatus;
-import com.bakdata.conquery.apiv1.FullExecutionStatus;
-import com.bakdata.conquery.apiv1.OverviewExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
@@ -52,6 +52,7 @@ import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -66,6 +67,7 @@ import org.apache.shiro.authz.Permission;
 @Slf4j
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@EqualsAndHashCode(callSuper = false)
 public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> implements Taggable, Shareable, Labelable, Owned, Visitable {
 
 	/**
@@ -94,28 +96,38 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	// we don't want to store or send query results or other result metadata
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient ExecutionState state = ExecutionState.NEW;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient CountDownLatch execution;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient LocalDateTime startTime;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient LocalDateTime finishTime;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient ConqueryErrorInfo error;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient Float progress;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient boolean initialized = false;
 
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient Namespace namespace;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
 
 	@JsonIgnore
 	@Getter(AccessLevel.PROTECTED)
 	@NotNull
+	@EqualsAndHashCode.Exclude
 	private final MetaStorage storage;
 
 	protected ManagedExecution(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {

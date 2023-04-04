@@ -82,8 +82,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 		final IndexService indexService = new IndexService(conquery.getConfig().getCsv().createCsvParserSettings());
 
-		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri()
-																				   .toURL(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService));
+		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
 															, AdminDatasetResource.class, "updateMatchingStats")
@@ -121,7 +120,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 													 ), MediaType.APPLICATION_JSON_TYPE));
 
 			final ConceptsProcessor.AutoCompleteResult resolvedFromCsv = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
-			assertThat(resolvedFromCsv.getValues().stream().map(FrontendValue::getValue)).containsExactly("a", "aaa", "aab", "baaa");
+			assertThat(resolvedFromCsv.values().stream().map(FrontendValue::getValue)).containsExactly("a", "aaa", "aab", "baaa");
 		}
 
 
@@ -138,7 +137,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 			final ConceptsProcessor.AutoCompleteResult resolvedFromValues = fromCsvResponse.readEntity(ConceptsProcessor.AutoCompleteResult.class);
 
 			//check the resolved values
-			assertThat(resolvedFromValues.getValues().stream().map(FrontendValue::getValue))
+			assertThat(resolvedFromValues.values().stream().map(FrontendValue::getValue))
 					.containsExactly("f", "fm");
 		}
 	}

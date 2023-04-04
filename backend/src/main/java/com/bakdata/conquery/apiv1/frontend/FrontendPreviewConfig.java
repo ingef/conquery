@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,6 +18,8 @@ public class FrontendPreviewConfig {
 		private final String name;
 		private final String label;
 	}
+
+	private final CDateRange observationPeriodDefault;
 
 	private final Collection<Labelled> all;
 	@JsonProperty("default")

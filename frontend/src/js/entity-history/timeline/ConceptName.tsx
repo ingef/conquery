@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 
 import { ConceptIdT, DatasetT } from "../../api/types";
@@ -66,7 +67,7 @@ const ConceptName = ({
 
   return (
     <Root title={title} className={className}>
-      <FaIcon icon="folder" active />
+      <FaIcon icon={faFolder} active />
       <span>
         {rootConcept ? `${rootConcept.label} ` : null}
         {conceptName}

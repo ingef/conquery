@@ -13,7 +13,7 @@ describe("Visit Form Editor", () => {
 
     cy.get('[data-test-id="right-pane-container"]').as("formEditor");
 
-    cy.get("@formEditor").contains("Formulare");
+    cy.get("@formEditor").contains("Formular");
     cy.get('[data-test-id="form-select"]').should("be.visible");
   });
 });

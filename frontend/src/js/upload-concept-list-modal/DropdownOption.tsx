@@ -1,5 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
+import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
@@ -53,7 +54,7 @@ export const DropdownOption = memo(
     return (
       <Container>
         <Icon
-          icon="folder"
+          icon={faFolder}
           active={!hasDifferentFilterLabel}
           gray={hasDifferentFilterLabel}
         />

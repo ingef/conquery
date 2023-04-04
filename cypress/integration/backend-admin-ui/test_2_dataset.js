@@ -61,7 +61,8 @@ context("Admin UI Single Dataset", () => {
         });
     });
 
-    describe("Can delete test table and concept", () => {
+    describe("Can delete test concept and table", () => {
+        beforeEach(() => visitAdminUI(`datasets/${testDSID}`));
 
         it("Can delete test concept", () => {
             cy.get('[data-test-id="accordion-Concepts"]').click();
@@ -74,7 +75,6 @@ context("Admin UI Single Dataset", () => {
             cy.get(`[data-test-id="delete-btn-table-${testDSID}.table"]`).click({force: true});
             cy.get(`[data-test-id="delete-btn-${testDSID}.table"]`).should('not.exist');
         });
-
     });
 
     describe("Delete the test dataset", () => {

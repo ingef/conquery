@@ -160,7 +160,7 @@ public class CDateSetTest {
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("arguments")
 	public void testAddMerging(String expected, CDateRange[] ranges) {
-		CDateSet set = CDateSet.create();
+		CDateSet set = CDateSet.createEmpty();
 		for (CDateRange range : ranges) {
 			set.add(range);
 		}
@@ -169,7 +169,7 @@ public class CDateSetTest {
 
 	@Test
 	public void testRemove() {
-		CDateSet set = CDateSet.create();
+		CDateSet set = CDateSet.createEmpty();
 		set.add(CDateRange.of(
 				LocalDate.of(2000, 1, 1),
 				LocalDate.of(2000, 12, 31)
@@ -183,12 +183,12 @@ public class CDateSetTest {
 
 	@Test
 	public void testRetain() {
-		CDateSet set = CDateSet.create();
+		CDateSet set = CDateSet.createEmpty();
 		set.add(CDateRange.of(
 				LocalDate.of(2000, 1, 1),
 				LocalDate.of(2000, 12, 31)
 		));
-		CDateSet retain = CDateSet.create();
+		CDateSet retain = CDateSet.createEmpty();
 		retain.add(CDateRange.of(
 				LocalDate.of(2000, 6, 1),
 				LocalDate.of(2000, 6, 20)
@@ -200,7 +200,7 @@ public class CDateSetTest {
 
 	@Test
 	public void testMaskedAddClosedMaskClosed() {
-		CDateSet set = CDateSet.create();
+		CDateSet set = CDateSet.createEmpty();
 		CDateSet mask = CDateSet.create(CDateRange.of(-10, 10));
 
 		set.maskedAdd(CDateRange.of(-5, 5), mask);
@@ -210,12 +210,12 @@ public class CDateSetTest {
 
 	@Test
 	public void testMaskedAddOpenMaskWithTruncateMax() {
-		final CDateSet mask = CDateSet.create();
+		final CDateSet mask = CDateSet.createEmpty();
 
 		mask.add(CDateRange.of(-10, -5));
 		mask.add(CDateRange.atLeast(-1));
 
-		final CDateSet set = CDateSet.create();
+		final CDateSet set = CDateSet.createEmpty();
 
 		set.maskedAdd(CDateRange.of(-5, 7), mask, 4);
 
@@ -224,7 +224,7 @@ public class CDateSetTest {
 
 	@Test
 	public void testMaskedTEST() {
-		CDateSet set = CDateSet.create();
+		CDateSet set = CDateSet.createEmpty();
 		CDateSet mask = CDateSet.create(CDateRange.of(-10, 10));
 
 		set.maskedAdd(CDateRange.of(-5, 5), mask);
@@ -234,7 +234,7 @@ public class CDateSetTest {
 
 	@Test
 	public void testMaskedAddClosedMaskAtMost() {
-		CDateSet set = CDateSet.create();
+		CDateSet set = CDateSet.createEmpty();
 
 		CDateSet mask1 = CDateSet.create(CDateRange.of(10, 19));
 
@@ -248,7 +248,7 @@ public class CDateSetTest {
 
 	@Test
 	public void testMaskedAddNoIntersection() {
-		CDateSet set = CDateSet.create();
+		CDateSet set = CDateSet.createEmpty();
 		CDateSet mask = CDateSet.create(CDateRange.atLeast(4));
 
 		set.maskedAdd(CDateRange.of(-5, 5), mask);
@@ -258,7 +258,7 @@ public class CDateSetTest {
 
 	@Test
 	public void testMaskedAddAtMostMaskClosed() {
-		CDateSet set = CDateSet.create();
+		CDateSet set = CDateSet.createEmpty();
 		CDateSet mask = CDateSet.create(CDateRange.of(-10, 10));
 
 		set.maskedAdd(CDateRange.atMost(5), mask);
@@ -268,7 +268,7 @@ public class CDateSetTest {
 
 	@Test
 	public void testMaskedAddAtLeastMaskClosed() {
-		CDateSet set = CDateSet.create();
+		CDateSet set = CDateSet.createEmpty();
 		CDateSet mask = CDateSet.create(CDateRange.of(-10, 10));
 
 		set.maskedAdd(CDateRange.atLeast(5), mask);
@@ -278,7 +278,7 @@ public class CDateSetTest {
 
 	@Test
 	public void testMaskedAddAtLeastMaskMultiple() {
-		CDateSet set = CDateSet.create();
+		CDateSet set = CDateSet.createEmpty();
 		CDateSet mask = CDateSet.create(List.of(CDateRange.of(-10, -5), CDateRange.of(1, 10), CDateRange.atLeast(30)));
 
 		set.maskedAdd(CDateRange.atLeast(5), mask);

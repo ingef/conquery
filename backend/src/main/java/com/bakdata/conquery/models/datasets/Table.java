@@ -38,11 +38,25 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	@ValidationMethod(message = "More than one column map to the same secondaryId")
 	@JsonIgnore
 	public boolean isDistinctSecondaryIds() {
-		Set<SecondaryIdDescription> secondaryIds = new HashSet<>();
+		final Set<SecondaryIdDescription> secondaryIds = new HashSet<>();
 		for (Column column : columns) {
-			SecondaryIdDescription secondaryId = column.getSecondaryId();
+			final SecondaryIdDescription secondaryId = column.getSecondaryId();
 			if (secondaryId != null && !secondaryIds.add(secondaryId)) {
 				log.error("{} is duplicated", secondaryId);
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@ValidationMethod(message = "Column labels must be unique.")
+	@JsonIgnore
+	public boolean isDistinctLabels() {
+		final Set<String> labels = new HashSet<>();
+
+		for (Column column : columns) {
+			if (!labels.add(column.getLabel())) {
+				log.error("Label `{}` for `{}`  is duplicated", column.getLabel(), column.getId());
 				return false;
 			}
 		}
@@ -55,10 +69,7 @@ public class Table extends Labeled<TableId> implements NamespacedIdentifiable<Ta
 	}
 
 	public Stream<Import> findImports(NamespacedStorage storage) {
-		return storage
-				.getAllImports()
-				.stream()
-				.filter(imp -> imp.getTable().equals(this));
+		return storage.getAllImports().stream().filter(imp -> imp.getTable().equals(this));
 	}
 
 	public Column getColumnByName(@NotNull String columnName) {

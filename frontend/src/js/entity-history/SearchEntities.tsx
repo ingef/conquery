@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
@@ -31,11 +32,11 @@ export const SearchEntites = ({
 }: {
   onLoad: (payload: LoadingPayload) => void;
 }) => {
-  const searchConcept = useSelector<StateT, ConceptT | null>((state) =>
-    state.entityHistory.defaultParams.searchConcept
-      ? getConceptById(state.entityHistory.defaultParams.searchConcept)
-      : null,
-  );
+  const searchConcept = useSelector<StateT, ConceptT | undefined>((state) => {
+    const searchConceptId = state.entityHistory.defaultParams.searchConcept;
+
+    return searchConceptId ? getConceptById(searchConceptId) : undefined;
+  });
 
   if (
     !searchConcept ||
@@ -254,7 +255,7 @@ export const SearchEntitiesComponent = ({
         onClick={onSubmitSearch}
         disabled={!hasFiltersSet || loading}
       >
-        {loading && <FaIcon white icon="spinner" />}
+        {loading && <FaIcon white icon={faSpinner} />}
         {t("history.searchEntitiesButton")}
       </SxPrimaryButton>
     </Root>

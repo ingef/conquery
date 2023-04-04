@@ -39,6 +39,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -46,6 +47,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "EXPORT_FORM", base = QueryDescription.class)
+@EqualsAndHashCode(callSuper = true)
 public class ExportForm extends Form implements InternalForm {
 
 	@NotNull
@@ -53,6 +55,7 @@ public class ExportForm extends Form implements InternalForm {
 	private ManagedExecutionId queryGroupId;
 
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private ManagedQuery queryGroup;
 
 	@NotNull
@@ -61,6 +64,7 @@ public class ExportForm extends Form implements InternalForm {
 	private Mode timeMode;
 
 	@NotEmpty
+	@Valid
 	private List<CQElement> features = ImmutableList.of();
 
 	@NotNull
@@ -70,8 +74,10 @@ public class ExportForm extends Form implements InternalForm {
 	private boolean alsoCreateCoarserSubdivisions = false;
 
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private Query prerequisite;
 	@JsonIgnore
+	@EqualsAndHashCode.Exclude
 	private List<Resolution> resolvedResolutions;
 	@Override
 	public void visit(Consumer<Visitable> visitor) {

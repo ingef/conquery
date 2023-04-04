@@ -224,6 +224,7 @@ public class FrontEndConceptBuilder {
 		if(con.getValidityDates().size() > 1) {
 			result.setDateColumn(
 					new FrontendValidityDate(
+							con.getValidityDatesDescription(),
 							null,
 							con
 									.getValidityDates()

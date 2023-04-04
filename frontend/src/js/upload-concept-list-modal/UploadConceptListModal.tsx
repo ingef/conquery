@@ -1,5 +1,10 @@
 import styled from "@emotion/styled";
 import {
+  faCheckCircle,
+  faExclamationCircle,
+  faSpinner,
+} from "@fortawesome/free-solid-svg-icons";
+import {
   FormEvent,
   useState,
   useEffect,
@@ -515,17 +520,17 @@ const UploadConceptListModal = ({
           <Section>
             {error && (
               <Row>
-                <ErrorIcon icon="exclamation-circle" />
+                <ErrorIcon icon={faExclamationCircle} />
                 {t("uploadConceptListModal.error")}
               </Row>
             )}
-            {loading && <CenteredIcon icon="spinner" />}
+            {loading && <CenteredIcon icon={faSpinner} />}
             {(!!resolvedConcepts || !!resolvedFilters) && (
               <>
                 {hasResolvedItems && (
                   <form onSubmit={onSubmit}>
                     <Msg>
-                      <SuccessIcon icon="check-circle" />
+                      <SuccessIcon icon={faCheckCircle} />
                       {t("uploadConceptListModal.resolvedCodes", {
                         count: resolvedItemsCount,
                       })}
@@ -549,7 +554,7 @@ const UploadConceptListModal = ({
                 {hasUnresolvedItems && (
                   <div>
                     <Msg>
-                      <ErrorIcon icon="exclamation-circle" />
+                      <ErrorIcon icon={faExclamationCircle} />
                       <span>
                         {t("uploadConceptListModal.unknownCodes", {
                           count: unresolvedItemsCount,

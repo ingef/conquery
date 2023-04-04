@@ -264,7 +264,7 @@
   },
   "externalForms": {
     "manualButton": "Hilfe zum Formular im Handbuch öffnen",
-    "forms": "Formulare",
+    "forms": "Formular",
     "formValidation": {
       "mustBePositiveNumber": "Muss positive Zahl sein",
       "isRequired": "Erforderlich",
