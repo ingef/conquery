@@ -1983,8 +1983,7 @@ components:
                       - $ref: "#/components/schemas/ColumnDescription"
                       - description: "Description of the columns of totals, years and quarters."
                   totals:
-                    totals:
-                      description: "Values for the entire observation period."
+                    description: "Values for the entire observation period."
                     type: object
                     additionalProperties:
                       type: string
