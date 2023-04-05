@@ -9,6 +9,7 @@
     ?sort_by("name")
     ?map(x -> {
       "${idHeader}": x.id,
+      "name": x.name,
       "${labelHeader}": x.label,
       "${requiredColumnsHeader}": x.requiredColumns?sort_by("name")?join(', ')
     })
