@@ -74,7 +74,7 @@
       </div>
     </div>
     <!-- Dataset Actions -->
-    <div class="d-flex flex-column" style="gap: 0.5rem;">
+    <div class="d-flex flex-column" style="flex-basis: 15rem; gap: 0.5rem;">
       <button 
         type="button"
         class="btn btn-secondary"
