@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -210,6 +211,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			switch (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX])) {
 				case YEARS -> yearLines.put(year, line);
 				case QUARTERS -> quarterLines.computeIfAbsent(year, (ignored) -> new HashMap<>(4)).put(quarter, line);
+				//TODO FK: case complete
 				default -> throw new IllegalStateException("Query may only have modes for Quarter and/or Year.");
 			}
 		}
@@ -273,7 +275,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 													   .defaultLabel(desc.label())
 													   .type(info.getType().typeInfo())
 													   .semantics(info.getSemantics())
-													   .description(desc.description())
+													   .description(Objects.requireNonNullElse(desc.description(), selectResultInfo.getDescription()))
 													   .build());
 			}
 		}
