@@ -35,23 +35,25 @@ context("Admin UI Single Dataset", () => {
     describe("Can upload test table and concept", () => {
       beforeEach(() => { visitAdminUI(`datasets/${testDSID}`); });
 
-      it("Can upload test table", () => {
+      it("Can upload table", () => {
+        cy.intercept('/admin/datasets/*/tables').as('apiCall');
         cy.get('[data-test-id="upload-select"]').select('Table JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.table.json');
         cy.get('[data-test-id="upload-btn"]').click();
-        cy.reload();
+        cy.wait('@apiCall').reload();
         cy.get('[data-test-id="accordion-Tables"]').contains('td', `table`);
       });
 
       it("Can upload concept", () => {
+        cy.intercept('/admin/datasets/*/concepts').as('apiCall');
         cy.get('[data-test-id="upload-select"]').select('Concept JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.concept.json');
         cy.get('[data-test-id="upload-btn"]').click();
-        cy.reload();
+        cy.wait('@apiCall').reload();
         cy.get('[data-test-id="accordion-Concepts"]').contains('td', `concept1`);
       });
 
-      it("Can replace test concept", () => {
+      it("Can replace concept", () => {
         cy.intercept('/admin/datasets/*/concepts*').as('apiCall');
         cy.get('[data-test-id="upload-select"]').select('Concept JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.concept.json');
