@@ -12,9 +12,6 @@ context("Admin UI Single Dataset", () => {
         cy.get('[data-test-id="entity-name"]').type(testDSLabel);
         cy.get('[data-test-id="entity-id"]').type(testDSID);
         cy.get('[data-test-id="create-dataset-btn"]').click().as('createDataset');
-      });
-
-      it("Can see the new dataset", () => {
         cy.contains(testDSID);
       });
     });
@@ -42,16 +39,16 @@ context("Admin UI Single Dataset", () => {
         cy.get('[data-test-id="upload-select"]').select('Table JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.table.json');
         cy.get('[data-test-id="upload-btn"]').click();
-      });
-
-      it("Is new table visible", () => {
-          cy.get('[data-test-id="accordion-Tables"]').contains('td', `table`);
+        cy.reload();
+        cy.get('[data-test-id="accordion-Tables"]').contains('td', `table`);
       });
 
       it("Can upload concept", () => {
         cy.get('[data-test-id="upload-select"]').select('Concept JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.concept.json');
         cy.get('[data-test-id="upload-btn"]').click();
+        cy.reload();
+        cy.get('[data-test-id="accordion-Concepts"]').contains('td', `concept1`);
       });
 
       it("Can replace test concept", () => {
@@ -63,9 +60,7 @@ context("Admin UI Single Dataset", () => {
         cy.get(`[data-test-id="toast-custom-button"]`).click();
         cy.wait('@apiCall');
         cy.get('[data-test-id="toast"]').contains('The file has been posted successfully');
-      });
-
-      it("Is new concept visible", () => {
+        cy.reload();
         cy.get('[data-test-id="accordion-Concepts"]').contains('td', `concept1`);
       });
     });
@@ -76,8 +71,11 @@ context("Admin UI Single Dataset", () => {
       it("Can use page components", () => {
         cy.contains('Table table');
         cy.get('[data-test-id="accordion-Tags"]').click();
+        cy.hash().should('eq', '#Tags');
         cy.get('[data-test-id="accordion-Concepts"]').click();
+        cy.hash().should('eq', '#Concepts');
         cy.get('[data-test-id="accordion-Columns"]').click();
+        cy.hash().should('eq', '#Columns');
       });
     });
 
@@ -87,7 +85,9 @@ context("Admin UI Single Dataset", () => {
       it("Can use page components", () => {
         cy.contains('Concept Concept1');
         cy.get('[data-test-id="accordion-Selects"]').first().click();
+        cy.hash().should('eq', '#Selects');
         cy.get('[data-test-id="accordion-Connectors"]').click();
+        cy.hash().should('eq', '#Connectors');
       });
     });
 
@@ -153,18 +153,17 @@ context("Admin UI Single Dataset", () => {
         cy.get(`[data-test-id="delete-btn-table-${testDSID}.table"]`).should('not.exist');
       });
 
-      it("Reupload test data", () => {
-        // upload table
+      it("Can force delete test table", () => {
+        // reupload table and concept
         cy.get('[data-test-id="upload-select"]').select('Table JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.table.json');
         cy.get('[data-test-id="upload-btn"]').click();
-        // upload concept
+        cy.reload();
         cy.get('[data-test-id="upload-select"]').select('Concept JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.concept.json');
         cy.get('[data-test-id="upload-btn"]').click();
-      });
+        cy.reload();
 
-      it("Can force delete test table", () => {
         cy.get('[data-test-id="accordion-Tables"]').click();
         cy.get(`[data-test-id="delete-btn-table-${testDSID}.table"]`).click({force: true});
         cy.get(`[data-test-id="toast-custom-button"]`).click({force: true});
