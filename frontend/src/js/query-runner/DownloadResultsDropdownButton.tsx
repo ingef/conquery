@@ -23,6 +23,8 @@ const List = styled("div")`
   flex-direction: column;
   gap: 1px;
   padding: 8px;
+  overflow-y: auto;
+  max-height: 60vh;
 `;
 
 const SxDownloadButton = styled(DownloadButton)`
