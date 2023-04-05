@@ -60,7 +60,7 @@ public class FrontendConfig {
 
 	@Data
 	public static class CurrencyConfig {
-		private String suffix = "€";
+		private String suffix = " €";
 		private String thousandSeparator = ".";
 		private String decimalSeparator = ",";
 		private int decimalScale = 2;

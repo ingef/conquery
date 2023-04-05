@@ -20,7 +20,7 @@ const initialState: StartupStateT = {
       ids: [],
     },
     currency: {
-      suffix: "€",
+      suffix: " €",
       thousandSeparator: ".",
       decimalSeparator: ",",
       decimalScale: 2,
