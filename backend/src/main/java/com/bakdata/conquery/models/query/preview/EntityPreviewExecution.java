@@ -155,13 +155,16 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
 			// Group lines by year and quarter.
-			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, query.getResultInfos(), printSettings, select2desc);
+			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings);
+			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, lineTransformer);
+
+			final Object[] completeResult = getCompleteLine(entityResult);
 
 			// get descriptions, but drop everything that isn't a select result as the rest is already structured
 			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
 
-			final EntityPreviewStatus.TimeStratifiedInfos infos =
-					new EntityPreviewStatus.TimeStratifiedInfos(description.label(), description.description(), columnDescriptors, yearEntries);
+
+			final EntityPreviewStatus.TimeStratifiedInfos infos = new EntityPreviewStatus.TimeStratifiedInfos(description.label(), description.description(), columnDescriptors, lineTransformer.apply(completeResult), yearEntries);
 
 			timeStratifiedInfos.add(infos);
 		}
@@ -170,13 +173,9 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	}
 
 	@NotNull
-	private List<EntityPreviewStatus.YearEntry> createYearEntries(EntityResult entityResult, List<ResultInfo> resultInfos, PrintSettings printSettings, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc) {
-		final Map<Integer, Object[]> yearLines = new HashMap<>();
-		final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
-
-		groupLinesForResolutions(entityResult, yearLines, quarterLines);
-
-		final Function<Object[], Map<String, Object>> lineTransformer = createLineTransformer(resultInfos, select2desc, printSettings);
+	private List<EntityPreviewStatus.YearEntry> createYearEntries(EntityResult entityResult, Function<Object[], Map<String, Object>> lineTransformer) {
+		final Map<Integer, Object[]> yearLines = getYearLines(entityResult);
+		final Map<Integer, Map<Integer, Object[]>> quarterLines = getQuarterLines(entityResult);
 
 		final List<EntityPreviewStatus.YearEntry> yearEntries = new ArrayList<>();
 
@@ -196,10 +195,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		return yearEntries;
 	}
 
-	/**
-	 * Query contains both YEARS and QUARTERS lines: Group them.
-	 */
-	private static void groupLinesForResolutions(EntityResult entityResult, Map<Integer, Object[]> yearLines, Map<Integer, Map<Integer, Object[]>> quarterLines) {
+	private Object[] getCompleteLine(EntityResult entityResult) {
 		for (Object[] line : entityResult.listResultLines()) {
 
 			// Since we know the dates are always aligned we need to only respect their starts.
@@ -208,20 +204,70 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			final int year = date.getYear();
 			final int quarter = QuarterUtils.getQuarter(date);
 
-			switch (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX])) {
-				case YEARS -> yearLines.put(year, line);
-				case QUARTERS -> quarterLines.computeIfAbsent(year, (ignored) -> new HashMap<>(4)).put(quarter, line);
-				//TODO FK: case complete
-				default -> throw new IllegalStateException("Query may only have modes for Quarter and/or Year.");
+			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) == Resolution.COMPLETE) {
+				return line;
 			}
 		}
+
+		throw new IllegalStateException("Result has no row for COMPLETE");
+	}
+
+	/**
+	 * Query contains both YEARS and QUARTERS lines: Group them.
+	 *
+	 * @return
+	 */
+	private static Map<Integer, Map<Integer, Object[]>> getQuarterLines(EntityResult entityResult) {
+		final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
+
+		for (Object[] line : entityResult.listResultLines()) {
+			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) != Resolution.QUARTERS) {
+				continue;
+			}
+
+			// Since we know the dates are always aligned we need to only respect their starts.
+			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
+
+			final int year = date.getYear();
+			final int quarter = QuarterUtils.getQuarter(date);
+
+			quarterLines.computeIfAbsent(year, (ignored) -> new HashMap<>(4)).put(quarter, line);
+		}
+
+		return quarterLines;
+	}
+
+	/**
+	 * Query contains both YEARS and QUARTERS lines: Group them.
+	 *
+	 * @return
+	 */
+	private static Map<Integer, Object[]> getYearLines(EntityResult entityResult) {
+
+		final Map<Integer, Object[]> yearLines = new HashMap<>();
+
+		for (Object[] line : entityResult.listResultLines()) {
+
+			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) != Resolution.YEARS) {
+				continue;
+			}
+
+			// Since we know the dates are always aligned we need to only respect their starts.
+			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
+
+			final int year = date.getYear();
+
+			yearLines.put(year, line);
+		}
+
+		return yearLines;
 	}
 
 	/**
 	 * Creates a transformer printing lines, transformed into a Map of label->value.
 	 * Null values are omitted.
 	 */
-	private static Function<Object[], Map<String, Object>> createLineTransformer(List<ResultInfo> resultInfos, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings) {
+	private static Function<Object[], Map<String, Object>> createLineToMapTransformer(List<ResultInfo> resultInfos, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings) {
 
 
 		final int size = resultInfos.size();

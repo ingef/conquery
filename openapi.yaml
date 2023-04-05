@@ -1981,7 +1981,12 @@ components:
                   columns:
                     allOf:
                       - $ref: "#/components/schemas/ColumnDescription"
-                      - description: "Description of the columns of years and quarters."
+                      - description: "Description of the columns of totals, years and quarters."
+                  totals:
+                    description: "Values for the entire observation period."
+                    type: object
+                    additionalProperties:
+                      type: string
                   years:
                     description: "One entry for each year, containing the values aggregated for each year and its quarters."
                     type: array
