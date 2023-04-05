@@ -48,7 +48,7 @@ context("Admin UI Single Dataset", () => {
           cy.get('[data-test-id="accordion-Tables"]').contains('td', `table`);
       });
 
-      it("Can upload concept table", () => {
+      it("Can upload concept", () => {
         cy.get('[data-test-id="upload-select"]').select('Concept JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.concept.json');
         cy.get('[data-test-id="upload-btn"]').click();
