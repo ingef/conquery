@@ -154,7 +154,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
 
 			// Group lines by year and quarter.
-			final Function<Object[], Map<String, Object>> lineTransformer = createLineTransformer(query.getResultInfos(), select2desc, printSettings);
+			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings);
 			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, lineTransformer);
 
 			final Object[] completeResult = getCompleteLine(entityResult);
@@ -220,6 +220,9 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		final Map<Integer, Map<Integer, Object[]>> quarterLines = new HashMap<>();
 
 		for (Object[] line : entityResult.listResultLines()) {
+			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) != Resolution.QUARTERS) {
+				continue;
+			}
 
 			// Since we know the dates are always aligned we need to only respect their starts.
 			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
@@ -227,9 +230,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 			final int year = date.getYear();
 			final int quarter = QuarterUtils.getQuarter(date);
 
-			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) == Resolution.QUARTERS) {
-				quarterLines.computeIfAbsent(year, (ignored) -> new HashMap<>(4)).put(quarter, line);
-			}
+			quarterLines.computeIfAbsent(year, (ignored) -> new HashMap<>(4)).put(quarter, line);
 		}
 
 		return quarterLines;
@@ -246,15 +247,16 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		for (Object[] line : entityResult.listResultLines()) {
 
+			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) != Resolution.YEARS) {
+				continue;
+			}
+
 			// Since we know the dates are always aligned we need to only respect their starts.
 			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
 
 			final int year = date.getYear();
-			final int quarter = QuarterUtils.getQuarter(date);
 
-			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) == Resolution.YEARS) {
-				yearLines.put(year, line);
-			}
+			yearLines.put(year, line);
 		}
 
 		return yearLines;
@@ -264,7 +266,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 	 * Creates a transformer printing lines, transformed into a Map of label->value.
 	 * Null values are omitted.
 	 */
-	private static Function<Object[], Map<String, Object>> createLineTransformer(List<ResultInfo> resultInfos, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings) {
+	private static Function<Object[], Map<String, Object>> createLineToMapTransformer(List<ResultInfo> resultInfos, Map<SelectId, PreviewConfig.InfoCardSelect> select2desc, PrintSettings printSettings) {
 
 
 		final int size = resultInfos.size();
