@@ -1864,8 +1864,8 @@ components:
       description: Frontend configuration for the entity-preview.
       type: object
       properties:
-        observationPeriod:
-          $ref: "#/components/schemas/DateRange"
+        observationPeriodMin:
+          $ref: "#/components/schemas/date"
         all:
           description: For frontend, list of sources to show the user. Usually a list of sources that have been tidied up.
           type: array

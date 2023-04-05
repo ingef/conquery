@@ -1,4 +1,10 @@
 import styled from "@emotion/styled";
+import {
+  faEuroSign,
+  faFingerprint,
+  faFolder,
+  faInfo,
+} from "@fortawesome/free-solid-svg-icons";
 import { memo, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -32,22 +38,22 @@ const ContentControl = ({ value, onChange }: Props) => {
     () => [
       {
         key: "money" as const,
-        icon: "euro-sign" as const,
+        icon: faEuroSign,
         tooltip: t("history.content.money"),
       },
       {
         key: "concept" as const,
-        icon: "folder" as const,
+        icon: faFolder,
         tooltip: t("history.content.concept"),
       },
       {
         key: "rest" as const,
-        icon: "info" as const,
+        icon: faInfo,
         tooltip: t("history.content.rest"),
       },
       {
         key: "groupId" as const,
-        icon: "fingerprint" as const,
+        icon: faFingerprint,
         tooltip: t("history.content.fingerprint"),
       },
     ],

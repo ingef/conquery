@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -320,7 +321,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 													   .defaultLabel(desc.label())
 													   .type(info.getType().typeInfo())
 													   .semantics(info.getSemantics())
-													   .description(desc.description())
+													   .description(Objects.requireNonNullElse(desc.description(), selectResultInfo.getDescription()))
 													   .build());
 			}
 		}
