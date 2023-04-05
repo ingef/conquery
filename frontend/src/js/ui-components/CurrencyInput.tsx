@@ -48,7 +48,6 @@ const CurrencyInput: FC<PropsT> = ({
       setNumberFormatValue("");
     }
   }, [value]);
-  console.log("Number Format Value: ", numberFormatValue)
   return (
     <SxNumberFormat
       {...currencyConfig}
