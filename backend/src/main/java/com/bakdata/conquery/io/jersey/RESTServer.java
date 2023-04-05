@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.jersey;
 
-import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.CachingFilter;
@@ -12,11 +11,11 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.auth.web.AuthorizationExceptionMapper;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import io.dropwizard.server.DefaultServerFactory;
+import io.dropwizard.views.ViewRenderExceptionMapper;
 import lombok.experimental.UtilityClass;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -33,6 +32,7 @@ public class RESTServer {
 		jersey.register(new AuthenticationExceptionMapper());
 		jersey.register(new AuthorizationExceptionMapper());
 		jersey.register(JsonValidationExceptionMapper.class);
+		jersey.register(ViewRenderExceptionMapper.class);
 		jersey.register(NoSuchElementExceptionMapper.class);
 		// default Dropwizard's exception mappers
 		jersey.register(new ConqueryErrorExecptionMapper());

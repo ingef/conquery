@@ -17,6 +17,7 @@
 
 	<body>
 		<script src="/assets/jquery-3.3.1/jquery.min.js"></script>
+		<script src="/assets/popper-1.12.9/popper.min.js"></script>
 		<script src="/assets/bootstrap-4.3.1/js/bootstrap.min.js"></script>
 		<script src="/assets/custom/js/script.js"></script>
 
