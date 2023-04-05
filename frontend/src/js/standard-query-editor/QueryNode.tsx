@@ -204,11 +204,9 @@ const QueryNode = ({
         ) {
           return false;
         }
-        const conceptId = item.ids[0];
-        const itemAlreadyInNode = node.ids.includes(conceptId);
-        const itemHasConceptRoot = item.tree === node.tree;
-        return itemHasConceptRoot && !itemAlreadyInNode;
+        return item.tree === node.tree;
       }}
+      highlightDroppable={true}
     >
       <Root
         ref={(instance) => {
