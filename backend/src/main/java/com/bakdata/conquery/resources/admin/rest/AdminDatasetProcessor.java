@@ -188,29 +188,31 @@ public class AdminDatasetProcessor {
 
 	/**
 	 * update a concept of the given dataset.
-	 * Therefore the concept will be deleted first then added
+	 * Therefore, the concept will be deleted first then added
 	 */
 	public synchronized void updateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
 		concept.setDataset(dataset);
 		if (!datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
 			throw new NotFoundException("Can't find the concept in the dataset " + concept.getId());
 		}
-		//deletes the old content of the concept using his id
-		deleteConcept(concept);
 
 		//adds new content of the content
-		addConcept(dataset, concept);
+		addConcept(dataset, concept, true);
 	}
 
 	/**
 	 * Add the concept to the dataset if it does not exist yet
 	 */
-	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
+	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept, boolean force) {
 		concept.setDataset(dataset);
 		ValidatorHelper.failOnError(log, validator.validate(concept));
 
 		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
-			throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
+			if (!force) {
+				throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
+			}
+			deleteConcept(concept);
+			log.info("Force deleted previous concept: {}", concept.getId());
 		}
 		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
 
