@@ -36,13 +36,12 @@ context("Admin UI Single Dataset", () => {
     });
 
     describe("Can upload test table and concept", () => {
-      before(() => { visitAdminUI(`datasets/${testDSID}`); });
+      beforeEach(() => { visitAdminUI(`datasets/${testDSID}`); });
 
       it("Can upload test table", () => {
         cy.get('[data-test-id="upload-select"]').select('Table JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.table.json');
         cy.get('[data-test-id="upload-btn"]').click();
-        cy.wait(3000).reload();
       });
 
       it("Is new table visible", () => {
@@ -53,16 +52,16 @@ context("Admin UI Single Dataset", () => {
         cy.get('[data-test-id="upload-select"]').select('Concept JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.concept.json');
         cy.get('[data-test-id="upload-btn"]').click();
-        cy.wait(3000).reload();
       });
 
       it("Can replace test concept", () => {
+        cy.intercept('/admin/datasets/*/concepts*').as('apiCall');
         cy.get('[data-test-id="upload-select"]').select('Concept JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.concept.json');
         cy.get('[data-test-id="upload-btn"]').click();
-        cy.wait(1000);
+        cy.wait('@apiCall');
         cy.get(`[data-test-id="toast-custom-button"]`).click();
-        cy.wait(1000);
+        cy.wait('@apiCall');
         cy.get('[data-test-id="toast"]').contains('The file has been posted successfully');
       });
 
@@ -72,7 +71,7 @@ context("Admin UI Single Dataset", () => {
     });
 
     describe("Can delete test concept and table", () => {
-        beforeEach(() => visitAdminUI(`datasets/${testDSID}`));
+      beforeEach(() => visitAdminUI(`datasets/${testDSID}`));
 
       it("Can delete test concept", () => {
         cy.get('[data-test-id="accordion-Concepts"]').click();
@@ -95,7 +94,6 @@ context("Admin UI Single Dataset", () => {
         cy.get('[data-test-id="upload-select"]').select('Concept JSON');
         cy.get('[data-test-id="upload-input"]').selectFile('./cypress/support/test_data/all_types.concept.json');
         cy.get('[data-test-id="upload-btn"]').click();
-        cy.wait(1000).reload();
       });
 
       it("Can force delete test table", () => {
