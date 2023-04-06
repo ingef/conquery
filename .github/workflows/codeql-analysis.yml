@@ -73,7 +73,7 @@ jobs:
       #    uses a compiled language
 
     - name: Build
-      if: matrix.language != 'java'
+      if: matrix.language == 'java'
       run: |
         ./scripts/build_backend_version.sh
 
