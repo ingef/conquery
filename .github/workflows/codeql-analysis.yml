@@ -75,7 +75,7 @@ jobs:
     - name: Build
       if: matrix.language == 'java'
       run: |
-        ./scripts/build_backend_version.sh
+        ./scripts/build_backend_version.sh "version_placeholder"
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
