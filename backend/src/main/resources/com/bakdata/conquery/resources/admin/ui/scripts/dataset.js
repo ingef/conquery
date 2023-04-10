@@ -1,23 +1,23 @@
-function updateDatasetUploadForm(select) {
-  const uploadFormMapping = {
-    mapping: {
-      name: "mapping",
-      uri: "internToExtern",
-      accept: "*.mapping.json",
-    },
-    table: { name: "table_schema", uri: "tables", accept: "*.table.json" },
-    concept: {
-      name: "concept_schema",
-      uri: "concepts",
-      accept: "*.concept.json",
-    },
-    structure: {
-      name: "structure_schema",
-      uri: "structure",
-      accept: "structure.json",
-    },
-  };
+const uploadFormMapping = {
+  mapping: {
+    name: "mapping",
+    uri: "internToExtern",
+    accept: "*.mapping.json",
+  },
+  table: { name: "table_schema", uri: "tables", accept: "*.table.json" },
+  concept: {
+    name: "concept_schema",
+    uri: "concepts",
+    accept: "*.concept.json",
+  },
+  structure: {
+    name: "structure_schema",
+    uri: "structure",
+    accept: "structure.json",
+  },
+};
 
+function updateDatasetUploadForm(select) {
   const data = uploadFormMapping[select.value];
   const fileInput = $(select).next();
   fileInput.value = "";
@@ -29,4 +29,17 @@ function updateDatasetUploadForm(select) {
       "onsubmit",
       "postFile(event, '/admin/datasets/${c.ds.id}/" + data.uri + "')"
     );
+}
+
+async function restOptionalForce(url, options) {
+  return rest(url, options).then((res) => {
+    // force button in case of 409 status
+    const customButton = createCustomButton('Force delete');
+    customButton.onclick = () => rest(toForceURL(url), options).then((res) => {
+      res.ok && location.reload();
+    });
+
+    showMessageForResponse(res, customButton);
+    return res;
+  });
 }
