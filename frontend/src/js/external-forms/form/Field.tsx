@@ -226,7 +226,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               rows={field.style?.rows ?? 4}
               value={fieldProps.value as string}
               onChange={(value) => {
-                console.log(value);
                 setValue(uniqueFieldname, value, setValueConfig);
               }}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}

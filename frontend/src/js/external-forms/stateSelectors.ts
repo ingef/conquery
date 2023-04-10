@@ -78,8 +78,10 @@ export const useAllowExtendedCopying = (
     selectFormConfig(state),
   );
   const values = useWatch({});
-  const otherConceptListFields = visibleConceptListFields.filter(
-    (field) => field.name !== targetFieldname,
+  const otherConceptListFields = visibleConceptListFields.filter((field) =>
+    !config
+      ? false
+      : getUniqueFieldname(config.type, field) !== targetFieldname,
   );
 
   // Need to have min 2 fields to copy from one to another

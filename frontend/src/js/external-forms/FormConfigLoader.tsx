@@ -15,7 +15,7 @@ import { SnackMessageType } from "../snack-message/reducer";
 import Dropzone from "../ui-components/Dropzone";
 
 import { setExternalForm } from "./actions";
-import type { Form, FormField } from "./config-types";
+import type { Field, Form, FormField, Tabs } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 import { collectAllFormFields, getUniqueFieldname } from "./helper";
 import { selectActiveFormType, selectFormConfig } from "./stateSelectors";
@@ -124,7 +124,7 @@ const FormConfigLoader: FC<Props> = ({
         // from string, e.g. 'next'
         // to SelectValueT, e.g. { value: 'next', label: 'Next' }
         const field = collectAllFormFields(formConfig.fields).find(
-          (f) => f.type !== "GROUP" && f.name === fieldname,
+          (f): f is Field | Tabs => f.type !== "GROUP" && f.name === fieldname,
         );
 
         if (!field) continue;
@@ -135,7 +135,7 @@ const FormConfigLoader: FC<Props> = ({
         });
         // --------------------------
 
-        setValue(getUniqueFieldname(formConfig.type, fieldname), fieldValue, {
+        setValue(getUniqueFieldname(formConfig.type, field), fieldValue, {
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,

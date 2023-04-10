@@ -132,7 +132,10 @@ const transformQueryToApi = (
   const formSpecificValuesToSave = Object.fromEntries(
     Object.entries(formValues)
       .filter(([k]) =>
-        formFields.some((f) => f.type !== "GROUP" && f.name === k),
+        formFields.some(
+          (f) =>
+            f.type !== "GROUP" && getUniqueFieldname(formConfig.type, f) === k,
+        ),
       )
       .map(([k, v]) => [getRawFieldname(k), v]),
   );
