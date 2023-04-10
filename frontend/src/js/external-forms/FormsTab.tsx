@@ -14,7 +14,11 @@ import FormsQueryRunner from "./FormsQueryRunner";
 import { loadFormsSuccess, setExternalForm } from "./actions";
 import type { Field, Form, Tabs } from "./config-types";
 import type { DynamicFormValues } from "./form/Form";
-import { collectAllFormFields, getInitialValue } from "./helper";
+import {
+  collectAllFormFields,
+  getInitialValue,
+  getUniqueFieldname,
+} from "./helper";
 import { selectFormConfig } from "./stateSelectors";
 
 const useLoadForms = ({ datasetId }: { datasetId: DatasetT["id"] | null }) => {
@@ -69,20 +73,20 @@ const useInitializeForm = () => {
 
   const datasetOptions = useDatasetOptions();
 
-  const defaultValues = useMemo(
-    () =>
-      Object.fromEntries(
-        allFields.map((field) => {
-          const initialValue = getInitialValue(field, {
-            availableDatasets: datasetOptions,
-            activeLang,
-          });
+  const defaultValues = useMemo(() => {
+    if (!config) return {};
 
-          return [field.name, initialValue];
-        }),
-      ),
-    [allFields, datasetOptions, activeLang],
-  );
+    return Object.fromEntries(
+      allFields.map((field) => {
+        const initialValue = getInitialValue(field, {
+          availableDatasets: datasetOptions,
+          activeLang,
+        });
+
+        return [getUniqueFieldname(config.type, field), initialValue];
+      }),
+    );
+  }, [allFields, datasetOptions, activeLang, config]);
 
   const methods = useForm<DynamicFormValues>({
     defaultValues,

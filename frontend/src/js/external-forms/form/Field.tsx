@@ -32,6 +32,7 @@ import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
 import {
   getFieldKey,
   getInitialValue,
+  getUniqueFieldname,
   isFormField,
   isOptionalField,
 } from "../helper";
@@ -66,6 +67,7 @@ const BOTTOM_MARGIN = 7;
 type Props<T> = T & {
   children: (props: ControllerRenderProps<DynamicFormValues>) => ReactNode;
   control: Control<DynamicFormValues>;
+  formType: string;
   formField: FieldT | Tabs;
   defaultValue?: any;
   noContainer?: boolean;
@@ -81,6 +83,7 @@ const FieldContainer = styled("div")<{ noLabel?: boolean }>`
 const ConnectedField = <T extends Object>({
   children,
   control,
+  formType,
   formField,
   defaultValue,
   noContainer,
@@ -89,7 +92,7 @@ const ConnectedField = <T extends Object>({
 }: Props<T>) => {
   const { t } = useTranslation();
   const { field } = useController<DynamicFormValues>({
-    name: formField.name,
+    name: getUniqueFieldname(formType, formField),
     defaultValue,
     control,
     rules: {
@@ -154,10 +157,16 @@ const Field = ({ field, ...commonProps }: PropsT) => {
   const { formType, optional, locale, availableDatasets, setValue, control } =
     commonProps;
   const { t } = useTranslation();
+
   const defaultValue =
     isFormField(field) && field.type !== "GROUP"
       ? getInitialValue(field, { availableDatasets, activeLang: locale })
       : null;
+
+  const uniqueFieldname =
+    isFormField(field) && field.type !== "GROUP"
+      ? getUniqueFieldname(formType, field)
+      : ""; // To avoid null checks. We won't use this value for non-form-fields and GROUP fields.
 
   switch (field.type) {
     case "HEADLINE":
@@ -175,6 +184,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     case "STRING":
       return (
         <ConnectedField
+          formType={formType}
           formField={field}
           control={control}
           defaultValue={defaultValue}
@@ -189,7 +199,9 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               }
               fullWidth={field.style ? field.style.fullWidth : false}
               value={fieldProps.value as string}
-              onChange={(value) => setValue(field.name, value, setValueConfig)}
+              onChange={(value) =>
+                setValue(uniqueFieldname, value, setValueConfig)
+              }
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
               optional={optional}
             />
@@ -199,6 +211,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     case "TEXTAREA":
       return (
         <ConnectedField
+          formType={formType}
           formField={field}
           control={control}
           defaultValue={defaultValue}
@@ -214,7 +227,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               value={fieldProps.value as string}
               onChange={(value) => {
                 console.log(value);
-                setValue(field.name, value, setValueConfig);
+                setValue(uniqueFieldname, value, setValueConfig);
               }}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
               optional={optional}
@@ -225,6 +238,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     case "NUMBER":
       return (
         <ConnectedField
+          formType={formType}
           formField={field}
           control={control}
           defaultValue={defaultValue}
@@ -238,7 +252,9 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 (field.placeholder && field.placeholder[locale]) || ""
               }
               value={fieldProps.value as number | null}
-              onChange={(value) => setValue(field.name, value, setValueConfig)}
+              onChange={(value) =>
+                setValue(uniqueFieldname, value, setValueConfig)
+              }
               inputProps={{
                 step: field.step || "1",
                 pattern: field.pattern,
@@ -254,6 +270,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     case "DATE_RANGE":
       return (
         <ConnectedField
+          formType={formType}
           formField={field}
           control={control}
           defaultValue={defaultValue}
@@ -267,7 +284,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 optional={optional}
                 value={fieldProps.value as DateStringMinMax}
                 onChange={(value) =>
-                  setValue(field.name, value, setValueConfig)
+                  setValue(uniqueFieldname, value, setValueConfig)
                 }
               />
             );
@@ -277,6 +294,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     case "RESULT_GROUP":
       return (
         <ConnectedField
+          formType={formType}
           formField={field}
           control={control}
           defaultValue={defaultValue}
@@ -288,7 +306,9 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
               optional={optional}
               value={fieldProps.value as DragItemQuery}
-              onChange={(value) => setValue(field.name, value, setValueConfig)}
+              onChange={(value) =>
+                setValue(uniqueFieldname, value, setValueConfig)
+              }
             />
           )}
         </ConnectedField>
@@ -296,6 +316,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     case "CHECKBOX":
       return (
         <ConnectedField
+          formType={formType}
           formField={field}
           control={control}
           defaultValue={defaultValue}
@@ -304,7 +325,9 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           {({ ref, ...fieldProps }) => (
             <InputCheckbox
               value={fieldProps.value as boolean}
-              onChange={(value) => setValue(field.name, value, setValueConfig)}
+              onChange={(value) =>
+                setValue(uniqueFieldname, value, setValueConfig)
+              }
               label={field.label[locale] || ""}
               infoTooltip={field.tooltip ? field.tooltip[locale] : undefined}
             />
@@ -319,6 +342,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
 
       return (
         <ConnectedField
+          formType={formType}
           formField={field}
           control={control}
           defaultValue={defaultValue}
@@ -330,7 +354,9 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
               optional={optional}
               value={fieldProps.value as SelectOptionT | null}
-              onChange={(value) => setValue(field.name, value, setValueConfig)}
+              onChange={(value) =>
+                setValue(uniqueFieldname, value, setValueConfig)
+              }
             />
           )}
         </ConnectedField>
@@ -344,6 +370,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
 
       return (
         <ConnectedField
+          formType={formType}
           formField={field}
           control={control}
           defaultValue={datasetDefaultValue}
@@ -357,7 +384,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 optional={optional}
                 value={fieldProps.value as SelectOptionT | null}
                 onChange={(value) =>
-                  setValue(field.name, value, setValueConfig)
+                  setValue(uniqueFieldname, value, setValueConfig)
                 }
               />
             );
@@ -399,6 +426,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     case "TABS":
       return (
         <ConnectedField
+          formType={formType}
           control={control}
           formField={field}
           defaultValue={defaultValue}
@@ -414,7 +442,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 <FormTabNavigation
                   selectedTab={fieldProps.value as string}
                   onSelectTab={(tab) =>
-                    setValue(field.name, tab, setValueConfig)
+                    setValue(uniqueFieldname, tab, setValueConfig)
                   }
                   options={field.tabs.map((tab) => ({
                     label: () => tab.title[locale] || "",
@@ -449,15 +477,18 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     case "CONCEPT_LIST":
       return (
         <ConnectedField
+          formType={formType}
           control={control}
           formField={field}
           defaultValue={defaultValue}
         >
           {({ ref, ...fieldProps }) => (
             <FormConceptGroup
-              fieldName={field.name}
+              fieldName={uniqueFieldname}
               value={fieldProps.value as FormConceptGroupT[]}
-              onChange={(value) => setValue(field.name, value, setValueConfig)}
+              onChange={(value) =>
+                setValue(uniqueFieldname, value, setValueConfig)
+              }
               label={field.label[locale] || ""}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
               conceptDropzoneText={

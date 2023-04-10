@@ -7,6 +7,7 @@ import { useActiveLang } from "../localization/useActiveLang";
 
 import { ConceptListField, Form, GeneralField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
+import { getUniqueFieldname } from "./helper";
 
 export const selectAvailableForms = (state: StateT) =>
   state.externalForms ? state.externalForms.availableForms : {};
@@ -31,22 +32,23 @@ export const selectRunningQuery = (state: StateT) => {
 };
 
 function getVisibleConceptListFields(
-  config: { fields: GeneralField[] },
+  config: Form,
+  fields: GeneralField[],
   values: Record<string, any>,
 ): ConceptListField[] {
-  return config.fields
+  return fields
     .flatMap((field) => {
       switch (field.type) {
         case "GROUP":
           return field.fields;
         case "TABS":
-          const activeTabName = values[field.name];
+          const activeTabName = values[getUniqueFieldname(config.type, field)];
           const activeTab = field.tabs.find(
             (tab) => tab.name === activeTabName,
           );
 
           return activeTab
-            ? getVisibleConceptListFields(activeTab, values)
+            ? getVisibleConceptListFields(config, activeTab.fields, values)
             : [];
         default:
           return [field];
@@ -65,13 +67,16 @@ export const useVisibleConceptListFields = () => {
 
   if (!config) return [];
 
-  return getVisibleConceptListFields(config, values);
+  return getVisibleConceptListFields(config, config.fields, values);
 };
 
 export const useAllowExtendedCopying = (
   targetFieldname: string,
   visibleConceptListFields: ConceptListField[],
 ) => {
+  const config = useSelector<StateT, Form | null>((state) =>
+    selectFormConfig(state),
+  );
   const values = useWatch({});
   const otherConceptListFields = visibleConceptListFields.filter(
     (field) => field.name !== targetFieldname,
@@ -80,11 +85,18 @@ export const useAllowExtendedCopying = (
   // Need to have min 2 fields to copy from one to another
   if (otherConceptListFields.length < 1) return false;
 
-  const fieldHasFilledConcept = (field: ConceptListField) =>
-    !!values[field.name] &&
-    values[field.name].some((value: FormConceptGroupT) =>
-      value.concepts.some(exists),
+  const fieldHasFilledConcept = (field: ConceptListField) => {
+    if (!config) return false;
+
+    const uniqueFieldname = getUniqueFieldname(config.type, field);
+
+    return (
+      !!values[uniqueFieldname] &&
+      values[uniqueFieldname].some((value: FormConceptGroupT) =>
+        value.concepts.some(exists),
+      )
     );
+  };
 
   return otherConceptListFields.some(fieldHasFilledConcept);
 };

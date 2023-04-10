@@ -17,7 +17,7 @@ import Dropzone from "../ui-components/Dropzone";
 import { setExternalForm } from "./actions";
 import type { Form, FormField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
-import { collectAllFormFields } from "./helper";
+import { collectAllFormFields, getUniqueFieldname } from "./helper";
 import { selectActiveFormType, selectFormConfig } from "./stateSelectors";
 import type { DragItemFormConfig } from "./types";
 
@@ -135,7 +135,7 @@ const FormConfigLoader: FC<Props> = ({
         });
         // --------------------------
 
-        setValue(fieldname, fieldValue, {
+        setValue(getUniqueFieldname(formConfig.type, fieldname), fieldValue, {
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,
