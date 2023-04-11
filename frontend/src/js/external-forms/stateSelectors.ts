@@ -31,10 +31,10 @@ export const selectRunningQuery = (state: StateT) => {
 };
 
 function getVisibleConceptListFields(
-  config: { fields: GeneralField[] },
+  fields: GeneralField[],
   values: Record<string, any>,
 ): ConceptListField[] {
-  return config.fields
+  return fields
     .flatMap((field) => {
       switch (field.type) {
         case "GROUP":
@@ -46,7 +46,7 @@ function getVisibleConceptListFields(
           );
 
           return activeTab
-            ? getVisibleConceptListFields(activeTab, values)
+            ? getVisibleConceptListFields(activeTab.fields, values)
             : [];
         default:
           return [field];
@@ -65,7 +65,7 @@ export const useVisibleConceptListFields = () => {
 
   if (!config) return [];
 
-  return getVisibleConceptListFields(config, values);
+  return getVisibleConceptListFields(config.fields, values);
 };
 
 export const useAllowExtendedCopying = (
@@ -80,11 +80,14 @@ export const useAllowExtendedCopying = (
   // Need to have min 2 fields to copy from one to another
   if (otherConceptListFields.length < 1) return false;
 
-  const fieldHasFilledConcept = (field: ConceptListField) =>
-    !!values[field.name] &&
-    values[field.name].some((value: FormConceptGroupT) =>
-      value.concepts.some(exists),
+  const fieldHasFilledConcept = (field: ConceptListField) => {
+    return (
+      !!values[field.name] &&
+      values[field.name].some((value: FormConceptGroupT) =>
+        value.concepts.some(exists),
+      )
     );
+  };
 
   return otherConceptListFields.some(fieldHasFilledConcept);
 };

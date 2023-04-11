@@ -165,6 +165,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     control,
   } = commonProps;
   const { t } = useTranslation();
+
   const defaultValue =
     isFormField(field) && field.type !== "GROUP"
       ? getInitialValue(field, { availableDatasets, activeLang: locale })
@@ -225,7 +226,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               rows={field.style?.rows ?? 4}
               value={fieldProps.value as string}
               onChange={(value) => {
-                console.log(value);
                 setValue(field.name, value, setValueConfig);
               }}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}

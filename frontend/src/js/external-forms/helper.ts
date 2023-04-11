@@ -5,6 +5,17 @@ import type { FormField, GeneralField, Group } from "./config-types";
 
 const nonFormFieldTypes = new Set(["HEADLINE", "DESCRIPTION"]);
 
+// Different forms may have fields with the same name.
+// We want to remember values of fields of form A when switching to form B,
+// so users may come back to form A and see their previous values.
+// So in order to avoid field name clashes, we need unique field names
+export const getUniqueFieldname = (formType: string, rawFieldName: string) => {
+  return `${formType}--${rawFieldName}`;
+};
+export const getRawFieldname = (uniqueFieldname: string) => {
+  return uniqueFieldname.split("--").at(-1);
+};
+
 export const getFieldKey = (
   formType: string,
   field: GeneralField,
