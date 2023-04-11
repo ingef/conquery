@@ -24,10 +24,23 @@ const Button = styled("button")<{
   border-top-left-radius: ${({ theme }) => theme.borderRadius};
   border-top-right-radius: ${({ theme }) => theme.borderRadius};
 
+  transition: border 0.1s ease-in-out;
+
   border: ${({ primary, theme, selected }) =>
     primary && selected
       ? `1px solid ${theme.col.gray}`
-      : "1px solid transparent"};
+      : primary
+      ? "1px solid transparent"
+      : "none"};
+  &:hover {
+    border: ${({ primary, theme, selected }) =>
+      primary && selected
+        ? `1px solid ${theme.col.gray}`
+        : primary
+        ? `1px solid ${theme.col.grayMediumLight}`
+        : "none"};
+    border-bottom: none;
+  }
   border-bottom: none;
 
   background-color: ${({ primary, theme, selected }) =>
