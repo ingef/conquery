@@ -58,9 +58,9 @@ const FormConceptCopyModal = ({
       const isAnotherField = field.name !== targetFieldname;
       const hasValues =
         formValues[field.name] &&
-        formValues[field.name].some((value: FormConceptGroupT) =>
-          value.concepts.some(exists),
-        );
+        formValues[field.name]
+          .flatMap((v: FormConceptGroupT) => v.concepts)
+          .some(exists);
 
       return isAnotherField && hasValues;
     })
