@@ -11,7 +11,7 @@ const SxSmallTabNavigation = styled(SmallTabNavigation)`
 const FormTavNavigation = (
   props: ComponentProps<typeof SmallTabNavigation>,
 ) => {
-  return <SxSmallTabNavigation size="L" {...props} />;
+  return <SxSmallTabNavigation size="L" variant="primary" {...props} />;
 };
 
 export default FormTavNavigation;

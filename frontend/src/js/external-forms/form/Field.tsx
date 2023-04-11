@@ -24,7 +24,11 @@ import { InputTextarea } from "../../ui-components/InputTextarea/InputTextarea";
 import ToggleButton from "../../ui-components/ToggleButton";
 import type { Field as FieldT, GeneralField, Tabs } from "../config-types";
 import { Description } from "../form-components/Description";
-import { getHeadlineFieldAs, Headline } from "../form-components/Headline";
+import {
+  getHeadlineFieldAs,
+  Headline,
+  HeadlineIndex,
+} from "../form-components/Headline";
 import FormConceptGroup from "../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../form-concept-group/formConceptGroupState";
 import FormQueryDropzone from "../form-query-dropzone/FormQueryDropzone";
@@ -38,8 +42,6 @@ import {
 import { getErrorForField } from "../validators";
 
 import type { DynamicFormValues } from "./Form";
-
-const BOTTOM_MARGIN = 7;
 
 // TODO: REFINE COLORS
 // const useColorByField = (fieldType: FormField["type"]) => {
@@ -72,7 +74,6 @@ type Props<T> = T & {
   noLabel?: boolean;
 };
 const FieldContainer = styled("div")<{ noLabel?: boolean }>`
-  margin: 0 0 ${BOTTOM_MARGIN}px;
   padding: ${({ noLabel }) => (noLabel ? "7px 10px" : "2px 10px 7px")};
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -115,7 +116,7 @@ const SxToggleButton = styled(ToggleButton)`
 `;
 
 const Spacer = styled("div")`
-  margin-bottom: ${BOTTOM_MARGIN * 2}px;
+  height: 14px;
 `;
 
 const Group = styled("div")`
@@ -125,15 +126,18 @@ const Group = styled("div")`
 `;
 
 const NestedFields = styled("div")`
-  padding: 12px 10px 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 12px 10px 12px;
   background-color: ${({ theme }) => theme.col.bg};
-  border: 1px solid ${({ theme }) => theme.col.grayLight};
+  border: 1px solid ${({ theme }) => theme.col.gray};
   border-radius: ${({ theme }) => theme.borderRadius};
-  margin-bottom: ${BOTTOM_MARGIN * 2}px;
 `;
 
 interface PropsT {
   formType: string;
+  h1Index?: number;
   field: GeneralField;
   locale: Language;
   availableDatasets: SelectOptionT[];
@@ -151,8 +155,15 @@ const setValueConfig = {
 
 const Field = ({ field, ...commonProps }: PropsT) => {
   const datasetId = useDatasetId();
-  const { formType, optional, locale, availableDatasets, setValue, control } =
-    commonProps;
+  const {
+    formType,
+    h1Index,
+    optional,
+    locale,
+    availableDatasets,
+    setValue,
+    control,
+  } = commonProps;
   const { t } = useTranslation();
   const defaultValue =
     isFormField(field) && field.type !== "GROUP"
@@ -163,6 +174,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     case "HEADLINE":
       return (
         <Headline as={getHeadlineFieldAs(field)} size={field.style?.size}>
+          {exists(h1Index) && <HeadlineIndex>{h1Index + 1}</HeadlineIndex>}
           {field.label[locale]}
         </Headline>
       );
@@ -374,7 +386,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           <Group
             style={{
               display: (field.style && field.style.display) || "flex",
-              gap: field.style?.display === "grid" ? "0 12px" : "0 8px",
+              gap: field.style?.display === "grid" ? "7px 12px" : "7px 8px",
               gridTemplateColumns: `repeat(${
                 field.style?.gridColumns || 1
               }, 1fr)`,
