@@ -11,7 +11,6 @@ import { useActiveLang } from "../../localization/useActiveLang";
 import Modal from "../../modal/Modal";
 import InputCheckbox from "../../ui-components/InputCheckbox";
 import InputSelect from "../../ui-components/InputSelect/InputSelect";
-import { getUniqueFieldname } from "../helper";
 import { useVisibleConceptListFields } from "../stateSelectors";
 
 import type { FormConceptGroupT } from "./formConceptGroupState";
@@ -39,19 +38,15 @@ const SxInputCheckbox = styled(InputCheckbox)`
   margin: 5px 0;
 `;
 
-interface PropsT {
-  formType: string;
-  targetFieldname: string;
-  onAccept: (selectedNodes: FormConceptGroupT[]) => void;
-  onClose: () => void;
-}
-
 const FormConceptCopyModal = ({
-  formType,
   targetFieldname,
   onAccept,
   onClose,
-}: PropsT) => {
+}: {
+  targetFieldname: string;
+  onAccept: (selectedNodes: FormConceptGroupT[]) => void;
+  onClose: () => void;
+}) => {
   const { t } = useTranslation();
   const activeLang = useActiveLang();
   const { getValues } = useFormContext();
@@ -60,11 +55,10 @@ const FormConceptCopyModal = ({
 
   const conceptListFieldOptions = visibleConceptListFields
     .filter((field) => {
-      const uniqueFieldname = getUniqueFieldname(formType, field);
-      const isAnotherField = uniqueFieldname !== targetFieldname;
+      const isAnotherField = field.name !== targetFieldname;
       const hasValues =
-        formValues[uniqueFieldname] &&
-        formValues[uniqueFieldname].some((value: FormConceptGroupT) =>
+        formValues[field.name] &&
+        formValues[field.name].some((value: FormConceptGroupT) =>
           value.concepts.some(exists),
         );
 
@@ -72,7 +66,7 @@ const FormConceptCopyModal = ({
     })
     .map((field) => ({
       label: field.label[activeLang] || "-",
-      value: getUniqueFieldname(formType, field),
+      value: field.name,
     }));
 
   // Since the modal is only rendered when there exists more than one concept list field

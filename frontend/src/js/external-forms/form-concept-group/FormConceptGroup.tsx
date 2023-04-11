@@ -364,7 +364,6 @@ const FormConceptGroup = (props: Props) => {
       />
       {isCopyModalOpen && (
         <FormConceptCopyModal
-          formType={props.formType}
           targetFieldname={props.fieldName}
           onAccept={onAcceptCopyModal}
           onClose={() => setIsCopyModalOpen(false)}

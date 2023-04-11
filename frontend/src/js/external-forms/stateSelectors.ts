@@ -7,7 +7,6 @@ import { useActiveLang } from "../localization/useActiveLang";
 
 import { ConceptListField, Form, GeneralField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
-import { getUniqueFieldname } from "./helper";
 
 export const selectAvailableForms = (state: StateT) =>
   state.externalForms ? state.externalForms.availableForms : {};
@@ -32,7 +31,6 @@ export const selectRunningQuery = (state: StateT) => {
 };
 
 function getVisibleConceptListFields(
-  config: Form,
   fields: GeneralField[],
   values: Record<string, any>,
 ): ConceptListField[] {
@@ -42,13 +40,13 @@ function getVisibleConceptListFields(
         case "GROUP":
           return field.fields;
         case "TABS":
-          const activeTabName = values[getUniqueFieldname(config.type, field)];
+          const activeTabName = values[field.name];
           const activeTab = field.tabs.find(
             (tab) => tab.name === activeTabName,
           );
 
           return activeTab
-            ? getVisibleConceptListFields(config, activeTab.fields, values)
+            ? getVisibleConceptListFields(activeTab.fields, values)
             : [];
         default:
           return [field];
@@ -67,34 +65,25 @@ export const useVisibleConceptListFields = () => {
 
   if (!config) return [];
 
-  return getVisibleConceptListFields(config, config.fields, values);
+  return getVisibleConceptListFields(config.fields, values);
 };
 
 export const useAllowExtendedCopying = (
   targetFieldname: string,
   visibleConceptListFields: ConceptListField[],
 ) => {
-  const config = useSelector<StateT, Form | null>((state) =>
-    selectFormConfig(state),
-  );
   const values = useWatch({});
-  const otherConceptListFields = visibleConceptListFields.filter((field) =>
-    !config
-      ? false
-      : getUniqueFieldname(config.type, field) !== targetFieldname,
+  const otherConceptListFields = visibleConceptListFields.filter(
+    (field) => field.name !== targetFieldname,
   );
 
   // Need to have min 2 fields to copy from one to another
   if (otherConceptListFields.length < 1) return false;
 
   const fieldHasFilledConcept = (field: ConceptListField) => {
-    if (!config) return false;
-
-    const uniqueFieldname = getUniqueFieldname(config.type, field);
-
     return (
-      !!values[uniqueFieldname] &&
-      values[uniqueFieldname].some((value: FormConceptGroupT) =>
+      !!values[field.name] &&
+      values[field.name].some((value: FormConceptGroupT) =>
         value.concepts.some(exists),
       )
     );

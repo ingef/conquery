@@ -124,7 +124,9 @@ const FormConfigLoader: FC<Props> = ({
         // from string, e.g. 'next'
         // to SelectValueT, e.g. { value: 'next', label: 'Next' }
         const field = collectAllFormFields(formConfig.fields).find(
-          (f): f is Field | Tabs => f.type !== "GROUP" && f.name === fieldname,
+          (f): f is Field | Tabs =>
+            f.type !== "GROUP" &&
+            f.name === getUniqueFieldname(formConfig.type, fieldname),
         );
 
         if (!field) continue;
@@ -135,7 +137,7 @@ const FormConfigLoader: FC<Props> = ({
         });
         // --------------------------
 
-        setValue(getUniqueFieldname(formConfig.type, field), fieldValue, {
+        setValue(field.name, fieldValue, {
           shouldValidate: true,
           shouldDirty: true,
           shouldTouch: true,

@@ -7,12 +7,7 @@ import type { DragItemQuery } from "../standard-query-editor/types";
 import type { Form, GeneralField } from "./config-types";
 import type { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 import type { DynamicFormValues } from "./form/Form";
-import {
-  collectAllFormFields,
-  getRawFieldname,
-  getUniqueFieldname,
-  isFormField,
-} from "./helper";
+import { collectAllFormFields, getRawFieldname, isFormField } from "./helper";
 
 function transformElementGroupsToApi(elementGroups: FormConceptGroupT[]) {
   const elementGroupsWithAtLeastOneElement = elementGroups
@@ -35,7 +30,6 @@ function transformElementGroupsToApi(elementGroups: FormConceptGroupT[]) {
 }
 
 function transformFieldToApiEntries(
-  configType: string,
   fieldConfig: GeneralField,
   formValues: DynamicFormValues,
 ): [string, any][] {
@@ -43,34 +37,40 @@ function transformFieldToApiEntries(
     return [];
   }
   const formValue =
+    fieldConfig.type === "GROUP" ? null : formValues[fieldConfig.name];
+
+  const rawFieldname =
     fieldConfig.type === "GROUP"
-      ? null
-      : formValues[getUniqueFieldname(configType, fieldConfig)];
+      ? "" // Group fields don't have a raw fieldname of their own
+      : getRawFieldname(fieldConfig.name);
+
+  if (!exists(rawFieldname)) {
+    throw new Error(
+      `No raw fieldname found for ${fieldConfig.type}, this shouldn't happen`,
+    );
+  }
 
   switch (fieldConfig.type) {
     case "CHECKBOX":
-      return [[fieldConfig.name, formValue || false]];
+      return [[rawFieldname, formValue || false]];
     case "TEXTAREA":
     case "STRING":
     case "NUMBER":
-      return [[fieldConfig.name, formValue ?? null]];
+      return [[rawFieldname, formValue ?? null]];
     case "DATASET_SELECT":
     case "SELECT":
       return [
-        [
-          fieldConfig.name,
-          formValue ? (formValue as SelectOptionT).value : null,
-        ],
+        [rawFieldname, formValue ? (formValue as SelectOptionT).value : null],
       ];
     case "RESULT_GROUP":
       // A RESULT_GROUP field may allow null / be optional
       return [
-        [fieldConfig.name, formValue ? (formValue as DragItemQuery).id : null],
+        [rawFieldname, formValue ? (formValue as DragItemQuery).id : null],
       ];
     case "DATE_RANGE":
       return [
         [
-          fieldConfig.name,
+          rawFieldname,
           {
             min: (formValue as DateStringMinMax).min,
             max: (formValue as DateStringMinMax).max,
@@ -80,13 +80,13 @@ function transformFieldToApiEntries(
     case "CONCEPT_LIST":
       return [
         [
-          fieldConfig.name,
+          rawFieldname,
           transformElementGroupsToApi(formValue as FormConceptGroupT[]),
         ],
       ];
     case "GROUP":
       return fieldConfig.fields.flatMap((f) =>
-        transformFieldToApiEntries(configType, f, formValues),
+        transformFieldToApiEntries(f, formValues),
       );
     case "TABS":
       const selectedTab = fieldConfig.tabs.find(
@@ -95,17 +95,17 @@ function transformFieldToApiEntries(
 
       if (!selectedTab) {
         throw new Error(
-          `No tab selected for ${fieldConfig.name}, this shouldn't happen`,
+          `No tab selected for ${rawFieldname}, this shouldn't happen`,
         );
       }
 
       return [
         [
-          fieldConfig.name,
+          rawFieldname,
           {
             value: formValue,
             // Only include field values from the selected tab
-            ...transformFieldsToApi(configType, selectedTab.fields, formValues),
+            ...transformFieldsToApi(selectedTab.fields, formValues),
           },
         ],
       ];
@@ -113,14 +113,11 @@ function transformFieldToApiEntries(
 }
 
 function transformFieldsToApi(
-  configType: string,
   fields: GeneralField[],
   formValues: DynamicFormValues,
 ): DynamicFormValues {
   return Object.fromEntries(
-    fields.flatMap((field) =>
-      transformFieldToApiEntries(configType, field, formValues),
-    ),
+    fields.flatMap((field) => transformFieldToApiEntries(field, formValues)),
   );
 }
 
@@ -132,10 +129,7 @@ const transformQueryToApi = (
   const formSpecificValuesToSave = Object.fromEntries(
     Object.entries(formValues)
       .filter(([k]) =>
-        formFields.some(
-          (f) =>
-            f.type !== "GROUP" && getUniqueFieldname(formConfig.type, f) === k,
-        ),
+        formFields.some((f) => f.type !== "GROUP" && f.name === k),
       )
       .map(([k, v]) => [getRawFieldname(k), v]),
   );
@@ -143,7 +137,7 @@ const transformQueryToApi = (
   return {
     type: formConfig.type,
     values: formSpecificValuesToSave,
-    ...transformFieldsToApi(formConfig.type, formConfig.fields, formValues),
+    ...transformFieldsToApi(formConfig.fields, formValues),
   };
 };
 

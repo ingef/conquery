@@ -14,11 +14,7 @@ import FormsQueryRunner from "./FormsQueryRunner";
 import { loadFormsSuccess, setExternalForm } from "./actions";
 import type { Field, Form, Tabs } from "./config-types";
 import type { DynamicFormValues } from "./form/Form";
-import {
-  collectAllFormFields,
-  getInitialValue,
-  getUniqueFieldname,
-} from "./helper";
+import { collectAllFormFields, getInitialValue } from "./helper";
 import { selectFormConfig } from "./stateSelectors";
 
 const useLoadForms = ({ datasetId }: { datasetId: DatasetT["id"] | null }) => {
@@ -83,7 +79,7 @@ const useInitializeForm = () => {
           activeLang,
         });
 
-        return [getUniqueFieldname(config.type, field), initialValue];
+        return [field.name, initialValue];
       }),
     );
   }, [allFields, datasetOptions, activeLang, config]);
