@@ -54,6 +54,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	private int minSuffixLength = 3;
 	private boolean generateSuffixes;
 	private boolean searchDisabled = false;
+	private String emptyLabel;
 
 	@JsonIgnore
 	@Getter(lazy = true)
@@ -157,6 +158,8 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 		final TrieSearch<FrontendValue> search = new TrieSearch<>(suffixLength, config.getSearchSplitChars());
 
+		search.addItem(new FrontendValue("", getEmptyLabel()), List.of(getEmptyLabel()));
+
 		storage.getAllImports().stream()
 			   .filter(imp -> imp.getTable().equals(getTable()))
 			   .flatMap(imp -> {
@@ -168,6 +171,9 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
 
 			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
+
+		search.shrinkToFit();
+
 		return List.of(search);
 	}
 

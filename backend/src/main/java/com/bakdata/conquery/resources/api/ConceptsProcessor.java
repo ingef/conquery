@@ -233,9 +233,15 @@ public class ConceptsProcessor {
 		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
 		 */
 
-		final Iterator<FrontendValue>
-				iterators =
-				Iterators.concat(Iterators.transform(namespace.getFilterSearch().getSearchesFor(searchable).iterator(), TrieSearch::iterator));
+
+		final Iterator<FrontendValue> iterators =
+				Iterators.concat(
+						// We are always leading with the empty value.
+						Iterators.singletonIterator(new FrontendValue("", searchable.getEmptyLabel())),
+						Iterators.concat(Iterators.transform(namespace.getFilterSearch()
+																	  .getSearchesFor(searchable)
+																	  .iterator(), TrieSearch::iterator))
+				);
 
 		// Use Set to accomplish distinct values
 		final Set<FrontendValue> seen = new HashSet<>();
@@ -245,7 +251,6 @@ public class ConceptsProcessor {
 
 	private long countAllValues(Searchable<?> searchable) {
 		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
-
 
 		return namespace.getFilterSearch().getTotal(searchable);
 	}

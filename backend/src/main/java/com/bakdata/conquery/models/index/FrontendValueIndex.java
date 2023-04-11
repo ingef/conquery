@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.index;
 
-import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
@@ -30,7 +29,6 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 		super(suffixCutoff, split);
 		this.valueTemplate = valueTemplate;
 		this.optionValueTemplate = optionValueTemplate;
-		addItem(new FrontendValue("", emptyLabel), List.of(emptyLabel, ""));
 	}
 
 	@Override

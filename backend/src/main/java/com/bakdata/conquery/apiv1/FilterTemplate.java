@@ -108,6 +108,8 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 				emptyLabel
 		));
 
+		search.addItem(new FrontendValue("", getEmptyLabel()), List.of(getEmptyLabel()));
+
 		return List.of(search);
 	}
 

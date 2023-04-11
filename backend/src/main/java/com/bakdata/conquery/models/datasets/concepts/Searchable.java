@@ -39,6 +39,8 @@ public interface Searchable<ID extends Id<? extends Identifiable<? extends ID>>>
 		return List.of(this);
 	}
 
+	String getEmptyLabel();
+
 	/**
 	 * Parameter used in the construction of {@link com.bakdata.conquery.util.search.TrieSearch}, defining the shortest suffix to create.
 	 * Ignored if isGenerateSuffixes is true.

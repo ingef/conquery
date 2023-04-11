@@ -47,9 +47,10 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	@NsIdRef
 	@View.ApiManagerPersistence
 	private FilterTemplate template;
+	private int searchMinSuffixLength = 3;
+	private boolean generateSearchSuffixes = true;
 
-	@JsonIgnore
-	public abstract String getFilterType();
+	private String emptyLabel;
 
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
@@ -68,26 +69,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		//TODO FK add empty label
 	}
 
-	@NotNull
-	protected List<FrontendValue> collectLabels() {
-		return labels.entrySet().stream()
-					 .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
-					 .collect(Collectors.toList());
-	}
-
 	@JsonIgnore
-	@ValidationMethod(message = "Cannot use both labels and template.")
-	public boolean isNotUsingTemplateAndLabels() {
-		// Technically it's possible it just doesn't make much sense and would lead to Single-Point-of-Truth confusion.
-		if (getTemplate() == null && labels.isEmpty()) {
-			return true;
-		}
-
-		return (getTemplate() == null) != labels.isEmpty();
-	}
-
-	private int searchMinSuffixLength = 3;
-	private boolean generateSearchSuffixes = true;
+	public abstract String getFilterType();
 
 	@Override
 	public List<Searchable<?>> getSearchReferences() {
@@ -104,6 +87,22 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		out.addAll(getColumn().getSearchReferences());
 
 		return out;
+	}
+
+	@NotNull
+	protected List<FrontendValue> collectLabels() {
+		return labels.entrySet().stream().map(entry -> new FrontendValue(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Cannot use both labels and template.")
+	public boolean isNotUsingTemplateAndLabels() {
+		// Technically it's possible it just doesn't make much sense and would lead to Single-Point-of-Truth confusion.
+		if (getTemplate() == null && labels.isEmpty()) {
+			return true;
+		}
+
+		return (getTemplate() == null) != labels.isEmpty();
 	}
 
 	@Override
@@ -130,11 +129,15 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	@Override
 	public List<TrieSearch<FrontendValue>> getSearches(IndexConfig config, NamespaceStorage storage) {
 
-		TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSearchSuffixLength(), config.getSearchSplitChars());
+		final TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSearchSuffixLength(), config.getSearchSplitChars());
+
+		search.addItem(new FrontendValue("", getEmptyLabel()), List.of(getEmptyLabel()));
+
 		labels.entrySet()
 			  .stream()
 			  .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
 			  .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
+
 		search.shrinkToFit();
 
 		return List.of(search);
