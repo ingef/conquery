@@ -561,6 +561,9 @@ export interface TimeStratifiedInfoYear {
 export interface TimeStratifiedInfo {
   label: string;
   description: string | null;
+  totals: {
+    [label: string]: string;
+  };
   columns: {
     label: string; // Matches `label` with `year.values` and `year.quarters[].values`
     defaultLabel: string; // Probably not used by us

@@ -4,16 +4,16 @@ import { Fragment, memo } from "react";
 import { EntityInfo } from "../api/types";
 
 const Grid = styled("div")`
-  display: grid;
+  display: inline-grid;
   grid-template-columns: 1fr auto;
-  gap: 0 10px;
+  gap: 0 16px;
 `;
 const Label = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
-  font-weight: 400;
 `;
 const Value = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
+  font-size: ${({ theme }) => theme.font.sm};
+  font-weight: 400;
 `;
 
 const EntityInfos = ({ infos }: { infos: EntityInfo[] }) => {

@@ -2,12 +2,11 @@ import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import type { EntityInfo, SelectOptionT } from "../api/types";
+import type { SelectOptionT } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { BadgeToggleButton } from "../button/BadgeToggleButton";
 import { Heading3 } from "../headings/Headings";
 
-import EntityInfos from "./EntityInfos";
 import { EntityId } from "./reducer";
 
 const Root = styled("div")`
@@ -52,7 +51,6 @@ interface Props {
   className?: string;
   currentEntityIndex: number;
   currentEntityId: EntityId;
-  currentEntityInfos: EntityInfo[];
   status: SelectOptionT[];
   setStatus: (value: SelectOptionT[]) => void;
   entityStatusOptions: SelectOptionT[];
@@ -62,7 +60,6 @@ export const EntityHeader = ({
   className,
   currentEntityIndex,
   currentEntityId,
-  currentEntityInfos,
   status,
   setStatus,
   entityStatusOptions,
@@ -96,7 +93,6 @@ export const EntityHeader = ({
             {totalEvents} {t("history.events", { count: totalEvents })}
           </Subtitle>
         </div>
-        <EntityInfos infos={currentEntityInfos} />
       </Flex>
       <Buttons>
         {entityStatusOptions.map((option, i) => (
