@@ -1,13 +1,7 @@
 import type { SelectOptionT } from "../api/types";
 import type { Language } from "../localization/useActiveLang";
 
-import type {
-  Field,
-  FormField,
-  GeneralField,
-  Group,
-  Tabs,
-} from "./config-types";
+import type { FormField, GeneralField, Group } from "./config-types";
 
 const nonFormFieldTypes = new Set(["HEADLINE", "DESCRIPTION"]);
 
