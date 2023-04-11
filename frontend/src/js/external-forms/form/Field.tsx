@@ -24,7 +24,11 @@ import { InputTextarea } from "../../ui-components/InputTextarea/InputTextarea";
 import ToggleButton from "../../ui-components/ToggleButton";
 import type { Field as FieldT, GeneralField, Tabs } from "../config-types";
 import { Description } from "../form-components/Description";
-import { getHeadlineFieldAs, Headline } from "../form-components/Headline";
+import {
+  getHeadlineFieldAs,
+  Headline,
+  HeadlineIndex,
+} from "../form-components/Headline";
 import FormConceptGroup from "../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../form-concept-group/formConceptGroupState";
 import FormQueryDropzone from "../form-query-dropzone/FormQueryDropzone";
@@ -133,6 +137,7 @@ const NestedFields = styled("div")`
 
 interface PropsT {
   formType: string;
+  h1Index?: number;
   field: GeneralField;
   locale: Language;
   availableDatasets: SelectOptionT[];
@@ -150,8 +155,15 @@ const setValueConfig = {
 
 const Field = ({ field, ...commonProps }: PropsT) => {
   const datasetId = useDatasetId();
-  const { formType, optional, locale, availableDatasets, setValue, control } =
-    commonProps;
+  const {
+    formType,
+    h1Index,
+    optional,
+    locale,
+    availableDatasets,
+    setValue,
+    control,
+  } = commonProps;
   const { t } = useTranslation();
   const defaultValue =
     isFormField(field) && field.type !== "GROUP"
@@ -162,6 +174,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
     case "HEADLINE":
       return (
         <Headline as={getHeadlineFieldAs(field)} size={field.style?.size}>
+          {exists(h1Index) && <HeadlineIndex>{h1Index + 1}</HeadlineIndex>}
           {field.label[locale]}
         </Headline>
       );

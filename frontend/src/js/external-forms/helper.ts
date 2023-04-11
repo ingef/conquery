@@ -15,6 +15,22 @@ export const getFieldKey = (
     : formType + field.type + idx;
 };
 
+export const getH1Index = (fields: GeneralField[], field: GeneralField) => {
+  if (
+    field.type !== "HEADLINE" ||
+    !field.style?.size ||
+    field.style.size !== "h1"
+  ) {
+    return;
+  }
+
+  const h1Fields = fields.filter(
+    (f) => f.type === "HEADLINE" && f.style?.size === "h1",
+  );
+
+  return h1Fields.indexOf(field);
+};
+
 export const isOptionalField = (field: GeneralField) => {
   return (
     isFormField(field) &&
