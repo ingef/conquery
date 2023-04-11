@@ -1,4 +1,8 @@
 import styled from "@emotion/styled";
+import {
+  faCompressArrowsAlt,
+  faExpandArrowsAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import { useRef, FC } from "react";
 import { useDrag } from "react-dnd";
 import { useTranslation } from "react-i18next";
@@ -146,9 +150,7 @@ const FormConceptNode: FC<PropsT> = ({
           {expand && expand.expandable && (
             <WithTooltip text={t("externalForms.common.concept.expand")}>
               <SxIconButton
-                icon={
-                  expand.active ? "compress-arrows-alt" : "expand-arrows-alt"
-                }
+                icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
                 tiny
                 onClick={(e) => {
                   e.stopPropagation();
