@@ -61,8 +61,6 @@ public class MapInternToExternMapper extends NamedImpl<InternToExternMapperId> i
 	@NotEmpty
 	private final String externalTemplate;
 
-	private final String emptyLabel;
-
 
 	//Manager only
 	@JsonIgnore
