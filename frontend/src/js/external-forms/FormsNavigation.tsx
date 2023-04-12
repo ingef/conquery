@@ -89,8 +89,10 @@ const FormsNavigation = ({ reset }: Props) => {
           value={options.find((o) => o.value === activeForm) || null}
           onChange={(value) => {
             if (value) {
-              reset();
               onChangeToForm(value.value as string);
+              // we intentionally only change the form
+              // but we don't reset field state,
+              // so values are kept when switching forms
             }
           }}
         />

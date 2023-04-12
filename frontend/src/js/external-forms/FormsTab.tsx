@@ -69,20 +69,20 @@ const useInitializeForm = () => {
 
   const datasetOptions = useDatasetOptions();
 
-  const defaultValues = useMemo(
-    () =>
-      Object.fromEntries(
-        allFields.map((field) => {
-          const initialValue = getInitialValue(field, {
-            availableDatasets: datasetOptions,
-            activeLang,
-          });
+  const defaultValues = useMemo(() => {
+    if (!config) return {};
 
-          return [field.name, initialValue];
-        }),
-      ),
-    [allFields, datasetOptions, activeLang],
-  );
+    return Object.fromEntries(
+      allFields.map((field) => {
+        const initialValue = getInitialValue(field, {
+          availableDatasets: datasetOptions,
+          activeLang,
+        });
+
+        return [field.name, initialValue];
+      }),
+    );
+  }, [allFields, datasetOptions, activeLang, config]);
 
   const methods = useForm<DynamicFormValues>({
     defaultValues,

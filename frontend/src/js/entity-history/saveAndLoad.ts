@@ -18,7 +18,6 @@ export const saveHistory = ({
   entityIds: EntityId[];
   entityIdsStatus: EntityIdsStatus;
 }) => {
-  console.log(entityIdsStatus);
   const usedStatuses = Object.values(entityIdsStatus).reduce(
     (longest, el) => (longest.length > el.length ? longest : el),
     [],

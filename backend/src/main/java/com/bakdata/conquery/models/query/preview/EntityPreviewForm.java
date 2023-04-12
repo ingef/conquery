@@ -101,12 +101,16 @@ public class EntityPreviewForm extends Form implements InternalForm {
 
 			final AbsoluteFormQuery query = new AbsoluteFormQuery(entitySelectQuery, dateRange,
 																  ArrayConceptQuery.createFromFeatures(
-																				selects.selects().stream()
-																					   .map(PreviewConfig.InfoCardSelect::select)
-																					   .map(datasetRegistry::resolve)
-																					   .map(CQConcept::forSelect)
-																					   .collect(Collectors.toList())),
-																  List.of(ExportForm.ResolutionAndAlignment.of(Resolution.YEARS, Alignment.YEAR), ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER))
+																		  selects.selects().stream()
+																				 .map(PreviewConfig.InfoCardSelect::select)
+																				 .map(datasetRegistry::resolve)
+																				 .map(CQConcept::forSelect)
+																				 .collect(Collectors.toList())),
+																  List.of(
+																		  ExportForm.ResolutionAndAlignment.of(Resolution.COMPLETE, Alignment.NO_ALIGN),
+																		  ExportForm.ResolutionAndAlignment.of(Resolution.YEARS, Alignment.YEAR),
+																		  ExportForm.ResolutionAndAlignment.of(Resolution.QUARTERS, Alignment.QUARTER)
+																  )
 			);
 
 			timeQueries.put(selects.label(), query);

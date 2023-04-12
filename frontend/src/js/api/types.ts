@@ -533,6 +533,7 @@ export interface HistorySources {
 export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
   searchConcept: string | null; // concept id
   searchFilters?: string[]; // allowlisted filter ids within the searchConcept
+  observationPeriodMin: string; // yyyy-MM-dd
 };
 
 export interface EntityInfo {
@@ -542,10 +543,39 @@ export interface EntityInfo {
   semantics: ColumnDescriptionSemantic[];
 }
 
+export interface TimeStratifiedInfoQuarter {
+  quarter: number;
+  values: {
+    [label: string]: string;
+  };
+}
+
+export interface TimeStratifiedInfoYear {
+  year: number;
+  values: {
+    [label: string]: string;
+  };
+  quarters: TimeStratifiedInfoQuarter[];
+}
+
+export interface TimeStratifiedInfo {
+  label: string;
+  description: string | null;
+  columns: {
+    label: string; // Matches `label` with `year.values` and `year.quarters[].values`
+    defaultLabel: string; // Probably not used by us
+    description: string | null;
+    type: ColumnDescriptionKind; // Relevant to show e.g. € for money
+    semantics: ColumnDescriptionSemantic[]; // Probably not used by us
+  }[];
+  years: TimeStratifiedInfoYear[];
+}
+
 export type GetEntityHistoryResponse = {
   resultUrls: ResultUrlWithLabel[];
   columnDescriptions: ColumnDescription[];
   infos: EntityInfo[];
+  timeStratifiedInfos: TimeStratifiedInfo[];
 };
 
 export type PostResolveEntitiesResponse = {

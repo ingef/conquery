@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -141,7 +140,7 @@ public class ConceptsProcessor {
 		// Connectors only act as bridge to table for the fronted, but also provide ConceptColumnT semantic
 
 		return new FrontendPreviewConfig(
-				CDateRange.of(previewConfig.getObservationStart(), LocalDate.now()),
+				previewConfig.getObservationStart(),
 				previewConfig.getAllConnectors()
 							 .stream()
 							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))
