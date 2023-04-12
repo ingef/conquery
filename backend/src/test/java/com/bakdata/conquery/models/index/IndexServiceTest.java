@@ -25,13 +25,13 @@ import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.MediaType;
 
-@TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Slf4j
 public class IndexServiceTest {
 
-	private final static Dataset DATASET = new Dataset("dataset");
-	private final static ConqueryConfig CONFIG = new ConqueryConfig();
-	private final static ClientAndServer REF_SERVER = ClientAndServer.startClientAndServer();
+	private static final Dataset DATASET = new Dataset("dataset");
+	private static final ConqueryConfig CONFIG = new ConqueryConfig();
+	private static final ClientAndServer REF_SERVER = ClientAndServer.startClientAndServer();
 	private final IndexService indexService = new IndexService(new CsvParserSettings());
 
 	@BeforeAll
@@ -62,24 +62,21 @@ public class IndexServiceTest {
 				"test1",
 				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
 				"internal",
-				"{{external}}",
-				"no value"
+				"{{external}}"
 		);
 
 		final MapInternToExternMapper mapperUrlAbsolute = new MapInternToExternMapper(
 				"testUrlAbsolute",
 				new URI(String.format("http://localhost:%d/mapping.csv", REF_SERVER.getPort())),
 				"internal",
-				"{{external}}",
-				"no value"
+				"{{external}}"
 		);
 
 		final MapInternToExternMapper mapperUrlRelative = new MapInternToExternMapper(
 				"testUrlRelative",
 				new URI("./mapping.csv"),
 				"internal",
-				"{{external}}",
-				"no value"
+				"{{external}}"
 		);
 
 
@@ -125,8 +122,7 @@ public class IndexServiceTest {
 				"test1",
 				new URI("classpath:/tests/aggregator/FIRST_MAPPED_AGGREGATOR/mapping.csv"),
 				"internal",
-				"{{external}}",
-				"no value"
+				"{{external}}"
 		);
 
 		injectComponents(mapInternToExternMapper, indexService, CONFIG);
@@ -136,7 +132,7 @@ public class IndexServiceTest {
 		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("hello");
 
 
-		MapIndex mappingBeforeEvict = mapInternToExternMapper.getInt2ext();
+		final MapIndex mappingBeforeEvict = mapInternToExternMapper.getInt2ext();
 
 		indexService.evictCache();
 
@@ -145,7 +141,7 @@ public class IndexServiceTest {
 
 		mapInternToExternMapper.init();
 
-		MapIndex mappingAfterEvict = mapInternToExternMapper.getInt2ext();
+		final MapIndex mappingAfterEvict = mapInternToExternMapper.getInt2ext();
 
 		// Check that the mapping reinitialized
 		assertThat(mappingBeforeEvict).as("Mapping before and after eviction")
