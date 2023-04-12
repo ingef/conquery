@@ -28,16 +28,14 @@ public class FrontendValueIndexKey extends AbstractIndexKey<FrontendValueIndex> 
 	 */
 	private final String optionValueTemplate;
 
-	private final String emptyLabel;
 
-	public FrontendValueIndexKey(URI csv, String internalColumn, String valueTemplate, String optionValueTemplate, int suffixCutoff, String splitPattern, String emptyLabel) {
+	public FrontendValueIndexKey(URI csv, String internalColumn, String valueTemplate, String optionValueTemplate, int suffixCutoff, String splitPattern) {
 		super(csv, internalColumn);
 		this.suffixCutoff = suffixCutoff;
 		this.splitPattern = splitPattern;
 
 		this.valueTemplate = valueTemplate;
 		this.optionValueTemplate = optionValueTemplate;
-		this.emptyLabel = emptyLabel;
 	}
 
 	@Override
@@ -47,6 +45,6 @@ public class FrontendValueIndexKey extends AbstractIndexKey<FrontendValueIndex> 
 
 	@Override
 	public FrontendValueIndex createIndex() {
-		return new FrontendValueIndex(suffixCutoff, splitPattern, valueTemplate, optionValueTemplate, emptyLabel);
+		return new FrontendValueIndex(suffixCutoff, splitPattern, valueTemplate, optionValueTemplate);
 	}
 }

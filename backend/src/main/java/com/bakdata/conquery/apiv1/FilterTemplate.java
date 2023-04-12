@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
 import java.net.URI;
-import java.util.List;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -74,8 +73,6 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 	@NotEmpty
 	private final String optionValue;
 
-	private final String emptyLabel;
-
 	private int minSuffixLength = 3;
 	private boolean generateSuffixes = true;
 
@@ -93,24 +90,21 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 		return false;
 	}
 
-	public List<TrieSearch<FrontendValue>> getSearches(IndexConfig config, NamespaceStorage storage) {
+	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getBaseUrl(), getFilePath());
 		log.trace("Resolved filter template reference url for search '{}': {}", this.getId(), resolvedURI);
 
-		FrontendValueIndex search = indexService.getIndex(new FrontendValueIndexKey(
+		final FrontendValueIndex search = indexService.getIndex(new FrontendValueIndexKey(
 				resolvedURI,
 				columnValue,
 				value,
 				optionValue,
 				isGenerateSuffixes() ? getMinSuffixLength() : Integer.MAX_VALUE,
-				config.getSearchSplitChars(),
-				emptyLabel
+				config.getSearchSplitChars()
 		));
 
-		search.addItem(new FrontendValue("", getEmptyLabel()), List.of(getEmptyLabel()));
-
-		return List.of(search);
+		return search;
 	}
 
 	@Override

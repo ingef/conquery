@@ -25,7 +25,7 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 	 */
 	private final String optionValueTemplate;
 
-	public FrontendValueIndex(int suffixCutoff, String split, String valueTemplate, String optionValueTemplate, String emptyLabel) {
+	public FrontendValueIndex(int suffixCutoff, String split, String valueTemplate, String optionValueTemplate) {
 		super(suffixCutoff, split);
 		this.valueTemplate = valueTemplate;
 		this.optionValueTemplate = optionValueTemplate;
@@ -54,6 +54,5 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 
 	@Override
 	public void finalizer() {
-		shrinkToFit();
 	}
 }

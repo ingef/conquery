@@ -85,11 +85,14 @@ public class UpdateFilterSearchJob extends Job {
 				log.info("BEGIN collecting entries for `{}`", searchable);
 
 				try {
-					final List<TrieSearch<FrontendValue>> values = searchable.getSearches(indexConfig, storage);
+					final TrieSearch<FrontendValue> search = searchable.createTrieSearch(indexConfig, storage);
 
-					for (TrieSearch<FrontendValue> search : values) {
-						synchronizedResult.put(searchable, search);
+					if(search.findExact(List.of(""), 1).isEmpty()){
+						search.addItem(new FrontendValue("", indexConfig.getEmptyLabel()), List.of(indexConfig.getEmptyLabel()));
 					}
+
+					search.shrinkToFit();
+					synchronizedResult.put(searchable, search);
 
 					log.debug(
 							"DONE collecting entries for `{}`, within {}",

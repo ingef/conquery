@@ -50,8 +50,6 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	private int searchMinSuffixLength = 3;
 	private boolean generateSearchSuffixes = true;
 
-	private String emptyLabel;
-
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.STRING);
@@ -66,7 +64,6 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		f.setCreatable(getSearchReferences().stream().noneMatch(Predicate.not(Searchable::isSearchDisabled)));
 
 		f.setOptions(collectLabels());
-		//TODO FK add empty label
 	}
 
 	@JsonIgnore
@@ -91,7 +88,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 
 	@NotNull
 	protected List<FrontendValue> collectLabels() {
-		return labels.entrySet().stream().map(entry -> new FrontendValue(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+		return labels.entrySet().stream()
+					 .map(entry -> new FrontendValue(entry.getKey(), entry.getValue())).collect(Collectors.toList());
 	}
 
 	@JsonIgnore
@@ -127,19 +125,13 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@Override
-	public List<TrieSearch<FrontendValue>> getSearches(IndexConfig config, NamespaceStorage storage) {
+	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
 		final TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSearchSuffixLength(), config.getSearchSplitChars());
 
-		search.addItem(new FrontendValue("", getEmptyLabel()), List.of(getEmptyLabel()));
+		collectLabels().forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
-		labels.entrySet()
-			  .stream()
-			  .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
-			  .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
-		search.shrinkToFit();
-
-		return List.of(search);
+		return search;
 	}
 }

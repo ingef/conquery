@@ -26,7 +26,7 @@ public interface Searchable<ID extends Id<? extends Identifiable<? extends ID>>>
 	/**
 	 * All available {@link FrontendValue}s for searching in a {@link TrieSearch}.
 	 */
-	List<TrieSearch<FrontendValue>> getSearches(IndexConfig config, NamespaceStorage storage);
+	TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage);
 
 	/**
 	 * The actual Searchables to use, if there is potential for deduplication/pooling.
@@ -38,8 +38,6 @@ public interface Searchable<ID extends Id<? extends Identifiable<? extends ID>>>
 		//Hopefully the only candidate will be Column
 		return List.of(this);
 	}
-
-	String getEmptyLabel();
 
 	/**
 	 * Parameter used in the construction of {@link com.bakdata.conquery.util.search.TrieSearch}, defining the shortest suffix to create.
