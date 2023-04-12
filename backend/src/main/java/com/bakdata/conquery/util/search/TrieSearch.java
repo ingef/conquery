@@ -196,7 +196,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	private void ensureWriteable() {
-		if (!shrunk) {
+		if (isWriteable()) {
 			return;
 		}
 		throw new IllegalStateException("Cannot alter a shrunk search.");
@@ -265,5 +265,9 @@ public class TrieSearch<T extends Comparable<T>> {
 				Iterators.concat(Iterators.transform(trie.values().iterator(), Collection::iterator)),
 				seen::add
 		);
+	}
+
+	public boolean isWriteable() {
+		return !shrunk;
 	}
 }

@@ -87,11 +87,11 @@ public class UpdateFilterSearchJob extends Job {
 				try {
 					final TrieSearch<FrontendValue> search = searchable.createTrieSearch(indexConfig, storage);
 
-					if(search.findExact(List.of(""), 1).isEmpty()){
+					if(search.isWriteable() && search.findExact(List.of(""), 1).isEmpty()){
 						search.addItem(new FrontendValue("", indexConfig.getEmptyLabel()), List.of(indexConfig.getEmptyLabel()));
+						search.shrinkToFit();
 					}
 
-					search.shrinkToFit();
 					synchronizedResult.put(searchable, search);
 
 					log.debug(
