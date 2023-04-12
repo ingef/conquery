@@ -42,7 +42,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 		super(filterValue);
 		this.column = column;
 		selectedValuesCache = new ConcurrentHashMap<>();
-		empty = Arrays.stream(filterValue).anyMatch(Strings::isBlank);
+		empty = Arrays.stream(filterValue).anyMatch(Strings::isEmpty);
 	}
 
 

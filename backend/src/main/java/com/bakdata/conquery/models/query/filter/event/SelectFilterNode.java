@@ -32,7 +32,7 @@ public class SelectFilterNode extends EventFilterNode<String> {
 		super(filterValue);
 		this.column = column;
 
-		empty = Strings.isBlank(filterValue);
+		empty = Strings.isEmpty(filterValue);
 	}
 
 	@Override
