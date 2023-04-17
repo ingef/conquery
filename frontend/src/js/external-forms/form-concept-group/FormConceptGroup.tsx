@@ -311,7 +311,8 @@ const FormConceptGroup = (props: Props) => {
                           ),
                         ),
                       expandable:
-                        !props.isSingle && hasConceptChildren(concept),
+                        !props.disallowMultipleColumns &&
+                        hasConceptChildren(concept),
                       active: !!concept.includeSubnodes,
                     }}
                   />
