@@ -1,15 +1,17 @@
 import styled from "@emotion/styled";
+import { Fragment } from "react";
 import { useSelector } from "react-redux";
 
 import { EntityInfo, TimeStratifiedInfo } from "../api/types";
 import { StateT } from "../app/reducers";
+import { exists } from "../common/helpers/exists";
 
 import EntityInfos from "./EntityInfos";
 import { getColumnType } from "./timeline/util";
 
 const Container = styled("div")`
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1.618fr 1fr;
   gap: 30px;
   padding: 20px;
   background-color: ${({ theme }) => theme.col.bg};
@@ -23,9 +25,9 @@ const Centered = styled("div")`
 `;
 
 const Grid = styled("div")`
-  display: flex;
-  gap: 10px;
-  flex-direction: column;
+  display: inline-grid;
+  gap: 4px 10px;
+  grid-template-columns: auto auto;
 `;
 const Label = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
@@ -34,6 +36,48 @@ const Value = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
   font-weight: 400;
 `;
+
+const TimeStratifiedInfos = ({
+  timeStratifiedInfos,
+}: {
+  timeStratifiedInfos: TimeStratifiedInfo[];
+}) => {
+  const currencyPrefix = useSelector<StateT, string>(
+    (state) => state.startup.config.currency.prefix,
+  );
+
+  return (
+    <div>
+      {timeStratifiedInfos.map((timeStratifiedInfo) => {
+        return (
+          <Grid key={timeStratifiedInfo.label}>
+            {timeStratifiedInfo.columns.map((column) => {
+              const columnType = getColumnType(
+                timeStratifiedInfo,
+                column.label,
+              );
+
+              const label = column.label;
+              const value = timeStratifiedInfo.totals[column.label];
+
+              if (!exists(value)) return <></>;
+
+              return (
+                <Fragment key={label}>
+                  <Value>
+                    {value}
+                    {columnType === "MONEY" ? " " + currencyPrefix : ""}
+                  </Value>
+                  <Label>{label}</Label>
+                </Fragment>
+              );
+            })}
+          </Grid>
+        );
+      })}
+    </div>
+  );
+};
 
 export const EntityCard = ({
   className,
@@ -44,34 +88,12 @@ export const EntityCard = ({
   infos: EntityInfo[];
   timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
-  const currencyPrefix = useSelector<StateT, string>(
-    (state) => state.startup.config.currency.prefix,
-  );
-
   return (
     <Container className={className}>
       <Centered>
         <EntityInfos infos={infos} />
       </Centered>
-      {timeStratifiedInfos.map((timeStratifiedInfo) => {
-        return (
-          <Grid key={timeStratifiedInfo.label}>
-            {Object.entries(timeStratifiedInfo.totals).map(([label, value]) => {
-              const columnType = getColumnType(timeStratifiedInfo, label);
-
-              return (
-                <div key={label}>
-                  <Value>
-                    {value}
-                    {columnType === "MONEY" ? " " + currencyPrefix : ""}
-                  </Value>
-                  <Label>{label}</Label>
-                </div>
-              );
-            })}
-          </Grid>
-        );
-      })}
+      <TimeStratifiedInfos timeStratifiedInfos={timeStratifiedInfos} />
     </Container>
   );
 };

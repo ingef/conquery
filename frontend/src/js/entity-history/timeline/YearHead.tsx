@@ -1,12 +1,11 @@
 import styled from "@emotion/styled";
 import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
-import { memo } from "react";
+import { Fragment, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import { TimeStratifiedInfo } from "../../api/types";
 import { StateT } from "../../app/reducers";
-import { exists } from "../../common/helpers/exists";
 import FaIcon from "../../icon/FaIcon";
 
 import { SmallHeading } from "./SmallHeading";
@@ -35,8 +34,8 @@ const StickyWrap = styled("div")`
 
 const Grid = styled("div")`
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 2px 10px;
+  grid-template-columns: 60px auto;
+  gap: 0px 10px;
 `;
 
 const Value = styled("div")`
@@ -63,30 +62,50 @@ const TimeStratifiedInfos = ({
   const currencyUnit = useSelector<StateT, string>(
     (state) => state.startup.config.currency.prefix,
   );
-  const yearInfos = timeStratifiedInfos
-    .map((i) => i.years.find((info) => info.year === year))
-    .filter(exists);
+
+  const infos = timeStratifiedInfos
+    .map((info) => {
+      return {
+        info,
+        yearInfo: info.years.find((i) => i.year === year),
+      };
+    })
+    .filter(
+      (
+        i,
+      ): i is {
+        info: TimeStratifiedInfo;
+        yearInfo: TimeStratifiedInfo["years"][number];
+      } => !!i.yearInfo?.values && Object.entries(i.yearInfo.values).length > 0,
+    );
 
   return (
     <>
-      <span />{" "}
-      {yearInfos.map((info) => (
-        <Grid>
-          {Object.entries(info.values).map(([label, value]) => {
-            const columnType = getColumnType(timeStratifiedInfos[0], label);
+      {infos.map(({ info, yearInfo }) => {
+        return (
+          <Grid key={info.label}>
+            {Object.entries(yearInfo.values)
+              .sort(
+                ([l1], [l2]) =>
+                  info.columns.findIndex((c) => c.label === l1) -
+                  info.columns.findIndex((c) => c.label === l2),
+              )
+              .map(([label, value]) => {
+                const columnType = getColumnType(info, label);
 
-            return (
-              <>
-                <Value>
-                  {value}
-                  {columnType === "MONEY" ? " " + currencyUnit : ""}
-                </Value>
-                <Label>{label}</Label>
-              </>
-            );
-          })}
-        </Grid>
-      ))}
+                return (
+                  <Fragment key={label}>
+                    <Value>
+                      {value}
+                      {columnType === "MONEY" ? " " + currencyUnit : ""}
+                    </Value>
+                    <Label>{label}</Label>
+                  </Fragment>
+                );
+              })}
+          </Grid>
+        );
+      })}
     </>
   );
 };
@@ -116,6 +135,7 @@ const YearHead = ({
             {totalEvents}&nbsp;{t("history.events", { count: totalEvents })}
           </div>
         </div>
+        <span />
         <TimeStratifiedInfos
           year={year}
           timeStratifiedInfos={timeStratifiedInfos}
