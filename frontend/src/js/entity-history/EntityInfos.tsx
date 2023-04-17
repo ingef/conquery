@@ -7,6 +7,7 @@ const Grid = styled("div")`
   display: inline-grid;
   grid-template-columns: 1fr auto;
   gap: 0 16px;
+  place-items: center start;
 `;
 const Label = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};

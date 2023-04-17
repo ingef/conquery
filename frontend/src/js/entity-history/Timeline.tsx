@@ -33,9 +33,9 @@ const Root = styled("div")`
   -webkit-overflow-scrolling: touch;
   padding: 0 20px 0 10px;
   display: inline-grid;
-  grid-template-columns: 125px auto;
+  grid-template-columns: 200px auto;
   grid-auto-rows: minmax(min-content, max-content);
-  gap: 20px 4px;
+  gap: 12px 4px;
   width: 100%;
 `;
 
@@ -100,6 +100,7 @@ const Timeline = ({
           year={year}
           datasetId={datasetId}
           quarterwiseData={quarterwiseData}
+          timeStratifiedInfos={currentEntityTimeStratifiedInfos}
           getIsOpen={getIsOpen}
           toggleOpenYear={toggleOpenYear}
           toggleOpenQuarter={toggleOpenQuarter}
@@ -293,7 +294,7 @@ const useTimeBucketedSortedData = (
     while (sortedEvents[0].year < currentYear) {
       sortedEvents.unshift({
         year: sortedEvents[0].year + 1,
-        quarterwiseData: [1, 2, 3, 4].map((q) => ({
+        quarterwiseData: [4, 3, 2, 1].map((q) => ({
           quarter: q,
           events: [],
         })),
