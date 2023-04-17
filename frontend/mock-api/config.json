@@ -3,7 +3,7 @@
   "production": true,
   "currency": {
     "factor": 1,
-    "suffix": " €",
+    "unit": "€",
     "thousandSeparator": ".",
     "decimalSeparator": ",",
     "decimalScale": 2

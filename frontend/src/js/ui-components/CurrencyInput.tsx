@@ -50,7 +50,10 @@ const CurrencyInput: FC<PropsT> = ({
   }, [value]);
   return (
     <SxNumberFormat
-      {...currencyConfig}
+      thousandSeparator={currencyConfig?.thousandSeparator}
+      decimalSeparator={currencyConfig?.decimalSeparator}
+      decimalScale={currencyConfig?.decimalScale}
+      suffix={" " + currencyConfig?.unit}
       placeholder={placeholder}
       type="text"
       value={numberFormatValue}

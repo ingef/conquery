@@ -28,7 +28,7 @@ export interface DateRangeT {
 }
 
 export interface CurrencyConfigT {
-  suffix: string;
+  unit: string;
   thousandSeparator: string;
   decimalSeparator: string;
   decimalScale: number;
