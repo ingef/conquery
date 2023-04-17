@@ -30,8 +30,8 @@ const ConceptDropzone: FC<PropsT> = ({ node, onDropConcept }) => {
         const conceptId = (item as DragItemConceptTreeNode).ids[0];
 
         return (
-          (item as DragItemConceptTreeNode).tree === node.tree
-        //  !node.ids.some((id) => id === conceptId)
+          (item as DragItemConceptTreeNode).tree === node.tree &&
+          !node.ids.some((id) => id === conceptId)
         );
       }}
     >

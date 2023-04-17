@@ -204,7 +204,10 @@ const QueryNode = ({
         ) {
           return false;
         }
-        return item.tree === node.tree;
+        const conceptId = item.ids[0];
+        const itemAlreadyInNode = node.ids.includes(conceptId);
+        const itemHasConceptRoot = item.tree === node.tree;
+        return itemHasConceptRoot && !itemAlreadyInNode;
       }}
       highlightDroppable={true}
     >

@@ -688,14 +688,8 @@ const onAddConceptToNode = (
 
   if (!nodeIsConceptQueryNode(node)) return state;
 
-  let ids = concept.ids;
-
-  node.ids.forEach(nodeId => {
-    if(!ids.includes(nodeId)) ids.push(nodeId);
-  });
-
   return setElementProperties(state, andIdx, orIdx, {
-    ids: ids,
+    ids: [...concept.ids, ...node.ids],
   });
 };
 
