@@ -22,7 +22,11 @@ const Root = styled("div")<{
   highlightDroppable?: boolean;
 }>`
   background-color: ${({ theme, isDroppable, highlightDroppable, isOver }) =>
-    isOver&& isDroppable ? `${theme.col.grayLight}` : highlightDroppable && isDroppable ? `${theme.col.grayVeryLight}` : "inherit"};
+    isOver && isDroppable
+      ? `${theme.col.grayLight}`
+      : highlightDroppable && isDroppable
+      ? `${theme.col.grayVeryLight}`
+      : "inherit"};
   position: relative;
   border-radius: ${({ theme }) => theme.borderRadius};
   display: inline-flex;
@@ -36,7 +40,7 @@ export const HoverNavigatable = ({
   children,
   className,
   canDrop,
-  highlightDroppable
+  highlightDroppable,
 }: PropsT) => {
   const [timeoutVar, setTimeoutVar] = useState<null | NodeJS.Timeout>(null);
 
@@ -55,7 +59,7 @@ export const HoverNavigatable = ({
           setTimeout(() => {
             setTimeoutVar(null);
             if (monitor.isOver()) {
-            triggerNavigate();
+              triggerNavigate();
             }
           }, TIME_UNTIL_NAVIGATE),
         );
