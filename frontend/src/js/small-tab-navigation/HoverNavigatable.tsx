@@ -21,12 +21,11 @@ const Root = styled("div")<{
   isDroppable?: boolean;
   highlightDroppable?: boolean;
 }>`
-  background-color: ${({ theme, isDroppable, highlightDroppable, isOver }) =>
-    isOver && isDroppable
-      ? `${theme.col.grayLight}`
-      : highlightDroppable && isDroppable
-      ? `${theme.col.grayVeryLight}`
-      : "inherit"};
+  background-color: ${({ theme, isDroppable, highlightDroppable, isOver }) => {
+    if (isOver && isDroppable) return `${theme.col.grayLight}`;
+    if (highlightDroppable && isDroppable) return `${theme.col.grayVeryLight}`;
+    return "inherit";
+  }};
   position: relative;
   border-radius: ${({ theme }) => theme.borderRadius};
   display: inline-flex;
