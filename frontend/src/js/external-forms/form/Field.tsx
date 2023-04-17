@@ -168,7 +168,11 @@ const Field = ({ field, ...commonProps }: PropsT) => {
 
   const defaultValue =
     isFormField(field) && field.type !== "GROUP"
-      ? getInitialValue(field, { availableDatasets, activeLang: locale })
+      ? getInitialValue(field, {
+          availableDatasets,
+          activeLang: locale,
+          datasetId,
+        })
       : null;
 
   switch (field.type) {

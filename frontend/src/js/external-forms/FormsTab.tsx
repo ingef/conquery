@@ -56,7 +56,11 @@ export const useDatasetOptions = () => {
   );
 };
 
-const useInitializeForm = () => {
+const useInitializeForm = ({
+  datasetId,
+}: {
+  datasetId: DatasetT["id"] | null;
+}) => {
   const activeLang = useActiveLang();
   const config = useSelector<StateT, Form | null>(selectFormConfig);
   const allFields: (Field | Tabs)[] = useMemo(() => {
@@ -77,12 +81,13 @@ const useInitializeForm = () => {
         const initialValue = getInitialValue(field, {
           availableDatasets: datasetOptions,
           activeLang,
+          datasetId,
         });
 
         return [field.name, initialValue];
       }),
     );
-  }, [allFields, datasetOptions, activeLang, config]);
+  }, [allFields, datasetOptions, activeLang, config, datasetId]);
 
   const methods = useForm<DynamicFormValues>({
     defaultValues,
@@ -104,7 +109,9 @@ const FormsTab = () => {
 
   useLoadForms({ datasetId });
 
-  const { methods, config, datasetOptions, onReset } = useInitializeForm();
+  const { methods, config, datasetOptions, onReset } = useInitializeForm({
+    datasetId,
+  });
 
   useEffect(
     function resetOnDatasetChange() {
