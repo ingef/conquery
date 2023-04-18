@@ -80,6 +80,12 @@ export const useAllowExtendedCopying = (
   // Need to have min 2 fields to copy from one to another
   if (otherConceptListFields.length < 1) return false;
 
+  const targetField = visibleConceptListFields.find(
+    (field) => field.name === targetFieldname,
+  );
+  if (targetField?.showCopyButton !== undefined && !targetField.showCopyButton)
+    return false;
+
   const fieldHasFilledConcept = (field: ConceptListField) => {
     return (
       !!values[field.name] &&
