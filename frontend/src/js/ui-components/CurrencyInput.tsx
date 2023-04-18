@@ -48,10 +48,10 @@ const CurrencyInput: FC<PropsT> = ({
       setNumberFormatValue("");
     }
   }, [value]);
-
   return (
     <SxNumberFormat
       {...currencyConfig}
+      suffix={" " + currencyConfig?.unit}
       placeholder={placeholder}
       type="text"
       value={numberFormatValue}

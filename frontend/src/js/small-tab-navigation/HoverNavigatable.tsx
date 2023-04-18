@@ -13,14 +13,20 @@ interface PropsT {
     item: PossibleDroppableObject,
     monitor: DropTargetMonitor<PossibleDroppableObject, unknown>,
   ) => boolean;
+  highlightDroppable?: boolean;
 }
 
 const Root = styled("div")<{
   isOver?: boolean;
   isDroppable?: boolean;
+  highlightDroppable?: boolean;
 }>`
-  background-color: ${({ theme, isOver, isDroppable }) =>
-    isOver && isDroppable ? `${theme.col.grayVeryLight}` : "inherit"};
+  background-color: ${({ theme, isDroppable, highlightDroppable, isOver }) => {
+    if (isOver && isDroppable)
+      return highlightDroppable ? theme.col.grayLight : theme.col.grayVeryLight;
+    if (highlightDroppable && isDroppable) return theme.col.grayVeryLight;
+    return "inherit";
+  }};
   position: relative;
   border-radius: ${({ theme }) => theme.borderRadius};
   display: inline-flex;
@@ -34,6 +40,7 @@ export const HoverNavigatable = ({
   children,
   className,
   canDrop,
+  highlightDroppable,
 }: PropsT) => {
   const [timeoutVar, setTimeoutVar] = useState<null | NodeJS.Timeout>(null);
 
@@ -70,6 +77,7 @@ export const HoverNavigatable = ({
       isOver={isOver}
       isDroppable={isDroppable}
       className={className}
+      highlightDroppable={highlightDroppable}
     >
       {children}
     </Root>

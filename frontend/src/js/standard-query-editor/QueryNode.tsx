@@ -209,6 +209,7 @@ const QueryNode = ({
         const itemHasConceptRoot = item.tree === node.tree;
         return itemHasConceptRoot && !itemAlreadyInNode;
       }}
+      highlightDroppable={true}
     >
       <Root
         ref={(instance) => {
