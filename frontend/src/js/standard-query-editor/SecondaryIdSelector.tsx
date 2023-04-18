@@ -9,6 +9,7 @@ import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode } from "../model/node";
+import WithTooltip from "../tooltip/WithTooltip";
 import ToggleButton from "../ui-components/ToggleButton";
 
 import { setSelectedSecondaryId } from "./actions";
@@ -22,6 +23,7 @@ const Headline = styled.h3<{ active?: boolean }>`
   transition: color ${({ theme }) => theme.transitionTime};
   color: ${({ theme, active }) =>
     active ? theme.col.blueGrayDark : theme.col.gray};
+  width: fit-content;
 `;
 
 const SxFaIcon = styled(FaIcon)<{ active?: boolean }>`
@@ -152,10 +154,12 @@ const SecondaryIdSelectorUI = memo(
 
     return (
       <div>
-        <Headline active={!!value}>
-          <SxFaIcon active={!!value} left icon={faMicroscope} />
-          {t("queryEditor.secondaryId")}
-        </Headline>
+        <WithTooltip text={t("queryEditor.secondaryIdTootlip")}>
+          <Headline active={!!value}>
+            <SxFaIcon active={!!value} left icon={faMicroscope} />
+            {t("queryEditor.secondaryId")}
+          </Headline>
+        </WithTooltip>
         <ToggleButton
           value={value || "standard"}
           onChange={onChange}
