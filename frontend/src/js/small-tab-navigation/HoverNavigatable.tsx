@@ -22,8 +22,9 @@ const Root = styled("div")<{
   highlightDroppable?: boolean;
 }>`
   background-color: ${({ theme, isDroppable, highlightDroppable, isOver }) => {
-    if (isOver && isDroppable) return `${theme.col.grayLight}`;
-    if (highlightDroppable && isDroppable) return `${theme.col.grayVeryLight}`;
+    if (isOver && isDroppable)
+      return highlightDroppable ? theme.col.grayLight : theme.col.grayVeryLight;
+    if (highlightDroppable && isDroppable) return theme.col.grayVeryLight;
     return "inherit";
   }};
   position: relative;
