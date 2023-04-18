@@ -49,16 +49,7 @@ const ConceptDropzone: FC<PropsT> = ({ node, onDropConcept }) => {
     <SxDropzone /* TOOD: ADD GENERIC TYPE <FC<DropzoneProps<DragItemConceptTreeNode>>> */
       acceptedDropTypes={DROP_TYPES}
       onDrop={(item) => onDropConcept(item as DragItemConceptTreeNode)}
-      canDrop={(item) => {
-        // The dragged item should contain exactly one id
-        // since it was dragged from the tree
-        const conceptId = (item as DragItemConceptTreeNode).ids[0];
-
-        return (
-          (item as DragItemConceptTreeNode).tree === node.tree &&
-          !node.ids.some((id) => id === conceptId)
-        );
-      }}
+      canDrop={canDropConceptTreeNodeBeDropped(node)}
     >
       {() => t("queryNodeEditor.dropConcept")}
     </SxDropzone>

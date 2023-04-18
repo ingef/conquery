@@ -130,7 +130,7 @@ const FormConceptNode: FC<PropsT> = ({
     <HoverNavigatable
       triggerNavigate={onClick}
       canDrop={canDropConceptTreeNodeBeDropped(conceptNode)}
-      highlightDroppable={true}
+      highlightDroppable
     >
       <Root
         ref={(instance) => {
