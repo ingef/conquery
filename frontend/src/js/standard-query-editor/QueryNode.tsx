@@ -12,9 +12,9 @@ import {
   nodeHasNonDefaultSettings,
   nodeHasFilterValues,
   nodeIsConceptQueryNode,
+  canNodeBeDropped,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
-import { canDropConceptTreeNodeBeDropped } from "../query-node-editor/ConceptDropzone";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 
@@ -187,7 +187,7 @@ const QueryNode = ({
   const QueryNodeRoot = (
     <FlexHoverNavigatable
       triggerNavigate={onClick}
-      canDrop={canDropConceptTreeNodeBeDropped(node)}
+      canDrop={(item) => canNodeBeDropped(node, item)}
       highlightDroppable={true}
     >
       <Root

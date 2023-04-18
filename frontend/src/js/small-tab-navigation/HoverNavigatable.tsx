@@ -28,6 +28,7 @@ const Root = styled("div")<{
     return "inherit";
   }};
   position: relative;
+  border-radius: ${({ theme }) => theme.borderRadius};
   display: inline-flex;
 `;
 
