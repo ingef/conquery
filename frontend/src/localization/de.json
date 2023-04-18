@@ -58,7 +58,7 @@
     "previousQuery": "Anfrage",
     "loadingPreviousQuery": "Lade Anfragedetails",
     "secondaryId": "Analyse-Ebene",
-    "secondaryIdTootlip": "Hier können zusätzliche Verknüpfungen zwischen den Konzepten bestimmt werden. Bei Standard erfolgt die Verknüpfung auf Versicherten-Ebene, bei den weiteren Schaltflächen auf Ebene des Versicherten + die zusätzlich gewählte Verknüpfung.",
+    "secondaryIdTootlip": "Hier können zusätzliche Verknüpfungen zwischen den Konzepten bestimmt werden. Bei Standard erfolgt die Verknüpfung auf Entitäten-Ebene, bei den weiteren Schaltflächen auf Ebene der Entität + die zusätzlich gewählte Verknüpfung.",
     "secondaryIdStandard": "Standard",
     "hasSecondaryId": "Analyse-Ebene aktiv",
     "removeNode": "Knoten entfernen",
