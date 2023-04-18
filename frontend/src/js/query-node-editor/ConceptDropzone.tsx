@@ -3,8 +3,12 @@ import { FC } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DNDType } from "../common/constants/dndTypes";
-import type { DragItemConceptTreeNode } from "../standard-query-editor/types";
-import Dropzone from "../ui-components/Dropzone";
+import { nodeIsConceptQueryNode } from "../model/node";
+import type {
+  DragItemConceptTreeNode,
+  StandardQueryNodeT,
+} from "../standard-query-editor/types";
+import Dropzone, { PossibleDroppableObject } from "../ui-components/Dropzone";
 
 const SxDropzone = styled(Dropzone)`
   width: 100%;
@@ -16,6 +20,27 @@ interface PropsT {
   node: DragItemConceptTreeNode;
   onDropConcept: (concept: DragItemConceptTreeNode) => void;
 }
+
+export const droppableObjectIsConceptTreeNode = (
+  node: PossibleDroppableObject,
+): node is DragItemConceptTreeNode => {
+  return node.type === DNDType.CONCEPT_TREE_NODE;
+};
+
+export const canDropConceptTreeNodeBeDropped = (node: StandardQueryNodeT) => {
+  return (item: PossibleDroppableObject) => {
+    if (
+      !droppableObjectIsConceptTreeNode(item) ||
+      !nodeIsConceptQueryNode(node)
+    ) {
+      return false;
+    }
+    const conceptId = item.ids[0];
+    const itemAlreadyInNode = node.ids.includes(conceptId);
+    const itemHasConceptRoot = item.tree === node.tree;
+    return itemHasConceptRoot && !itemAlreadyInNode;
+  };
+};
 
 const ConceptDropzone: FC<PropsT> = ({ node, onDropConcept }) => {
   const { t } = useTranslation();
