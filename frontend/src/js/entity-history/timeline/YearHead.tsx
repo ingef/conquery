@@ -60,7 +60,7 @@ const TimeStratifiedInfos = ({
   timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
   const currencyUnit = useSelector<StateT, string>(
-    (state) => state.startup.config.currency.prefix,
+    (state) => state.startup.config.currency.unit,
   );
 
   const infos = timeStratifiedInfos

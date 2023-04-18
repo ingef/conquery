@@ -42,8 +42,8 @@ const TimeStratifiedInfos = ({
 }: {
   timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
-  const currencyPrefix = useSelector<StateT, string>(
-    (state) => state.startup.config.currency.prefix,
+  const currencyUnit = useSelector<StateT, string>(
+    (state) => state.startup.config.currency.unit,
   );
 
   return (
@@ -66,7 +66,7 @@ const TimeStratifiedInfos = ({
                 <Fragment key={label}>
                   <Value>
                     {value}
-                    {columnType === "MONEY" ? " " + currencyPrefix : ""}
+                    {columnType === "MONEY" ? " " + currencyUnit : ""}
                   </Value>
                   <Label>{label}</Label>
                 </Fragment>
