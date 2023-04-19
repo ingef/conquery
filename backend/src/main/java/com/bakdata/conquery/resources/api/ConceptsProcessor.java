@@ -234,16 +234,13 @@ public class ConceptsProcessor {
 		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
 		 */
 
-		List<TrieSearch<FrontendValue>> searches = namespace.getFilterSearch().getSearchesFor(searchable);
-
-		log.debug("");
+		final List<TrieSearch<FrontendValue>> searches = namespace.getFilterSearch().getSearchesFor(searchable);
 
 		final Iterator<FrontendValue> iterators =
 				Iterators.concat(
 						// We are always leading with the empty value.
 						Iterators.singletonIterator(new FrontendValue("", config.getIndex().getEmptyLabel())),
-						Iterators.concat(Iterators.transform(searches
-																	  .iterator(), TrieSearch::iterator))
+						Iterators.concat(Iterators.transform(searches.iterator(), TrieSearch::iterator))
 				);
 
 		// Use Set to accomplish distinct values

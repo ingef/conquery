@@ -89,7 +89,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	@NotNull
 	protected List<FrontendValue> collectLabels() {
 		return labels.entrySet().stream()
-					 .map(entry -> new FrontendValue(entry.getKey(), entry.getValue())).collect(Collectors.toList());
+					 .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
+					 .collect(Collectors.toList());
 	}
 
 	@JsonIgnore
@@ -128,6 +129,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
 		final TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSearchSuffixLength(), config.getSearchSplitChars());
+
+		log.debug("Labels for {}: `{}`", getId(), collectLabels().stream().map(FrontendValue::toString).collect(Collectors.toList()));
 
 		collectLabels().forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 
