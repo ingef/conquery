@@ -46,6 +46,9 @@ ENV CLUSTER_PORT=${CLUSTER_PORT:-8082}
 ENV ADMIN_PORT=${ADMIN_PORT:-8081}
 ENV API_PORT=${API_PORT:-8080}
 
+RUN mkdir /app/logs
+VOLUME /app/logs
+
 ENTRYPOINT [ "java", "-jar", "conquery.jar" ]
 
 CMD [ "standalone" ]
