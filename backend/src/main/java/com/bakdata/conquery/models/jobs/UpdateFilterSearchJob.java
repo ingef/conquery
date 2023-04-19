@@ -82,7 +82,7 @@ public class UpdateFilterSearchJob extends Job {
 
 				final StopWatch watch = StopWatch.createStarted();
 
-				log.info("BEGIN collecting entries for `{}`", searchable);
+				log.info("BEGIN collecting entries for `{}`", searchable.getId());
 
 				try {
 					final TrieSearch<FrontendValue> search = searchable.createTrieSearch(indexConfig, storage);
@@ -95,8 +95,9 @@ public class UpdateFilterSearchJob extends Job {
 					synchronizedResult.put(searchable, search);
 
 					log.debug(
-							"DONE collecting entries for `{}`, within {}",
-							searchable,
+							"DONE collecting {} entries for `{}`, within {}",
+							search.calculateSize(),
+							searchable.getId(),
 							Duration.ofMillis(watch.getTime())
 					);
 				}

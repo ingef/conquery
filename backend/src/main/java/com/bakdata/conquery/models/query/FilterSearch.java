@@ -62,8 +62,12 @@ public class FilterSearch {
 	/**
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
-	public List<TrieSearch<FrontendValue>> getSearchesFor(Searchable<?> searchable) {
-		return searchable.getSearchReferences().stream()
+	public final List<TrieSearch<FrontendValue>> getSearchesFor(Searchable<?> searchable) {
+		final List<Searchable<?>> references = searchable.getSearchReferences();
+
+		log.debug("Got {} as searchables for {}", references.stream().map(Searchable::getId).collect(Collectors.toList()), searchable.getId());
+
+		return references.stream()
 						 .map(searchCache::get)
 						 .filter(Objects::nonNull)
 						 .collect(Collectors.toList());

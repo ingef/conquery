@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -172,10 +171,4 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 		return search;
 	}
-
-	@Override
-	public List<Searchable<?>> getSearchReferences() {
-		return List.of(this);
-	}
-
 }

@@ -25,7 +25,6 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -235,12 +234,15 @@ public class ConceptsProcessor {
 		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
 		 */
 
+		List<TrieSearch<FrontendValue>> searches = namespace.getFilterSearch().getSearchesFor(searchable);
+
+		log.debug("");
+
 		final Iterator<FrontendValue> iterators =
 				Iterators.concat(
 						// We are always leading with the empty value.
 						Iterators.singletonIterator(new FrontendValue("", config.getIndex().getEmptyLabel())),
-						Iterators.concat(Iterators.transform(namespace.getFilterSearch()
-																	  .getSearchesFor(searchable)
+						Iterators.concat(Iterators.transform(searches
 																	  .iterator(), TrieSearch::iterator))
 				);
 
