@@ -1,6 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { FC, ReactNode, useMemo } from "react";
+import { FC, ReactNode, createRef, useMemo } from "react";
+import "react-datepicker/dist/react-datepicker.css";
 import { useTranslation } from "react-i18next";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
@@ -14,7 +15,7 @@ import {
 import { exists } from "../common/helpers/exists";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
-import BaseInput from "./BaseInput";
+import InputDate from "./InputDate";
 import Label from "./Label";
 import Labeled from "./Labeled";
 import Optional from "./Optional";
@@ -165,6 +166,8 @@ const InputDateRange: FC<PropsT> = ({
   const min = getDisplayDate("min", value, displayDateFormat);
   const max = getDisplayDate("max", value, displayDateFormat);
 
+  const maxRef = createRef<HTMLInputElement>();
+
   const isMinValid = exists(value.min && parseDate(min, displayDateFormat));
   const isMaxValid = exists(value.max && parseDate(max, displayDateFormat));
 
@@ -199,9 +202,9 @@ const InputDateRange: FC<PropsT> = ({
       {labelWithSuffix}
       <Pickers inline={inline} center={center}>
         <SxLabeled label={t("inputDateRange.from")}>
-          <BaseInput
-            inputType="text"
+          <InputDate
             value={min}
+            dateFormat={displayDateFormat}
             valid={isMinValid}
             invalid={min.length !== 0 && !isMinValid}
             invalidText={t("common.dateInvalid")}
@@ -209,6 +212,7 @@ const InputDateRange: FC<PropsT> = ({
             onChange={(val) =>
               onChangeRaw("min", val as string, displayDateFormat)
             }
+            onCalendarSelect={() => maxRef.current?.focus()}
             onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
             inputProps={{
               autoFocus,
@@ -216,9 +220,10 @@ const InputDateRange: FC<PropsT> = ({
           />
         </SxLabeled>
         <SxLabeled label={t("inputDateRange.to")}>
-          <BaseInput
-            inputType="text"
+          <InputDate
+            ref={maxRef}
             value={max}
+            dateFormat={displayDateFormat}
             valid={isMaxValid}
             invalid={max.length !== 0 && !isMaxValid}
             invalidText={t("common.dateInvalid")}
