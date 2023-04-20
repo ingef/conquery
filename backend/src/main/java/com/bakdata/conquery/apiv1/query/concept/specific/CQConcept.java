@@ -81,16 +81,52 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 	@NsIdRefCollection
 	private List<Select> selects = new ArrayList<>();
 
-	private boolean excludeFromTimeAggregation = false;
+	private boolean excludeFromTimeAggregation;
 
 	//TODO FK 2.12.2021: remove this after successful recode.
 	@JsonAlias("excludeFromSecondaryIdQuery")
-	private boolean excludeFromSecondaryId = false;
+	private boolean excludeFromSecondaryId;
 
 	@JsonView(View.InternalCommunication.class)
 	private boolean aggregateEventDates;
 
+	public static CQConcept forSelect(Select select) {
+		final CQConcept cqConcept = new CQConcept();
+		cqConcept.setElements(List.of(select.getHolder().findConcept()));
 
+		if (select.getHolder() instanceof Connector) {
+			final CQTable table = new CQTable();
+			cqConcept.setTables(List.of(table));
+
+			table.setConnector(((Connector) select.getHolder()));
+
+			table.setSelects(List.of(select));
+		}
+		else {
+			cqConcept.setTables(((Concept<?>) select.getHolder())
+										.getConnectors().stream()
+										.map(conn -> {
+											final CQTable table = new CQTable();
+											table.setConnector(conn);
+											return table;
+										}).toList());
+
+			cqConcept.setSelects(List.of(select));
+		}
+
+		return cqConcept;
+	}
+
+	public static CQConcept forConnector(Connector source) {
+		final CQConcept cqConcept = new CQConcept();
+		cqConcept.setElements(List.of(source.getConcept()));
+		final CQTable cqTable = new CQTable();
+		cqTable.setConcept(cqConcept);
+		cqTable.setConnector(source);
+		cqConcept.setTables(List.of(cqTable));
+
+		return cqConcept;
+	}
 
 	@Override
 	public String defaultLabel(Locale locale) {
@@ -155,15 +191,15 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 		final List<Aggregator<?>> conceptAggregators = createAggregators(plan, selects);
 
-		List<QPNode> tableNodes = new ArrayList<>();
+		final List<QPNode> tableNodes = new ArrayList<>();
 		for (CQTable table : tables) {
 
-			List<FilterNode<?>> filters = table.getFilters().stream()
-											   .map(FilterValue::createNode)
-											   .collect(Collectors.toList());
+			final List<FilterNode<?>> filters = table.getFilters().stream()
+													 .map(FilterValue::createNode)
+													 .collect(Collectors.toList());
 
 			//add filter to children
-			List<Aggregator<?>> aggregators = new ArrayList<>();
+			final List<Aggregator<?>> aggregators = new ArrayList<>();
 
 			aggregators.addAll(conceptAggregators);
 
@@ -171,7 +207,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			// Exists aggregators hold a reference to their parent FiltersNode so they need to be treated separately.
 			// They also don't need aggregation as they simply imitate their reference.
-			List<ExistsAggregator> existsAggregators =
+			final List<ExistsAggregator> existsAggregators =
 					connectorAggregators.stream()
 										.filter(ExistsAggregator.class::isInstance)
 										.map(ExistsAggregator.class::cast)
@@ -182,7 +218,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 			aggregators.removeIf(ExistsAggregator.class::isInstance);
 
 
-			List<Aggregator<CDateSet>> eventDateUnionAggregators =
+			final List<Aggregator<CDateSet>> eventDateUnionAggregators =
 					aggregateEventDates ? List.of(new EventDateUnionAggregator(Set.of(table.getConnector().getTable())))
 										: Collections.emptyList();
 
@@ -201,7 +237,6 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 						  .map(Column::getSecondaryId)
 						  .filter(Objects::nonNull)
 						  .anyMatch(o -> Objects.equals(context.getSelectedSecondaryId(), o));
-
 
 
 			final ConceptNode node = new ConceptNode(
@@ -252,7 +287,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@Override
 	public List<ResultInfo> getResultInfos() {
-		List<ResultInfo> resultInfos = new ArrayList<>();
+		final List<ResultInfo> resultInfos = new ArrayList<>();
 
 		for (Select select : selects) {
 			resultInfos.add(select.getResultInfo(this));
@@ -276,55 +311,31 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		this.aggregateEventDates = !(excludeFromTimeAggregation || DateAggregationMode.NONE.equals(context.getDateAggregationMode()));
+		aggregateEventDates = !(excludeFromTimeAggregation || DateAggregationMode.NONE.equals(context.getDateAggregationMode()));
 		tables.forEach(t -> t.resolve(context));
 	}
 
 	@Override
 	public void setDefaultExists() {
-		boolean allTablesEmpty = getTables().stream()
-											.map(CQTable::getSelects)
-											.allMatch(List::isEmpty);
+		final boolean allTablesEmpty = getTables().stream()
+												  .map(CQTable::getSelects)
+												  .allMatch(List::isEmpty);
 
 		if (!(getSelects().isEmpty() && (tables.isEmpty() || allTablesEmpty))) {
 			// Don't fill if there are any selects on concept level or on any table level
 			return;
 		}
 
-		List<Select> cSelects = new ArrayList<>(getSelects());
+		final List<Select> cSelects = new ArrayList<>(getSelects());
 		cSelects.addAll(getConcept().getDefaultSelects());
 
 		setSelects(cSelects);
 
 		for (CQTable t : getTables()) {
-			List<Select> conSelects = new ArrayList<>(t.getSelects());
+			final List<Select> conSelects = new ArrayList<>(t.getSelects());
 			conSelects.addAll(t.getConnector().getDefaultSelects());
 			t.setSelects(conSelects);
 		}
-	}
-
-	public static CQConcept forSelect(Select select) {
-		CQConcept cqConcept = new CQConcept();
-		cqConcept.setElements(List.of(select.getHolder().findConcept()));
-		CQTable table = new CQTable();
-		cqConcept.setTables(List.of(table));
-
-		table.setConnector(((Connector) select.getHolder()));
-
-		table.setSelects(List.of(select));
-
-		return cqConcept;
-	}
-
-	public static CQConcept forConnector(Connector source) {
-		final CQConcept cqConcept = new CQConcept();
-		cqConcept.setElements(List.of(source.getConcept()));
-		final CQTable cqTable = new CQTable();
-		cqTable.setConcept(cqConcept);
-		cqTable.setConnector(source);
-		cqConcept.setTables(List.of(cqTable));
-
-		return cqConcept;
 	}
 
 	@Override
