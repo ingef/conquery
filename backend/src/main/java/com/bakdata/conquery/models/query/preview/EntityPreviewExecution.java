@@ -44,7 +44,7 @@ import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.DoubleNode;
+import com.fasterxml.jackson.databind.node.DecimalNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.MoreCollectors;
@@ -200,7 +200,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		}
 
 		if (type instanceof ResultType.NumericT) {
-			return DoubleNode.valueOf((Double) value);
+			return DecimalNode.valueOf((BigDecimal) value);
 		}
 
 		if (type instanceof ResultType.DateRangeT) {
