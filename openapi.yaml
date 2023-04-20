@@ -98,6 +98,38 @@ components:
         - RUNNING
         - FAILED
         - DONE
+    Column:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        type:
+          $ref: "#/components/schemas/ColumnType"
+        description:
+          type: string
+        minSuffixLength:
+          type: integer
+        generateSuffixes:
+          type: boolean
+        searchDisabled:
+          type: boolean
+        sharedDictionary:
+          type: string
+        secondaryId:
+          $ref: "#/components/schemas/SecondaryIdId"
+    Table:
+      type: object
+      properties:
+        name:
+          type: string
+        label:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/Column"
     FrontendDatasetId:
       type: object
       properties:
@@ -2043,6 +2075,7 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/SecondaryIdId"
+
 paths:
   /frontend/config:
     get:
