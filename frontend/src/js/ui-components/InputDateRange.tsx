@@ -1,7 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { FC, ReactNode, createRef, useMemo } from "react";
-import "react-datepicker/dist/react-datepicker.css";
 import { useTranslation } from "react-i18next";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";

@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { createElement, createRef, forwardRef, useState } from "react";
 import ReactDatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 
@@ -40,7 +41,7 @@ type Props = Omit<BaseInputProps, "inputType"> & {
   dateFormat: string;
   className?: string;
   onChange: (val: string | null) => void;
-  onCalendarSelect?: () => void;
+  onCalendarSelect?: (val: string | null) => void;
 };
 
 const InputDate = forwardRef<HTMLInputElement, Props>(
@@ -95,8 +96,9 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
           ref={datePickerRef}
           selected={value ? parseDate(value, dateFormat) : new Date()}
           onChange={(val) => {
-            val && onChange(formatDate(val as Date, dateFormat));
-            onCalendarSelect?.();
+            const selectedDate = formatDate(val as Date, dateFormat);
+            val && onChange(selectedDate);
+            onCalendarSelect?.(selectedDate);
             setFocusBlocked(true);
             datePickerRef.current?.setOpen(false);
           }}
