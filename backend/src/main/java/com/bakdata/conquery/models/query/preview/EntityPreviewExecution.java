@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.preview;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -183,7 +184,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		}
 
 		if (type instanceof ResultType.DateT) {
-			return new TextNode(CDate.toLocalDate((Integer) value).toString());
+			return CDate.toLocalDate((Integer) value);
 		}
 
 		if (type instanceof ResultType.IntegerT) {
@@ -195,7 +196,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		}
 
 		if (type instanceof ResultType.MoneyT) {
-			return DoubleNode.valueOf((Double) value);
+			return new BigDecimal(((Number) value).longValue()).movePointLeft(printSettings.getCurrency().getDefaultFractionDigits());
 		}
 
 		if (type instanceof ResultType.NumericT) {
