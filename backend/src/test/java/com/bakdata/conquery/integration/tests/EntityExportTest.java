@@ -171,31 +171,31 @@ public class EntityExportTest implements ProgrammaticIntegrationTest {
 		// assert only 2010 as the other years are empty
 		assertThat(infos.years().get(0))
 				.isEqualTo(new EntityPreviewStatus.YearEntry(
-						2010, Map.of("Values", "B2"),
+						2010, Map.of("Values", List.of("B2")),
 						List.of(
 								new EntityPreviewStatus.QuarterEntry(1, Collections.emptyMap()),
 								new EntityPreviewStatus.QuarterEntry(2, Collections.emptyMap()),
-								new EntityPreviewStatus.QuarterEntry(3, Map.of("Values", "B2")),
+								new EntityPreviewStatus.QuarterEntry(3, Map.of("Values", List.of("B2"))),
 								new EntityPreviewStatus.QuarterEntry(4, Collections.emptyMap())
 						)
 				));
 
 		assertThat(result.getTimeStratifiedInfos().get(0).totals()).isEqualTo(
-				Map.of("Values", "A1 ; B2")
+				Map.of("Values", List.of("A1", "B2"))
 		);
 
 
 		assertThat(result.getInfos()).containsExactly(
 				new EntityPreviewStatus.Info(
 						"Age",
-						"9",
+						9,
 						ResultType.IntegerT.INSTANCE.typeInfo(),
 						null,
 						Set.of(new SemanticType.SelectResultT(conquery.getDatasetRegistry().resolve(SelectId.Parser.INSTANCE.parsePrefixed(dataset.getName(), "tree1.connector.age"))))
 				),
 				new EntityPreviewStatus.Info(
 						"Values",
-						"A1 ; B2",
+						List.of("A1", "B2"),
 						new ResultType.ListT(ResultType.StringT.INSTANCE).typeInfo(),
 						null,
 						Set.of(

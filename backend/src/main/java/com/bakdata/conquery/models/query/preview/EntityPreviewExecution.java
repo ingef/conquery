@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -37,13 +38,17 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.types.SemanticType;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
+import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.DoubleNode;
+import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.MoreCollectors;
 import lombok.ToString;
-import org.apache.logging.log4j.util.Strings;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -63,153 +68,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 	public EntityPreviewExecution(EntityPreviewForm entityPreviewQuery, User user, Dataset submittedDataset, MetaStorage storage) {
 		super(entityPreviewQuery, user, submittedDataset, storage);
-	}
-
-	@Override
-	public boolean isSystem() {
-		// This Form should NEVER be started manually. Nor persisted
-		return true;
-	}
-
-	@Override
-	public void doInitExecutable() {
-		super.doInitExecutable();
-		previewConfig = getNamespace().getPreviewConfig();
-	}
-
-	/**
-	 * Collects status of {@link EntityPreviewForm#getValuesQuery()} and {@link EntityPreviewForm#getInfoCardQuery()}.
-	 * <p>
-	 * Most importantly to {@link EntityPreviewStatus#setInfos(List)} to for infos of entity.
-	 */
-	@Override
-	public FullExecutionStatus buildStatusFull(Subject subject) {
-
-		initExecutable(getNamespace(), getConfig());
-
-		final EntityPreviewStatus status = new EntityPreviewStatus();
-		setStatusFull(status, subject);
-		status.setQuery(getValuesQuery().getQuery());
-
-		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
-
-		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), printSettings));
-
-		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), printSettings));
-
-		return status;
-	}
-
-	@JsonIgnore
-	private ManagedQuery getValuesQuery() {
-		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME);
-	}
-
-	/**
-	 * Takes a ManagedQuery, and transforms its result into a List of {@link EntityPreviewStatus.Info}.
-	 * The format of the query is an {@link AbsoluteFormQuery} containing a single line for one person. This should correspond to {@link EntityPreviewForm#VALUES_QUERY_NAME}.
-	 */
-	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, PrintSettings printSettings) {
-
-
-		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
-		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
-		final Object[] values = result.getValues().get(0);
-
-		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
-
-		// We are only interested in the Select results.
-		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
-			final ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
-
-			final String printed = resultInfo.getType().printNullable(printSettings, values[index]);
-
-			extraInfos.add(new EntityPreviewStatus.Info(
-					resultInfo.userColumnName(printSettings),
-					printed,
-					resultInfo.getType().typeInfo(),
-					resultInfo.getDescription(),
-					resultInfo.getSemantics()
-			));
-		}
-
-		return extraInfos;
-	}
-
-	@JsonIgnore
-	private ManagedQuery getInfoCardExecution() {
-		return getSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME);
-	}
-
-	@NotNull
-	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, ManagedQuery> subQueries, PrintSettings printSettings) {
-		final List<EntityPreviewStatus.TimeStratifiedInfos> timeStratifiedInfos = new ArrayList<>();
-
-		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
-			final ManagedQuery query = subQueries.get(description.label());
-
-			final EntityResult entityResult = query.streamResults().collect(MoreCollectors.onlyElement());
-
-			final Map<SelectId, PreviewConfig.InfoCardSelect> select2desc =
-					description.selects().stream()
-							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
-
-			// Group lines by year and quarter.
-			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings);
-			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, lineTransformer);
-
-			final Object[] completeResult = getCompleteLine(entityResult);
-
-			// get descriptions, but drop everything that isn't a select result as the rest is already structured
-			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
-
-
-			final EntityPreviewStatus.TimeStratifiedInfos infos = new EntityPreviewStatus.TimeStratifiedInfos(description.label(), description.description(), columnDescriptors, lineTransformer.apply(completeResult), yearEntries);
-
-			timeStratifiedInfos.add(infos);
-		}
-
-		return timeStratifiedInfos;
-	}
-
-	@NotNull
-	private List<EntityPreviewStatus.YearEntry> createYearEntries(EntityResult entityResult, Function<Object[], Map<String, Object>> lineTransformer) {
-		final Map<Integer, Object[]> yearLines = getYearLines(entityResult);
-		final Map<Integer, Map<Integer, Object[]>> quarterLines = getQuarterLines(entityResult);
-
-		final List<EntityPreviewStatus.YearEntry> yearEntries = new ArrayList<>();
-
-		yearLines.forEach((year, yearLine) -> {
-
-			final List<EntityPreviewStatus.QuarterEntry> quarterEntries = new ArrayList<>();
-			quarterLines.getOrDefault(year, Collections.emptyMap())
-						.forEach((quarter, line) -> quarterEntries.add(new EntityPreviewStatus.QuarterEntry(quarter, lineTransformer.apply(line))));
-
-			quarterEntries.sort(Comparator.comparingInt(EntityPreviewStatus.QuarterEntry::quarter));
-
-			yearEntries.add(new EntityPreviewStatus.YearEntry(year, lineTransformer.apply(yearLine), quarterEntries));
-		});
-
-		yearEntries.sort(Comparator.comparingInt(EntityPreviewStatus.YearEntry::year));
-
-		return yearEntries;
-	}
-
-	private Object[] getCompleteLine(EntityResult entityResult) {
-		for (Object[] line : entityResult.listResultLines()) {
-
-			// Since we know the dates are always aligned we need to only respect their starts.
-			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
-
-			final int year = date.getYear();
-			final int quarter = QuarterUtils.getQuarter(date);
-
-			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) == Resolution.COMPLETE) {
-				return line;
-			}
-		}
-
-		throw new IllegalStateException("Result has no row for COMPLETE");
 	}
 
 	/**
@@ -291,9 +149,10 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 					continue;
 				}
 
-				final String value = resultInfos.get(column).getType().printNullable(printSettings, line[column]);
 
-				if (Strings.isBlank(value)) {
+				final Object value = renderValue(line[column], resultInfos.get(column).getType(), printSettings);
+
+				if (value == null) {
 					continue;
 				}
 
@@ -302,6 +161,59 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 			return out;
 		};
+	}
+
+	/**
+	 * Instead of outputting only String values, render to Json equivalents
+	 */
+	private static Object renderValue(Object value, ResultType type, PrintSettings printSettings) {
+		if (value == null) {
+			return null;
+		}
+
+		if (type instanceof ResultType.StringT stringT) {
+
+			// StringT may have a mapping that translates values
+			final String string = stringT.printNullable(printSettings, value);
+
+			if (string.isBlank()) {
+				return null;
+			}
+
+			return new TextNode(string);
+		}
+
+		if (type instanceof ResultType.DateT) {
+			return new TextNode(CDate.toLocalDate((Integer) value).toString());
+		}
+
+		if (type instanceof ResultType.IntegerT) {
+			return new IntNode((Integer) value);
+		}
+
+		if (type instanceof ResultType.BooleanT) {
+			return BooleanNode.valueOf((Boolean) value);
+		}
+
+		if (type instanceof ResultType.MoneyT) {
+			return DoubleNode.valueOf((Double) value);
+		}
+
+		if (type instanceof ResultType.NumericT) {
+			return DoubleNode.valueOf((Double) value);
+		}
+
+		if (type instanceof ResultType.DateRangeT) {
+			final List<Integer> values = (List<Integer>) value;
+			return CDateRange.of(values.get(0), values.get(1)).toSimpleRange();
+		}
+
+
+		if (type instanceof ResultType.ListT listT) {
+			return ((List<?>) value).stream().map(entry -> renderValue(entry, listT.getElementType(), printSettings)).collect(Collectors.toList());
+		}
+
+		throw new IllegalArgumentException(String.format("Don't know how to handle %s", type));
 	}
 
 	/**
@@ -328,6 +240,151 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 
 		return columnDescriptions;
+	}
+
+	@Override
+	public boolean isSystem() {
+		// This Form should NEVER be started manually. Nor persisted
+		return true;
+	}
+
+	@Override
+	public void doInitExecutable() {
+		super.doInitExecutable();
+		previewConfig = getNamespace().getPreviewConfig();
+	}
+
+	/**
+	 * Collects status of {@link EntityPreviewForm#getValuesQuery()} and {@link EntityPreviewForm#getInfoCardQuery()}.
+	 * <p>
+	 * Most importantly to {@link EntityPreviewStatus#setInfos(List)} to for infos of entity.
+	 */
+	@Override
+	public FullExecutionStatus buildStatusFull(Subject subject) {
+
+		initExecutable(getNamespace(), getConfig());
+
+		final EntityPreviewStatus status = new EntityPreviewStatus();
+		setStatusFull(status, subject);
+		status.setQuery(getValuesQuery().getQuery());
+
+		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
+
+		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), printSettings));
+
+		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), printSettings));
+
+		return status;
+	}
+
+	/**
+	 * Takes a ManagedQuery, and transforms its result into a List of {@link EntityPreviewStatus.Info}.
+	 * The format of the query is an {@link AbsoluteFormQuery} containing a single line for one person. This should correspond to {@link EntityPreviewForm#VALUES_QUERY_NAME}.
+	 */
+	private List<EntityPreviewStatus.Info> transformQueryResultToInfos(ManagedQuery infoCardExecution, PrintSettings printSettings) {
+
+
+		// Submitted Query is a single line of an AbsoluteFormQuery => MultilineEntityResult with a single line.
+		final MultilineEntityResult result = (MultilineEntityResult) infoCardExecution.streamResults().collect(MoreCollectors.onlyElement());
+		final Object[] values = result.getValues().get(0);
+
+		final List<EntityPreviewStatus.Info> extraInfos = new ArrayList<>(values.length);
+
+		// We are only interested in the Select results.
+		for (int index = AbsoluteFormQuery.FEATURES_OFFSET; index < infoCardExecution.getResultInfos().size(); index++) {
+			final ResultInfo resultInfo = infoCardExecution.getResultInfos().get(index);
+
+
+			final Object printed = renderValue(values[index], resultInfo.getType(), printSettings);
+
+			extraInfos.add(new EntityPreviewStatus.Info(
+					resultInfo.userColumnName(printSettings),
+					printed,
+					resultInfo.getType().typeInfo(),
+					resultInfo.getDescription(),
+					resultInfo.getSemantics()
+			));
+		}
+
+		return extraInfos;
+	}
+
+	@JsonIgnore
+	private ManagedQuery getInfoCardExecution() {
+		return getSubQueries().get(EntityPreviewForm.INFOS_QUERY_NAME);
+	}
+
+	@NotNull
+	private List<EntityPreviewStatus.TimeStratifiedInfos> toChronoInfos(PreviewConfig previewConfig, Map<String, ManagedQuery> subQueries, PrintSettings printSettings) {
+		final List<EntityPreviewStatus.TimeStratifiedInfos> timeStratifiedInfos = new ArrayList<>();
+
+		for (PreviewConfig.TimeStratifiedSelects description : previewConfig.getTimeStratifiedSelects()) {
+			final ManagedQuery query = subQueries.get(description.label());
+
+			final EntityResult entityResult = query.streamResults().collect(MoreCollectors.onlyElement());
+
+			final Map<SelectId, PreviewConfig.InfoCardSelect> select2desc =
+					description.selects().stream()
+							   .collect(Collectors.toMap(PreviewConfig.InfoCardSelect::select, Function.identity()));
+
+			// Group lines by year and quarter.
+			final Function<Object[], Map<String, Object>> lineTransformer = createLineToMapTransformer(query.getResultInfos(), select2desc, printSettings);
+			final List<EntityPreviewStatus.YearEntry> yearEntries = createYearEntries(entityResult, lineTransformer);
+
+			final Object[] completeResult = getCompleteLine(entityResult);
+
+			// get descriptions, but drop everything that isn't a select result as the rest is already structured
+			final List<ColumnDescriptor> columnDescriptors = createChronoColumnDescriptors(query, select2desc);
+
+
+			final EntityPreviewStatus.TimeStratifiedInfos
+					infos =
+					new EntityPreviewStatus.TimeStratifiedInfos(description.label(), description.description(), columnDescriptors, lineTransformer.apply(completeResult), yearEntries);
+
+			timeStratifiedInfos.add(infos);
+		}
+
+		return timeStratifiedInfos;
+	}
+
+	@NotNull
+	private List<EntityPreviewStatus.YearEntry> createYearEntries(EntityResult entityResult, Function<Object[], Map<String, Object>> lineTransformer) {
+		final Map<Integer, Object[]> yearLines = getYearLines(entityResult);
+		final Map<Integer, Map<Integer, Object[]>> quarterLines = getQuarterLines(entityResult);
+
+		final List<EntityPreviewStatus.YearEntry> yearEntries = new ArrayList<>();
+
+		yearLines.forEach((year, yearLine) -> {
+
+			final List<EntityPreviewStatus.QuarterEntry> quarterEntries = new ArrayList<>();
+			quarterLines.getOrDefault(year, Collections.emptyMap())
+						.forEach((quarter, line) -> quarterEntries.add(new EntityPreviewStatus.QuarterEntry(quarter, lineTransformer.apply(line))));
+
+			quarterEntries.sort(Comparator.comparingInt(EntityPreviewStatus.QuarterEntry::quarter));
+
+			yearEntries.add(new EntityPreviewStatus.YearEntry(year, lineTransformer.apply(yearLine), quarterEntries));
+		});
+
+		yearEntries.sort(Comparator.comparingInt(EntityPreviewStatus.YearEntry::year));
+
+		return yearEntries;
+	}
+
+	private Object[] getCompleteLine(EntityResult entityResult) {
+		for (Object[] line : entityResult.listResultLines()) {
+
+			// Since we know the dates are always aligned we need to only respect their starts.
+			final LocalDate date = CDate.toLocalDate(((List<Integer>) line[AbsoluteFormQuery.TIME_INDEX]).get(0));
+
+			final int year = date.getYear();
+			final int quarter = QuarterUtils.getQuarter(date);
+
+			if (Resolution.valueOf((String) line[AbsoluteFormQuery.RESOLUTION_INDEX]) == Resolution.COMPLETE) {
+				return line;
+			}
+		}
+
+		throw new IllegalStateException("Result has no row for COMPLETE");
 	}
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
@@ -357,6 +414,11 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 
 		return descriptors;
+	}
+
+	@JsonIgnore
+	private ManagedQuery getValuesQuery() {
+		return getSubQueries().get(EntityPreviewForm.VALUES_QUERY_NAME);
 	}
 
 	@Override
