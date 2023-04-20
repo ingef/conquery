@@ -130,7 +130,9 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 
 		final TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSearchSuffixLength(), config.getSearchSplitChars());
 
-		log.debug("Labels for {}: `{}`", getId(), collectLabels().stream().map(FrontendValue::toString).collect(Collectors.toList()));
+		if(log.isTraceEnabled()) {
+			log.trace("Labels for {}: `{}`", getId(), collectLabels().stream().map(FrontendValue::toString).collect(Collectors.toList()));
+		}
 
 		collectLabels().forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
 

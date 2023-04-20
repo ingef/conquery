@@ -65,7 +65,9 @@ public class FilterSearch {
 	public final List<TrieSearch<FrontendValue>> getSearchesFor(Searchable<?> searchable) {
 		final List<Searchable<?>> references = searchable.getSearchReferences();
 
-		log.debug("Got {} as searchables for {}", references.stream().map(Searchable::getId).collect(Collectors.toList()), searchable.getId());
+		if(log.isTraceEnabled()) {
+			log.trace("Got {} as searchables for {}", references.stream().map(Searchable::getId).collect(Collectors.toList()), searchable.getId());
+		}
 
 		return references.stream()
 						 .map(searchCache::get)

@@ -98,7 +98,7 @@ public class ConceptsProcessor {
 	private final LoadingCache<Searchable<?>, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
 		@Override
 		public CursorAndLength load(Searchable<?> searchable) {
-			log.debug("Creating cursor for `{}`", searchable.getId());
+			log.trace("Creating cursor for `{}`", searchable.getId());
 			return new CursorAndLength(listAllValues(searchable), countAllValues(searchable));
 		}
 
