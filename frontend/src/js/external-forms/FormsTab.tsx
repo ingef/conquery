@@ -125,7 +125,7 @@ const FormsTab = () => {
 
   return (
     <FormProvider {...methods}>
-      <FormsNavigation reset={onResetActiveForm} />
+      <FormsNavigation onReset={onResetActiveForm} />
       <FormContainer
         methods={methods}
         config={config}
