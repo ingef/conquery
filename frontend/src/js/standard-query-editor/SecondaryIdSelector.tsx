@@ -156,7 +156,7 @@ const SecondaryIdSelectorUI = memo(
         <Headline active={!!value}>
           <SxFaIcon active={!!value} left icon={faMicroscope} />
           {t("queryEditor.secondaryId")}
-          <InfoTooltip text={t("queryEditor.secondaryIdTootlip")} />
+          <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
         </Headline>
         <ToggleButton
           value={value || "standard"}
