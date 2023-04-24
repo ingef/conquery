@@ -20,7 +20,6 @@ const Root = styled("div")<{
 }>`
   padding: 5px 10px;
   cursor: pointer;
-  background-color: white;
   max-width: 200px;
   border-radius: ${({ theme }) => theme.borderRadius};
   transition: background-color ${({ theme }) => theme.transitionTime};
@@ -31,10 +30,8 @@ const Root = styled("div")<{
   &:hover {
     background-color: ${({ theme }) => theme.col.bgAlt};
   }
-
   display: grid;
   grid-template-columns: 1fr auto;
-
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
