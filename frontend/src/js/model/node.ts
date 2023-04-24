@@ -128,7 +128,7 @@ export function getNodeIcon(
   return config?.isStructNode ? faFolderRegular : faFolder;
 }
 
-export const droppableObjectIsConceptTreeNode = (
+const droppableObjectIsConceptTreeNode = (
   node: PossibleDroppableObject,
 ): node is DragItemConceptTreeNode => {
   return node.type === DNDType.CONCEPT_TREE_NODE;

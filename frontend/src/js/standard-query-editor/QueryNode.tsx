@@ -188,7 +188,7 @@ const QueryNode = ({
     <FlexHoverNavigatable
       triggerNavigate={onClick}
       canDrop={(item) => canNodeBeDropped(node, item)}
-      highlightDroppable={true}
+      highlightDroppable
     >
       <Root
         ref={(instance) => {
