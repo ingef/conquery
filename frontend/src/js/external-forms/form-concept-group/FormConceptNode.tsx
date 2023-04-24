@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 
 import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
+import { canNodeBeDropped } from "../../model/node";
 import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
@@ -126,7 +127,11 @@ const FormConceptNode: FC<PropsT> = ({
     : undefined;
 
   return (
-    <HoverNavigatable triggerNavigate={onClick}>
+    <HoverNavigatable
+      triggerNavigate={onClick}
+      canDrop={(item) => canNodeBeDropped(conceptNode, item)}
+      highlightDroppable
+    >
       <Root
         ref={(instance) => {
           ref.current = instance;
