@@ -93,7 +93,14 @@ const useInitializeForm = () => {
     methods.reset(defaultValues);
   }, [methods, defaultValues]);
 
-  return { methods, config, datasetOptions, onReset };
+  const onResetActiveForm = useCallback(() => {
+    methods.reset({
+      ...methods.getValues(),
+      ...defaultValues,
+    });
+  }, [methods, defaultValues]);
+
+  return { methods, config, datasetOptions, onReset, onResetActiveForm };
 };
 
 const FormsTab = () => {
@@ -104,7 +111,8 @@ const FormsTab = () => {
 
   useLoadForms({ datasetId });
 
-  const { methods, config, datasetOptions, onReset } = useInitializeForm();
+  const { methods, config, datasetOptions, onReset, onResetActiveForm } =
+    useInitializeForm();
 
   useEffect(
     function resetOnDatasetChange() {
@@ -117,7 +125,7 @@ const FormsTab = () => {
 
   return (
     <FormProvider {...methods}>
-      <FormsNavigation reset={onReset} />
+      <FormsNavigation reset={onResetActiveForm} />
       <FormContainer
         methods={methods}
         config={config}
