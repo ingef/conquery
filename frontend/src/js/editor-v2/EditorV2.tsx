@@ -294,6 +294,8 @@ const Node = styled("div")<{
   background-color: ${({ selected, theme }) =>
     selected ? "white" : theme.col.bgAlt};
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Connector = styled("span")`
@@ -338,10 +340,28 @@ const InvisibleDropzone = (
   );
 };
 
+const Name = styled("div")`
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+
 const Description = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme }) => theme.col.gray};
 `;
+
+const DateRange = styled("div")`
+  font-size: ${({ theme }) => theme.font.xs};
+  color: ${({ theme }) => theme.col.gray};
+  font-weight: 700;
+`;
+
+const formatDateRange = (range: DateRangeT): string => {
+  if (range.min === range.max) {
+    return range.min || "";
+  } else {
+    return `${range.min} - ${range.max}`;
+  }
+};
 
 function TreeNode({
   tree,
@@ -391,9 +411,13 @@ function TreeNode({
           }}
         >
           <div>
-            {!tree.children && tree.name}
-            <Description>{tree.data?.description}</Description>
-            {tree.dateRestriction ? JSON.stringify(tree.dateRestriction) : ""}
+            {!tree.children && <Name>{tree.name}</Name>}
+            {tree.data?.description && (
+              <Description>{tree.data?.description}</Description>
+            )}
+            {tree.dateRestriction && (
+              <DateRange>{formatDateRange(tree.dateRestriction)}</DateRange>
+            )}
           </div>
           {tree.children && (
             <Grid style={gridStyles}>
@@ -421,6 +445,7 @@ function TreeNode({
                     <InvisibleDropzoneContainer
                       acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
                       naked
+                      bare
                       transparent
                       onDrop={(item) => {
                         console.log(item);
