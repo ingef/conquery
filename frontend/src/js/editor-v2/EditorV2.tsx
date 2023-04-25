@@ -1,9 +1,5 @@
 import styled from "@emotion/styled";
-import {
-  faLeftRight,
-  faTrash,
-  faUpDown,
-} from "@fortawesome/free-solid-svg-icons";
+import { faRefresh, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
 import { useState } from "react";
 
@@ -19,10 +15,7 @@ import {
 } from "../api/types";
 import IconButton from "../button/IconButton";
 import { DNDType } from "../common/constants/dndTypes";
-import {
-  getConceptById,
-  setTree,
-} from "../concept-trees/globalTreeStoreHelper";
+import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
 const Root = styled("div")`
@@ -107,6 +100,9 @@ const useEditorState = () => {
   ): Tree => {
     switch (queryNode.type) {
       case "AND":
+        if (queryNode.children.length === 1) {
+          return expandNode(queryNode.children[0], config);
+        }
         const andid = createId();
         return {
           id: andid,
@@ -121,6 +117,9 @@ const useEditorState = () => {
           },
         };
       case "OR":
+        if (queryNode.children.length === 1) {
+          return expandNode(queryNode.children[0], config);
+        }
         const orid = createId();
         return {
           id: orid,
@@ -219,45 +218,36 @@ export function EditorV2() {
                     }
                   });
                 }}
-              />
+              >
+                Delete
+              </IconButton>
             </>
           )}
           {selectedNode?.children && (
-            <>
-              <IconButton
-                icon={faUpDown}
-                active={selectedNode?.children?.direction === "vertical"}
-                onClick={() => {
-                  setTree((tr) => {
-                    const newTree = JSON.parse(JSON.stringify(tr));
-                    const node = findNodeById(newTree, selectedNode.id);
-                    if (node?.children) {
-                      node.children.direction = "vertical";
-                    }
+            <IconButton
+              icon={faRefresh}
+              onClick={() => {
+                setTree((tr) => {
+                  const newTree = JSON.parse(JSON.stringify(tr));
+                  const node = findNodeById(newTree, selectedNode.id);
+                  if (node?.children) {
+                    node.children.direction =
+                      node.children.direction === "horizontal"
+                        ? "vertical"
+                        : "horizontal";
+                  }
 
-                    return newTree;
-                  });
-                }}
-              />
-              <IconButton
-                icon={faLeftRight}
-                active={selectedNode?.children?.direction === "horizontal"}
-                onClick={() => {
-                  setTree((tr) => {
-                    const newTree = JSON.parse(JSON.stringify(tr));
-                    const node = findNodeById(newTree, selectedNode.id);
-                    if (node?.children) {
-                      node.children.direction = "horizontal";
-                    }
-
-                    return newTree;
-                  });
-                }}
-              />
-            </>
+                  return newTree;
+                });
+              }}
+            >
+              Flip
+            </IconButton>
           )}
         </Flex>
-        <IconButton icon={faTrash} onClick={onReset} />
+        <IconButton icon={faTrash} onClick={onReset}>
+          Clear
+        </IconButton>
       </Actions>
       <Grid>
         {tree ? (
@@ -299,7 +289,7 @@ const Node = styled("div")<{
   border: 1px solid
     ${({ negated, theme, selected }) =>
       negated ? "red" : selected ? "black" : theme.col.grayMediumLight};
-  border-radius: 5px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   width: ${({ leaf }) => (leaf ? "150px" : "inherit")};
   background-color: ${({ selected, theme }) =>
     selected ? "white" : theme.col.bgAlt};
@@ -332,7 +322,6 @@ function getGridStyles(tree: Tree) {
 const InvisibleDropzoneContainer = styled(Dropzone)`
   width: 100%;
   height: 100%;
-  padding: 5px;
 `;
 
 const InvisibleDropzone = (
@@ -348,6 +337,11 @@ const InvisibleDropzone = (
     />
   );
 };
+
+const Description = styled("div")`
+  font-size: ${({ theme }) => theme.font.xs};
+  color: ${({ theme }) => theme.col.gray};
+`;
 
 function TreeNode({
   tree,
@@ -396,10 +390,11 @@ function TreeNode({
             setSelectedNode(tree);
           }}
         >
-          <span>
+          <div>
             {!tree.children && tree.name}
+            <Description>{tree.data?.description}</Description>
             {tree.dateRestriction ? JSON.stringify(tree.dateRestriction) : ""}
-          </span>
+          </div>
           {tree.children && (
             <Grid style={gridStyles}>
               <InvisibleDropzone
