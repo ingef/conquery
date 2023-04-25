@@ -192,14 +192,19 @@ export function EditorV2() {
     useEditorState();
 
   return (
-    <Root>
+    <Root
+      onClick={() => {
+        setSelectedNode(undefined);
+      }}
+    >
       <Actions>
         <Flex>
           {selectedNode && (
             <>
               <IconButton
                 icon={faTrash}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setTree((tr) => {
                     if (selectedNode.parentId === undefined) {
                       return undefined;
@@ -226,7 +231,8 @@ export function EditorV2() {
           {selectedNode?.children && (
             <IconButton
               icon={faRefresh}
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setTree((tr) => {
                   const newTree = JSON.parse(JSON.stringify(tr));
                   const node = findNodeById(newTree, selectedNode.id);
