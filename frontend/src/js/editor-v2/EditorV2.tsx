@@ -13,7 +13,7 @@ import {
 } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import Dropzone from "../ui-components/Dropzone";
+import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -24,7 +24,7 @@ const Root = styled("div")`
 
 const Grid = styled("div")`
   display: grid;
-  grid-gap: 5px;
+  grid-gap: 3px;
   height: 100%;
   width: 100%;
   place-items: center;
@@ -137,7 +137,13 @@ export function EditorV2() {
     <Root>
       <Grid>
         {tree ? (
-          <TreeNode tree={tree} />
+          <TreeNode
+            tree={tree}
+            droppable={{
+              h: true,
+              v: true,
+            }}
+          />
         ) : (
           <SxDropzone
             onDrop={(droppedItem) => {
@@ -153,8 +159,13 @@ export function EditorV2() {
   );
 }
 
+const NodeContainer = styled("div")`
+  display: grid;
+  grid-gap: 5px;
+`;
+
 const Node = styled("div")<{ negated?: boolean; leaf?: boolean }>`
-  padding: ${({ leaf }) => (leaf ? "5px 10px" : "20px")};
+  padding: ${({ leaf }) => (leaf ? "5px 10px" : "10px")};
   border: 1px solid
     ${({ negated, theme, leaf }) =>
       negated ? "red" : leaf ? "black" : theme.col.grayMediumLight};
@@ -185,27 +196,119 @@ function getGridStyles(tree: Tree) {
   }
 }
 
-function TreeNode({ tree }: { tree: Tree }) {
+const InvisibleDropzoneContainer = styled(Dropzone)`
+  width: 100%;
+  height: 100%;
+  border-width: 1px;
+`;
+
+const InvisibleDropzone = (
+  props: Omit<DropzoneProps<any>, "acceptedDropTypes">,
+) => {
+  return (
+    <InvisibleDropzoneContainer
+      bare
+      transparent
+      acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
+      {...props}
+    />
+  );
+};
+
+function TreeNode({
+  tree,
+  droppable,
+}: {
+  tree: Tree;
+  droppable: {
+    h: boolean;
+    v: boolean;
+  };
+}) {
   const gridStyles = getGridStyles(tree);
 
   return (
-    <Node negated={tree.negation} leaf={!tree.children}>
-      <span>
-        {!tree.children && tree.name}
-        {tree.dateRestriction ? JSON.stringify(tree.dateRestriction) : ""}
-      </span>
-      {tree.children && (
-        <Grid style={gridStyles}>
-          {tree.children.items.map((item, i, items) => (
-            <>
-              <TreeNode tree={item} />
-              {i < items.length - 1 && (
-                <Connector>{tree.children?.connection}</Connector>
-              )}
-            </>
-          ))}
-        </Grid>
+    <NodeContainer>
+      {droppable.v && (
+        <InvisibleDropzone
+          onDrop={(item) => {
+            console.log(item);
+          }}
+        />
       )}
-    </Node>
+
+      <NodeContainer
+        style={{
+          gridAutoFlow: "column",
+        }}
+      >
+        {droppable.h && (
+          <InvisibleDropzone
+            onDrop={(item) => {
+              console.log(item);
+            }}
+          />
+        )}
+        <Node negated={tree.negation} leaf={!tree.children}>
+          <span>
+            {!tree.children && tree.name}
+            {tree.dateRestriction ? JSON.stringify(tree.dateRestriction) : ""}
+          </span>
+          {tree.children && (
+            <Grid style={gridStyles}>
+              <InvisibleDropzone
+                onDrop={(item) => {
+                  console.log(item);
+                }}
+              />
+              {tree.children.items.map((item, i, items) => (
+                <>
+                  <TreeNode
+                    tree={item}
+                    droppable={{
+                      h:
+                        !item.children &&
+                        tree.children?.direction === "vertical",
+                      v:
+                        !item.children &&
+                        tree.children?.direction === "horizontal",
+                    }}
+                  />
+                  {i < items.length - 1 && (
+                    <>
+                      <Connector>{tree.children?.connection}</Connector>
+                      <InvisibleDropzone
+                        onDrop={(item) => {
+                          console.log(item);
+                        }}
+                      />
+                    </>
+                  )}
+                </>
+              ))}
+              <InvisibleDropzone
+                onDrop={(item) => {
+                  console.log(item);
+                }}
+              />
+            </Grid>
+          )}
+        </Node>
+        {droppable.h && (
+          <InvisibleDropzone
+            onDrop={(item) => {
+              console.log(item);
+            }}
+          />
+        )}
+      </NodeContainer>
+      {droppable.v && (
+        <InvisibleDropzone
+          onDrop={(item) => {
+            console.log(item);
+          }}
+        />
+      )}
+    </NodeContainer>
   );
 }
