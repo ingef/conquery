@@ -25,12 +25,13 @@ const Root = styled("div")`
   overflow: auto;
   display: flex;
   flex-direction: column;
+  gap: 10px;
 `;
 
 const Grid = styled("div")`
   flex-grow: 1;
   display: grid;
-  grid-gap: 3px;
+  gap: 3px;
   height: 100%;
   width: 100%;
   place-items: center;
@@ -54,7 +55,6 @@ const Flex = styled("div")`
 interface Tree {
   id: string;
   parentId?: string;
-  name: string;
   negation?: boolean;
   dateRestriction?: DateRangeT;
   data?: any;
@@ -106,7 +106,6 @@ const useEditorState = () => {
         const andid = createId();
         return {
           id: andid,
-          name: "AND",
           ...config,
           children: {
             connection: "and",
@@ -123,7 +122,6 @@ const useEditorState = () => {
         const orid = createId();
         return {
           id: orid,
-          name: "OR",
           ...config,
           children: {
             connection: "or",
@@ -145,13 +143,11 @@ const useEditorState = () => {
         return {
           id: createId(),
           data: concept,
-          name: concept?.label || "Unknown",
           ...config,
         };
       case "SAVED_QUERY":
         return {
           id: queryNode.query,
-          name: queryNode.query,
           data: queryNode,
           ...config,
         };
@@ -283,7 +279,7 @@ export function EditorV2() {
 
 const NodeContainer = styled("div")`
   display: grid;
-  grid-gap: 5px;
+  gap: 5px;
 `;
 
 const Node = styled("div")<{
@@ -302,6 +298,7 @@ const Node = styled("div")<{
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  gap: 10px;
 `;
 
 const Connector = styled("span")`
@@ -416,15 +413,17 @@ function TreeNode({
             setSelectedNode(tree);
           }}
         >
-          <div>
-            {!tree.children && <Name>{tree.name}</Name>}
-            {tree.data?.description && (
-              <Description>{tree.data?.description}</Description>
-            )}
-            {tree.dateRestriction && (
-              <DateRange>{formatDateRange(tree.dateRestriction)}</DateRange>
-            )}
-          </div>
+          {(!tree.children || tree.data || tree.dateRestriction) && (
+            <div>
+              {tree.data?.label && <Name>{tree.data.label[0]}</Name>}
+              {tree.data?.description && (
+                <Description>{tree.data?.description}</Description>
+              )}
+              {tree.dateRestriction && (
+                <DateRange>{formatDateRange(tree.dateRestriction)}</DateRange>
+              )}
+            </div>
+          )}
           {tree.children && (
             <Grid style={gridStyles}>
               <InvisibleDropzone
