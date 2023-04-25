@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { faRefresh, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faBan, faRefresh, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
 import { useState } from "react";
 
@@ -195,6 +195,26 @@ export function EditorV2() {
     >
       <Actions>
         <Flex>
+          {selectedNode && (
+            <>
+              <IconButton
+                icon={faBan}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTree((tr) => {
+                    const newTree = JSON.parse(JSON.stringify(tr));
+                    const node = findNodeById(newTree, selectedNode.id);
+                    if (node) {
+                      node.negation = !node.negation;
+                    }
+                    return newTree;
+                  });
+                }}
+              >
+                Negate
+              </IconButton>
+            </>
+          )}
           {selectedNode && (
             <>
               <IconButton
