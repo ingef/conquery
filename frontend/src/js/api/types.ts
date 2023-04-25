@@ -553,7 +553,7 @@ export interface TimeStratifiedInfoQuarter {
 export interface TimeStratifiedInfoYear {
   year: number;
   values: {
-    [label: string]: string;
+    [label: string]: number;
   };
   quarters: TimeStratifiedInfoQuarter[];
 }
@@ -562,7 +562,7 @@ export interface TimeStratifiedInfo {
   label: string;
   description: string | null;
   totals: {
-    [label: string]: string;
+    [label: string]: number;
   };
   columns: {
     label: string; // Matches `label` with `year.values` and `year.quarters[].values`

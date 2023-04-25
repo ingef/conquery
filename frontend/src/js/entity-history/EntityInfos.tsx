@@ -6,7 +6,7 @@ import { EntityInfo } from "../api/types";
 const Grid = styled("div")`
   display: inline-grid;
   grid-template-columns: 1fr auto;
-  gap: 0 16px;
+  gap: 0 20px;
   place-items: center start;
 `;
 const Label = styled("div")`

@@ -34,7 +34,7 @@ const StickyWrap = styled("div")`
 
 const Grid = styled("div")`
   display: grid;
-  grid-template-columns: 60px auto;
+  grid-template-columns: auto 45px;
   gap: 0px 10px;
 `;
 
@@ -42,6 +42,7 @@ const Value = styled("div")`
   font-size: ${({ theme }) => theme.font.tiny};
   font-weight: 400;
   white-space: nowrap;
+  justify-self: end;
 `;
 
 const Label = styled("div")`
@@ -92,14 +93,16 @@ const TimeStratifiedInfos = ({
               )
               .map(([label, value]) => {
                 const columnType = getColumnType(info, label);
+                const valueFormatted =
+                  columnType === "MONEY" ? Math.round(value) : value;
 
                 return (
                   <Fragment key={label}>
+                    <Label>{label}</Label>
                     <Value>
-                      {value}
+                      {valueFormatted}
                       {columnType === "MONEY" ? " " + currencyUnit : ""}
                     </Value>
-                    <Label>{label}</Label>
                   </Fragment>
                 );
               })}

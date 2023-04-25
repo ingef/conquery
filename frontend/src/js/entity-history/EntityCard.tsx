@@ -26,7 +26,7 @@ const Centered = styled("div")`
 
 const Grid = styled("div")`
   display: inline-grid;
-  gap: 4px 10px;
+  gap: 0 20px;
   grid-template-columns: auto auto;
 `;
 const Label = styled("div")`
@@ -35,6 +35,7 @@ const Label = styled("div")`
 const Value = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
   font-weight: 400;
+  justify-self: end;
 `;
 
 const TimeStratifiedInfos = ({
@@ -62,13 +63,16 @@ const TimeStratifiedInfos = ({
 
               if (!exists(value)) return <></>;
 
+              const valueFormatted =
+                columnType === "MONEY" ? Math.round(value) : value;
+
               return (
                 <Fragment key={label}>
+                  <Label>{label}</Label>
                   <Value>
-                    {value}
+                    {valueFormatted}
                     {columnType === "MONEY" ? " " + currencyUnit : ""}
                   </Value>
-                  <Label>{label}</Label>
                 </Fragment>
               );
             })}
