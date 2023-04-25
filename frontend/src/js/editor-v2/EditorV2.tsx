@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 
 import { useGetQuery } from "../api/api";
@@ -11,8 +12,10 @@ import {
   QueryConceptNodeT,
   SavedQueryNodeT,
 } from "../api/types";
+import IconButton from "../button/IconButton";
 import { DNDType } from "../common/constants/dndTypes";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
+import QueryNode from "../standard-query-editor/QueryNode";
 import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
 const Root = styled("div")`
@@ -119,9 +122,14 @@ const useEditorState = () => {
     }
   };
 
+  const onReset = () => {
+    setTree(undefined);
+  };
+
   return {
     expandQuery,
     tree,
+    onReset,
   };
 };
 
@@ -131,10 +139,11 @@ const DROP_TYPES = [
 ];
 
 export function EditorV2() {
-  const { tree, expandQuery } = useEditorState();
+  const { tree, expandQuery, onReset } = useEditorState();
 
   return (
     <Root>
+      <IconButton icon={faTrash} onClick={onReset} />
       <Grid>
         {tree ? (
           <TreeNode
@@ -199,7 +208,7 @@ function getGridStyles(tree: Tree) {
 const InvisibleDropzoneContainer = styled(Dropzone)`
   width: 100%;
   height: 100%;
-  border-width: 1px;
+  padding: 5px;
 `;
 
 const InvisibleDropzone = (
@@ -207,8 +216,9 @@ const InvisibleDropzone = (
 ) => {
   return (
     <InvisibleDropzoneContainer
-      bare
+      invisible
       transparent
+      naked
       acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
       {...props}
     />
@@ -275,14 +285,16 @@ function TreeNode({
                     }}
                   />
                   {i < items.length - 1 && (
-                    <>
-                      <Connector>{tree.children?.connection}</Connector>
-                      <InvisibleDropzone
-                        onDrop={(item) => {
-                          console.log(item);
-                        }}
-                      />
-                    </>
+                    <InvisibleDropzoneContainer
+                      acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
+                      naked
+                      transparent
+                      onDrop={(item) => {
+                        console.log(item);
+                      }}
+                    >
+                      {() => <Connector>{tree.children?.connection}</Connector>}
+                    </InvisibleDropzoneContainer>
                   )}
                 </>
               ))}
