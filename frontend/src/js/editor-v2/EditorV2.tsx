@@ -1,5 +1,10 @@
 import styled from "@emotion/styled";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faLeftRight,
+  faTrash,
+  faUpDown,
+} from "@fortawesome/free-solid-svg-icons";
+import { createId } from "@paralleldrive/cuid2";
 import { useState } from "react";
 
 import { useGetQuery } from "../api/api";
@@ -14,8 +19,10 @@ import {
 } from "../api/types";
 import IconButton from "../button/IconButton";
 import { DNDType } from "../common/constants/dndTypes";
-import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
-import QueryNode from "../standard-query-editor/QueryNode";
+import {
+  getConceptById,
+  setTree,
+} from "../concept-trees/globalTreeStoreHelper";
 import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
 const Root = styled("div")`
@@ -23,9 +30,12 @@ const Root = styled("div")`
   height: 100%;
   padding: 8px 10px 10px 10px;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Grid = styled("div")`
+  flex-grow: 1;
   display: grid;
   grid-gap: 3px;
   height: 100%;
@@ -38,11 +48,23 @@ const SxDropzone = styled(Dropzone)`
   height: 100px;
 `;
 
+const Actions = styled("div")`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+const Flex = styled("div")`
+  display: flex;
+  align-items: center;
+`;
+
 interface Tree {
   id: string;
+  parentId?: string;
   name: string;
   negation?: boolean;
   dateRestriction?: DateRangeT;
+  data?: any;
   children?: {
     connection: "and" | "or" | "time";
     direction: "horizontal" | "vertical";
@@ -50,8 +72,24 @@ interface Tree {
   };
 }
 
+const findNodeById = (tree: Tree, id: string): Tree | undefined => {
+  if (tree.id === id) {
+    return tree;
+  }
+  if (tree.children) {
+    for (const child of tree.children.items) {
+      const found = findNodeById(child, id);
+      if (found) {
+        return found;
+      }
+    }
+  }
+  return undefined;
+};
+
 const useEditorState = () => {
   const [tree, setTree] = useState<Tree | undefined>(undefined);
+  const [selectedNode, setSelectedNode] = useState<Tree | undefined>(undefined);
 
   const expandNode = (
     queryNode:
@@ -62,31 +100,38 @@ const useEditorState = () => {
       | QueryConceptNodeT
       | SavedQueryNodeT,
     config: {
+      parentId?: string;
       negation?: boolean;
       dateRestriction?: DateRangeT;
     } = {},
   ): Tree => {
     switch (queryNode.type) {
       case "AND":
+        const andid = createId();
         return {
-          id: "AND",
+          id: andid,
           name: "AND",
           ...config,
           children: {
             connection: "and",
             direction: "horizontal",
-            items: queryNode.children.map((child) => expandNode(child)),
+            items: queryNode.children.map((child) =>
+              expandNode(child, { parentId: andid }),
+            ),
           },
         };
       case "OR":
+        const orid = createId();
         return {
-          id: "OR",
+          id: orid,
           name: "OR",
           ...config,
           children: {
             connection: "or",
             direction: "vertical",
-            items: queryNode.children.map((child) => expandNode(child)),
+            items: queryNode.children.map((child) =>
+              expandNode(child, { parentId: orid }),
+            ),
           },
         };
       case "NEGATION":
@@ -99,7 +144,8 @@ const useEditorState = () => {
       case "CONCEPT":
         const concept = getConceptById(queryNode.ids[0]);
         return {
-          id: queryNode.ids[0],
+          id: createId(),
+          data: concept,
           name: concept?.label || "Unknown",
           ...config,
         };
@@ -107,6 +153,7 @@ const useEditorState = () => {
         return {
           id: queryNode.query,
           name: queryNode.query,
+          data: queryNode,
           ...config,
         };
     }
@@ -129,7 +176,10 @@ const useEditorState = () => {
   return {
     expandQuery,
     tree,
+    setTree,
     onReset,
+    selectedNode,
+    setSelectedNode,
   };
 };
 
@@ -139,15 +189,82 @@ const DROP_TYPES = [
 ];
 
 export function EditorV2() {
-  const { tree, expandQuery, onReset } = useEditorState();
+  const { tree, setTree, expandQuery, onReset, selectedNode, setSelectedNode } =
+    useEditorState();
 
   return (
     <Root>
-      <IconButton icon={faTrash} onClick={onReset} />
+      <Actions>
+        <Flex>
+          {selectedNode && (
+            <>
+              <IconButton
+                icon={faTrash}
+                onClick={() => {
+                  setTree((tr) => {
+                    if (selectedNode.parentId === undefined) {
+                      return undefined;
+                    } else {
+                      const newTree = JSON.parse(JSON.stringify(tr));
+                      const parent = findNodeById(
+                        newTree,
+                        selectedNode.parentId,
+                      );
+                      if (parent?.children) {
+                        parent.children.items = parent.children.items.filter(
+                          (item) => item.id !== selectedNode.id,
+                        );
+                      }
+                      return newTree;
+                    }
+                  });
+                }}
+              />
+            </>
+          )}
+          {selectedNode?.children && (
+            <>
+              <IconButton
+                icon={faUpDown}
+                active={selectedNode?.children?.direction === "vertical"}
+                onClick={() => {
+                  setTree((tr) => {
+                    const newTree = JSON.parse(JSON.stringify(tr));
+                    const node = findNodeById(newTree, selectedNode.id);
+                    if (node?.children) {
+                      node.children.direction = "vertical";
+                    }
+
+                    return newTree;
+                  });
+                }}
+              />
+              <IconButton
+                icon={faLeftRight}
+                active={selectedNode?.children?.direction === "horizontal"}
+                onClick={() => {
+                  setTree((tr) => {
+                    const newTree = JSON.parse(JSON.stringify(tr));
+                    const node = findNodeById(newTree, selectedNode.id);
+                    if (node?.children) {
+                      node.children.direction = "horizontal";
+                    }
+
+                    return newTree;
+                  });
+                }}
+              />
+            </>
+          )}
+        </Flex>
+        <IconButton icon={faTrash} onClick={onReset} />
+      </Actions>
       <Grid>
         {tree ? (
           <TreeNode
             tree={tree}
+            selectedNode={selectedNode}
+            setSelectedNode={setSelectedNode}
             droppable={{
               h: true,
               v: true,
@@ -173,13 +290,20 @@ const NodeContainer = styled("div")`
   grid-gap: 5px;
 `;
 
-const Node = styled("div")<{ negated?: boolean; leaf?: boolean }>`
+const Node = styled("div")<{
+  selected?: boolean;
+  negated?: boolean;
+  leaf?: boolean;
+}>`
   padding: ${({ leaf }) => (leaf ? "5px 10px" : "10px")};
   border: 1px solid
-    ${({ negated, theme, leaf }) =>
-      negated ? "red" : leaf ? "black" : theme.col.grayMediumLight};
-  border-radius: ${({ theme }) => theme.borderRadius};
+    ${({ negated, theme, selected }) =>
+      negated ? "red" : selected ? "black" : theme.col.grayMediumLight};
+  border-radius: 5px;
   width: ${({ leaf }) => (leaf ? "150px" : "inherit")};
+  background-color: ${({ selected, theme }) =>
+    selected ? "white" : theme.col.bgAlt};
+  cursor: pointer;
 `;
 
 const Connector = styled("span")`
@@ -228,12 +352,16 @@ const InvisibleDropzone = (
 function TreeNode({
   tree,
   droppable,
+  selectedNode,
+  setSelectedNode,
 }: {
   tree: Tree;
   droppable: {
     h: boolean;
     v: boolean;
   };
+  selectedNode: Tree | undefined;
+  setSelectedNode: (node: Tree | undefined) => void;
 }) {
   const gridStyles = getGridStyles(tree);
 
@@ -259,7 +387,15 @@ function TreeNode({
             }}
           />
         )}
-        <Node negated={tree.negation} leaf={!tree.children}>
+        <Node
+          negated={tree.negation}
+          leaf={!tree.children}
+          selected={selectedNode?.id === tree.id}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedNode(tree);
+          }}
+        >
           <span>
             {!tree.children && tree.name}
             {tree.dateRestriction ? JSON.stringify(tree.dateRestriction) : ""}
@@ -275,6 +411,8 @@ function TreeNode({
                 <>
                   <TreeNode
                     tree={item}
+                    selectedNode={selectedNode}
+                    setSelectedNode={setSelectedNode}
                     droppable={{
                       h:
                         !item.children &&
