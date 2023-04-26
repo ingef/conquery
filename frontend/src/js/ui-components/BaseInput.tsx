@@ -74,7 +74,7 @@ interface InputProps {
   onKeyPress?: (e: KeyboardEvent<HTMLInputElement>) => void;
 }
 
-interface Props {
+export interface Props {
   className?: string;
   inputType: string;
   money?: boolean;
@@ -86,6 +86,7 @@ interface Props {
   large?: boolean;
   inputProps?: InputProps;
   currencyConfig?: CurrencyConfigT;
+  onFocus?: (e: FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
   onChange: (val: string | number | null) => void;
 }
@@ -120,6 +121,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
       money,
       value,
       onChange,
+      onFocus,
       onBlur,
       placeholder,
       large,
@@ -175,6 +177,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
             }}
             value={exists(value) ? value : ""}
             large={large}
+            onFocus={onFocus}
             onBlur={onBlur}
             onWheel={
               (e) =>
