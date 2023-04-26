@@ -17,12 +17,12 @@ const Root = styled("div")`
     z-index: -1;
   }
   .react-datepicker-popper[data-placement^="bottom"] {
-    padding-top: 0.25rem;
-    transform: translate3d(0, 2rem, 0) !important;
+    padding-top: 4px;
+    transform: translate3d(0, 32px, 0) !important;
   }
   .react-datepicker-popper[data-placement^="top"] {
     padding-bottom: 0;
-    transform: translate3d(0, -2rem, 0) !important;
+    transform: translate3d(0, 32px, 0) !important;
   }
 `;
 
@@ -32,7 +32,7 @@ const HiddenInput = styled("input")`
 
 const StyledCalendar = styled("div")`
   .react-datepicker__day--selected {
-    background: ${({ theme }) => theme.col.green};
+    background: ${({ theme }) => theme.col.blueGrayDark};
   }
 `;
 
@@ -40,8 +40,8 @@ type Props = Omit<BaseInputProps, "inputType"> & {
   value: string | null;
   dateFormat: string;
   className?: string;
-  onChange: (val: string | null) => void;
-  onCalendarSelect?: (val: string | null) => void;
+  onChange: (val: string) => void;
+  onCalendarSelect?: (val: string) => void;
 };
 
 const InputDate = forwardRef<HTMLInputElement, Props>(
@@ -96,8 +96,12 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
           ref={datePickerRef}
           selected={value ? parseDate(value, dateFormat) : new Date()}
           onChange={(val) => {
-            const selectedDate = formatDate(val as Date, dateFormat);
-            val && onChange(selectedDate);
+            if (!val) {
+              return;
+            }
+
+            const selectedDate = formatDate(val, dateFormat);
+            onChange(selectedDate);
             onCalendarSelect?.(selectedDate);
             setFocusBlocked(true);
             datePickerRef.current?.setOpen(false);
