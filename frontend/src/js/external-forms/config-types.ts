@@ -209,6 +209,7 @@ export type ConceptListField = CommonField & {
   conceptColumnDropzoneLabel?: TranslatableString;
   rowPrefixField?: SelectField;
   isTwoDimensional?: boolean; // Default: False
+  hideCopyButton?: boolean;
   isSingle?: boolean; // Default: False
   defaults?: ConceptListDefaults;
   validations?: ConceptListFieldValidation[];
