@@ -83,7 +83,7 @@ export const useAllowExtendedCopying = (
   const targetField = visibleConceptListFields.find(
     (field) => field.name === targetFieldname,
   );
-  if (targetField?.hideCopyButton === true) return false;
+  if (targetField?.hideCopyButton) return false;
 
   const fieldHasFilledConcept = (field: ConceptListField) => {
     return (
