@@ -1,6 +1,11 @@
 import styled from "@emotion/styled";
 import { faCalendar, faTrashCan } from "@fortawesome/free-regular-svg-icons";
-import { faBan, faRefresh, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faBan,
+  faCircleNodes,
+  faRefresh,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
 import { useCallback, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -27,7 +32,6 @@ const Root = styled("div")`
   flex-grow: 1;
   height: 100%;
   padding: 8px 10px 10px 10px;
-  overflow: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -40,6 +44,7 @@ const Grid = styled("div")`
   height: 100%;
   width: 100%;
   place-items: center;
+  overflow: auto;
 `;
 
 const SxDropzone = styled(Dropzone)`
@@ -52,9 +57,16 @@ const Actions = styled("div")`
   align-items: center;
   justify-content: space-between;
 `;
+
 const Flex = styled("div")`
   display: flex;
   align-items: center;
+`;
+
+const SxIconButton = styled(IconButton)`
+  display: flex;
+  align-items: center;
+  gap: 5px;
 `;
 
 const findNodeById = (tree: Tree, id: string): Tree | undefined => {
@@ -220,6 +232,12 @@ const useNegationEditing = ({
   };
 };
 
+const CONNECTORS = ["and", "or", "before"] as const;
+const getNextConnector = (connector: (typeof CONNECTORS)[number]) => {
+  const index = CONNECTORS.indexOf(connector);
+  return CONNECTORS[(index + 1) % CONNECTORS.length];
+};
+
 export function EditorV2({
   featureDates,
   featureNegate,
@@ -273,9 +291,20 @@ export function EditorV2({
     }
   }, [selectedNode, setTree, updateTreeNode]);
 
+  const onRotateConnector = useCallback(() => {
+    if (!selectedNode || !selectedNode.children) return;
+
+    updateTreeNode(selectedNode.id, (node) => {
+      if (!node.children) return;
+
+      node.children.connection = getNextConnector(node.children.connection);
+    });
+  }, [selectedNode, updateTreeNode]);
+
   useHotkeys("del", onDelete, [onDelete]);
   useHotkeys("backspace", onDelete, [onDelete]);
   useHotkeys("f", onFlip, [onFlip]);
+  useHotkeys("c", onRotateConnector, [onRotateConnector]);
 
   const { showModal, headline, onOpen, onClose } = useDateEditing({
     enabled: featureDates,
@@ -347,6 +376,18 @@ export function EditorV2({
               Flip
             </IconButton>
           )}
+          {selectedNode?.children && (
+            <SxIconButton
+              icon={faCircleNodes}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRotateConnector();
+              }}
+            >
+              <span>Connected:</span>
+              <Connector>{selectedNode.children.connection}</Connector>
+            </SxIconButton>
+          )}
           {selectedNode && (
             <IconButton
               icon={faTrashCan}
@@ -367,6 +408,7 @@ export function EditorV2({
         {tree ? (
           <TreeNode
             tree={tree}
+            updateTreeNode={updateTreeNode}
             selectedNode={selectedNode}
             setSelectedNode={setSelectedNodeId}
             droppable={{ h: true, v: true }}
@@ -399,11 +441,13 @@ const Node = styled("div")<{
   padding: ${({ leaf }) => (leaf ? "5px 10px" : "10px")};
   border: 1px solid
     ${({ negated, theme, selected }) =>
-      negated ? "red" : selected ? "black" : theme.col.grayMediumLight};
+      negated ? "red" : selected ? theme.col.gray : theme.col.grayMediumLight};
+  box-shadow: ${({ selected, theme }) =>
+    selected ? `inset 0px 0px 0px 1px ${theme.col.gray}` : "none"};
+
   border-radius: ${({ theme }) => theme.borderRadius};
   width: ${({ leaf }) => (leaf ? "150px" : "inherit")};
-  background-color: ${({ selected, theme }) =>
-    selected ? "white" : theme.col.bgAlt};
+  background-color: ${({ leaf, theme }) => (leaf ? "white" : theme.col.bg)};
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -412,12 +456,11 @@ const Node = styled("div")<{
 
 const Connector = styled("span")`
   text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.md};
+  font-size: ${({ theme }) => theme.font.sm};
   color: black;
 
   border-radius: ${({ theme }) => theme.borderRadius};
-  width: 40px;
-  height: 40px;
+  padding: 0px 5px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -450,7 +493,6 @@ const InvisibleDropzone = (
   return (
     <InvisibleDropzoneContainer
       invisible
-      transparent
       naked
       acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
       {...props}
@@ -482,11 +524,13 @@ const formatDateRange = (range: DateRangeT): string => {
 
 function TreeNode({
   tree,
+  updateTreeNode,
   droppable,
   selectedNode,
   setSelectedNode,
 }: {
   tree: Tree;
+  updateTreeNode: (id: string, update: (node: Tree) => void) => void;
   droppable: {
     h: boolean;
     v: boolean;
@@ -496,16 +540,69 @@ function TreeNode({
 }) {
   const gridStyles = getGridStyles(tree);
 
+  const onDropOutsideOfNode = ({
+    pos,
+    direction,
+    item,
+  }: {
+    direction: "h" | "v";
+    pos: "b" | "a";
+    item: any;
+  }) => {
+    console.log("dropped outside of node", { pos, direction, item });
+    // Create a new "parent" and create a new "item", make parent contain tree and item
+    const newParentId = createId();
+    const newItemId = createId();
+    updateTreeNode(tree.id, (node) => {
+      const newChildren: Tree[] = [
+        {
+          id: newItemId,
+          negation: false,
+          data: item,
+          parentId: newParentId,
+        },
+        {
+          id: tree.id,
+          negation: false,
+          data: tree.data,
+          children: tree.children,
+          parentId: newParentId,
+        },
+      ];
+
+      node.id = newParentId;
+      node.data = undefined;
+      node.children = {
+        connection: tree.children?.connection === "and" ? "or" : "and" || "and",
+        direction: direction === "h" ? "horizontal" : "vertical",
+        items: pos === "b" ? newChildren : newChildren.reverse(),
+      };
+    });
+  };
+
+  const onDropAtChildrenIdx = ({ idx, item }: { idx: number; item: any }) => {
+    // Create a new "item" and insert it at idx of tree.children
+    updateTreeNode(tree.id, (node) => {
+      if (node.children) {
+        node.children.items.splice(idx, 0, {
+          id: createId(),
+          negation: false,
+          data: item,
+          parentId: node.id,
+        });
+      }
+    });
+  };
+
   return (
     <NodeContainer>
       {droppable.v && (
         <InvisibleDropzone
-          onDrop={(item) => {
-            console.log(item);
-          }}
+          onDrop={(item) =>
+            onDropOutsideOfNode({ pos: "b", direction: "v", item })
+          }
         />
       )}
-
       <NodeContainer
         style={{
           gridAutoFlow: "column",
@@ -513,9 +610,13 @@ function TreeNode({
       >
         {droppable.h && (
           <InvisibleDropzone
-            onDrop={(item) => {
-              console.log(item);
-            }}
+            onDrop={(item) =>
+              onDropOutsideOfNode({
+                pos: "b",
+                direction: "h",
+                item,
+              })
+            }
           />
         )}
         <Node
@@ -542,12 +643,16 @@ function TreeNode({
           )}
           {tree.children && (
             <Grid style={gridStyles}>
-              <InvisibleDropzone key="dropzone-before" onDrop={(item) => {}} />
+              <InvisibleDropzone
+                key="dropzone-before"
+                onDrop={(item) => onDropAtChildrenIdx({ idx: 0, item })}
+              />
               {tree.children.items.map((item, i, items) => (
                 <>
                   <TreeNode
                     key={item.id}
                     tree={item}
+                    updateTreeNode={updateTreeNode}
                     selectedNode={selectedNode}
                     setSelectedNode={setSelectedNode}
                     droppable={{
@@ -566,9 +671,9 @@ function TreeNode({
                       naked
                       bare
                       transparent
-                      onDrop={(item) => {
-                        console.log(item);
-                      }}
+                      onDrop={(item) =>
+                        onDropAtChildrenIdx({ idx: i + 1, item })
+                      }
                     >
                       {() => <Connector>{tree.children?.connection}</Connector>}
                     </InvisibleDropzoneContainer>
@@ -577,26 +682,29 @@ function TreeNode({
               ))}
               <InvisibleDropzone
                 key="dropzone-after"
-                onDrop={(item) => {
-                  console.log(item);
-                }}
+                onDrop={(item) =>
+                  onDropAtChildrenIdx({
+                    idx: tree.children!.items.length,
+                    item,
+                  })
+                }
               />
             </Grid>
           )}
         </Node>
         {droppable.h && (
           <InvisibleDropzone
-            onDrop={(item) => {
-              console.log(item);
-            }}
+            onDrop={(item) =>
+              onDropOutsideOfNode({ pos: "a", direction: "h", item })
+            }
           />
         )}
       </NodeContainer>
       {droppable.v && (
         <InvisibleDropzone
-          onDrop={(item) => {
-            console.log(item);
-          }}
+          onDrop={(item) =>
+            onDropOutsideOfNode({ pos: "a", direction: "v", item })
+          }
         />
       )}
     </NodeContainer>

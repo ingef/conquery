@@ -7,7 +7,7 @@ export interface Tree {
   dateRestriction?: DateRangeT;
   data?: any;
   children?: {
-    connection: "and" | "or" | "time";
+    connection: "and" | "or" | "before";
     direction: "horizontal" | "vertical";
     items: Tree[];
   };

@@ -77,6 +77,12 @@ const SxBasicButton = styled(BasicButton)<{
   }
 `;
 
+const Children = styled("span")`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+`;
+
 export interface IconButtonPropsT extends BasicButtonProps {
   iconProps?: IconStyleProps;
   active?: boolean;
@@ -165,7 +171,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
         ref={ref}
       >
         {iconElement}
-        {children && <span>{children}</span>}
+        {children && <Children>{children}</Children>}
       </SxBasicButton>
     );
   },
