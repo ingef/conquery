@@ -1,5 +1,11 @@
 import styled from "@emotion/styled";
-import { createElement, createRef, forwardRef, useState } from "react";
+import {
+  createElement,
+  createRef,
+  forwardRef,
+  useEffect,
+  useState,
+} from "react";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -53,12 +59,21 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
       onChange,
       onCalendarSelect,
       onFocus,
+      onBlur,
+      onClick,
       ...props
     },
     ref,
   ) => {
     const datePickerRef = createRef<ReactDatePicker>();
+    const [hasFocus, setHasFocus] = useState(false);
     const [focusBlocked, setFocusBlocked] = useState(false);
+
+    useEffect(() => {
+      if (props.inputProps?.autoFocus && hasFocus) {
+        datePickerRef.current?.setOpen(true);
+      }
+    }, [props.inputProps?.autoFocus, hasFocus, datePickerRef]);
 
     return (
       <Root
@@ -81,8 +96,17 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
               setFocusBlocked(false);
             } else {
               onFocus?.(e);
+              setHasFocus(true);
               datePickerRef.current?.setOpen(true);
             }
+          }}
+          onBlur={(e) => {
+            onBlur?.(e);
+            setHasFocus(false);
+          }}
+          onClick={(e) => {
+            onClick?.(e);
+            hasFocus && datePickerRef.current?.setOpen(true);
           }}
           inputProps={{
             ...props?.inputProps,
