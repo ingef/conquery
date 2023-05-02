@@ -6,6 +6,7 @@ import type {
   EntityInfo,
   HistorySources,
   ResultUrlWithLabel,
+  TimeStratifiedInfo,
 } from "../api/types";
 import type { Action } from "../app/actions";
 
@@ -51,6 +52,7 @@ export type EntityHistoryStateT = {
   currentEntityData: EntityEvent[];
   currentEntityCsvUrl: string;
   currentEntityInfos: EntityInfo[];
+  currentEntityTimeStratifiedInfos: TimeStratifiedInfo[];
 };
 
 const initialState: EntityHistoryStateT = {
@@ -72,6 +74,7 @@ const initialState: EntityHistoryStateT = {
   currentEntityData: [],
   currentEntityCsvUrl: "",
   currentEntityInfos: [],
+  currentEntityTimeStratifiedInfos: [],
 };
 
 export default function reducer(
@@ -106,6 +109,7 @@ export default function reducer(
         currentEntityData: [],
         currentEntityCsvUrl: "",
         currentEntityInfos: [],
+        currentEntityTimeStratifiedInfos: [],
       };
     case getType(resetHistory):
       return {
@@ -120,6 +124,7 @@ export default function reducer(
         currentEntityData: [],
         currentEntityCsvUrl: "",
         currentEntityInfos: [],
+        currentEntityTimeStratifiedInfos: [],
       };
     case getType(openHistory):
       return { ...state, isOpen: true };

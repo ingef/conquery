@@ -7,12 +7,15 @@ import {
   ColumnDescriptionSemanticConceptColumn,
   ConceptIdT,
   CurrencyConfigT,
+  EntityInfo,
+  TimeStratifiedInfo,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useDatasetId } from "../dataset/selectors";
 
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
+import { EntityCard } from "./EntityCard";
 import type { EntityHistoryStateT, EntityEvent } from "./reducer";
 import { TimelineEmptyPlaceholder } from "./timeline/TimelineEmptyPlaceholder";
 import Year from "./timeline/Year";
@@ -30,14 +33,20 @@ const Root = styled("div")`
   -webkit-overflow-scrolling: touch;
   padding: 0 20px 0 10px;
   display: inline-grid;
-  grid-template-columns: 125px auto;
+  grid-template-columns: 200px auto;
   grid-auto-rows: minmax(min-content, max-content);
-  gap: 20px 4px;
+  gap: 12px 4px;
   width: 100%;
+`;
+
+const SxEntityCard = styled(EntityCard)`
+  grid-column: span 2;
 `;
 
 interface Props {
   className?: string;
+  currentEntityInfos: EntityInfo[];
+  currentEntityTimeStratifiedInfos: TimeStratifiedInfo[];
   detailLevel: DetailLevel;
   sources: Set<string>;
   contentFilter: ContentFilterValue;
@@ -48,6 +57,8 @@ interface Props {
 
 const Timeline = ({
   className,
+  currentEntityInfos,
+  currentEntityTimeStratifiedInfos,
   detailLevel,
   sources,
   contentFilter,
@@ -79,12 +90,17 @@ const Timeline = ({
 
   return (
     <Root className={className}>
+      <SxEntityCard
+        infos={currentEntityInfos}
+        timeStratifiedInfos={currentEntityTimeStratifiedInfos}
+      />
       {eventsByQuarterWithGroups.map(({ year, quarterwiseData }) => (
         <Year
           key={year}
           year={year}
           datasetId={datasetId}
           quarterwiseData={quarterwiseData}
+          timeStratifiedInfos={currentEntityTimeStratifiedInfos}
           getIsOpen={getIsOpen}
           toggleOpenYear={toggleOpenYear}
           toggleOpenQuarter={toggleOpenQuarter}
@@ -278,7 +294,7 @@ const useTimeBucketedSortedData = (
     while (sortedEvents[0].year < currentYear) {
       sortedEvents.unshift({
         year: sortedEvents[0].year + 1,
-        quarterwiseData: [1, 2, 3, 4].map((q) => ({
+        quarterwiseData: [4, 3, 2, 1].map((q) => ({
           quarter: q,
           events: [],
         })),
