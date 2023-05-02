@@ -255,10 +255,19 @@ export function EditorV2({
       setTree(undefined);
     } else {
       updateTreeNode(selectedNode.parentId, (parent) => {
-        if (parent.children) {
-          parent.children.items = parent.children.items.filter(
-            (item) => item.id !== selectedNode.id,
-          );
+        if (!parent.children) return;
+
+        parent.children.items = parent.children.items.filter(
+          (item) => item.id !== selectedNode.id,
+        );
+
+        if (parent.children.items.length === 1) {
+          const child = parent.children.items[0];
+          parent.id = child.id;
+          parent.children = child.children;
+          parent.data = child.data;
+          parent.dateRestriction ||= child.dateRestriction;
+          parent.negation ||= child.negation;
         }
       });
     }
@@ -533,12 +542,7 @@ function TreeNode({
           )}
           {tree.children && (
             <Grid style={gridStyles}>
-              <InvisibleDropzone
-                key="dropzone-before"
-                onDrop={(item) => {
-                  console.log(item);
-                }}
-              />
+              <InvisibleDropzone key="dropzone-before" onDrop={(item) => {}} />
               {tree.children.items.map((item, i, items) => (
                 <>
                   <TreeNode
