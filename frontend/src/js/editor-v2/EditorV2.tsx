@@ -1,7 +1,9 @@
 import styled from "@emotion/styled";
+import { faCalendar, faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import { faBan, faRefresh, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 
 import { useGetQuery } from "../api/api";
 import {
@@ -17,6 +19,9 @@ import IconButton from "../button/IconButton";
 import { DNDType } from "../common/constants/dndTypes";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
+
+import { DateModal, useDateEditing } from "./DateModal";
+import { Tree } from "./types";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -52,19 +57,6 @@ const Flex = styled("div")`
   align-items: center;
 `;
 
-interface Tree {
-  id: string;
-  parentId?: string;
-  negation?: boolean;
-  dateRestriction?: DateRangeT;
-  data?: any;
-  children?: {
-    connection: "and" | "or" | "time";
-    direction: "horizontal" | "vertical";
-    items: Tree[];
-  };
-}
-
 const findNodeById = (tree: Tree, id: string): Tree | undefined => {
   if (tree.id === id) {
     return tree;
@@ -82,7 +74,15 @@ const findNodeById = (tree: Tree, id: string): Tree | undefined => {
 
 const useEditorState = () => {
   const [tree, setTree] = useState<Tree | undefined>(undefined);
-  const [selectedNode, setSelectedNode] = useState<Tree | undefined>(undefined);
+  const [selectedNodeId, setSelectedNodeId] = useState<Tree | undefined>(
+    undefined,
+  );
+  const selectedNode = useMemo(() => {
+    if (!tree || !selectedNodeId) {
+      return undefined;
+    }
+    return findNodeById(tree, selectedNodeId.id);
+  }, [tree, selectedNodeId]);
 
   const expandNode = (
     queryNode:
@@ -168,13 +168,26 @@ const useEditorState = () => {
     setTree(undefined);
   };
 
+  const updateTreeNode = useCallback(
+    (id: string, update: (node: Tree) => void) => {
+      const newTree = JSON.parse(JSON.stringify(tree));
+      const node = findNodeById(newTree, id);
+      if (node) {
+        update(node);
+        setTree(newTree);
+      }
+    },
+    [tree],
+  );
+
   return {
     expandQuery,
     tree,
     setTree,
+    updateTreeNode,
     onReset,
     selectedNode,
-    setSelectedNode,
+    setSelectedNodeId,
   };
 };
 
@@ -183,87 +196,157 @@ const DROP_TYPES = [
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
 
-export function EditorV2() {
-  const { tree, setTree, expandQuery, onReset, selectedNode, setSelectedNode } =
-    useEditorState();
+const useNegationEditing = ({
+  selectedNode,
+  updateTreeNode,
+  enabled,
+}: {
+  enabled: boolean;
+  selectedNode: Tree | undefined;
+  updateTreeNode: (id: string, update: (node: Tree) => void) => void;
+}) => {
+  const onNegateClick = useCallback(() => {
+    if (!selectedNode || !enabled) return;
+
+    updateTreeNode(selectedNode.id, (node) => {
+      node.negation = !node.negation;
+    });
+  }, [enabled, selectedNode, updateTreeNode]);
+
+  useHotkeys("n", onNegateClick, [onNegateClick]);
+
+  return {
+    onNegateClick,
+  };
+};
+
+export function EditorV2({
+  featureDates,
+  featureNegate,
+}: {
+  featureDates: boolean;
+  featureNegate: boolean;
+}) {
+  const {
+    tree,
+    setTree,
+    updateTreeNode,
+    expandQuery,
+    onReset,
+    selectedNode,
+    setSelectedNodeId,
+  } = useEditorState();
+
+  const onFlip = useCallback(() => {
+    if (!selectedNode || !selectedNode.children) return;
+
+    updateTreeNode(selectedNode.id, (node) => {
+      if (!node.children) return;
+
+      node.children.direction =
+        node.children.direction === "horizontal" ? "vertical" : "horizontal";
+    });
+  }, [selectedNode, updateTreeNode]);
+
+  const onDelete = useCallback(() => {
+    if (!selectedNode) return;
+
+    if (selectedNode.parentId === undefined) {
+      setTree(undefined);
+    } else {
+      updateTreeNode(selectedNode.parentId, (parent) => {
+        if (parent.children) {
+          parent.children.items = parent.children.items.filter(
+            (item) => item.id !== selectedNode.id,
+          );
+        }
+      });
+    }
+  }, [selectedNode, setTree, updateTreeNode]);
+
+  useHotkeys("del", onDelete, [onDelete]);
+  useHotkeys("backspace", onDelete, [onDelete]);
+  useHotkeys("f", onFlip, [onFlip]);
+
+  const { showModal, headline, onOpen, onClose } = useDateEditing({
+    enabled: featureDates,
+    selectedNode,
+  });
+
+  const { onNegateClick } = useNegationEditing({
+    enabled: featureNegate,
+    selectedNode,
+    updateTreeNode,
+  });
 
   return (
     <Root
       onClick={() => {
-        setSelectedNode(undefined);
+        if (!selectedNode || showModal) return;
+        setSelectedNodeId(undefined);
       }}
     >
+      {showModal && selectedNode && (
+        <DateModal
+          onClose={onClose}
+          headline={headline}
+          dateRange={selectedNode.dateRestriction}
+          onResetDates={() =>
+            updateTreeNode(selectedNode.id, (node) => {
+              node.dateRestriction = undefined;
+            })
+          }
+          setDateRange={(dateRange) => {
+            updateTreeNode(selectedNode.id, (node) => {
+              node.dateRestriction = dateRange;
+            });
+          }}
+        />
+      )}
       <Actions>
         <Flex>
-          {selectedNode && (
-            <>
-              <IconButton
-                icon={faBan}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setTree((tr) => {
-                    const newTree = JSON.parse(JSON.stringify(tr));
-                    const node = findNodeById(newTree, selectedNode.id);
-                    if (node) {
-                      node.negation = !node.negation;
-                    }
-                    return newTree;
-                  });
-                }}
-              >
-                Negate
-              </IconButton>
-            </>
+          {featureDates && selectedNode && (
+            <IconButton
+              icon={faCalendar}
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpen();
+              }}
+            >
+              Dates
+            </IconButton>
           )}
-          {selectedNode && (
-            <>
-              <IconButton
-                icon={faTrash}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setTree((tr) => {
-                    if (selectedNode.parentId === undefined) {
-                      return undefined;
-                    } else {
-                      const newTree = JSON.parse(JSON.stringify(tr));
-                      const parent = findNodeById(
-                        newTree,
-                        selectedNode.parentId,
-                      );
-                      if (parent?.children) {
-                        parent.children.items = parent.children.items.filter(
-                          (item) => item.id !== selectedNode.id,
-                        );
-                      }
-                      return newTree;
-                    }
-                  });
-                }}
-              >
-                Delete
-              </IconButton>
-            </>
+          {featureNegate && selectedNode && (
+            <IconButton
+              icon={faBan}
+              onClick={(e) => {
+                e.stopPropagation();
+                onNegateClick();
+              }}
+            >
+              Negate
+            </IconButton>
           )}
           {selectedNode?.children && (
             <IconButton
               icon={faRefresh}
               onClick={(e) => {
                 e.stopPropagation();
-                setTree((tr) => {
-                  const newTree = JSON.parse(JSON.stringify(tr));
-                  const node = findNodeById(newTree, selectedNode.id);
-                  if (node?.children) {
-                    node.children.direction =
-                      node.children.direction === "horizontal"
-                        ? "vertical"
-                        : "horizontal";
-                  }
-
-                  return newTree;
-                });
+                onFlip();
               }}
             >
               Flip
+            </IconButton>
+          )}
+          {selectedNode && (
+            <IconButton
+              icon={faTrashCan}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+            >
+              Delete
             </IconButton>
           )}
         </Flex>
@@ -276,11 +359,8 @@ export function EditorV2() {
           <TreeNode
             tree={tree}
             selectedNode={selectedNode}
-            setSelectedNode={setSelectedNode}
-            droppable={{
-              h: true,
-              v: true,
-            }}
+            setSelectedNode={setSelectedNodeId}
+            droppable={{ h: true, v: true }}
           />
         ) : (
           <SxDropzone
@@ -322,10 +402,16 @@ const Node = styled("div")<{
 `;
 
 const Connector = styled("span")`
-  font-weight: 700;
   text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.gray};
+  font-size: ${({ theme }) => theme.font.md};
+  color: black;
+
+  border-radius: ${({ theme }) => theme.borderRadius};
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 function getGridStyles(tree: Tree) {
@@ -365,17 +451,16 @@ const InvisibleDropzone = (
 
 const Name = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
+  font-weight: 700;
 `;
 
 const Description = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.gray};
 `;
 
 const DateRange = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.gray};
-  font-weight: 700;
+  font-family: monospace;
 `;
 
 const formatDateRange = (range: DateRangeT): string => {
@@ -435,18 +520,21 @@ function TreeNode({
         >
           {(!tree.children || tree.data || tree.dateRestriction) && (
             <div>
+              {tree.dateRestriction && (
+                <>
+                  <DateRange>{formatDateRange(tree.dateRestriction)}</DateRange>
+                </>
+              )}
               {tree.data?.label && <Name>{tree.data.label[0]}</Name>}
               {tree.data?.description && (
                 <Description>{tree.data?.description}</Description>
-              )}
-              {tree.dateRestriction && (
-                <DateRange>{formatDateRange(tree.dateRestriction)}</DateRange>
               )}
             </div>
           )}
           {tree.children && (
             <Grid style={gridStyles}>
               <InvisibleDropzone
+                key="dropzone-before"
                 onDrop={(item) => {
                   console.log(item);
                 }}
@@ -454,6 +542,7 @@ function TreeNode({
               {tree.children.items.map((item, i, items) => (
                 <>
                   <TreeNode
+                    key={item.id}
                     tree={item}
                     selectedNode={selectedNode}
                     setSelectedNode={setSelectedNode}
@@ -468,6 +557,7 @@ function TreeNode({
                   />
                   {i < items.length - 1 && (
                     <InvisibleDropzoneContainer
+                      key={item.id + "connector"}
                       acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
                       naked
                       bare
@@ -482,6 +572,7 @@ function TreeNode({
                 </>
               ))}
               <InvisibleDropzone
+                key="dropzone-after"
                 onDrop={(item) => {
                   console.log(item);
                 }}
