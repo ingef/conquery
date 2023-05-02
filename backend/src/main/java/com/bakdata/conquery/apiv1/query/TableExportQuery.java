@@ -311,7 +311,7 @@ public class TableExportQuery extends Query {
 			return node.getId().toStringWithoutDataset();
 		}
 
-		return node.getName();
+		return node.getName() + " - " + node.getDescription();
 	}
 
 	@Override
