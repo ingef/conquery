@@ -1,5 +1,15 @@
+import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import { Fragment } from "react";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Tooltip,
+  ChartOptions,
+} from "chart.js";
+import { Fragment, useMemo } from "react";
+import { Bar } from "react-chartjs-2";
 import { useSelector } from "react-redux";
 
 import { EntityInfo, TimeStratifiedInfo } from "../api/types";
@@ -11,7 +21,7 @@ import { getColumnType } from "./timeline/util";
 
 const Container = styled("div")`
   display: grid;
-  grid-template-columns: 1fr 1.618fr;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
   padding: 20px;
   background-color: ${({ theme }) => theme.col.bg};
@@ -30,6 +40,11 @@ const Col = styled("div")`
   gap: 10px;
 `;
 
+const ChartContainer = styled("div")`
+  height: 200px;
+  width: 100%;
+`;
+
 const Grid = styled("div")`
   display: grid;
   gap: 0 20px;
@@ -46,17 +61,37 @@ const Value = styled("div")`
   justify-self: end;
 `;
 
-const TimeStratifiedInfos = ({
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  // Title,
+  Tooltip,
+  // Legend,
+);
+
+function hexToRgbA(hex: string) {
+  let c: any;
+  if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+    c = hex.substring(1).split("");
+    if (c.length === 3) {
+      c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+    }
+    c = "0x" + c.join("");
+    return [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(",");
+  }
+  throw new Error("Bad Hex");
+}
+
+const Table = ({
   timeStratifiedInfos,
+  currencyUnit,
 }: {
   timeStratifiedInfos: TimeStratifiedInfo[];
+  currencyUnit: string;
 }) => {
-  const currencyUnit = useSelector<StateT, string>(
-    (state) => state.startup.config.currency.unit,
-  );
-
   return (
-    <Col>
+    <>
       {timeStratifiedInfos.map((timeStratifiedInfo) => {
         return (
           <Grid key={timeStratifiedInfo.label}>
@@ -91,6 +126,87 @@ const TimeStratifiedInfos = ({
           </Grid>
         );
       })}
+    </>
+  );
+};
+
+const TimeStratifiedInfos = ({
+  timeStratifiedInfos,
+}: {
+  timeStratifiedInfos: TimeStratifiedInfo[];
+}) => {
+  const currencyUnit = useSelector<StateT, string>(
+    (state) => state.startup.config.currency.unit,
+  );
+
+  const theme = useTheme();
+  const datasets = useMemo(() => {
+    const sortedYears = [...timeStratifiedInfos[0].years].sort(
+      (a, b) => b.year - a.year,
+    );
+
+    return sortedYears.map((year, i) => {
+      return {
+        label: year.year.toString(),
+        data: Object.values(year.values),
+        backgroundColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, ${1 / i})`,
+      };
+    });
+  }, [theme, timeStratifiedInfos]);
+
+  const entries = Object.entries(timeStratifiedInfos[0].totals);
+  const labels = entries.map(([key]) => key);
+  // const values = entries.map(([, value]) => value);
+
+  const data = {
+    labels,
+    datasets,
+  };
+
+  const options: ChartOptions<"bar"> = useMemo(() => {
+    return {
+      // indexAxis: "y" as const,
+      // legend: {
+      //   position: "right" as const,
+      // },
+      plugins: {
+        title: {
+          display: true,
+          text: timeStratifiedInfos[0].label,
+        },
+        subtitle: {
+          text: "ololol",
+        },
+      },
+      responsive: true,
+      interaction: {
+        mode: "index" as const,
+        intersect: false,
+      },
+      datasets: {},
+      layout: {
+        padding: 0,
+      },
+      // scales: {
+      //   x: {
+      //     stacked: true,
+      //   },
+      //   y: {
+      //     stacked: true,
+      //   },
+      // },
+    };
+  }, [timeStratifiedInfos]);
+
+  return (
+    <Col>
+      <ChartContainer>
+        <Bar options={options} data={data} />
+      </ChartContainer>
+      {/* <Table
+        currencyUnit={currencyUnit}
+        timeStratifiedInfos={timeStratifiedInfos}
+      /> */}
     </Col>
   );
 };
