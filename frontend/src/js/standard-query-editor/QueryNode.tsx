@@ -7,22 +7,21 @@ import { useSelector } from "react-redux";
 import type { QueryT } from "../api/types";
 import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
-import { DNDType } from "../common/constants/dndTypes";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import {
   nodeHasNonDefaultSettings,
   nodeHasFilterValues,
   nodeIsConceptQueryNode,
+  canNodeBeDropped,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
 import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
-import { PossibleDroppableObject } from "../ui-components/Dropzone";
 
 import QueryNodeActions from "./QueryNodeActions";
 import QueryNodeContent from "./QueryNodeContent";
 import { getRootNodeLabel } from "./helper";
-import { DragItemConceptTreeNode, StandardQueryNodeT } from "./types";
+import { StandardQueryNodeT } from "./types";
 
 const FlexHoverNavigatable = styled(HoverNavigatable)`
   display: flex;
@@ -48,9 +47,6 @@ const Root = styled("div")<{
     active
       ? `2px solid ${theme.col.blueGrayDark}`
       : `1px solid ${theme.col.grayMediumLight}`};
-  &:hover {
-    background-color: ${({ theme }) => theme.col.bg};
-  }
 `;
 
 interface PropsT {
@@ -85,12 +81,6 @@ const nodeHasActiveSecondaryId = (
       node.availableSecondaryIds.includes(activeSecondaryId)
     );
   }
-};
-
-export const droppableObjectIsConceptTreeNode = (
-  node: PossibleDroppableObject,
-): node is DragItemConceptTreeNode => {
-  return node.type === DNDType.CONCEPT_TREE_NODE;
 };
 
 const QueryNode = ({
@@ -197,18 +187,8 @@ const QueryNode = ({
   const QueryNodeRoot = (
     <FlexHoverNavigatable
       triggerNavigate={onClick}
-      canDrop={(item: PossibleDroppableObject) => {
-        if (
-          !droppableObjectIsConceptTreeNode(item) ||
-          !nodeIsConceptQueryNode(node)
-        ) {
-          return false;
-        }
-        const conceptId = item.ids[0];
-        const itemAlreadyInNode = node.ids.includes(conceptId);
-        const itemHasConceptRoot = item.tree === node.tree;
-        return itemHasConceptRoot && !itemAlreadyInNode;
-      }}
+      canDrop={(item) => canNodeBeDropped(node, item)}
+      highlightDroppable
     >
       <Root
         ref={(instance) => {

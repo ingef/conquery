@@ -155,10 +155,8 @@ const EventCard = ({
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
                   <code>
                     <NumericFormat
-                      thousandSeparator={currencyConfig.thousandSeparator}
-                      decimalSeparator={currencyConfig.decimalSeparator}
-                      decimalScale={currencyConfig.decimalScale}
-                      suffix={currencyConfig.prefix}
+                      {...currencyConfig}
+                      suffix={" " + currencyConfig.unit}
                       displayType="text"
                       value={parseInt(row[column.label]) / 100}
                     />

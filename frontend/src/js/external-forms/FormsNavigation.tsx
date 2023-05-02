@@ -39,10 +39,7 @@ const SxIconButton = styled(IconButton)`
   padding: 7px 10px;
 `;
 
-interface Props {
-  reset: () => void;
-}
-const FormsNavigation = ({ reset }: Props) => {
+const FormsNavigation = ({ onReset }: { onReset: () => void }) => {
   const language = useActiveLang();
   const { t } = useTranslation();
 
@@ -70,15 +67,6 @@ const FormsNavigation = ({ reset }: Props) => {
     }))
     .sort((a, b) => (a.label < b.label ? -1 : 1));
 
-  const activeFormType = useSelector<StateT, string | null>((state) =>
-    selectActiveFormType(state),
-  );
-  const onClear = () => {
-    if (activeFormType) {
-      reset();
-    }
-  };
-
   return (
     <Root>
       <Row>
@@ -97,7 +85,7 @@ const FormsNavigation = ({ reset }: Props) => {
           }}
         />
         <ConfirmableTooltip
-          onConfirm={onClear}
+          onConfirm={onReset}
           confirmationText={t("externalForms.common.clearConfirm")}
         >
           <WithTooltip text={t("externalForms.common.clear")}>

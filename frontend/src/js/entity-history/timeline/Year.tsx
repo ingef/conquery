@@ -6,6 +6,7 @@ import {
   ConceptIdT,
   CurrencyConfigT,
   DatasetT,
+  TimeStratifiedInfo,
 } from "../../api/types";
 import { ContentFilterValue } from "../ContentControl";
 import { DetailLevel } from "../DetailControl";
@@ -33,6 +34,7 @@ const Year = ({
   columnBuckets,
   currencyConfig,
   rootConceptIdsByColumn,
+  timeStratifiedInfos,
 }: {
   datasetId: DatasetT["id"];
   year: number;
@@ -46,6 +48,7 @@ const Year = ({
   currencyConfig: CurrencyConfigT;
   columnBuckets: ColumnBuckets;
   columns: Record<string, ColumnDescription>;
+  timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
   const isYearOpen = getIsOpen(year);
   const totalEvents = quarterwiseData.reduce(
@@ -61,6 +64,7 @@ const Year = ({
         year={year}
         totalEvents={totalEvents}
         onClick={() => toggleOpenYear(year)}
+        timeStratifiedInfos={timeStratifiedInfos}
       />
       <YearGroup key={year}>
         {quarterwiseData.map(({ quarter, groupedEvents, differences }) => {

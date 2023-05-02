@@ -67,7 +67,7 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	@NotEmpty
 	private String healthCheckPath = "health";
 
-	@NotEmpty
+	@NotNull
 	private URL conqueryApiUrl;
 
 	@Valid
