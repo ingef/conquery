@@ -94,7 +94,9 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
           }}
           onClick={(e) => {
             onClick?.(e);
-            hasFocus && datePickerRef.current?.setOpen(true);
+            if (hasFocus) {
+              datePickerRef.current?.setOpen(true);
+            }
           }}
           inputProps={{
             ...props?.inputProps,
