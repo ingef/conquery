@@ -117,7 +117,9 @@ const FormsTab = () => {
   useLoadForms({ datasetId });
 
   const { methods, config, datasetOptions, onReset, onResetActiveForm } =
-    useInitializeForm();
+    useInitializeForm({
+      datasetId,
+    });
 
   useEffect(
     function resetOnDatasetChange() {
