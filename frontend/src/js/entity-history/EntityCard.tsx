@@ -1,22 +1,14 @@
-import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Tooltip,
-  ChartOptions,
-} from "chart.js";
-import { Fragment, useMemo } from "react";
-import { Bar } from "react-chartjs-2";
+import { Fragment } from "react";
+import { NumericFormat } from "react-number-format";
 import { useSelector } from "react-redux";
 
-import { EntityInfo, TimeStratifiedInfo } from "../api/types";
+import { CurrencyConfigT, EntityInfo, TimeStratifiedInfo } from "../api/types";
 import { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 
 import EntityInfos from "./EntityInfos";
+import { TimeStratifiedChart } from "./TimeStratifiedChart";
 import { getColumnType } from "./timeline/util";
 
 const Container = styled("div")`
@@ -32,17 +24,8 @@ const Container = styled("div")`
 const Centered = styled("div")`
   display: flex;
   align-items: flex-start;
-`;
-
-const Col = styled("div")`
-  display: flex;
   flex-direction: column;
   gap: 10px;
-`;
-
-const ChartContainer = styled("div")`
-  height: 200px;
-  width: 100%;
 `;
 
 const Grid = styled("div")`
@@ -61,35 +44,14 @@ const Value = styled("div")`
   justify-self: end;
 `;
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  // Title,
-  Tooltip,
-  // Legend,
-);
-
-function hexToRgbA(hex: string) {
-  let c: any;
-  if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
-    c = hex.substring(1).split("");
-    if (c.length === 3) {
-      c = [c[0], c[0], c[1], c[1], c[2], c[2]];
-    }
-    c = "0x" + c.join("");
-    return [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(",");
-  }
-  throw new Error("Bad Hex");
-}
-
 const Table = ({
   timeStratifiedInfos,
-  currencyUnit,
 }: {
   timeStratifiedInfos: TimeStratifiedInfo[];
-  currencyUnit: string;
 }) => {
+  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
+    (state) => state.startup.config.currency,
+  );
   return (
     <>
       {timeStratifiedInfos.map((timeStratifiedInfo) => {
@@ -117,8 +79,17 @@ const Table = ({
                 <Fragment key={label}>
                   <Label>{label}</Label>
                   <Value>
-                    {valueFormatted}
-                    {columnType === "MONEY" ? " " + currencyUnit : ""}
+                    {columnType === "MONEY" && typeof value === "number" ? (
+                      <NumericFormat
+                        {...currencyConfig}
+                        decimalScale={0}
+                        suffix={" " + currencyConfig.unit}
+                        displayType="text"
+                        value={value}
+                      />
+                    ) : (
+                      valueFormatted
+                    )}
                   </Value>
                 </Fragment>
               );
@@ -127,87 +98,6 @@ const Table = ({
         );
       })}
     </>
-  );
-};
-
-const TimeStratifiedInfos = ({
-  timeStratifiedInfos,
-}: {
-  timeStratifiedInfos: TimeStratifiedInfo[];
-}) => {
-  const currencyUnit = useSelector<StateT, string>(
-    (state) => state.startup.config.currency.unit,
-  );
-
-  const theme = useTheme();
-  const datasets = useMemo(() => {
-    const sortedYears = [...timeStratifiedInfos[0].years].sort(
-      (a, b) => b.year - a.year,
-    );
-
-    return sortedYears.map((year, i) => {
-      return {
-        label: year.year.toString(),
-        data: Object.values(year.values),
-        backgroundColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, ${1 / i})`,
-      };
-    });
-  }, [theme, timeStratifiedInfos]);
-
-  const entries = Object.entries(timeStratifiedInfos[0].totals);
-  const labels = entries.map(([key]) => key);
-  // const values = entries.map(([, value]) => value);
-
-  const data = {
-    labels,
-    datasets,
-  };
-
-  const options: ChartOptions<"bar"> = useMemo(() => {
-    return {
-      // indexAxis: "y" as const,
-      // legend: {
-      //   position: "right" as const,
-      // },
-      plugins: {
-        title: {
-          display: true,
-          text: timeStratifiedInfos[0].label,
-        },
-        subtitle: {
-          text: "ololol",
-        },
-      },
-      responsive: true,
-      interaction: {
-        mode: "index" as const,
-        intersect: false,
-      },
-      datasets: {},
-      layout: {
-        padding: 0,
-      },
-      // scales: {
-      //   x: {
-      //     stacked: true,
-      //   },
-      //   y: {
-      //     stacked: true,
-      //   },
-      // },
-    };
-  }, [timeStratifiedInfos]);
-
-  return (
-    <Col>
-      <ChartContainer>
-        <Bar options={options} data={data} />
-      </ChartContainer>
-      {/* <Table
-        currencyUnit={currencyUnit}
-        timeStratifiedInfos={timeStratifiedInfos}
-      /> */}
-    </Col>
   );
 };
 
@@ -224,8 +114,11 @@ export const EntityCard = ({
     <Container className={className}>
       <Centered>
         <EntityInfos infos={infos} />
+        <Table timeStratifiedInfos={timeStratifiedInfos.slice(1)} />
       </Centered>
-      <TimeStratifiedInfos timeStratifiedInfos={timeStratifiedInfos} />
+      <TimeStratifiedChart
+        timeStratifiedInfos={timeStratifiedInfos.slice(0, 1)}
+      />
     </Container>
   );
 };
