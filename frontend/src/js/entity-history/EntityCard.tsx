@@ -11,8 +11,8 @@ import { getColumnType } from "./timeline/util";
 
 const Container = styled("div")`
   display: grid;
-  grid-template-columns: 1.618fr 1fr;
-  gap: 30px;
+  grid-template-columns: 1fr 1.618fr;
+  gap: 10px;
   padding: 20px;
   background-color: ${({ theme }) => theme.col.bg};
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -24,14 +24,22 @@ const Centered = styled("div")`
   align-items: flex-start;
 `;
 
+const Col = styled("div")`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
 const Grid = styled("div")`
-  display: inline-grid;
+  display: grid;
   gap: 0 20px;
   grid-template-columns: auto auto;
 `;
+
 const Label = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
 `;
+
 const Value = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
   font-weight: 400;
@@ -48,7 +56,7 @@ const TimeStratifiedInfos = ({
   );
 
   return (
-    <div>
+    <Col>
       {timeStratifiedInfos.map((timeStratifiedInfo) => {
         return (
           <Grid key={timeStratifiedInfo.label}>
@@ -64,7 +72,11 @@ const TimeStratifiedInfos = ({
               if (!exists(value)) return <></>;
 
               const valueFormatted =
-                columnType === "MONEY" ? Math.round(value) : value;
+                typeof value === "number"
+                  ? Math.round(value)
+                  : value instanceof Array
+                  ? value.join(", ")
+                  : value;
 
               return (
                 <Fragment key={label}>
@@ -79,7 +91,7 @@ const TimeStratifiedInfos = ({
           </Grid>
         );
       })}
-    </div>
+    </Col>
   );
 };
 
