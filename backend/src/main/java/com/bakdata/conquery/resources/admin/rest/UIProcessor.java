@@ -32,7 +32,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedDatasetRegistry;
 import com.bakdata.conquery.resources.admin.ui.model.FrontendAuthOverview;
 import com.bakdata.conquery.resources.admin.ui.model.FrontendGroupContent;
 import com.bakdata.conquery.resources.admin.ui.model.FrontendPermission;
@@ -57,8 +57,9 @@ public class UIProcessor {
 	@Getter
 	private final AdminProcessor adminProcessor;
 
-	public DatasetRegistry getDatasetRegistry() {
-		return adminProcessor.getDatasetRegistry();
+	// todo(tm): UIContext requires a distributed context. Should it just be disabled if SQL is enabled?
+	public DistributedDatasetRegistry getDatasetRegistry() {
+		return (DistributedDatasetRegistry) adminProcessor.getDatasetRegistry();
 	}
 
 	public MetaStorage getStorage() {

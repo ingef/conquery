@@ -5,20 +5,22 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.models.messages.namespaces.specific.RequestConsistency;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedDatasetRegistry;
 import io.dropwizard.servlets.tasks.Task;
 
 public class ReportConsistencyTask extends Task {
 
-    private final DatasetRegistry datasetRegistry;
+    private final DistributedDatasetRegistry datasetRegistry;
 
-    public ReportConsistencyTask(DatasetRegistry datasetRegistry) {
+    public ReportConsistencyTask(DistributedDatasetRegistry datasetRegistry) {
         super("report-consistency");
         this.datasetRegistry = datasetRegistry;
     }
 
     @Override
     public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
-        datasetRegistry.getWorkers().values().forEach(w -> w.send(new RequestConsistency()));
+        datasetRegistry.getDatasets().stream()
+            .flatMap(ns -> ns.getWorkerHandler().getWorkers().values().stream())
+            .forEach(w -> w.send(new RequestConsistency()));
     }
 }

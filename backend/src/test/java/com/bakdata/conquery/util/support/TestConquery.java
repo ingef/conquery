@@ -28,8 +28,10 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedDatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -123,8 +125,9 @@ public class TestConquery {
 	}
 
 	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
-		DatasetRegistry datasets = standaloneCommand.getManager().getDatasetRegistry();
-		Namespace ns = datasets.get(datasetId);
+		// TODO(tm): might be okay for test?
+		DistributedDatasetRegistry datasets = (DistributedDatasetRegistry) standaloneCommand.getManager().getDatasetRegistry();
+		DistributedNamespace ns = datasets.get(datasetId);
 
 		assertThat(datasets.getShardNodes()).hasSize(2);
 
@@ -149,7 +152,8 @@ public class TestConquery {
 				localTmpDir,
 				localCfg,
 				standaloneCommand.getManager().getAdmin().getAdminProcessor(),
-				standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor(),
+				// todo(tm): test integration
+				(AdminDatasetProcessor<DistributedNamespace>) standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor(),
 				// Getting the User from AuthorizationConfig
 				testUser
 		);
@@ -158,7 +162,7 @@ public class TestConquery {
 			.total(Duration.ofSeconds(5))
 			.stepTime(Duration.ofMillis(5))
 			.build()
-			.until(() -> ns.getWorkers().size() == datasets.getShardNodes().size());
+			.until(() -> ns.getWorkerHandler().getWorkers().size() == datasets.getShardNodes().size());
 
 		support.waitUntilWorkDone();
 		openSupports.add(support);

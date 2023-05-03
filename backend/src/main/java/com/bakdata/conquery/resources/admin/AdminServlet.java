@@ -18,6 +18,8 @@ import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedDatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
@@ -26,6 +28,7 @@ import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
 import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
+import com.bakdata.conquery.resources.admin.rest.DistributedAdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.GroupResource;
 import com.bakdata.conquery.resources.admin.rest.PermissionResource;
 import com.bakdata.conquery.resources.admin.rest.RoleResource;
@@ -62,7 +65,7 @@ public class AdminServlet {
 	public static final String ADMIN_UI = "admin-ui";
 	private final AdminProcessor adminProcessor;
 	private final DropwizardResourceConfig jerseyConfig;
-	private final AdminDatasetProcessor adminDatasetProcessor;
+	private final AdminDatasetProcessor<? extends Namespace> adminDatasetProcessor;
 	private final DropwizardResourceConfig jerseyConfigUI;
 
 	public AdminServlet(ManagerNode manager) {
@@ -84,19 +87,23 @@ public class AdminServlet {
 		// freemarker support
 
 
+		// todo(tm): configure properly
+		DistributedDatasetRegistry datasetRegistry = (DistributedDatasetRegistry) manager.getDatasetRegistry();
+
 		adminProcessor = new AdminProcessor(
 				manager.getConfig(),
 				manager.getStorage(),
 				manager.getDatasetRegistry(),
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
-				manager.getValidator()
+				manager.getValidator(),
+				() -> datasetRegistry.getShardNodes().values()
 		);
 
-		adminDatasetProcessor = new AdminDatasetProcessor(
+		adminDatasetProcessor = new DistributedAdminDatasetProcessor(
 				manager.getConfig(),
 				manager.getValidator(),
-				manager.getDatasetRegistry(),
+				datasetRegistry,
 				manager.getJobManager()
 		);
 

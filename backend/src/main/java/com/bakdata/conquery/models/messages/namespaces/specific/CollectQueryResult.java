@@ -4,7 +4,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.query.results.ShardResult;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +27,7 @@ public class CollectQueryResult extends NamespaceMessage {
 	private ShardResult result;
 
 	@Override
-	public void react(Namespace context) throws Exception {
+	public void react(DistributedNamespace context) throws Exception {
 		log.info("Received {} of size {}", result, result.getResults().size());
 
 		context.getExecutionManager().handleQueryResult(result);

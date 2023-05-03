@@ -95,6 +95,9 @@ public class PreviewConfig {
 	 */
 	private Set<FilterId> searchFilters = Collections.emptySet();
 
+	// todo(tm): I've got no idea why this is suddenly needed. If omitted, Jackson first injects the value correctly and then tries to parse it from the input
+	//           as there is no entry, it then overwrites the correct value with null
+	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
 	private DatasetRegistry datasetRegistry;

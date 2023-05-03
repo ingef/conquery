@@ -1,6 +1,5 @@
 package com.bakdata.conquery.commands;
 
-import java.net.InetSocketAddress;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,35 +18,27 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jersey.RESTServer;
-import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
-import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
-import com.bakdata.conquery.io.mina.ChunkReader;
-import com.bakdata.conquery.io.mina.ChunkWriter;
-import com.bakdata.conquery.io.mina.MinaAttributes;
-import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.jobs.ReactingJob;
-import com.bakdata.conquery.models.messages.SlowMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownShard;
-import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.worker.ClusterManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedDatasetRegistry;
+import com.bakdata.conquery.models.worker.ShardConnectionManager;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
+import com.bakdata.conquery.sql.conquery.SqlClusterManager;
+import com.bakdata.conquery.sql.conquery.SqlDatasetRegistry;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
-import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
@@ -60,10 +51,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 /**
@@ -79,7 +67,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 
 	private final String name;
 
-	private IoAcceptor acceptor;
 	private MetaStorage storage;
 	private JobManager jobManager;
 	private Validator validator;
@@ -91,6 +78,7 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	private Environment environment;
 	private final List<ResourcesProvider> providers = new ArrayList<>();
 	private Client client;
+	private ClusterManager shardManager;
 
 	// Resources without authentication
 	private DropwizardResourceConfig unprotectedAuthApi;
@@ -115,9 +103,27 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		client = new JerseyClientBuilder(environment).using(config.getJerseyClient())
 													 .build(getName());
 
+		jobManager = new JobManager("ManagerNode", config.isFailOnError());
+
 		// Instantiate DatasetRegistry and MetaStorage, so they are ready for injection into the object mapper (API + Storage)
 		// The validator is already injected at this point see Conquery.java
-		datasetRegistry = new DatasetRegistry(config.getCluster().getEntityBucketSize(), config, this::createInternalObjectMapper);
+		if (!config.getSqlConnectorConfig().isEnabled()) {
+			DistributedDatasetRegistry
+					distributedDatasetRegistry =
+					new DistributedDatasetRegistry(config.getCluster().getEntityBucketSize(), config, this::createInternalObjectMapper);
+			datasetRegistry = distributedDatasetRegistry;
+			shardManager = new ShardConnectionManager(
+					distributedDatasetRegistry, jobManager, validator, config, this::createInternalObjectMapper
+			);
+
+			// todo(tm): Does the order of events matter? I've moved this up
+			environment.admin().addTask(new ReportConsistencyTask(distributedDatasetRegistry));
+		}
+		else {
+			datasetRegistry = new SqlDatasetRegistry(config, this::createInternalObjectMapper);
+			shardManager = new SqlClusterManager();
+		}
+
 		storage = new MetaStorage(config.getStorage(), datasetRegistry);
 		datasetRegistry.setMetaStorage(storage);
 
@@ -126,7 +132,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 		customizeApiObjectMapper(objectMapper);
 
 
-		jobManager = new JobManager("ManagerNode", config.isFailOnError());
 
 		// FormScanner needs to be instantiated before plugins are initialized
 		formScanner = new FormScanner(config);
@@ -193,7 +198,6 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 						config.getQueries().getOldQueriesTime().getUnit().toChronoUnit()
 				)));
 		environment.admin().addTask(new PermissionCleanupTask(storage));
-		environment.admin().addTask(new ReportConsistencyTask(datasetRegistry));
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
@@ -317,76 +321,17 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 	}
 
 	@Override
-	public void sessionOpened(IoSession session) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
-		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
-	}
-
-	@Override
-	public void sessionClosed(IoSession session) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
-		log.info("Client '{}' disconnected ", session.getAttribute(MinaAttributes.IDENTIFIER));
-	}
-
-	@Override
-	public void exceptionCaught(IoSession session, Throwable cause) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
-		log.error("caught exception", cause);
-	}
-
-	@Override
-	public void messageReceived(IoSession session, Object message) {
-		ConqueryMDC.setLocation("ManagerNode[" + session.getLocalAddress().toString() + "]");
-		if (message instanceof MessageToManagerNode toManagerNode) {
-
-			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
-
-			Job job = new ReactingJob<>(toManagerNode, new NetworkMessageContext.ManagerNodeNetworkContext(
-					new NetworkSession(session),
-					datasetRegistry, config.getCluster().getBackpressure()
-			));
-
-			if (toManagerNode instanceof SlowMessage slowMessage) {
-				slowMessage.setProgressReporter(job.getProgressReporter());
-				jobManager.addSlowJob(job);
-			}
-			else {
-				jobManager.addFastJob(job);
-			}
-		}
-		else {
-			log.error("Unknown message type {} in {}", message.getClass(), message);
-		}
-	}
-
-	@Override
 	public void start() throws Exception {
-		acceptor = new NioSocketAcceptor();
-
-		ObjectMapper om = createInternalObjectMapper(View.InternalCommunication.class);
-		config.configureObjectMapper(om);
-		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
-		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
-		acceptor.setHandler(this);
-		acceptor.getSessionConfig().setAll(config.getCluster().getMina());
-		acceptor.bind(new InetSocketAddress(config.getCluster().getPort()));
-		log.info("Started ManagerNode @ {}", acceptor.getLocalAddress());
+		shardManager.start();
 	}
 
 	@Override
 	public void stop() throws Exception {
-		datasetRegistry.getShardNodes().forEach(((socketAddress, shardNodeInformation) -> shardNodeInformation.send(new ShutdownShard())));
 
 		jobManager.close();
 
 		datasetRegistry.close();
-
-		try {
-			acceptor.dispose();
-		}
-		catch (Exception e) {
-			log.error(acceptor + " could not be closed", e);
-		}
+		shardManager.stop();
 
 		for (ResourcesProvider provider : providers) {
 			try {

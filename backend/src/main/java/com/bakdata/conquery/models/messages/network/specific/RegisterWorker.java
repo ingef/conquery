@@ -39,7 +39,7 @@ public class RegisterWorker extends MessageToManagerNode {
 		context.getNamespaces().register(node, info);
 
 		// Request consistency report
-		context.getNamespaces().getWorkers().get(info.getId()).send(new RequestConsistency());
+		context.getNamespaces().getWorker(info.getId(), info.getDataset()).send(new RequestConsistency());
 	}
 
 	/**

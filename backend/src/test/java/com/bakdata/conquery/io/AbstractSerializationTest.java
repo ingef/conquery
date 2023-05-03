@@ -12,6 +12,7 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedDatasetRegistry;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.jersey.validation.Validators;
@@ -33,7 +34,7 @@ public abstract class AbstractSerializationTest {
 
 	@BeforeEach
 	public void before() {
-		datasetRegistry = new DatasetRegistry(0, config, null);
+		datasetRegistry = new DistributedDatasetRegistry(0, config, null);
 		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
 
 		// Prepare manager node internal mapper

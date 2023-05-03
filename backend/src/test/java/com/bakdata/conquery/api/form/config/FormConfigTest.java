@@ -44,7 +44,8 @@ import com.bakdata.conquery.models.forms.frontendconfiguration.FormType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedDatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.IdResolveContext;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -72,7 +73,7 @@ public class FormConfigTest {
 	private ConqueryConfig config = new ConqueryConfig();
 
 	private MetaStorage storage;
-	private DatasetRegistry namespacesMock;
+	private DistributedDatasetRegistry namespacesMock;
 
 	private FormConfigProcessor processor;
 	private AuthorizationController controller;
@@ -93,7 +94,7 @@ public class FormConfigTest {
 		datasetId1 = dataset1.getId();
 
 		// Mock DatasetRegistry for translation
-		namespacesMock = Mockito.mock(DatasetRegistry.class);
+		namespacesMock = Mockito.mock(DistributedDatasetRegistry.class);
 
 		doAnswer(invocation -> {
 			throw new UnsupportedOperationException("Not yet implemented");
@@ -101,7 +102,7 @@ public class FormConfigTest {
 
 		doAnswer(invocation -> {
 			final DatasetId id = invocation.getArgument(0);
-			Namespace namespaceMock = Mockito.mock(Namespace.class);
+			Namespace namespaceMock = Mockito.mock(DistributedNamespace.class);
 			if (id.equals(datasetId)) {
 				when(namespaceMock.getDataset()).thenReturn(dataset);
 			}

@@ -9,6 +9,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.validation.Validator;
@@ -57,6 +58,7 @@ public class AdminProcessor {
 	private final ScheduledExecutorService maintenanceService;
 	private final Validator validator;
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
+	private final Supplier<Collection<ShardNodeInformation>> nodeProvider;
 
 
 
@@ -274,14 +276,12 @@ public class AdminProcessor {
 								)))
 				// Remote Worker JobManagers
 				.putAll(
-						getDatasetRegistry()
-								.getShardNodes()
-								.values()
-								.stream()
-								.collect(Collectors.toMap(
-										si -> Objects.toString(si.getRemoteAddress()),
-										ShardNodeInformation::getJobManagerStatus
-								))
+						nodeProvider.get()
+									.stream()
+									.collect(Collectors.toMap(
+											si -> Objects.toString(si.getRemoteAddress()),
+											ShardNodeInformation::getJobManagerStatus
+									))
 				)
 				.build();
 	}

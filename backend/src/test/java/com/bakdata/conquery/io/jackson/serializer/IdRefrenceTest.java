@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedDatasetRegistry;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -38,7 +39,7 @@ public class IdRefrenceTest {
 		registry.register(dataset);
 		registry.register(table);
 
-		final DatasetRegistry datasetRegistry = new DatasetRegistry(0, null, null);
+		final DatasetRegistry datasetRegistry = new DistributedDatasetRegistry(0, null, null);
 
 		final MetaStorage metaStorage = new MetaStorage(new NonPersistentStoreFactory(),datasetRegistry);
 

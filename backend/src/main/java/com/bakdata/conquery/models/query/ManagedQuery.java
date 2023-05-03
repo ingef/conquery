@@ -38,6 +38,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -129,7 +130,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@Override
 	public void start() {
 		super.start();
-		involvedWorkers = Collections.synchronizedSet(getNamespace().getWorkers().stream()
+		involvedWorkers = Collections.synchronizedSet(getNamespace().getWorkerHandler().getWorkers().stream()
 																	.map(WorkerInformation::getId)
 																	.collect(Collectors.toSet()));
 	}
@@ -286,4 +287,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		visitor.accept(this);
 		query.visit(visitor);
 	}
+
+	public DistributedNamespace getNamespace() {
+		return (DistributedNamespace) super.getNamespace();
+	}
+
 }

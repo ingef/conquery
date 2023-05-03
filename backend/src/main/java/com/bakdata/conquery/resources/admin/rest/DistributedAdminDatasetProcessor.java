@@ -1,0 +1,441 @@
+package com.bakdata.conquery.resources.admin.rest;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.inject.Inject;
+import javax.validation.Validator;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.PreviewConfig;
+import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.Concept;
+import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.StructureNode;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.IdMutex;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.InternToExternMapper;
+import com.bakdata.conquery.models.index.search.SearchIndex;
+import com.bakdata.conquery.models.jobs.ImportJob;
+import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.jobs.SimpleJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveSecondaryId;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveTable;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateSecondaryId;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateTable;
+import com.bakdata.conquery.models.worker.DistributedDatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.univocity.parsers.csv.CsvParser;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+
+
+@Slf4j
+@Getter
+@RequiredArgsConstructor(onConstructor_ = {@Inject})
+public class DistributedAdminDatasetProcessor implements AdminDatasetProcessor<DistributedNamespace> {
+
+	private static final String ABBREVIATION_MARKER = "\u2026";
+
+	private final ConqueryConfig config;
+	private final Validator validator;
+	private final DistributedDatasetRegistry datasetRegistry;
+	private final JobManager jobManager;
+
+	private final IdMutex<DictionaryId> sharedDictionaryLocks = new IdMutex<>();
+
+	@Override
+	@SneakyThrows(IOException.class)
+	public synchronized Dataset addDataset(Dataset dataset) {
+
+		final String name = dataset.getName();
+		if (datasetRegistry.get(new DatasetId(name)) != null) {
+			throw new WebApplicationException("Dataset already exists", Response.Status.CONFLICT);
+		}
+
+		return datasetRegistry.createNamespace(dataset, getValidator()).getDataset();
+	}
+
+	@Override
+	public synchronized void deleteDataset(Dataset dataset) {
+		final Namespace namespace = datasetRegistry.get(dataset.getId());
+
+		if (!namespace.getStorage().getTables().isEmpty()) {
+			throw new WebApplicationException(
+					String.format(
+							"Cannot delete dataset `%s`, because it still has tables: `%s`",
+							dataset.getId(),
+							namespace.getStorage().getTables().stream()
+									 .map(Table::getId)
+									 .map(Objects::toString)
+									 .collect(Collectors.joining(","))
+					),
+					Response.Status.CONFLICT
+			);
+		}
+
+		datasetRegistry.removeNamespace(dataset.getId());
+
+	}
+
+	@Override
+	public synchronized void addSecondaryId(DistributedNamespace namespace, SecondaryIdDescription secondaryId) {
+		final Dataset dataset = namespace.getDataset();
+		secondaryId.setDataset(dataset);
+
+		if (namespace.getStorage().getSecondaryId(secondaryId.getId()) != null) {
+			throw new WebApplicationException("SecondaryId already exists", Response.Status.CONFLICT);
+		}
+
+		log.info("Received new SecondaryId[{}]", secondaryId.getId());
+
+		namespace.getStorage().addSecondaryId(secondaryId);
+
+		namespace.getWorkerHandler().sendToAll(new UpdateSecondaryId(secondaryId));
+	}
+
+	@Override
+	public synchronized void deleteSecondaryId(@NonNull SecondaryIdDescription secondaryId) {
+		final DistributedNamespace namespace = datasetRegistry.get(secondaryId.getDataset().getId());
+
+		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
+		final List<Column> dependents = namespace.getStorage().getTables().stream()
+												 .map(Table::getColumns).flatMap(Arrays::stream)
+												 .filter(column -> secondaryId.equals(column.getSecondaryId()))
+												 .collect(Collectors.toList());
+
+		if (!dependents.isEmpty()) {
+			final Set<TableId> tables = dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet());
+			log.error(
+					"SecondaryId[{}] still present on {}",
+					secondaryId,
+					tables
+			);
+
+			throw new ForbiddenException(String.format("SecondaryId still has dependencies. %s", tables));
+		}
+
+		log.info("Deleting SecondaryId[{}]", secondaryId);
+
+		namespace.getStorage().removeSecondaryId(secondaryId.getId());
+		namespace.getWorkerHandler().sendToAll(new RemoveSecondaryId(secondaryId));
+	}
+
+	@Override
+	@SneakyThrows
+	public synchronized void addTable(@NonNull Table table, DistributedNamespace namespace) {
+		Dataset dataset = namespace.getDataset();
+
+		if (table.getDataset() == null) {
+			table.setDataset(dataset);
+		}
+		else if (!table.getDataset().equals(dataset)) {
+			throw new IllegalArgumentException();
+		}
+
+
+		if (namespace.getStorage().getTable(table.getId()) != null) {
+			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
+		}
+
+		ValidatorHelper.failOnError(log, validator.validate(table));
+
+		namespace.getStorage().addTable(table);
+		namespace.getWorkerHandler().sendToAll(new UpdateTable(table));
+	}
+
+
+	@Override
+	public synchronized void updateConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept) {
+		concept.setDataset(dataset);
+		if (!datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+			throw new NotFoundException("Can't find the concept in the dataset " + concept.getId());
+		}
+
+		//adds new content of the content
+		addConcept(dataset, concept, true);
+	}
+
+	@Override
+	public synchronized void addConcept(@NonNull Dataset dataset, @NonNull Concept<?> concept, boolean force) {
+		concept.setDataset(dataset);
+		ValidatorHelper.failOnError(log, validator.validate(concept));
+
+		if (datasetRegistry.get(dataset.getId()).getStorage().hasConcept(concept.getId())) {
+			if (!force) {
+				throw new WebApplicationException("Can't replace already existing concept " + concept.getId(), Response.Status.CONFLICT);
+			}
+			deleteConcept(concept);
+			log.info("Force deleted previous concept: {}", concept.getId());
+		}
+		final DistributedNamespace namespace = datasetRegistry.get(concept.getDataset().getId());
+
+
+		// Register the Concept in the ManagerNode and Workers
+		datasetRegistry.get(dataset.getId()).getStorage().updateConcept(concept);
+		getJobManager().addSlowJob(new SimpleJob(
+				String.format("sendToAll : Add %s ", concept.getId()),
+				() -> namespace.getWorkerHandler().sendToAll(new UpdateConcept(concept))
+		));
+	}
+
+
+	@Override
+	public void setPreviewConfig(PreviewConfig previewConfig, DistributedNamespace namespace) {
+		log.info("Received new {}", previewConfig);
+
+		ValidatorHelper.failOnError(log, getValidator().validate(previewConfig));
+
+		namespace.getStorage().setPreviewConfig(previewConfig);
+	}
+
+	@Override
+	public void setIdMapping(InputStream data, DistributedNamespace namespace) {
+		log.info("Received IdMapping for Dataset[{}]", namespace.getDataset().getId());
+
+		CsvParser parser = config.getCsv()
+								 .withSkipHeader(false)
+								 .withParseHeaders(true)
+								 .createParser();
+
+		try {
+
+			parser.beginParsing(data);
+
+			EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getIdColumns().getIds());
+			namespace.getStorage().updateIdMapping(mapping);
+
+		}
+		finally {
+			parser.stopParsing();
+		}
+	}
+
+	@Override
+	public void setStructure(DistributedNamespace namespace, StructureNode[] structure) {
+		log.info("Add Structure for Dataset[{}]", namespace.getDataset().getId());
+
+		namespace.getStorage().updateStructure(structure);
+	}
+
+
+	@Override
+	@SneakyThrows
+	public void addImport(DistributedNamespace namespace, InputStream inputStream) throws IOException {
+
+		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, false);
+		namespace.getJobManager().addSlowJob(job);
+
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), job.getTable());
+	}
+
+	@Override
+	@SneakyThrows
+	public void updateImport(DistributedNamespace namespace, InputStream inputStream) throws IOException {
+
+		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, true);
+
+		namespace.getJobManager().addSlowJob(job);
+
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), job.getTable());
+	}
+
+	@Override
+	public synchronized void deleteImport(Import imp) {
+		final DistributedNamespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
+
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), imp.getTable());
+
+
+		namespace.getStorage().removeImport(imp.getId());
+		namespace.getWorkerHandler().sendToAll(new RemoveImportJob(imp));
+
+		// Remove bucket assignments for consistency report
+		namespace.getWorkerHandler().removeBucketAssignmentsForImportFormWorkers(imp);
+	}
+
+	@Override
+	public synchronized List<ConceptId> deleteTable(Table table, boolean force) {
+		final DistributedNamespace namespace = datasetRegistry.get(table.getDataset().getId());
+
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
+															.filter(con -> con.getTable().equals(table))
+															.map(Connector::getConcept)
+															.collect(Collectors.toList());
+
+		if (force || dependentConcepts.isEmpty()) {
+			for (Concept<?> concept : dependentConcepts) {
+				deleteConcept(concept);
+			}
+
+			namespace.getStorage().getAllImports().stream()
+					 .filter(imp -> imp.getTable().equals(table))
+					 .forEach(this::deleteImport);
+
+			namespace.getStorage().removeTable(table.getId());
+			namespace.getWorkerHandler().sendToAll(new RemoveTable(table));
+		}
+
+		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
+	@Override
+	public synchronized void deleteConcept(Concept<?> concept) {
+		final DistributedNamespace namespace = datasetRegistry.get(concept.getDataset().getId());
+
+		namespace.getStorage().removeConcept(concept.getId());
+		getJobManager().addSlowJob(new SimpleJob(
+				"sendToAll: remove " + concept.getId(),
+				() -> namespace.getWorkerHandler().sendToAll(new RemoveConcept(concept))
+		));
+	}
+
+	@Override
+	public void updateMatchingStats(Dataset dataset) {
+		final DistributedNamespace ns = getDatasetRegistry().get(dataset.getId());
+
+		ns.getJobManager().addSlowJob(new SimpleJob(
+				"Initiate Update Matching Stats and FilterSearch",
+				() -> {
+
+					final Collection<Concept<?>> concepts = ns.getStorage().getAllConcepts()
+															  .stream()
+															  .filter(concept -> concept.getMatchingStats() == null)
+															  .collect(Collectors.toSet());
+
+					ns.getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(concepts));
+					ns.getFilterSearch().updateSearch();
+					ns.updateInternToExternMappings();
+				}
+		));
+	}
+
+	@Override
+	public EntityIdMap getIdMapping(DistributedNamespace namespace) {
+		return namespace.getStorage().getIdMapping();
+	}
+
+	@Override
+	public void addInternToExternMapping(DistributedNamespace namespace, InternToExternMapper internToExternMapper) {
+		internToExternMapper.setDataset(namespace.getDataset());
+
+		ValidatorHelper.failOnError(log, validator.validate(internToExternMapper));
+
+		if (namespace.getStorage().getInternToExternMapper(internToExternMapper.getId()) != null) {
+			throw new WebApplicationException("InternToExternMapping already exists", Response.Status.CONFLICT);
+		}
+
+		log.info("Received new InternToExternMapping[{}]", internToExternMapper.getId());
+
+		// We don't call internToExternMapper::init this is done by the first select that needs the mapping
+		namespace.getStorage().addInternToExternMapper(internToExternMapper);
+	}
+
+	@Override
+	public List<ConceptId> deleteInternToExternMapping(InternToExternMapper internToExternMapper, boolean force) {
+		final Namespace namespace = datasetRegistry.get(internToExternMapper.getDataset().getId());
+
+		final Set<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
+														   .filter(
+																   c -> c.getSelects().stream()
+																		 .filter(MappableSingleColumnSelect.class::isInstance)
+
+																		 .map(MappableSingleColumnSelect.class::cast)
+																		 .map(MappableSingleColumnSelect::getMapping)
+																		 .anyMatch(internToExternMapper::equals)
+														   )
+														   .collect(Collectors.toSet());
+
+		if (force || dependentConcepts.isEmpty()) {
+			for (Concept<?> concept : dependentConcepts) {
+				deleteConcept(concept);
+			}
+
+			namespace.getStorage().removeInternToExternMapper(internToExternMapper.getId());
+		}
+
+		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
+	@Override
+	public void clearIndexCache(DistributedNamespace namespace) {
+		namespace.clearIndexCache();
+	}
+
+	@Override
+	public void addSearchIndex(DistributedNamespace namespace, SearchIndex searchIndex) {
+		searchIndex.setDataset(namespace.getDataset());
+
+		ValidatorHelper.failOnError(log, validator.validate(searchIndex));
+
+		if (namespace.getStorage().getSearchIndex(searchIndex.getId()) != null) {
+			throw new WebApplicationException("InternToExternMapping already exists", Response.Status.CONFLICT);
+		}
+
+		log.info("Received new SearchIndex[{}]", searchIndex.getId());
+		namespace.getStorage().addSearchIndex(searchIndex);
+	}
+
+	@Override
+	public List<ConceptId> deleteSearchIndex(SearchIndex searchIndex, boolean force) {
+		final Namespace namespace = datasetRegistry.get(searchIndex.getDataset().getId());
+
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
+															.filter(
+																	c -> c.getConnectors().stream()
+																		  .map(Connector::getFilters)
+																		  .flatMap(Collection::stream)
+																		  .filter(SelectFilter.class::isInstance)
+																		  .map(SelectFilter.class::cast)
+																		  .map(SelectFilter::getTemplate)
+																		  .filter(Objects::nonNull)
+																		  .anyMatch(searchIndex::equals)
+															)
+															.toList();
+
+		if (force || dependentConcepts.isEmpty()) {
+			for (Concept<?> concept : dependentConcepts) {
+				deleteConcept(concept);
+			}
+
+			namespace.getStorage().removeSearchIndex(searchIndex.getId());
+		}
+
+		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
+	@Override
+	public void deletePreviewConfig(DistributedNamespace namespace) {
+		namespace.getStorage().removePreviewConfig();
+	}
+}

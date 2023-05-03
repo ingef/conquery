@@ -78,7 +78,7 @@ public class AdminResource {
 
 		processor.getJobManager().cancelJob(jobId);
 
-		for (ShardNodeInformation info : processor.getDatasetRegistry().getShardNodes().values()) {
+		for (ShardNodeInformation info : processor.getNodeProvider().get()) {
 			info.send(new CancelJobMessage(jobId));
 		}
 
