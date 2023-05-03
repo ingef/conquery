@@ -82,18 +82,22 @@ public class UpdateFilterSearchJob extends Job {
 
 				final StopWatch watch = StopWatch.createStarted();
 
-				log.info("BEGIN collecting entries for `{}`", searchable);
+				log.info("BEGIN collecting entries for `{}`", searchable.getId());
 
 				try {
-					final List<TrieSearch<FrontendValue>> values = searchable.getSearches(indexConfig, storage);
+					final TrieSearch<FrontendValue> search = searchable.createTrieSearch(indexConfig, storage);
 
-					for (TrieSearch<FrontendValue> search : values) {
-						synchronizedResult.put(searchable, search);
+					if(search.isWriteable() && search.findExact(List.of(""), 1).isEmpty()){
+						search.addItem(new FrontendValue("", indexConfig.getEmptyLabel()), List.of(indexConfig.getEmptyLabel()));
+						search.shrinkToFit();
 					}
 
+					synchronizedResult.put(searchable, search);
+
 					log.debug(
-							"DONE collecting entries for `{}`, within {}",
-							searchable,
+							"DONE collecting {} entries for `{}`, within {}",
+							search.calculateSize(),
+							searchable.getId(),
 							Duration.ofMillis(watch.getTime())
 					);
 				}

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.index;
 
 import java.net.URI;
-import java.net.URL;
 import java.util.List;
 
 import lombok.EqualsAndHashCode;
@@ -12,6 +11,7 @@ import lombok.ToString;
 public class MapIndexKey extends AbstractIndexKey<MapIndex> {
 
 	private final String externalTemplate;
+
 
 	public MapIndexKey(URI csv, String internalColumn, String externalTemplate) {
 		super(csv, internalColumn);

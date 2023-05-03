@@ -25,6 +25,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -62,6 +63,8 @@ public class ConceptsProcessor {
 	private final DatasetRegistry namespaces;
 	private final Validator validator;
 
+	private final ConqueryConfig config;
+
 	private final LoadingCache<Concept<?>, FrontendList> nodeCache =
 			CacheBuilder.newBuilder().softValues().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
 				@Override
@@ -95,7 +98,7 @@ public class ConceptsProcessor {
 	private final LoadingCache<Searchable<?>, CursorAndLength> listResults = CacheBuilder.newBuilder().softValues().build(new CacheLoader<>() {
 		@Override
 		public CursorAndLength load(Searchable<?> searchable) {
-			log.debug("Creating cursor for `{}`", searchable.getId());
+			log.trace("Creating cursor for `{}`", searchable.getId());
 			return new CursorAndLength(listAllValues(searchable), countAllValues(searchable));
 		}
 
@@ -216,7 +219,7 @@ public class ConceptsProcessor {
 			return new AutoCompleteResult(fullResult.subList(startIncl, Math.min(fullResult.size(), endExcl)), fullResult.size());
 		}
 		catch (ExecutionException e) {
-			log.warn("Failed to search for \"{}\".", maybeText, log.isTraceEnabled() ? e : null);
+			log.warn("Failed to search for \"{}\".", maybeText, (Exception) (log.isTraceEnabled() ? e : null));
 			return new AutoCompleteResult(Collections.emptyList(), 0);
 		}
 	}
@@ -231,9 +234,14 @@ public class ConceptsProcessor {
 		See: https://stackoverflow.com/questions/61114380/java-streams-buffering-huge-streams
 		 */
 
-		final Iterator<FrontendValue>
-				iterators =
-				Iterators.concat(Iterators.transform(namespace.getFilterSearch().getSearchesFor(searchable).iterator(), TrieSearch::iterator));
+		final List<TrieSearch<FrontendValue>> searches = namespace.getFilterSearch().getSearchesFor(searchable);
+
+		final Iterator<FrontendValue> iterators =
+				Iterators.concat(
+						// We are always leading with the empty value.
+						Iterators.singletonIterator(new FrontendValue("", config.getIndex().getEmptyLabel())),
+						Iterators.concat(Iterators.transform(searches.iterator(), TrieSearch::iterator))
+				);
 
 		// Use Set to accomplish distinct values
 		final Set<FrontendValue> seen = new HashSet<>();
@@ -243,7 +251,6 @@ public class ConceptsProcessor {
 
 	private long countAllValues(Searchable<?> searchable) {
 		final Namespace namespace = namespaces.get(searchable.getDataset().getId());
-
 
 		return namespace.getFilterSearch().getTotal(searchable);
 	}

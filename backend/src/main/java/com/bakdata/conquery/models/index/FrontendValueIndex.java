@@ -6,9 +6,11 @@ import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.bakdata.conquery.util.search.TrieSearch;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@ToString
 public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Index<FrontendValueIndexKey> {
 
 
@@ -31,7 +33,7 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 
 	@Override
 	public void put(String internalValue, Map<String, String> templateToConcrete) {
-		FrontendValue feValue = new FrontendValue(
+		final FrontendValue feValue = new FrontendValue(
 				internalValue,
 				templateToConcrete.get(valueTemplate),
 				templateToConcrete.get(optionValueTemplate)
@@ -52,6 +54,5 @@ public class FrontendValueIndex extends TrieSearch<FrontendValue> implements Ind
 
 	@Override
 	public void finalizer() {
-		shrinkToFit();
 	}
 }

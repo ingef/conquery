@@ -39,7 +39,7 @@ import org.jetbrains.annotations.NotNull;
 public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> implements Searchable<FilterId> {
 
 	/**
-	 * user given mapping from the values in the CSVs to shown labels
+	 * user given mapping from the values in the columns to shown labels
 	 */
 	protected BiMap<String, String> labels = ImmutableBiMap.of();
 
@@ -47,9 +47,8 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	@NsIdRef
 	@View.ApiManagerPersistence
 	private FilterTemplate template;
-
-	@JsonIgnore
-	public abstract String getFilterType();
+	private int searchMinSuffixLength = 3;
+	private boolean generateSearchSuffixes = true;
 
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
@@ -65,6 +64,26 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		f.setCreatable(getSearchReferences().stream().noneMatch(Predicate.not(Searchable::isSearchDisabled)));
 
 		f.setOptions(collectLabels());
+	}
+
+	@JsonIgnore
+	public abstract String getFilterType();
+
+	@Override
+	public List<Searchable<?>> getSearchReferences() {
+		final List<Searchable<?>> out = new ArrayList<>();
+
+		if (getTemplate() != null) {
+			out.add(getTemplate());
+		}
+
+		if (!labels.isEmpty()) {
+			out.add(this);
+		}
+
+		out.addAll(getColumn().getSearchReferences());
+
+		return out;
 	}
 
 	@NotNull
@@ -83,26 +102,6 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 		}
 
 		return (getTemplate() == null) != labels.isEmpty();
-	}
-
-	private int searchMinSuffixLength = 3;
-	private boolean generateSearchSuffixes = true;
-
-	@Override
-	public List<Searchable<?>> getSearchReferences() {
-		final List<Searchable<?>> out = new ArrayList<>();
-
-		if (getTemplate() != null) {
-			out.add(getTemplate());
-		}
-
-		if (!labels.isEmpty()) {
-			out.add(this);
-		}
-
-		out.addAll(getColumn().getSearchReferences());
-
-		return out;
 	}
 
 	@Override
@@ -127,15 +126,17 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@Override
-	public List<TrieSearch<FrontendValue>> getSearches(IndexConfig config, NamespaceStorage storage) {
+	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
-		TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSearchSuffixLength(), config.getSearchSplitChars());
-		labels.entrySet()
-			  .stream()
-			  .map(entry -> new FrontendValue(entry.getKey(), entry.getValue()))
-			  .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
-		search.shrinkToFit();
+		final TrieSearch<FrontendValue> search = new TrieSearch<>(config.getSearchSuffixLength(), config.getSearchSplitChars());
 
-		return List.of(search);
+		if(log.isTraceEnabled()) {
+			log.trace("Labels for {}: `{}`", getId(), collectLabels().stream().map(FrontendValue::toString).collect(Collectors.toList()));
+		}
+
+		collectLabels().forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
+
+
+		return search;
 	}
 }

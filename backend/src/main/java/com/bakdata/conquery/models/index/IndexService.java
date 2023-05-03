@@ -34,9 +34,10 @@ import org.jetbrains.annotations.Nullable;
 public class IndexService implements Injectable {
 
 	private final CsvParserSettings csvParserSettings;
+
 	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<>() {
 		@Override
-		public Index<?> load(@NotNull IndexKey key) throws Exception {
+		public Index<?> load(@NotNull IndexKey<?> key) throws Exception {
 			log.info("Started to parse mapping {}", key);
 
 			final Map<String, String> emptyDefaults = computeEmptyDefaults(key);
@@ -70,12 +71,9 @@ public class IndexService implements Injectable {
 						int2ext.put(internalValue, externalValue);
 					}
 					catch (IllegalArgumentException e) {
-						log.warn(
-								"Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
-								internalValue,
-								externalValue,
-								csvParser.getContext().currentLine(),
-								(Exception) (log.isTraceEnabled() ? e : null)
+						log.warn("Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
+								 internalValue, externalValue, csvParser.getContext().currentLine(),
+								 (Exception) (log.isTraceEnabled() ? e : null)
 						);
 					}
 				}
@@ -106,10 +104,10 @@ public class IndexService implements Injectable {
 		final String internalValue = row.getString(key.getInternalColumn());
 
 		if (internalValue == null) {
-			log.trace(
-					"Could not create a mapping for row {} because the cell for the internal value was empty. Row: {}",
-					csvParser.getContext().currentLine(),
-					log.isTraceEnabled() ? StringUtils.join(row.toFieldMap()) : null
+			log.trace("Could not create a mapping for row {} because the cell for the internal value was empty. Row: {}", csvParser.getContext().currentLine(),
+					  log.isTraceEnabled()
+					  ? StringUtils.join(row.toFieldMap())
+					  : null
 			);
 			return null;
 		}
@@ -127,11 +125,7 @@ public class IndexService implements Injectable {
 
 		return externalTemplates.stream()
 								.distinct()
-								.collect(Collectors.toMap(
-												 Functions.identity(),
-												 value -> whitespaceMatcher.trimAndCollapseFrom(substitutor.replace(value), ' ')
-										 )
-								);
+								.collect(Collectors.toMap(Functions.identity(), value -> whitespaceMatcher.trimAndCollapseFrom(substitutor.replace(value), ' ')));
 	}
 
 	private Map<String, String> computeEmptyDefaults(IndexKey<?> key) {

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -151,7 +150,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 
 	@Override
-	public List<TrieSearch<FrontendValue>> getSearches(IndexConfig config, NamespaceStorage storage) {
+	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
 		final int suffixLength = isGenerateSuffixes() ? config.getSearchSuffixLength() : Integer.MAX_VALUE;
 
@@ -168,12 +167,8 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 			   .onClose(() -> log.debug("DONE processing values for {}", getId()))
 
 			   .forEach(feValue -> search.addItem(feValue, FilterSearch.extractKeywords(feValue)));
-		return List.of(search);
-	}
 
-	@Override
-	public List<Searchable<?>> getSearchReferences() {
-		return List.of(this);
-	}
 
+		return search;
+	}
 }
