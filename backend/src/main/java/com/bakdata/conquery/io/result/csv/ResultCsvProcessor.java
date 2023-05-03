@@ -75,12 +75,7 @@ public class ResultCsvProcessor {
 			}
 		};
 
-		return makeResponseWithFileName(
-				Response.ok(out),
-				String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV),
-				new MediaType("text", "csv", charset.toString()),
-				ResultUtil.ContentDispositionOption.ATTACHMENT
-		);
+		return makeResponseWithFileName(Response.ok(out), String.join(".", exec.getLabelWithoutAutoLabelSuffix(), ResourceConstants.FILE_EXTENTION_CSV), new MediaType("text", "csv", charset.toString()), ResultUtil.ContentDispositionOption.ATTACHMENT);
 
 	}
 }

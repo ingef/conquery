@@ -74,7 +74,7 @@ public class LoadingUtil {
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList("ID", "DATE_SET"), data, false));
 
 			ManagedExecution managed = support.getNamespace().getExecutionManager()
-											  .createQuery(support.getNamespace(), query, queryId, user, support.getNamespace().getDataset(), false);
+											  .createQuery(query, queryId, user, support.getNamespace().getDataset(), false);
 
 			user.addPermission(managed.createPermission(AbilitySets.QUERY_CREATOR));
 
@@ -91,7 +91,7 @@ public class LoadingUtil {
 			ManagedExecution managed =
 					support.getNamespace()
 						   .getExecutionManager()
-						   .createQuery(support.getNamespace(), query, queryId, user, support.getNamespace().getDataset(), false);
+						   .createQuery(query, queryId, user, support.getNamespace().getDataset(), false);
 
 			user.addPermission(ExecutionPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 
