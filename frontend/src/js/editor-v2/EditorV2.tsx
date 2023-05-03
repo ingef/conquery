@@ -3,6 +3,7 @@ import { faCalendar, faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import {
   faBan,
   faCircleNodes,
+  faExpandArrowsAlt,
   faRefresh,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
@@ -10,23 +11,23 @@ import { createId } from "@paralleldrive/cuid2";
 import { useCallback, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
-import { useGetQuery } from "../api/api";
-import {
-  AndNodeT,
-  DateRangeT,
-  DateRestrictionNodeT,
-  NegationNodeT,
-  OrNodeT,
-  QueryConceptNodeT,
-  SavedQueryNodeT,
-} from "../api/types";
 import IconButton from "../button/IconButton";
 import { DNDType } from "../common/constants/dndTypes";
-import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
+import { nodeIsConceptQueryNode } from "../model/node";
+import {
+  DragItemConceptTreeNode,
+  DragItemQuery,
+} from "../standard-query-editor/types";
 import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
-import { DateModal, useDateEditing } from "./DateModal";
+import { useConnectorEditing } from "./connector-update/useConnectorRotation";
+import { DateModal } from "./date-restriction/DateModal";
+import { DateRange } from "./date-restriction/DateRange";
+import { useDateEditing } from "./date-restriction/useDateEditing";
+import { useExpandQuery } from "./expand/useExpandQuery";
+import { useNegationEditing } from "./negation/useNegationEditing";
 import { Tree } from "./types";
+import { findNodeById } from "./util";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -48,8 +49,8 @@ const Grid = styled("div")`
 `;
 
 const SxDropzone = styled(Dropzone)`
-  width: 200px;
-  height: 100px;
+  width: 100%;
+  height: 100%;
 `;
 
 const Actions = styled("div")`
@@ -69,21 +70,6 @@ const SxIconButton = styled(IconButton)`
   gap: 5px;
 `;
 
-const findNodeById = (tree: Tree, id: string): Tree | undefined => {
-  if (tree.id === id) {
-    return tree;
-  }
-  if (tree.children) {
-    for (const child of tree.children.items) {
-      const found = findNodeById(child, id);
-      if (found) {
-        return found;
-      }
-    }
-  }
-  return undefined;
-};
-
 const useEditorState = () => {
   const [tree, setTree] = useState<Tree | undefined>(undefined);
   const [selectedNodeId, setSelectedNodeId] = useState<Tree | undefined>(
@@ -95,86 +81,6 @@ const useEditorState = () => {
     }
     return findNodeById(tree, selectedNodeId.id);
   }, [tree, selectedNodeId]);
-
-  const expandNode = (
-    queryNode:
-      | AndNodeT
-      | DateRestrictionNodeT
-      | OrNodeT
-      | NegationNodeT
-      | QueryConceptNodeT
-      | SavedQueryNodeT,
-    config: {
-      parentId?: string;
-      negation?: boolean;
-      dateRestriction?: DateRangeT;
-    } = {},
-  ): Tree => {
-    switch (queryNode.type) {
-      case "AND":
-        if (queryNode.children.length === 1) {
-          return expandNode(queryNode.children[0], config);
-        }
-        const andid = createId();
-        return {
-          id: andid,
-          ...config,
-          children: {
-            connection: "and",
-            direction: "horizontal",
-            items: queryNode.children.map((child) =>
-              expandNode(child, { parentId: andid }),
-            ),
-          },
-        };
-      case "OR":
-        if (queryNode.children.length === 1) {
-          return expandNode(queryNode.children[0], config);
-        }
-        const orid = createId();
-        return {
-          id: orid,
-          ...config,
-          children: {
-            connection: "or",
-            direction: "vertical",
-            items: queryNode.children.map((child) =>
-              expandNode(child, { parentId: orid }),
-            ),
-          },
-        };
-      case "NEGATION":
-        return expandNode(queryNode.child, { ...config, negation: true });
-      case "DATE_RESTRICTION":
-        return expandNode(queryNode.child, {
-          ...config,
-          dateRestriction: queryNode.dateRange,
-        });
-      case "CONCEPT":
-        const concept = getConceptById(queryNode.ids[0]);
-        return {
-          id: createId(),
-          data: concept,
-          ...config,
-        };
-      case "SAVED_QUERY":
-        return {
-          id: queryNode.query,
-          data: queryNode,
-          ...config,
-        };
-    }
-  };
-
-  const getQuery = useGetQuery();
-  const expandQuery = async (id: string) => {
-    const query = await getQuery(id);
-
-    if (query && query.query.root.type !== "EXTERNAL_RESOLVED") {
-      const tree = expandNode(query.query.root);
-      setTree(tree);
-    }
-  };
 
   const onReset = () => {
     setTree(undefined);
@@ -193,7 +99,6 @@ const useEditorState = () => {
   );
 
   return {
-    expandQuery,
     tree,
     setTree,
     updateTreeNode,
@@ -204,52 +109,26 @@ const useEditorState = () => {
 };
 
 const DROP_TYPES = [
+  DNDType.CONCEPT_TREE_NODE,
   DNDType.PREVIOUS_QUERY,
   DNDType.PREVIOUS_SECONDARY_ID_QUERY,
 ];
 
-const useNegationEditing = ({
-  selectedNode,
-  updateTreeNode,
-  enabled,
-}: {
-  enabled: boolean;
-  selectedNode: Tree | undefined;
-  updateTreeNode: (id: string, update: (node: Tree) => void) => void;
-}) => {
-  const onNegateClick = useCallback(() => {
-    if (!selectedNode || !enabled) return;
-
-    updateTreeNode(selectedNode.id, (node) => {
-      node.negation = !node.negation;
-    });
-  }, [enabled, selectedNode, updateTreeNode]);
-
-  useHotkeys("n", onNegateClick, [onNegateClick]);
-
-  return {
-    onNegateClick,
-  };
-};
-
-const CONNECTORS = ["and", "or", "before"] as const;
-const getNextConnector = (connector: (typeof CONNECTORS)[number]) => {
-  const index = CONNECTORS.indexOf(connector);
-  return CONNECTORS[(index + 1) % CONNECTORS.length];
-};
-
 export function EditorV2({
   featureDates,
   featureNegate,
+  featureExpand,
+  featureConnectorRotate,
 }: {
   featureDates: boolean;
   featureNegate: boolean;
+  featureExpand: boolean;
+  featureConnectorRotate: boolean;
 }) {
   const {
     tree,
     setTree,
     updateTreeNode,
-    expandQuery,
     onReset,
     selectedNode,
     setSelectedNodeId,
@@ -284,35 +163,41 @@ export function EditorV2({
           parent.id = child.id;
           parent.children = child.children;
           parent.data = child.data;
-          parent.dateRestriction ||= child.dateRestriction;
+          parent.dates ||= child.dates;
           parent.negation ||= child.negation;
         }
       });
     }
   }, [selectedNode, setTree, updateTreeNode]);
 
-  const onRotateConnector = useCallback(() => {
-    if (!selectedNode || !selectedNode.children) return;
-
-    updateTreeNode(selectedNode.id, (node) => {
-      if (!node.children) return;
-
-      node.children.connection = getNextConnector(node.children.connection);
-    });
-  }, [selectedNode, updateTreeNode]);
-
   useHotkeys("del", onDelete, [onDelete]);
   useHotkeys("backspace", onDelete, [onDelete]);
   useHotkeys("f", onFlip, [onFlip]);
-  useHotkeys("c", onRotateConnector, [onRotateConnector]);
+
+  const { canExpand, onExpand } = useExpandQuery({
+    enabled: featureExpand,
+    hotkey: "x",
+    updateTreeNode,
+    selectedNode,
+    tree,
+  });
 
   const { showModal, headline, onOpen, onClose } = useDateEditing({
     enabled: featureDates,
+    hotkey: "d",
     selectedNode,
   });
 
   const { onNegateClick } = useNegationEditing({
     enabled: featureNegate,
+    hotkey: "n",
+    selectedNode,
+    updateTreeNode,
+  });
+
+  const { onRotateConnector } = useConnectorEditing({
+    enabled: featureConnectorRotate,
+    hotkey: "c",
     selectedNode,
     updateTreeNode,
   });
@@ -328,15 +213,24 @@ export function EditorV2({
         <DateModal
           onClose={onClose}
           headline={headline}
-          dateRange={selectedNode.dateRestriction}
+          dateRange={selectedNode.dates?.restriction}
+          excludeFromDates={selectedNode.dates?.excluded}
+          setExcludeFromDates={(excluded) => {
+            updateTreeNode(selectedNode.id, (node) => {
+              if (!node.dates) node.dates = {};
+              node.dates.excluded = excluded;
+            });
+          }}
           onResetDates={() =>
             updateTreeNode(selectedNode.id, (node) => {
-              node.dateRestriction = undefined;
+              if (!node.dates) return;
+              node.dates.restriction = undefined;
             })
           }
           setDateRange={(dateRange) => {
             updateTreeNode(selectedNode.id, (node) => {
-              node.dateRestriction = dateRange;
+              if (!node.dates) node.dates = {};
+              node.dates.restriction = dateRange;
             });
           }}
         />
@@ -376,7 +270,7 @@ export function EditorV2({
               Flip
             </IconButton>
           )}
-          {selectedNode?.children && (
+          {featureConnectorRotate && selectedNode?.children && (
             <SxIconButton
               icon={faCircleNodes}
               onClick={(e) => {
@@ -387,6 +281,17 @@ export function EditorV2({
               <span>Connected:</span>
               <Connector>{selectedNode.children.connection}</Connector>
             </SxIconButton>
+          )}
+          {canExpand && (
+            <IconButton
+              icon={faExpandArrowsAlt}
+              onClick={(e) => {
+                e.stopPropagation();
+                onExpand();
+              }}
+            >
+              Expand
+            </IconButton>
           )}
           {selectedNode && (
             <IconButton
@@ -415,8 +320,11 @@ export function EditorV2({
           />
         ) : (
           <SxDropzone
-            onDrop={(droppedItem) => {
-              expandQuery((droppedItem as any).id);
+            onDrop={(item) => {
+              setTree({
+                id: createId(),
+                data: item as DragItemConceptTreeNode | DragItemQuery,
+              });
             }}
             acceptedDropTypes={DROP_TYPES}
           >
@@ -494,7 +402,7 @@ const InvisibleDropzone = (
     <InvisibleDropzoneContainer
       invisible
       naked
-      acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
+      acceptedDropTypes={DROP_TYPES}
       {...props}
     />
   );
@@ -508,19 +416,6 @@ const Name = styled("div")`
 const Description = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
 `;
-
-const DateRange = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
-  font-family: monospace;
-`;
-
-const formatDateRange = (range: DateRangeT): string => {
-  if (range.min === range.max) {
-    return range.min || "";
-  } else {
-    return `${range.min} - ${range.max}`;
-  }
-};
 
 function TreeNode({
   tree,
@@ -549,7 +444,6 @@ function TreeNode({
     pos: "b" | "a";
     item: any;
   }) => {
-    console.log("dropped outside of node", { pos, direction, item });
     // Create a new "parent" and create a new "item", make parent contain tree and item
     const newParentId = createId();
     const newItemId = createId();
@@ -628,15 +522,13 @@ function TreeNode({
             setSelectedNode(tree);
           }}
         >
-          {(!tree.children || tree.data || tree.dateRestriction) && (
+          {(!tree.children || tree.data || tree.dates) && (
             <div>
-              {tree.dateRestriction && (
-                <>
-                  <DateRange>{formatDateRange(tree.dateRestriction)}</DateRange>
-                </>
+              {tree.dates?.restriction && (
+                <DateRange dateRange={tree.dates.restriction} />
               )}
-              {tree.data?.label && <Name>{tree.data.label[0]}</Name>}
-              {tree.data?.description && (
+              {tree.data?.label && <Name>{tree.data.label}</Name>}
+              {tree.data && nodeIsConceptQueryNode(tree.data) && (
                 <Description>{tree.data?.description}</Description>
               )}
             </div>

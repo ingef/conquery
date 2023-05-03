@@ -1,11 +1,18 @@
 import { DateRangeT } from "../api/types";
+import {
+  DragItemConceptTreeNode,
+  DragItemQuery,
+} from "../standard-query-editor/types";
 
 export interface Tree {
   id: string;
   parentId?: string;
   negation?: boolean;
-  dateRestriction?: DateRangeT;
-  data?: any;
+  dates?: {
+    restriction?: DateRangeT;
+    excluded?: boolean;
+  };
+  data?: DragItemQuery | DragItemConceptTreeNode;
   children?: {
     connection: "and" | "or" | "before";
     direction: "horizontal" | "vertical";

@@ -1,54 +1,21 @@
 import styled from "@emotion/styled";
 import { faUndo } from "@fortawesome/free-solid-svg-icons";
-import { useState, useCallback, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
-import { DateRangeT } from "../api/types";
-import IconButton from "../button/IconButton";
-import { DateStringMinMax } from "../common/helpers/dateHelper";
-import Modal from "../modal/Modal";
-import InputDateRange from "../ui-components/InputDateRange";
+import { DateRangeT } from "../../api/types";
+import IconButton from "../../button/IconButton";
+import { DateStringMinMax } from "../../common/helpers/dateHelper";
+import Modal from "../../modal/Modal";
+import InputCheckbox from "../../ui-components/InputCheckbox";
+import InputDateRange from "../../ui-components/InputDateRange";
 
-import { Tree } from "./types";
-
-export const useDateEditing = ({
-  enabled,
-  selectedNode,
-}: {
-  enabled: boolean;
-  selectedNode: Tree | undefined;
-}) => {
-  const [showModal, setShowModal] = useState(false);
-
-  const onClose = useCallback(() => setShowModal(false), []);
-  const onOpen = useCallback(() => {
-    if (!enabled) return;
-    if (!selectedNode) return;
-
-    setShowModal(true);
-  }, [enabled, selectedNode]);
-
-  useHotkeys("d", onOpen, [onOpen], {
-    preventDefault: true,
-  });
-
-  const headline = useMemo(() => {
-    if (!selectedNode) return "";
-
-    return (
-      selectedNode.data?.label ||
-      (selectedNode.children?.items || []).map((c) => c.data?.label).join(" ")
-    );
-  }, [selectedNode]);
-
-  return {
-    showModal,
-    headline,
-    onClose,
-    onOpen,
-  };
-};
+const Col = styled("div")`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
 
 const ResetAll = styled(IconButton)`
   color: ${({ theme }) => theme.col.blueGrayDark};
@@ -60,13 +27,17 @@ export const DateModal = ({
   onClose,
   dateRange = {},
   headline,
+  excludeFromDates,
+  setExcludeFromDates,
   setDateRange,
   onResetDates,
 }: {
   onClose: () => void;
+  excludeFromDates?: boolean;
+  setExcludeFromDates: (exclude: boolean) => void;
   dateRange?: DateRangeT;
-  headline: string;
   setDateRange: (range: DateRangeT) => void;
+  headline: string;
   onResetDates: () => void;
 }) => {
   const { t } = useTranslation();
@@ -102,18 +73,25 @@ export const DateModal = ({
       headline={t("queryGroupModal.explanation")}
     >
       <div>{headline}</div>
-      <InputDateRange
-        large
-        inline
-        autoFocus
-        label={t("queryGroupModal.dateRange")}
-        labelSuffix={labelSuffix}
-        onChange={onChange}
-        value={{
-          min: minDate,
-          max: maxDate,
-        }}
-      />
+      <Col>
+        <InputDateRange
+          large
+          inline
+          autoFocus
+          label={t("queryGroupModal.dateRange")}
+          labelSuffix={labelSuffix}
+          onChange={onChange}
+          value={{
+            min: minDate,
+            max: maxDate,
+          }}
+        />
+        <InputCheckbox
+          label={t("queryNodeEditor.excludeTimestamps")}
+          onChange={setExcludeFromDates}
+          value={excludeFromDates}
+        />
+      </Col>
     </Modal>
   );
 };

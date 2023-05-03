@@ -85,7 +85,12 @@ const RightPane = () => {
       </Tab>
       <Tab key={tabs[1].key} isActive={activeTab === tabs[1].key}>
         {showEditorV2 ? (
-          <EditorV2 featureDates featureNegate />
+          <EditorV2
+            featureDates
+            featureNegate
+            featureExpand
+            featureConnectorRotate
+          />
         ) : (
           <TimebasedQueryEditorTab />
         )}
