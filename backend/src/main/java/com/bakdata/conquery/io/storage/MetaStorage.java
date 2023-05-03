@@ -32,9 +32,10 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
+	private final StoreFactory storageFactory;
+
 	@Getter
 	protected final DatasetRegistry datasetRegistry;
-	private final StoreFactory storageFactory;
 	private IdentifiableStore<ManagedExecution> executions;
 	private IdentifiableStore<FormConfig> formConfigs;
 	private IdentifiableStore<User> authUser;
