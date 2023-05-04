@@ -21,7 +21,7 @@ public class AuthOverviewUIResource {
 
 	@GET
 	public View getOverview() {
-		return new UIView<>("authOverview.html.ftl", uiProcessor.getUIContext(), uiProcessor.getAuthOverview());
+		return new UIView<>("authOverview.html.ftl", uiProcessor.getAuthOverview());
 	}
 
 }

@@ -25,7 +25,7 @@ public class GroupUIResource {
 
 	@GET
 	public View getGroups() {
-		return new UIView<>("groups.html.ftl", uiProcessor.getUIContext(), uiProcessor.getAdminProcessor().getAllGroups());
+		return new UIView<>("groups.html.ftl", uiProcessor.getAdminProcessor().getAllGroups());
 	}
 
 	/**
@@ -37,6 +37,6 @@ public class GroupUIResource {
 	@Path("{" + GROUP_ID + "}")
 	@GET
 	public View getGroup(@PathParam(GROUP_ID) Group group) {
-		return new UIView<>("group.html.ftl", uiProcessor.getUIContext(), uiProcessor.getGroupContent(group));
+		return new UIView<>("group.html.ftl", uiProcessor.getGroupContent(group));
 	}
 }

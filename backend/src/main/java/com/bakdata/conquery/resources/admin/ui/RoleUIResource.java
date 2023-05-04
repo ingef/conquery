@@ -25,7 +25,7 @@ public class RoleUIResource {
 
 	@GET
 	public View getRoles() {
-		return new UIView<>("roles.html.ftl", uiProcessor.getUIContext(), uiProcessor.getAdminProcessor().getAllRoles());
+		return new UIView<>("roles.html.ftl", uiProcessor.getAdminProcessor().getAllRoles());
 	}
 
 	/**
@@ -38,6 +38,6 @@ public class RoleUIResource {
 	@Path("{" + ROLE_ID + "}")
 	@GET
 	public View getRole(@PathParam(ROLE_ID) Role role) {
-		return new UIView<>("role.html.ftl", uiProcessor.getUIContext(), uiProcessor.getRoleContent(role));
+		return new UIView<>("role.html.ftl", uiProcessor.getRoleContent(role));
 	}
 }

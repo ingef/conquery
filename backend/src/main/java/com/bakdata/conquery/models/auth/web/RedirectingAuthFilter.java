@@ -99,7 +99,7 @@ public class RedirectingAuthFilter extends AuthFilter<AuthenticationToken, User>
 
 			// Give the user a choice to choose between them. (If there is only one schema, still redirect the user there)
 			// to prevent too many redirects if there was a problem wit the authentication
-			throw new WebApplicationException(Response.ok(new UIView<>("logins.html.ftl", null, loginRedirects)).build());
+			throw new WebApplicationException(Response.ok(new UIView<>("logins.html.ftl", loginRedirects)).build());
 		}
 	}
 }

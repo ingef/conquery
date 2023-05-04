@@ -28,6 +28,6 @@ public class LoginResource {
 					requestAuthority,
 					redirectAuthority));
 		}
-		return new UIView<>("login.html.ftl", null, redirectUri);
+		return new UIView<>("login.html.ftl", redirectUri);
 	}
 }

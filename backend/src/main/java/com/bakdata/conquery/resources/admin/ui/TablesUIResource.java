@@ -40,7 +40,6 @@ public class TablesUIResource {
 	public View getTableView() {
 		return new UIView<>(
 				"table.html.ftl",
-				uiProcessor.getUIContext(),
 				uiProcessor.getTableStatistics(table)
 		);
 	}
@@ -51,7 +50,6 @@ public class TablesUIResource {
 
 		return new UIView<>(
 				"import.html.ftl",
-				uiProcessor.getUIContext(),
 				uiProcessor.getImportStatistics(imp)
 		);
 	}
