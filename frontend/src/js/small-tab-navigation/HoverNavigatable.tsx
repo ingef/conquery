@@ -33,7 +33,7 @@ const Root = styled("div")<{
 `;
 
 // estimated to feel responsive, but not too quick
-const TIME_UNTIL_NAVIGATE = 600;
+const TIME_UNTIL_NAVIGATE = 1000;
 
 export const HoverNavigatable = ({
   triggerNavigate,
