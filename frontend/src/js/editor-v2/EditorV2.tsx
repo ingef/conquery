@@ -62,14 +62,14 @@ const SxIconButton = styled(IconButton)`
 
 const useEditorState = () => {
   const [tree, setTree] = useState<Tree | undefined>(undefined);
-  const [selectedNodeId, setSelectedNodeId] = useState<Tree | undefined>(
+  const [selectedNodeId, setSelectedNodeId] = useState<Tree["id"] | undefined>(
     undefined,
   );
   const selectedNode = useMemo(() => {
     if (!tree || !selectedNodeId) {
       return undefined;
     }
-    return findNodeById(tree, selectedNodeId.id);
+    return findNodeById(tree, selectedNodeId);
   }, [tree, selectedNodeId]);
 
   const onReset = () => {
@@ -163,6 +163,7 @@ export function EditorV2({
     hotkey: "x",
     updateTreeNode,
     selectedNode,
+    setSelectedNodeId,
     tree,
   });
 
@@ -299,7 +300,7 @@ export function EditorV2({
             tree={tree}
             updateTreeNode={updateTreeNode}
             selectedNode={selectedNode}
-            setSelectedNode={setSelectedNodeId}
+            setSelectedNodeId={setSelectedNodeId}
             droppable={{ h: true, v: true }}
           />
         ) : (

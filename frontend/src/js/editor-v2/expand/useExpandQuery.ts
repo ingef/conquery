@@ -30,11 +30,13 @@ export const useExpandQuery = ({
   hotkey,
   enabled,
   tree,
+  setSelectedNodeId,
   updateTreeNode,
 }: {
   enabled: boolean;
   hotkey: string;
   selectedNode?: Tree;
+  setSelectedNodeId: (id: Tree["id"] | undefined) => void;
   tree?: Tree;
   updateTreeNode: (id: string, update: (node: Tree) => void) => void;
 }) => {
@@ -166,16 +168,18 @@ export const useExpandQuery = ({
       if (!tree) return;
       const queryId = (findNodeById(tree, id)?.data as DragItemQuery).id;
       const query = await getQuery(queryId);
+
       updateTreeNode(id, (node) => {
         if (!query.query || query.query.root.type === "EXTERNAL_RESOLVED")
           return;
 
         const expanded = expandNode(query.query.root);
+        setSelectedNodeId(expanded.id);
 
         Object.assign(node, expanded);
       });
     },
-    [getQuery, expandNode, updateTreeNode, tree],
+    [getQuery, expandNode, updateTreeNode, tree, setSelectedNodeId],
   );
 
   const canExpand = useMemo(() => {

@@ -109,7 +109,7 @@ export function TreeNode({
   updateTreeNode,
   droppable,
   selectedNode,
-  setSelectedNode,
+  setSelectedNodeId,
 }: {
   tree: Tree;
   updateTreeNode: (id: string, update: (node: Tree) => void) => void;
@@ -118,7 +118,7 @@ export function TreeNode({
     v: boolean;
   };
   selectedNode: Tree | undefined;
-  setSelectedNode: (node: Tree | undefined) => void;
+  setSelectedNodeId: (id: Tree["id"] | undefined) => void;
 }) {
   const gridStyles = getGridStyles(tree);
 
@@ -138,6 +138,7 @@ export function TreeNode({
     // Create a new "parent" and create a new "item", make parent contain tree and item
     const newParentId = createId();
     const newItemId = createId();
+
     updateTreeNode(tree.id, (node) => {
       const newChildren: Tree[] = [
         {
@@ -147,36 +148,37 @@ export function TreeNode({
           parentId: newParentId,
         },
         {
-          id: tree.id,
-          negation: false,
-          data: tree.data,
-          children: tree.children,
+          ...tree,
           parentId: newParentId,
         },
       ];
 
       node.id = newParentId;
       node.data = undefined;
+      node.dates = undefined;
       node.children = {
         connection: tree.children?.connection === "and" ? "or" : "and" || "and",
         direction: direction === "h" ? "horizontal" : "vertical",
         items: pos === "b" ? newChildren : newChildren.reverse(),
       };
     });
+    setSelectedNodeId(newItemId);
   };
 
   const onDropAtChildrenIdx = ({ idx, item }: { idx: number; item: any }) => {
+    const newItemId = createId();
     // Create a new "item" and insert it at idx of tree.children
     updateTreeNode(tree.id, (node) => {
       if (node.children) {
         node.children.items.splice(idx, 0, {
-          id: createId(),
+          id: newItemId,
           negation: false,
           data: item,
           parentId: node.id,
         });
       }
     });
+    setSelectedNodeId(newItemId);
   };
 
   return (
@@ -210,7 +212,7 @@ export function TreeNode({
           selected={selectedNode?.id === tree.id}
           onClick={(e) => {
             e.stopPropagation();
-            setSelectedNode(tree);
+            setSelectedNodeId(tree.id);
           }}
         >
           {tree.dates?.restriction && (
@@ -245,7 +247,7 @@ export function TreeNode({
                     tree={item}
                     updateTreeNode={updateTreeNode}
                     selectedNode={selectedNode}
-                    setSelectedNode={setSelectedNode}
+                    setSelectedNodeId={setSelectedNodeId}
                     droppable={{
                       h:
                         !item.children &&
