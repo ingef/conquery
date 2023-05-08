@@ -140,6 +140,7 @@ export const useExpandQuery = ({
             ...config,
           };
         case "SAVED_QUERY":
+          console.log(queryNode);
           const dataQuery: DragItemQuery = {
             ...queryNode,
             query: undefined,
