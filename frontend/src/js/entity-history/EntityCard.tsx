@@ -44,6 +44,8 @@ const Value = styled("div")`
   justify-self: end;
 `;
 
+// @ts-ignore EVALUATE IF WE WANT TO SHOW THIS TABLE WITH FUTURE DATA
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Table = ({
   timeStratifiedInfos,
 }: {
@@ -114,7 +116,8 @@ export const EntityCard = ({
     <Container className={className}>
       <Centered>
         <EntityInfos infos={infos} />
-        <Table timeStratifiedInfos={timeStratifiedInfos.slice(1)} />
+        {/* TODO: EVALUATE IF WE WANT TO SHOW THIS TABLE WITH FUTURE DATA
+        <Table timeStratifiedInfos={timeStratifiedInfos.slice(1)} /> */}
       </Centered>
       <TimeStratifiedChart
         timeStratifiedInfos={timeStratifiedInfos.slice(0, 1)}
