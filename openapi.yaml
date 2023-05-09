@@ -280,7 +280,6 @@ components:
               sourceFile:
                 description: "Filename of the to preprocess file, relative to the path supplied in `preprocess`."
                 type: string
-                format: file
               filter:
                 description: "Groovy script which can be used to filter the csv rows. 
                 The row is passed as `row` array, the fields can be accessed as integer variables to the index in the file.
