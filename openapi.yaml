@@ -130,6 +130,169 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Column"
+
+    OutputDescription:
+      description: "Operations to transform, then import, values into tables."
+      type: object
+      discriminator:
+        propertyName: operation
+        mapping:
+          COMPOUND_DATE_RANGE: "#/components/schemas/CompoundDateRangeOutput"
+          LINE: "#/components/schemas/LineOutput"
+          EPOCH: "#/components/schemas/EpochOutput"
+          NULL: "#/components/schemas/NullOutput"
+          COPY: "#/components/schemas/CopyOutput"
+          EPOCH_DATE_RANGE: "#/components/schemas/EpochDateRangeOutput"
+          DATE_RANGE: "#/components/schemas/DateRangeOutput"
+      oneOf:
+        - $ref: "#/components/schemas/CompoundDateRangeOutput"
+        - $ref: "#/components/schemas/LineOutput"
+        - $ref: "#/components/schemas/EpochOutput"
+        - $ref: "#/components/schemas/NullOutput"
+        - $ref: "#/components/schemas/CopyOutput"
+        - $ref: "#/components/schemas/EpochDateRangeOutput"
+        - $ref: "#/components/schemas/DateRangeOutput"
+
+    OutputDescriptionBase:
+      type: object
+      properties:
+        name:
+          description: "Name of the `table.column` to be imported into."
+          type: string
+        required:
+          type: boolean
+
+    LineOutput:
+      description: "Emits the line number."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            operation:
+              type: string
+              enum: [ LINE ]
+
+    NullOutput:
+      description: "Emits a NULL value. Can be used to unify among multiple input sources with differing file schemas."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            operation:
+              type: string
+              enum: [ NULL ]
+
+    CopyOutput:
+      description: "Parses and emits the values in inputColumn as the provided type."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            inputColumn:
+              type: string
+              description: "Name of the csv column to process."
+            inputType:
+              $ref: "#/components/schemas/MajorType"
+            operation:
+              type: string
+              enum: [ COPY ]
+    CompoundDateRangeOutput:
+      description: "Creates a virtual daterange column as a composite of its neighboring DATE-columns (not csv columns). 
+      This helps avoid copying multiple values of the same column, when they can be reused."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ COMPOUND_DATE_RANGE ]
+
+    DateRangeOutput:
+      description: "Parses `startColumn` and `endColumn` as dates, then emits them as a daterange."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ DATE_RANGE ]
+
+    EpochDateRangeOutput:
+      deprecated: true
+      description: "Parses `startColumn` and `endColumn` as integers, interpreting them as dates in the Unix-Epoch (i.e. days since 01-01-1970), then emits them as a daterange."
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ EPOCH_DATE_RANGE ]
+
+    EpochOutput:
+      deprecated: true
+      description: "Parses `startColumn` integer, emitting it as dates in the Unix-Epoch (i.e. days since 01-01-1970)"
+      type: object
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            inputColumn:
+              type: string
+            operation:
+              type: string
+              enum: [ EPOCH ]
+
+    Import:
+      description: "Describes how one or multiple CSV files are to be transformed into a .cqpp file compatible with the designated table."
+      type: object
+      properties:
+        table:
+          $ref: "#/components/schemas/TableId"
+        name:
+          description: "Name of the import. When preprocessed with tags, will be overwritten to the respective tag."
+          type: string
+        label:
+          deprecated: true
+          type: string
+        inputs:
+          description: "One ore more descriptions to preprocess a `.csv` or `.csv.gz` into a single cqpp."
+          type: array
+          items:
+            type: object
+            properties:
+              sourceFile:
+                description: "Filename of the to preprocess file, relative to the path supplied in `preprocess`."
+                type: string
+                format: file
+              filter:
+                description: "Groovy script which can be used to filter the csv rows. 
+                The row is passed as `row` array, the fields can be accessed as integer variables to the index in the file.
+                For example accessing `value` in `id,value` can be done with `row[value]` (no string up-ticks), or `row[1]`."
+                type: string
+              primary:
+                $ref: "#/components/schemas/OutputDescription"
+              output:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OutputDescription"
+
     FrontendDatasetId:
       type: object
       properties:
@@ -1023,20 +1186,22 @@ components:
                     type: string
                   value:
                     type: string
-
+    MajorType:
+      type: string
+      enum:
+        - STRING
+        - INTEGER
+        - BOOLEAN
+        - NUMERIC
+        - MONEY
+        - DATE
+        - DATE_RANGE
     ColumnType:
       description: Available types for input and output of conquery. Additionally list, which is a nested type of ColumnType.
       oneOf:
+        - $ref: "#/components/schemas/MajorType"
         - type: string
-          enum:
-            - STRING
-            - INTEGER
-            - BOOLEAN
-            - NUMERIC
-            - MONEY
-            - DATE
-            - DATE_RANGE
-        - type: string
+          description: "Arbitrary nesting of ColumnTypes including List."
           pattern: "LIST\\[.*\\]"
     SemanticsEventDate:
       description: Values contain the primary date of a row.
