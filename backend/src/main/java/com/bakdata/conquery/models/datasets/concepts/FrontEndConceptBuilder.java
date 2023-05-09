@@ -46,10 +46,10 @@ public class FrontEndConceptBuilder {
 
 	public static FrontendRoot createRoot(NamespaceStorage storage, Subject subject) {
 
-		FrontendRoot root = new FrontendRoot();
-		Map<Id<?>, FrontendNode> roots = root.getConcepts();
+		final FrontendRoot root = new FrontendRoot();
+		final Map<Id<?>, FrontendNode> roots = root.getConcepts();
 
-		List<? extends Concept<?>> allConcepts = new ArrayList<>(storage.getAllConcepts());
+		final List<? extends Concept<?>> allConcepts = new ArrayList<>(storage.getAllConcepts());
 		// Remove any hidden concepts
 		allConcepts.removeIf(Concept::isHidden);
 
@@ -58,22 +58,24 @@ public class FrontEndConceptBuilder {
 		}
 
 		// Submit all permissions to Shiro
-		boolean[] isPermitted = subject.isPermitted(allConcepts, Ability.READ);
+		final boolean[] isPermitted = subject.isPermitted(allConcepts, Ability.READ);
 
-		for (int i = 0; i<allConcepts.size(); i++) {
-			if(isPermitted[i]) {
+		for (int i = 0; i < allConcepts.size(); i++) {
+			if (isPermitted[i]) {
 				roots.put(allConcepts.get(i).getId(), createCTRoot(allConcepts.get(i), storage.getStructure()));
 			}
 		}
-		if(roots.isEmpty()) {
-			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.", subject.getId(), storage.getDataset().getId());
-		} else {
+		if (roots.isEmpty()) {
+			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.", subject.getId(), storage.getDataset()
+																																								 .getId());
+		}
+		else {
 			log.trace("Collected {} concepts for {} on dataset {}.", roots.size(), subject.getId(), storage.getDataset().getId());
 		}
 		//add the structure tree
-		for(StructureNode sn : storage.getStructure()) {
-			FrontendNode node = createStructureNode(sn, roots);
-			if(node == null) {
+		for (StructureNode sn : storage.getStructure()) {
+			final FrontendNode node = createStructureNode(sn, roots);
+			if (node == null) {
 				log.trace("Did not create a structure node entry for {}. Contained no concepts.", sn.getId());
 				continue;
 			}
@@ -93,39 +95,39 @@ public class FrontEndConceptBuilder {
 
 	private static FrontendNode createCTRoot(Concept<?> c, StructureNode[] structureNodes) {
 
-		MatchingStats matchingStats = c.getMatchingStats();
+		final MatchingStats matchingStats = c.getMatchingStats();
 
-		StructureNodeId structureParent = Arrays
+		final StructureNodeId structureParent = Arrays
 				.stream(structureNodes)
 				.filter(sn -> sn.getContainedRoots().contains(c.getId()))
 				.findAny()
 				.map(StructureNode::getId)
 				.orElse(null);
 
-		FrontendNode n = FrontendNode.builder()
-									 .active(true)
-									 .description(c.getDescription())
-									 .label(c.getLabel())
-									 .additionalInfos(c.getAdditionalInfos())
-									 .matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
-									 .matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
-									 .dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
-									 .detailsAvailable(Boolean.TRUE)
-									 .codeListResolvable(c.countElements() > 1)
-									 .parent(structureParent)
-									 .selects(c
+		final FrontendNode n = FrontendNode.builder()
+										   .active(true)
+										   .description(c.getDescription())
+										   .label(c.getLabel())
+										   .additionalInfos(c.getAdditionalInfos())
+										   .matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
+										   .matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
+										   .dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
+										   .detailsAvailable(Boolean.TRUE)
+										   .codeListResolvable(c.countElements() > 1)
+										   .parent(structureParent)
+										   .selects(c
 													  .getSelects()
 													  .stream()
 													  .map(FrontEndConceptBuilder::createSelect)
 													  .collect(Collectors.toList())
 									 )
-									 .tables(c
+										   .tables(c
 													 .getConnectors()
 													 .stream()
 													 .map(FrontEndConceptBuilder::createTable)
 													 .collect(Collectors.toList())
 									 )
-									 .build();
+										   .build();
 
 		if (c instanceof ConceptTreeNode<?> tree && tree.getChildren() != null) {
 			n.setChildren(
@@ -140,7 +142,7 @@ public class FrontEndConceptBuilder {
 
 	@Nullable
 	private static FrontendNode createStructureNode(StructureNode cn, Map<Id<?>, FrontendNode> roots) {
-		List<ConceptId> unstructured = new ArrayList<>();
+		final List<ConceptId> unstructured = new ArrayList<>();
 		for (ConceptId id : cn.getContainedRoots()) {
 			if (!roots.containsKey(id)) {
 				log.trace("Concept from structure node can not be found: {}", id);
@@ -170,31 +172,19 @@ public class FrontEndConceptBuilder {
 						   .build();
 	}
 
-	private static FrontendNode createCTNode(ConceptElement<?> ce) {
-		MatchingStats matchingStats = ce.getMatchingStats();
-		FrontendNode n = FrontendNode.builder()
-									 .active(null)
-									 .description(ce.getDescription())
-									 .label(ce.getLabel())
-									 .additionalInfos(ce.getAdditionalInfos())
-									 .matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
-									 .matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
-									 .dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
-									 .build();
-
-		if (ce instanceof ConceptTreeNode<?> tree) {
-			if (tree.getChildren() != null) {
-				n.setChildren(tree.getChildren().stream().map(IdentifiableImpl::getId).toArray(ConceptTreeChildId[]::new));
-			}
-			if (tree.getParent() != null) {
-				n.setParent(tree.getParent().getId());
-			}
-		}
-		return n;
+	public static FrontendSelect createSelect(Select select) {
+		return FrontendSelect
+				.builder()
+				.id(select.getId())
+				.label(select.getLabel())
+				.description(select.getDescription())
+				.resultType(select.getResultType())
+				.isDefault(select.isDefault())
+				.build();
 	}
 
 	public static FrontendTable createTable(Connector con) {
-		FrontendTable result =
+		final FrontendTable result =
 				FrontendTable.builder()
 							 .id(con.getTable().getId())
 							 .connectorId(con.getId())
@@ -221,7 +211,7 @@ public class FrontEndConceptBuilder {
 							 )
 							 .build();
 
-		if(con.getValidityDates().size() > 1) {
+		if (con.getValidityDates().size() > 1) {
 			result.setDateColumn(
 					new FrontendValidityDate(
 							con.getValidityDatesDescription(),
@@ -234,7 +224,7 @@ public class FrontEndConceptBuilder {
 					)
 			);
 
-			if(!result.getDateColumn().getOptions().isEmpty()) {
+			if (!result.getDateColumn().getOptions().isEmpty()) {
 				result.getDateColumn().setDefaultValue(result.getDateColumn().getOptions().get(0).getValue());
 			}
 		}
@@ -251,19 +241,31 @@ public class FrontEndConceptBuilder {
 		}
 	}
 
-	public static FrontendSelect createSelect(Select select) {
-		return FrontendSelect
-				.builder()
-				.id(select.getId())
-				.label(select.getLabel())
-				.description(select.getDescription())
-				.resultType(select.getResultType())
-				.isDefault(select.isDefault())
-				.build();
+	private static FrontendNode createCTNode(ConceptElement<?> ce) {
+		final MatchingStats matchingStats = ce.getMatchingStats();
+		final FrontendNode n = FrontendNode.builder()
+										   .active(null)
+										   .description(ce.getDescription())
+										   .label(ce.getLabel())
+										   .additionalInfos(ce.getAdditionalInfos())
+										   .matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
+										   .matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
+										   .dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
+										   .build();
+
+		if (ce instanceof ConceptTreeNode<?> tree) {
+			if (tree.getChildren() != null) {
+				n.setChildren(tree.getChildren().stream().map(IdentifiableImpl::getId).toArray(ConceptTreeChildId[]::new));
+			}
+			if (tree.getParent() != null) {
+				n.setParent(tree.getParent().getId());
+			}
+		}
+		return n;
 	}
 
 	public static FrontendList createTreeMap(Concept<?> concept) {
-		FrontendList map = new FrontendList();
+		final FrontendList map = new FrontendList();
 		fillTreeMap(concept, map);
 		return map;
 	}
