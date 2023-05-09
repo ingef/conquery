@@ -58,6 +58,7 @@
     "previousQuery": "Query",
     "loadingPreviousQuery": "Loading Query Details",
     "secondaryId": "Analysis layer",
+    "secondaryIdTooltip": "Additional links between the concepts can be determined here. By default, the link is made on the entity level. If another option is selected the link will be additionally made on it.",
     "secondaryIdStandard": "Standard",
     "hasSecondaryId": "Analysis layer active",
     "removeNode": "Remove node",

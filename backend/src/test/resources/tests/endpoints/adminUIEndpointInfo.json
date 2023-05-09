@@ -51,6 +51,11 @@
   },
   {
     "method": "GET",
+    "path": "/datasets/{dataset}/connectors/{connector}",
+    "clazz": "ConnectorUIResource"
+  },
+  {
+    "method": "GET",
     "path": "/groups/{groupId}",
     "clazz": "GroupUIResource"
   },

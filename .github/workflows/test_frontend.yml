@@ -1,12 +1,18 @@
 name: "Test Frontend"
 
 on:
+  push:
+    branches:
+      # Always run on protected branches
+      - master
+      - develop
+      - release
   pull_request:
     paths:
       - "frontend/**"
 
 jobs:
-  format-lint-unittest:
+  test:
     runs-on: ubuntu-latest
     timeout-minutes: 6
     steps:

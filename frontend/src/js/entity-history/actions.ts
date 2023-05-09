@@ -12,8 +12,8 @@ import type {
   DatasetT,
   EntityInfo,
   GetEntityHistoryDefaultParamsResponse,
-  HistorySources,
   ResultUrlWithLabel,
+  TimeStratifiedInfo,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
@@ -81,6 +81,7 @@ export const loadHistoryData = createAsyncAction(
     currentEntityCsvUrl: string;
     currentEntityData: EntityEvent[];
     currentEntityInfos: EntityInfo[];
+    currentEntityTimeStratifiedInfos: TimeStratifiedInfo[];
     currentEntityId: EntityId;
     currentEntityUniqueSources: string[];
     resultUrls?: ResultUrlWithLabel[];
@@ -177,7 +178,7 @@ export function useUpdateHistorySession() {
 
   const defaultEntityHistoryParams = useSelector<
     StateT,
-    { sources: HistorySources }
+    StateT["entityHistory"]["defaultParams"]
   >((state) => state.entityHistory.defaultParams);
 
   return useCallback(
@@ -196,11 +197,15 @@ export function useUpdateHistorySession() {
       try {
         dispatch(loadHistoryData.request());
 
-        const { resultUrls, columnDescriptions, infos } =
+        const { resultUrls, columnDescriptions, infos, timeStratifiedInfos } =
           await getEntityHistory(
             datasetId,
             entityId,
             defaultEntityHistoryParams.sources,
+            {
+              min: defaultEntityHistoryParams.observationPeriodMin,
+              max: formatStdDate(new Date()),
+            },
           );
 
         const csvUrl = resultUrls.find(({ url }) => url.endsWith("csv"));
@@ -239,6 +244,7 @@ export function useUpdateHistorySession() {
             currentEntityData: currentEntityDataProcessed,
             currentEntityId: entityId,
             currentEntityInfos: nonEmptyInfos,
+            currentEntityTimeStratifiedInfos: timeStratifiedInfos,
             currentEntityUniqueSources: uniqueSources,
             columnDescriptions,
             resultUrls,
@@ -260,7 +266,7 @@ export function useUpdateHistorySession() {
     [
       t,
       datasetId,
-      defaultEntityHistoryParams.sources,
+      defaultEntityHistoryParams,
       dispatch,
       getAuthorizedUrl,
       getEntityHistory,

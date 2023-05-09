@@ -11,6 +11,7 @@ import type {
   HistorySources,
   ResultUrlWithLabel,
   SelectOptionT,
+  TimeStratifiedInfo,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
 import ErrorFallback from "../error-fallback/ErrorFallback";
@@ -111,6 +112,10 @@ export const History = () => {
   const currentEntityInfos = useSelector<StateT, EntityInfo[]>(
     (state) => state.entityHistory.currentEntityInfos,
   );
+  const currentEntityTimeStratifiedInfos = useSelector<
+    StateT,
+    TimeStratifiedInfo[]
+  >((state) => state.entityHistory.currentEntityTimeStratifiedInfos);
   const resultUrls = useSelector<StateT, ResultUrlWithLabel[]>(
     (state) => state.entityHistory.resultUrls,
   );
@@ -203,7 +208,6 @@ export const History = () => {
                 <EntityHeader
                   currentEntityIndex={currentEntityIndex}
                   currentEntityId={currentEntityId}
-                  currentEntityInfos={currentEntityInfos}
                   status={currentEntityStatus}
                   setStatus={setCurrentEntityStatus}
                   entityStatusOptions={entityStatusOptions}
@@ -237,6 +241,10 @@ export const History = () => {
                 detailLevel={detailLevel}
                 sources={sourcesSet}
                 contentFilter={contentFilter}
+                currentEntityInfos={currentEntityInfos}
+                currentEntityTimeStratifiedInfos={
+                  currentEntityTimeStratifiedInfos
+                }
                 getIsOpen={getIsOpen}
                 toggleOpenYear={toggleOpenYear}
                 toggleOpenQuarter={toggleOpenQuarter}

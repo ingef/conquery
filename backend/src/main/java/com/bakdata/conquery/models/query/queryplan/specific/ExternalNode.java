@@ -35,9 +35,8 @@ public class ExternalNode<T> extends QPNode {
 
 	private final Map<Integer, Map<String, T>> extraData;
 	private final String[] extraColumns;
-
-	private CDateSet contained;
 	private final Map<String, ConstantValueAggregator<T>> extraAggregators;
+	private CDateSet contained;
 
 	@ToString.Include
 	public Set<Integer> getEntities() {
@@ -72,7 +71,7 @@ public class ExternalNode<T> extends QPNode {
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
 
-		if (table.equals(currentTable) && contained != null){
+		if (table.equals(currentTable) && contained != null) {
 			dateUnion.addAll(contained);
 			dateUnion.retainAll(ctx.getDateRestriction());
 		}
@@ -85,10 +84,14 @@ public class ExternalNode<T> extends QPNode {
 
 	@Override
 	public boolean isContained() {
+		if (contained == null) {
+			// Entity was not in the selected set.
+			return false;
+		}
+
 		/*
-		If the intersection 'dateUnion' is not empty its contained. Otherwise
-		it is only contained, if the initial date set 'contained' was also empty,
-		which means that no date context was provided anyway.
+		If the intersection 'dateUnion' is not empty its contained.
+		Unless the initial dateset 'contained' was also empty, which means that no date context was provided anyway.
 		 */
 		return !dateUnion.isEmpty() || contained.isEmpty();
 	}

@@ -9,6 +9,7 @@ import type { StateT } from "../app/reducers";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import { nodeIsConceptQueryNode } from "../model/node";
+import InfoTooltip from "../tooltip/InfoTooltip";
 import ToggleButton from "../ui-components/ToggleButton";
 
 import { setSelectedSecondaryId } from "./actions";
@@ -155,6 +156,7 @@ const SecondaryIdSelectorUI = memo(
         <Headline active={!!value}>
           <SxFaIcon active={!!value} left icon={faMicroscope} />
           {t("queryEditor.secondaryId")}
+          <InfoTooltip text={t("queryEditor.secondaryIdTooltip")} />
         </Headline>
         <ToggleButton
           value={value || "standard"}

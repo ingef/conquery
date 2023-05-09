@@ -1,4 +1,4 @@
-import { FC, ReactNode } from "react";
+import { ReactNode } from "react";
 
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -10,20 +10,20 @@ interface TabOption {
   tooltip?: string;
 }
 
-interface PropsT {
-  className?: string;
-  size?: "M" | "L";
-  options: TabOption[];
-  selectedTab: string;
-  onSelectTab: (tab: string) => void;
-}
-
-const SmallTabNavigation: FC<PropsT> = ({
+const SmallTabNavigation = ({
   className,
   size = "M",
+  variant = "secondary",
   options,
   selectedTab,
   onSelectTab,
+}: {
+  className?: string;
+  size?: "M" | "L";
+  variant?: "primary" | "secondary";
+  options: TabOption[];
+  selectedTab: string;
+  onSelectTab: (tab: string) => void;
 }) => {
   return (
     <div className={className}>
@@ -33,6 +33,7 @@ const SmallTabNavigation: FC<PropsT> = ({
         return (
           <WithTooltip key={option.value} text={option.tooltip}>
             <SmallTabNavigationButton
+              variant={variant}
               key={option.value}
               value={option.value}
               size={size}

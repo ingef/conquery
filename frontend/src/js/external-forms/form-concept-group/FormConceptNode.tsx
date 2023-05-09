@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 
 import { getWidthAndHeight } from "../../app/DndProvider";
 import IconButton from "../../button/IconButton";
+import { canNodeBeDropped } from "../../model/node";
 import { HoverNavigatable } from "../../small-tab-navigation/HoverNavigatable";
 import { getRootNodeLabel } from "../../standard-query-editor/helper";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
@@ -19,7 +20,6 @@ const Root = styled("div")<{
 }>`
   padding: 5px 10px;
   cursor: pointer;
-  background-color: white;
   max-width: 200px;
   border-radius: ${({ theme }) => theme.borderRadius};
   transition: background-color ${({ theme }) => theme.transitionTime};
@@ -30,10 +30,8 @@ const Root = styled("div")<{
   &:hover {
     background-color: ${({ theme }) => theme.col.bgAlt};
   }
-
   display: grid;
   grid-template-columns: 1fr auto;
-
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
@@ -126,7 +124,11 @@ const FormConceptNode: FC<PropsT> = ({
     : undefined;
 
   return (
-    <HoverNavigatable triggerNavigate={onClick}>
+    <HoverNavigatable
+      triggerNavigate={onClick}
+      canDrop={(item) => canNodeBeDropped(conceptNode, item)}
+      highlightDroppable
+    >
       <Root
         ref={(instance) => {
           ref.current = instance;

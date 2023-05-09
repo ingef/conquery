@@ -9,6 +9,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import groovy.transform.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -60,7 +61,8 @@ public class FrontendConfig {
 
 	@Data
 	public static class CurrencyConfig {
-		private String prefix = "€";
+		@JsonAlias("prefix")
+		private String unit = "€";
 		private String thousandSeparator = ".";
 		private String decimalSeparator = ",";
 		private int decimalScale = 2;

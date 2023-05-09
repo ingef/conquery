@@ -15,6 +15,7 @@ import type {
   DragItemConceptTreeNode,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
+import { PossibleDroppableObject } from "../ui-components/Dropzone";
 
 import { objectHasNonDefaultSelects } from "./select";
 import {
@@ -126,3 +127,25 @@ export function getNodeIcon(
 
   return config?.isStructNode ? faFolderRegular : faFolder;
 }
+
+const droppableObjectIsConceptTreeNode = (
+  node: PossibleDroppableObject,
+): node is DragItemConceptTreeNode => {
+  return node.type === DNDType.CONCEPT_TREE_NODE;
+};
+
+export const canNodeBeDropped = (
+  node: StandardQueryNodeT,
+  item: PossibleDroppableObject,
+) => {
+  if (
+    !droppableObjectIsConceptTreeNode(item) ||
+    !nodeIsConceptQueryNode(node)
+  ) {
+    return false;
+  }
+  const conceptId = item.ids[0];
+  const itemAlreadyInNode = node.ids.includes(conceptId);
+  const itemHasConceptRoot = item.tree === node.tree;
+  return itemHasConceptRoot && !itemAlreadyInNode;
+};
