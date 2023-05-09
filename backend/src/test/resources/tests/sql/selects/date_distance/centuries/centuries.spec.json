@@ -1,0 +1,96 @@
+{
+  "label": "DATE_DISTANCE select query with timeUnit Centuries",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "type": "DATE_RESTRICTION",
+          "dateRange": {
+            "min": "2012-01-01",
+            "max": "2012-12-31"
+          },
+          "child": {
+            "ids":[
+              "geschlecht_select"
+            ],
+            "type":"CONCEPT",
+            "label":"Geschlecht SELECT",
+            "tables":[
+              {
+                "id":"geschlecht_select.geschlecht_connector",
+                "filters":[
+                  {
+                    "filter":"geschlecht_select.geschlecht_connector.geschlecht",
+                    "type":"BIG_MULTI_SELECT",
+                    "value":[
+                      "f"
+                    ]
+                  }
+                ],
+                "selects": [
+                  "geschlecht_select.geschlecht_connector.date_distance"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "concepts":[
+    {
+      "label":"geschlecht_select",
+      "type":"TREE",
+      "connectors":[
+        {
+          "label":"geschlecht_connector",
+          "table":"table1",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          },
+          "filters":{
+            "label":"geschlecht",
+            "description":"Geschlecht zur gegebenen Datumseinschränkung",
+            "column":"table1.geschlecht",
+            "type":"SELECT"
+          },
+          "selects": [
+            {
+              "column": "table1.datum",
+              "default": true,
+              "label": "date_distance",
+              "name": "date_distance",
+              "timeUnit": "CENTURIES",
+              "type": "DATE_DISTANCE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content":{
+    "tables":[
+      {
+        "csv":"",
+        "name":"table1",
+        "primaryColumn":{
+          "name":"pid",
+          "type":"STRING"
+        },
+        "columns":[
+          {
+            "name":"datum",
+            "type":"DATE"
+          },
+          {
+            "name":"geschlecht",
+            "type":"STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,1 @@
+select pid, (((extract(year from date '2012-12-31') - extract(year from datum)) * 12) + (extract(month from date '2012-12-31') - extract(month from datum))) as "date_distance" from table1 where geschlecht in ('f')

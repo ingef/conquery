@@ -346,5 +346,15 @@
             <artifactId>auto-service</artifactId>
             <version>1.0.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+            <version>3.18.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq-postgres-extensions</artifactId>
+            <version>3.18.3</version>
+        </dependency>
     </dependencies>
 </project>
