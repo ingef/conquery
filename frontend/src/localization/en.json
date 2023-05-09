@@ -513,5 +513,19 @@
     "paste": "Paste from clipboard",
     "submit": "Submit",
     "pasted": "Imported"
+  },
+  "editorV2": {
+    "before": "BEFORe",
+    "and": "AND",
+    "or": "OR",
+    "clear": "Clear",
+    "flip": "Flip",
+    "dates": "Dates",
+    "negate": "Negate",
+    "connector": "Connector",
+    "delete": "Delete",
+    "expand": "Expand",
+    "edit": "Details",
+    "initialDropText": "Drop a concept or query here."
   }
 }

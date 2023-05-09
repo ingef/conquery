@@ -58,6 +58,8 @@ export const DateModal = ({
 
   const onChange = useCallback(
     (date: DateStringMinMax) => {
+      if (!date.min && !date.max) return;
+
       setDateRange({
         min: date.min || undefined,
         max: date.max || undefined,

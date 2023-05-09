@@ -142,12 +142,11 @@ export const useExpandQuery = ({
             ...config,
           };
         case "SAVED_QUERY":
-          console.log(queryNode);
           const dataQuery: DragItemQuery = {
             ...queryNode,
             query: undefined,
             dragContext: { width: 0, height: 0 },
-            label: "", // TODO: DOUBLE CHECK
+            label: "", // TODO: Clarify why there is no label at this point.
             tags: [],
             type: DNDType.PREVIOUS_QUERY,
             id: queryNode.query,

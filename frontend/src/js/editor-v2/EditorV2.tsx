@@ -10,6 +10,7 @@ import {
 import { createId } from "@paralleldrive/cuid2";
 import { useCallback, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
+import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
 import {
@@ -27,7 +28,7 @@ import { useDateEditing } from "./date-restriction/useDateEditing";
 import { useExpandQuery } from "./expand/useExpandQuery";
 import { useNegationEditing } from "./negation/useNegationEditing";
 import { Tree } from "./types";
-import { findNodeById } from "./util";
+import { findNodeById, useTranslatedConnection } from "./util";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -109,6 +110,7 @@ export function EditorV2({
   featureExpand: boolean;
   featureConnectorRotate: boolean;
 }) {
+  const { t } = useTranslation();
   const {
     tree,
     setTree,
@@ -187,6 +189,10 @@ export function EditorV2({
     updateTreeNode,
   });
 
+  const connection = useTranslatedConnection(
+    selectedNode?.children?.connection,
+  );
+
   return (
     <Root
       onClick={() => {
@@ -230,7 +236,7 @@ export function EditorV2({
                 onOpen();
               }}
             >
-              Dates
+              {t("editorV2.dates")}
             </IconButton>
           )}
           {featureNegate && selectedNode && (
@@ -241,7 +247,7 @@ export function EditorV2({
                 onNegateClick();
               }}
             >
-              Negate
+              {t("editorV2.negate")}
             </IconButton>
           )}
           {selectedNode?.children && (
@@ -252,7 +258,7 @@ export function EditorV2({
                 onFlip();
               }}
             >
-              Flip
+              {t("editorV2.flip")}
             </IconButton>
           )}
           {featureConnectorRotate && selectedNode?.children && (
@@ -263,8 +269,8 @@ export function EditorV2({
                 onRotateConnector();
               }}
             >
-              <span>Connected:</span>
-              <Connector>{selectedNode.children.connection}</Connector>
+              <span>{t("editorV2.connector")}</span>
+              <Connector>{connection}</Connector>
             </SxIconButton>
           )}
           {canExpand && (
@@ -275,7 +281,7 @@ export function EditorV2({
                 onExpand();
               }}
             >
-              Expand
+              {t("editorV2.expand")}
             </IconButton>
           )}
           {selectedNode && (
@@ -286,12 +292,12 @@ export function EditorV2({
                 onDelete();
               }}
             >
-              Delete
+              {t("editorV2.delete")}
             </IconButton>
           )}
         </Flex>
         <IconButton icon={faTrash} onClick={onReset}>
-          Clear
+          {t("editorV2.clear")}
         </IconButton>
       </Actions>
       <Grid>
@@ -313,7 +319,7 @@ export function EditorV2({
             }}
             acceptedDropTypes={EDITOR_DROP_TYPES}
           >
-            {() => <div>Drop if you dare</div>}
+            {() => <div>{t("editorV2.initialDropText")}</div>}
           </SxDropzone>
         )}
       </Grid>

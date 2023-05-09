@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { createId } from "@paralleldrive/cuid2";
+import { memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DNDType } from "../common/constants/dndTypes";
@@ -10,7 +11,8 @@ import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 import { Connector, Grid } from "./EditorLayout";
 import { EDITOR_DROP_TYPES } from "./config";
 import { DateRange } from "./date-restriction/DateRange";
-import { Tree } from "./types";
+import { ConnectionKind, Tree } from "./types";
+import { useTranslatedConnection } from "./util";
 
 const NodeContainer = styled("div")`
   display: grid;
@@ -104,14 +106,22 @@ const Dates = styled("div")`
   text-align: right;
 `;
 
+const Connection = memo(({ connection }: { connection?: ConnectionKind }) => {
+  const message = useTranslatedConnection(connection);
+
+  return <Connector>{message}</Connector>;
+});
+
 export function TreeNode({
   tree,
+  treeParent,
   updateTreeNode,
   droppable,
   selectedNode,
   setSelectedNodeId,
 }: {
   tree: Tree;
+  treeParent?: Tree;
   updateTreeNode: (id: string, update: (node: Tree) => void) => void;
   droppable: {
     h: boolean;
@@ -156,8 +166,12 @@ export function TreeNode({
       node.id = newParentId;
       node.data = undefined;
       node.dates = undefined;
+
+      const connection =
+        treeParent?.children?.connection || tree.children?.connection;
+
       node.children = {
-        connection: tree.children?.connection === "and" ? "or" : "and" || "and",
+        connection: connection === "and" ? "or" : "and" || "and",
         direction: direction === "h" ? "horizontal" : "vertical",
         items: pos === "b" ? newChildren : newChildren.reverse(),
       };
@@ -245,6 +259,7 @@ export function TreeNode({
                   <TreeNode
                     key={item.id}
                     tree={item}
+                    treeParent={tree}
                     updateTreeNode={updateTreeNode}
                     selectedNode={selectedNode}
                     setSelectedNodeId={setSelectedNodeId}
@@ -268,7 +283,9 @@ export function TreeNode({
                         onDropAtChildrenIdx({ idx: i + 1, item })
                       }
                     >
-                      {() => <Connector>{tree.children?.connection}</Connector>}
+                      {() => (
+                        <Connection connection={tree.children?.connection} />
+                      )}
                     </InvisibleDropzoneContainer>
                   )}
                 </>

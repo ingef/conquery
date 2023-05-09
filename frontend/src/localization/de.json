@@ -514,5 +514,19 @@
     "paste": "Aus Zwischenablage einfügen",
     "submit": "Übernehmen",
     "pasted": "Importiert"
+  },
+  "editorV2": {
+    "before": "VOR",
+    "and": "UND",
+    "or": "ODER",
+    "clear": "Leeren",
+    "flip": "Drehen",
+    "dates": "Datum",
+    "negate": "Nicht",
+    "connector": "Verknüpfung",
+    "delete": "Löschen",
+    "expand": "Expandieren",
+    "edit": "Details",
+    "initialDropText": "Ziehe ein Konzept oder eine Anfrage hier hinein."
   }
 }

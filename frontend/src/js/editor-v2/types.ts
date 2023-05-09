@@ -4,6 +4,9 @@ import {
   DragItemQuery,
 } from "../standard-query-editor/types";
 
+export type ConnectionKind = "and" | "or" | "before";
+export type DirectionKind = "horizontal" | "vertical";
+
 export interface Tree {
   id: string;
   parentId?: string;
@@ -14,8 +17,8 @@ export interface Tree {
   };
   data?: DragItemQuery | DragItemConceptTreeNode;
   children?: {
-    connection: "and" | "or" | "before";
-    direction: "horizontal" | "vertical";
+    connection: ConnectionKind;
+    direction: DirectionKind;
     items: Tree[];
   };
 }
