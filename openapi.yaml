@@ -1008,6 +1008,9 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/UniversalSelect"
+            defaultExcludeFromTimeAggregation:
+              type: boolean
+              description: "If true, excludeFromTimeAggregation will be set to true by default for the users."
             hidden:
               description: "If true, the concept is not visible in the API or the frontend."
               type: boolean
