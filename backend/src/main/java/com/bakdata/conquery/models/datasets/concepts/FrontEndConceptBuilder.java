@@ -62,9 +62,11 @@ public class FrontEndConceptBuilder {
 		final boolean[] isPermitted = subject.isPermitted(allConcepts, Ability.READ);
 
 		for (int i = 0; i < allConcepts.size(); i++) {
-			if (isPermitted[i]) {
-				roots.put(allConcepts.get(i).getId(), createConceptRoot(allConcepts.get(i), storage.getStructure()));
+			if (!isPermitted[i]) {
+				continue;
 			}
+
+			roots.put(allConcepts.get(i).getId(), createConceptRoot(allConcepts.get(i), storage.getStructure()));
 		}
 		if (roots.isEmpty()) {
 			log.warn("No concepts could be collected for {} on dataset {}. The subject is possibly lacking the permission to use them.", subject.getId(), storage.getDataset()
@@ -113,7 +115,12 @@ public class FrontEndConceptBuilder {
 							.detailsAvailable(Boolean.TRUE)
 							.codeListResolvable(concept.countElements() > 1)
 							.parent(structureParent)
-							.excludeFromTimeAggregation(concept.isDefaultExcludeFromTimeAggregation() || concept.getConnectors().stream().map(Connector::getValidityDates).flatMap(Collection::stream).count() == 0)
+							.excludeFromTimeAggregation(concept.isDefaultExcludeFromTimeAggregation() || concept.getConnectors()
+																												.stream()
+																												.map(Connector::getValidityDates)
+																												.flatMap(Collection::stream)
+																												.findAny()
+																												.isEmpty())
 							.selects(concept.getSelects().stream().map(FrontEndConceptBuilder::createSelect).collect(Collectors.toList()))
 							.tables(concept.getConnectors().stream().map(FrontEndConceptBuilder::createTable).collect(Collectors.toList()))
 							.build();
@@ -125,9 +132,9 @@ public class FrontEndConceptBuilder {
 	}
 
 	@Nullable
-	private static FrontendNode createStructureNode(StructureNode cn, Map<Id<?>, FrontendNode> roots) {
+	private static FrontendNode createStructureNode(StructureNode structureNode, Map<Id<?>, FrontendNode> roots) {
 		final List<ConceptId> unstructured = new ArrayList<>();
-		for (ConceptId id : cn.getContainedRoots()) {
+		for (ConceptId id : structureNode.getContainedRoots()) {
 			if (!roots.containsKey(id)) {
 				log.trace("Concept from structure node can not be found: {}", id);
 				continue;
@@ -141,13 +148,13 @@ public class FrontEndConceptBuilder {
 
 		return FrontendNode.builder()
 						   .active(false)
-						   .description(cn.getDescription())
-						   .label(cn.getLabel())
+						   .description(structureNode.getDescription())
+						   .label(structureNode.getLabel())
 						   .detailsAvailable(Boolean.FALSE)
 						   .codeListResolvable(false)
-						   .additionalInfos(cn.getAdditionalInfos())
-						   .parent(cn.getParent() == null ? null : cn.getParent().getId())
-						   .children(Stream.concat(cn.getChildren().stream().map(IdentifiableImpl::getId), unstructured.stream()).toArray(Id[]::new))
+						   .additionalInfos(structureNode.getAdditionalInfos())
+						   .parent(structureNode.getParent() == null ? null : structureNode.getParent().getId())
+						   .children(Stream.concat(structureNode.getChildren().stream().map(IdentifiableImpl::getId), unstructured.stream()).toArray(Id[]::new))
 						   .build();
 	}
 
@@ -204,17 +211,32 @@ public class FrontEndConceptBuilder {
 
 	private static FrontendNode createCTNode(ConceptElement<?> ce) {
 		final MatchingStats matchingStats = ce.getMatchingStats();
-		final FrontendNode
-				n =
-				FrontendNode.builder()
-							.active(null)
-							.description(ce.getDescription())
-							.label(ce.getLabel())
-							.additionalInfos(ce.getAdditionalInfos())
-							.matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
-							.matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
-							.dateRange(matchingStats != null && matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
-							.build();
+		FrontendNode.FrontendNodeBuilder nodeBuilder = FrontendNode.builder()
+																   .active(null)
+																   .description(ce.getDescription())
+																   .label(ce.getLabel())
+																   .additionalInfos(ce.getAdditionalInfos())
+																   .matchingEntries(matchingStats != null ? matchingStats.countEvents() : 0)
+																   .matchingEntities(matchingStats != null ? matchingStats.countEntities() : 0)
+																   .dateRange(matchingStats != null && matchingStats.spanEvents() != null
+																			  ? matchingStats.spanEvents().toSimpleRange()
+																			  : null);
+
+
+		if (ce instanceof Concept<?> concept) {
+			final boolean anyValidityDates = concept.getConnectors()
+													.stream()
+													.map(Connector::getValidityDates)
+													.flatMap(Collection::stream)
+													.findAny()
+													.isEmpty();
+
+			nodeBuilder = nodeBuilder.excludeFromTimeAggregation(concept.isDefaultExcludeFromTimeAggregation() || anyValidityDates);
+		}
+
+
+		final FrontendNode n = nodeBuilder.build();
+
 
 		if (ce instanceof ConceptTreeNode<?> tree) {
 			if (tree.getChildren() != null) {
