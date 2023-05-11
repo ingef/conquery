@@ -133,7 +133,6 @@ components:
 
     OutputDescription:
       description: "Operations to transform, then import, values into tables."
-      type: object
       discriminator:
         propertyName: operation
         mapping:
@@ -164,7 +163,6 @@ components:
 
     LineOutput:
       description: "Emits the line number."
-      type: object
       allOf:
         - $ref: "#/components/schemas/OutputDescriptionBase"
         - properties:
@@ -174,7 +172,6 @@ components:
 
     NullOutput:
       description: "Emits a NULL value. Can be used to unify among multiple input sources with differing file schemas."
-      type: object
       allOf:
         - $ref: "#/components/schemas/OutputDescriptionBase"
         - properties:
@@ -184,7 +181,6 @@ components:
 
     CopyOutput:
       description: "Parses and emits the values in inputColumn as the provided type."
-      type: object
       allOf:
         - $ref: "#/components/schemas/OutputDescriptionBase"
         - properties:
@@ -199,7 +195,6 @@ components:
     CompoundDateRangeOutput:
       description: "Creates a virtual daterange column as a composite of its neighboring DATE-columns (not csv columns). 
       This helps avoid copying multiple values of the same column, when they can be reused."
-      type: object
       allOf:
         - $ref: "#/components/schemas/OutputDescriptionBase"
         - properties:
@@ -215,7 +210,6 @@ components:
 
     DateRangeOutput:
       description: "Parses `startColumn` and `endColumn` as dates, then emits them as a daterange."
-      type: object
       allOf:
         - $ref: "#/components/schemas/OutputDescriptionBase"
         - properties:
@@ -232,7 +226,6 @@ components:
     EpochDateRangeOutput:
       deprecated: true
       description: "Parses `startColumn` and `endColumn` as integers, interpreting them as dates in the Unix-Epoch (i.e. days since 01-01-1970), then emits them as a daterange."
-      type: object
       allOf:
         - $ref: "#/components/schemas/OutputDescriptionBase"
         - properties:
@@ -249,7 +242,6 @@ components:
     EpochOutput:
       deprecated: true
       description: "Parses `startColumn` integer, emitting it as dates in the Unix-Epoch (i.e. days since 01-01-1970)"
-      type: object
       allOf:
         - $ref: "#/components/schemas/OutputDescriptionBase"
         - properties:
