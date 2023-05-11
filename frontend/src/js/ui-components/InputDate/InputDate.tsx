@@ -3,9 +3,10 @@ import { createElement, forwardRef, useRef, useState } from "react";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-import { formatDate, parseDate } from "../common/helpers/dateHelper";
+import { formatDate, parseDate } from "../../common/helpers/dateHelper";
+import BaseInput, { Props as BaseInputProps } from "../BaseInput";
 
-import BaseInput, { Props as BaseInputProps } from "./BaseInput";
+import { CustomHeader } from "./CustomHeader";
 
 const Root = styled("div")`
   position: relative;
@@ -121,8 +122,10 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
             datePickerRef.current?.setOpen(false);
           }}
           onClickOutside={() => datePickerRef.current?.setOpen(false)}
+          renderCustomHeader={CustomHeader}
           customInput={createElement(HiddenInput)}
           calendarContainer={StyledCalendar}
+          showFullMonthYearPicker={true}
         />
       </Root>
     );
