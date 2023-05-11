@@ -191,53 +191,52 @@ components:
             operation:
               type: string
               enum: [ COPY ]
-#
-#    CompoundDateRangeOutput:
-#      description: "Creates a virtual daterange column as a composite of its neighboring DATE-columns (not csv columns).
-#      This helps avoid copying multiple values of the same column, when they can be reused."
-#      allOf:
-#        - $ref: "#/components/schemas/OutputDescriptionBase"
-#        - properties:
-#            startColumn:
-#              type: string
-#            endColumn:
-#              type: string
-#            allowOpen:
-#              type: boolean
-#            operation:
-#              type: string
-#              enum: [ COMPOUND_DATE_RANGE ]
-#
-#    DateRangeOutput:
-#      description: "Parses `startColumn` and `endColumn` as dates, then emits them as a daterange."
-#      allOf:
-#        - $ref: "#/components/schemas/OutputDescriptionBase"
-#        - properties:
-#            startColumn:
-#              type: string
-#            endColumn:
-#              type: string
-#            allowOpen:
-#              type: boolean
-#            operation:
-#              type: string
-#              enum: [ DATE_RANGE ]
-#
-#    EpochDateRangeOutput:
-#      deprecated: true
-#      description: "Parses `startColumn` and `endColumn` as integers, interpreting them as dates in the Unix-Epoch (i.e. days since 01-01-1970), then emits them as a daterange."
-#      allOf:
-#        - $ref: "#/components/schemas/OutputDescriptionBase"
-#        - properties:
-#            startColumn:
-#              type: string
-#            endColumn:
-#              type: string
-#            allowOpen:
-#              type: boolean
-#            operation:
-#              type: string
-#              enum: [ EPOCH_DATE_RANGE ]
+    CompoundDateRangeOutput:
+      description: "Creates a virtual daterange column as a composite of its neighboring DATE-columns (not csv columns).
+      This helps avoid copying multiple values of the same column, when they can be reused."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ COMPOUND_DATE_RANGE ]
+
+    DateRangeOutput:
+      description: "Parses `startColumn` and `endColumn` as dates, then emits them as a daterange."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ DATE_RANGE ]
+
+    EpochDateRangeOutput:
+      deprecated: true
+      description: "Parses `startColumn` and `endColumn` as integers, interpreting them as dates in the Unix-Epoch (i.e. days since 01-01-1970), then emits them as a daterange."
+      allOf:
+        - $ref: "#/components/schemas/OutputDescriptionBase"
+        - properties:
+            startColumn:
+              type: string
+            endColumn:
+              type: string
+            allowOpen:
+              type: boolean
+            operation:
+              type: string
+              enum: [ EPOCH_DATE_RANGE ]
 #
 #    EpochOutput:
 #      deprecated: true
