@@ -136,20 +136,20 @@ components:
       discriminator:
         propertyName: operation
         mapping:
-          COMPOUND_DATE_RANGE: "#/components/schemas/CompoundDateRangeOutput"
-          COPY: "#/components/schemas/CopyOutput"
-          DATE_RANGE: "#/components/schemas/DateRangeOutput"
-          EPOCH: "#/components/schemas/EpochOutput"
-          EPOCH_DATE_RANGE: "#/components/schemas/EpochDateRangeOutput"
-          LINE: "#/components/schemas/LineOutput"
+#          COMPOUND_DATE_RANGE: "#/components/schemas/CompoundDateRangeOutput"
+#          COPY: "#/components/schemas/CopyOutput"
+#          DATE_RANGE: "#/components/schemas/DateRangeOutput"
+#          EPOCH: "#/components/schemas/EpochOutput"
+#          EPOCH_DATE_RANGE: "#/components/schemas/EpochDateRangeOutput"
+#          LINE: "#/components/schemas/LineOutput"
           NULL: "#/components/schemas/NullOutput"
       oneOf:
-        - $ref: "#/components/schemas/CompoundDateRangeOutput"
-        - $ref: "#/components/schemas/CopyOutput"
-        - $ref: "#/components/schemas/DateRangeOutput"
-        - $ref: "#/components/schemas/EpochDateRangeOutput"
-        - $ref: "#/components/schemas/EpochOutput"
-        - $ref: "#/components/schemas/LineOutput"
+#        - $ref: "#/components/schemas/CompoundDateRangeOutput"
+#        - $ref: "#/components/schemas/CopyOutput"
+#        - $ref: "#/components/schemas/DateRangeOutput"
+#        - $ref: "#/components/schemas/EpochDateRangeOutput"
+#        - $ref: "#/components/schemas/EpochOutput"
+#        - $ref: "#/components/schemas/LineOutput"
         - $ref: "#/components/schemas/NullOutput"
 
     OutputDescriptionBase:
