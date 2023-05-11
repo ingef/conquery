@@ -131,27 +131,27 @@ components:
           items:
             $ref: "#/components/schemas/Column"
 
-#    OutputDescription:
-#      description: "Operations to transform, then import, values into tables."
-#      discriminator:
-#        propertyName: operation
-#        mapping:
-#          COMPOUND_DATE_RANGE: "#/components/schemas/CompoundDateRangeOutput"
-#          LINE: "#/components/schemas/LineOutput"
-#          EPOCH: "#/components/schemas/EpochOutput"
-#          NULL: "#/components/schemas/NullOutput"
-#          COPY: "#/components/schemas/CopyOutput"
-#          EPOCH_DATE_RANGE: "#/components/schemas/EpochDateRangeOutput"
-#          DATE_RANGE: "#/components/schemas/DateRangeOutput"
-#      oneOf:
-#        - $ref: "#/components/schemas/CompoundDateRangeOutput"
-#        - $ref: "#/components/schemas/LineOutput"
-#        - $ref: "#/components/schemas/EpochOutput"
-#        - $ref: "#/components/schemas/NullOutput"
-#        - $ref: "#/components/schemas/CopyOutput"
-#        - $ref: "#/components/schemas/EpochDateRangeOutput"
-#        - $ref: "#/components/schemas/DateRangeOutput"
-#
+    OutputDescription:
+      description: "Operations to transform, then import, values into tables."
+      discriminator:
+        propertyName: operation
+        mapping:
+          COMPOUND_DATE_RANGE: "#/components/schemas/CompoundDateRangeOutput"
+          COPY: "#/components/schemas/CopyOutput"
+          DATE_RANGE: "#/components/schemas/DateRangeOutput"
+          EPOCH: "#/components/schemas/EpochOutput"
+          EPOCH_DATE_RANGE: "#/components/schemas/EpochDateRangeOutput"
+          LINE: "#/components/schemas/LineOutput"
+          NULL: "#/components/schemas/NullOutput"
+      oneOf:
+        - $ref: "#/components/schemas/CompoundDateRangeOutput"
+        - $ref: "#/components/schemas/CopyOutput"
+        - $ref: "#/components/schemas/DateRangeOutput"
+        - $ref: "#/components/schemas/EpochDateRangeOutput"
+        - $ref: "#/components/schemas/EpochOutput"
+        - $ref: "#/components/schemas/LineOutput"
+        - $ref: "#/components/schemas/NullOutput"
+
     OutputDescriptionBase:
       type: object
       properties:
@@ -168,7 +168,6 @@ components:
             operation:
               type: string
               enum: [ LINE ]
-#
     NullOutput:
       description: "Emits a NULL value. Can be used to unify among multiple input sources with differing file schemas."
       allOf:
