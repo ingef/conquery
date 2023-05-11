@@ -232,16 +232,16 @@ components:
 
     OutputDescription:
       description: "Operations to transform, then import, values into tables."
-      discriminator:
-        propertyName: operation
-        mapping:
-          #          COMPOUND_DATE_RANGE: "#/components/schemas/CompoundDateRangeOutput"
-          #          COPY: "#/components/schemas/CopyOutput"
-          #          DATE_RANGE: "#/components/schemas/DateRangeOutput"
-          #          EPOCH: "#/components/schemas/EpochOutput"
-          #          EPOCH_DATE_RANGE: "#/components/schemas/EpochDateRangeOutput"
-          #          LINE: "#/components/schemas/LineOutput"
-          NULL: "#/components/schemas/NullOutput"
+#      discriminator:
+#        propertyName: operation
+#        mapping:
+#          #          COMPOUND_DATE_RANGE: "#/components/schemas/CompoundDateRangeOutput"
+#          #          COPY: "#/components/schemas/CopyOutput"
+#          #          DATE_RANGE: "#/components/schemas/DateRangeOutput"
+#          #          EPOCH: "#/components/schemas/EpochOutput"
+#          #          EPOCH_DATE_RANGE: "#/components/schemas/EpochDateRangeOutput"
+#          #          LINE: "#/components/schemas/LineOutput"
+#          NULL: "#/components/schemas/NullOutput"
       oneOf:
         #        - $ref: "#/components/schemas/CompoundDateRangeOutput"
         #        - $ref: "#/components/schemas/CopyOutput"
