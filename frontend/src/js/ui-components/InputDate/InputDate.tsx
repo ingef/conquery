@@ -125,7 +125,6 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
           renderCustomHeader={CustomHeader}
           customInput={createElement(HiddenInput)}
           calendarContainer={StyledCalendar}
-          showFullMonthYearPicker={true}
         />
       </Root>
     );
