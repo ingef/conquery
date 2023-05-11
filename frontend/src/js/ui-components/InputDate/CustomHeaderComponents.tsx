@@ -13,7 +13,7 @@ export const SelectMenuContainer = styled("div")`
   position: absolute;
   top: 40px;
   left: 0;
-  right: 0;
+  width: 100%;
 `;
 
 export const OptionList = styled(List)`
