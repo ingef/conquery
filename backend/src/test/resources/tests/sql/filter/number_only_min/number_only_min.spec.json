@@ -1,5 +1,6 @@
 {
   "label": "Single Number-Real-Range Filter Query (only min val)",
+  "type": "SQL_TEST",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
