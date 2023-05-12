@@ -15,7 +15,7 @@ import org.jooq.DatePart;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-public class DateDistanceConverter extends SelectConverter<DateDistanceSelect> {
+public class DateDistanceConverter implements SelectConverter<DateDistanceSelect> {
 
 	private static final Map<ChronoUnit, DatePart> DATE_CONVERSION = Map.of(
 			ChronoUnit.DECADES, DatePart.DECADE,
@@ -27,16 +27,17 @@ public class DateDistanceConverter extends SelectConverter<DateDistanceSelect> {
 	private final Supplier<LocalDate> dateNowSupplier;
 
 	public DateDistanceConverter(Supplier<LocalDate> dateNowSupplier) {
-		super(DateDistanceSelect.class);
 		this.dateNowSupplier = dateNowSupplier;
 	}
 
 	@Override
-	protected Field<Integer> convertSelect(DateDistanceSelect select, ConversionContext context) {
-
-		DatePart timeUnit = Objects.requireNonNull(DATE_CONVERSION.get(select.getTimeUnit()), "Given ChronoUnit can't be converted to known DatePart.");
+	public Field<Integer> convert(DateDistanceSelect select, ConversionContext context) {
+		DatePart timeUnit = DATE_CONVERSION.get(select.getTimeUnit());
+		if (timeUnit == null) {
+			throw new UnsupportedOperationException("Chrono unit %s is not supported".formatted(select.getTimeUnit()));
+		}
 		Column startDateColumn = select.getColumn();
-		Date endDate = this.getEndDate(context);
+		Date endDate = getEndDate(context);
 
 		if (startDateColumn.getType() != MajorTypeId.DATE) {
 			throw new UnsupportedOperationException("Can't calculate date distance to column of type "
@@ -55,9 +56,13 @@ public class DateDistanceConverter extends SelectConverter<DateDistanceSelect> {
 		}
 		else {
 			// otherwise the current date is the upper bound
-			endDate = this.dateNowSupplier.get();
+			endDate = dateNowSupplier.get();
 		}
 		return Date.valueOf(endDate);
 	}
 
+	@Override
+	public Class<DateDistanceSelect> getConversionClass() {
+		return DateDistanceSelect.class;
+	}
 }
