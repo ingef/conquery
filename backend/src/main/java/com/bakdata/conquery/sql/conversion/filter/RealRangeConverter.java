@@ -9,20 +9,23 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-public class RealRangeConverter extends FilterConverter<FilterValue.CQRealRangeFilter> {
-
-	public RealRangeConverter() {
-		super(FilterValue.CQRealRangeFilter.class);
-	}
+public class RealRangeConverter implements FilterConverter<FilterValue.CQRealRangeFilter> {
 
 	@Override
-	protected Condition convertFilter(FilterValue.CQRealRangeFilter filter, ConversionContext context) {
-		Field<Object> field = DSL.field(super.getColumnName(filter));
+	public Condition convert(FilterValue.CQRealRangeFilter filter, ConversionContext context) {
+		Field<Object> field = DSL.field(FilterConverter.getColumnName(filter));
+
 		Optional<Condition> greaterOrEqualCondition = Optional.ofNullable(filter.getValue().getMin()).map(field::greaterOrEqual);
 		Optional<Condition> lessOrEqualCondition = Optional.ofNullable(filter.getValue().getMax()).map(field::lessOrEqual);
 		return Stream.concat(greaterOrEqualCondition.stream(), lessOrEqualCondition.stream())
 					 .reduce(Condition::and)
 					 .orElseThrow(() -> new IllegalArgumentException("Missing min or max value for real range filter."));
 	}
+
+	@Override
+	public Class<FilterValue.CQRealRangeFilter> getConversionClass() {
+		return FilterValue.CQRealRangeFilter.class;
+	}
+
 
 }

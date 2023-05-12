@@ -4,14 +4,15 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 
-public class ConceptQueryConverter extends NodeConverter<ConceptQuery> {
+public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
-	public ConceptQueryConverter() {
-		super(ConceptQuery.class);
+	@Override
+	public ConversionContext convert(ConceptQuery node, ConversionContext context) {
+		return context.getSqlConverterService().convert(node.getRoot(), context);
 	}
 
 	@Override
-	protected ConversionContext convertNode(ConceptQuery node, ConversionContext context) {
-		return context.getSqlConverterService().convertNode(node.getRoot(), context);
+	public Class<ConceptQuery> getConversionClass() {
+		return ConceptQuery.class;
 	}
 }

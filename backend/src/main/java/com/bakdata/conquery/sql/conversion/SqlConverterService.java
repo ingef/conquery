@@ -19,9 +19,9 @@ import org.jooq.impl.DSL;
 /**
  * Entry point for converting {@link QueryDescription} to an SQL query.
  */
-public class SqlConverterService {
+public class SqlConverterService extends ConverterService<Visitable, ConversionContext> {
 
-	private final List<NodeConverter<? extends Visitable>> converters = List.of(
+	private static final List<NodeConverter<? extends Visitable>> converters = List.of(
 			new CQDateRestrictionConverter(),
 			new CQAndConverter(),
 			new CQConceptConverter(new FilterConverterService(), new SelectConverterService()),
@@ -29,20 +29,17 @@ public class SqlConverterService {
 			new CQOrConverter()
 	);
 
+	public SqlConverterService() {
+		super(converters);
+	}
+
 	public String convert(QueryDescription queryDescription) {
 		ConversionContext initialCtx = ConversionContext.builder()
 														.dslContext(DSL.using(SQLDialect.POSTGRES))
 														.sqlConverterService(this)
 														.build();
-		ConversionContext resultCtx = this.convertNode(queryDescription, initialCtx);
+		ConversionContext resultCtx = convert(queryDescription, initialCtx);
 		return resultCtx.getQuery().getSQL(ParamType.INLINED);
-	}
-
-	public ConversionContext convertNode(final Visitable visitable, final ConversionContext context) {
-		return converters.stream()
-						 .flatMap(converter -> converter.convert(visitable, context).stream())
-						 .findFirst()
-						 .orElseThrow();
 	}
 
 }

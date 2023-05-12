@@ -4,20 +4,16 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
-import com.bakdata.conquery.sql.conversion.context.ConversionContext;
+import com.bakdata.conquery.sql.conversion.ConverterService;
 import org.jooq.Field;
 
-public class SelectConverterService {
+public class SelectConverterService extends ConverterService<Select, Field<?>> {
 
-	private final List<SelectConverter<? extends Select>> converters = List.of(
+	private static final List<? extends SelectConverter<? extends Select>> converters = List.of(
 			new DateDistanceConverter(LocalDate::now)
 	);
 
-	public Field<?> convertNode(Select selectNode, ConversionContext context) {
-		return converters.stream()
-						 .flatMap(converter -> converter.convert(selectNode, context).stream())
-						 .findFirst()
-						 .orElseThrow();
+	public SelectConverterService() {
+		super(converters);
 	}
-
 }

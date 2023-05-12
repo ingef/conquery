@@ -4,17 +4,18 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 
-public class CQDateRestrictionConverter extends NodeConverter<CQDateRestriction> {
+public class CQDateRestrictionConverter implements NodeConverter<CQDateRestriction> {
 
-
-	public CQDateRestrictionConverter() {
-		super(CQDateRestriction.class);
+	@Override
+	public ConversionContext convert(CQDateRestriction node, ConversionContext context) {
+		// TODO if there is already a data restriction from a parent node, intersect both date ranges
+		ConversionContext childContext = context.withDateRestricionRange(node.getDateRange());
+		ConversionContext resultContext = context.getSqlConverterService().convert(node.getChild(), childContext);
+		return resultContext.withDateRestricionRange(null);
 	}
 
 	@Override
-	protected ConversionContext convertNode(CQDateRestriction node, ConversionContext context) {
-		ConversionContext childContext = context.toBuilder().dateRestricionRange(node.getDateRange()).build();
-		ConversionContext resultContext = context.getSqlConverterService().convertNode(node.getChild(), childContext);
-		return resultContext.toBuilder().dateRestricionRange(null).build();
+	public Class<CQDateRestriction> getConversionClass() {
+		return CQDateRestriction.class;
 	}
 }

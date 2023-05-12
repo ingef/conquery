@@ -5,15 +5,15 @@ import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 import org.jooq.Condition;
 import org.jooq.impl.DSL;
 
-public class MultiSelectConverter extends FilterConverter<FilterValue.CQBigMultiSelectFilter> {
+public class MultiSelectConverter implements FilterConverter<FilterValue.CQBigMultiSelectFilter> {
 
-	public MultiSelectConverter() {
-		super(FilterValue.CQBigMultiSelectFilter.class);
+	@Override
+	public Condition convert(FilterValue.CQBigMultiSelectFilter filter, ConversionContext context) {
+		return DSL.field(FilterConverter.getColumnName(filter)).in(filter.getValue());
 	}
 
 	@Override
-	protected Condition convertFilter(FilterValue.CQBigMultiSelectFilter filter, ConversionContext context) {
-		return DSL.field(super.getColumnName(filter)).in(filter.getValue());
+	public Class<FilterValue.CQBigMultiSelectFilter> getConversionClass() {
+		return FilterValue.CQBigMultiSelectFilter.class;
 	}
-
 }

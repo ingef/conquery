@@ -6,12 +6,14 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.sql.conversion.SqlConverterService;
 import lombok.Builder;
 import lombok.Value;
+import lombok.With;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.jooq.Select;
 
 @Value
-@Builder(toBuilder = true)
+@With
+@Builder
 public class ConversionContext {
 
 	DSLContext dslContext;
