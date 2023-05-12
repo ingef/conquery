@@ -26,5 +26,4 @@ public abstract class ConverterService<C, R> {
 						 .collect(MoreCollectors.onlyElement());
 	}
 
-
 }

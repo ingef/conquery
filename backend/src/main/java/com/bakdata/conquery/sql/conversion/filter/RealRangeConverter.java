@@ -27,5 +27,4 @@ public class RealRangeConverter implements FilterConverter<FilterValue.CQRealRan
 		return FilterValue.CQRealRangeFilter.class;
 	}
 
-
 }
