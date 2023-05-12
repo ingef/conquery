@@ -1,18 +1,14 @@
 package com.bakdata.conquery.integration;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
-import com.bakdata.conquery.integration.sql.SqlIntegrationTest;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 public class ConqueryIntegrationTests extends IntegrationTests {
 
