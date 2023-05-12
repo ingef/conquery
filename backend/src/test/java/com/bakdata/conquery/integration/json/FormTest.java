@@ -54,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Setter
 @CPSType(id = "FORM_TEST", base = ConqueryTestSpec.class)
-public class FormTest extends ConqueryTestSpec {
+public class FormTest extends ConqueryTestSpec<StandaloneSupport> {
 
 	/*
 	 * parse form as json first, because it may contain namespaced ids, that can only be resolved after

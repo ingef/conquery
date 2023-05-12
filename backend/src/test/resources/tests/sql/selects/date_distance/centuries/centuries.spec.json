@@ -1,5 +1,6 @@
 {
   "label": "DATE_DISTANCE select query with timeUnit Centuries",
+  "type": "SQL_TEST",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
