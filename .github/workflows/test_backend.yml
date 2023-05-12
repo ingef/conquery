@@ -41,5 +41,5 @@ jobs:
       - name: JSON based Integration Tests
         run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
       - name: SQL based Integration Tests
-        if: startsWith(github.ref, 'refs/heads/sql/')
+        if: ${{ startsWith(github.ref, 'refs/heads/sql') }}
         run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_SQL_BACKEND"
