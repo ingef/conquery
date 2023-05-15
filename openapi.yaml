@@ -131,8 +131,6 @@ components:
           items:
             $ref: "#/components/schemas/Column"
 
-
-
     OutputDescriptionBase:
       type: object
       properties:
@@ -235,6 +233,7 @@ components:
       discriminator:
         propertyName: operation
         mapping: {
+          # FK: I'm using JSON notation here, because the key `NULL`  breaks some tools.
           "COMPOUND_DATE_RANGE": "#/components/schemas/CompoundDateRangeOutput",
           "COPY": "#/components/schemas/CopyOutput",
           "DATE_RANGE": "#/components/schemas/DateRangeOutput",
