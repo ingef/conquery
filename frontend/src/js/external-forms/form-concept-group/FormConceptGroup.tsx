@@ -240,33 +240,35 @@ const FormConceptGroup = (props: Props) => {
         }}
         items={props.value.map((row, i) => (
           <>
-            <DropzoneBetweenElements
-              acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
-              onDrop={(item: DragItemConceptTreeNode) => {
-                if (isMovedObject(item)) {
+            {!props.disallowMultipleColumns && (
+              <DropzoneBetweenElements
+                acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
+                onDrop={(item: DragItemConceptTreeNode) => {
+                  if (isMovedObject(item)) {
+                    return props.onChange(
+                      addConcept(
+                        insertValue(props.value, i, newValue),
+                        i,
+                        copyConcept(item),
+                      ),
+                    );
+                  }
+
+                  if (props.isValidConcept && !props.isValidConcept(item))
+                    return null;
+
                   return props.onChange(
                     addConcept(
                       insertValue(props.value, i, newValue),
                       i,
-                      copyConcept(item),
+                      initializeConcept(item, defaults, tableConfig),
                     ),
                   );
-                }
-
-                if (props.isValidConcept && !props.isValidConcept(item))
-                  return null;
-
-                return props.onChange(
-                  addConcept(
-                    insertValue(props.value, i, newValue),
-                    i,
-                    initializeConcept(item, defaults, tableConfig),
-                  ),
-                );
-              }}
-            >
-              {() => props.conceptDropzoneText}
-            </DropzoneBetweenElements>
+                }}
+              >
+                {() => props.conceptDropzoneText}
+              </DropzoneBetweenElements>
+            )}
             <DropzoneListItem>
               {props.renderRowPrefix
                 ? props.renderRowPrefix({
