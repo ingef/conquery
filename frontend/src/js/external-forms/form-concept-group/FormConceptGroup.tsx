@@ -32,6 +32,7 @@ import {
   useVisibleConceptListFields,
 } from "../stateSelectors";
 
+import DropzoneBetweenElements from "./DropzoneBetweenElements";
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import FormConceptNode from "./FormConceptNode";
 import {
@@ -40,6 +41,7 @@ import {
   copyConcept,
   FormConceptGroupT,
   initializeConcept,
+  insertValue,
   onToggleIncludeSubnodes,
   removeConcept,
   removeValue,
@@ -237,130 +239,163 @@ const FormConceptGroup = (props: Props) => {
           );
         }}
         items={props.value.map((row, i) => (
-          <DropzoneListItem>
-            {props.renderRowPrefix
-              ? props.renderRowPrefix({
-                  value: props.value,
-                  onChange: props.onChange,
-                  row,
-                  i,
-                })
-              : null}
-            {row.concepts.length > 1 && (
-              <Row>
-                <SxDescription>
-                  {t("externalForms.common.connectedWith")}:
-                </SxDescription>
-                <ToggleButton
-                  value={props.value[i].connector}
-                  onChange={(val) => {
-                    props.onChange(
-                      setValueProperties(props.value, i, {
-                        connector: val,
-                      }),
-                    );
-                  }}
-                  options={[
-                    { value: "OR", label: t("common.or") },
-                    { value: "AND", label: t("common.and") },
-                  ]}
-                />
-              </Row>
-            )}
-            <DynamicInputGroup
-              key={i}
-              limit={props.isSingle ? 1 : 0}
-              onAddClick={() =>
-                props.onChange(addConcept(props.value, i, null))
-              }
-              onRemoveClick={(j) =>
-                props.onChange(
-                  props.value && props.value[i].concepts.length === 1
-                    ? removeValue(props.value, i)
-                    : removeConcept(props.value, i, j),
-                )
-              }
-              items={row.concepts.map((concept, j) =>
-                concept ? (
-                  <FormConceptNode
-                    key={j}
-                    valueIdx={i}
-                    conceptIdx={j}
-                    conceptNode={concept}
-                    name={props.fieldName}
-                    hasNonDefaultSettings={
-                      concept.includeSubnodes ||
-                      nodeHasNonDefaultSettings(concept)
-                    }
-                    hasFilterValues={nodeHasFilterValues(concept)}
-                    onClick={() =>
-                      setEditedFormQueryNodePosition({
-                        valueIdx: i,
-                        conceptIdx: j,
-                      })
-                    }
-                    expand={{
-                      onClick: () =>
-                        props.onChange(
-                          onToggleIncludeSubnodes(
+          <>
+            <DropzoneBetweenElements
+              acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
+              onDrop={(item: DragItemConceptTreeNode) => {
+                console.log("onDrop", item);
+                console.log(row);
+                if (isMovedObject(item)) {
+                  return props.onChange(
+                    addConcept(
+                      insertValue(props.value, i, newValue),
+                      i,
+                      copyConcept(item),
+                    ),
+                  );
+                }
+
+                if (props.isValidConcept && !props.isValidConcept(item))
+                  return null;
+
+                return props.onChange(
+                  addConcept(
+                    insertValue(props.value, i, newValue),
+                    i,
+                    initializeConcept(item, defaults, tableConfig),
+                  ),
+                );
+              }}
+            >
+              {() => props.conceptDropzoneText}
+            </DropzoneBetweenElements>
+            <DropzoneListItem>
+              {props.renderRowPrefix
+                ? props.renderRowPrefix({
+                    value: props.value,
+                    onChange: props.onChange,
+                    row,
+                    i,
+                  })
+                : null}
+              {row.concepts.length > 1 && (
+                <Row>
+                  <SxDescription>
+                    {t("externalForms.common.connectedWith")}:
+                  </SxDescription>
+                  <ToggleButton
+                    value={props.value[i].connector}
+                    onChange={(val) => {
+                      props.onChange(
+                        setValueProperties(props.value, i, {
+                          connector: val,
+                        }),
+                      );
+                    }}
+                    options={[
+                      { value: "OR", label: t("common.or") },
+                      { value: "AND", label: t("common.and") },
+                    ]}
+                  />
+                </Row>
+              )}
+              <DynamicInputGroup
+                key={i}
+                limit={props.isSingle ? 1 : 0}
+                onAddClick={() =>
+                  props.onChange(addConcept(props.value, i, null))
+                }
+                onRemoveClick={(j) =>
+                  props.onChange(
+                    props.value && props.value[i].concepts.length === 1
+                      ? removeValue(props.value, i)
+                      : removeConcept(props.value, i, j),
+                  )
+                }
+                items={row.concepts.map((concept, j) =>
+                  concept ? (
+                    <FormConceptNode
+                      key={j}
+                      valueIdx={i}
+                      conceptIdx={j}
+                      conceptNode={concept}
+                      name={props.fieldName}
+                      hasNonDefaultSettings={
+                        concept.includeSubnodes ||
+                        nodeHasNonDefaultSettings(concept)
+                      }
+                      hasFilterValues={nodeHasFilterValues(concept)}
+                      onClick={() =>
+                        setEditedFormQueryNodePosition({
+                          valueIdx: i,
+                          conceptIdx: j,
+                        })
+                      }
+                      expand={{
+                        onClick: () =>
+                          props.onChange(
+                            onToggleIncludeSubnodes(
+                              props.value,
+                              i,
+                              j,
+                              !concept.includeSubnodes,
+                              newValue,
+                            ),
+                          ),
+                        expandable:
+                          !props.disallowMultipleColumns &&
+                          hasConceptChildren(concept),
+                        active: !!concept.includeSubnodes,
+                      }}
+                    />
+                  ) : (
+                    <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <DragItemConceptTreeNode> */
+                      acceptedDropTypes={DROP_TYPES}
+                      onImportLines={(lines) =>
+                        onImportLines(lines, { valueIdx: i, conceptIdx: j })
+                      }
+                      onDrop={(
+                        item: DragItemConceptTreeNode | DragItemFile,
+                      ) => {
+                        if (item.type === "__NATIVE_FILE__") {
+                          onDropFile(item.files[0], {
+                            valueIdx: i,
+                            conceptIdx: j,
+                          });
+
+                          return;
+                        }
+
+                        if (isMovedObject(item)) {
+                          return props.onChange(
+                            setConcept(props.value, i, j, copyConcept(item)),
+                          );
+                        }
+
+                        if (props.isValidConcept && !props.isValidConcept(item))
+                          return null;
+
+                        return props.onChange(
+                          setConcept(
                             props.value,
                             i,
                             j,
-                            !concept.includeSubnodes,
-                            newValue,
+                            initializeConcept(item, defaults, tableConfig),
                           ),
-                        ),
-                      expandable:
-                        !props.disallowMultipleColumns &&
-                        hasConceptChildren(concept),
-                      active: !!concept.includeSubnodes,
-                    }}
-                  />
-                ) : (
-                  <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <DragItemConceptTreeNode> */
-                    acceptedDropTypes={DROP_TYPES}
-                    onImportLines={(lines) =>
-                      onImportLines(lines, { valueIdx: i, conceptIdx: j })
-                    }
-                    onDrop={(item: DragItemConceptTreeNode | DragItemFile) => {
-                      if (item.type === "__NATIVE_FILE__") {
-                        onDropFile(item.files[0], {
-                          valueIdx: i,
-                          conceptIdx: j,
-                        });
-
-                        return;
-                      }
-
-                      if (isMovedObject(item)) {
-                        return props.onChange(
-                          setConcept(props.value, i, j, copyConcept(item)),
                         );
+                      }}
+                    >
+                      {({ isOver, item }) =>
+                        isOver && isMovedObject(item)
+                          ? t("externalForms.common.concept.copying")
+                          : props.conceptDropzoneText
                       }
-
-                      if (props.isValidConcept && !props.isValidConcept(item))
-                        return null;
-
-                      return props.onChange(
-                        setConcept(
-                          props.value,
-                          i,
-                          j,
-                          initializeConcept(item, defaults, tableConfig),
-                        ),
-                      );
-                    }}
-                  >
-                    {({ isOver, item }) =>
-                      isOver && isMovedObject(item)
-                        ? t("externalForms.common.concept.copying")
-                        : props.conceptDropzoneText
-                    }
-                  </DropzoneWithFileInput>
-                ),
-              )}
-            />
-          </DropzoneListItem>
+                    </DropzoneWithFileInput>
+                  ),
+                )}
+              />
+            </DropzoneListItem>
+          </>
         ))}
       />
       {isCopyModalOpen && (

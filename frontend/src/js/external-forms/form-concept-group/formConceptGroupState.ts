@@ -47,6 +47,12 @@ export const addValue = (
   newValue: FormConceptGroupT,
 ) => [...value, newValue];
 
+export const insertValue = (
+  value: FormConceptGroupT[],
+  valueIdx: number,
+  newValue: FormConceptGroupT,
+) => [...value.slice(0, valueIdx), newValue, ...value.slice(valueIdx)];
+
 export const removeValue = (value: FormConceptGroupT[], valueIdx: number) => {
   return [...value.slice(0, valueIdx), ...value.slice(valueIdx + 1)];
 };
