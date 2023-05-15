@@ -234,14 +234,15 @@ components:
       description: "Operations to transform, then import, values into tables."
       discriminator:
         propertyName: operation
-        mapping:
-          COMPOUND_DATE_RANGE: "#/components/schemas/CompoundDateRangeOutput"
-          COPY: "#/components/schemas/CopyOutput"
-          DATE_RANGE: "#/components/schemas/DateRangeOutput"
-          EPOCH: "#/components/schemas/EpochOutput"
-          EPOCH_DATE_RANGE: "#/components/schemas/EpochDateRangeOutput"
-          LINE: "#/components/schemas/LineOutput"
-          NULL: "#/components/schemas/NullOutput"
+        mapping: {
+          "COMPOUND_DATE_RANGE": "#/components/schemas/CompoundDateRangeOutput"
+            "COPY": "#/components/schemas/CopyOutput"
+            "DATE_RANGE": "#/components/schemas/DateRangeOutput"
+            "EPOCH": "#/components/schemas/EpochOutput"
+            "EPOCH_DATE_RANGE": "#/components/schemas/EpochDateRangeOutput"
+            "LINE": "#/components/schemas/LineOutput"
+            "NULL": "#/components/schemas/NullOutput"
+        }
       oneOf:
         - $ref: "#/components/schemas/CompoundDateRangeOutput"
         - $ref: "#/components/schemas/CopyOutput"
@@ -277,12 +278,12 @@ components:
                 The row is passed as `row` array, the fields can be accessed as integer variables to the index in the file.
                 For example accessing `value` in `id,value` can be done with `row[value]` (no string up-ticks), or `row[1]`."
                 type: string
-#              primary:
-#                $ref: "#/components/schemas/OutputDescription"
-#              output:
-#                type: array
-#                items:
-#                  $ref: "#/components/schemas/OutputDescription"
+              primary:
+                $ref: "#/components/schemas/OutputDescription"
+              output:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OutputDescription"
 
     FrontendDatasetId:
       type: object
