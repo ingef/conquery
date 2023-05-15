@@ -243,8 +243,6 @@ const FormConceptGroup = (props: Props) => {
             <DropzoneBetweenElements
               acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
               onDrop={(item: DragItemConceptTreeNode) => {
-                console.log("onDrop", item);
-                console.log(row);
                 if (isMovedObject(item)) {
                   return props.onChange(
                     addConcept(
