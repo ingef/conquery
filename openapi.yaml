@@ -142,7 +142,7 @@ components:
         required:
           type: boolean
     LineOutput:
-      description: "Emits the line number."
+      description: "Emits the line number. The line-number is not guaranteed to be in file order, just an incrementing unique number: If multiple files are preprocessed, the line-number will not reset to zero."
       allOf:
         - $ref: "#/components/schemas/OutputDescriptionBase"
         - properties:
@@ -150,7 +150,7 @@ components:
               type: string
               enum: [ LINE ]
     NullOutput:
-      description: "Emits a NULL value. Can be used to unify among multiple input sources with differing file schemas."
+      description: "Emits a `null`/NA value. Can be used to unify among multiple input sources with differing file schemas."
       allOf:
         - $ref: "#/components/schemas/OutputDescriptionBase"
         - properties:
