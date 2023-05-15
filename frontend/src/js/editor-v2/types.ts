@@ -22,3 +22,7 @@ export interface Tree {
     items: Tree[];
   };
 }
+
+export interface EditorV2Query {
+  tree?: Tree;
+}

@@ -6,6 +6,7 @@
 // Some keys are added (e.g. the query type attribute)
 import { isEmpty } from "../common/helpers/commonHelper";
 import { exists } from "../common/helpers/exists";
+import { EditorV2Query, Tree } from "../editor-v2/types";
 import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
@@ -204,11 +205,42 @@ const transformTimebasedQueryToApi = (query: ValidatedTimebasedQueryStateT) =>
     ),
   );
 
+const transformTreeToApi = (tree: Tree) => {
+  let dateRestriction;
+  if (tree.dates?.restriction) {
+    dateRestriction = createDateRestriction(tree.dates.restriction, tree);
+  }
+
+  let negation;
+  if (tree.negation) {
+    negation = createNegation(tree);
+  }
+
+  let combined;
+  if (dateRestriction && negation) {
+    combined = dateRestriction;
+    combined.child = negation;
+  } else if (dateRestriction) {
+    combined = dateRestriction;
+  } else if (negation) {
+    combined = negation;
+  } else {
+    combined = tree;
+
+  tree.dates;
+};
+
+const transformEditorV2QueryToApi = (query: EditorV2Query) => {
+  if (!query.tree) return null;
+
+  return transformTreeToApi(query.tree);
+};
+
 // The query state already contains the query.
 // But small additions are made (properties allowlisted), empty things filtered out
 // to make it compatible with the backend API
 export const transformQueryToApi = (
-  query: StandardQueryStateT | ValidatedTimebasedQueryStateT,
+  query: StandardQueryStateT | ValidatedTimebasedQueryStateT | EditorV2Query,
   options: { queryType: string; selectedSecondaryId?: string | null },
 ) => {
   switch (options.queryType) {
@@ -221,6 +253,8 @@ export const transformQueryToApi = (
         query as StandardQueryStateT,
         options.selectedSecondaryId,
       );
+    case "editorV2":
+      return transformEditorV2QueryToApi(query as EditorV2Query);
     default:
       return null;
   }

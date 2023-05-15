@@ -40,7 +40,7 @@ const LoadingGroup = styled("div")`
 interface PropsT {
   queryRunner?: QueryRunnerStateT;
   isQueryRunning: boolean;
-  isButtonEnabled: boolean;
+  disabled: boolean;
   buttonTooltip?: string;
   startQuery: () => void;
   stopQuery: () => void;
@@ -52,7 +52,7 @@ const QueryRunner: FC<PropsT> = ({
   stopQuery,
   buttonTooltip,
   isQueryRunning,
-  isButtonEnabled,
+  disabled,
 }) => {
   const btnAction = isQueryRunning ? stopQuery : startQuery;
   const isStartStopLoading =
@@ -64,9 +64,9 @@ const QueryRunner: FC<PropsT> = ({
   useHotkeys(
     "shift+enter",
     () => {
-      if (isButtonEnabled) btnAction();
+      if (!disabled) btnAction();
     },
-    [isButtonEnabled, btnAction],
+    [disabled, btnAction],
   );
 
   return (
@@ -77,7 +77,7 @@ const QueryRunner: FC<PropsT> = ({
             onClick={btnAction}
             isStartStopLoading={isStartStopLoading}
             isQueryRunning={isQueryRunning}
-            disabled={!isButtonEnabled}
+            disabled={disabled}
           />
         </WithTooltip>
       </Left>

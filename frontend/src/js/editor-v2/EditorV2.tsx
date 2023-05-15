@@ -20,6 +20,7 @@ import {
 import Dropzone from "../ui-components/Dropzone";
 
 import { Connector, Grid } from "./EditorLayout";
+import { EditorV2QueryRunner } from "./EditorV2QueryRunner";
 import { TreeNode } from "./TreeNode";
 import { EDITOR_DROP_TYPES } from "./config";
 import { useConnectorEditing } from "./connector-update/useConnectorRotation";
@@ -31,6 +32,13 @@ import { Tree } from "./types";
 import { findNodeById, useTranslatedConnection } from "./util";
 
 const Root = styled("div")`
+  flex-grow: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
+const Main = styled("div")`
   flex-grow: 1;
   height: 100%;
   padding: 8px 10px 10px 10px;
@@ -200,129 +208,132 @@ export function EditorV2({
         setSelectedNodeId(undefined);
       }}
     >
-      {showModal && selectedNode && (
-        <DateModal
-          onClose={onClose}
-          headline={headline}
-          dateRange={selectedNode.dates?.restriction}
-          excludeFromDates={selectedNode.dates?.excluded}
-          setExcludeFromDates={(excluded) => {
-            updateTreeNode(selectedNode.id, (node) => {
-              if (!node.dates) node.dates = {};
-              node.dates.excluded = excluded;
-            });
-          }}
-          onResetDates={() =>
-            updateTreeNode(selectedNode.id, (node) => {
-              if (!node.dates) return;
-              node.dates.restriction = undefined;
-            })
-          }
-          setDateRange={(dateRange) => {
-            updateTreeNode(selectedNode.id, (node) => {
-              if (!node.dates) node.dates = {};
-              node.dates.restriction = dateRange;
-            });
-          }}
-        />
-      )}
-      <Actions>
-        <Flex>
-          {featureDates && selectedNode && (
-            <IconButton
-              icon={faCalendar}
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpen();
-              }}
-            >
-              {t("editorV2.dates")}
-            </IconButton>
-          )}
-          {featureNegate && selectedNode && (
-            <IconButton
-              icon={faBan}
-              onClick={(e) => {
-                e.stopPropagation();
-                onNegateClick();
-              }}
-            >
-              {t("editorV2.negate")}
-            </IconButton>
-          )}
-          {selectedNode?.children && (
-            <IconButton
-              icon={faRefresh}
-              onClick={(e) => {
-                e.stopPropagation();
-                onFlip();
-              }}
-            >
-              {t("editorV2.flip")}
-            </IconButton>
-          )}
-          {featureConnectorRotate && selectedNode?.children && (
-            <SxIconButton
-              icon={faCircleNodes}
-              onClick={(e) => {
-                e.stopPropagation();
-                onRotateConnector();
-              }}
-            >
-              <span>{t("editorV2.connector")}</span>
-              <Connector>{connection}</Connector>
-            </SxIconButton>
-          )}
-          {canExpand && (
-            <IconButton
-              icon={faExpandArrowsAlt}
-              onClick={(e) => {
-                e.stopPropagation();
-                onExpand();
-              }}
-            >
-              {t("editorV2.expand")}
-            </IconButton>
-          )}
-          {selectedNode && (
-            <IconButton
-              icon={faTrashCan}
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-            >
-              {t("editorV2.delete")}
-            </IconButton>
-          )}
-        </Flex>
-        <IconButton icon={faTrash} onClick={onReset}>
-          {t("editorV2.clear")}
-        </IconButton>
-      </Actions>
-      <Grid>
-        {tree ? (
-          <TreeNode
-            tree={tree}
-            updateTreeNode={updateTreeNode}
-            selectedNode={selectedNode}
-            setSelectedNodeId={setSelectedNodeId}
-            droppable={{ h: true, v: true }}
-          />
-        ) : (
-          <SxDropzone
-            onDrop={(item) => {
-              setTree({
-                id: createId(),
-                data: item as DragItemConceptTreeNode | DragItemQuery,
+      <Main>
+        {showModal && selectedNode && (
+          <DateModal
+            onClose={onClose}
+            headline={headline}
+            dateRange={selectedNode.dates?.restriction}
+            excludeFromDates={selectedNode.dates?.excluded}
+            setExcludeFromDates={(excluded) => {
+              updateTreeNode(selectedNode.id, (node) => {
+                if (!node.dates) node.dates = {};
+                node.dates.excluded = excluded;
               });
             }}
-            acceptedDropTypes={EDITOR_DROP_TYPES}
-          >
-            {() => <div>{t("editorV2.initialDropText")}</div>}
-          </SxDropzone>
+            onResetDates={() =>
+              updateTreeNode(selectedNode.id, (node) => {
+                if (!node.dates) return;
+                node.dates.restriction = undefined;
+              })
+            }
+            setDateRange={(dateRange) => {
+              updateTreeNode(selectedNode.id, (node) => {
+                if (!node.dates) node.dates = {};
+                node.dates.restriction = dateRange;
+              });
+            }}
+          />
         )}
-      </Grid>
+        <Actions>
+          <Flex>
+            {featureDates && selectedNode && (
+              <IconButton
+                icon={faCalendar}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpen();
+                }}
+              >
+                {t("editorV2.dates")}
+              </IconButton>
+            )}
+            {featureNegate && selectedNode && (
+              <IconButton
+                icon={faBan}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onNegateClick();
+                }}
+              >
+                {t("editorV2.negate")}
+              </IconButton>
+            )}
+            {selectedNode?.children && (
+              <IconButton
+                icon={faRefresh}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onFlip();
+                }}
+              >
+                {t("editorV2.flip")}
+              </IconButton>
+            )}
+            {featureConnectorRotate && selectedNode?.children && (
+              <SxIconButton
+                icon={faCircleNodes}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRotateConnector();
+                }}
+              >
+                <span>{t("editorV2.connector")}</span>
+                <Connector>{connection}</Connector>
+              </SxIconButton>
+            )}
+            {canExpand && (
+              <IconButton
+                icon={faExpandArrowsAlt}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onExpand();
+                }}
+              >
+                {t("editorV2.expand")}
+              </IconButton>
+            )}
+            {selectedNode && (
+              <IconButton
+                icon={faTrashCan}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+              >
+                {t("editorV2.delete")}
+              </IconButton>
+            )}
+          </Flex>
+          <IconButton icon={faTrash} onClick={onReset}>
+            {t("editorV2.clear")}
+          </IconButton>
+        </Actions>
+        <Grid>
+          {tree ? (
+            <TreeNode
+              tree={tree}
+              updateTreeNode={updateTreeNode}
+              selectedNode={selectedNode}
+              setSelectedNodeId={setSelectedNodeId}
+              droppable={{ h: true, v: true }}
+            />
+          ) : (
+            <SxDropzone
+              onDrop={(item) => {
+                setTree({
+                  id: createId(),
+                  data: item as DragItemConceptTreeNode | DragItemQuery,
+                });
+              }}
+              acceptedDropTypes={EDITOR_DROP_TYPES}
+            >
+              {() => <div>{t("editorV2.initialDropText")}</div>}
+            </SxDropzone>
+          )}
+        </Grid>
+      </Main>
+      <EditorV2QueryRunner query={{ tree }} />
     </Root>
   );
 }
