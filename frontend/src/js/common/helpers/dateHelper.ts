@@ -10,6 +10,7 @@ import {
   formatDistance,
 } from "date-fns";
 import { de, enGB } from "date-fns/locale";
+import i18next from "i18next";
 import { useTranslation } from "react-i18next";
 
 // To save the date in this format in the state
@@ -212,4 +213,17 @@ export function getFirstAndLastDateOfRange(dateRangeStr: string): {
   const last = parseStdDate(ranges[ranges.length - 1].split("/")[1]);
 
   return { first, last };
+}
+
+export function getMonthName(date: Date): string {
+  const locale = i18next.language === "de" ? de : enGB;
+  return format(date, "LLLL", { locale });
+}
+
+export function getMonthNames(): string[] {
+  return [...Array(12).keys()].map((month) => {
+    const date = new Date();
+    date.setMonth(month);
+    return getMonthName(date);
+  });
 }
