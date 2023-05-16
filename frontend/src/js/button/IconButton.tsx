@@ -45,12 +45,12 @@ const SxBasicButton = styled(BasicButton)<{
 }>`
   background-color: transparent;
   color: ${({ theme, active, secondary, red }) =>
-    active
+    red
+      ? theme.col.red
+      : active
       ? theme.col.blueGrayDark
       : secondary
       ? theme.col.orange
-      : red
-      ? theme.col.red
       : theme.col.black};
   opacity: ${({ frame }) => (frame ? 1 : 0.75)};
   transition: opacity ${({ theme }) => theme.transitionTime},

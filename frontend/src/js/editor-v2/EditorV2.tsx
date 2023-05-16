@@ -21,8 +21,9 @@ import Dropzone from "../ui-components/Dropzone";
 
 import { Connector, Grid } from "./EditorLayout";
 import { EditorV2QueryRunner } from "./EditorV2QueryRunner";
+import { KeyboardShortcutTooltip } from "./KeyboardShortcutTooltip";
 import { TreeNode } from "./TreeNode";
-import { EDITOR_DROP_TYPES } from "./config";
+import { EDITOR_DROP_TYPES, HOTKEYS } from "./config";
 import { useConnectorEditing } from "./connector-update/useConnectorRotation";
 import { DateModal } from "./date-restriction/DateModal";
 import { useDateEditing } from "./date-restriction/useDateEditing";
@@ -81,9 +82,9 @@ const useEditorState = () => {
     return findNodeById(tree, selectedNodeId);
   }, [tree, selectedNodeId]);
 
-  const onReset = () => {
+  const onReset = useCallback(() => {
     setTree(undefined);
-  };
+  }, []);
 
   const updateTreeNode = useCallback(
     (id: string, update: (node: Tree) => void) => {
@@ -164,9 +165,10 @@ export function EditorV2({
     }
   }, [selectedNode, setTree, updateTreeNode]);
 
-  useHotkeys("del", onDelete, [onDelete]);
-  useHotkeys("backspace", onDelete, [onDelete]);
-  useHotkeys("f", onFlip, [onFlip]);
+  useHotkeys(HOTKEYS.delete[0].keyname, onDelete, [onDelete]);
+  useHotkeys(HOTKEYS.delete[1].keyname, onDelete, [onDelete]);
+  useHotkeys(HOTKEYS.flip.keyname, onFlip, [onFlip]);
+  useHotkeys(HOTKEYS.reset.keyname, onReset, [onReset]);
 
   const { canExpand, onExpand } = useExpandQuery({
     enabled: featureExpand,
@@ -238,76 +240,101 @@ export function EditorV2({
         <Actions>
           <Flex>
             {featureDates && selectedNode && (
-              <IconButton
-                icon={faCalendar}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onOpen();
-                }}
-              >
-                {t("editorV2.dates")}
-              </IconButton>
+              <KeyboardShortcutTooltip keyname={HOTKEYS.editDates.keyname}>
+                <IconButton
+                  icon={faCalendar}
+                  tight
+                  active={!!selectedNode.dates?.restriction}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpen();
+                  }}
+                >
+                  {t("editorV2.dates")}
+                </IconButton>
+              </KeyboardShortcutTooltip>
             )}
             {featureNegate && selectedNode && (
-              <IconButton
-                icon={faBan}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onNegateClick();
-                }}
-              >
-                {t("editorV2.negate")}
-              </IconButton>
+              <KeyboardShortcutTooltip keyname={HOTKEYS.negate.keyname}>
+                <IconButton
+                  icon={faBan}
+                  tight
+                  active={selectedNode.negation}
+                  red={selectedNode.negation}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onNegateClick();
+                  }}
+                >
+                  {t("editorV2.negate")}
+                </IconButton>
+              </KeyboardShortcutTooltip>
             )}
             {selectedNode?.children && (
-              <IconButton
-                icon={faRefresh}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onFlip();
-                }}
-              >
-                {t("editorV2.flip")}
-              </IconButton>
+              <KeyboardShortcutTooltip keyname={HOTKEYS.flip.keyname}>
+                <IconButton
+                  icon={faRefresh}
+                  tight
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onFlip();
+                  }}
+                >
+                  {t("editorV2.flip")}
+                </IconButton>
+              </KeyboardShortcutTooltip>
             )}
             {featureConnectorRotate && selectedNode?.children && (
-              <SxIconButton
-                icon={faCircleNodes}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRotateConnector();
-                }}
+              <KeyboardShortcutTooltip
+                keyname={HOTKEYS.rotateConnector.keyname}
               >
-                <span>{t("editorV2.connector")}</span>
-                <Connector>{connection}</Connector>
-              </SxIconButton>
+                <SxIconButton
+                  icon={faCircleNodes}
+                  tight
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRotateConnector();
+                  }}
+                >
+                  <span>{t("editorV2.connector")}</span>
+                  <Connector>{connection}</Connector>
+                </SxIconButton>
+              </KeyboardShortcutTooltip>
             )}
             {canExpand && (
-              <IconButton
-                icon={faExpandArrowsAlt}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onExpand();
-                }}
-              >
-                {t("editorV2.expand")}
-              </IconButton>
+              <KeyboardShortcutTooltip keyname={HOTKEYS.expand.keyname}>
+                <IconButton
+                  icon={faExpandArrowsAlt}
+                  tight
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onExpand();
+                  }}
+                >
+                  {t("editorV2.expand")}
+                </IconButton>
+              </KeyboardShortcutTooltip>
             )}
             {selectedNode && (
-              <IconButton
-                icon={faTrashCan}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}
-              >
-                {t("editorV2.delete")}
-              </IconButton>
+              <KeyboardShortcutTooltip keyname={HOTKEYS.delete[0].keyname}>
+                <IconButton
+                  icon={faTrashCan}
+                  tight
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                >
+                  {t("editorV2.delete")}
+                </IconButton>
+              </KeyboardShortcutTooltip>
             )}
           </Flex>
-          <IconButton icon={faTrash} onClick={onReset}>
-            {t("editorV2.clear")}
-          </IconButton>
+          <KeyboardShortcutTooltip keyname={HOTKEYS.reset.keyname}>
+            <IconButton icon={faTrash} onClick={onReset}>
+              {t("editorV2.clear")}
+            </IconButton>
+          </KeyboardShortcutTooltip>
         </Actions>
         <Grid>
           {tree ? (

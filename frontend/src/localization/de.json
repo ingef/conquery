@@ -170,7 +170,8 @@
     "dateInvalid": "Ungültiges Datum",
     "missingLabel": "Unbenannt",
     "import": "Importieren",
-    "openFileDialog": "Datei auswählen"
+    "openFileDialog": "Datei auswählen",
+    "shortcut": "Kürzel"
   },
   "tooltip": {
     "headline": "Info",

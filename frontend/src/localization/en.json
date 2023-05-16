@@ -170,7 +170,8 @@
     "dateInvalid": "Invalid date",
     "missingLabel": "Unknown",
     "import": "Import",
-    "openFileDialog": "Select file"
+    "openFileDialog": "Select file",
+    "shortcut": "Key"
   },
   "tooltip": {
     "headline": "Info",

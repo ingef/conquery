@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { createId } from "@paralleldrive/cuid2";
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DNDType } from "../common/constants/dndTypes";
@@ -24,7 +24,7 @@ const Node = styled("div")<{
   negated?: boolean;
   leaf?: boolean;
 }>`
-  padding: ${({ leaf }) => (leaf ? "8px 10px" : "12px")};
+  padding: ${({ leaf }) => (leaf ? "8px 10px" : "20px")};
   border: 1px solid
     ${({ negated, theme, selected }) =>
       negated ? "red" : selected ? theme.col.gray : theme.col.grayMediumLight};
@@ -32,7 +32,7 @@ const Node = styled("div")<{
     selected ? `inset 0px 0px 0px 1px ${theme.col.gray}` : "none"};
 
   border-radius: ${({ theme }) => theme.borderRadius};
-  width: ${({ leaf }) => (leaf ? "150px" : "inherit")};
+  width: ${({ leaf }) => (leaf ? "180px" : "inherit")};
   background-color: ${({ leaf, theme }) => (leaf ? "white" : theme.col.bg)};
   cursor: pointer;
   display: flex;
@@ -166,6 +166,7 @@ export function TreeNode({
       node.id = newParentId;
       node.data = undefined;
       node.dates = undefined;
+      node.negation = false;
 
       const connection =
         treeParent?.children?.connection || tree.children?.connection;

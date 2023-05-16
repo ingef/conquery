@@ -115,6 +115,11 @@ const createConceptQuery = <T>(root: T) => ({
   root,
 });
 
+const createOr = <T>(children: T) => ({
+  type: "OR" as const,
+  children,
+});
+
 const createAnd = <T>(children: T) => ({
   type: "AND" as const,
   children,
@@ -205,35 +210,76 @@ const transformTimebasedQueryToApi = (query: ValidatedTimebasedQueryStateT) =>
     ),
   );
 
-const transformTreeToApi = (tree: Tree) => {
+const transformTreeToApi = (tree: Tree): unknown => {
   let dateRestriction;
   if (tree.dates?.restriction) {
-    dateRestriction = createDateRestriction(tree.dates.restriction, tree);
+    dateRestriction = createDateRestriction(tree.dates.restriction, null);
   }
 
   let negation;
   if (tree.negation) {
-    negation = createNegation(tree);
+    negation = createNegation(null);
   }
 
-  let combined;
-  if (dateRestriction && negation) {
-    combined = dateRestriction;
-    combined.child = negation;
-  } else if (dateRestriction) {
-    combined = dateRestriction;
-  } else if (negation) {
-    combined = negation;
-  } else {
-    combined = tree;
+  let node;
+  if (!tree.children) {
+    if (!tree.data) {
+      throw new Error(
+        "Tree has no children and no data, this shouldn't happen.",
+      );
+    }
 
-  tree.dates;
+    node = nodeIsConceptQueryNode(tree.data)
+      ? createQueryConcept(tree.data)
+      : createSavedQuery(tree.data.id);
+  } else {
+    switch (tree.children.connection) {
+      case "and":
+        node = createAnd(tree.children.items.map(transformTreeToApi));
+        break;
+      case "or":
+        node = createOr(tree.children.items.map(transformTreeToApi));
+        break;
+      case "before":
+        node = {
+          type: "BEFORE",
+          // TODO:
+          // ...days,
+          preceding: {
+            sampler: "EARLIEST",
+            child: transformTreeToApi(tree.children.items[0]),
+          },
+          index: {
+            sampler: "EARLIEST",
+            child: transformTreeToApi(tree.children.items[1]),
+          },
+        };
+        break;
+    }
+  }
+
+  if (dateRestriction && negation) {
+    return {
+      ...dateRestriction,
+      child: {
+        ...negation,
+        child: node,
+      },
+    };
+  } else if (dateRestriction) {
+    return {
+      ...dateRestriction,
+      child: node,
+    };
+  } else {
+    return node;
+  }
 };
 
 const transformEditorV2QueryToApi = (query: EditorV2Query) => {
   if (!query.tree) return null;
 
-  return transformTreeToApi(query.tree);
+  return createConceptQuery(transformTreeToApi(query.tree));
 };
 
 // The query state already contains the query.
