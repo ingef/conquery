@@ -54,7 +54,10 @@ public class TrieSearch<T extends Comparable<T>> {
 	private final int suffixCutoff;
 
 	private final Pattern splitPattern;
-
+	/**
+	 * Maps from keywords to associated items.
+	 */
+	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
 	private boolean shrunk = false;
 	private long size = -1;
 
@@ -67,18 +70,41 @@ public class TrieSearch<T extends Comparable<T>> {
 		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split, "") + WHOLE_WORD_MARKER)));
 	}
 
-	/**
-	 * Maps from keywords to associated items.
-	 */
-	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
+	public List<T> findItems(Collection<String> keywords, int limit) {
+		final Object2DoubleMap<T> itemWeights = new Object2DoubleAVLTreeMap<>();
 
-	Stream<String> suffixes(String word) {
-		return Stream.concat(
-				// We append a special character here marking original words as we want to favor them in weighing.
-				Stream.of(word + WHOLE_WORD_MARKER),
-				IntStream.range(1, Math.max(1, word.length() - suffixCutoff))
-						 .mapToObj(word::substring)
-		);
+		// We are not guaranteed to have split keywords incoming, so we normalize them for searching
+		keywords = keywords.stream().flatMap(this::split).collect(Collectors.toSet());
+
+		for (String keyword : keywords) {
+			// Query trie for all items associated with extensions of keywords
+			final SortedMap<String, List<T>> hits = trie.prefixMap(keyword);
+
+			for (Map.Entry<String, List<T>> entry : hits.entrySet()) {
+
+				// calculate and update weights for all queried items
+				final String itemWord = entry.getKey();
+
+				final double weight = weightWord(keyword, itemWord);
+
+				entry.getValue()
+					 .forEach(item ->
+							  {
+								  // We combine hits multiplicative to favor items with multiple hits
+								  final double currentWeight = itemWeights.getOrDefault(item, 1);
+								  itemWeights.put(item, currentWeight * weight);
+							  });
+			}
+		}
+
+		// Sort items according to their weight, then limit.
+		// Note that sorting is in ascending order, meaning lower-scores are better.
+		return itemWeights.object2DoubleEntrySet()
+						  .stream()
+						  .sorted(Comparator.comparingDouble(Object2DoubleMap.Entry::getDoubleValue))
+						  .limit(limit)
+						  .map(Map.Entry::getKey)
+						  .collect(Collectors.toList());
 	}
 
 	private Stream<String> split(String keyword) {
@@ -129,43 +155,6 @@ public class TrieSearch<T extends Comparable<T>> {
 		return itemWord.endsWith(WHOLE_WORD_MARKER);
 	}
 
-	public List<T> findItems(Collection<String> keywords, int limit) {
-		final Object2DoubleMap<T> itemWeights = new Object2DoubleAVLTreeMap<>();
-
-		// We are not guaranteed to have split keywords incoming, so we normalize them for searching
-		keywords = keywords.stream().flatMap(this::split).collect(Collectors.toSet());
-
-		for (String keyword : keywords) {
-			// Query trie for all items associated with extensions of keywords
-			final SortedMap<String, List<T>> hits = trie.prefixMap(keyword);
-
-			for (Map.Entry<String, List<T>> entry : hits.entrySet()) {
-
-				// calculate and update weights for all queried items
-				final String itemWord = entry.getKey();
-
-				final double weight = weightWord(keyword, itemWord);
-
-				entry.getValue()
-					 .forEach(item ->
-							  {
-								  // We combine hits multiplicative to favor items with multiple hits
-								  final double currentWeight = itemWeights.getOrDefault(item, 1);
-								  itemWeights.put(item, currentWeight * weight);
-							  });
-			}
-		}
-
-		// Sort items according to their weight, then limit.
-		// Note that sorting is in ascending order, meaning lower-scores are better.
-		return itemWeights.object2DoubleEntrySet()
-						  .stream()
-						  .sorted(Comparator.comparingDouble(Object2DoubleMap.Entry::getDoubleValue))
-						  .limit(limit)
-						  .map(Map.Entry::getKey)
-						  .collect(Collectors.toList());
-	}
-
 	public List<T> findExact(Collection<String> keywords, int limit) {
 		return keywords.stream()
 					   .flatMap(this::split)
@@ -180,21 +169,6 @@ public class TrieSearch<T extends Comparable<T>> {
 		return trie.getOrDefault(kw, Collections.emptyList()).stream();
 	}
 
-
-	private void doPut(String kw, T item) {
-		ensureWriteable();
-
-		trie.computeIfAbsent(kw, (ignored) -> new ArrayList<>())
-			.add(item);
-	}
-
-	private void ensureWriteable() {
-		if (!shrunk) {
-			return;
-		}
-		throw new IllegalStateException("Cannot alter a shrunk search.");
-	}
-
 	public void addItem(T item, List<String> keywords) {
 		// Associate item with all extracted keywords
 		keywords.stream()
@@ -205,6 +179,29 @@ public class TrieSearch<T extends Comparable<T>> {
 				.forEach(kw -> doPut(kw, item));
 	}
 
+	Stream<String> suffixes(String word) {
+		return Stream.concat(
+				// We append a special character here marking original words as we want to favor them in weighing.
+				Stream.of(word + WHOLE_WORD_MARKER),
+				IntStream.range(1, Math.max(1, word.length() - suffixCutoff))
+						 .mapToObj(word::substring)
+		);
+	}
+
+	private void doPut(String kw, T item) {
+		ensureWriteable();
+
+		trie.computeIfAbsent(kw, (ignored) -> new ArrayList<>())
+			.add(item);
+	}
+
+	private void ensureWriteable() {
+		if (isWriteable()) {
+			return;
+		}
+		throw new IllegalStateException("Cannot alter a shrunk search.");
+	}
+
 	public Collection<T> listItems() {
 		//TODO this a pretty dangerous operation, I'd rather see a session based iterator instead
 		return trie.values().stream()
@@ -212,14 +209,6 @@ public class TrieSearch<T extends Comparable<T>> {
 				   .distinct()
 				   .sorted()
 				   .collect(Collectors.toList());
-	}
-
-	public long calculateSize() {
-		if (size != -1) {
-			return size;
-		}
-
-		return trie.values().stream().distinct().count();
 	}
 
 	/**
@@ -236,6 +225,14 @@ public class TrieSearch<T extends Comparable<T>> {
 
 		size = calculateSize();
 		shrunk = true;
+	}
+
+	public long calculateSize() {
+		if (size != -1) {
+			return size;
+		}
+
+		return trie.values().stream().distinct().count();
 	}
 
 	public void logStats() {
@@ -268,5 +265,9 @@ public class TrieSearch<T extends Comparable<T>> {
 				Iterators.concat(Iterators.transform(trie.values().iterator(), Collection::iterator)),
 				seen::add
 		);
+	}
+
+	public boolean isWriteable() {
+		return !shrunk;
 	}
 }

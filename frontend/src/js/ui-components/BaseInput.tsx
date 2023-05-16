@@ -88,6 +88,7 @@ export interface Props {
   currencyConfig?: CurrencyConfigT;
   onFocus?: (e: FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLInputElement>) => void;
   onChange: (val: string | number | null) => void;
 }
 
@@ -123,6 +124,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
       onChange,
       onFocus,
       onBlur,
+      onClick,
       placeholder,
       large,
       inputType,
@@ -179,6 +181,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
             large={large}
             onFocus={onFocus}
             onBlur={onBlur}
+            onClick={onClick}
             onWheel={
               (e) =>
                 (e.target as any).blur() /* to disable scrolling for number */

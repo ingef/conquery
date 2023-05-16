@@ -184,7 +184,7 @@ public class QueryProcessor {
 		if (!user.isOwner(execution)) {
 			final ManagedExecution
 					newExecution =
-					executionManager.createExecution(namespace, execution.getSubmitted(), user, execution.getDataset(), false);
+					executionManager.createExecution(execution.getSubmitted(), user, execution.getDataset(), false);
 			newExecution.setLabel(execution.getLabel());
 			newExecution.setTags(execution.getTags().clone());
 			storage.updateExecution(newExecution);
@@ -318,22 +318,6 @@ public class QueryProcessor {
 
 		patch.applyTo(execution, storage, subject);
 		storage.updateExecution(execution);
-
-		// TODO remove this, since we don't translate anymore
-		// Patch this query in other datasets
-		final List<Dataset> remainingDatasets = datasetRegistry.getAllDatasets();
-		remainingDatasets.remove(execution.getDataset());
-
-		for (Dataset dataset : remainingDatasets) {
-			final ManagedExecutionId id = new ManagedExecutionId(dataset.getId(), execution.getQueryId());
-			final ManagedExecution otherExecution = storage.getExecution(id);
-			if (otherExecution == null) {
-				continue;
-			}
-			log.trace("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), id, patch);
-			patch.applyTo(otherExecution, storage, subject);
-			storage.updateExecution(execution);
-		}
 	}
 
 	public void reexecute(Subject subject, ManagedExecution query) {
@@ -399,7 +383,7 @@ public class QueryProcessor {
 				execution =
 				((ManagedQuery) namespace
 						.getExecutionManager()
-						.createExecution(namespace, query, subject.getUser(), dataset, false));
+						.createExecution(query, subject.getUser(), dataset, false));
 
 		execution.setLastResultCount((long) statistic.getResolved().size());
 

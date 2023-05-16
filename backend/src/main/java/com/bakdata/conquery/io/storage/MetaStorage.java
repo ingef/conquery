@@ -30,19 +30,17 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class MetaStorage extends ConqueryStorage implements Injectable {
 
+	@Getter
+	protected final CentralRegistry centralRegistry = new CentralRegistry();
 	private final StoreFactory storageFactory;
 
+	@Getter
+	protected final DatasetRegistry datasetRegistry;
 	private IdentifiableStore<ManagedExecution> executions;
-
 	private IdentifiableStore<FormConfig> formConfigs;
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<Role> authRole;
 	private IdentifiableStore<Group> authGroup;
-
-	@Getter
-	protected final CentralRegistry centralRegistry = new CentralRegistry();
-	@Getter
-	protected final DatasetRegistry datasetRegistry;
 
 	public void openStores(ObjectMapper mapper) {
 		authUser = storageFactory.createUserStore(centralRegistry, "meta", this, mapper);
@@ -66,7 +64,6 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 				authUser,
 				authRole,
 				authGroup,
-
 				executions,
 				formConfigs
 		);

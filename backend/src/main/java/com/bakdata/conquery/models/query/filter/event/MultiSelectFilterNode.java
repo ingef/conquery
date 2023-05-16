@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event;
 
+import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -15,19 +16,21 @@ import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.logging.log4j.util.Strings;
 
 /**
  * Event is included when the value in column is one of many selected.
  */
 
-@ToString(callSuper = true, of = {"column"})
+@ToString(callSuper = true, of = "column")
 public class MultiSelectFilterNode extends EventFilterNode<String[]> {
-
 
 	@NotNull
 	@Getter
 	@Setter
 	private Column column;
+
+	private final boolean empty;
 
 	/**
 	 * Shared between all executing Threads to maximize utilization.
@@ -39,6 +42,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 		super(filterValue);
 		this.column = column;
 		selectedValuesCache = new ConcurrentHashMap<>();
+		empty = Arrays.stream(filterValue).anyMatch(Strings::isEmpty);
 	}
 
 
@@ -55,13 +59,14 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	}
 
 	private int[] findIds(Bucket bucket, String[] values) {
-		int[] selectedValues = new int[values.length];
+		final int[] selectedValues = new int[values.length];
 
-		StringStore type = (StringStore) bucket.getStore(getColumn());
+		final StringStore type = (StringStore) bucket.getStore(getColumn());
 
 		for (int index = 0; index < values.length; index++) {
-			String select = values[index];
-			int parsed = type.getId(select);
+			final String select = values[index];
+			final int parsed = type.getId(select);
+
 			selectedValues[index] = parsed;
 		}
 
@@ -76,10 +81,10 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 		}
 
 		if (!bucket.has(event, getColumn())) {
-			return false;
+			return empty;
 		}
 
-		int stringToken = bucket.getString(event, getColumn());
+		final int stringToken = bucket.getString(event, getColumn());
 
 		for (int selectedValue : selectedValues) {
 			if (selectedValue == stringToken) {

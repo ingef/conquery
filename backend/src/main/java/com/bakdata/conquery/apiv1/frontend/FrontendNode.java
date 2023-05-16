@@ -32,4 +32,5 @@ public class FrontendNode {
 	private boolean codeListResolvable;
 	private List<FrontendSelect> selects;
 	private long matchingEntities;
+	private boolean excludeFromTimeAggregation;
 }

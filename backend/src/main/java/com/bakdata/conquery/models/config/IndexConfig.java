@@ -5,6 +5,7 @@ import java.net.URI;
 
 import javax.annotation.Nullable;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.index.IndexKey;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,6 +30,9 @@ public class IndexConfig {
 	private int searchSuffixLength = 2;
 	@Nullable
 	private String searchSplitChars = "(),;.:\"'/";
+
+	@NotNull
+	private String emptyLabel = "No Value";
 
 	@JsonIgnore
 	@ValidationMethod(message = "Specified baseUrl is not valid")
