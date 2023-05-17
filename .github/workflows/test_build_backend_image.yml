@@ -7,6 +7,7 @@ name: Test building backend image
 
 on:
   pull_request:
+    types: [opened, reopened, synchronize]
     branches:
       - develop
       - master
@@ -24,7 +25,7 @@ env:
   IMAGE_NAME: ${{ github.repository }}-backend
 
 jobs:
-  build-and-push-image-and-clean-ghcr:
+  test-build-image:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -37,7 +38,7 @@ jobs:
           # Fetch all tags
           fetch-depth: 0
 
-      - name: Build and push Docker image
+      - name: Build docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
         with:
           context: .
