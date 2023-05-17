@@ -268,7 +268,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		setStatusFull(status, subject);
 		status.setQuery(getValuesQuery().getQuery());
 
-		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
+		final PrintSettings printSettings = new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
 
 		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), printSettings));
 
