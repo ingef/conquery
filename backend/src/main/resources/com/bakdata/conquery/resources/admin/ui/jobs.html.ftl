@@ -50,7 +50,7 @@
                                 </td>
                                 <td class="w-100">
                                     <div class="progress position-relative">
-                                        <div class="progress-bar" role="progressbar" style="width: ${job.progress?string.percent}" aria-valuenow="${job.progressReporter.progress?c}" aria-valuemin="0" aria-valuemax="1"></div>
+                                        <div class="progress-bar" role="progressbar" style="width: ${job.progress?string.percent}" aria-valuenow="${job.progress}" aria-valuemin="0" aria-valuemax="1"></div>
                                     </div>
                                 </td>
                                 <td>
