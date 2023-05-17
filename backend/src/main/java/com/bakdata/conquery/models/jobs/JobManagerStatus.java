@@ -3,29 +3,36 @@ package com.bakdata.conquery.models.jobs;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
-import lombok.NonNull;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import lombok.With;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 
 
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class JobManagerStatus {
-	@NonNull
+	@With
+	@Nullable
+	private final String origin;
+	@Nullable
+	private final DatasetId dataset;
 	@NotNull
-	private final LocalDateTime timestamp = LocalDateTime.now();
+	@EqualsAndHashCode.Exclude
+	private final LocalDateTime timestamp;
 	@NotNull
-	private final SortedSet<JobStatus> jobs = new TreeSet<>();
-
-	public JobManagerStatus(Collection<? extends JobStatus> jobs) {
-		this.jobs.addAll(jobs);
+	@EqualsAndHashCode.Exclude
+	private final Collection<JobStatus> jobs;
+	public JobManagerStatus(String origin, DatasetId dataset, Collection<JobStatus> statuses) {
+		this(origin, dataset, LocalDateTime.now(), statuses);
 	}
 
 	public int size() {
@@ -35,11 +42,8 @@ public class JobManagerStatus {
 	// Used in AdminUIResource/jobs
 	@JsonIgnore
 	public String getAgeString() {
-		Duration duration = Duration.between(timestamp, LocalDateTime.now());
+		final Duration duration = Duration.between(timestamp, LocalDateTime.now());
 
-		if (duration.toSeconds() > 0) {
-			return Long.toString(duration.toSeconds()) + " s";
-		}
-		return Long.toString(duration.toMillis()) + " ms";
+		return DurationFormatUtils.formatDurationWords(duration.toMillis(), true, true);
 	}
 }

@@ -38,14 +38,12 @@ public class JobManager implements Closeable {
 		fastExecutor.add(job);
 	}
 
-	public JobManagerStatus reportStatus() {
+	public List<JobStatus> getJobStatus() {
+		return getSlowJobs().stream()
+							.map(job -> new JobStatus(job.getJobId(), job.getProgressReporter().getProgress(), job.getLabel(), job.isCancelled()))
+							.sorted()
+							.collect(Collectors.toList());
 
-		return new JobManagerStatus(
-				getSlowJobs()
-						.stream()
-						.map(job -> new JobStatus(job.getJobId(), job.getProgressReporter().getProgress(), job.getLabel(), job.isCancelled()))
-						.collect(Collectors.toList())
-		);
 	}
 
 	public List<Job> getSlowJobs() {

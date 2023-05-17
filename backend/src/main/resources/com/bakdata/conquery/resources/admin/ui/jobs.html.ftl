@@ -1,12 +1,41 @@
 <#import "templates/template.html.ftl" as layout>
 <@layout.layout>
-	<#list c as node, status>
+    <div class="row">
+		<div class="col">
+            <input type="checkbox" id="update" name="update" checked>
+            <label for="update">Reload automatically.</label><br>
+			<script type="text/javascript">
+				setTimeout(function () {
+                    if(!document.getElementById("update").checked){
+                        return
+                    }
+
+                    location.reload(false);
+				}, 5000);
+
+
+                function cancelJob(jobId) {
+		            event.preventDefault();
+                    fetch(
+                        ${r"`/admin/jobs/${jobId}/cancel`"},
+                        {
+                            method: "post",
+                            credentials: "same-origin"
+                        }
+                    )
+                }
+			</script>
+		</div>
+	</div>
+
+
+	<#list c as status>
 	<div class="row">
 		<div class="col">
 			<div class="card">
 				<div class="card-body">
 					<h5 class="card-title">
-						${node}
+						${status.origin} ${status.dataset?}
 						<span class="float-right">
 							<small>updated ${status.ageString} ago</small> 
 							<span class="badge badge-secondary">${status.jobs?size}</span>
@@ -40,32 +69,4 @@
 		</div>
 	</div>
 	</#list>
-	
-	<div class="row">
-		<div class="col">
-            <input type="checkbox" id="update" name="update" checked>
-            <label for="update">Reload automatically.</label><br>
-			<script type="text/javascript">
-				setTimeout(function () {
-                    if(!document.getElementById("update").checked){
-                        return
-                    }
-					
-                    location.reload(false);
-				}, 5000);
-
-                
-                function cancelJob(jobId) {
-		            event.preventDefault(); 
-                    fetch(
-                        ${r"`/admin/jobs/${jobId}/cancel`"},
-                        {
-                            method: "post",
-                            credentials: "same-origin"
-                        }
-                    )
-                }
-			</script>
-		</div>
-	</div>
 </@layout.layout>
