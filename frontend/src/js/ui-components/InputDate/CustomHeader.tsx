@@ -9,7 +9,7 @@ import { ReactDatePickerCustomHeaderProps } from "react-datepicker";
 import { SelectOptionT } from "../../api/types";
 import IconButton from "../../button/IconButton";
 import { TransparentButton } from "../../button/TransparentButton";
-import { getMonthName, getMonthNames } from "../../common/helpers/dateHelper";
+import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
 import { List, Menu } from "../InputSelect/InputSelectComponents";
 
 export const Root = styled("div")`
@@ -35,20 +35,6 @@ export const MonthYearLabel = styled("div")`
   font-weight: bold;
   cursor: pointer;
 `;
-
-const yearSelectionSpan = 10;
-const yearOptions: SelectOptionT[] = [...Array(yearSelectionSpan).keys()]
-  .map((n) => new Date().getFullYear() - n)
-  .map((year) => ({
-    label: String(year),
-    value: year,
-  }))
-  .reverse();
-
-const monthOptions: SelectOptionT[] = getMonthNames().map((month, i) => ({
-  label: month,
-  value: i,
-}));
 
 const SelectMenu = ({
   date,
@@ -87,6 +73,21 @@ const YearMonthSelect = ({
   ReactDatePickerCustomHeaderProps,
   "date" | "changeYear" | "changeMonth"
 >) => {
+  const yearSelectionSpan = 10;
+  const yearOptions: SelectOptionT[] = [...Array(yearSelectionSpan).keys()]
+    .map((n) => new Date().getFullYear() - n)
+    .map((year) => ({
+      label: String(year),
+      value: year,
+    }))
+    .reverse();
+
+  const monthNames = useMonthNames();
+  const monthOptions: SelectOptionT[] = monthNames.map((month, i) => ({
+    label: month,
+    value: i,
+  }));
+
   const [yearSelectOpen, setYearSelectOpen] = useState(false);
   const [monthSelectOpen, setMonthSelectOpen] = useState(false);
   const handleClick = () => {
@@ -101,7 +102,7 @@ const YearMonthSelect = ({
   return (
     <>
       <MonthYearLabel onClick={handleClick}>
-        {getMonthName(date)} {date.getFullYear()}
+        {useMonthName(date)} {date.getFullYear()}
       </MonthYearLabel>
       {yearSelectOpen && (
         <SelectMenu
