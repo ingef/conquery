@@ -35,7 +35,7 @@
 			<div class="card">
 				<div class="card-body">
 					<h5 class="card-title">
-						${status.origin} ${status.dataset?}
+						${status.origin} ${status.dataset}
 						<span class="float-right">
 							<small>updated ${status.ageString} ago</small> 
 							<span class="badge badge-secondary">${status.jobs?size}</span>
