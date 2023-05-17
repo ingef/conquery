@@ -13,6 +13,7 @@ on:
     paths:
       - 'frontend/*'
       - 'scripts/*'
+      - '.github/workflows/test_build_frontend_image.yml'
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}-frontend

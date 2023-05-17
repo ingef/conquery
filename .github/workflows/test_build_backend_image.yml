@@ -17,6 +17,7 @@ on:
       - 'pom.xml'
       - 'lombok.config'
       - 'scripts/**'
+      - '.github/workflows/test_build_backend_image.yml'
 
 env:
   REGISTRY: ghcr.io
@@ -35,13 +36,6 @@ jobs:
         with:
           # Fetch all tags
           fetch-depth: 0
-
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: type=raw,value={{branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
