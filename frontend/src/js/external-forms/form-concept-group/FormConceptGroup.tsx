@@ -32,7 +32,6 @@ import {
   useVisibleConceptListFields,
 } from "../stateSelectors";
 
-import DropzoneBetweenElements from "./DropzoneBetweenElements";
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import FormConceptNode from "./FormConceptNode";
 import {
@@ -201,6 +200,30 @@ const FormConceptGroup = (props: Props) => {
             ? t("externalForms.common.concept.copying")
             : props.attributeDropzoneText
         }
+        dropBetween={(i: number) => {
+          return (item: DragItemConceptTreeNode) => {
+            if (isMovedObject(item)) {
+              return props.onChange(
+                addConcept(
+                  insertValue(props.value, i, newValue),
+                  i,
+                  copyConcept(item),
+                ),
+              );
+            }
+
+            if (props.isValidConcept && !props.isValidConcept(item))
+              return null;
+
+            return props.onChange(
+              addConcept(
+                insertValue(props.value, i, newValue),
+                i,
+                initializeConcept(item, defaults, tableConfig),
+              ),
+            );
+          };
+        }}
         acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
         disallowMultipleColumns={props.disallowMultipleColumns}
         onDelete={(i) => props.onChange(removeValue(props.value, i))}
@@ -238,37 +261,9 @@ const FormConceptGroup = (props: Props) => {
             ),
           );
         }}
+        conceptDropzoneText={props.conceptDropzoneText}
         items={props.value.map((row, i) => (
           <>
-            {!props.disallowMultipleColumns && (
-              <DropzoneBetweenElements
-                acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
-                onDrop={(item: DragItemConceptTreeNode) => {
-                  if (isMovedObject(item)) {
-                    return props.onChange(
-                      addConcept(
-                        insertValue(props.value, i, newValue),
-                        i,
-                        copyConcept(item),
-                      ),
-                    );
-                  }
-
-                  if (props.isValidConcept && !props.isValidConcept(item))
-                    return null;
-
-                  return props.onChange(
-                    addConcept(
-                      insertValue(props.value, i, newValue),
-                      i,
-                      initializeConcept(item, defaults, tableConfig),
-                    ),
-                  );
-                }}
-              >
-                {() => props.conceptDropzoneText}
-              </DropzoneBetweenElements>
-            )}
             <DropzoneListItem>
               {props.renderRowPrefix
                 ? props.renderRowPrefix({
