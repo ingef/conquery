@@ -3,7 +3,7 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { ReactNode, useState } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 
-import IconButton from "../../button/IconButton";
+import FaIcon from "../../icon/FaIcon";
 import Dropzone, {
   ChildArgs,
   PossibleDroppableObject,
@@ -21,20 +21,20 @@ const Root = styled("div")<{
 }>`
   background-color: ${({ theme, isDroppable, isOver }) => {
     if (isOver && isDroppable) return theme.col.grayLight;
-    if (isDroppable) return theme.col.grayVeryLight;
-    return "inherit";
+    return isDroppable ? theme.col.grayVeryLight : "inherit";
   }};
-  display: flex;
-  align-items: center;
   width: 100%;
-  margin-bottom: 1px;
-  z-index: 2;
-  position: relative;
+  text-align: center;
 `;
 
 const PlusContainer = styled("div")`
-  margin-left: 45%;
-  width: 10%;
+  margin: auto;
+`;
+
+const SxFaIcon = styled(FaIcon)`
+  height: 15px;
+  color: ${({ theme }) => theme.col.black};
+  opacity: 0.75;
 `;
 
 const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
@@ -42,6 +42,10 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   children,
   onDrop,
 }: Props<DroppableObject>) => {
+  const SxDropzone = styled(Dropzone<DroppableObject>)`
+    margin: 5px 0 5px 0;
+  `;
+
   const [showDropzone, setShowDropzone] = useState(false);
   const [{ isOver, isDroppable }, drop] = useDrop({
     accept: acceptedDropTypes,
@@ -67,20 +71,20 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
       {!(showDropzone || isOver || isOver2) && (
         <Root ref={drop} isOver={isOver} isDroppable={isDroppable}>
           <PlusContainer onClick={() => setShowDropzone(true)}>
-            <IconButton icon={faPlus} />
+            <SxFaIcon icon={faPlus} />
           </PlusContainer>
         </Root>
       )}
 
       {(showDropzone || isOver || isOver2) && (
         // TODO x - to close the dropzone
-        <Dropzone
+        <SxDropzone
           acceptedDropTypes={acceptedDropTypes}
           onDrop={onDropped}
           ref={drop2}
         >
           {children}
-        </Dropzone>
+        </SxDropzone>
       )}
     </>
   );
