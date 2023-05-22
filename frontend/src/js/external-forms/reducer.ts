@@ -23,6 +23,7 @@ const transformToUniqueFieldnames = (
       case "TABS":
         return {
           ...field,
+          name: getUniqueFieldname(formType, field.name),
           tabs: field.tabs.map((tab) => ({
             ...tab,
             fields: transformToUniqueFieldnames(formType, tab.fields),
