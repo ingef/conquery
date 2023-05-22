@@ -229,9 +229,7 @@ const transformTreeToApi = (tree: Tree): unknown => {
       );
     }
 
-    node = nodeIsConceptQueryNode(tree.data)
-      ? createQueryConcept(tree.data)
-      : createSavedQuery(tree.data.id);
+    node = createQueryConcept(tree.data);
   } else {
     switch (tree.children.connection) {
       case "and":
@@ -269,6 +267,11 @@ const transformTreeToApi = (tree: Tree): unknown => {
   } else if (dateRestriction) {
     return {
       ...dateRestriction,
+      child: node,
+    };
+  } else if (negation) {
+    return {
+      ...negation,
       child: node,
     };
   } else {

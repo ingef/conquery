@@ -14,4 +14,5 @@ export const HOTKEYS = {
   flip: { keyname: "f" },
   rotateConnector: { keyname: "c" },
   reset: { keyname: "shift+backspace" },
+  editQueryNode: { keyname: "Enter" },
 };

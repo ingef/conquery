@@ -3,6 +3,7 @@ import { faCalendar, faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import {
   faBan,
   faCircleNodes,
+  faEdit,
   faExpandArrowsAlt,
   faRefresh,
   faTrash,
@@ -13,6 +14,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
+import { nodeIsConceptQueryNode } from "../model/node";
 import {
   DragItemConceptTreeNode,
   DragItemQuery,
@@ -29,6 +31,8 @@ import { DateModal } from "./date-restriction/DateModal";
 import { useDateEditing } from "./date-restriction/useDateEditing";
 import { useExpandQuery } from "./expand/useExpandQuery";
 import { useNegationEditing } from "./negation/useNegationEditing";
+import { EditorV2QueryNodeEditor } from "./query-node-edit/EditorV2QueryNodeEditor";
+import { useQueryNodeEditing } from "./query-node-edit/useQueryNodeEditing";
 import { Tree } from "./types";
 import { findNodeById, useTranslatedConnection } from "./util";
 
@@ -113,11 +117,13 @@ export function EditorV2({
   featureNegate,
   featureExpand,
   featureConnectorRotate,
+  featureQueryNodeEdit,
 }: {
   featureDates: boolean;
   featureNegate: boolean;
   featureExpand: boolean;
   featureConnectorRotate: boolean;
+  featureQueryNodeEdit: boolean;
 }) {
   const { t } = useTranslation();
   const {
@@ -187,30 +193,54 @@ export function EditorV2({
 
   const { onNegateClick } = useNegationEditing({
     enabled: featureNegate,
-    hotkey: "n",
+    hotkey: HOTKEYS.negate.keyname,
     selectedNode,
     updateTreeNode,
   });
 
   const { onRotateConnector } = useConnectorEditing({
     enabled: featureConnectorRotate,
-    hotkey: "c",
+    hotkey: HOTKEYS.rotateConnector.keyname,
     selectedNode,
     updateTreeNode,
+  });
+
+  const {
+    showModal: showQueryNodeEditor,
+    onOpen: onOpenQueryNodeEditor,
+    onClose: onCloseQueryNodeEditor,
+  } = useQueryNodeEditing({
+    enabled: featureQueryNodeEdit,
+    hotkey: HOTKEYS.editQueryNode.keyname,
+    selectedNode,
   });
 
   const connection = useTranslatedConnection(
     selectedNode?.children?.connection,
   );
 
+  const onChangeData = useCallback(
+    (data: DragItemConceptTreeNode) => {
+      if (!selectedNode) return;
+      updateTreeNode(selectedNode.id, (node) => {
+        node.data = data;
+      });
+    },
+    [selectedNode, updateTreeNode],
+  );
+
   return (
-    <Root
-      onClick={() => {
-        if (!selectedNode || showModal) return;
-        setSelectedNodeId(undefined);
-      }}
-    >
+    <Root>
       <Main>
+        {showQueryNodeEditor &&
+          selectedNode?.data &&
+          nodeIsConceptQueryNode(selectedNode.data) && (
+            <EditorV2QueryNodeEditor
+              onClose={onCloseQueryNodeEditor}
+              node={selectedNode.data}
+              onChange={onChangeData}
+            />
+          )}
         {showModal && selectedNode && (
           <DateModal
             onClose={onClose}
@@ -239,6 +269,25 @@ export function EditorV2({
         )}
         <Actions>
           <Flex>
+            {featureQueryNodeEdit &&
+              selectedNode?.data &&
+              nodeIsConceptQueryNode(selectedNode.data) && (
+                <KeyboardShortcutTooltip
+                  keyname={HOTKEYS.editQueryNode.keyname}
+                >
+                  <IconButton
+                    icon={faEdit}
+                    tight
+                    active={false}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenQueryNodeEditor();
+                    }}
+                  >
+                    {t("editorV2.edit")}
+                  </IconButton>
+                </KeyboardShortcutTooltip>
+              )}
             {featureDates && selectedNode && (
               <KeyboardShortcutTooltip keyname={HOTKEYS.editDates.keyname}>
                 <IconButton
@@ -336,9 +385,24 @@ export function EditorV2({
             </IconButton>
           </KeyboardShortcutTooltip>
         </Actions>
-        <Grid>
+        <Grid
+          onClick={() => {
+            if (!selectedNode || showModal) return;
+            setSelectedNodeId(undefined);
+          }}
+        >
           {tree ? (
             <TreeNode
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                if (!selectedNode) return;
+                if (
+                  selectedNode?.data &&
+                  nodeIsConceptQueryNode(selectedNode.data)
+                ) {
+                  onOpenQueryNodeEditor();
+                }
+              }}
               tree={tree}
               updateTreeNode={updateTreeNode}
               selectedNode={selectedNode}

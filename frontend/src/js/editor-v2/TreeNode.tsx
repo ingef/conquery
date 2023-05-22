@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { createId } from "@paralleldrive/cuid2";
-import { memo } from "react";
+import { DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DNDType } from "../common/constants/dndTypes";
@@ -119,6 +119,7 @@ export function TreeNode({
   droppable,
   selectedNode,
   setSelectedNodeId,
+  onDoubleClick,
 }: {
   tree: Tree;
   treeParent?: Tree;
@@ -129,6 +130,7 @@ export function TreeNode({
   };
   selectedNode: Tree | undefined;
   setSelectedNodeId: (id: Tree["id"] | undefined) => void;
+  onDoubleClick?: DOMAttributes<HTMLElement>["onDoubleClick"];
 }) {
   const gridStyles = getGridStyles(tree);
 
@@ -225,6 +227,7 @@ export function TreeNode({
           negated={tree.negation}
           leaf={!tree.children}
           selected={selectedNode?.id === tree.id}
+          onDoubleClick={onDoubleClick}
           onClick={(e) => {
             e.stopPropagation();
             setSelectedNodeId(tree.id);

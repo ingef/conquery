@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactElement } from "react";
+import { Fragment, ReactElement } from "react";
 import { useTranslation } from "react-i18next";
 
 import { KeyboardKey } from "../common/components/KeyboardKey";
@@ -35,10 +35,10 @@ export const KeyboardShortcutTooltip = ({
           {t("common.shortcut")}:{" "}
           <Keys>
             {keynames.map((keyPart, i) => (
-              <>
+              <Fragment key={keyPart}>
                 <KeyboardKey>{keyPart}</KeyboardKey>
                 {i < keynames.length - 1 && "+"}
-              </>
+              </Fragment>
             ))}
           </Keys>
         </KeyTooltip>
