@@ -528,6 +528,7 @@
     "delete": "Löschen",
     "expand": "Expandieren",
     "edit": "Details",
-    "initialDropText": "Ziehe ein Konzept oder eine Anfrage hier hinein."
+    "initialDropText": "Ziehe ein Konzept oder eine Anfrage hier hinein.",
+    "datesExcluded": "Keine Datumswerte"
   }
 }

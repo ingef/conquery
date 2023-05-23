@@ -1,5 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
+import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { FC, ReactNode, createRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -12,6 +13,7 @@ import {
   DateStringMinMax,
 } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
+import { Icon } from "../icon/FaIcon";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 import InputDate from "./InputDate";
@@ -33,7 +35,6 @@ const StyledLabel = styled(Label)<{ large?: boolean }>`
     large &&
     css`
       font-size: ${theme.font.md};
-      margin: 20px 0 10px;
     `}
 `;
 
@@ -175,6 +176,7 @@ const InputDateRange: FC<PropsT> = ({
 
     return (
       <StyledLabel large={large}>
+        <Icon icon={faCalendar} left gray />
         {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
         {optional && <Optional />}
         {label}

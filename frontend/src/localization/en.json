@@ -527,6 +527,7 @@
     "delete": "Delete",
     "expand": "Expand",
     "edit": "Details",
-    "initialDropText": "Drop a concept or query here."
+    "initialDropText": "Drop a concept or query here.",
+    "datesExcluded": "No dates"
   }
 }

@@ -31,7 +31,7 @@ export const useDateEditing = ({
 
     return (
       selectedNode.data?.label ||
-      (selectedNode.children?.items || []).map((c) => c.data?.label).join(" ")
+      (selectedNode.children?.items || []).map((c) => c.data?.label).join(" - ")
     );
   }, [selectedNode]);
 

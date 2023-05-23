@@ -1,6 +1,8 @@
 import styled from "@emotion/styled";
+import { useTranslation } from "react-i18next";
 
 import { DateRangeT } from "../../api/types";
+import { formatDate } from "../../common/helpers/dateHelper";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
@@ -17,19 +19,35 @@ const Label = styled("div")`
   justify-self: flex-end;
 `;
 
+const getFormattedDate = (date: string | undefined, dateFormat: string) => {
+  if (!date) return null;
+
+  const d = new Date(date);
+
+  if (isNaN(d.getTime())) return null;
+
+  return formatDate(d, dateFormat);
+};
+
 export const DateRange = ({ dateRange }: { dateRange: DateRangeT }) => {
+  const { t } = useTranslation();
+  const dateFormat = t("inputDateRange.dateFormat");
+
+  const dateMin = getFormattedDate(dateRange.min, dateFormat);
+  const dateMax = getFormattedDate(dateRange.max, dateFormat);
+
   return (
     <Root>
-      {dateRange.min && (
+      {dateMin && (
         <>
-          <Label>from</Label>
-          <span>{dateRange.min}</span>
+          <Label>{t("inputDateRange.from")}</Label>
+          <span>{dateMin}</span>
         </>
       )}
-      {dateRange.max && dateRange.max !== dateRange.min && (
+      {dateMax && dateMax !== dateMin && (
         <>
-          <Label>to</Label>
-          <span>{dateRange.max}</span>
+          <Label>{t("inputDateRange.to")}</Label>
+          <span>{dateMax}</span>
         </>
       )}
     </Root>
