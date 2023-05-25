@@ -1,7 +1,7 @@
-package com.bakdata.conquery.models.worker;
+package com.bakdata.conquery.mode.cluster;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.function.Function;
 
 import javax.validation.Validator;
 
@@ -12,15 +12,20 @@ import com.bakdata.conquery.io.mina.ChunkReader;
 import com.bakdata.conquery.io.mina.ChunkWriter;
 import com.bakdata.conquery.io.mina.MinaAttributes;
 import com.bakdata.conquery.io.mina.NetworkSession;
+import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.ShutdownShard;
 import com.bakdata.conquery.models.messages.network.MessageToManagerNode;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoAcceptor;
@@ -33,14 +38,16 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
  */
 @Slf4j
 @RequiredArgsConstructor
-public class ShardConnectionManager extends IoHandlerAdapter implements ClusterManager {
+public class ClusterConnectionManager extends IoHandlerAdapter {
 
 	private IoAcceptor acceptor;
-	private final DistributedDatasetRegistry datasetRegistry;
+	private final DatasetRegistry<DistributedNamespace> datasetRegistry;
 	private final JobManager jobManager;
 	private final Validator validator;
 	private final ConqueryConfig config;
-	private final Function<Class<? extends View>, ObjectMapper> createInternalObjectMapperCreator;
+	private final InternalObjectMapperCreator internalObjectMapperCreator;
+	@Getter
+	private final ClusterState clusterState;
 
 	@Override
 	public void sessionOpened(IoSession session) {
@@ -68,9 +75,12 @@ public class ShardConnectionManager extends IoHandlerAdapter implements ClusterM
 			log.trace("ManagerNode received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 
 			Job job = new ReactingJob<>(toManagerNode,
-				new NetworkMessageContext.ManagerNodeNetworkContext(new NetworkSession(session),
-					datasetRegistry,
-					config.getCluster().getBackpressure()));
+				new NetworkMessageContext.ManagerNodeNetworkContext(
+						new NetworkSession(session),
+						datasetRegistry,
+						clusterState,
+						config.getCluster().getBackpressure()
+				));
 
 			if (toManagerNode instanceof SlowMessage slowMessage) {
 				slowMessage.setProgressReporter(job.getProgressReporter());
@@ -85,11 +95,10 @@ public class ShardConnectionManager extends IoHandlerAdapter implements ClusterM
 		}
 	}
 
-	@Override
-	public void start() throws Exception {
+	public void start() throws IOException {
 		acceptor = new NioSocketAcceptor();
 
-		ObjectMapper om = createInternalObjectMapperCreator.apply(View.InternalCommunication.class);
+		ObjectMapper om = internalObjectMapperCreator.createInternalObjectMapper(View.InternalCommunication.class);
 		config.configureObjectMapper(om);
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(datasetRegistry, validator, om);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder, om)));
@@ -99,13 +108,14 @@ public class ShardConnectionManager extends IoHandlerAdapter implements ClusterM
 		log.info("Started ManagerNode @ {}", acceptor.getLocalAddress());
 	}
 
-	@Override
-	public void stop() throws Exception {
+	public void stop() {
+		clusterState.getShardNodes().forEach(((socketAddress, shardNodeInformation) -> shardNodeInformation.send(new ShutdownShard())));
+
 		try {
 			acceptor.dispose();
 		}
-		catch (Exception e) {
-			log.error(acceptor + " could not be closed", e);
+		catch (RuntimeException e) {
+			log.error("{} could not be closed", acceptor, e);
 		}
 
 	}

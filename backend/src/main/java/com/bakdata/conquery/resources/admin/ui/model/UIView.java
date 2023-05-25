@@ -11,9 +11,7 @@ public class UIView<CONTENT_TYPE> extends View {
 	private final CONTENT_TYPE c;
 	
 	public UIView(String templateName) {
-		super(resolve(templateName), StandardCharsets.UTF_8);
-		this.c = null;
-
+		this(resolve(templateName), null);
 	}
 	
 	public UIView(String templateName, CONTENT_TYPE content) {

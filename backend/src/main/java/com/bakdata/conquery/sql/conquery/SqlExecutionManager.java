@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conquery;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -8,13 +7,10 @@ import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.google.common.cache.RemovalNotification;
 
 public class SqlExecutionManager implements ExecutionManager {
 	@Override
@@ -33,32 +29,17 @@ public class SqlExecutionManager implements ExecutionManager {
 	}
 
 	@Override
-	public ManagedExecution createQuery(QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
-		return null;
-	}
-
-	@Override
 	public void cancelQuery(Dataset dataset, ManagedExecution query) {
 
 	}
 
 	@Override
-	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result) {
-
-	}
-
-	@Override
-	public void addQueryResult(ManagedExecution execution, List<EntityResult> queryResults) {
-
-	}
-
-	@Override
 	public void clearQueryResults(ManagedExecution execution) {
-
 	}
 
 	@Override
 	public Stream<EntityResult> streamQueryResults(ManagedExecution execution) {
 		return null;
 	}
+
 }

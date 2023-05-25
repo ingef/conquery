@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
+import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -21,7 +22,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -35,14 +35,13 @@ import lombok.extern.slf4j.Slf4j;
 public class DistributedExecutionManager implements ExecutionManager {
 
 	private final MetaStorage storage;
+	private final ClusterState clusterState;
 
 	private final Cache<ManagedExecutionId, List<List<EntityResult>>> executionResults =
 			CacheBuilder.newBuilder()
 						.softValues()
 						.removalListener(this::executionRemoved)
 						.build();
-	private final NamespaceProvider<DistributedNamespace> provider = new NamespaceProvider<>() {
-	};
 
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
@@ -92,7 +91,7 @@ public class DistributedExecutionManager implements ExecutionManager {
 
 		if (execution instanceof InternalExecution<?> internalExecution) {
 			log.info("Executing Query[{}] in Dataset[{}]", execution.getQueryId(), namespace.getDataset().getId());
-			this.provider.provide(namespace).getWorkerHandler().sendToAll(internalExecution.createExecutionMessage());
+			clusterState.getWorkerHandlers().get(execution.getDataset().getId()).sendToAll(internalExecution.createExecutionMessage());
 		}
 	}
 
@@ -102,7 +101,7 @@ public class DistributedExecutionManager implements ExecutionManager {
 	}
 
 
-	@Override
+	// Visible for testing
 	public ManagedExecution createQuery(QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution managed = query.toManagedExecution(user, submittedDataset, storage);
@@ -115,7 +114,11 @@ public class DistributedExecutionManager implements ExecutionManager {
 		return managed;
 	}
 
-	@Override
+	/**
+	 * Receive part of query result and store into query.
+	 *
+	 * @param result
+	 */
 	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result) {
 
 
@@ -137,7 +140,11 @@ public class DistributedExecutionManager implements ExecutionManager {
 		}
 	}
 
-	@Override
+
+	/**
+	 * Register another result for the execution.
+	 */
+
 	@SneakyThrows(ExecutionException.class) // can only occur if ArrayList::new fails which is unlikely and would have other problems also
 	public void addQueryResult(ManagedExecution execution, List<EntityResult> queryResults) {
 		// We don't collect all results together into a fat list as that would cause lots of huge re-allocations for little gain.
@@ -164,7 +171,7 @@ public class DistributedExecutionManager implements ExecutionManager {
 
 	@Override
 	public void cancelQuery(Dataset dataset, ManagedExecution query) {
-		this.provider.provide(query.getNamespace()).getWorkerHandler().sendToAll(new CancelQuery(query.getId()));
-
+		clusterState.getWorkerHandlers().get(dataset.getId()).sendToAll(new CancelQuery(query.getId()));
 	}
+
 }

@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AdminDatasetsResource {
 
-	private final AdminDatasetProcessor<Namespace> processor;
+	private final AdminDatasetProcessor processor;
 
 	@POST
 	@Consumes(ExtraMimeTypes.JSON_STRING)

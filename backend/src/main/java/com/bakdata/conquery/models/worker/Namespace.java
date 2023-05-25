@@ -23,8 +23,6 @@ public interface Namespace extends Injectable, Closeable {
 
 	Dataset getDataset();
 
-	void close();
-
 	void remove();
 
 	CentralRegistry getCentralRegistry();
@@ -41,11 +39,13 @@ public interface Namespace extends Injectable, Closeable {
 
 	CentralRegistry getMetaRegistry();
 
+	ExecutionManager getExecutionManager();
+
 	ObjectMapper getPreprocessMapper();
 
-	NamespaceStorage getStorage();
+	ObjectMapper getCommunicationMapper();
 
-	ExecutionManager getExecutionManager();
+	NamespaceStorage getStorage();
 
 	JobManager getJobManager();
 

@@ -47,7 +47,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.worker.DistributedDatasetRegistry;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.google.common.collect.ImmutableList;
 import lombok.SneakyThrows;
@@ -59,7 +60,7 @@ public class StoredQueriesProcessorTest {
 	public static final AuthorizationController AUTHORIZATION_CONTROLLER = new AuthorizationController(STORAGE, new DevelopmentAuthorizationConfig());
 
 	public static final ConqueryConfig CONFIG = new ConqueryConfig();
-	private static final DistributedDatasetRegistry datasetRegistry = new DistributedDatasetRegistry(0, CONFIG, null);
+	private static final DatasetRegistry<DistributedNamespace> datasetRegistry = new DatasetRegistry<>(0, CONFIG, null, null);
 	private static final QueryProcessor processor = new QueryProcessor(datasetRegistry, STORAGE, CONFIG);
 
 	private static final Dataset DATASET_0 = new Dataset() {{

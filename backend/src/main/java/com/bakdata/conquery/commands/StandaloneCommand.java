@@ -11,6 +11,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.Conquery;
+import com.bakdata.conquery.mode.cluster.ClusterManager;
+import com.bakdata.conquery.mode.cluster.ClusterManagerProvider;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -26,7 +28,8 @@ import net.sourceforge.argparse4j.inf.Namespace;
 public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryConfig> {
 
 	private final Conquery conquery;
-	private ManagerNode manager = new ManagerNode();
+	private ClusterManager manager;
+	private ManagerNode managerNode = new ManagerNode();
 	private final List<ShardNode> shardNodes = new Vector<>();
 
 	// TODO clean up the command structure, so we can use the Environment from EnvironmentCommand
@@ -68,9 +71,10 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 			managerConfig = config.withStorage(((XodusStoreFactory) config.getStorage()).withDirectory(managerDir));
 		}
 
+		manager = new ClusterManagerProvider().provideManager(managerConfig, environment);
 
-		conquery.setManager(manager);
-		conquery.run(managerConfig, environment);
+		conquery.setManagerNode(managerNode);
+		conquery.run(manager);
 
 		//create thread pool to start multiple ShardNodes at the same time
 		ExecutorService starterPool = Executors.newFixedThreadPool(

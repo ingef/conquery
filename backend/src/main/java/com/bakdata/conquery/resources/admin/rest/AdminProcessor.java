@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -53,7 +54,7 @@ public class AdminProcessor {
 
 	private final ConqueryConfig config;
 	private final MetaStorage storage;
-	private final DatasetRegistry datasetRegistry;
+	private final DatasetRegistry<? extends Namespace> datasetRegistry;
 	private final JobManager jobManager;
 	private final ScheduledExecutorService maintenanceService;
 	private final Validator validator;

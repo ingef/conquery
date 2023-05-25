@@ -9,7 +9,6 @@ import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
@@ -20,6 +19,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Handler for worker in a single namespace.
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class WorkerHandler {
@@ -103,9 +105,9 @@ public class WorkerHandler {
 
 	public synchronized void addResponsibility(int bucket) {
 		WorkerInformation smallest = workers
-			.stream()
-			.min(Comparator.comparing(si -> si.getIncludedBuckets().size()))
-			.orElseThrow(() -> new IllegalStateException("Unable to find minimum."));
+				.stream()
+				.min(Comparator.comparing(si -> si.getIncludedBuckets().size()))
+				.orElseThrow(() -> new IllegalStateException("Unable to find minimum."));
 
 		log.debug("Assigning Bucket[{}] to Worker[{}]", bucket, smallest.getId());
 
@@ -129,10 +131,6 @@ public class WorkerHandler {
 				throw new IllegalStateException(String.format("Duplicate claims for Bucket[%d] from %s and %s", bucket, old, info));
 			}
 		}
-	}
-
-	public void removeDataset(DatasetId id) {
-		workers.keySet().removeIf(w -> w.getDataset().equals(id));
 	}
 
 	public void register(ShardNodeInformation node, WorkerInformation info) {

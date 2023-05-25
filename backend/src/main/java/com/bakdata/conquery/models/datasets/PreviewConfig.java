@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -95,12 +96,9 @@ public class PreviewConfig {
 	 */
 	private Set<FilterId> searchFilters = Collections.emptySet();
 
-	// todo(tm): I've got no idea why this is suddenly needed. If omitted, Jackson first injects the value correctly and then tries to parse it from the input
-	//           as there is no entry, it then overwrites the correct value with null
-	@JsonIgnore
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
-	private DatasetRegistry datasetRegistry;
+	private DatasetRegistry<Namespace> datasetRegistry;
 
 	public boolean isGroupingColumn(SecondaryIdDescription desc) {
 		return getGrouping().contains(desc.getId());

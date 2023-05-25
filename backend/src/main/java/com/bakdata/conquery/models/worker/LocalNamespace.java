@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conquery;
+package com.bakdata.conquery.models.worker;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,25 +18,27 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.FilterSearch;
-import com.bakdata.conquery.models.worker.IdResolveContext;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@RequiredArgsConstructor
 @Getter
-public class SqlNamespace extends IdResolveContext implements Namespace {
+@ToString(onlyExplicitlyIncluded = true)
+@RequiredArgsConstructor
+public class LocalNamespace extends IdResolveContext  implements Namespace {
 
 	private final ObjectMapper preprocessMapper;
+	private final ObjectMapper communicationMapper;
 	@ToString.Include
 	private final NamespaceStorage storage;
 
-	private final SqlExecutionManager executionManager;
+	private final ExecutionManager executionManager;
 
 	// TODO: 01.07.2020 FK: This is not used a lot, as NamespacedMessages are highly convoluted and hard to decouple as is.
 	private final JobManager jobManager;
@@ -48,35 +50,6 @@ public class SqlNamespace extends IdResolveContext implements Namespace {
 	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
 	private final List<Injectable> injectables;
 
-	public static SqlNamespace create(SqlExecutionManager executionManager, NamespaceStorage storage, ConqueryConfig config, Function<Class<? extends View>, ObjectMapper> mapperCreator) {
-
-		// Prepare namespace dependent Jackson injectables
-		List<Injectable> injectables = new ArrayList<>();
-		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
-		injectables.add(indexService);
-		ObjectMapper persistenceMapper = mapperCreator.apply(View.Persistence.Manager.class);
-		ObjectMapper preprocessMapper = mapperCreator.apply(null);
-
-		injectables.forEach(i -> i.injectInto(persistenceMapper));
-		injectables.forEach(i -> i.injectInto(preprocessMapper));
-
-		// Open and load the stores
-		storage.openStores(persistenceMapper);
-		storage.loadData();
-
-		JobManager jobManager = new JobManager(storage.getDataset().getName(), config.isFailOnError());
-
-		FilterSearch filterSearch = new FilterSearch(storage, jobManager, config.getCsv(), config.getIndex());
-
-		return new SqlNamespace(
-			preprocessMapper,
-			storage,
-			executionManager,
-			jobManager,
-			filterSearch,
-			indexService,
-			injectables);
-	}
 
 	@Override
 	public Dataset getDataset() {
@@ -126,23 +99,16 @@ public class SqlNamespace extends IdResolveContext implements Namespace {
 
 	@Override
 	public void updateInternToExternMappings() {
-		storage
-			.getAllConcepts()
-			.stream()
-			.flatMap(c -> c.getConnectors().stream())
-			.flatMap(con -> con.getSelects().stream())
-			.filter(MappableSingleColumnSelect.class::isInstance)
-			.map(MappableSingleColumnSelect.class::cast)
-			.forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
+		storage.getAllConcepts().stream()
+			   .flatMap(c -> c.getConnectors().stream())
+			   .flatMap(con -> con.getSelects().stream())
+			   .filter(MappableSingleColumnSelect.class::isInstance)
+			   .map(MappableSingleColumnSelect.class::cast)
+			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s::loadMapping)));
 
-		storage
-			.getSecondaryIds()
-			.stream()
-			.filter(desc -> desc.getMapping() != null)
-			.forEach((s) -> jobManager.addSlowJob(new SimpleJob(
-				"Update internToExtern Mappings [" + s.getId() + "]",
-				s.getMapping()::init)));
-
+		storage.getSecondaryIds().stream()
+			   .filter(desc -> desc.getMapping() != null)
+			   .forEach((s) -> jobManager.addSlowJob(new SimpleJob("Update internToExtern Mappings [" + s.getId() + "]", s.getMapping()::init)));
 	}
 
 	@Override
@@ -168,4 +134,8 @@ public class SqlNamespace extends IdResolveContext implements Namespace {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public ExecutionManager getExecutionManager() {
+		return executionManager;
+	}
 }

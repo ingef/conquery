@@ -21,6 +21,7 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
@@ -28,10 +29,9 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.worker.DistributedDatasetRegistry;
+import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -125,11 +125,11 @@ public class TestConquery {
 	}
 
 	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
-		// TODO(tm): might be okay for test?
-		DistributedDatasetRegistry datasets = (DistributedDatasetRegistry) standaloneCommand.getManager().getDatasetRegistry();
+		DatasetRegistry<DistributedNamespace> datasets = standaloneCommand.getManager().getDatasetRegistry();
 		DistributedNamespace ns = datasets.get(datasetId);
 
-		assertThat(datasets.getShardNodes()).hasSize(2);
+		ClusterState clusterState = standaloneCommand.getManager().getConnectionManager().getClusterState();
+		assertThat(clusterState.getShardNodes()).hasSize(2);
 
 		// make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_" + name);
@@ -142,7 +142,7 @@ public class TestConquery {
 			log.info("Reusing existing folder {} for Support", localTmpDir.getPath());
 		}
 
-		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManager().getEnvironment().getValidator()), IntegrationTests.MAPPER);
+		ConqueryConfig localCfg = Cloner.clone(config, Map.of(Validator.class, standaloneCommand.getManagerNode().getEnvironment().getValidator()), IntegrationTests.MAPPER);
 
 
 		StandaloneSupport support = new StandaloneSupport(
@@ -151,9 +151,8 @@ public class TestConquery {
 				ns.getStorage().getDataset(),
 				localTmpDir,
 				localCfg,
-				standaloneCommand.getManager().getAdmin().getAdminProcessor(),
-				// todo(tm): test integration
-				(AdminDatasetProcessor<DistributedNamespace>) standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor(),
+				standaloneCommand.getManagerNode().getAdmin().getAdminProcessor(),
+				 standaloneCommand.getManagerNode().getAdmin().getAdminDatasetProcessor(),
 				// Getting the User from AuthorizationConfig
 				testUser
 		);
@@ -162,7 +161,7 @@ public class TestConquery {
 			.total(Duration.ofSeconds(5))
 			.stepTime(Duration.ofMillis(5))
 			.build()
-			.until(() -> ns.getWorkerHandler().getWorkers().size() == datasets.getShardNodes().size());
+			.until(() -> clusterState.getWorkerHandlers().get(datasetId).getWorkers().size() == clusterState.getShardNodes().size());
 
 		support.waitUntilWorkDone();
 		openSupports.add(support);
@@ -177,7 +176,7 @@ public class TestConquery {
 				name += "[" + count + "]";
 			}
 			Dataset dataset = new Dataset(name);
-			standaloneCommand.getManager().getAdmin().getAdminDatasetProcessor().addDataset(dataset);
+			standaloneCommand.getManagerNode().getAdmin().getAdminDatasetProcessor().addDataset(dataset);
 			return createSupport(dataset.getId(), name);
 		}
 		catch (Exception e) {
@@ -227,13 +226,13 @@ public class TestConquery {
 			}
 			openSupports.clear();
 		}
-		this.getStandaloneCommand().getManager().getStorage().clear();
+		this.getStandaloneCommand().getManagerNode().getStorage().clear();
 		waitUntilWorkDone();
 	}
 
 	@SneakyThrows
 	public void removeSupportDataset(StandaloneSupport support) {
-		standaloneCommand.getManager().getDatasetRegistry().removeNamespace(support.getDataset().getId());
+		standaloneCommand.getManagerNode().getDatasetRegistry().removeNamespace(support.getDataset().getId());
 	}
 
 	public void removeSupport(StandaloneSupport support) {
@@ -269,15 +268,15 @@ public class TestConquery {
 
 	private boolean isBusy() {
 		boolean busy;
-		busy = standaloneCommand.getManager().getJobManager().isSlowWorkerBusy();
-		busy |= standaloneCommand.getManager()
+		busy = standaloneCommand.getManagerNode().getJobManager().isSlowWorkerBusy();
+		busy |= standaloneCommand.getManagerNode()
 								 .getStorage()
 								 .getAllExecutions()
 								 .stream()
 								 .map(ManagedExecution::getState)
 								 .anyMatch(ExecutionState.RUNNING::equals);
 
-		for (Namespace namespace : standaloneCommand.getManager().getDatasetRegistry().getDatasets()) {
+		for (Namespace namespace : standaloneCommand.getManagerNode().getDatasetRegistry().getDatasets()) {
 			busy |= namespace.getJobManager().isSlowWorkerBusy();
 		}
 
@@ -288,8 +287,8 @@ public class TestConquery {
 	}
 
 	public void beforeEach() {
-		final MetaStorage storage = standaloneCommand.getManager().getStorage();
-		testUser = standaloneCommand.getManager().getConfig().getAuthorizationRealms().getInitialUsers().get(0).createOrOverwriteUser(storage);
+		final MetaStorage storage = standaloneCommand.getManagerNode().getStorage();
+		testUser = standaloneCommand.getManagerNode().getConfig().getAuthorizationRealms().getInitialUsers().get(0).createOrOverwriteUser(storage);
 		storage.updateUser(testUser);
 	}
 }

@@ -29,7 +29,7 @@ import lombok.Setter;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AdminConceptsResource {
 
-	private final AdminDatasetProcessor<Namespace> processor;
+	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
 	private Dataset dataset;

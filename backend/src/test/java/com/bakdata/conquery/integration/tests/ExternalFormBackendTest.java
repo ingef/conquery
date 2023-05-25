@@ -52,14 +52,14 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 		log.info("Test health");
 		assertThat(testConquery.getStandaloneCommand()
-							   .getManager()
+							   .getManagerNode()
 							   .getEnvironment()
 							   .healthChecks()
 							   .runHealthCheck(FORM_BACKEND_ID)
 							   .isHealthy()).describedAs("Checking health of form backend").isTrue();
 
 		log.info("Get external form configs");
-		final FormScanner formScanner = testConquery.getStandaloneCommand().getManager().getFormScanner();
+		final FormScanner formScanner = testConquery.getStandaloneCommand().getManagerNode().getFormScanner();
 		formScanner.execute(Collections.emptyMap(), null);
 
 		final String externalFormId = FormBackendConfig.createSubTypedId("SOME_EXTERNAL_FORM");

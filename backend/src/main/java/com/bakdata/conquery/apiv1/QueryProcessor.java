@@ -85,7 +85,7 @@ import lombok.extern.slf4j.Slf4j;
 public class QueryProcessor {
 
 	@Inject
-	private DatasetRegistry datasetRegistry;
+	private DatasetRegistry<? extends Namespace> datasetRegistry;
 	@Inject
 	private MetaStorage storage;
 	@Inject

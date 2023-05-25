@@ -49,12 +49,12 @@ public class StandaloneSupport {
 	@Getter
 	private final AdminProcessor metaProcessor;
 	@Getter
-	private final AdminDatasetProcessor<DistributedNamespace> datasetsProcessor;
+	private final AdminDatasetProcessor datasetsProcessor;
 	@Getter
 	private final User testUser;
 
 	public AuthorizationController getAuthorizationController() {
-		return testConquery.getStandaloneCommand().getManager().getAuthController();
+		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();
 	}
 
 	public void waitUntilWorkDone() {
@@ -84,19 +84,19 @@ public class StandaloneSupport {
 
 
 	public Validator getValidator() {
-		return testConquery.getStandaloneCommand().getManager().getValidator();
+		return testConquery.getStandaloneCommand().getManagerNode().getValidator();
 	}
 
 	public MetaStorage getMetaStorage() {
-		return testConquery.getStandaloneCommand().getManager().getStorage();
+		return testConquery.getStandaloneCommand().getManagerNode().getStorage();
 	}
 
 	public NamespaceStorage getNamespaceStorage() {
-		return testConquery.getStandaloneCommand().getManager().getDatasetRegistry().get(dataset.getId()).getStorage();
+		return testConquery.getStandaloneCommand().getManagerNode().getDatasetRegistry().get(dataset.getId()).getStorage();
 	}
 
 	public DatasetRegistry getDatasetRegistry() {
-		return testConquery.getStandaloneCommand().getManager().getDatasetRegistry();
+		return testConquery.getStandaloneCommand().getManagerNode().getDatasetRegistry();
 	}
 
 	public List<ShardNode> getShardNodes() {

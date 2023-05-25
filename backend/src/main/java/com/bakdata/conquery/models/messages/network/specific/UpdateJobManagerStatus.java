@@ -24,12 +24,12 @@ public class UpdateJobManagerStatus extends MessageToManagerNode {
 
 	@Override
 	public void react(ManagerNodeNetworkContext context) throws Exception {
-		ShardNodeInformation node = context.getNamespaces()
+		ShardNodeInformation node = context.getClusterState()
 										 .getShardNodes()
 										 .get(context.getRemoteAddress());
 
 		if (node == null) {
-			log.error("Could not find ShardNode {}, I only know of {}", context.getRemoteAddress(), context.getNamespaces().getShardNodes().keySet());
+			log.error("Could not find ShardNode {}, I only know of {}", context.getRemoteAddress(), context.getClusterState().getShardNodes().keySet());
 		}
 		else {
 			node.setJobManagerStatus(status);
