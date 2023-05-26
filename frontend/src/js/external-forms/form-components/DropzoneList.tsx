@@ -14,7 +14,8 @@ import DropzoneWithFileInput, {
 } from "../../ui-components/DropzoneWithFileInput";
 import Label from "../../ui-components/Label";
 import Optional from "../../ui-components/Optional";
-import BetweenElements from "../form-concept-group/BetweenElement";
+
+import BetweenElements from "./DropzoneBetweenElements";
 
 const ListItem = styled("div")`
   position: relative;
@@ -22,7 +23,6 @@ const ListItem = styled("div")`
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
-  margin-bottom: 5px;
 `;
 
 const StyledIconButton = styled(IconButton)`
@@ -95,12 +95,15 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
         <div>
           {items.map((item, i) => (
             <>
-              <BetweenElements
-                acceptedDropTypes={acceptedDropTypes}
-                onDrop={dropBetween(i)}
-              >
-                {() => conceptDropzoneText}
-              </BetweenElements>
+              {!disallowMultipleColumns && (
+                <BetweenElements
+                  acceptedDropTypes={acceptedDropTypes}
+                  onDrop={dropBetween(i)}
+                  isFirstElement={i === 0}
+                >
+                  {() => conceptDropzoneText}
+                </BetweenElements>
+              )}
               <ListItem key={i}>
                 <StyledIconButton icon={faTimes} onClick={() => onDelete(i)} />
                 {item}

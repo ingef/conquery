@@ -1,8 +1,9 @@
 import styled from "@emotion/styled";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { ReactNode, useState } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 
+import IconButton from "../../button/IconButton";
 import FaIcon from "../../icon/FaIcon";
 import Dropzone, {
   ChildArgs,
@@ -13,16 +14,19 @@ interface Props<DroppableObject> {
   onDrop: (item: DroppableObject, monitor: DropTargetMonitor) => void;
   acceptedDropTypes: string[];
   children?: (args: ChildArgs<DroppableObject>) => ReactNode;
+  isFirstElement: boolean;
 }
 
 const Root = styled("div")<{
   isOver: boolean;
   isDroppable: boolean;
+  isFirstElement: boolean;
 }>`
   background-color: ${({ theme, isDroppable, isOver }) => {
     if (isOver && isDroppable) return theme.col.grayLight;
     return isDroppable ? theme.col.grayVeryLight : "inherit";
   }};
+  margin-top: ${({ isFirstElement }) => (isFirstElement ? "5px" : "0px")};
   width: 100%;
   text-align: center;
 `;
@@ -31,16 +35,31 @@ const PlusContainer = styled("div")`
   margin: auto;
 `;
 
+const DropzoneContainer = styled("div")`
+  overflow: hidden;
+  height: 54px;
+`;
+
 const SxFaIcon = styled(FaIcon)`
   height: 15px;
   color: ${({ theme }) => theme.col.black};
   opacity: 0.75;
 `;
 
+const RemoveBtn = styled(IconButton)`
+  position: relative;
+  color: ${({ theme }) => theme.col.black};
+  top: -64px;
+  left: 97%;
+  z-index: 2;
+  background-color: white;
+`;
+
 const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   acceptedDropTypes,
   children,
   onDrop,
+  isFirstElement,
 }: Props<DroppableObject>) => {
   const SxDropzone = styled(Dropzone<DroppableObject>)`
     margin: 5px 0 5px 0;
@@ -65,11 +84,15 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
     setShowDropzone(false);
     onDrop(item, monitor);
   };
-
   return (
     <>
       {!(showDropzone || isOver || isOver2) && (
-        <Root ref={drop} isOver={isOver} isDroppable={isDroppable}>
+        <Root
+          ref={drop}
+          isOver={isOver}
+          isDroppable={isDroppable}
+          isFirstElement={isFirstElement}
+        >
           <PlusContainer onClick={() => setShowDropzone(true)}>
             <SxFaIcon icon={faPlus} />
           </PlusContainer>
@@ -77,14 +100,16 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
       )}
 
       {(showDropzone || isOver || isOver2) && (
-        // TODO x - to close the dropzone
-        <SxDropzone
-          acceptedDropTypes={acceptedDropTypes}
-          onDrop={onDropped}
-          ref={drop2}
-        >
-          {children}
-        </SxDropzone>
+        <DropzoneContainer>
+          <SxDropzone
+            acceptedDropTypes={acceptedDropTypes}
+            onDrop={onDropped}
+            ref={drop2}
+          >
+            {children}
+          </SxDropzone>
+          <RemoveBtn icon={faTimes} />
+        </DropzoneContainer>
       )}
     </>
   );
