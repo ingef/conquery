@@ -35,14 +35,14 @@ public class SqlStandaloneSupport implements TestSupport {
 		storage.openStores(Jackson.MAPPER.copy());
 		storage.updateDataset(dataset);
 
-		config = IntegrationTests.DEFAULT_CONFIG;
-		InternalObjectMapperCreator mapperCreator = new InternalObjectMapperCreator(config, getValidator());
-		LocalNamespaceHandler localNamespaceHandler = new LocalNamespaceHandler(config, mapperCreator);
-		DatasetRegistry<LocalNamespace> datasetRegistry = new DatasetRegistry<>(2, config, mapperCreator, localNamespaceHandler);
-		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
-		datasetRegistry.setMetaStorage(metaStorage);
-		mapperCreator.init(datasetRegistry);
-		namespace = localNamespaceHandler.createNamespace(storage, metaStorage);
+		this.config = IntegrationTests.DEFAULT_CONFIG;
+		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, getValidator());
+		LocalNamespaceHandler localNamespaceHandler = new LocalNamespaceHandler(config, creator);
+		DatasetRegistry<LocalNamespace> registry = new DatasetRegistry<>(0, config, creator, localNamespaceHandler);
+		creator.init(registry);
+
+		this.namespace = registry.createNamespace(storage);
+		this.metaStorage = new MetaStorage(new NonPersistentStoreFactory(), registry);
 	}
 
 	@Override
