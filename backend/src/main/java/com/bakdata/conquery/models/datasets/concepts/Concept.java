@@ -40,7 +40,7 @@ import lombok.ToString;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-@ToString(of = {"connectors"})
+@ToString(of = "connectors")
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
@@ -49,7 +49,9 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	/**
 	 * Display Concept for users.
 	 */
-	private boolean hidden = false;
+	private boolean hidden;
+
+	private boolean defaultExcludeFromTimeAggregation = false;
 
 	@JsonManagedReference
 	@Valid
@@ -59,10 +61,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	private Dataset dataset;
 
 	public List<Select> getDefaultSelects() {
-		return getSelects()
-					  .stream()
-					  .filter(Select::isDefault)
-					  .collect(Collectors.toList());
+		return getSelects().stream().filter(Select::isDefault).collect(Collectors.toList());
 	}
 
 	public abstract List<? extends Select> getSelects();
@@ -91,7 +90,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	 * Allows concepts to create their own altered FiltersNode if necessary.
 	 */
 	public QPNode createConceptQuery(QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators, Column validityDateColumn) {
-		QPNode child = filters.isEmpty() && aggregators.isEmpty() ? new Leaf() : FiltersNode.create(filters, aggregators, eventDateAggregators);
+		final QPNode child = filters.isEmpty() && aggregators.isEmpty() ? new Leaf() : FiltersNode.create(filters, aggregators, eventDateAggregators);
 
 
 		// Only if a validityDateColumn exists, capsule children in ValidityDateNode

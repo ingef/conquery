@@ -1,11 +1,12 @@
 import styled from "@emotion/styled";
-import { createElement, createRef, forwardRef, useState } from "react";
+import { createElement, forwardRef, useRef, useState } from "react";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-import { formatDate, parseDate } from "../common/helpers/dateHelper";
+import { formatDate, parseDate } from "../../common/helpers/dateHelper";
+import BaseInput, { Props as BaseInputProps } from "../BaseInput";
 
-import BaseInput, { Props as BaseInputProps } from "./BaseInput";
+import { CustomHeader } from "./CustomHeader";
 
 const Root = styled("div")`
   position: relative;
@@ -53,11 +54,14 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
       onChange,
       onCalendarSelect,
       onFocus,
+      onBlur,
+      onClick,
       ...props
     },
     ref,
   ) => {
-    const datePickerRef = createRef<ReactDatePicker>();
+    const datePickerRef = useRef<ReactDatePicker>(null);
+    const [hasFocus, setHasFocus] = useState(false);
     const [focusBlocked, setFocusBlocked] = useState(false);
 
     return (
@@ -81,6 +85,17 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
               setFocusBlocked(false);
             } else {
               onFocus?.(e);
+              setHasFocus(true);
+              datePickerRef.current?.setOpen(true);
+            }
+          }}
+          onBlur={(e) => {
+            onBlur?.(e);
+            setHasFocus(false);
+          }}
+          onClick={(e) => {
+            onClick?.(e);
+            if (hasFocus) {
               datePickerRef.current?.setOpen(true);
             }
           }}
@@ -107,6 +122,7 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
             datePickerRef.current?.setOpen(false);
           }}
           onClickOutside={() => datePickerRef.current?.setOpen(false)}
+          renderCustomHeader={CustomHeader}
           customInput={createElement(HiddenInput)}
           calendarContainer={StyledCalendar}
         />
