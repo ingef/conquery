@@ -125,6 +125,7 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
           renderCustomHeader={CustomHeader}
           customInput={createElement(HiddenInput)}
           calendarContainer={StyledCalendar}
+          calendarStartDay={1}
         />
       </Root>
     );
