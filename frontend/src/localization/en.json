@@ -528,6 +528,8 @@
     "expand": "Expand",
     "edit": "Details",
     "initialDropText": "Drop a concept or query here.",
-    "datesExcluded": "No dates"
+    "datesExcluded": "No dates",
+    "outputSection": "Output values",
+    "filtersSection": "Filters"
   }
 }
