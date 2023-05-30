@@ -1,6 +1,12 @@
 import { useCallback } from "react";
 
+import {
+  PostPrefixForSuggestionsParams,
+  usePostPrefixForSuggestions,
+} from "../../api/api";
 import { SelectOptionT } from "../../api/types";
+import { exists } from "../../common/helpers/exists";
+import { mergeFilterOptions } from "../../model/filter";
 import { NodeResetConfig } from "../../model/node";
 import { resetSelects } from "../../model/select";
 import {
@@ -9,6 +15,7 @@ import {
   tableWithDefaults,
 } from "../../model/table";
 import QueryNodeEditor from "../../query-node-editor/QueryNodeEditor";
+import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import { DragItemConceptTreeNode } from "../../standard-query-editor/types";
 import { ModeT } from "../../ui-components/InputRange";
 
@@ -37,18 +44,6 @@ export const EditorV2QueryNodeEditor = ({
       onChange({ ...node, tables });
     },
     [node, onChange],
-  );
-
-  const onLoadFilterSuggestions = useCallback(
-    (
-      params: any,
-      tableIdx: number,
-      filterIdx: number,
-      config?: { returnOnly?: boolean },
-    ) => {
-      return Promise.resolve(null);
-    },
-    [],
   );
 
   const onDropConcept = useCallback(
@@ -95,18 +90,25 @@ export const EditorV2QueryNodeEditor = ({
     [node, onChange],
   );
 
-  const onSetFilterValue = useCallback(
-    (tableIdx: number, filterIdx: number, value: any) => {
+  const setFilterProperties = useCallback(
+    (tableIdx: number, filterIdx: number, properties: any) => {
       const tables = [...node.tables];
       tables[tableIdx] = {
         ...tables[tableIdx],
         filters: tables[tableIdx].filters.map((filter, idx) =>
-          idx === filterIdx ? { ...filter, value } : filter,
+          idx === filterIdx ? { ...filter, ...properties } : filter,
         ),
       };
       onChange({ ...node, tables });
     },
     [node, onChange],
+  );
+
+  const onSetFilterValue = useCallback(
+    (tableIdx: number, filterIdx: number, value: any) => {
+      setFilterProperties(tableIdx, filterIdx, { value });
+    },
+    [setFilterProperties],
   );
 
   const onSwitchFilterMode = useCallback(
@@ -121,6 +123,39 @@ export const EditorV2QueryNodeEditor = ({
       onChange({ ...node, tables });
     },
     [node, onChange],
+  );
+
+  const postPrefixForSuggestions = usePostPrefixForSuggestions();
+  const onLoadFilterSuggestions = useCallback(
+    async (
+      params: PostPrefixForSuggestionsParams,
+      tableIdx: number,
+      filterIdx: number,
+      config?: { returnOnly?: boolean },
+    ) => {
+      const suggestions = await postPrefixForSuggestions(params);
+
+      if (!config?.returnOnly) {
+        const newOptions: SelectOptionT[] = suggestions.values.map(
+          filterSuggestionToSelectOption,
+        );
+
+        const filter = node.tables[tableIdx].filters[filterIdx];
+        const options =
+          params.page === 0
+            ? newOptions
+            : mergeFilterOptions(filter, newOptions);
+
+        if (exists(options)) {
+          const props = { options, total: suggestions.total };
+
+          setFilterProperties(tableIdx, filterIdx, props);
+        }
+      }
+
+      return suggestions;
+    },
+    [postPrefixForSuggestions, node, setFilterProperties],
   );
 
   const onResetTable = useCallback(
