@@ -418,10 +418,12 @@ export function EditorV2({
           ) : (
             <SxDropzone
               onDrop={(item) => {
+                const id = createId();
                 setTree({
-                  id: createId(),
+                  id,
                   data: item as DragItemConceptTreeNode | DragItemQuery,
                 });
+                setSelectedNodeId(id);
               }}
               acceptedDropTypes={EDITOR_DROP_TYPES}
             >

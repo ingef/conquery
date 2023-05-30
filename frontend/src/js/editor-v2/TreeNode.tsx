@@ -432,12 +432,20 @@ const Value = ({
         {isElement && ","}
       </span>
     );
-  } else if (value instanceof Object && "min" in value && "max" in value) {
+  } else if (value instanceof Object) {
     return (
-      <span>
-        {JSON.stringify(value.min)}-{JSON.stringify(value.max)}
-      </span>
+      <>
+        {Object.entries(value)
+          .filter(([, v]) => exists(v))
+          .map(([k, v]) => (
+            <>
+              {k}: <Value value={v} />
+            </>
+          ))}
+      </>
     );
+  } else if (value === null) {
+    return <span></span>;
   } else {
     return <span>{JSON.stringify(value)}</span>;
   }
