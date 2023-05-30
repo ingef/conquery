@@ -12,7 +12,7 @@ public class CQOrConverter implements NodeConverter<CQOr> {
 			throw new IllegalArgumentException("Multiple children are not yet supported");
 		}
 
-		return context.getSqlConverterService().convert(node.getChildren().get(0), context);
+		return context.getNodeConverterService().convert(node.getChildren().get(0), context);
 	}
 
 	@Override

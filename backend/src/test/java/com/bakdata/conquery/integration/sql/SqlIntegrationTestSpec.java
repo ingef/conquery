@@ -3,7 +3,9 @@ package com.bakdata.conquery.integration.sql;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -17,7 +19,9 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.sql.conversion.SqlConverterService;
+import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
+import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,11 +30,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.junit.jupiter.api.Assertions;
+import lombok.extern.slf4j.Slf4j;
+import org.assertj.core.api.Assertions;
 
 @Getter
 @Setter
 @CPSType(id = "SQL_TEST", base = ConqueryTestSpec.class)
+@Slf4j
 public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSupport> {
 
 	private static final String EXPECTED_SQL_FILENAME = "expected.sql";
@@ -38,6 +44,12 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 	@NotNull
 	@JsonProperty("query")
 	private JsonNode rawQuery;
+
+	@JsonIgnore
+	private String description;
+
+	@NotNull
+	private String expectedCsv;
 
 	@Valid
 	@NotNull
@@ -68,8 +80,18 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 
 	@Override
 	public void executeTest(SqlStandaloneSupport support) throws IOException {
-		SqlConverterService converter = new SqlConverterService();
-		Assertions.assertEquals(this.getExpectedSql(), converter.convert(this.getQuery()));
+		for (RequiredTable table : content.getTables()) {
+			support.getTableImporter().importTableIntoDatabase(table);
+		}
+
+		SqlManagedQuery managedQuery = support.getExecutionManager()
+											  .runQuery(support.getNamespace(), getQuery(), support.getTestUser(), support.getDataset(), support.getConfig(), false);
+		log.info("Execute query: \n{}", managedQuery.getSqlQuery().getSqlString());
+
+		SqlExecutionResult result = managedQuery.getResult();
+		List<SinglelineEntityResult> resultCsv = result.getTable();
+		List<SinglelineEntityResult> expectedCsv = support.getTableImporter().readExpectedEntities(readExpectedCsv());
+		Assertions.assertThat(resultCsv).usingRecursiveFieldByFieldElementComparator().containsExactlyElementsOf(expectedCsv);
 	}
 
 	@Override
@@ -97,9 +119,9 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 		}
 	}
 
-	public String getExpectedSql() throws IOException {
-		Path expectedSqlFile = this.specDir.resolve(EXPECTED_SQL_FILENAME);
-		return Files.readString(expectedSqlFile).trim();
+	public String readExpectedCsv() throws IOException {
+		Path expectedCSVFile = this.specDir.resolve(this.expectedCsv);
+		return Files.readString(expectedCSVFile);
 	}
 
 }

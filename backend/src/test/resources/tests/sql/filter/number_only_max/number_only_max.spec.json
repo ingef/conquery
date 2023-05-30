@@ -1,6 +1,7 @@
 {
   "label": "Single Number-Real-Range Filter Query (only max val)",
   "type": "SQL_TEST",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -20,7 +21,7 @@
                   "filter": "number.number_connector.value",
                   "type": "REAL_RANGE",
                   "value": {
-                    "max": 50
+                    "max": 0.5
                   }
                 }
               ]
@@ -51,7 +52,7 @@
   "content": {
     "tables": [
       {
-        "csv": "",
+        "csv": "tests/sql/filter/number_only_max/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",

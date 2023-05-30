@@ -5,15 +5,14 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Supplier;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
+import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import org.jooq.DatePart;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 public class DateDistanceConverter implements SelectConverter<DateDistanceSelect> {
 
@@ -24,9 +23,9 @@ public class DateDistanceConverter implements SelectConverter<DateDistanceSelect
 			ChronoUnit.MONTHS, DatePart.MONTH,
 			ChronoUnit.CENTURIES, DatePart.CENTURY
 	);
-	private final Supplier<LocalDate> dateNowSupplier;
+	private final DateNowSupplier dateNowSupplier;
 
-	public DateDistanceConverter(Supplier<LocalDate> dateNowSupplier) {
+	public DateDistanceConverter(DateNowSupplier dateNowSupplier) {
 		this.dateNowSupplier = dateNowSupplier;
 	}
 
@@ -43,9 +42,8 @@ public class DateDistanceConverter implements SelectConverter<DateDistanceSelect
 			throw new UnsupportedOperationException("Can't calculate date distance to column of type "
 													+ startDateColumn.getType());
 		}
-		// we can now safely cast to Field of type Date
-		Field<Date> startDate = DSL.field(startDateColumn.getName(), Date.class);
-		return DSL.dateDiff(timeUnit, startDate, endDate).as(select.getLabel());
+		return context.getSqlDialect().getFunction().dateDistance(timeUnit, endDate, startDateColumn)
+					  .as(select.getLabel());
 	}
 
 	private Date getEndDate(ConversionContext context) {
@@ -56,7 +54,7 @@ public class DateDistanceConverter implements SelectConverter<DateDistanceSelect
 		}
 		else {
 			// otherwise the current date is the upper bound
-			endDate = dateNowSupplier.get();
+			endDate = dateNowSupplier.getLocalDateNow();
 		}
 		return Date.valueOf(endDate);
 	}
