@@ -50,7 +50,7 @@ const SxFaIcon = styled(FaIcon)`
 
 const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   acceptedDropTypes,
-  onDrop,
+  onDrop: onDropCallback,
   isFirstElement,
 }: Props<DroppableObject>) => {
   const { t } = useTranslation();
@@ -60,6 +60,7 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   `;
 
   const [showDropzone, setShowDropzone] = useState(false);
+
   const [{ isOver, isDroppable }, drop] = useDrop({
     accept: acceptedDropTypes,
     collect: (monitor) => ({
@@ -74,10 +75,11 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
     }),
   });
 
-  const onDropped = (item: DroppableObject, monitor: DropTargetMonitor) => {
+  const onDrop = (item: DroppableObject, monitor: DropTargetMonitor) => {
     setShowDropzone(false);
-    onDrop(item, monitor);
+    onDropCallback(item, monitor);
   };
+
   return (
     <>
       {!(showDropzone || isOver || isOver2) && (
@@ -95,7 +97,7 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
 
       {(showDropzone || isOver || isOver2) && (
         <DropzoneContainer ref={drop2} onClick={() => setShowDropzone(false)}>
-          <SxDropzone acceptedDropTypes={acceptedDropTypes} onDrop={onDropped}>
+          <SxDropzone acceptedDropTypes={acceptedDropTypes} onDrop={onDrop}>
             {() => t("externalForms.default.dropBetweenLabel")}
           </SxDropzone>
         </DropzoneContainer>
