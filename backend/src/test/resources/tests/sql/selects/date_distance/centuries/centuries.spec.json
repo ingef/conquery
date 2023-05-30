@@ -1,41 +1,35 @@
 {
-  "label": "DATE_DISTANCE select query with timeUnit Centuries",
+  "label": "DATE_DISTANCE select query with timeUnit CENTURIES",
   "type": "SQL_TEST",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "AND",
       "children": [
         {
-          "type": "DATE_RESTRICTION",
-          "dateRange": {
-            "min": "2012-01-01",
-            "max": "2012-12-31"
-          },
-          "child": {
-            "ids":[
-              "geschlecht_select"
-            ],
-            "type":"CONCEPT",
-            "label":"Geschlecht SELECT",
-            "tables":[
-              {
-                "id":"geschlecht_select.geschlecht_connector",
-                "filters":[
-                  {
-                    "filter":"geschlecht_select.geschlecht_connector.geschlecht",
-                    "type":"BIG_MULTI_SELECT",
-                    "value":[
-                      "f"
-                    ]
-                  }
-                ],
-                "selects": [
-                  "geschlecht_select.geschlecht_connector.date_distance"
-                ]
-              }
-            ]
-          }
+          "ids":[
+            "geschlecht_select"
+          ],
+          "type":"CONCEPT",
+          "label":"Geschlecht SELECT",
+          "tables":[
+            {
+              "id":"geschlecht_select.geschlecht_connector",
+              "filters":[
+                {
+                  "filter":"geschlecht_select.geschlecht_connector.geschlecht",
+                  "type":"BIG_MULTI_SELECT",
+                  "value":[
+                    "f"
+                  ]
+                }
+              ],
+              "selects": [
+                "geschlecht_select.geschlecht_connector.date_distance_centuries"
+              ]
+            }
+          ]
         }
       ]
     }
@@ -48,10 +42,6 @@
         {
           "label":"geschlecht_connector",
           "table":"table1",
-          "validityDates": {
-            "label": "datum",
-            "column": "table1.datum"
-          },
           "filters":{
             "label":"geschlecht",
             "description":"Geschlecht zur gegebenen Datumseinschränkung",
@@ -62,8 +52,8 @@
             {
               "column": "table1.datum",
               "default": true,
-              "label": "date_distance",
-              "name": "date_distance",
+              "label": "date_distance_centuries",
+              "name": "date_distance_centuries",
               "timeUnit": "CENTURIES",
               "type": "DATE_DISTANCE"
             }
@@ -75,7 +65,7 @@
   "content":{
     "tables":[
       {
-        "csv":"",
+        "csv":"tests/sql/selects/date_distance/centuries/content.csv",
         "name":"table1",
         "primaryColumn":{
           "name":"pid",

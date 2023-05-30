@@ -1,21 +1,18 @@
 package com.bakdata.conquery.sql.conversion.cqelement;
 
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
+import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
+import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.conversion.filter.FilterConverterService;
 import com.bakdata.conquery.sql.conversion.select.SelectConverterService;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.Record;
-import org.jooq.SelectConditionStep;
-import org.jooq.impl.DSL;
 
 public class CQConceptConverter implements NodeConverter<CQConcept> {
 
@@ -34,50 +31,177 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	@Override
 	public ConversionContext convert(CQConcept node, ConversionContext context) {
-		if (node.getTables().size() > 1) {
-			throw new IllegalArgumentException("More than 1 table in a concept is not yet supported");
+
+		if (this.conceptNodeHasMultipleTables(node)) {
+			throw new UnsupportedOperationException("Can't handle concepts with multiple tables for now.");
 		}
 
-
+		ConceptPreprocessingService preprocessingService = new ConceptPreprocessingService(node, context);
 		CQTable table = node.getTables().get(0);
+		String conceptLabel = this.getConceptLabel(node);
 
-		SelectConditionStep<Record> query = context.getDslContext().select(getSelects(table, context))
-												   .from(getTableName(table))
-												   .where(getFilters(table, context));
+		QueryStep preprocessingStep = preprocessingService.buildPreprocessingQueryStepForTable(conceptLabel, table);
+		QueryStep dateRestriction = this.buildDateRestrictionQueryStep(context, node, conceptLabel, preprocessingStep);
+		QueryStep eventSelect = this.buildEventSelectQueryStep(context, table, conceptLabel, dateRestriction);
+		QueryStep eventFilter = this.buildEventFilterQueryStep(context, table, conceptLabel, eventSelect);
+		QueryStep finalStep = this.buildFinalQueryStep(conceptLabel, eventFilter);
 
-		return context.withQuery(query);
+		return context.withQuerySteps(List.of(finalStep));
 	}
 
-	private Set<Field<?>> getSelects(CQTable table, ConversionContext context) {
-		// primary column of the table is always a field of the select statement
-		Field<?> primaryColumn = DSL.field(getPrimaryColumnName(table));
-		// filter out possible duplicates if primary column and a select field from conceptSelects match
-		Set<Field<?>> selects = new LinkedHashSet<>();
-		selects.add(primaryColumn);
-		// all other fields for the select statement are obtained from the concepts selects
-		selects.addAll(getConceptSelects(table, context));
-		return selects;
+	private boolean conceptNodeHasMultipleTables(CQConcept node) {
+		return node.getTables().size() > 1;
 	}
 
-	private String getTableName(CQTable table) {
-		return table.getConnector().getTable().getName();
+	private String getConceptLabel(CQConcept node) {
+		return node.getLabel()
+				   .toLowerCase()
+				   .replace(' ', '_');
 	}
 
-	private List<Condition> getFilters(CQTable table, ConversionContext context) {
+	/**
+	 * selects:
+	 * - all of previous step
+	 */
+	private QueryStep buildDateRestrictionQueryStep(
+			ConversionContext context,
+			CQConcept node,
+			String conceptLabel,
+			QueryStep previous
+	) {
+		if (((ConceptSelects) previous.getSelects()).getDateRestriction().isEmpty()) {
+			return previous;
+		}
+
+		ConceptSelects dateRestrictionSelects = this.prepareDateRestrictionSelects(node, previous);
+		List<Condition> dateRestriction = this.buildDateRestriction(context, previous);
+		String dateRestrictionCteName = "concept_%s_date_restriction".formatted(conceptLabel);
+
+		return QueryStep.builder()
+						.cteName(dateRestrictionCteName)
+						.fromTable(QueryStep.toTableLike(previous.getCteName()))
+						.selects(dateRestrictionSelects)
+						.conditions(dateRestriction)
+						.predecessors(List.of(previous))
+						.build();
+	}
+
+	/**
+	 * selects:
+	 * - all of previous steps
+	 * - transformed columns with selects
+	 */
+	private QueryStep buildEventSelectQueryStep(
+			ConversionContext context,
+			CQTable table,
+			String conceptLabel, QueryStep previous
+	) {
+		if (table.getSelects().isEmpty()) {
+			return previous;
+		}
+
+		ConceptSelects eventSelectSelects = this.prepareEventSelectSelects(context, table, previous);
+		String eventSelectCteName = "concept_%s_event_select".formatted(conceptLabel);
+
+		return QueryStep.builder()
+						.cteName(eventSelectCteName)
+						.fromTable(QueryStep.toTableLike(previous.getCteName()))
+						.selects(eventSelectSelects)
+						.conditions(List.of())
+						.predecessors(List.of(previous))
+						.build();
+	}
+
+	/**
+	 * selects:
+	 * - all of previous step
+	 * - remove filter
+	 */
+	private QueryStep buildEventFilterQueryStep(
+			ConversionContext context,
+			CQTable table,
+			String conceptLabel,
+			QueryStep previous
+	) {
+		if (table.getFilters().isEmpty()) {
+			return previous;
+		}
+
+		ConceptSelects eventFilterSelects = this.prepareEventFilterSelects(previous);
+		List<Condition> eventFilterConditions = this.buildEventFilterConditions(context, table);
+		String eventFilterCteName = "concept_%s_event_filter".formatted(conceptLabel);
+
+		return QueryStep.builder()
+						.cteName(eventFilterCteName)
+						.fromTable(QueryStep.toTableLike(previous.getCteName()))
+						.selects(eventFilterSelects)
+						.conditions(eventFilterConditions)
+						.predecessors(List.of(previous))
+						.build();
+	}
+
+	/**
+	 * selects:
+	 * - all of previous step
+	 */
+	private QueryStep buildFinalQueryStep(String conceptLabel, QueryStep previous) {
+		ConceptSelects finalSelects = ((ConceptSelects) previous.getQualifiedSelects());
+		return QueryStep.builder()
+						.cteName("concept_%s".formatted(conceptLabel))
+						.fromTable(QueryStep.toTableLike(previous.getCteName()))
+						.selects(finalSelects)
+						.conditions(List.of())
+						.predecessors(List.of(previous))
+						.build();
+	}
+
+	private ConceptSelects prepareDateRestrictionSelects(CQConcept node, QueryStep previous) {
+		ConceptSelects.ConceptSelectsBuilder selectsBuilder = ((ConceptSelects) previous.getQualifiedSelects()).toBuilder();
+		selectsBuilder.dateRestriction(Optional.empty());
+		if (node.isExcludeFromTimeAggregation()) {
+			selectsBuilder.validityDate(Optional.empty());
+		}
+		return selectsBuilder.build();
+	}
+
+	private List<Condition> buildDateRestriction(ConversionContext context, QueryStep previous) {
+		return ((ConceptSelects) previous.getSelects()).getDateRestriction()
+													   .map(dateRestrictionColumn -> getDateRestrictionAsCondition(context, previous, dateRestrictionColumn))
+													   .orElseGet(List::of);
+	}
+
+	private static List<Condition> getDateRestrictionAsCondition(ConversionContext context, QueryStep previous, Field<Object> dateRestrictionColumn) {
+		return previous.getSelects().getValidityDate().stream()
+					   .map(validityDateColumn -> context.getSqlDialect().getFunction().dateRestriction(dateRestrictionColumn, validityDateColumn))
+					   .toList();
+	}
+
+	private ConceptSelects prepareEventSelectSelects(
+			ConversionContext context,
+			CQTable table,
+			QueryStep previous
+	) {
+		return ((ConceptSelects) previous.getQualifiedSelects()).toBuilder()
+																.eventSelect(this.getEventSelects(context, table))
+																.build();
+	}
+
+	private ConceptSelects prepareEventFilterSelects(QueryStep previous) {
+		return ((ConceptSelects) previous.getQualifiedSelects()).toBuilder()
+																.eventFilter(List.of())
+																.build();
+	}
+
+	private List<Condition> buildEventFilterConditions(ConversionContext context, CQTable table) {
 		return table.getFilters().stream()
-					.map(filter -> filterConverterService.convert(filter, context))
+					.map(filterValue -> this.filterConverterService.convert(filterValue, context))
 					.toList();
 	}
 
-	private String getPrimaryColumnName(CQTable table) {
-		// TODO add primary column to table
-		return "pid";
-	}
-
-	private List<Field<?>> getConceptSelects(CQTable table, ConversionContext context) {
+	private List<Field<Object>> getEventSelects(ConversionContext context, CQTable table) {
 		return table.getSelects().stream()
-					.map(select -> selectConverterService.convert(select, context))
-					.collect(Collectors.toList());
+					.map(select -> (Field<Object>) this.selectConverterService.convert(select, context))
+					.toList();
 	}
 
 }

@@ -8,9 +8,7 @@ import org.jooq.Condition;
 
 public class FilterConverterService extends ConverterService<FilterValue<?>, Condition> {
 
-	private static final List<? extends FilterConverter<?>> converters = List.of(new RealRangeConverter(), new MultiSelectConverter());
-
-	public FilterConverterService() {
+	public FilterConverterService(List<? extends FilterConverter<?>> converters) {
 		super(converters);
 	}
 }

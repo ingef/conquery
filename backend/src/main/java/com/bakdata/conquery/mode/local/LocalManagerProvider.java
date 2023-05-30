@@ -13,6 +13,9 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
+import com.bakdata.conquery.sql.DslContextFactory;
+import com.bakdata.conquery.sql.SqlContext;
+import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import io.dropwizard.setup.Environment;
 
 public class LocalManagerProvider implements ManagerProvider {
@@ -21,7 +24,9 @@ public class LocalManagerProvider implements ManagerProvider {
 
 	public DelegateManager<LocalNamespace> provideManager(ConqueryConfig config, Environment environment) {
 		InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
-		NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator);
+		// todo(tm): proper injection
+		SqlContext sqlContext = new SqlContext(config.getSqlConnectorConfig(), new PostgreSqlDialect(DslContextFactory.create(config.getSqlConnectorConfig())));
+		NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, sqlContext);
 		DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
 		creator.init(datasetRegistry);
 

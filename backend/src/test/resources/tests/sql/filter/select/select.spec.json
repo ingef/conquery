@@ -1,6 +1,7 @@
 {
   "label": "Single Big-Multi-Select Filter Query",
   "type": "SQL_TEST",
+  "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -51,7 +52,7 @@
   "content":{
     "tables":[
       {
-        "csv":"",
+        "csv":"tests/sql/filter/select/content.csv",
         "name":"table1",
         "primaryColumn":{
           "name":"pid",

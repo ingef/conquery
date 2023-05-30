@@ -8,10 +8,8 @@ public class CQDateRestrictionConverter implements NodeConverter<CQDateRestricti
 
 	@Override
 	public ConversionContext convert(CQDateRestriction node, ConversionContext context) {
-		// TODO if there is already a data restriction from a parent node, intersect both date ranges
 		ConversionContext childContext = context.withDateRestricionRange(node.getDateRange());
-		ConversionContext resultContext = context.getSqlConverterService().convert(node.getChild(), childContext);
-		return resultContext.withDateRestricionRange(null);
+		return context.getNodeConverterService().convert(node.getChild(), childContext).withDateRestricionRange(null);
 	}
 
 	@Override
