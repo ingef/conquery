@@ -261,7 +261,6 @@ const FormConceptGroup = (props: Props) => {
             ),
           );
         }}
-        conceptDropzoneText={props.conceptDropzoneText}
         items={props.value.map((row, i) => (
           <>
             <DropzoneListItem>

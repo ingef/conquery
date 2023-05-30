@@ -1,19 +1,17 @@
 import styled from "@emotion/styled";
-import { faPlus, faTimes } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode, useState } from "react";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { useState } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 
-import IconButton from "../../button/IconButton";
 import FaIcon from "../../icon/FaIcon";
 import Dropzone, {
-  ChildArgs,
   PossibleDroppableObject,
 } from "../../ui-components/Dropzone";
+import { useTranslation } from "react-i18next";
 
 interface Props<DroppableObject> {
   onDrop: (item: DroppableObject, monitor: DropTargetMonitor) => void;
   acceptedDropTypes: string[];
-  children?: (args: ChildArgs<DroppableObject>) => ReactNode;
   isFirstElement: boolean;
 }
 
@@ -32,7 +30,11 @@ const Root = styled("div")<{
 `;
 
 const PlusContainer = styled("div")`
-  margin: auto;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 21px;
 `;
 
 const DropzoneContainer = styled("div")`
@@ -41,26 +43,18 @@ const DropzoneContainer = styled("div")`
 `;
 
 const SxFaIcon = styled(FaIcon)`
-  height: 15px;
+  height: 12px;
   color: ${({ theme }) => theme.col.black};
   opacity: 0.75;
 `;
 
-const RemoveBtn = styled(IconButton)`
-  position: relative;
-  color: ${({ theme }) => theme.col.black};
-  top: -64px;
-  left: 97%;
-  z-index: 2;
-  background-color: white;
-`;
-
 const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   acceptedDropTypes,
-  children,
   onDrop,
   isFirstElement,
 }: Props<DroppableObject>) => {
+  const { t } = useTranslation();
+
   const SxDropzone = styled(Dropzone<DroppableObject>)`
     margin: 5px 0 5px 0;
   `;
@@ -100,15 +94,13 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
       )}
 
       {(showDropzone || isOver || isOver2) && (
-        <DropzoneContainer>
+        <DropzoneContainer ref={drop2} onClick={() => setShowDropzone(false)}>
           <SxDropzone
             acceptedDropTypes={acceptedDropTypes}
             onDrop={onDropped}
-            ref={drop2}
           >
-            {children}
+            {() => t("externalForms.default.dropBetweenLabel")}
           </SxDropzone>
-          <RemoveBtn icon={faTimes} />
         </DropzoneContainer>
       )}
     </>
