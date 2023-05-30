@@ -409,7 +409,7 @@ const Value = ({
       </span>
     );
   } else if (typeof value === "boolean") {
-    return <span>{value ? "" : "false"}</span>;
+    return <span>{value ? "✔" : "✗"}</span>;
   } else if (value instanceof Array) {
     return (
       <>
