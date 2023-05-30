@@ -2,12 +2,12 @@ import styled from "@emotion/styled";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
+import { useTranslation } from "react-i18next";
 
 import FaIcon from "../../icon/FaIcon";
 import Dropzone, {
   PossibleDroppableObject,
 } from "../../ui-components/Dropzone";
-import { useTranslation } from "react-i18next";
 
 interface Props<DroppableObject> {
   onDrop: (item: DroppableObject, monitor: DropTargetMonitor) => void;
@@ -95,10 +95,7 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
 
       {(showDropzone || isOver || isOver2) && (
         <DropzoneContainer ref={drop2} onClick={() => setShowDropzone(false)}>
-          <SxDropzone
-            acceptedDropTypes={acceptedDropTypes}
-            onDrop={onDropped}
-          >
+          <SxDropzone acceptedDropTypes={acceptedDropTypes} onDrop={onDropped}>
             {() => t("externalForms.default.dropBetweenLabel")}
           </SxDropzone>
         </DropzoneContainer>
