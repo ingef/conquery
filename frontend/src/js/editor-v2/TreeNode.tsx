@@ -6,8 +6,9 @@ import { useTranslation } from "react-i18next";
 
 import { DNDType } from "../common/constants/dndTypes";
 import { Icon } from "../icon/FaIcon";
-import { nodeIsConceptQueryNode } from "../model/node";
+import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { getRootNodeLabel } from "../standard-query-editor/helper";
+import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
 import { Connector, Grid } from "./EditorLayout";
@@ -23,6 +24,7 @@ const NodeContainer = styled("div")`
 
 const Node = styled("div")<{
   selected?: boolean;
+  active?: boolean;
   negated?: boolean;
   leaf?: boolean;
   isDragging?: boolean;
@@ -30,10 +32,16 @@ const Node = styled("div")<{
   padding: ${({ leaf, isDragging }) =>
     leaf ? "8px 10px" : isDragging ? "5px" : "24px"};
   border: 2px solid
-    ${({ negated, theme, selected }) =>
-      negated ? "red" : selected ? theme.col.gray : theme.col.grayMediumLight};
+    ${({ negated, theme, selected, active }) =>
+      negated
+        ? theme.col.red
+        : active
+        ? theme.col.blueGrayDark
+        : selected
+        ? theme.col.gray
+        : theme.col.grayMediumLight};
   box-shadow: ${({ selected, theme }) =>
-    selected ? `inset 0px 0px 0px 2px ${theme.col.gray}` : "none"};
+    selected ? `inset 0px 0px 0px 4px ${theme.col.blueGrayVeryLight}` : "none"};
 
   border-radius: ${({ theme }) => theme.borderRadius};
   width: ${({ leaf }) => (leaf ? "180px" : "inherit")};
@@ -148,6 +156,8 @@ export function TreeNode({
 
   const rootNodeLabel = tree.data ? getRootNodeLabel(tree.data) : null;
 
+  const { active, tooltipText } = useActiveState(tree.data);
+
   const onDropOutsideOfNode = ({
     pos,
     direction,
@@ -240,110 +250,113 @@ export function TreeNode({
           onDrop={() => {}}
         >
           {({ canDrop }) => (
-            <Node
-              isDragging={canDrop}
-              negated={tree.negation}
-              leaf={!tree.children}
-              selected={selectedNode?.id === tree.id}
-              onDoubleClick={onDoubleClick}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedNodeId(tree.id);
-              }}
-            >
-              {tree.dates?.restriction && (
-                <Dates>
-                  <DateRange dateRange={tree.dates.restriction} />
-                </Dates>
-              )}
-              {tree.dates?.excluded && (
-                <Dates>
-                  <Icon red icon={faCalendarMinus} left />
-                  {t("editorV2.datesExcluded")}
-                </Dates>
-              )}
-              {(!tree.children || tree.data) && (
-                <div>
-                  {tree.data?.type !== DNDType.CONCEPT_TREE_NODE && (
-                    <PreviousQueryLabel>
-                      {t("queryEditor.previousQuery")}
-                    </PreviousQueryLabel>
-                  )}
-                  {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-                  {tree.data?.label && <Name>{tree.data.label}</Name>}
-                  {tree.data && nodeIsConceptQueryNode(tree.data) && (
-                    <Description>{tree.data?.description}</Description>
-                  )}
-                </div>
-              )}
-              {tree.children && (
-                <Grid style={gridStyles}>
-                  <InvisibleDropzone
-                    key="dropzone-before"
-                    naked
-                    bare
-                    onDrop={(item) => onDropAtChildrenIdx({ idx: 0, item })}
-                  >
-                    {() => (
-                      <Connection connection={tree.children?.connection} />
+            <WithTooltip text={tooltipText}>
+              <Node
+                isDragging={canDrop}
+                active={active}
+                negated={tree.negation}
+                leaf={!tree.children}
+                selected={selectedNode?.id === tree.id}
+                onDoubleClick={onDoubleClick}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedNodeId(tree.id);
+                }}
+              >
+                {tree.dates?.restriction && (
+                  <Dates>
+                    <DateRange dateRange={tree.dates.restriction} />
+                  </Dates>
+                )}
+                {tree.dates?.excluded && (
+                  <Dates>
+                    <Icon red icon={faCalendarMinus} left />
+                    {t("editorV2.datesExcluded")}
+                  </Dates>
+                )}
+                {(!tree.children || tree.data) && (
+                  <div>
+                    {tree.data?.type !== DNDType.CONCEPT_TREE_NODE && (
+                      <PreviousQueryLabel>
+                        {t("queryEditor.previousQuery")}
+                      </PreviousQueryLabel>
                     )}
-                  </InvisibleDropzone>
-                  {tree.children.items.map((item, i, items) => (
-                    <>
-                      <TreeNode
-                        key={item.id}
-                        tree={item}
-                        treeParent={tree}
-                        updateTreeNode={updateTreeNode}
-                        selectedNode={selectedNode}
-                        setSelectedNodeId={setSelectedNodeId}
-                        droppable={{
-                          h:
-                            !item.children &&
-                            tree.children?.direction === "vertical",
-                          v:
-                            !item.children &&
-                            tree.children?.direction === "horizontal",
-                        }}
-                      />
-                      {i < items.length - 1 && (
-                        <InvisibleDropzoneContainer
-                          key={item.id + "connector"}
-                          acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
-                          naked
-                          bare
-                          transparent
-                          onDrop={(item) =>
-                            onDropAtChildrenIdx({ idx: i + 1, item })
-                          }
-                        >
-                          {() => (
-                            <Connection
-                              connection={tree.children?.connection}
-                            />
-                          )}
-                        </InvisibleDropzoneContainer>
+                    {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
+                    {tree.data?.label && <Name>{tree.data.label}</Name>}
+                    {tree.data && nodeIsConceptQueryNode(tree.data) && (
+                      <Description>{tree.data?.description}</Description>
+                    )}
+                  </div>
+                )}
+                {tree.children && (
+                  <Grid style={gridStyles}>
+                    <InvisibleDropzone
+                      key="dropzone-before"
+                      naked
+                      bare
+                      onDrop={(item) => onDropAtChildrenIdx({ idx: 0, item })}
+                    >
+                      {() => (
+                        <Connection connection={tree.children?.connection} />
                       )}
-                    </>
-                  ))}
-                  <InvisibleDropzone
-                    key="dropzone-after"
-                    naked
-                    bare
-                    onDrop={(item) =>
-                      onDropAtChildrenIdx({
-                        idx: tree.children!.items.length,
-                        item,
-                      })
-                    }
-                  >
-                    {() => (
-                      <Connection connection={tree.children?.connection} />
-                    )}
-                  </InvisibleDropzone>
-                </Grid>
-              )}
-            </Node>
+                    </InvisibleDropzone>
+                    {tree.children.items.map((item, i, items) => (
+                      <>
+                        <TreeNode
+                          key={item.id}
+                          tree={item}
+                          treeParent={tree}
+                          updateTreeNode={updateTreeNode}
+                          selectedNode={selectedNode}
+                          setSelectedNodeId={setSelectedNodeId}
+                          droppable={{
+                            h:
+                              !item.children &&
+                              tree.children?.direction === "vertical",
+                            v:
+                              !item.children &&
+                              tree.children?.direction === "horizontal",
+                          }}
+                        />
+                        {i < items.length - 1 && (
+                          <InvisibleDropzoneContainer
+                            key={item.id + "connector"}
+                            acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
+                            naked
+                            bare
+                            transparent
+                            onDrop={(item) =>
+                              onDropAtChildrenIdx({ idx: i + 1, item })
+                            }
+                          >
+                            {() => (
+                              <Connection
+                                connection={tree.children?.connection}
+                              />
+                            )}
+                          </InvisibleDropzoneContainer>
+                        )}
+                      </>
+                    ))}
+                    <InvisibleDropzone
+                      key="dropzone-after"
+                      naked
+                      bare
+                      onDrop={(item) =>
+                        onDropAtChildrenIdx({
+                          idx: tree.children!.items.length,
+                          item,
+                        })
+                      }
+                    >
+                      {() => (
+                        <Connection connection={tree.children?.connection} />
+                      )}
+                    </InvisibleDropzone>
+                  </Grid>
+                )}
+              </Node>
+            </WithTooltip>
           )}
         </Dropzone>
         {droppable.h && (

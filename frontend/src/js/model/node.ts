@@ -7,6 +7,7 @@ import {
   faFolderOpen,
   faMinus,
 } from "@fortawesome/free-solid-svg-icons";
+import { useTranslation } from "react-i18next";
 
 import { ConceptElementT, ConceptT } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
@@ -148,4 +149,29 @@ export const canNodeBeDropped = (
   const itemAlreadyInNode = node.ids.includes(conceptId);
   const itemHasConceptRoot = item.tree === node.tree;
   return itemHasConceptRoot && !itemAlreadyInNode;
+};
+
+export const useActiveState = (node?: StandardQueryNodeT) => {
+  const { t } = useTranslation();
+
+  if (!node) {
+    return {
+      active: false,
+      tooltipText: undefined,
+    };
+  }
+
+  const hasNonDefaultSettings = !node.error && nodeHasNonDefaultSettings(node);
+  const hasFilterValues = nodeHasFilterValues(node);
+
+  const tooltipText = hasNonDefaultSettings
+    ? t("queryEditor.hasNonDefaultSettings")
+    : hasFilterValues
+    ? t("queryEditor.hasDefaultSettings")
+    : undefined;
+
+  return {
+    active: hasNonDefaultSettings || hasFilterValues,
+    tooltipText,
+  };
 };
