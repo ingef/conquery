@@ -37,6 +37,7 @@ public class ConceptsUIResource {
 	public View getConceptView() {
 		return new UIView<>(
 				"concept.html.ftl",
+				uiProcessor.getUIContext(),
 				concept
 		);
 	}

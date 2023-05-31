@@ -23,25 +23,25 @@ public class AdminUIResource {
 
 	@GET
 	public View getIndex() {
-		return new UIView<>("index.html.ftl");
+		return new UIView<>("index.html.ftl", uiProcessor.getUIContext());
 	}
 
 	@GET
 	@Path("script")
 	public View getScript() {
-		return new UIView<>("script.html.ftl");
+		return new UIView<>("script.html.ftl", uiProcessor.getUIContext());
 	}
 
 	@GET
 	@Path("jobs")
 	public View getJobs() {
-		return new UIView<>("jobs.html.ftl", uiProcessor.getAdminProcessor().getJobs());
+		return new UIView<>("jobs.html.ftl", uiProcessor.getUIContext(), uiProcessor.getAdminProcessor().getJobs());
 	}
 
 	@GET
 	@Path("queries")
 	public View getQueries() {
-		return new UIView<>("queries.html.ftl");
+		return new UIView<>("queries.html.ftl", uiProcessor.getUIContext());
 	}
 
 }

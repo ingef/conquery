@@ -83,8 +83,6 @@ public class AdminServlet {
 		jerseyConfig.register(new JacksonMessageBodyProvider(manager.getEnvironment().getObjectMapper()));
 		// freemarker support
 
-
-
 		adminProcessor = new AdminProcessor(
 				manager.getConfig(),
 				manager.getStorage(),
@@ -92,16 +90,16 @@ public class AdminServlet {
 				manager.getJobManager(),
 				manager.getMaintenanceService(),
 				manager.getValidator(),
-				manager.getManager().getNodeProvider()
+				manager.getNodeProvider()
 		);
 
 		adminDatasetProcessor = new AdminDatasetProcessor(
 				manager.getConfig(),
 				manager.getValidator(),
-				manager.getManager().getDatasetRegistry(),
+				manager.getDatasetRegistry(),
 				manager.getJobManager(),
-				manager.getManager().getImportHandler(),
-				manager.getManager().getStorageListener()
+				manager.getImportHandler(),
+				manager.getStorageListener()
 		);
 
 		final AuthCookieFilter authCookieFilter = manager.getConfig().getAuthentication().getAuthCookieFilter();

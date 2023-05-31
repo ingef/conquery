@@ -54,6 +54,7 @@ public class DatasetsUIResource {
 	public View listDatasetsUI() {
 		return new UIView<>(
 				"datasets.html.ftl",
+				uiProcessor.getUIContext(),
 				uiProcessor.getDatasetRegistry().getAllDatasets()
 		);
 	}
@@ -65,6 +66,7 @@ public class DatasetsUIResource {
 		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset.getId());
 		return new UIView<>(
 				"dataset.html.ftl",
+				uiProcessor.getUIContext(),
 				new DatasetInfos(
 						namespace.getDataset(),
 						namespace.getStorage().getSecondaryIds(),
@@ -116,9 +118,9 @@ public class DatasetsUIResource {
 		final Namespace namespace = uiProcessor.getDatasetRegistry().get(dataset.getId());
 		EntityIdMap mapping = namespace.getStorage().getIdMapping();
 		if (mapping != null && mapping.getInternalToPrint() != null) {
-			return new UIView<>("idmapping.html.ftl", mapping.getInternalToPrint());
+			return new UIView<>("idmapping.html.ftl", uiProcessor.getUIContext(), mapping.getInternalToPrint());
 		}
-		return new UIView<>("add_idmapping.html.ftl", namespace.getDataset().getId());
+		return new UIView<>("add_idmapping.html.ftl", uiProcessor.getUIContext(), namespace.getDataset().getId());
 	}
 
 	@Data

@@ -40,6 +40,7 @@ public class ConnectorUIResource {
 	public View getConnectorView() {
 		return new UIView<>(
 				"connector.html.ftl",
+				uiProcessor.getUIContext(),
 				connector
 		);
 	}

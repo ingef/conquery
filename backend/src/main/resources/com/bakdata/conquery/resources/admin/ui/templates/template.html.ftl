@@ -70,7 +70,7 @@
 				</ul>
 				<!-- Status of the shardNodes -->
 				<div>
-					<#list ctx.namespaces.shardNodes as key,shardNode>
+					<#list ctx.shardNodes as key,shardNode>
 						<i class="fas fa-circle <#if shardNode.connected>text-success<#else>text-danger</#if>"></i>
 					</#list>
 				</div>
