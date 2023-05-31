@@ -33,14 +33,24 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 @CPSType(id = "FULL_EXPORT_FORM", base = QueryDescription.class)
 public class FullExportForm extends Form implements InternalForm {
+
+	@Getter
+	@Setter
+	@EqualsAndHashCode.Exclude
+	private JsonNode values;
+
 
 	@NotNull
 	@JsonProperty("queryGroup")

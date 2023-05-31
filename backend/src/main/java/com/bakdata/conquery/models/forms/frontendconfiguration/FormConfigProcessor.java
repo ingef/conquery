@@ -72,7 +72,7 @@ public class FormConfigProcessor {
 			// If no specific form type is provided, show all types the subject is permitted to create.
 			// However if a subject queries for specific form types, we will show all matching regardless whether
 			// the form config can be used by the subject again.
-			Set<String> allowedFormTypes = new HashSet<>();
+			final Set<String> allowedFormTypes = new HashSet<>();
 
 			for (FormType formType : FormScanner.FRONTEND_FORM_CONFIGS.values()) {
 				if (!subject.isPermitted(formType, Ability.CREATE)) {
@@ -86,10 +86,10 @@ public class FormConfigProcessor {
 
 		final Set<String> formTypesFinal = requestedFormType;
 
-		Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
-										   .filter(c -> dataset.equals(c.getDataset()))
-										   .filter(c -> formTypesFinal.contains(c.getFormType()))
-										   .filter(c -> subject.isPermitted(c, Ability.READ));
+		final Stream<FormConfig> stream = storage.getAllFormConfigs().stream()
+												 .filter(c -> dataset.equals(c.getDataset()))
+												 .filter(c -> formTypesFinal.contains(c.getFormType()))
+												 .filter(c -> subject.isPermitted(c, Ability.READ));
 
 
 		return stream.map(c -> c.overview(subject));
@@ -117,7 +117,7 @@ public class FormConfigProcessor {
 
 		subject.authorize(namespace.getDataset(), Ability.READ);
 
-		FormConfig internalConfig = config.intern(storage.getUser(subject.getId()), targetDataset);
+		final FormConfig internalConfig = config.intern(storage.getUser(subject.getId()), targetDataset);
 		// Add the config immediately to the submitted dataset
 		addConfigToDataset(internalConfig);
 
@@ -151,14 +151,14 @@ public class FormConfigProcessor {
 	 * Deletes a configuration from the storage and all permissions, that have this configuration as target.
 	 */
 	public void deleteConfig(Subject subject, FormConfig config) {
-		User user = storage.getUser(subject.getId());
+		final User user = storage.getUser(subject.getId());
 
 		user.authorize(config, Ability.DELETE);
 		storage.removeFormConfig(config.getId());
 		// Delete corresponding permissions (Maybe better to put it into a slow job)
 		for (ConqueryPermission permission : user.getPermissions()) {
 
-			WildcardPermission wpermission = (WildcardPermission) permission;
+			final WildcardPermission wpermission = (WildcardPermission) permission;
 
 			if (!wpermission.getDomains().contains(FormConfigPermission.DOMAIN.toLowerCase())) {
 				continue;
@@ -169,9 +169,9 @@ public class FormConfigProcessor {
 
 			if (!wpermission.getInstances().isEmpty()) {
 				// Create new permission if it was a composite permission
-				Set<String> instancesCleared = new HashSet<>(wpermission.getInstances());
+				final Set<String> instancesCleared = new HashSet<>(wpermission.getInstances());
 				instancesCleared.remove(config.getId().toString());
-				WildcardPermission clearedPermission =
+				final WildcardPermission clearedPermission =
 						new WildcardPermission(List.of(wpermission.getDomains(), wpermission.getAbilities(), instancesCleared), Instant.now());
 				user.addPermission(clearedPermission);
 			}

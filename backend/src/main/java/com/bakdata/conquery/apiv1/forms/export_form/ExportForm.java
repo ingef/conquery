@@ -37,18 +37,27 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @CPSType(id = "EXPORT_FORM", base = QueryDescription.class)
 @EqualsAndHashCode(callSuper = true)
+@ToString
 public class ExportForm extends Form implements InternalForm {
+
+	@Getter
+	@Setter
+	@EqualsAndHashCode.Exclude
+	private JsonNode values;
+
 
 	@NotNull
 	@JsonProperty("queryGroup")
