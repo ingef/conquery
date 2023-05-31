@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -9,12 +10,13 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 import c10n.C10N;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
+import com.bakdata.conquery.apiv1.query.CQYes;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.apiv1.query.TableExportQuery;
@@ -46,13 +48,14 @@ import lombok.ToString;
 @CPSType(id = "FULL_EXPORT_FORM", base = QueryDescription.class)
 public class FullExportForm extends Form implements InternalForm {
 
+	@Nullable
 	@Getter
 	@Setter
 	@EqualsAndHashCode.Exclude
 	private JsonNode values;
 
 
-	@NotNull
+	@Nullable
 	@JsonProperty("queryGroup")
 	private ManagedExecutionId queryGroupId;
 
@@ -78,7 +81,16 @@ public class FullExportForm extends Form implements InternalForm {
 
 		// Forms are sent as an array of standard queries containing AND/OR of CQConcepts, we ignore everything and just convert the CQConcepts into CQUnfiltered for export.
 
-		final TableExportQuery exportQuery = new TableExportQuery(queryGroup.getQuery());
+		final Query query;
+
+		if (queryGroupId != null) {
+			query = queryGroup.getQuery();
+		}
+		else {
+			query = new ConceptQuery(new CQYes());
+		}
+
+		final TableExportQuery exportQuery = new TableExportQuery(query);
 		exportQuery.setDateRange(getDateRange());
 
 		exportQuery.setTables(tables);
@@ -93,12 +105,18 @@ public class FullExportForm extends Form implements InternalForm {
 
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
+		if (queryGroupId == null) {
+			return Collections.emptySet();
+		}
+
 		return Set.of(queryGroupId);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		queryGroup = (ManagedQuery) context.getStorage().getExecution(queryGroupId);
+		if (queryGroupId != null) {
+			queryGroup = (ManagedQuery) context.getStorage().getExecution(queryGroupId);
+		}
 	}
 
 	@Override
