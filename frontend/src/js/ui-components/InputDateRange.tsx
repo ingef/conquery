@@ -14,7 +14,7 @@ import {
 import { exists } from "../common/helpers/exists";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
-import InputDate from "./InputDate";
+import InputDate from "./InputDate/InputDate";
 import Label from "./Label";
 import Labeled from "./Labeled";
 import Optional from "./Optional";
