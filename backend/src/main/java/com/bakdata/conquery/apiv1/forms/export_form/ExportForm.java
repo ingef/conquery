@@ -1,11 +1,13 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.ValidationException;
 import javax.validation.constraints.NotEmpty;
@@ -16,6 +18,8 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.apiv1.forms.InternalForm;
 import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.CQYes;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.internationalization.ExportFormC10n;
@@ -59,7 +63,7 @@ public class ExportForm extends Form implements InternalForm {
 	private JsonNode values;
 
 
-	@NotNull
+	@Nullable
 	@JsonProperty("queryGroup")
 	private ManagedExecutionId queryGroupId;
 
@@ -106,19 +110,28 @@ public class ExportForm extends Form implements InternalForm {
 
 	@Override
 	public Set<ManagedExecutionId> collectRequiredQueries() {
+		if (queryGroupId == null) {
+			return Collections.emptySet();
+		}
+
 		return Set.of(queryGroupId);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
-		queryGroup = (ManagedQuery) context.getStorage().getExecution(queryGroupId);
+		if(queryGroupId != null) {
+			queryGroup = (ManagedQuery) context.getStorage().getExecution(queryGroupId);
+			prerequisite = queryGroup.getQuery();
+		}
+		else {
+			prerequisite = new ConceptQuery(new CQYes());
+		}
 
 
 		// Apply defaults to user concept
 		ExportForm.DefaultSelectSettable.enable(features);
 
 		timeMode.resolve(context);
-		prerequisite = queryGroup.getQuery();
 
 		List<Resolution> resolutionsFlat = resolution.stream()
 													 .flatMap(ResolutionShortNames::correspondingResolutions)
