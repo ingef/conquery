@@ -10,25 +10,18 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
  */
 public interface StorageListener {
 
-	default void onAddSecondaryId(SecondaryIdDescription secondaryId) {
-	}
+	void onAddSecondaryId(SecondaryIdDescription secondaryId);
 
-	default void onDeleteSecondaryId(SecondaryIdDescription description) {
-	}
+	void onDeleteSecondaryId(SecondaryIdDescription description);
 
-	default void onAddTable(Table table) {
-	}
+	void onAddTable(Table table);
 
-	default void onRemoveTable(Table table) {
-	}
+	void onRemoveTable(Table table);
 
-	default void onAddConcept(Concept<?> concept) {
-	}
+	void onAddConcept(Concept<?> concept);
 
-	default void onDeleteConcept(Concept<?> concept) {
-	}
+	void onDeleteConcept(Concept<?> concept);
 
-	default void onUpdateMatchingStats(final Dataset dataset) {
-	}
+	void onUpdateMatchingStats(final Dataset dataset);
 
 }
