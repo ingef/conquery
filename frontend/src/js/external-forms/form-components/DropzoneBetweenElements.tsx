@@ -61,14 +61,14 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
 
   const [showDropzone, setShowDropzone] = useState(false);
 
-  const [{ isOver, isDroppable }, drop] = useDrop({
+  const [{ isOver, isDroppable }, addZoneRef] = useDrop({
     accept: acceptedDropTypes,
     collect: (monitor) => ({
       isOver: monitor.isOver(),
       isDroppable: monitor.canDrop(),
     }),
   });
-  const [{ isOver: isOver2 }, drop2] = useDrop({
+  const [{ isOver: isOver2 }, dropzoneWrapperRef] = useDrop({
     accept: acceptedDropTypes,
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -84,7 +84,7 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
     <>
       {!(showDropzone || isOver || isOver2) && (
         <Root
-          ref={drop}
+          ref={addZoneRef}
           isOver={isOver}
           isDroppable={isDroppable}
           isFirstElement={isFirstElement}
@@ -96,7 +96,10 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
       )}
 
       {(showDropzone || isOver || isOver2) && (
-        <DropzoneContainer ref={drop2} onClick={() => setShowDropzone(false)}>
+        <DropzoneContainer
+          ref={dropzoneWrapperRef}
+          onClick={() => setShowDropzone(false)}
+        >
           <SxDropzone acceptedDropTypes={acceptedDropTypes} onDrop={onDrop}>
             {() => t("externalForms.default.dropBetweenLabel")}
           </SxDropzone>

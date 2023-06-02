@@ -200,7 +200,7 @@ const FormConceptGroup = (props: Props) => {
             ? t("externalForms.common.concept.copying")
             : props.attributeDropzoneText
         }
-        dropInbetween={(i: number) => {
+        dropBetween={(i: number) => {
           return (item: DragItemConceptTreeNode) => {
             if (isMovedObject(item)) {
               return props.onChange(

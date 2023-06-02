@@ -52,7 +52,7 @@ interface PropsT<DroppableObject> {
   ) => void;
   onDropFile: (file: File) => void;
   onImportLines: (lines: string[]) => void;
-  dropInbetween: (
+  dropBetween: (
     i: number,
   ) => (item: DroppableObject, monitor: DropTargetMonitor) => void;
 }
@@ -70,11 +70,13 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
     disallowMultipleColumns,
     onDrop,
     onImportLines,
-    dropInbetween,
+    dropBetween,
   }: PropsT<DroppableObject>,
   ref: Ref<HTMLDivElement>,
 ) => {
-  const SxDropzoneWithFileInput = styled(DropzoneWithFileInput<DroppableObject>)`
+  const SxDropzoneWithFileInput = styled(
+    DropzoneWithFileInput<DroppableObject>,
+  )`
     margin-top: 5px;
   `;
   // allow at least one column
@@ -99,7 +101,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
               {!disallowMultipleColumns && (
                 <DropzoneBetweenElements
                   acceptedDropTypes={acceptedDropTypes}
-                  onDrop={dropInbetween(i)}
+                  onDrop={dropBetween(i)}
                   isFirstElement={i === 0}
                 />
               )}
