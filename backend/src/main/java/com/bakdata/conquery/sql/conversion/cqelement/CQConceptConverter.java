@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
@@ -54,7 +55,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	private String getConceptLabel(CQConcept node) {
-		return node.getLabel()
+		// only relevant for debugging purposes as it will be part of the generated SQL query
+		return node.getUserOrDefaultLabel(Locale.ENGLISH)
 				   .toLowerCase()
 				   .replace(' ', '_');
 	}
