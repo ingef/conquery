@@ -12,9 +12,12 @@ import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.mapping.AutoIncrementingPseudomizer;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.EntityPrintId;
 import com.bakdata.conquery.models.identifiable.mapping.FullIdPrinter;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -53,6 +56,10 @@ public class IdColumnUtil {
 								 .orElseThrow();
 
 		if (owner.isPermitted(execution.getDataset(), Ability.PRESERVE_ID)) {
+			// todo(tm): The integration of ids in the sql connector needs to be properly managed
+			if (execution instanceof SqlManagedQuery) {
+				return entityResult -> EntityPrintId.from(String.valueOf(entityResult.getEntityId()));
+			}
 			return new FullIdPrinter(namespace.getStorage().getPrimaryDictionary(), namespace.getStorage().getIdMapping(), size, pos);
 		}
 

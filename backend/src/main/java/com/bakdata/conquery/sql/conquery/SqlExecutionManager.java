@@ -33,16 +33,18 @@ public class SqlExecutionManager implements ExecutionManager {
 	@Override
 	public SqlManagedQuery runQuery(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
 		SqlManagedQuery execution = createExecution(query, user, submittedDataset, system);
-		// todo(tm): Non-blocking
+		execution.initExecutable(namespace, config);
+		execution.start();
+		// todo(tm): Non-blocking execution
 		SqlExecutionResult result = this.executionService.execute(execution.getSqlQuery());
-		execution.setResult(result);
+		execution.finish(result);
 		return execution;
 	}
 
 	@Override
 	public void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
 		if (!(execution instanceof SqlManagedQuery)) {
-			return;
+			throw new UnsupportedOperationException("The SQL execution manager can only execute SQL queries, but got a %s".formatted(execution.getClass()));
 		}
 
 		this.executionService.execute(((SqlManagedQuery) execution).getSqlQuery());
@@ -50,8 +52,9 @@ public class SqlExecutionManager implements ExecutionManager {
 
 	@Override
 	public SqlManagedQuery createExecution(QueryDescription query, User user, Dataset submittedDataset, boolean system) {
-		SqlQuery converted = this.converter.convert(query);
-		SqlManagedQuery sqlManagedQuery = new SqlManagedQuery((Query) query, user, submittedDataset, metaStorage, converted);
+		Query castQuery = (Query) query;
+		SqlQuery converted = this.converter.convert(castQuery);
+		SqlManagedQuery sqlManagedQuery = new SqlManagedQuery(castQuery, user, submittedDataset, metaStorage, converted);
 		metaStorage.addExecution(sqlManagedQuery);
 		return sqlManagedQuery;
 	}

@@ -54,7 +54,6 @@ public class SqlStandaloneSupport implements TestSupport {
 		registry.setMetaStorage(metaStorage);
 		creator.init(registry);
 
-
 		testUser = getConfig().getAuthorizationRealms().getInitialUsers().get(0).createOrOverwriteUser(metaStorage);
 		metaStorage.updateUser(testUser);
 		namespace = registry.createNamespace(storage);

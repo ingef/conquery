@@ -25,17 +25,17 @@ public class PostgreSqlDialect implements SqlDialect {
 
 	@Override
 	public List<NodeConverter<? extends Visitable>> getNodeConverters() {
-		return this.getDefaultNodeConverters(this.dslContext);
+		return getDefaultNodeConverters();
 	}
 
 	@Override
 	public List<FilterConverter<? extends FilterValue<?>>> getFilterConverters() {
-		return SqlDialect.getDefaultFilterConverters();
+		return getDefaultFilterConverters();
 	}
 
 	@Override
 	public List<SelectConverter<? extends Select>> getSelectConverters() {
-		return SqlDialect.getDefaultSelectConverters();
+		return getDefaultSelectConverters();
 	}
 
 	@Override
