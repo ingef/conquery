@@ -415,7 +415,7 @@ const Value = ({
       <>
         {value.slice(0, 10).map((v, idx) => (
           <>
-            <Value value={v} isElement={idx < value.length - 1} />
+            <Value key={idx} value={v} isElement={idx < value.length - 1} />
           </>
         ))}
         {value.length > 10 && <span>{`... +${value.length - 10}`}</span>}
@@ -458,7 +458,7 @@ const Connection = memo(({ connection }: { connection?: ConnectionKind }) => {
 });
 
 const SectionHeading = styled("h4")`
-  font-weight: 400;
+  font-weight: 700;
   color: ${(props) => props.theme.col.blueGrayDark};
   margin: 0;
   text-transform: uppercase;
