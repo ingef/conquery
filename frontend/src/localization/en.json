@@ -3,8 +3,11 @@
   "headline": "Queries and Analyses",
   "error": {
     "sorry": "Sorry, something went wrong here",
-    "description": "Please try again. If this happens again, please leave us a message. That way, we can fix this issue.",
-    "reload": "Refresh page"
+    "description": "But it's not your fault. It's an issue on our side.",
+    "reset": "Reset",
+    "resetDescription": "Try to reset. If the issue happens again, please reach out to us. Then we can fix this issue sooner.",
+    "reload": "Refresh page",
+    "reloadDescription": "If this happens again, please leave us a message. That way, we can fix this issue sooner."
   },
   "errorCodes": {
     "EXAMPLE_ERROR": "This is an example error",
