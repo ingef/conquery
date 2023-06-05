@@ -18,6 +18,8 @@ import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class TestForm extends Form implements InternalForm {
 
@@ -53,9 +55,19 @@ public abstract class TestForm extends Form implements InternalForm {
 
 	@CPSType(id = "TEST_FORM_ABS_URL", base = QueryDescription.class)
 	public static class Abs extends TestForm {
+		@Nullable
+		@Override
+		public JsonNode getValues() {
+			return null;
+		}
 	}
 
 	@CPSType(id = "TEST_FORM_REL_URL", base = QueryDescription.class)
 	public static class Rel extends TestForm {
+		@Nullable
+		@Override
+		public JsonNode getValues() {
+			return null;
+		}
 	}
 }

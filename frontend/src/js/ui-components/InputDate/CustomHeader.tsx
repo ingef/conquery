@@ -34,6 +34,12 @@ export const OptionList = styled(List)`
 export const MonthYearLabel = styled("div")`
   font-weight: bold;
   cursor: pointer;
+  transition: opacity ${({ theme }) => theme.transitionTime};
+  opacity: 0.75;
+
+  &:hover {
+    opacity: 1;
+  }
 `;
 
 const SelectMenu = ({
