@@ -194,7 +194,7 @@ export const History = () => {
           onLoadFromFile={onLoadFromFile}
           onResetHistory={onResetEntityStatus}
         />
-        <ErrorBoundary FallbackComponent={ErrorFallback}>
+        <ErrorBoundary fallback={<ErrorFallback allowFullRefresh />}>
           <Main>
             <Header>
               <Controls>

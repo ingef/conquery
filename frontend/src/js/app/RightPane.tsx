@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
+import { ResetableErrorBoundary } from "../error-fallback/ResetableErrorBoundary";
 import FormsTab from "../external-forms/FormsTab";
 import Pane from "../pane/Pane";
 import { TabNavigationTab } from "../pane/TabNavigation";
@@ -59,7 +60,9 @@ const RightPane = () => {
         <TimebasedQueryEditorTab />
       </Tab>
       <Tab key={tabs[2].key} isActive={activeTab === tabs[2].key}>
-        <FormsTab />
+        <ResetableErrorBoundary>
+          <FormsTab />
+        </ResetableErrorBoundary>
       </Tab>
     </SxPane>
   );
