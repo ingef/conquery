@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { memo, useCallback, useRef } from "react";
 import { useDrag } from "react-dnd";
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { QueryT } from "../api/types";
@@ -9,8 +8,6 @@ import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import {
-  nodeHasNonDefaultSettings,
-  nodeHasFilterValues,
   nodeIsConceptQueryNode,
   canNodeBeDropped,
   useActiveState,
