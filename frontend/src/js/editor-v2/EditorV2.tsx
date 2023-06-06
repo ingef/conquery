@@ -179,8 +179,7 @@ export function EditorV2({
     }
   }, [selectedNode, setTree, updateTreeNode]);
 
-  useHotkeys(HOTKEYS.delete[0].keyname, onDelete, [onDelete]);
-  useHotkeys(HOTKEYS.delete[1].keyname, onDelete, [onDelete]);
+  useHotkeys(HOTKEYS.delete.keyname, onDelete, [onDelete]);
   useHotkeys(HOTKEYS.flip.keyname, onFlip, [onFlip]);
   useHotkeys(HOTKEYS.reset.keyname, onReset, [onReset]);
 
@@ -412,7 +411,9 @@ export function EditorV2({
                 </KeyboardShortcutTooltip>
               )}
               {selectedNode && (
-                <KeyboardShortcutTooltip keyname={HOTKEYS.delete[0].keyname}>
+                <KeyboardShortcutTooltip
+                  keyname={HOTKEYS.delete.keyname.join(" | ")}
+                >
                   <IconButton
                     icon={faTrashCan}
                     tight

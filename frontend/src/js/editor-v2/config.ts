@@ -10,7 +10,7 @@ export const HOTKEYS = {
   expand: { keyname: "x" },
   negate: { keyname: "n" },
   editDates: { keyname: "d" },
-  delete: [{ keyname: "backspace" }, { keyname: "del" }],
+  delete: { keyname: ["backspace", "del"] },
   flip: { keyname: "f" },
   rotateConnector: { keyname: "c" },
   editTimeConnection: { keyname: "t" },
