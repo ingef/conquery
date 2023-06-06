@@ -1,4 +1,3 @@
-import { FC } from "react";
 import { useFormContext, useFormState } from "react-hook-form";
 import { useSelector } from "react-redux";
 
@@ -37,7 +36,7 @@ const isButtonEnabled = ({
   );
 };
 
-const FormQueryRunner: FC = () => {
+const FormQueryRunner = () => {
   const datasetId = useDatasetId();
   const queryRunner = useSelector<StateT, QueryRunnerStateT | null>(
     selectQueryRunner,
@@ -83,7 +82,7 @@ const FormQueryRunner: FC = () => {
   return (
     <QueryRunner
       queryRunner={queryRunner}
-      isButtonEnabled={buttonEnabled}
+      disabled={!buttonEnabled}
       isQueryRunning={isQueryRunning}
       startQuery={startQuery}
       stopQuery={stopQuery}

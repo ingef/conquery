@@ -105,12 +105,14 @@ const ContentColumn: FC<PropsT> = ({
     <Column>
       <ContentCellGroup>
         <SectionHeading>{t("queryNodeEditor.properties")}</SectionHeading>
-        <CommonNodeSettings
-          excludeFromSecondaryId={node.excludeFromSecondaryId}
-          onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
-          excludeTimestamps={node.excludeTimestamps}
-          onToggleTimestamps={onToggleTimestamps}
-        />
+        {(onToggleSecondaryIdExclude || onToggleTimestamps) && (
+          <CommonNodeSettings
+            excludeFromSecondaryId={node.excludeFromSecondaryId}
+            onToggleSecondaryIdExclude={onToggleSecondaryIdExclude}
+            excludeTimestamps={node.excludeTimestamps}
+            onToggleTimestamps={onToggleTimestamps}
+          />
+        )}
         {nodeIsConceptQueryNode(node) && node.selects && (
           <NodeSelects
             selects={node.selects}

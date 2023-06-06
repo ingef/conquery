@@ -1,5 +1,6 @@
 import { useCallback } from "react";
 
+import { EditorV2Query } from "../editor-v2/types";
 import { EntityId } from "../entity-history/reducer";
 import { apiUrl } from "../environment";
 import type { FormConfigT } from "../previous-queries/list/reducer";
@@ -95,7 +96,10 @@ export const usePostQueries = () => {
   return useCallback(
     (
       datasetId: DatasetT["id"],
-      query: StandardQueryStateT | ValidatedTimebasedQueryStateT,
+      query:
+        | StandardQueryStateT
+        | ValidatedTimebasedQueryStateT
+        | EditorV2Query,
       options: { queryType: string; selectedSecondaryId?: string | null },
     ) =>
       api({
