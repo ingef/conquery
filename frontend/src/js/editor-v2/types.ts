@@ -31,15 +31,15 @@ export interface TreeChildrenOr extends TreeChildrenBase {
   connection: "or";
 }
 
-export type TimeTimestamp = "some" | "earliest" | "latest";
+export type TimeTimestamp = "every" | "some" | "earliest" | "latest";
 export type TimeOperator = "before" | "after" | "while";
 export interface TreeChildrenTime extends TreeChildrenBase {
   connection: "time";
   operator: TimeOperator;
   timestamps: TimeTimestamp[]; // items.length
   interval?: {
-    min?: number;
-    max?: number;
+    min: number | null;
+    max: number | null;
   };
 }
 export type TreeChildren = TreeChildrenAnd | TreeChildrenOr | TreeChildrenTime;

@@ -93,8 +93,6 @@ export const useTranslatedOperator = (
     return t("editorV2.after");
   } else if (operator === "while") {
     return t("editorV2.while");
-  } else {
-    return "";
   }
 };
 

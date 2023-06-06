@@ -29,7 +29,7 @@ const getNextConnector = (
       items: children.items,
       direction: children.direction,
       connection: "time" as const,
-      timestamps: children.items.map(() => "some" as const),
+      timestamps: children.items.map(() => "every" as const),
       operator: "before" as const,
     };
   }

@@ -12,10 +12,10 @@ import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
 import { Connector, Grid } from "./EditorLayout";
-import { TimeConnection } from "./TimeConnection";
 import { TreeNodeConcept } from "./TreeNodeConcept";
 import { EDITOR_DROP_TYPES } from "./config";
 import { DateRange } from "./date-restriction/DateRange";
+import { TimeConnection } from "./time-connection/TimeConnection";
 import { ConnectionKind, Tree } from "./types";
 import { useGetTranslatedConnection } from "./util";
 

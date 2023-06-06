@@ -5,6 +5,7 @@ import {
   faCircleNodes,
   faEdit,
   faExpandArrowsAlt,
+  faHourglass,
   faRefresh,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
@@ -34,7 +35,9 @@ import { useExpandQuery } from "./expand/useExpandQuery";
 import { useNegationEditing } from "./negation/useNegationEditing";
 import { EditorV2QueryNodeEditor } from "./query-node-edit/EditorV2QueryNodeEditor";
 import { useQueryNodeEditing } from "./query-node-edit/useQueryNodeEditing";
-import { Tree } from "./types";
+import { TimeConnectionModal } from "./time-connection/TimeConnectionModal";
+import { useTimeConnectionEditing } from "./time-connection/useTimeConnectionEditing";
+import { Tree, TreeChildrenTime } from "./types";
 import { findNodeById, useGetTranslatedConnection } from "./util";
 
 const Root = styled("div")`
@@ -212,6 +215,16 @@ export function EditorV2({
   });
 
   const {
+    showModal: showTimeModal,
+    onOpen: onOpenTimeModal,
+    onClose: onCloseTimeModal,
+  } = useTimeConnectionEditing({
+    enabled: featureTimebasedQueries,
+    hotkey: HOTKEYS.editTimeConnection.keyname,
+    selectedNode,
+  });
+
+  const {
     showModal: showQueryNodeEditor,
     onOpen: onOpenQueryNodeEditor,
     onClose: onCloseQueryNodeEditor,
@@ -270,6 +283,17 @@ export function EditorV2({
               updateTreeNode(selectedNode.id, (node) => {
                 if (!node.dates) node.dates = {};
                 node.dates.restriction = dateRange;
+              });
+            }}
+          />
+        )}
+        {showTimeModal && selectedNode && (
+          <TimeConnectionModal
+            onClose={onCloseTimeModal}
+            conditions={selectedNode.children as TreeChildrenTime}
+            onChange={(nodeChildren) => {
+              updateTreeNode(selectedNode.id, (node) => {
+                node.children = nodeChildren;
               });
             }}
           />
@@ -353,8 +377,23 @@ export function EditorV2({
                       onRotateConnector();
                     }}
                   >
-                    <span>{t("editorV2.connector")}</span>
                     <Connector>{connection}</Connector>
+                  </SxIconButton>
+                </KeyboardShortcutTooltip>
+              )}
+              {selectedNode?.children?.connection === "time" && (
+                <KeyboardShortcutTooltip
+                  keyname={HOTKEYS.editTimeConnection.keyname}
+                >
+                  <SxIconButton
+                    icon={faHourglass}
+                    tight
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenTimeModal();
+                    }}
+                  >
+                    <span>{t("editorV2.timeConnection")}</span>
                   </SxIconButton>
                 </KeyboardShortcutTooltip>
               )}

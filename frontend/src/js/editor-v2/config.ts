@@ -13,6 +13,7 @@ export const HOTKEYS = {
   delete: [{ keyname: "backspace" }, { keyname: "del" }],
   flip: { keyname: "f" },
   rotateConnector: { keyname: "c" },
+  editTimeConnection: { keyname: "t" },
   reset: { keyname: "shift+backspace" },
   editQueryNode: { keyname: "Enter" },
 };

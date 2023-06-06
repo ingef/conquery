@@ -2,15 +2,21 @@ import styled from "@emotion/styled";
 import { memo } from "react";
 import { useTranslation } from "react-i18next";
 
-import { TreeChildrenTime } from "./types";
+import { TreeChildrenTime } from "../types";
 import {
   useGetNodeLabel,
   useGetTranslatedTimestamp,
   useTranslatedInterval,
   useTranslatedOperator,
-} from "./util";
+} from "../util";
 
-const TimeConnectionContainer = styled("div")`
+const Container = styled("div")`
+  margin: 0 auto;
+  display: inline-flex;
+  flex-direction: column;
+`;
+
+const Row = styled("div")`
   display: flex;
   align-items: center;
   gap: 5px;
@@ -48,22 +54,22 @@ export const TimeConnection = memo(
     const interval = useTranslatedInterval(conditions.interval);
 
     return (
-      <div>
-        <TimeConnectionContainer>
+      <Container>
+        <Row>
           <Timestamp>{aTimestamp}</Timestamp>
           <span>{t("editorV2.dateRangeFrom")}</span>
           <ConceptName>{a}</ConceptName>
-        </TimeConnectionContainer>
-        <TimeConnectionContainer>
-          <Interval>{interval}</Interval>
+        </Row>
+        <Row>
+          {conditions.operator !== "while" && <Interval>{interval}</Interval>}
           <Operator>{operator}</Operator>
-        </TimeConnectionContainer>
-        <TimeConnectionContainer>
+        </Row>
+        <Row>
           <Timestamp>{bTimestamp}</Timestamp>
           <span>{t("editorV2.dateRangeFrom")}</span>
           <ConceptName>{b}</ConceptName>
-        </TimeConnectionContainer>
-      </div>
+        </Row>
+      </Container>
     );
   },
 );
