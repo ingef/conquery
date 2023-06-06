@@ -78,7 +78,7 @@
     "remark-gfm": "^3.0.1",
     "resize-observer-polyfill": "^1.5.1",
     "typesafe-actions": "^5.1.0",
-    "vite": "^4.1.4",
+    "vite": "^4.1.5",
     "vite-jest": "^0.1.4"
   },
   "devDependencies": {
