@@ -35,7 +35,7 @@ import { useNegationEditing } from "./negation/useNegationEditing";
 import { EditorV2QueryNodeEditor } from "./query-node-edit/EditorV2QueryNodeEditor";
 import { useQueryNodeEditing } from "./query-node-edit/useQueryNodeEditing";
 import { Tree } from "./types";
-import { findNodeById, useTranslatedConnection } from "./util";
+import { findNodeById, useGetTranslatedConnection } from "./util";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -120,6 +120,7 @@ export function EditorV2({
   featureConnectorRotate,
   featureQueryNodeEdit,
   featureContentInfos,
+  featureTimebasedQueries,
 }: {
   featureDates: boolean;
   featureNegate: boolean;
@@ -127,6 +128,7 @@ export function EditorV2({
   featureConnectorRotate: boolean;
   featureQueryNodeEdit: boolean;
   featureContentInfos: boolean;
+  featureTimebasedQueries: boolean;
 }) {
   const { t } = useTranslation();
   const {
@@ -203,6 +205,7 @@ export function EditorV2({
 
   const { onRotateConnector } = useConnectorEditing({
     enabled: featureConnectorRotate,
+    timebasedQueriesEnabled: featureTimebasedQueries,
     hotkey: HOTKEYS.rotateConnector.keyname,
     selectedNode,
     updateTreeNode,
@@ -218,7 +221,8 @@ export function EditorV2({
     selectedNode,
   });
 
-  const connection = useTranslatedConnection(
+  const getTranslatedConnection = useGetTranslatedConnection();
+  const connection = getTranslatedConnection(
     selectedNode?.children?.connection,
   );
 

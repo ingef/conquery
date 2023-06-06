@@ -92,6 +92,7 @@ const RightPane = () => {
             featureConnectorRotate
             featureQueryNodeEdit
             featureContentInfos
+            featureTimebasedQueries
           />
         ) : (
           <TimebasedQueryEditorTab />

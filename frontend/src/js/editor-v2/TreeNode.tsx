@@ -5,19 +5,19 @@ import { DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { DNDType } from "../common/constants/dndTypes";
-import { exists } from "../common/helpers/exists";
 import { Icon } from "../icon/FaIcon";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { getRootNodeLabel } from "../standard-query-editor/helper";
-import { DragItemConceptTreeNode } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
 import { Connector, Grid } from "./EditorLayout";
+import { TimeConnection } from "./TimeConnection";
+import { TreeNodeConcept } from "./TreeNodeConcept";
 import { EDITOR_DROP_TYPES } from "./config";
 import { DateRange } from "./date-restriction/DateRange";
 import { ConnectionKind, Tree } from "./types";
-import { useTranslatedConnection } from "./util";
+import { useGetTranslatedConnection } from "./util";
 
 const NodeContainer = styled("div")`
   display: grid;
@@ -95,15 +95,6 @@ const Name = styled("div")`
   color: ${({ theme }) => theme.col.black};
 `;
 
-const Description = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.black};
-  display: flex;
-  align-items: center;
-  gap: 0px 5px;
-  flex-wrap: wrap;
-`;
-
 const PreviousQueryLabel = styled("p")`
   margin: 0;
   line-height: 1.2;
@@ -133,10 +124,6 @@ const Dates = styled("div")`
   text-align: right;
   font-size: ${({ theme }) => theme.font.xs};
   text-transform: uppercase;
-  font-weight: 400;
-`;
-
-const Bold = styled("span")`
   font-weight: 400;
 `;
 
@@ -275,6 +262,9 @@ export function TreeNode({
                   setSelectedNodeId(tree.id);
                 }}
               >
+                {tree.children && tree.children.connection === "time" && (
+                  <TimeConnection conditions={tree.children} />
+                )}
                 {tree.dates?.restriction && (
                   <Dates>
                     <DateRange dateRange={tree.dates.restriction} />
@@ -394,134 +384,8 @@ export function TreeNode({
   );
 }
 
-const Value = ({
-  value,
-  isElement,
-}: {
-  value: unknown;
-  isElement?: boolean;
-}) => {
-  if (typeof value === "string" || typeof value === "number") {
-    return (
-      <span>
-        {value}
-        {isElement && ","}
-      </span>
-    );
-  } else if (typeof value === "boolean") {
-    return <span>{value ? "✔" : "✗"}</span>;
-  } else if (value instanceof Array) {
-    return (
-      <>
-        {value.slice(0, 10).map((v, idx) => (
-          <>
-            <Value key={idx} value={v} isElement={idx < value.length - 1} />
-          </>
-        ))}
-        {value.length > 10 && <span>{`... +${value.length - 10}`}</span>}
-      </>
-    );
-  } else if (
-    value instanceof Object &&
-    "label" in value &&
-    typeof value.label === "string"
-  ) {
-    return (
-      <span>
-        {value.label}
-        {isElement && ","}
-      </span>
-    );
-  } else if (value instanceof Object) {
-    return (
-      <>
-        {Object.entries(value)
-          .filter(([, v]) => exists(v))
-          .map(([k, v]) => (
-            <>
-              {k}: <Value value={v} />
-            </>
-          ))}
-      </>
-    );
-  } else if (value === null) {
-    return <span></span>;
-  } else {
-    return <span>{JSON.stringify(value)}</span>;
-  }
-};
-
 const Connection = memo(({ connection }: { connection?: ConnectionKind }) => {
-  const message = useTranslatedConnection(connection);
+  const getTranslatedConnection = useGetTranslatedConnection();
 
-  return <Connector>{message}</Connector>;
+  return <Connector>{getTranslatedConnection(connection)}</Connector>;
 });
-
-const SectionHeading = styled("h4")`
-  font-weight: 700;
-  color: ${(props) => props.theme.col.blueGrayDark};
-  margin: 0;
-  text-transform: uppercase;
-  font-size: ${({ theme }) => theme.font.xs};
-`;
-
-const Appendix = styled("div")`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 8px;
-`;
-
-const TreeNodeConcept = ({
-  node,
-  featureContentInfos,
-}: {
-  node: DragItemConceptTreeNode;
-  featureContentInfos?: boolean;
-}) => {
-  const { t } = useTranslation();
-  const selectedSelects = [
-    ...node.selects,
-    ...node.tables.flatMap((t) => t.selects),
-  ].filter((s) => s.selected);
-
-  const filtersWithValues = node.tables.flatMap((t) =>
-    t.filters.filter(
-      (f) =>
-        exists(f.value) && (!(f.value instanceof Array) || f.value.length > 0),
-    ),
-  );
-
-  const showAppendix =
-    featureContentInfos &&
-    (selectedSelects.length > 0 || filtersWithValues.length > 0);
-
-  return (
-    <>
-      {node.description && <Description>{node.description}</Description>}
-      {showAppendix && (
-        <Appendix>
-          {selectedSelects.length > 0 && (
-            <div>
-              <SectionHeading>{t("editorV2.outputSection")}</SectionHeading>
-              <Description>
-                <Value value={selectedSelects} />
-              </Description>
-            </div>
-          )}
-          {filtersWithValues.length > 0 && (
-            <div>
-              <SectionHeading>{t("editorV2.filtersSection")}</SectionHeading>
-              {filtersWithValues.map((f) => (
-                <Description>
-                  <Bold>{f.label}:</Bold>
-                  <Value value={f.value} />
-                </Description>
-              ))}
-            </div>
-          )}
-        </Appendix>
-      )}
-    </>
-  );
-};

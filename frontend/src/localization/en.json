@@ -516,7 +516,7 @@
     "pasted": "Imported"
   },
   "editorV2": {
-    "before": "TIME",
+    "time": "TIME",
     "and": "AND",
     "or": "OR",
     "clear": "Clear",
@@ -530,6 +530,18 @@
     "initialDropText": "Drop a concept or query here.",
     "datesExcluded": "No dates",
     "outputSection": "Output values",
-    "filtersSection": "Filters"
+    "filtersSection": "Filters",
+    "every": "Every",
+    "some": "Some",
+    "earliest": "The earliest",
+    "latest": "The latest",
+    "dateRangeFrom": "date range from",
+    "intervalSome": "some time",
+    "intervalMinDays": "at least {{days}} days",
+    "intervalMaxDays": "at most {{days}} days",
+    "intervalMinMaxDays": "between {{minDays}} and {{maxDays}} days",
+    "before": "before",
+    "after": "after",
+    "while": "while"
   }
 }

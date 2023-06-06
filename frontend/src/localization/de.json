@@ -517,7 +517,7 @@
     "pasted": "Importiert"
   },
   "editorV2": {
-    "before": "ZEIT",
+    "time": "ZEIT",
     "and": "UND",
     "or": "ODER",
     "clear": "Leeren",
@@ -531,6 +531,18 @@
     "initialDropText": "Ziehe ein Konzept oder eine Anfrage hier hinein.",
     "datesExcluded": "Keine Datumswerte",
     "outputSection": "Ausgabewerte",
-    "filtersSection": "Filter"
+    "filtersSection": "Filter",
+    "every": "Jeder",
+    "some": "Irgend ein",
+    "earliest": "Der früheste",
+    "latest": "Der späteste",
+    "dateRangeFrom": "Zeitraum aus",
+    "intervalSome": "irgendwann",
+    "intervalMinDays": "mindestens {{days}} Tage",
+    "intervalMaxDays": "höchstens {{days}} Tage",
+    "intervalMinMaxDays": "zwischen {{minDays}} und {{maxDays}} Tagen",
+    "before": "zeitlich vor",
+    "after": "zeitlich nach",
+    "while": "zeitlich während"
   }
 }

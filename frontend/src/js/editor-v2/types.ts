@@ -4,7 +4,7 @@ import {
   DragItemQuery,
 } from "../standard-query-editor/types";
 
-export type ConnectionKind = "and" | "or" | "before";
+export type ConnectionKind = "and" | "or" | "time";
 export type DirectionKind = "horizontal" | "vertical";
 
 export interface Tree {
@@ -16,12 +16,33 @@ export interface Tree {
     excluded?: boolean;
   };
   data?: DragItemQuery | DragItemConceptTreeNode;
-  children?: {
-    connection: ConnectionKind;
-    direction: DirectionKind;
-    items: Tree[];
+  children?: TreeChildren;
+}
+
+export interface TreeChildrenBase {
+  direction: DirectionKind;
+  items: Tree[];
+}
+
+export interface TreeChildrenAnd extends TreeChildrenBase {
+  connection: "and";
+}
+export interface TreeChildrenOr extends TreeChildrenBase {
+  connection: "or";
+}
+
+export type TimeTimestamp = "some" | "earliest" | "latest";
+export type TimeOperator = "before" | "after" | "while";
+export interface TreeChildrenTime extends TreeChildrenBase {
+  connection: "time";
+  operator: TimeOperator;
+  timestamps: TimeTimestamp[]; // items.length
+  interval?: {
+    min?: number;
+    max?: number;
   };
 }
+export type TreeChildren = TreeChildrenAnd | TreeChildrenOr | TreeChildrenTime;
 
 export interface EditorV2Query {
   tree?: Tree;
