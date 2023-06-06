@@ -49,8 +49,8 @@ public class DateDistanceConverter implements SelectConverter<DateDistanceSelect
 	private Date getEndDate(ConversionContext context) {
 		LocalDate endDate;
 		// if a date restriction is set, the max of the date restriction equals the end date of the date distance
-		if (Objects.nonNull(context.getDateRestricionRange())) {
-			endDate = context.getDateRestricionRange().getMax();
+		if (Objects.nonNull(context.getDateRestrictionRange())) {
+			endDate = context.getDateRestrictionRange().getMax();
 		}
 		else {
 			// otherwise the current date is the upper bound

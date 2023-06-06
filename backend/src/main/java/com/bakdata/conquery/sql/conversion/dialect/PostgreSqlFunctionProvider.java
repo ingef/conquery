@@ -1,8 +1,6 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
-import java.time.LocalDate;
-
-import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -26,7 +24,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Object> daterange(Range<LocalDate> dateRestriction) {
+	public Field<Object> daterange(CDateRange dateRestriction) {
 		return DSL.field(
 				"daterange({0}::date, {1}::date, '[]')",
 				DSL.val(dateRestriction.getMin().toString()),

@@ -18,7 +18,9 @@ import com.bakdata.conquery.sql.SqlQuery;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SqlExecutionManager implements ExecutionManager {
 	private final MetaStorage metaStorage;
 	private final SqlExecutionService executionService;
@@ -36,7 +38,7 @@ public class SqlExecutionManager implements ExecutionManager {
 		execution.initExecutable(namespace, config);
 		execution.start();
 		// todo(tm): Non-blocking execution
-		SqlExecutionResult result = this.executionService.execute(execution.getSqlQuery());
+		SqlExecutionResult result = this.executionService.execute(execution);
 		execution.finish(result);
 		return execution;
 	}
@@ -47,7 +49,7 @@ public class SqlExecutionManager implements ExecutionManager {
 			throw new UnsupportedOperationException("The SQL execution manager can only execute SQL queries, but got a %s".formatted(execution.getClass()));
 		}
 
-		this.executionService.execute(((SqlManagedQuery) execution).getSqlQuery());
+		this.executionService.execute(((SqlManagedQuery) execution));
 	}
 
 	@Override

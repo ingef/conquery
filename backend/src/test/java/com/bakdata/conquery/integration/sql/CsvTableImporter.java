@@ -3,6 +3,8 @@ package com.bakdata.conquery.integration.sql;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Statement;
@@ -15,16 +17,12 @@ import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
-import com.fasterxml.jackson.databind.MappingIterator;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.dataformat.csv.CsvMapper;
-import com.fasterxml.jackson.dataformat.csv.CsvParser;
-import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.github.powerlibraries.io.In;
+import com.univocity.parsers.csv.CsvParser;
 import lombok.SneakyThrows;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
@@ -42,12 +40,12 @@ public class CsvTableImporter {
 
 	private final DSLContext dslContext;
 	private final DateRangeParser dateRangeParser;
-	private final ObjectReader csvObjectReader;
+	private final CsvParser csvReader;
 
 	public CsvTableImporter(DSLContext dslContext) {
 		this.dslContext = dslContext;
 		this.dateRangeParser = new DateRangeParser(new ConqueryConfig());
-		this.csvObjectReader = this.setUpCsvReader();
+		this.csvReader = new CSVConfig().withSkipHeader(true).createParser();
 	}
 
 	/**
@@ -84,35 +82,15 @@ public class CsvTableImporter {
 		});
 	}
 
-	public List<SinglelineEntityResult> readExpectedEntities(String csv) throws IOException {
-		List<List<String>> rawEntities = fromRaw(csv);
+	public List<SinglelineEntityResult> readExpectedEntities(Path csv) throws IOException {
+		List<String[]> rawEntities = this.csvReader.parseAll(Files.newInputStream(csv));
 		return rawEntities.stream()
-						  .map(list -> {
-							  int id = Integer.parseInt(list.get(0));
-							  return new SinglelineEntityResult(id, list.stream().skip(1).toArray());
+						  .map(row -> {
+							  int id = Integer.parseInt(row[0]);
+							  return new SinglelineEntityResult(id, Arrays.copyOfRange(row, 1, row.length));
 						  }).toList();
 	}
 
-	/**
-	 * Maps a raw concatenated CSV string to list of rows. A row contains all values of
-	 * a line from the CSV as Strings. First row (header row with column names) is ignored.
-	 */
-	private List<List<String>> fromRaw(String rawCsv) throws IOException {
-		MappingIterator<List<String>> mappingIterator = this.csvObjectReader.readValues(rawCsv);
-		// ignoring the header line because we just need the value rows
-		List<List<String>> rawContent = mappingIterator.readAll();
-		return rawContent.subList(1, rawContent.size());
-	}
-
-	private ObjectReader setUpCsvReader() {
-		// dateranges contain commas, but we want to read them as one value, so we define an escape char
-		CsvSchema csvSchema = CsvSchema.emptySchema()
-									   .withEscapeChar('\\');
-		return new CsvMapper()
-				.readerForListOf(String.class)
-				.with(csvSchema)
-				.with(CsvParser.Feature.WRAP_AS_ARRAY);
-	}
 
 	private List<Field<?>> createFieldsForColumns(List<RequiredColumn> requiredColumns) {
 		return requiredColumns.stream()
@@ -140,31 +118,25 @@ public class CsvTableImporter {
 		return DSL.field(requiredColumn.getName(), dataType);
 	}
 
+	@SneakyThrows
 	private List<RowN> getTablesContentFromCSV(ResourceFile csvFile, List<RequiredColumn> requiredColumns) {
-		List<List<String>> rawContent = this.getRawContentOf(csvFile);
+		List<String[]> rawContent = this.csvReader.parseAll(csvFile.stream());
 		List<List<Object>> castedContent = this.castContent(rawContent, requiredColumns);
 		return castedContent.stream()
 							.map(DSL::row)
 							.toList();
 	}
 
-	@SneakyThrows
-	private List<List<String>> getRawContentOf(ResourceFile csvFile) {
-		String rawCsv = In.stream(csvFile.stream()).readAll();
-		return this.fromRaw(rawCsv);
-	}
-
 	/**
 	 * Casts all values of each row to the corresponding type of the column the value refers to.
 	 */
-	private List<List<Object>> castContent(List<List<String>> rawContent, List<RequiredColumn> requiredColumns) {
+	private List<List<Object>> castContent(List<String[]> rawContent, List<RequiredColumn> requiredColumns) {
 		List<List<Object>> castedContent = new ArrayList<>(rawContent.size());
-		for (List<String> row : rawContent) {
-			List<Object> castEntriesOfRow = new ArrayList<>(row.size());
-			for (int i = 0; i < row.size(); i++) {
-				String entry = row.get(i);
+		for (String[] row : rawContent) {
+			List<Object> castEntriesOfRow = new ArrayList<>(row.length);
+			for (int i = 0; i < row.length; i++) {
 				MajorTypeId type = requiredColumns.get(i).getType();
-				castEntriesOfRow.add(this.castEntryAccordingToColumnType(entry, type));
+				castEntriesOfRow.add(this.castEntryAccordingToColumnType(row[i], type));
 			}
 			castedContent.add(castEntriesOfRow);
 		}
@@ -174,7 +146,7 @@ public class CsvTableImporter {
 	private Object castEntryAccordingToColumnType(String entry, MajorTypeId type) {
 
 		// if the entry from the CSV is empty, the value in the database should be null
-		if (entry.isEmpty()) {
+		if (entry == null || entry.isEmpty()) {
 			return null;
 		}
 

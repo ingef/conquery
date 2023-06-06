@@ -30,10 +30,6 @@ public class QueryStep {
 		return DSL.table(DSL.name(fromTableName));
 	}
 
-	public Selects getSelects() {
-		return this.selects;
-	}
-
 	/**
 	 * @return All selects re-mapped to a qualifier, which is the cteName of this QueryStep.
 	 */

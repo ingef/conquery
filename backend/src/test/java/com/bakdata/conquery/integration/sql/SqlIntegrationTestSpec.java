@@ -3,9 +3,7 @@ package com.bakdata.conquery.integration.sql;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -90,7 +88,8 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 
 		SqlExecutionResult result = managedQuery.getResult();
 		List<SinglelineEntityResult> resultCsv = result.getTable();
-		List<SinglelineEntityResult> expectedCsv = support.getTableImporter().readExpectedEntities(readExpectedCsv());
+		Path expectedCsvFile = this.specDir.resolve(this.expectedCsv);
+		List<SinglelineEntityResult> expectedCsv = support.getTableImporter().readExpectedEntities(expectedCsvFile);
 		Assertions.assertThat(resultCsv).usingRecursiveFieldByFieldElementComparator().containsExactlyElementsOf(expectedCsv);
 	}
 
@@ -119,9 +118,5 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 		}
 	}
 
-	public String readExpectedCsv() throws IOException {
-		Path expectedCSVFile = this.specDir.resolve(this.expectedCsv);
-		return Files.readString(expectedCSVFile);
-	}
 
 }
