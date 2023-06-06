@@ -238,17 +238,20 @@ const transformTreeToApi = (tree: Tree): unknown => {
       case "or":
         node = createOr(tree.children.items.map(transformTreeToApi));
         break;
-      case "before":
+      case "time":
         node = {
-          type: "BEFORE",
-          // TODO:
-          // ...days,
+          type: "BEFORE", // SHOULD BE: tree.children.operator,
+          days: {
+            ...(tree.children.interval || {}),
+          },
+          // TODO: improve this to be more flexible with the "preceding" and "index" keys
+          // based on the operator, which would be "before" | "after" | "while"
           preceding: {
-            sampler: "EARLIEST",
+            sampler: "EARLIEST", // SHOULD BE: tree.children.timestamps[0],
             child: transformTreeToApi(tree.children.items[0]),
           },
           index: {
-            sampler: "EARLIEST",
+            sampler: "EARLIEST", // SHOULD BE: tree.children.timestamps[1]
             child: transformTreeToApi(tree.children.items[1]),
           },
         };
