@@ -8,12 +8,14 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import lombok.Builder;
 import lombok.Value;
+import lombok.With;
 import org.jooq.Field;
 
 /**
  * {@link ConceptSelects} represent all select fields of a {@link CQConcept}.
  */
 @Value
+@With
 @Builder(toBuilder = true)
 public class ConceptSelects implements Selects {
 

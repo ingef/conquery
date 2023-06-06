@@ -10,31 +10,35 @@ import java.util.stream.IntStream;
 
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
-import com.bakdata.conquery.sql.SqlQuery;
+import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
+import com.google.common.base.Stopwatch;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 
+@RequiredArgsConstructor
+@Slf4j
 public class SqlExecutionService {
 
 	private final DSLContext dslContext;
 
-	public SqlExecutionService(DSLContext dslContext) {
-		this.dslContext = dslContext;
+	public SqlExecutionResult execute(SqlManagedQuery sqlQuery) {
+		log.info("Starting SQL execution[{}]", sqlQuery.getQueryId());
+		Stopwatch stopwatch = Stopwatch.createStarted();
+		SqlExecutionResult result = dslContext.connectionResult(connection -> this.createStatementAndExecute(sqlQuery, connection));
+		log.info("Finished SQL execution[{}] with {} results within {}", sqlQuery.getQueryId(), result.getRowCount(), stopwatch.elapsed());
+		return result;
 	}
 
-	public SqlExecutionResult execute(SqlQuery sqlQuery) {
-		return dslContext.connectionResult(connection -> this.createStatementAndExecute(sqlQuery.getSqlString(), connection));
-	}
-
-	private SqlExecutionResult createStatementAndExecute(String sqlQuery, Connection connection) {
+	private SqlExecutionResult createStatementAndExecute(SqlManagedQuery sqlQuery, Connection connection) {
 
 		try (Statement statement = connection.createStatement();
-			 ResultSet resultSet = statement.executeQuery(sqlQuery)) {
+			 ResultSet resultSet = statement.executeQuery(sqlQuery.getSqlQuery().getSqlString())) {
 			int columnCount = resultSet.getMetaData().getColumnCount();
 			List<String> columnNames = this.getColumnNames(resultSet, columnCount);
 			List<SinglelineEntityResult> resultTable = this.createResultTable(resultSet, columnCount);
 
 			return new SqlExecutionResult(columnNames, resultTable);
-
 		}
 		catch (SQLException e) {
 			throw new ConqueryError.SqlError(e);

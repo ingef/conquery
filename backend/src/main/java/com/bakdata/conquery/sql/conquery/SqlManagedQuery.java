@@ -116,6 +116,6 @@ public class SqlManagedQuery extends ManagedExecution implements SingleTableResu
 
 	public void finish(final SqlExecutionResult result) {
 		this.result = result;
-		this.finish(ExecutionState.DONE);
+		super.finish(ExecutionState.DONE);
 	}
 }

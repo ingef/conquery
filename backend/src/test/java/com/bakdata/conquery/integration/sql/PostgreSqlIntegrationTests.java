@@ -3,12 +3,14 @@ package com.bakdata.conquery.integration.sql;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.SqlQuery;
+import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -62,8 +64,13 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	@Test
 	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
 	public void shouldThrowException() {
+		SqlExecutionService executionService = new SqlExecutionService(dslContext);
+		SqlManagedQuery validQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, new SqlQuery("SELECT 1"));
+		Assertions.assertThatNoException().isThrownBy(() -> executionService.execute(validQuery));
+
 		// executing an empty query should throw an SQL error
-		Assertions.assertThatThrownBy(() -> new SqlExecutionService(dslContext).execute(new SqlQuery("")))
+		SqlManagedQuery emptyQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, new SqlQuery(""));
+		Assertions.assertThatThrownBy(() -> executionService.execute(emptyQuery))
 				  .isInstanceOf(ConqueryError.SqlError.class)
 				  .hasMessageContaining("Something went wrong while querying the database: org.postgresql.util.PSQLException");
 	}

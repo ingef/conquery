@@ -183,15 +183,11 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			CQTable table,
 			QueryStep previous
 	) {
-		return ((ConceptSelects) previous.getQualifiedSelects()).toBuilder()
-																.eventSelect(this.getEventSelects(context, table))
-																.build();
+		return ((ConceptSelects) previous.getQualifiedSelects()).withEventSelect(this.getEventSelects(context, table));
 	}
 
 	private ConceptSelects prepareEventFilterSelects(QueryStep previous) {
-		return ((ConceptSelects) previous.getQualifiedSelects()).toBuilder()
-																.eventFilter(List.of())
-																.build();
+		return ((ConceptSelects) previous.getQualifiedSelects()).withEventFilter(List.of());
 	}
 
 	private List<Condition> buildEventFilterConditions(ConversionContext context, CQTable table) {

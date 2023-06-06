@@ -1,9 +1,8 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.sql.Date;
-import java.time.LocalDate;
 
-import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import org.jooq.Condition;
@@ -24,7 +23,7 @@ public interface SqlFunctionProvider {
 	/**
 	 * @return A daterange for a date restriction.
 	 */
-	Field<Object> daterange(Range<LocalDate> dateRestriction);
+	Field<Object> daterange(CDateRange dateRestriction);
 
 	/**
 	 * @return A daterange for an existing column.

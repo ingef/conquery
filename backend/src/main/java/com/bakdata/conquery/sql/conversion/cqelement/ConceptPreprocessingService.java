@@ -1,14 +1,14 @@
 
 package com.bakdata.conquery.sql.conversion.cqelement;
 
-import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
@@ -76,8 +76,8 @@ public class ConceptPreprocessingService {
 		if (!this.context.dateRestrictionActive() || !this.tableHasValidityDates(table)) {
 			return Optional.empty();
 		}
-		Range<LocalDate> dateRestricionRange = this.context.getDateRestricionRange();
-		Field<Object> dateRestriction = this.sqlFunctionProvider.daterange(dateRestricionRange)
+		CDateRange dateRestrictionRange = this.context.getDateRestrictionRange();
+		Field<Object> dateRestriction = this.sqlFunctionProvider.daterange(dateRestrictionRange)
 																.as(DATE_RESTRICTION_COLUMN_NAME);
 		return Optional.of(dateRestriction);
 	}

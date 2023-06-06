@@ -1,19 +1,17 @@
 package com.bakdata.conquery.models.config;
 
+import lombok.Getter;
 import org.jooq.SQLDialect;
 
+@Getter
 public enum Dialect {
 
 	POSTGRESQL(SQLDialect.POSTGRES);
 
-	private final SQLDialect dialect;
+	private final SQLDialect jooqDialect;
 
-	Dialect(SQLDialect dialect) {
-		this.dialect = dialect;
-	}
-
-	public SQLDialect getJooqDialect() {
-		return dialect;
+	Dialect(SQLDialect jooqDialect) {
+		this.jooqDialect = jooqDialect;
 	}
 
 }
