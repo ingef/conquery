@@ -17,7 +17,6 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.external.form.ExternalFormBackendApi;
-import com.bakdata.conquery.io.external.form.ExternalFormBackendHealthCheck;
 import com.bakdata.conquery.io.external.form.ExternalFormMixin;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -94,7 +93,9 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		client.register(new JacksonMessageBodyProvider(om));
 
 		// Register health check
-		managerNode.getEnvironment().healthChecks().register(getId(), new ExternalFormBackendHealthCheck(createApi()));
+		final ExternalFormBackendApi externalApi = createApi();
+
+		managerNode.getEnvironment().healthChecks().register(getId(), externalApi.createHealthCheck());
 
 		// Register form configuration provider
 		managerNode.getFormScanner().registerFrontendFormConfigProvider(this::registerFormConfigs);
@@ -121,11 +122,11 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	 * @param formConfigs Collection to add received form configs to.
 	 */
 	private void registerFormConfigs(ImmutableCollection.Builder<FormFrontendConfigInformation> formConfigs) {
-		Set<String> supportedFormTypes = new HashSet<>();
+		final Set<String> supportedFormTypes = new HashSet<>();
 
 		for (ObjectNode formConfig : createApi().getFormConfigs()) {
 			final String subType = formConfig.get("type").asText();
-			String formType = createSubTypedId(subType);
+			final String formType = createSubTypedId(subType);
 
 			// Override type with our subtype
 			formConfig.set("type", new TextNode(formType));
@@ -155,7 +156,7 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		// the actual user and download permissions.
 		final User
 				serviceUser =
-				managerNode.getAuthController().flatCopyUser(originalUser, String.format("%s_%s", this.getClass().getSimpleName().toLowerCase(), getId()));
+				managerNode.getAuthController().flatCopyUser(originalUser, String.format("%s_%s", getClass().getSimpleName().toLowerCase(), getId()));
 
 		// The user is able to read the dataset, ensure that the service user can download results
 		serviceUser.addPermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));
