@@ -18,9 +18,9 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 
 	@Override
 	public ConversionContext convert(CQAnd node, ConversionContext context) {
-		// if the AND node has multiple child, the converted children need to be logically combined
-		// before we obtain the final query
-		if (!this.nodeHasMultipleChildren(node)) {
+		// if the AND node has a single child, the AND node is a noop
+		// otherwise, the converted children need to be logically combined before we obtain the final query
+		if (node.getChildren().size() == 1) {
 			return context.getNodeConverterService().convert(node.getChildren().get(0), context);
 		}
 
@@ -38,10 +38,6 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 										  .build();
 
 		return context.withQuerySteps(List.of(andQueryStep));
-	}
-
-	private boolean nodeHasMultipleChildren(CQAnd node) {
-		return node.getChildren().size() > 1;
 	}
 
 	private String constructAndQueryStepLabel(List<QueryStep> queriesToJoin) {
