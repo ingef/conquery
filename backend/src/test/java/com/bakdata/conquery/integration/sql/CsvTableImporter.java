@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.google.common.base.Strings;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.SneakyThrows;
 import org.jooq.DSLContext;
@@ -146,7 +147,7 @@ public class CsvTableImporter {
 	private Object castEntryAccordingToColumnType(String entry, MajorTypeId type) {
 
 		// if the entry from the CSV is empty, the value in the database should be null
-		if (entry == null || entry.isEmpty()) {
+		if (Strings.isNullOrEmpty(entry)) {
 			return null;
 		}
 

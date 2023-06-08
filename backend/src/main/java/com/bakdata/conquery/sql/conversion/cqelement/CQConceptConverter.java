@@ -33,7 +33,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	@Override
 	public ConversionContext convert(CQConcept node, ConversionContext context) {
 
-		if (this.conceptNodeHasMultipleTables(node)) {
+		if (node.getTables().size() > 1) {
 			throw new UnsupportedOperationException("Can't handle concepts with multiple tables for now.");
 		}
 
@@ -48,10 +48,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		QueryStep finalStep = this.buildFinalQueryStep(conceptLabel, eventFilter);
 
 		return context.withQuerySteps(List.of(finalStep));
-	}
-
-	private boolean conceptNodeHasMultipleTables(CQConcept node) {
-		return node.getTables().size() > 1;
 	}
 
 	private String getConceptLabel(CQConcept node) {
@@ -77,10 +73,9 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		ConceptSelects dateRestrictionSelects = this.prepareDateRestrictionSelects(node, previous);
 		List<Condition> dateRestriction = this.buildDateRestriction(context, previous);
-		String dateRestrictionCteName = "concept_%s_date_restriction".formatted(conceptLabel);
 
 		return QueryStep.builder()
-						.cteName(dateRestrictionCteName)
+						.cteName(createCteName(conceptLabel, "_date_restriction"))
 						.fromTable(QueryStep.toTableLike(previous.getCteName()))
 						.selects(dateRestrictionSelects)
 						.conditions(dateRestriction)
@@ -103,10 +98,9 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		}
 
 		ConceptSelects eventSelectSelects = this.prepareEventSelectSelects(context, table, previous);
-		String eventSelectCteName = "concept_%s_event_select".formatted(conceptLabel);
 
 		return QueryStep.builder()
-						.cteName(eventSelectCteName)
+						.cteName(createCteName(conceptLabel, "_event_select"))
 						.fromTable(QueryStep.toTableLike(previous.getCteName()))
 						.selects(eventSelectSelects)
 						.conditions(List.of())
@@ -131,28 +125,12 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		ConceptSelects eventFilterSelects = this.prepareEventFilterSelects(previous);
 		List<Condition> eventFilterConditions = this.buildEventFilterConditions(context, table);
-		String eventFilterCteName = "concept_%s_event_filter".formatted(conceptLabel);
 
 		return QueryStep.builder()
-						.cteName(eventFilterCteName)
+						.cteName(createCteName(conceptLabel, "_event_filter"))
 						.fromTable(QueryStep.toTableLike(previous.getCteName()))
 						.selects(eventFilterSelects)
 						.conditions(eventFilterConditions)
-						.predecessors(List.of(previous))
-						.build();
-	}
-
-	/**
-	 * selects:
-	 * - all of previous step
-	 */
-	private QueryStep buildFinalQueryStep(String conceptLabel, QueryStep previous) {
-		ConceptSelects finalSelects = ((ConceptSelects) previous.getQualifiedSelects());
-		return QueryStep.builder()
-						.cteName("concept_%s".formatted(conceptLabel))
-						.fromTable(QueryStep.toTableLike(previous.getCteName()))
-						.selects(finalSelects)
-						.conditions(List.of())
 						.predecessors(List.of(previous))
 						.build();
 	}
@@ -200,6 +178,25 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return table.getSelects().stream()
 					.map(select -> (Field<Object>) this.selectConverterService.convert(select, context))
 					.toList();
+	}
+
+	/**
+	 * selects:
+	 * - all of previous step
+	 */
+	private QueryStep buildFinalQueryStep(String conceptLabel, QueryStep previous) {
+		ConceptSelects finalSelects = ((ConceptSelects) previous.getQualifiedSelects());
+		return QueryStep.builder()
+						.cteName(createCteName(conceptLabel, ""))
+						.fromTable(QueryStep.toTableLike(previous.getCteName()))
+						.selects(finalSelects)
+						.conditions(List.of())
+						.predecessors(List.of(previous))
+						.build();
+	}
+
+	private static String createCteName(String conceptLabel, String suffix) {
+		return "concept_%s%s".formatted(conceptLabel, suffix);
 	}
 
 }
