@@ -35,7 +35,7 @@ jobs:
       - name: Build Backend
         run: mvn -T 1C install -pl backend -DskipTests -am
       - name: Unit Test
-        run: mvn test -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+        run: mvn test -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON, INTEGRATION_SQL_BACKEND"
       - name: Programmatic Integration Tests
         run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
       - name: JSON based Integration Tests
