@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
 import com.google.common.base.Stopwatch;
@@ -36,7 +37,7 @@ public class SqlExecutionService {
 			 ResultSet resultSet = statement.executeQuery(sqlQuery.getSqlQuery().getSqlString())) {
 			int columnCount = resultSet.getMetaData().getColumnCount();
 			List<String> columnNames = this.getColumnNames(resultSet, columnCount);
-			List<SinglelineEntityResult> resultTable = this.createResultTable(resultSet, columnCount);
+			List<EntityResult> resultTable = this.createResultTable(resultSet, columnCount);
 
 			return new SqlExecutionResult(columnNames, resultTable);
 		}
@@ -45,11 +46,11 @@ public class SqlExecutionService {
 		}
 	}
 
-	private List<SinglelineEntityResult> createResultTable(ResultSet resultSet, int columnCount) throws SQLException {
-		List<SinglelineEntityResult> resultTable = new ArrayList<>(resultSet.getFetchSize());
+	private List<EntityResult> createResultTable(ResultSet resultSet, int columnCount) throws SQLException {
+		List<EntityResult> resultTable = new ArrayList<>(resultSet.getFetchSize());
 		while (resultSet.next()) {
 			Object[] resultRow = this.getResultRow(resultSet, columnCount);
-			resultTable.add(new SinglelineEntityResult(resultSet.getInt(1), resultRow));
+			resultTable.add(new SqlEntityResult(resultSet.getRow(), resultSet.getObject(1).toString(), resultRow));
 		}
 		return resultTable;
 	}
