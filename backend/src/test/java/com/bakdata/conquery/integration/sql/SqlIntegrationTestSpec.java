@@ -17,8 +17,10 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
+import com.bakdata.conquery.sql.execution.SqlEntityResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -87,9 +89,9 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 		log.info("Execute query: \n{}", managedQuery.getSqlQuery().getSqlString());
 
 		SqlExecutionResult result = managedQuery.getResult();
-		List<SinglelineEntityResult> resultCsv = result.getTable();
+		List<EntityResult> resultCsv = result.getTable();
 		Path expectedCsvFile = this.specDir.resolve(this.expectedCsv);
-		List<SinglelineEntityResult> expectedCsv = support.getTableImporter().readExpectedEntities(expectedCsvFile);
+		List<EntityResult> expectedCsv = support.getTableImporter().readExpectedEntities(expectedCsvFile);
 		Assertions.assertThat(resultCsv).usingRecursiveFieldByFieldElementComparator().containsExactlyElementsOf(expectedCsv);
 	}
 

@@ -21,7 +21,8 @@ import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
-import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
+import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.sql.execution.SqlEntityResult;
 import com.google.common.base.Strings;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.SneakyThrows;
@@ -83,13 +84,14 @@ public class CsvTableImporter {
 		});
 	}
 
-	public List<SinglelineEntityResult> readExpectedEntities(Path csv) throws IOException {
+	public List<EntityResult> readExpectedEntities(Path csv) throws IOException {
 		List<String[]> rawEntities = this.csvReader.parseAll(Files.newInputStream(csv));
-		return rawEntities.stream()
-						  .map(row -> {
-							  int id = Integer.parseInt(row[0]);
-							  return new SinglelineEntityResult(id, Arrays.copyOfRange(row, 1, row.length));
-						  }).toList();
+		List<EntityResult> results = new ArrayList<>(rawEntities.size());
+		for (int i = 0; i < rawEntities.size(); i++) {
+			String[] row = rawEntities.get(i);
+			results.add(new SqlEntityResult(i + 1, row[0], Arrays.copyOfRange(row, 1, row.length)));
+		}
+		return results;
 	}
 
 
