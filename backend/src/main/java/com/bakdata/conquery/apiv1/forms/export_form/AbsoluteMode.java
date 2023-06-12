@@ -46,12 +46,8 @@ public class AbsoluteMode extends Mode {
 		List<ExportForm.ResolutionAndAlignment> resolutionsAndAlignments =
 				ExportForm.getResolutionAlignmentMap(getForm().getResolvedResolutions(), getAlignmentHint());
 
-		return new AbsoluteFormQuery(
-				getForm().getPrerequisite(),
-				dateRange,
-				resolvedFeatures,
-				resolutionsAndAlignments
-		);
+		Query prerequisite = getForm().getPrerequisite();
+		return new AbsoluteFormQuery(prerequisite, dateRange, resolvedFeatures, resolutionsAndAlignments);
 	}
 
 	@Override

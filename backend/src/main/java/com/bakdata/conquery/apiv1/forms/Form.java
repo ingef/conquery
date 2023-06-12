@@ -15,9 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ClassToInstanceMap;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 
 /**
  * API representation of a form query.
@@ -25,15 +23,13 @@ import lombok.Setter;
 @EqualsAndHashCode
 public abstract class Form implements QueryDescription {
 
+
 	/**
 	 * Raw form config (basically the raw format of this form), that is used by the backend at the moment to
 	 * create a {@link com.bakdata.conquery.models.forms.configs.FormConfig} upon start of this form (see {@link ManagedForm#start()}).
 	 */
 	@Nullable
-	@Getter
-	@Setter
-	@EqualsAndHashCode.Exclude
-	private JsonNode values;
+	public abstract JsonNode getValues();
 
 	@JsonIgnore
 	public String getFormType() {

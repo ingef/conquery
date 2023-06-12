@@ -43,6 +43,7 @@ import com.google.common.collect.ClassToInstanceMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,6 +61,7 @@ import org.jetbrains.annotations.Nullable;
 @CPSType(id = "ENTITY_PREVIEW", base = QueryDescription.class)
 @Getter
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+@ToString
 public class EntityPreviewForm extends Form implements InternalForm {
 
 	public static final String INFOS_QUERY_NAME = "INFOS";

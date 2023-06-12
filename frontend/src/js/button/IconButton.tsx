@@ -45,12 +45,12 @@ const SxBasicButton = styled(BasicButton)<{
 }>`
   background-color: transparent;
   color: ${({ theme, active, secondary, red }) =>
-    active
+    red
+      ? theme.col.red
+      : active
       ? theme.col.blueGrayDark
       : secondary
       ? theme.col.orange
-      : red
-      ? theme.col.red
       : theme.col.black};
   opacity: ${({ frame }) => (frame ? 1 : 0.75)};
   transition: opacity ${({ theme }) => theme.transitionTime},
@@ -75,6 +75,12 @@ const SxBasicButton = styled(BasicButton)<{
       opacity: 0.6;
     }
   }
+`;
+
+const Children = styled("span")`
+  display: flex;
+  align-items: center;
+  gap: 5px;
 `;
 
 export interface IconButtonPropsT extends BasicButtonProps {
@@ -165,7 +171,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
         ref={ref}
       >
         {iconElement}
-        {children && <span>{children}</span>}
+        {children && <Children>{children}</Children>}
       </SxBasicButton>
     );
   },
