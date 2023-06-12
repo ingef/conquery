@@ -31,7 +31,7 @@ const SelectedItem = forwardRef<
   {
     active?: boolean;
     disabled?: boolean;
-    option: SelectOptionT;
+    item: SelectOptionT;
     index: number;
     getSelectedItemProps: (props: {
       selectedItem: SelectOptionT;
@@ -41,13 +41,13 @@ const SelectedItem = forwardRef<
   }
 >(
   (
-    { index, option, disabled, removeSelectedItem, getSelectedItemProps },
+    { index, item, disabled, removeSelectedItem, getSelectedItemProps },
     ref,
   ) => {
-    const label = option.selectedLabel || option.label || option.value;
+    const label = item.selectedLabel || item.label || item.value;
 
     const selectedItemProps = getSelectedItemProps({
-      selectedItem: option,
+      selectedItem: item,
       index,
     });
 
@@ -57,7 +57,10 @@ const SelectedItem = forwardRef<
         <SxIconButton
           icon={faTimes}
           disabled={disabled}
-          onClick={() => removeSelectedItem(option)}
+          onClick={(e) => {
+            e.stopPropagation(); // otherwise the click handler on the Container overrides this
+            removeSelectedItem(item);
+          }}
         />
       </Container>
     );

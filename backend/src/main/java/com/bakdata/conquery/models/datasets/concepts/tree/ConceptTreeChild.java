@@ -22,7 +22,8 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 
 	@JsonIgnore
 	private transient int[] prefix;
-	@JsonManagedReference //@Valid
+
+	@JsonManagedReference
 	@Getter
 	@Setter
 	private List<ConceptTreeChild> children = Collections.emptyList();

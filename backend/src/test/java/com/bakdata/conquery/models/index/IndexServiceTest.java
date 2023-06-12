@@ -25,15 +25,14 @@ import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.MediaType;
 
-@TestMethodOrder(value = MethodOrderer.OrderAnnotation.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Slf4j
 public class IndexServiceTest {
 
+	private static final Dataset DATASET = new Dataset("dataset");
+	private static final ConqueryConfig CONFIG = new ConqueryConfig();
+	private static final ClientAndServer REF_SERVER = ClientAndServer.startClientAndServer();
 	private final IndexService indexService = new IndexService(new CsvParserSettings());
-	private final static Dataset DATASET = new Dataset("dataset");
-	private final static ConqueryConfig CONFIG = new ConqueryConfig();
-
-	private final static ClientAndServer REF_SERVER = ClientAndServer.startClientAndServer();
 
 	@BeforeAll
 	@SneakyThrows
@@ -100,6 +99,20 @@ public class IndexServiceTest {
 
 	}
 
+	private static void injectComponents(MapInternToExternMapper mapInternToExternMapper, IndexService indexService, ConqueryConfig config)
+			throws NoSuchFieldException, IllegalAccessException {
+
+		final Field indexServiceField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.mapIndex);
+		indexServiceField.setAccessible(true);
+		indexServiceField.set(mapInternToExternMapper, indexService);
+
+		final Field configField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.config);
+		configField.setAccessible(true);
+		configField.set(mapInternToExternMapper, config);
+
+		mapInternToExternMapper.setDataset(DATASET);
+	}
+
 	@Test
 	@Order(2)
 	void testEvictOnMapper()
@@ -119,7 +132,7 @@ public class IndexServiceTest {
 		assertThat(mapInternToExternMapper.external("int1")).as("Internal Value").isEqualTo("hello");
 
 
-		MapIndex mappingBeforeEvict = mapInternToExternMapper.getInt2ext();
+		final MapIndex mappingBeforeEvict = mapInternToExternMapper.getInt2ext();
 
 		indexService.evictCache();
 
@@ -128,25 +141,11 @@ public class IndexServiceTest {
 
 		mapInternToExternMapper.init();
 
-		MapIndex mappingAfterEvict = mapInternToExternMapper.getInt2ext();
+		final MapIndex mappingAfterEvict = mapInternToExternMapper.getInt2ext();
 
 		// Check that the mapping reinitialized
 		assertThat(mappingBeforeEvict).as("Mapping before and after eviction")
 									  .isNotSameAs(mappingAfterEvict);
-	}
-
-	private static void injectComponents(MapInternToExternMapper mapInternToExternMapper, IndexService indexService, ConqueryConfig config)
-			throws NoSuchFieldException, IllegalAccessException {
-
-		final Field indexServiceField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.mapIndex);
-		indexServiceField.setAccessible(true);
-		indexServiceField.set(mapInternToExternMapper, indexService);
-
-		final Field configField = MapInternToExternMapper.class.getDeclaredField(MapInternToExternMapper.Fields.config);
-		configField.setAccessible(true);
-		configField.set(mapInternToExternMapper, config);
-
-		mapInternToExternMapper.setDataset(DATASET);
 	}
 
 }

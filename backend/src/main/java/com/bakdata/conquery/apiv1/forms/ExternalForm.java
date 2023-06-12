@@ -26,9 +26,9 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -37,13 +37,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.Nullable;
 
 @Getter
 @Setter
@@ -51,17 +54,27 @@ import lombok.extern.slf4j.Slf4j;
 @JsonDeserialize(using = Deserializer.class)
 @RequiredArgsConstructor
 @Slf4j
+@ToString
 public class ExternalForm extends Form implements SubTyped {
 
 
 	@JsonValue
+	@ToString.Exclude
 	private final ObjectNode node;
-
 	private final String subType;
 
+	public JsonNode getExternalApiPayload() {
+		return ((ObjectNode) node.deepCopy()
+								 .without("values"))
+				.set("type", new TextNode(subType));
+
+	}
+
+	@Nullable
 	@Override
-	public String getFormType() {
-		return CPSTypeIdResolver.createSubTyped(this.getClass().getAnnotation(CPSType.class).id(), getSubType());
+	@JsonIgnore
+	public JsonNode getValues() {
+		return node.get("values");
 	}
 
 	@Override
@@ -72,39 +85,50 @@ public class ExternalForm extends Form implements SubTyped {
 		}
 
 		// Form had no specific title set. Try localized lookup in FormConfig
-		Locale preferredLocale = I18n.LOCALE.get();
-		FormType frontendConfig = FormScanner.FRONTEND_FORM_CONFIGS.get(this.getFormType());
+		final Locale preferredLocale = I18n.LOCALE.get();
+		final FormType frontendConfig = FormScanner.FRONTEND_FORM_CONFIGS.get(getFormType());
 
 		if (frontendConfig == null) {
 			return getSubType();
 		}
 
-		JsonNode titleObj = frontendConfig.getRawConfig().path("title");
+		final JsonNode titleObj = frontendConfig.getRawConfig().path("title");
 		if (!titleObj.isObject()) {
 			log.trace("Expected \"title\" member to be of type Object in {}", frontendConfig);
 			return getSubType();
 		}
 
-		List<Locale> localesFound = new ArrayList<>();
+		final List<Locale> localesFound = new ArrayList<>();
 		titleObj.fieldNames().forEachRemaining((lang) -> localesFound.add(new Locale(lang)));
+
 		if (localesFound.isEmpty()) {
 			log.trace("Could not extract a locale from the provided FrontendConfig: {}", frontendConfig);
 			return getSubType();
 		}
+
 		Locale chosenLocale = Locale.lookup(Locale.LanguageRange.parse(preferredLocale.getLanguage()), localesFound);
+
 		if (chosenLocale == null) {
 			chosenLocale = localesFound.get(0);
 			log.trace("Locale lookup did not return a matching locale. Using the first title encountered: {}", chosenLocale);
 		}
-		JsonNode title = titleObj.path(chosenLocale.getLanguage());
+
+		final JsonNode title = titleObj.path(chosenLocale.getLanguage());
+
 		if (!title.isTextual()) {
 			log.trace("Expected a textual node for the localized title. Was: {}", title.getNodeType());
 			return getSubType();
 		}
-		String ret = title.asText();
+
+		final String ret = title.asText();
 
 		log.trace("Extracted localized title. Was: \"{}\"", ret);
 		return ret.isBlank() ? getSubType() : ret;
+	}
+
+	@Override
+	public String getFormType() {
+		return CPSTypeIdResolver.createSubTyped(getClass().getAnnotation(CPSType.class).id(), getSubType());
 	}
 
 	@Override
@@ -142,22 +166,25 @@ public class ExternalForm extends Form implements SubTyped {
 		private String subTypeId;
 
 		@Override
-		public ExternalForm deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		public ExternalForm deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 
 			if (Strings.isNullOrEmpty(subTypeId)) {
 				throw new IllegalStateException("This class needs subtype information for deserialization.");
 			}
-			ObjectNode tree = p.readValueAsTree();
+
+			final ObjectNode tree = p.readValueAsTree();
 			return new ExternalForm(tree, subTypeId);
 		}
 
 		@Override
 		public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
 			// This is only called once per typeId@SubTypeId
-			String subTypeId = (String) ctxt.getAttribute(CPSTypeIdResolver.ATTRIBUTE_SUB_TYPE);
+			final String subTypeId = (String) ctxt.getAttribute(CPSTypeIdResolver.ATTRIBUTE_SUB_TYPE);
+
 			if (Strings.isNullOrEmpty(subTypeId)) {
 				throw new IllegalStateException("This class needs subtype information for deserialization.");
 			}
+
 			return new Deserializer(subTypeId);
 		}
 

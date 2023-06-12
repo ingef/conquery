@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
 import java.net.URI;
-import java.util.List;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -91,12 +90,12 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 		return false;
 	}
 
-	public List<TrieSearch<FrontendValue>> getSearches(IndexConfig config, NamespaceStorage storage) {
+	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
 		final URI resolvedURI = FileUtil.getResolvedUri(config.getBaseUrl(), getFilePath());
 		log.trace("Resolved filter template reference url for search '{}': {}", this.getId(), resolvedURI);
 
-		FrontendValueIndex search = indexService.getIndex(new FrontendValueIndexKey(
+		final FrontendValueIndex search = indexService.getIndex(new FrontendValueIndexKey(
 				resolvedURI,
 				columnValue,
 				value,
@@ -105,7 +104,7 @@ public class FilterTemplate extends IdentifiableImpl<SearchIndexId> implements S
 				config.getSearchSplitChars()
 		));
 
-		return List.of(search);
+		return search;
 	}
 
 	@Override

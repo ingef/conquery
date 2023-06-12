@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.index;
 
 import java.net.URI;
-import java.net.URL;
 import java.util.List;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
@@ -28,6 +27,7 @@ public class FrontendValueIndexKey extends AbstractIndexKey<FrontendValueIndex> 
 	 * @see FilterTemplate#getOptionValue()
 	 */
 	private final String optionValueTemplate;
+
 
 	public FrontendValueIndexKey(URI csv, String internalColumn, String valueTemplate, String optionValueTemplate, int suffixCutoff, String splitPattern) {
 		super(csv, internalColumn);

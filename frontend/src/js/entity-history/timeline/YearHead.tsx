@@ -32,6 +32,12 @@ const StickyWrap = styled("div")`
   }
 `;
 
+const Col = styled("div")`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
 const Grid = styled("div")`
   display: grid;
   grid-template-columns: auto 45px;
@@ -41,8 +47,12 @@ const Grid = styled("div")`
 const Value = styled("div")`
   font-size: ${({ theme }) => theme.font.tiny};
   font-weight: 400;
-  white-space: nowrap;
   justify-self: end;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  text-align: right;
 `;
 
 const Label = styled("div")`
@@ -81,7 +91,7 @@ const TimeStratifiedInfos = ({
     );
 
   return (
-    <>
+    <Col>
       {infos.map(({ info, yearInfo }) => {
         return (
           <Grid key={info.label}>
@@ -94,7 +104,11 @@ const TimeStratifiedInfos = ({
               .map(([label, value]) => {
                 const columnType = getColumnType(info, label);
                 const valueFormatted =
-                  columnType === "MONEY" ? Math.round(value) : value;
+                  typeof value === "number"
+                    ? Math.round(value)
+                    : value instanceof Array
+                    ? value.join(", ")
+                    : value;
 
                 return (
                   <Fragment key={label}>
@@ -109,7 +123,7 @@ const TimeStratifiedInfos = ({
           </Grid>
         );
       })}
-    </>
+    </Col>
   );
 };
 

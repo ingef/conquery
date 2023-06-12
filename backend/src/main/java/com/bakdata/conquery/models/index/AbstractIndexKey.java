@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.index;
 
 import java.net.URI;
-import java.net.URL;
 
 import lombok.Data;
 
