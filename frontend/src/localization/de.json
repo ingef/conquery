@@ -2,9 +2,12 @@
   "locale": "de",
   "headline": "Anfragen und Analyse",
   "error": {
-    "sorry": "Das hat leider nicht geklappt",
-    "description": "Versuche es noch einmal. Falls es erneut nicht klappt, bitte hinterlasse uns eine Nachricht, damit wir dieses Problem beheben können.",
-    "reload": "Seite vollständig neu laden"
+    "sorry": "Da ist etwas schiefgelaufen!",
+    "description": "Aber Du hast nichts falsch gemacht. Das Problem liegt auf unserer Seite.",
+    "reset": "Zurücksetzen",
+    "resetDescription": "Versuche zurückzusetzen. Falls das Problem weiterhin besteht, bitte kontaktiere uns, damit wir das Problem schneller beheben können.",
+    "reload": "Seite vollständig neu laden",
+    "reloadDescription": "Bitte hinterlasse uns eine Nachricht, damit wir dieses Problem beheben können."
   },
   "errorCodes": {
     "EXAMPLE_ERROR": "Dies ist eine Beispiel-Fehlermeldung",

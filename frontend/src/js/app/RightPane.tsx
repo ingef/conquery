@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import { EditorV2 } from "../editor-v2/EditorV2";
+import { ResetableErrorBoundary } from "../error-fallback/ResetableErrorBoundary";
 import FormsTab from "../external-forms/FormsTab";
 import Pane from "../pane/Pane";
 import { TabNavigationTab } from "../pane/TabNavigation";
@@ -99,7 +100,9 @@ const RightPane = () => {
         )}
       </Tab>
       <Tab key={tabs[2].key} isActive={activeTab === tabs[2].key}>
-        <FormsTab />
+        <ResetableErrorBoundary>
+          <FormsTab />
+        </ResetableErrorBoundary>
       </Tab>
     </SxPane>
   );
