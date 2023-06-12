@@ -7,16 +7,11 @@ import spinner from "./images/spinner.png";
 export const theme: Theme = {
   col: {
     bg: "#fafafa",
-    bgAlt: "#f4f6f5",
     black: "#222",
     gray: "#888",
     grayMediumLight: "#aaa",
     grayLight: "#dadada",
     grayVeryLight: "#eee",
-    blueGrayDark: "#0C6427",
-    blueGray: "#72757C",
-    blueGrayLight: "#52A55C",
-    blueGrayVeryLight: "#A4E6AC",
     red: "#b22125",
     green: "#36971C",
     orange: "#E9711C",
@@ -32,6 +27,11 @@ export const theme: Theme = {
       "#777",
       "#fff",
     ],
+    bgAlt: "#f4f6f5",
+    blueGrayDark: "#1f5f30",
+    blueGray: "#98b099",
+    blueGrayLight: "#ccd6d0",
+    blueGrayVeryLight: "#dadedb",
   },
   img: {
     logo: logo,

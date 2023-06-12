@@ -173,7 +173,8 @@
     "dateInvalid": "Invalid date",
     "missingLabel": "Unknown",
     "import": "Import",
-    "openFileDialog": "Select file"
+    "openFileDialog": "Select file",
+    "shortcut": "Key"
   },
   "tooltip": {
     "headline": "Info",
@@ -446,6 +447,7 @@
     "tabQueryEditor": "In the Editor, a query may be built and sent.",
     "tabTimebasedEditor": "In the Timebased Editor, a time-based query may be built and sent. That means, previous queries may be combined using time based relations, such as 'before' and 'after'.",
     "tabFormEditor": "The Form Editor allows for further analysis and statistics of previous queries.",
+    "tabEditorV2": "An extended editor that allows advanced queries.",
     "datasetSelector": "Select the dataset – concept trees, previous queries and forms will be loaded.",
     "excludeTimestamps": "If selected, will avoid using the date values from this concept within a query.",
     "excludeFromSecondaryId": "If selected, will avoid using this concept in the analysis layer, should an analysis layer be selected.",
@@ -516,5 +518,37 @@
     "paste": "Paste from clipboard",
     "submit": "Submit",
     "pasted": "Imported"
+  },
+  "editorV2": {
+    "time": "TIME",
+    "and": "AND",
+    "or": "OR",
+    "clear": "Clear",
+    "flip": "Flip",
+    "dates": "Dates",
+    "negate": "Negate",
+    "connector": "Connector",
+    "timeConnection": "Time connection",
+    "editTimeConnection": "Edit time connection",
+    "delete": "Delete",
+    "expand": "Expand",
+    "edit": "Details",
+    "initialDropText": "Drop a concept or query here.",
+    "datesExcluded": "No dates",
+    "outputSection": "Output values",
+    "filtersSection": "Filters",
+    "every": "Every",
+    "some": "Some",
+    "earliest": "The earliest",
+    "latest": "The latest",
+    "dateRangeFrom": "date range from",
+    "dayInterval": "Days",
+    "intervalSome": "some time",
+    "intervalMinDays": "at least {{days}} days",
+    "intervalMaxDays": "at most {{days}} days",
+    "intervalMinMaxDays": "between {{minDays}} and {{maxDays}} days",
+    "before": "before",
+    "after": "after",
+    "while": "while"
   }
 }
