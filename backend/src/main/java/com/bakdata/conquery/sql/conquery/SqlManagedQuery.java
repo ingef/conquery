@@ -106,7 +106,7 @@ public class SqlManagedQuery extends ManagedExecution implements SingleTableResu
 
 	@Override
 	public Stream<EntityResult> streamResults() {
-		return result.getTable().stream().map(Function.identity());
+		return result.getTable().stream();
 	}
 
 	@Override

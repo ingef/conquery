@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
+import com.bakdata.conquery.sql.execution.SqlEntityResult;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -58,7 +59,7 @@ public class IdColumnUtil {
 		if (owner.isPermitted(execution.getDataset(), Ability.PRESERVE_ID)) {
 			// todo(tm): The integration of ids in the sql connector needs to be properly managed
 			if (execution instanceof SqlManagedQuery) {
-				return entityResult -> EntityPrintId.from(String.valueOf(entityResult.getEntityId()));
+				return entityResult -> EntityPrintId.from(((SqlEntityResult) entityResult).getId());
 			}
 			return new FullIdPrinter(namespace.getStorage().getPrimaryDictionary(), namespace.getStorage().getIdMapping(), size, pos);
 		}
