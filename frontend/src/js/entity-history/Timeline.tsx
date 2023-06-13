@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { memo, useMemo } from "react";
+import { Fragment, memo, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import {
@@ -101,9 +101,8 @@ const Timeline = ({
         timeStratifiedInfos={currentEntityTimeStratifiedInfos}
       />
       {eventsByQuarterWithGroups.map(({ year, quarterwiseData }, i) => (
-        <>
+        <Fragment key={year}>
           <Year
-            key={year}
             year={year}
             datasetId={datasetId}
             quarterwiseData={quarterwiseData}
@@ -119,7 +118,7 @@ const Timeline = ({
             columns={columns}
           />
           {i < eventsByQuarterWithGroups.length - 1 && <Divider />}
-        </>
+        </Fragment>
       ))}
     </Root>
   );

@@ -18,6 +18,7 @@ import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";
 import {
   isConceptColumn,
+  isDateColumn,
   isMoneyColumn,
   isSecondaryIdColumn,
   isVisibleColumn,
@@ -154,7 +155,7 @@ const Cell = memo(
     datasetId: DatasetT["id"];
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
   }) => {
-    if (!columnDescription) {
+    if (isDateColumn(columnDescription)) {
       return cell.from === cell.to ? (
         <CellWrap>{formatHistoryDayRange(cell.from)}</CellWrap>
       ) : (
