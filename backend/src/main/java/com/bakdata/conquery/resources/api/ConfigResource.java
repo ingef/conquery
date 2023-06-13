@@ -37,7 +37,8 @@ public class ConfigResource {
 				frontendConfig.getCurrency(),
 				idColumns,
 				frontendConfig.getManualUrl(),
-				frontendConfig.getContactEmail()
+				frontendConfig.getContactEmail(),
+				frontendConfig.getObservationStart()
 		);
 	}
 

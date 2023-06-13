@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.datasets;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -46,11 +45,6 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 public class PreviewConfig {
 
-	/**
-	 * Default start-date for EntityPreview, end date will always be LocalDate.now()
-	 */
-	@NotNull
-	private LocalDate observationStart;
 
 	/**
 	 * Selects to be used in {@link com.bakdata.conquery.apiv1.QueryProcessor#getSingleEntityExport(Subject, UriBuilder, String, String, List, Dataset, Range)}.
