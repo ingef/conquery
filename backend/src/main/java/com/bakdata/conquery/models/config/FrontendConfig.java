@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.config;
 import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
@@ -31,7 +32,7 @@ public class FrontendConfig {
 	 * Default start-date for EntityPreview and DatePicker.
 	 */
 	@NotNull
-	private LocalDate observationStart;
+	private LocalDate observationStart = LocalDate.now().minus(10, ChronoUnit.YEARS);
 
 	/**
 	 * The url that points a manual. This is also used by the {@link FormScanner}
