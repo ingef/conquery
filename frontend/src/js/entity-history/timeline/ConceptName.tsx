@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { faFolder } from "@fortawesome/free-solid-svg-icons";
 import { memo } from "react";
 
-import { ConceptIdT, DatasetT } from "../../api/types";
+import { ConceptIdT } from "../../api/types";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../../icon/FaIcon";
 
