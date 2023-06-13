@@ -216,11 +216,13 @@ export function getFirstAndLastDateOfRange(dateRangeStr: string): {
 
 export function useMonthName(date: Date): string {
   const locale = useDateLocale();
+
   return format(date, "LLLL", { locale });
 }
 
 export function useMonthNames(): string[] {
   const locale = useDateLocale();
+
   return [...Array(12).keys()].map((month) => {
     const date = new Date();
     date.setMonth(month);

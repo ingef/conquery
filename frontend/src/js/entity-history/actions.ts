@@ -278,6 +278,7 @@ export function useUpdateHistorySession() {
       dispatch,
       getAuthorizedUrl,
       getEntityHistory,
+      observationPeriodMin,
     ],
   );
 }
