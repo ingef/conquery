@@ -469,13 +469,13 @@
     "backButtonWarning": "Achtung: Wenn Du zurück gehst, werden Änderungen an der Liste verworfen. Lade die Liste vorher herunter, um sie zu speichern.",
     "history": "Historie",
     "marked": "mit Status",
-    "events_one": "Datenpunkt",
-    "events_other": "Datenpunkte",
+    "events_one": "Eintrag",
+    "events_other": "Einträge",
     "downloadButtonLabel": "Liste mit Status-Einträgen herunterladen",
     "nextButtonLabel": "Weiterblättern",
     "prevButtonLabel": "Zurückblättern",
     "downloadEntityData": "Einzelhistorie herunterladen",
-    "differencesTooltip": "Unterschiede aus den einzelnen Datenpunkten",
+    "differencesTooltip": "Unterschiede aus den einzelnen Einträgen",
     "closeAll": "Alle schließen",
     "openAll": "Alle aufklappen",
     "dates": "Datumswerte",
@@ -488,7 +488,7 @@
     "detail": {
       "summary": "Zusammenfassung",
       "detail": "Gruppiert",
-      "full": "Alle Einzeldatenpunkte"
+      "full": "Alle Einzeleinträge"
     },
     "content": {
       "money": "Geldbeträge",

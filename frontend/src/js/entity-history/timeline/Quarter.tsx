@@ -55,7 +55,7 @@ const InlineGrid = styled("div")`
   cursor: pointer;
   border: 1px solid transparent;
   border-radius: ${({ theme }) => theme.borderRadius};
-  padding: 5px;
+  padding: 6px 10px;
   &:hover {
     border: 1px solid ${({ theme }) => theme.col.blueGray};
   }

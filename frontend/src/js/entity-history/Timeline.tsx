@@ -31,12 +31,18 @@ import {
 const Root = styled("div")`
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0 20px 0 10px;
+  padding: 0 20px 20px 10px;
   display: inline-grid;
   grid-template-columns: 200px auto;
   grid-auto-rows: minmax(min-content, max-content);
-  gap: 12px 4px;
+  gap: 20px 4px;
   width: 100%;
+`;
+
+const Divider = styled("div")`
+  grid-column: 1 / span 2;
+  height: 1px;
+  background: ${({ theme }) => theme.col.grayLight};
 `;
 
 const SxEntityCard = styled(EntityCard)`
@@ -94,23 +100,26 @@ const Timeline = ({
         infos={currentEntityInfos}
         timeStratifiedInfos={currentEntityTimeStratifiedInfos}
       />
-      {eventsByQuarterWithGroups.map(({ year, quarterwiseData }) => (
-        <Year
-          key={year}
-          year={year}
-          datasetId={datasetId}
-          quarterwiseData={quarterwiseData}
-          timeStratifiedInfos={currentEntityTimeStratifiedInfos}
-          getIsOpen={getIsOpen}
-          toggleOpenYear={toggleOpenYear}
-          toggleOpenQuarter={toggleOpenQuarter}
-          detailLevel={detailLevel}
-          currencyConfig={currencyConfig}
-          rootConceptIdsByColumn={rootConceptIdsByColumn}
-          columnBuckets={columnBuckets}
-          contentFilter={contentFilter}
-          columns={columns}
-        />
+      {eventsByQuarterWithGroups.map(({ year, quarterwiseData }, i) => (
+        <>
+          <Year
+            key={year}
+            year={year}
+            datasetId={datasetId}
+            quarterwiseData={quarterwiseData}
+            timeStratifiedInfos={currentEntityTimeStratifiedInfos}
+            getIsOpen={getIsOpen}
+            toggleOpenYear={toggleOpenYear}
+            toggleOpenQuarter={toggleOpenQuarter}
+            detailLevel={detailLevel}
+            currencyConfig={currencyConfig}
+            rootConceptIdsByColumn={rootConceptIdsByColumn}
+            columnBuckets={columnBuckets}
+            contentFilter={contentFilter}
+            columns={columns}
+          />
+          {i < eventsByQuarterWithGroups.length - 1 && <Divider />}
+        </>
       ))}
     </Root>
   );
