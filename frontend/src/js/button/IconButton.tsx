@@ -166,6 +166,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       secondary,
       light,
       fixedIconWidth,
+      iconColor,
     ]);
     return (
       <SxBasicButton
