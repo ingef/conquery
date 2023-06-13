@@ -192,8 +192,8 @@ public class AdminDatasetResource {
 
 	@DELETE
 	@Path("secondaryId/{" + SECONDARY_ID + "}")
-	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId) {
-		processor.deleteSecondaryId(secondaryId);
+	public void deleteSecondaryId(@PathParam(SECONDARY_ID) SecondaryIdDescription secondaryId, @QueryParam("force") @DefaultValue("false") boolean force) {
+		processor.deleteSecondaryId(secondaryId, force);
 	}
 
 	@DELETE

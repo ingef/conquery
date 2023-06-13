@@ -134,7 +134,7 @@ public class AdminDatasetProcessor {
 	/**
 	 * Delete SecondaryId if it does not have any dependents.
 	 */
-	public synchronized void deleteSecondaryId(@NonNull SecondaryIdDescription secondaryId) {
+	public synchronized void deleteSecondaryId(@NonNull SecondaryIdDescription secondaryId, boolean force) {
 		final Namespace namespace = datasetRegistry.get(secondaryId.getDataset().getId());
 
 		// Before we commit this deletion, we check if this SecondaryId still has dependent Columns.
@@ -143,7 +143,7 @@ public class AdminDatasetProcessor {
 												 .filter(column -> secondaryId.equals(column.getSecondaryId()))
 												 .collect(Collectors.toList());
 
-		if (!dependents.isEmpty()) {
+		if (!dependents.isEmpty() && !force) {
 			final Set<TableId> tables = dependents.stream().map(Column::getTable).map(Identifiable::getId).collect(Collectors.toSet());
 			log.error(
 					"SecondaryId[{}] still present on {}",
@@ -153,6 +153,11 @@ public class AdminDatasetProcessor {
 
 			throw new ForbiddenException(String.format("SecondaryId still has dependencies. %s", tables));
 		}
+
+		dependents.stream()
+				  .map(Column::getTable)
+				  .distinct()
+				  .forEach(table -> deleteTable(table, true));
 
 		log.info("Deleting SecondaryId[{}]", secondaryId);
 
