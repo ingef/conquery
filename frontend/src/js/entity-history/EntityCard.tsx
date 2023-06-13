@@ -9,7 +9,7 @@ import { exists } from "../common/helpers/exists";
 
 import EntityInfos from "./EntityInfos";
 import { TimeStratifiedChart } from "./TimeStratifiedChart";
-import { getColumnType, isMoneyColumn } from "./timeline/util";
+import { isMoneyColumn } from "./timeline/util";
 
 const Container = styled("div")`
   display: grid;
