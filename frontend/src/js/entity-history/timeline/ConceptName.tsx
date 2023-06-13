@@ -18,24 +18,12 @@ const Named = styled("span")`
 interface Props {
   className?: string;
   title?: string;
-  datasetId: DatasetT["id"] | null;
-  conceptId: string; // Because it's just part of an actual ConceptT['id']
+  conceptId: string;
   rootConceptId: ConceptIdT;
 }
 
-const ConceptName = ({
-  className,
-  title,
-  datasetId,
-  rootConceptId,
-  conceptId,
-}: Props) => {
-  // TODO: refactor. It's very implicit that the id is
-  // somehow containing the datasetId.
-  if (!datasetId) return null;
-
-  const fullConceptId = `${datasetId}.${conceptId}`;
-  const concept = getConceptById(fullConceptId, rootConceptId);
+const ConceptName = ({ className, title, rootConceptId, conceptId }: Props) => {
+  const concept = getConceptById(conceptId, rootConceptId);
 
   if (!concept) {
     return (
@@ -55,7 +43,7 @@ const ConceptName = ({
     </Named>
   );
 
-  if (fullConceptId === rootConceptId) {
+  if (conceptId === rootConceptId) {
     return (
       <div title={title} className={className}>
         {conceptName}

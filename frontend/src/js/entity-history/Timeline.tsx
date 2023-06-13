@@ -11,7 +11,6 @@ import {
   TimeStratifiedInfo,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { useDatasetId } from "../dataset/selectors";
 
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
@@ -72,7 +71,6 @@ const Timeline = ({
   toggleOpenYear,
   toggleOpenQuarter,
 }: Props) => {
-  const datasetId = useDatasetId();
   const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
     (state) => state.entityHistory.currentEntityData,
   );
@@ -88,8 +86,6 @@ const Timeline = ({
     secondaryIds: columnBuckets.secondaryIds,
   });
 
-  if (!datasetId) return null;
-
   if (eventsByQuarterWithGroups.length === 0) {
     return <TimelineEmptyPlaceholder />;
   }
@@ -104,7 +100,6 @@ const Timeline = ({
         <Fragment key={year}>
           <Year
             year={year}
-            datasetId={datasetId}
             quarterwiseData={quarterwiseData}
             timeStratifiedInfos={currentEntityTimeStratifiedInfos}
             getIsOpen={getIsOpen}

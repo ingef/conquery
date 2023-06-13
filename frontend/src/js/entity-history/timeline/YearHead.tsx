@@ -138,13 +138,7 @@ const TimeStratifiedInfos = ({
 
                   if (value instanceof Array) {
                     const concepts = value
-                      .map((v) =>
-                        getConceptById(
-                          // TODO: should be just v
-                          semantic?.concept.split(".")[0] + "." + v,
-                          semantic!.concept,
-                        ),
-                      )
+                      .map((v) => getConceptById(v, semantic!.concept))
                       .filter(exists);
 
                     return (
@@ -169,11 +163,8 @@ const TimeStratifiedInfos = ({
                       </Fragment>
                     );
                   }
-                  // else if (typeof value === "string") {
-                  //   const concept = getConceptById(semantic!.concept, value);
 
-                  //   if (concept) valueFormatted = concept.label;
-                  // }
+                  // TOOD: Potentially support single-value concepts
                 }
 
                 let valueFormatted: string | number | string[] = value;
