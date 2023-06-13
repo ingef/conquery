@@ -296,6 +296,7 @@ export interface GetFrontendConfigResponseT {
   queryUpload: QueryUploadConfigT;
   manualUrl?: string;
   contactEmail?: string;
+  observationPeriodStart?: string; // yyyy-mm-dd format, start of the data
 }
 
 export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
@@ -535,7 +536,6 @@ export interface HistorySources {
 export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
   searchConcept: string | null; // concept id
   searchFilters?: string[]; // allowlisted filter ids within the searchConcept
-  observationPeriodMin: string; // yyyy-MM-dd
 };
 
 export interface EntityInfo {

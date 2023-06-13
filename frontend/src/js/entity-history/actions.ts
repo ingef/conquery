@@ -1,3 +1,5 @@
+import startOfYear from "date-fns/startOfYear";
+import subYears from "date-fns/subYears";
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -180,6 +182,12 @@ export function useUpdateHistorySession() {
     StateT,
     StateT["entityHistory"]["defaultParams"]
   >((state) => state.entityHistory.defaultParams);
+  const observationPeriodMin = useSelector<StateT, string>((state) => {
+    return (
+      state.startup.config.observationPeriodStart ||
+      formatStdDate(subYears(startOfYear(new Date()), 1))
+    );
+  });
 
   return useCallback(
     async ({
@@ -203,7 +211,7 @@ export function useUpdateHistorySession() {
             entityId,
             defaultEntityHistoryParams.sources,
             {
-              min: defaultEntityHistoryParams.observationPeriodMin,
+              min: observationPeriodMin,
               max: formatStdDate(new Date()),
             },
           );
