@@ -11,11 +11,14 @@ interface StyledFaIconProps extends FaIconPropsT {
   red?: boolean;
   secondary?: boolean;
   hasChildren: boolean;
+  iconColor?: string;
 }
 
 const SxFaIcon = styled(FaIcon)<StyledFaIconProps>`
-  color: ${({ theme, active, red, secondary, light }) =>
-    red
+  color: ${({ theme, active, red, secondary, light, iconColor }) =>
+    iconColor
+      ? iconColor
+      : red
       ? theme.col.red
       : active
       ? theme.col.blueGrayDark
@@ -42,6 +45,7 @@ const SxBasicButton = styled(BasicButton)<{
   tight?: boolean;
   bgHover?: boolean;
   red?: boolean;
+  large?: boolean;
 }>`
   background-color: transparent;
   color: ${({ theme, active, secondary, red }) =>
@@ -62,7 +66,7 @@ const SxBasicButton = styled(BasicButton)<{
   display: inline-flex;
   align-items: center;
   gap: ${({ tight }) => (tight ? "5px" : "10px")};
-
+  font-size: ${({ theme, large }) => (large ? theme.font.md : theme.font.sm)};
   &:hover {
     opacity: 1;
 
@@ -98,6 +102,7 @@ export interface IconButtonPropsT extends BasicButtonProps {
   light?: boolean;
   fixedIconWidth?: number;
   bgHover?: boolean;
+  iconColor?: string;
 }
 
 // A button that is prefixed by an icon
@@ -117,6 +122,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
       light,
       fixedIconWidth,
       bgHover,
+      iconColor,
       ...restProps
     },
     ref,
@@ -135,6 +141,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
           tight={tight}
           small={small}
           light={light}
+          iconColor={iconColor}
           {...iconProps}
         />
       );
@@ -169,6 +176,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
         red={red}
         {...restProps}
         ref={ref}
+        large={large}
       >
         {iconElement}
         {children && <Children>{children}</Children>}

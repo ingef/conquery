@@ -10,6 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { ReactNode, useContext, forwardRef } from "react";
 
+import { theme } from "../../app-theme";
 import { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { getEnding } from "../query-runner/DownloadResultsDropdownButton";
@@ -24,13 +25,19 @@ const Link = styled("a")`
   line-height: 1;
 `;
 
-const fileTypeToIcon: Record<string, IconProp> = {
-  ZIP: faFileArchive,
-  XLSX: faFileExcel,
-  PDF: faFilePdf,
-  CSV: faFileCsv,
+interface FileIcon {
+  icon: IconProp;
+  color?: string;
+}
+
+const fileTypeToIcon: Record<string, FileIcon> = {
+  ZIP: { icon: faFileArchive, color: theme.col.files.zip },
+  XLSX: { icon: faFileExcel, color: theme.col.files.xlsx },
+  PDF: { icon: faFilePdf, color: theme.col.files.pdf },
+  CSV: { icon: faFileCsv, color: theme.col.files.csv },
 };
-function getFileIcon(url: string): IconProp {
+
+function getFileInfo(url: string): FileIcon {
   // Forms
   if (url.includes(".")) {
     const ext = getEnding(url);
@@ -38,7 +45,7 @@ function getFileIcon(url: string): IconProp {
       return fileTypeToIcon[ext];
     }
   }
-  return faFileDownload;
+  return { icon: faFileDownload };
 }
 
 interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
@@ -60,12 +67,16 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
       authToken,
     )}&charset=ISO_8859_1`;
 
+    const fileInfo = getFileInfo(resultUrl.url);
+
     return (
       <Link href={href} className={className} ref={ref}>
         <SxIconButton
           {...restProps}
-          icon={simpleIcon ? faDownload : getFileIcon(resultUrl.url)}
+          icon={simpleIcon ? faDownload : fileInfo.icon}
           onClick={onClick}
+          large={true}
+          iconColor={fileInfo.color}
         >
           {children}
         </SxIconButton>
