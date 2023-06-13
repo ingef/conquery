@@ -11,7 +11,6 @@ import type {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
-  DatasetT,
 } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
 import FaIcon from "../../icon/FaIcon";
@@ -93,29 +92,25 @@ const Bullet = styled("div")`
   flex-shrink: 0;
 `;
 
-interface Props {
-  row: EntityEvent;
-  columns: Record<string, ColumnDescription>;
-  columnBuckets: ColumnBuckets;
-  datasetId: DatasetT["id"];
-  contentFilter: ContentFilterValue;
-  currencyConfig: CurrencyConfigT;
-  rootConceptIdsByColumn: Record<string, ConceptIdT>;
-  groupedRows?: EntityEvent[];
-  groupedRowsKeysWithDifferentValues?: string[];
-}
-
 const EventCard = ({
   row,
   columns,
   columnBuckets,
-  datasetId,
   currencyConfig,
   contentFilter,
   rootConceptIdsByColumn,
   groupedRows,
   groupedRowsKeysWithDifferentValues,
-}: Props) => {
+}: {
+  row: EntityEvent;
+  columns: Record<string, ColumnDescription>;
+  columnBuckets: ColumnBuckets;
+  contentFilter: ContentFilterValue;
+  currencyConfig: CurrencyConfigT;
+  rootConceptIdsByColumn: Record<string, ConceptIdT>;
+  groupedRows?: EntityEvent[];
+  groupedRowsKeysWithDifferentValues?: string[];
+}) => {
   const { t } = useTranslation();
 
   const applicableGroupableIds = columnBuckets.groupableIds.filter(
@@ -168,7 +163,6 @@ const EventCard = ({
         )}
         {groupedRowsKeysWithDifferentValues && groupedRows && (
           <GroupedContent
-            datasetId={datasetId}
             columns={columns}
             contentFilter={contentFilter}
             groupedRows={groupedRows}

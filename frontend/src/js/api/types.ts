@@ -326,7 +326,8 @@ export type ColumnDescriptionKind =
   | "MONEY"
   | "DATE"
   | "DATE_RANGE"
-  | "LIST[DATE_RANGE]";
+  | "LIST[DATE_RANGE]"
+  | "LIST[STRING]";
 
 export interface ColumnDescriptionSemanticColumn {
   type: "COLUMN";
@@ -384,6 +385,7 @@ export interface ColumnDescription {
   // `label` matches column name in CSV
   // So it's more of an id, TODO: rename this to 'id',
   label: string;
+  description: string | null;
 
   type: ColumnDescriptionKind;
   semantics: ColumnDescriptionSemantic[];
@@ -564,13 +566,9 @@ export interface TimeStratifiedInfo {
   totals: {
     [label: string]: number | string[];
   };
-  columns: {
-    label: string; // Matches `label` with `year.values` and `year.quarters[].values`
-    defaultLabel: string; // Probably not used by us
-    description: string | null;
-    type: ColumnDescriptionKind; // Relevant to show e.g. € for money
-    semantics: ColumnDescriptionSemantic[]; // Probably not used by us
-  }[];
+  // `columns[].label` matches with
+  // `year.values` and `year.quarters[].values`
+  columns: ColumnDescription[];
   years: TimeStratifiedInfoYear[];
 }
 

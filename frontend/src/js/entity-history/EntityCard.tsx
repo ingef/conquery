@@ -9,7 +9,7 @@ import { exists } from "../common/helpers/exists";
 
 import EntityInfos from "./EntityInfos";
 import { TimeStratifiedChart } from "./TimeStratifiedChart";
-import { getColumnType } from "./timeline/util";
+import { isMoneyColumn } from "./timeline/util";
 
 const Container = styled("div")`
   display: grid;
@@ -60,11 +60,6 @@ const Table = ({
         return (
           <Grid key={timeStratifiedInfo.label}>
             {timeStratifiedInfo.columns.map((column) => {
-              const columnType = getColumnType(
-                timeStratifiedInfo,
-                column.label,
-              );
-
               const label = column.label;
               const value = timeStratifiedInfo.totals[column.label];
 
@@ -81,7 +76,7 @@ const Table = ({
                 <Fragment key={label}>
                   <Label>{label}</Label>
                   <Value>
-                    {columnType === "MONEY" && typeof value === "number" ? (
+                    {isMoneyColumn(column) && typeof value === "number" ? (
                       <NumericFormat
                         {...currencyConfig}
                         decimalScale={0}

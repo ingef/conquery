@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { memo, useMemo } from "react";
+import { Fragment, memo, useMemo } from "react";
 import { useSelector } from "react-redux";
 
 import {
@@ -11,7 +11,6 @@ import {
   TimeStratifiedInfo,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { useDatasetId } from "../dataset/selectors";
 
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
@@ -31,12 +30,18 @@ import {
 const Root = styled("div")`
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 0 20px 0 10px;
+  padding: 0 20px 20px 10px;
   display: inline-grid;
   grid-template-columns: 200px auto;
   grid-auto-rows: minmax(min-content, max-content);
-  gap: 12px 4px;
+  gap: 20px 4px;
   width: 100%;
+`;
+
+const Divider = styled("div")`
+  grid-column: 1 / span 2;
+  height: 1px;
+  background: ${({ theme }) => theme.col.grayLight};
 `;
 
 const SxEntityCard = styled(EntityCard)`
@@ -66,7 +71,6 @@ const Timeline = ({
   toggleOpenYear,
   toggleOpenQuarter,
 }: Props) => {
-  const datasetId = useDatasetId();
   const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
     (state) => state.entityHistory.currentEntityData,
   );
@@ -82,8 +86,6 @@ const Timeline = ({
     secondaryIds: columnBuckets.secondaryIds,
   });
 
-  if (!datasetId) return null;
-
   if (eventsByQuarterWithGroups.length === 0) {
     return <TimelineEmptyPlaceholder />;
   }
@@ -94,23 +96,24 @@ const Timeline = ({
         infos={currentEntityInfos}
         timeStratifiedInfos={currentEntityTimeStratifiedInfos}
       />
-      {eventsByQuarterWithGroups.map(({ year, quarterwiseData }) => (
-        <Year
-          key={year}
-          year={year}
-          datasetId={datasetId}
-          quarterwiseData={quarterwiseData}
-          timeStratifiedInfos={currentEntityTimeStratifiedInfos}
-          getIsOpen={getIsOpen}
-          toggleOpenYear={toggleOpenYear}
-          toggleOpenQuarter={toggleOpenQuarter}
-          detailLevel={detailLevel}
-          currencyConfig={currencyConfig}
-          rootConceptIdsByColumn={rootConceptIdsByColumn}
-          columnBuckets={columnBuckets}
-          contentFilter={contentFilter}
-          columns={columns}
-        />
+      {eventsByQuarterWithGroups.map(({ year, quarterwiseData }, i) => (
+        <Fragment key={year}>
+          <Year
+            year={year}
+            quarterwiseData={quarterwiseData}
+            timeStratifiedInfos={currentEntityTimeStratifiedInfos}
+            getIsOpen={getIsOpen}
+            toggleOpenYear={toggleOpenYear}
+            toggleOpenQuarter={toggleOpenQuarter}
+            detailLevel={detailLevel}
+            currencyConfig={currencyConfig}
+            rootConceptIdsByColumn={rootConceptIdsByColumn}
+            columnBuckets={columnBuckets}
+            contentFilter={contentFilter}
+            columns={columns}
+          />
+          {i < eventsByQuarterWithGroups.length - 1 && <Divider />}
+        </Fragment>
       ))}
     </Root>
   );

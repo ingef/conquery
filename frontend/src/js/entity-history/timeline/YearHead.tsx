@@ -4,12 +4,18 @@ import { Fragment, memo } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
-import { TimeStratifiedInfo } from "../../api/types";
+import {
+  ColumnDescriptionSemanticConceptColumn,
+  TimeStratifiedInfo,
+} from "../../api/types";
 import { StateT } from "../../app/reducers";
+import { exists } from "../../common/helpers/exists";
+import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../../icon/FaIcon";
+import WithTooltip from "../../tooltip/WithTooltip";
 
 import { SmallHeading } from "./SmallHeading";
-import { getColumnType } from "./util";
+import { isConceptColumn, isMoneyColumn } from "./util";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
@@ -20,7 +26,7 @@ const StickyWrap = styled("div")`
   position: sticky;
   top: 0;
   left: 0;
-  padding: 5px;
+  padding: 6px 10px;
   cursor: pointer;
   display: grid;
   grid-template-columns: 16px 1fr;
@@ -42,6 +48,22 @@ const Grid = styled("div")`
   display: grid;
   grid-template-columns: auto 45px;
   gap: 0px 10px;
+`;
+
+const ConceptRow = styled("div")`
+  grid-column: span 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+`;
+
+const ConceptBubble = styled("span")`
+  padding: 0 2px;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  color: ${({ theme }) => theme.col.black};
+  border: 1px solid ${({ theme }) => theme.col.blueGrayLight};
+  font-size: ${({ theme }) => theme.font.tiny};
 `;
 
 const Value = styled("div")`
@@ -102,20 +124,62 @@ const TimeStratifiedInfos = ({
                   info.columns.findIndex((c) => c.label === l2),
               )
               .map(([label, value]) => {
-                const columnType = getColumnType(info, label);
-                const valueFormatted =
-                  typeof value === "number"
-                    ? Math.round(value)
-                    : value instanceof Array
-                    ? value.join(", ")
-                    : value;
+                const column = info.columns.find((c) => c.label === label);
+
+                if (!column) {
+                  return null;
+                }
+
+                if (isConceptColumn(column)) {
+                  const semantic = column.semantics.find(
+                    (s): s is ColumnDescriptionSemanticConceptColumn =>
+                      s.type === "CONCEPT_COLUMN",
+                  );
+
+                  if (value instanceof Array) {
+                    const concepts = value
+                      .map((v) => getConceptById(v, semantic!.concept))
+                      .filter(exists);
+
+                    return (
+                      <Fragment key={label}>
+                        <Label
+                          style={{
+                            gridColumn: "span 2",
+                          }}
+                        >
+                          {label}
+                        </Label>
+                        <ConceptRow>
+                          {concepts.map((concept) => (
+                            <WithTooltip
+                              key={concept.label}
+                              text={concept.description}
+                            >
+                              <ConceptBubble>{concept.label}</ConceptBubble>
+                            </WithTooltip>
+                          ))}
+                        </ConceptRow>
+                      </Fragment>
+                    );
+                  }
+
+                  // TOOD: Potentially support single-value concepts
+                }
+
+                let valueFormatted: string | number | string[] = value;
+                if (typeof value === "number") {
+                  valueFormatted = Math.round(value);
+                } else if (value instanceof Array) {
+                  valueFormatted = value.join(", ");
+                }
 
                 return (
                   <Fragment key={label}>
                     <Label>{label}</Label>
-                    <Value>
+                    <Value title={String(valueFormatted)}>
                       {valueFormatted}
-                      {columnType === "MONEY" ? " " + currencyUnit : ""}
+                      {isMoneyColumn(column) ? " " + currencyUnit : ""}
                     </Value>
                   </Fragment>
                 );
