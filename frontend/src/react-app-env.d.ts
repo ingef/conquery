@@ -31,7 +31,7 @@ declare module "@emotion/react" {
       green: string;
       orange: string;
       palette: string[];
-      files: {
+      fileTypes: {
         csv: string;
         pdf: string;
         zip: string;

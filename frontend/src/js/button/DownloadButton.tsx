@@ -30,19 +30,20 @@ interface FileIcon {
   color?: string;
 }
 
-const fileTypeToIcon: Record<string, FileIcon> = {
-  ZIP: { icon: faFileArchive, color: theme.col.files.zip },
-  XLSX: { icon: faFileExcel, color: theme.col.files.xlsx },
-  PDF: { icon: faFilePdf, color: theme.col.files.pdf },
-  CSV: { icon: faFileCsv, color: theme.col.files.csv },
+const fileTypeToFileIcon: Record<string, FileIcon> = {
+  ZIP: { icon: faFileArchive, color: theme.col.fileTypes.zip },
+  XLSX: { icon: faFileExcel, color: theme.col.fileTypes.xlsx },
+  PDF: { icon: faFilePdf, color: theme.col.fileTypes.pdf },
+  CSV: { icon: faFileCsv, color: theme.col.fileTypes.csv },
 };
 
 function getFileInfo(url: string): FileIcon {
   // Forms
+
   if (url.includes(".")) {
     const ext = getEnding(url);
-    if (ext in fileTypeToIcon) {
-      return fileTypeToIcon[ext];
+    if (ext in fileTypeToFileIcon) {
+      return fileTypeToFileIcon[ext];
     }
   }
   return { icon: faFileDownload };
