@@ -316,7 +316,7 @@ public class LoadingUtil {
 					required.toSecondaryId(support.getDataset(), support.getDatasetRegistry().findRegistry(support.getDataset().getId()));
 
 			support.getDatasetsProcessor()
-				   .addSecondaryId(support.getNamespace(), description);
+				   .addSecondaryId(support.getNamespace(), description, false);
 
 			out.put(description.getName(), description);
 		}

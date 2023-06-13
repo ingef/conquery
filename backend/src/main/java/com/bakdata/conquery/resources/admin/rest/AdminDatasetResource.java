@@ -102,7 +102,13 @@ public class AdminDatasetResource {
 	@POST
 	@Path("secondaryId")
 	public void addSecondaryId(SecondaryIdDescription secondaryId) {
-		processor.addSecondaryId(namespace, secondaryId);
+		processor.addSecondaryId(namespace, secondaryId, false);
+	}
+
+	@PUT
+	@Path("secondaryId")
+	public void updateSecondaryId(SecondaryIdDescription secondaryId) {
+		processor.addSecondaryId(namespace, secondaryId, true);
 	}
 
 	@POST

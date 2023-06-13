@@ -116,15 +116,27 @@ public class AdminDatasetProcessor {
 	/**
 	 * Add SecondaryId if it doesn't already exist.
 	 */
-	public synchronized void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId) {
+	public synchronized void addSecondaryId(Namespace namespace, SecondaryIdDescription secondaryId, boolean update) {
 		final Dataset dataset = namespace.getDataset();
 		secondaryId.setDataset(dataset);
 
-		if (namespace.getStorage().getSecondaryId(secondaryId.getId()) != null) {
-			throw new WebApplicationException("SecondaryId already exists", Response.Status.CONFLICT);
+
+		final boolean exists = namespace.getStorage().getSecondaryId(secondaryId.getId()) != null;
+
+		if (!update && exists) {
+			throw new WebApplicationException("%s already exists".formatted(secondaryId), Response.Status.CONFLICT);
+		}
+
+		if (update && !exists) {
+			throw new WebApplicationException("%s does not exist yet.".formatted(secondaryId), Response.Status.CONFLICT);
 		}
 
 		log.info("Received new SecondaryId[{}]", secondaryId.getId());
+
+		if(update && exists){
+			log.debug("First delete prior SecondaryId.");
+			deleteSecondaryId(namespace.getStorage().getSecondaryId(secondaryId.getId()), true);
+		}
 
 		namespace.getStorage().addSecondaryId(secondaryId);
 
@@ -166,11 +178,77 @@ public class AdminDatasetProcessor {
 	}
 
 	/**
+	 * Deletes a table if it has no dependents or not forced to do so.
+	 */
+	public synchronized List<ConceptId> deleteTable(Table table, boolean force) {
+		final Namespace namespace = datasetRegistry.get(table.getDataset().getId());
+
+		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
+															.filter(con -> con.getTable().equals(table))
+															.map(Connector::getConcept)
+															.collect(Collectors.toList());
+
+		if (force || dependentConcepts.isEmpty()) {
+			for (Concept<?> concept : dependentConcepts) {
+				deleteConcept(concept);
+			}
+
+			namespace.getStorage().getAllImports().stream()
+					 .filter(imp -> imp.getTable().equals(table))
+					 .forEach(this::deleteImport);
+
+			namespace.getStorage().removeTable(table.getId());
+			namespace.sendToAll(new RemoveTable(table));
+		}
+
+		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
+	/**
+	 * Deletes a concept.
+	 */
+	public synchronized void deleteConcept(Concept<?> concept) {
+		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
+
+		namespace.getStorage().removeConcept(concept.getId());
+		getJobManager()
+				.addSlowJob(new SimpleJob("sendToAll: remove " + concept.getId(), () -> namespace.sendToAll(new RemoveConcept(concept))));
+	}
+
+	/**
+	 * Deletes an import.
+	 */
+	public synchronized void deleteImport(Import imp) {
+		final Namespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
+
+		clearDependentConcepts(namespace.getStorage().getAllConcepts(), imp.getTable());
+
+
+		namespace.getStorage().removeImport(imp.getId());
+		namespace.sendToAll(new RemoveImportJob(imp));
+
+		// Remove bucket assignments for consistency report
+		namespace.removeBucketAssignmentsForImportFormWorkers(imp);
+	}
+
+	private void clearDependentConcepts(Collection<Concept<?>> allConcepts, Table table) {
+		for (Concept<?> c : allConcepts) {
+			for (Connector con : c.getConnectors()) {
+				if (!con.getTable().equals(table)) {
+					continue;
+				}
+
+				con.getConcept().clearMatchingStats();
+			}
+		}
+	}
+
+	/**
 	 * Add table to Dataset if it doesn't already exist.
 	 */
 	@SneakyThrows
 	public synchronized void addTable(@NonNull Table table, Namespace namespace) {
-		Dataset dataset = namespace.getDataset();
+		final Dataset dataset = namespace.getDataset();
 
 		if (table.getDataset() == null) {
 			table.setDataset(dataset);
@@ -189,7 +267,6 @@ public class AdminDatasetProcessor {
 		namespace.getStorage().addTable(table);
 		namespace.sendToAll(new UpdateTable(table));
 	}
-
 
 	/**
 	 * update a concept of the given dataset.
@@ -227,7 +304,6 @@ public class AdminDatasetProcessor {
 		getJobManager().addSlowJob(new SimpleJob(String.format("sendToAll : Add %s ", concept.getId()), () -> namespace.sendToAll(new UpdateConcept(concept))));
 	}
 
-
 	public void setPreviewConfig(PreviewConfig previewConfig, Namespace namespace) {
 		log.info("Received new {}", previewConfig);
 
@@ -242,16 +318,16 @@ public class AdminDatasetProcessor {
 	public void setIdMapping(InputStream data, Namespace namespace) {
 		log.info("Received IdMapping for Dataset[{}]", namespace.getDataset().getId());
 
-		CsvParser parser = config.getCsv()
-								 .withSkipHeader(false)
-								 .withParseHeaders(true)
-								 .createParser();
+		final CsvParser parser = config.getCsv()
+									   .withSkipHeader(false)
+									   .withParseHeaders(true)
+									   .createParser();
 
 		try {
 
 			parser.beginParsing(data);
 
-			EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getIdColumns().getIds());
+			final EntityIdMap mapping = EntityIdMap.generateIdMapping(parser, config.getIdColumns().getIds());
 			namespace.getStorage().updateIdMapping(mapping);
 
 		}
@@ -269,14 +345,13 @@ public class AdminDatasetProcessor {
 		namespace.getStorage().updateStructure(structure);
 	}
 
-
 	/**
 	 * Reads an Import partially Importing it if not yet present, then submitting it for full import.
 	 */
 	@SneakyThrows
 	public void addImport(Namespace namespace, InputStream inputStream) throws IOException {
 
-		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, false);
+		final ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, false);
 		namespace.getJobManager().addSlowJob(job);
 
 		clearDependentConcepts(namespace.getStorage().getAllConcepts(), job.getTable());
@@ -288,77 +363,11 @@ public class AdminDatasetProcessor {
 	@SneakyThrows
 	public void updateImport(Namespace namespace, InputStream inputStream) throws IOException {
 
-		ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, true);
+		final ImportJob job = ImportJob.createOrUpdate(namespace, inputStream, config.getCluster().getEntityBucketSize(), sharedDictionaryLocks, config, true);
 
 		namespace.getJobManager().addSlowJob(job);
 
 		clearDependentConcepts(namespace.getStorage().getAllConcepts(), job.getTable());
-	}
-
-	/**
-	 * Deletes an import.
-	 */
-	public synchronized void deleteImport(Import imp) {
-		final Namespace namespace = datasetRegistry.get(imp.getTable().getDataset().getId());
-
-		clearDependentConcepts(namespace.getStorage().getAllConcepts(), imp.getTable());
-
-
-		namespace.getStorage().removeImport(imp.getId());
-		namespace.sendToAll(new RemoveImportJob(imp));
-
-		// Remove bucket assignments for consistency report
-		namespace.removeBucketAssignmentsForImportFormWorkers(imp);
-	}
-
-	private void clearDependentConcepts(Collection<Concept<?>> allConcepts, Table table) {
-		for (Concept<?> c : allConcepts) {
-			for (Connector con : c.getConnectors()) {
-				if (!con.getTable().equals(table)) {
-					continue;
-				}
-
-				con.getConcept().clearMatchingStats();
-			}
-		}
-	}
-
-	/**
-	 * Deletes a table if it has no dependents or not forced to do so.
-	 */
-	public synchronized List<ConceptId> deleteTable(Table table, boolean force) {
-		final Namespace namespace = datasetRegistry.get(table.getDataset().getId());
-
-		final List<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
-															.filter(con -> con.getTable().equals(table))
-															.map(Connector::getConcept)
-															.collect(Collectors.toList());
-
-		if (force || dependentConcepts.isEmpty()) {
-			for (Concept<?> concept : dependentConcepts) {
-				deleteConcept(concept);
-			}
-
-			namespace.getStorage().getAllImports().stream()
-					 .filter(imp -> imp.getTable().equals(table))
-					 .forEach(this::deleteImport);
-
-			namespace.getStorage().removeTable(table.getId());
-			namespace.sendToAll(new RemoveTable(table));
-		}
-
-		return dependentConcepts.stream().map(Concept::getId).collect(Collectors.toList());
-	}
-
-	/**
-	 * Deletes a concept.
-	 */
-	public synchronized void deleteConcept(Concept<?> concept) {
-		final Namespace namespace = datasetRegistry.get(concept.getDataset().getId());
-
-		namespace.getStorage().removeConcept(concept.getId());
-		getJobManager()
-				.addSlowJob(new SimpleJob("sendToAll: remove " + concept.getId(), () -> namespace.sendToAll(new RemoveConcept(concept))));
 	}
 
 	/**
@@ -409,13 +418,13 @@ public class AdminDatasetProcessor {
 
 		final Set<Concept<?>> dependentConcepts = namespace.getStorage().getAllConcepts().stream()
 														   .filter(
-																	c -> c.getSelects().stream()
-																		  .filter(MappableSingleColumnSelect.class::isInstance)
+																   c -> c.getSelects().stream()
+																		 .filter(MappableSingleColumnSelect.class::isInstance)
 
-																		  .map(MappableSingleColumnSelect.class::cast)
-																		  .map(MappableSingleColumnSelect::getMapping)
-																		  .anyMatch(internToExternMapper::equals)
-															)
+																		 .map(MappableSingleColumnSelect.class::cast)
+																		 .map(MappableSingleColumnSelect::getMapping)
+																		 .anyMatch(internToExternMapper::equals)
+														   )
 														   .collect(Collectors.toSet());
 
 		if (force || dependentConcepts.isEmpty()) {
