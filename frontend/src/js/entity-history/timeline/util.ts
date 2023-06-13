@@ -1,4 +1,4 @@
-import { ColumnDescription, TimeStratifiedInfo } from "../../api/types";
+import { ColumnDescription } from "../../api/types";
 
 export const isIdColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "ID");
@@ -21,10 +21,3 @@ export const isMoneyColumn = (columnDescription: ColumnDescription) =>
 
 export const isSecondaryIdColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "SECONDARY_ID");
-
-export const getColumnType = (
-  timeStratifiedInfo: TimeStratifiedInfo,
-  label: string,
-) => {
-  return timeStratifiedInfo.columns.find((c) => c.label === label)?.type;
-};
