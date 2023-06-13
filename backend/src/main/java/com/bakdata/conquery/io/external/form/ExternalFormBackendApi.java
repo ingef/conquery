@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.config.auth.AuthenticationClientFilterProvide
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.dropwizard.health.check.http.HttpHealthCheck;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -96,7 +97,8 @@ public class ExternalFormBackendApi {
 			   .header(HTTP_HEADER_CQ_AUTHENTICATION, serviceUserToken)
 			   .header(HTTP_HEADER_CQ_AUTHENTICATION_ORIGINAL, originalUserToken);
 
-		return request.post(Entity.entity(form, MediaType.APPLICATION_JSON_TYPE), ExternalTaskState.class);
+		ExternalTaskState post = request.post(Entity.entity(form.getExternalApiPayload(), MediaType.APPLICATION_JSON_TYPE), ExternalTaskState.class);
+		return post;
 	}
 
 	public ExternalTaskState getFormState(UUID externalId) {
@@ -113,14 +115,10 @@ public class ExternalFormBackendApi {
 
 	}
 
-	public HealthCheck.Result checkHealth() {
-		log.trace("Checking health from: {}", getHealthTarget);
-		try {
-			getHealthTarget.request(MediaType.APPLICATION_JSON_TYPE).get(Void.class);
-			return HealthCheck.Result.healthy();
-		}
-		catch (Exception e) {
-			return HealthCheck.Result.unhealthy(e.getMessage());
-		}
+	public HealthCheck createHealthCheck() {
+		return new HttpHealthCheck(
+				getHealthTarget.getUri().toString(), client
+		);
 	}
+
 }
