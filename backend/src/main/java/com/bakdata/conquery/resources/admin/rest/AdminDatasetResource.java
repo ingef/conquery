@@ -140,7 +140,13 @@ public class AdminDatasetResource {
 	@POST
 	@Path("tables")
 	public void addTable(Table table) {
-		processor.addTable(table, namespace);
+		processor.addTable(table, namespace, false);
+	}
+
+	@PUT
+	@Path("tables")
+	public void updateTable(Table table) {
+		processor.addTable(table, namespace, true);
 	}
 
 	@PUT

@@ -133,7 +133,7 @@ public class AdminDatasetProcessor {
 
 		log.info("Received new SecondaryId[{}]", secondaryId.getId());
 
-		if(update && exists){
+		if (update && exists) {
 			log.debug("First delete prior SecondaryId.");
 			deleteSecondaryId(namespace.getStorage().getSecondaryId(secondaryId.getId()), true);
 		}
@@ -247,19 +247,22 @@ public class AdminDatasetProcessor {
 	 * Add table to Dataset if it doesn't already exist.
 	 */
 	@SneakyThrows
-	public synchronized void addTable(@NonNull Table table, Namespace namespace) {
-		final Dataset dataset = namespace.getDataset();
+	public synchronized void addTable(@NonNull Table table, Namespace namespace, boolean update) {
 
-		if (table.getDataset() == null) {
-			table.setDataset(dataset);
-		}
-		else if (!table.getDataset().equals(dataset)) {
-			throw new IllegalArgumentException();
-		}
+		table.setDataset(namespace.getDataset());
 
+		final boolean exists = namespace.getStorage().getTable(table.getId()) != null;
 
-		if (namespace.getStorage().getTable(table.getId()) != null) {
+		if (!update && exists) {
 			throw new WebApplicationException("Table already exists", Response.Status.CONFLICT);
+		}
+
+		if (update && !exists) {
+			throw new WebApplicationException("Cannot update not existing Table.", Response.Status.CONFLICT);
+		}
+
+		if (update && exists) {
+			deleteTable(table, true);
 		}
 
 		ValidatorHelper.failOnError(log, validator.validate(table));
