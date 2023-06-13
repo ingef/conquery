@@ -143,7 +143,7 @@ public class TableExportQuery extends Query {
 		query.resolve(context);
 
 		// First is dates, second is source id
-		AtomicInteger currentPosition = new AtomicInteger(2);
+		final AtomicInteger currentPosition = new AtomicInteger(2);
 
 		final Map<SecondaryIdDescription, Integer> secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
 
@@ -153,7 +153,7 @@ public class TableExportQuery extends Query {
 	}
 
 	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
-		Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
+		final Map<SecondaryIdDescription, Integer> secondaryIdPositions = new HashMap<>();
 
 		// SecondaryIds are pulled to the front and grouped over all tables
 		tables.stream()
@@ -303,12 +303,12 @@ public class TableExportQuery extends Query {
 
 		final TreeConcept tree = (TreeConcept) concept;
 
-		int localId = (int) rawValue;
+		final int localId = (int) rawValue;
 
 		final ConceptTreeNode<?> node = tree.getElementByLocalId(localId);
 
 		if (!printSettings.isPrettyPrint()) {
-			return node.getId().toStringWithoutDataset();
+			return node.getId().toString();
 		}
 
 		if (node.getDescription() == null) {
