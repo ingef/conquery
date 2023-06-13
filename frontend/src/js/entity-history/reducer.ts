@@ -35,7 +35,6 @@ export interface EntityId {
 
 export type EntityHistoryStateT = {
   defaultParams: {
-    observationPeriodMin: string;
     sources: HistorySources;
     searchConcept: string | null;
     searchFilters: string[];
@@ -57,7 +56,6 @@ export type EntityHistoryStateT = {
 
 const initialState: EntityHistoryStateT = {
   defaultParams: {
-    observationPeriodMin: "2020-01-01",
     sources: { all: [], default: [] },
     searchConcept: null,
     searchFilters: [],
@@ -86,7 +84,6 @@ export default function reducer(
       return {
         ...state,
         defaultParams: {
-          observationPeriodMin: action.payload.observationPeriodMin,
           sources: { all: action.payload.all, default: action.payload.default },
           searchConcept: action.payload.searchConcept,
           searchFilters: action.payload.searchFilters || [],
