@@ -28,7 +28,7 @@ export const theme: Theme = {
       "#fff",
     ],
     files: {
-      csv: "#5aa86f",
+      csv: "#279e47",
       pdf: "#c9181e",
       zip: "#e5c527",
       xlsx: "#3B843C",
