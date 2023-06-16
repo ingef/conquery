@@ -24,6 +24,7 @@ import ToggleButton from "../../ui-components/ToggleButton";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import { Description } from "../form-components/Description";
+import DropzoneBetweenElements from "../form-components/DropzoneBetweenElements";
 import DropzoneList from "../form-components/DropzoneList";
 import DynamicInputGroup from "../form-components/DynamicInputGroup";
 import FormQueryNodeEditor from "../form-query-node-editor/FormQueryNodeEditor";
@@ -87,7 +88,9 @@ interface Props {
   }) => ReactNode;
 }
 
-const DropzoneListItem = styled("div")``;
+const DropzoneListItem = styled("div")`
+  margin-top: -30px;
+`;
 const Row = styled("div")`
   display: flex;
   align-items: center;

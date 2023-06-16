@@ -1,11 +1,6 @@
 import styled from "@emotion/styled";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import { useState } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
-import { useTranslation } from "react-i18next";
-
-import FaIcon from "../../icon/FaIcon";
-import Dropzone, {
+import {
   PossibleDroppableObject,
 } from "../../ui-components/Dropzone";
 
@@ -20,49 +15,28 @@ const Root = styled("div")<{
   isDroppable: boolean;
   isFirstElement: boolean;
 }>`
-  background-color: ${({ theme, isDroppable, isOver }) => {
-    if (isOver && isDroppable) return theme.col.grayLight;
-    return isDroppable ? theme.col.grayVeryLight : "inherit";
-  }};
-  margin-top: ${({ isFirstElement }) => (isFirstElement ? "5px" : "0px")};
   width: 100%;
-  text-align: center;
-`;
-
-const PlusContainer = styled("div")`
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 21px;
+  left: 0;
+  top: -17px;
+  height: 40px;
+  right: 0;
+  position: relative;
+  border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
 const DropzoneContainer = styled("div")`
   overflow: hidden;
-  height: 54px;
-`;
-
-const SxFaIcon = styled(FaIcon)`
-  height: 12px;
-  color: ${({ theme }) => theme.col.black};
-  opacity: 0.75;
+  height: 20px;
 `;
 
 const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   acceptedDropTypes,
-  onDrop: onDropCallback,
+  onDrop,
   isFirstElement,
 }: Props<DroppableObject>) => {
-  const { t } = useTranslation();
-
-  const SxDropzone = styled(Dropzone<DroppableObject>)`
-    margin: 5px 0 5px 0;
-  `;
-
-  const [showDropzone, setShowDropzone] = useState(false);
-
   const [{ isOver, isDroppable }, addZoneRef] = useDrop({
     accept: acceptedDropTypes,
+    drop: onDrop,
     collect: (monitor) => ({
       isOver: monitor.isOver(),
       isDroppable: monitor.canDrop(),
@@ -74,37 +48,24 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
       isOver: monitor.isOver(),
     }),
   });
-
-  const onDrop = (item: DroppableObject, monitor: DropTargetMonitor) => {
-    setShowDropzone(false);
-    onDropCallback(item, monitor);
-  };
+  console.log(isOver, isDroppable);
 
   return (
     <>
-      {!(showDropzone || isOver || isOver2) && (
         <Root
           ref={addZoneRef}
           isOver={isOver}
           isDroppable={isDroppable}
           isFirstElement={isFirstElement}
-        >
-          <PlusContainer onClick={() => setShowDropzone(true)}>
-            <SxFaIcon icon={faPlus} />
-          </PlusContainer>
+          >
         </Root>
-      )}
 
-      {(showDropzone || isOver || isOver2) && (
-        <DropzoneContainer
-          ref={dropzoneWrapperRef}
-          onClick={() => setShowDropzone(false)}
-        >
-          <SxDropzone acceptedDropTypes={acceptedDropTypes} onDrop={onDrop}>
-            {() => t("externalForms.default.dropBetweenLabel")}
-          </SxDropzone>
-        </DropzoneContainer>
-      )}
+          {( isOver || isOver2) && (
+            <DropzoneContainer
+              ref={dropzoneWrapperRef}
+            >
+            </DropzoneContainer>
+          )}
     </>
   );
 };
