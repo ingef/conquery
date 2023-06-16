@@ -1,8 +1,7 @@
 import styled from "@emotion/styled";
 import { DropTargetMonitor, useDrop } from "react-dnd";
-import {
-  PossibleDroppableObject,
-} from "../../ui-components/Dropzone";
+
+import { PossibleDroppableObject } from "../../ui-components/Dropzone";
 
 interface Props<DroppableObject> {
   onDrop: (item: DroppableObject, monitor: DropTargetMonitor) => void;
@@ -52,20 +51,16 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
 
   return (
     <>
-        <Root
-          ref={addZoneRef}
-          isOver={isOver}
-          isDroppable={isDroppable}
-          isFirstElement={isFirstElement}
-          >
-        </Root>
+      <Root
+        ref={addZoneRef}
+        isOver={isOver}
+        isDroppable={isDroppable}
+        isFirstElement={isFirstElement}
+      ></Root>
 
-          {( isOver || isOver2) && (
-            <DropzoneContainer
-              ref={dropzoneWrapperRef}
-            >
-            </DropzoneContainer>
-          )}
+      {(isOver || isOver2) && (
+        <DropzoneContainer ref={dropzoneWrapperRef}></DropzoneContainer>
+      )}
     </>
   );
 };
