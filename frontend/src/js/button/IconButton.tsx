@@ -175,9 +175,9 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonPropsT>(
         tight={tight}
         bgHover={bgHover}
         red={red}
+        large={large}
         {...restProps}
         ref={ref}
-        large={large}
       >
         {iconElement}
         {children && <Children>{children}</Children>}

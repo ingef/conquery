@@ -73,16 +73,16 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
       authToken,
     )}&charset=ISO_8859_1`;
 
-    const fileInfo = getFileInfo(resultUrl.url);
+    const { icon, color } = useFileIcon(resultUrl.url);
 
     return (
       <Link href={href} className={className} ref={ref}>
         <SxIconButton
           {...restProps}
-          icon={simpleIcon ? faDownload : fileInfo.icon}
+          large
+          icon={simpleIcon ? faDownload : icon}
           onClick={onClick}
-          large={true}
-          iconColor={fileInfo.color}
+          iconColor={color}
         >
           {children}
         </SxIconButton>
