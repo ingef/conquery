@@ -25,10 +25,12 @@ const Centered = styled("div")`
 `;
 
 export const EntityCard = ({
+  blurred,
   className,
   infos,
   timeStratifiedInfos,
 }: {
+  blurred?: boolean;
   className?: string;
   infos: EntityInfo[];
   timeStratifiedInfos: TimeStratifiedInfo[];
@@ -40,7 +42,7 @@ export const EntityCard = ({
   return (
     <Container className={className}>
       <Centered>
-        <EntityInfos infos={infos} />
+        <EntityInfos blurred={blurred} infos={infos} />
       </Centered>
       <TabbableTimeStratifiedCharts infos={infosWithOnlyMoneyColumns} />
     </Container>

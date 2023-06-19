@@ -48,18 +48,6 @@ const SxEntityCard = styled(EntityCard)`
   grid-column: span 2;
 `;
 
-interface Props {
-  className?: string;
-  currentEntityInfos: EntityInfo[];
-  currentEntityTimeStratifiedInfos: TimeStratifiedInfo[];
-  detailLevel: DetailLevel;
-  sources: Set<string>;
-  contentFilter: ContentFilterValue;
-  getIsOpen: (year: number, quarter?: number) => boolean;
-  toggleOpenYear: (year: number) => void;
-  toggleOpenQuarter: (year: number, quarter: number) => void;
-}
-
 const Timeline = ({
   className,
   currentEntityInfos,
@@ -70,7 +58,19 @@ const Timeline = ({
   getIsOpen,
   toggleOpenYear,
   toggleOpenQuarter,
-}: Props) => {
+  blurred,
+}: {
+  className?: string;
+  currentEntityInfos: EntityInfo[];
+  currentEntityTimeStratifiedInfos: TimeStratifiedInfo[];
+  detailLevel: DetailLevel;
+  sources: Set<string>;
+  contentFilter: ContentFilterValue;
+  getIsOpen: (year: number, quarter?: number) => boolean;
+  toggleOpenYear: (year: number) => void;
+  toggleOpenQuarter: (year: number, quarter: number) => void;
+  blurred?: boolean;
+}) => {
   const data = useSelector<StateT, EntityHistoryStateT["currentEntityData"]>(
     (state) => state.entityHistory.currentEntityData,
   );
@@ -93,6 +93,7 @@ const Timeline = ({
   return (
     <Root className={className}>
       <SxEntityCard
+        blurred={blurred}
         infos={currentEntityInfos}
         timeStratifiedInfos={currentEntityTimeStratifiedInfos}
       />
