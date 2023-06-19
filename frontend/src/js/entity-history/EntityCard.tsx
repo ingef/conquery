@@ -1,24 +1,20 @@
 import styled from "@emotion/styled";
-import { Fragment } from "react";
-import { NumericFormat } from "react-number-format";
-import { useSelector } from "react-redux";
 
-import { CurrencyConfigT, EntityInfo, TimeStratifiedInfo } from "../api/types";
-import { StateT } from "../app/reducers";
-import { exists } from "../common/helpers/exists";
+import { EntityInfo, TimeStratifiedInfo } from "../api/types";
 
 import EntityInfos from "./EntityInfos";
-import { TimeStratifiedChart } from "./TimeStratifiedChart";
+import { TabbableTimeStratifiedCharts } from "./TabbableTimeStratifiedCharts";
 import { isMoneyColumn } from "./timeline/util";
 
 const Container = styled("div")`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  padding: 20px;
+  padding: 20px 24px;
   background-color: ${({ theme }) => theme.col.bg};
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.grayLight};
+  align-items: center;
 `;
 
 const Centered = styled("div")`
@@ -27,76 +23,6 @@ const Centered = styled("div")`
   flex-direction: column;
   gap: 10px;
 `;
-
-const Grid = styled("div")`
-  display: grid;
-  gap: 0 20px;
-  grid-template-columns: auto auto;
-`;
-
-const Label = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
-`;
-
-const Value = styled("div")`
-  font-size: ${({ theme }) => theme.font.sm};
-  font-weight: 400;
-  justify-self: end;
-`;
-
-// @ts-ignore EVALUATE IF WE WANT TO SHOW THIS TABLE WITH FUTURE DATA
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const Table = ({
-  timeStratifiedInfos,
-}: {
-  timeStratifiedInfos: TimeStratifiedInfo[];
-}) => {
-  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-    (state) => state.startup.config.currency,
-  );
-  return (
-    <>
-      {timeStratifiedInfos.map((timeStratifiedInfo) => {
-        return (
-          <Grid key={timeStratifiedInfo.label}>
-            {timeStratifiedInfo.columns.map((column) => {
-              const label = column.label;
-              const value = timeStratifiedInfo.totals[column.label];
-
-              if (!exists(value)) return <></>;
-
-              const valueFormatted =
-                typeof value === "number"
-                  ? Math.round(value)
-                  : value instanceof Array
-                  ? value.join(", ")
-                  : value;
-
-              return (
-                <Fragment key={label}>
-                  <Label>{label}</Label>
-                  <Value>
-                    {isMoneyColumn(column) && typeof value === "number" ? (
-                      <NumericFormat
-                        {...currencyConfig}
-                        decimalScale={0}
-                        suffix={" " + currencyConfig.unit}
-                        displayType="text"
-                        value={value}
-                      />
-                    ) : (
-                      valueFormatted
-                    )}
-                  </Value>
-                </Fragment>
-              );
-            })}
-          </Grid>
-        );
-      })}
-    </>
-  );
-};
 
 export const EntityCard = ({
   className,
@@ -107,16 +33,16 @@ export const EntityCard = ({
   infos: EntityInfo[];
   timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
+  const infosWithOnlyMoneyColumns = timeStratifiedInfos.filter((info) =>
+    info.columns.every(isMoneyColumn),
+  );
+
   return (
     <Container className={className}>
       <Centered>
         <EntityInfos infos={infos} />
-        {/* TODO: EVALUATE IF WE WANT TO SHOW THIS TABLE WITH FUTURE DATA
-        <Table timeStratifiedInfos={timeStratifiedInfos.slice(1)} /> */}
       </Centered>
-      <TimeStratifiedChart
-        timeStratifiedInfos={timeStratifiedInfos.slice(0, 1)}
-      />
+      <TabbableTimeStratifiedCharts infos={infosWithOnlyMoneyColumns} />
     </Container>
   );
 };

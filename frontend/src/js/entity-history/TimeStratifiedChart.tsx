@@ -19,7 +19,7 @@ import { exists } from "../common/helpers/exists";
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
 const ChartContainer = styled("div")`
-  height: 185px;
+  height: 190px;
   width: 100%;
   display: flex;
   justify-content: flex-end;
@@ -65,16 +65,15 @@ const useFormatCurrency = () => {
 };
 
 export const TimeStratifiedChart = ({
-  timeStratifiedInfos,
+  timeStratifiedInfo,
 }: {
-  timeStratifiedInfos: TimeStratifiedInfo[];
+  timeStratifiedInfo: TimeStratifiedInfo;
 }) => {
   const theme = useTheme();
-  const infosToVisualize = timeStratifiedInfos[0];
-  const labels = infosToVisualize.columns.map((col) => col.label);
+  const labels = timeStratifiedInfo.columns.map((col) => col.label);
 
   const datasets = useMemo(() => {
-    const sortedYears = [...infosToVisualize.years].sort(
+    const sortedYears = [...timeStratifiedInfo.years].sort(
       (a, b) => b.year - a.year,
     );
 
@@ -87,7 +86,7 @@ export const TimeStratifiedChart = ({
         )}, ${interpolateDecreasingOpacity(i)})`,
       };
     });
-  }, [theme, infosToVisualize, labels]);
+  }, [theme, timeStratifiedInfo, labels]);
 
   const data = {
     labels,
@@ -101,7 +100,7 @@ export const TimeStratifiedChart = ({
       plugins: {
         title: {
           display: true,
-          text: infosToVisualize.label,
+          text: timeStratifiedInfo.label,
         },
         tooltip: {
           usePointStyle: true,
@@ -159,7 +158,7 @@ export const TimeStratifiedChart = ({
         },
       },
     };
-  }, [infosToVisualize, labels, formatCurrency]);
+  }, [timeStratifiedInfo, labels, formatCurrency]);
 
   return (
     <ChartContainer>
