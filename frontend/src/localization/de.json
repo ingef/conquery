@@ -273,8 +273,7 @@
     },
     "default": {
       "conceptDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu",
-      "conceptColumnDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu",
-      "dropBetweenLabel": "Füge ein Konzept oder eine Konzeptliste hinzu. Klicke hier um abzubrechen"
+      "conceptColumnDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu"
     },
     "copyModal": {
       "headline": "Kopieren von Konzepten aus anderem Feld",

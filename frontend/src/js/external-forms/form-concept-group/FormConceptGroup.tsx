@@ -24,7 +24,6 @@ import ToggleButton from "../../ui-components/ToggleButton";
 import UploadConceptListModal from "../../upload-concept-list-modal/UploadConceptListModal";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 import { Description } from "../form-components/Description";
-import DropzoneBetweenElements from "../form-components/DropzoneBetweenElements";
 import DropzoneList from "../form-components/DropzoneList";
 import DynamicInputGroup from "../form-components/DynamicInputGroup";
 import FormQueryNodeEditor from "../form-query-node-editor/FormQueryNodeEditor";
@@ -205,18 +204,29 @@ const FormConceptGroup = (props: Props) => {
         }
         dropBetween={(i: number) => {
           return (item: DragItemConceptTreeNode) => {
+            if (props.isValidConcept && !props.isValidConcept(item))
+              return null;
+
             if (isMovedObject(item)) {
+              let removed =
+                props.value[item.dragContext.movedFromAndIdx].concepts
+                  .length === 1
+                  ? removeValue(props.value, item.dragContext.movedFromAndIdx)
+                  : removeConcept(
+                      props.value,
+                      item.dragContext.movedFromAndIdx,
+                      item.dragContext.movedFromOrIdx,
+                    );
+              let insertIndex =
+                i > item.dragContext.movedFromAndIdx ? i - 1 : i;
               return props.onChange(
                 addConcept(
-                  insertValue(props.value, i, newValue),
-                  i,
+                  insertValue(removed, insertIndex, newValue),
+                  insertIndex,
                   copyConcept(item),
                 ),
               );
             }
-
-            if (props.isValidConcept && !props.isValidConcept(item))
-              return null;
 
             return props.onChange(
               addConcept(
@@ -244,6 +254,8 @@ const FormConceptGroup = (props: Props) => {
             return;
           }
 
+          if (props.isValidConcept && !props.isValidConcept(item)) return;
+
           if (isMovedObject(item)) {
             return props.onChange(
               addConcept(
@@ -253,8 +265,6 @@ const FormConceptGroup = (props: Props) => {
               ),
             );
           }
-
-          if (props.isValidConcept && !props.isValidConcept(item)) return;
 
           return props.onChange(
             addConcept(

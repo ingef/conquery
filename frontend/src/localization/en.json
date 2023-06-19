@@ -274,8 +274,7 @@
     },
     "default": {
       "conceptDropzoneLabel": "Add a concept or a concept list",
-      "conceptColumnDropzoneLabel": "Add a concept or a concept list",
-      "dropBetweenLabel": "Add a concept or a concept list. Click here to cancel"
+      "conceptColumnDropzoneLabel": "Add a concept or a concept list"
     },
     "copyModal": {
       "headline": "Copy concepts form another field",

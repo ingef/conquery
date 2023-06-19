@@ -41,14 +41,6 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
       isDroppable: monitor.canDrop(),
     }),
   });
-  const [{ isOver: isOver2 }, dropzoneWrapperRef] = useDrop({
-    accept: acceptedDropTypes,
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-    }),
-  });
-  console.log(isOver, isDroppable);
-
   return (
     <>
       <Root
@@ -58,9 +50,7 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
         isFirstElement={isFirstElement}
       ></Root>
 
-      {(isOver || isOver2) && (
-        <DropzoneContainer ref={dropzoneWrapperRef}></DropzoneContainer>
-      )}
+      {isOver && <DropzoneContainer />}
     </>
   );
 };
