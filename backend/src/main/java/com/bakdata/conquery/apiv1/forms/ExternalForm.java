@@ -79,7 +79,7 @@ public class ExternalForm extends Form implements SubTyped {
 
 		// Form had no specific title set. Try localized lookup in FormConfig
 		final Locale preferredLocale = I18n.LOCALE.get();
-		final FormType frontendConfig = FormScanner.FRONTEND_FORM_CONFIGS.get(getFormType());
+		final FormType frontendConfig = FormScanner.resolveFormType(getFormType());
 
 		if (frontendConfig == null) {
 			return getSubType();

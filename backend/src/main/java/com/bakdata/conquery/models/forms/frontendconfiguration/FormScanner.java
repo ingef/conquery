@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.forms.Form;
@@ -36,15 +37,13 @@ public class FormScanner extends Task {
 
 	public static final String MANUAL_URL_KEY = "manualUrl";
 	public static Map<String, FormType> FRONTEND_FORM_CONFIGS = Collections.emptyMap();
-
-	private Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
-
 	/**
 	 * The config is used to look up the base url for manuals see {@link FrontendConfig#getManualUrl()}.
 	 * If the url was changed (e.g. using {@link AdminProcessor#executeScript(String)}) an execution of this
 	 * task accounts the change.
 	 */
 	private final ConqueryConfig config;
+	private Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> providerChain = QueryUtils.getNoOpEntryPoint();
 
 	public FormScanner(ConqueryConfig config) {
 		super("form-scanner");
@@ -52,68 +51,48 @@ public class FormScanner extends Task {
 		registerFrontendFormConfigProvider(ResourceFormConfigProvider::accept);
 	}
 
-	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
-		Builder<String, Class<? extends Form>> backendClasses = ImmutableMap.builder();
-		// Gather form implementations first
-		for (Class<?> subclass : CPSTypeIdResolver.SCAN_RESULT.getSubclasses(Form.class.getName()).loadClasses()) {
-			if (Modifier.isAbstract(subclass.getModifiers())) {
-				continue;
-			}
-			CPSType[] cpsAnnotations = subclass.getAnnotationsByType(CPSType.class);
-
-			if (cpsAnnotations.length == 0) {
-				log.warn("Implemented Form {} has no CPSType annotation", subclass);
-				continue;
-			}
-			for (CPSType cpsType : cpsAnnotations) {
-				backendClasses.put(cpsType.id(), (Class<? extends Form>) subclass);
-			}
-		}
-		return backendClasses.build();
-	}
-
-	public synchronized void registerFrontendFormConfigProvider(Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider){
+	public synchronized void registerFrontendFormConfigProvider(Consumer<ImmutableCollection.Builder<FormFrontendConfigInformation>> provider) {
 		providerChain = providerChain.andThen(provider);
 	}
 
-	/**
-	 * Frontend form configurations can be provided from different sources.
-	 * Each source must register a provider with {@link FormScanner#registerFrontendFormConfigProvider(Consumer)} beforehand.
-	 */
-	@SneakyThrows
-	private List<FormFrontendConfigInformation> findFrontendFormConfigs() {
+	public static FormType resolveFormType(String formType) {
+		return FRONTEND_FORM_CONFIGS.get(formType);
+	}
 
-		ImmutableList.Builder<FormFrontendConfigInformation> frontendConfigs = ImmutableList.builder();
-		try {
-			providerChain.accept(frontendConfigs);
-		} catch (Exception e) {
-			log.error("Unable to collect all frontend form configurations.", e);
-		}
-		return frontendConfigs.build();
+	public static Set<FormType> getAllFormTypes() {
+		return Set.copyOf(FRONTEND_FORM_CONFIGS.values());
+	}
+
+	@Override
+	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
+		FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
 	}
 
 	private Map<String, FormType> generateFEFormConfigMap() {
 		// Collect backend implementations for specific forms
-		Map<String, Class<? extends Form>> forms = findBackendMappingClasses();
+		final Map<String, Class<? extends Form>> forms = findBackendMappingClasses();
 
 		// Collect frontend form configurations for the specific forms
-		List<FormFrontendConfigInformation> frontendConfigs = findFrontendFormConfigs();
+		final List<FormFrontendConfigInformation> frontendConfigs = findFrontendFormConfigs();
 
 		// Match frontend form configurations to backend implementations
 		final ImmutableMap.Builder<String, FormType> result = ImmutableMap.builderWithExpectedSize(frontendConfigs.size());
 
 
 		for (FormFrontendConfigInformation configInfo : frontendConfigs) {
-			ObjectNode configTree = configInfo.getConfigTree();
-			JsonNode type = configTree.get("type");
+
+			final ObjectNode configTree = configInfo.getConfigTree();
+			final JsonNode type = configTree.get("type");
+
 			if (!validTypeId(type)) {
 				log.warn("Found invalid type id in {}. Was: {}", configInfo.getOrigin(), type);
 				continue;
 			}
 
 			// Extract complete type information (type@subtype) and type information
-			String fullTypeIdentifier = type.asText();
-			String typeIdentifier = CPSTypeIdResolver.truncateSubTypeInformation(fullTypeIdentifier);
+			final String fullTypeIdentifier = type.asText();
+			final String typeIdentifier = CPSTypeIdResolver.truncateSubTypeInformation(fullTypeIdentifier);
+
 			if (!forms.containsKey(typeIdentifier)) {
 				log.error("Frontend form config {} (type = {}) does not map to a backend class.", configInfo, type);
 				continue;
@@ -139,14 +118,19 @@ public class FormScanner extends Task {
 
 											return URI.create(manualUrl.textValue());
 										});
+
+
 			final URL manualBaseUrl = config.getFrontend().getManualUrl();
+
 			if (manualBaseUrl != null && manualURL != null) {
 
 				final TextNode manualNode = relativizeManualUrl(fullTypeIdentifier, manualURL, manualBaseUrl);
+
 				if (manualNode == null) {
 					log.warn("Manual url relativization did not succeed for {}. Skipping registration.", fullTypeIdentifier);
 					continue;
 				}
+
 				configTree.set(MANUAL_URL_KEY, manualNode);
 			}
 
@@ -156,6 +140,50 @@ public class FormScanner extends Task {
 		}
 
 		return result.build();
+	}
+
+	private static Map<String, Class<? extends Form>> findBackendMappingClasses() {
+		final Builder<String, Class<? extends Form>> backendClasses = ImmutableMap.builder();
+		// Gather form implementations first
+		for (Class<?> subclass : CPSTypeIdResolver.SCAN_RESULT.getSubclasses(Form.class.getName()).loadClasses()) {
+			if (Modifier.isAbstract(subclass.getModifiers())) {
+				continue;
+			}
+
+			final CPSType[] cpsAnnotations = subclass.getAnnotationsByType(CPSType.class);
+
+			if (cpsAnnotations.length == 0) {
+				log.warn("Implemented Form {} has no CPSType annotation", subclass);
+				continue;
+			}
+
+			for (CPSType cpsType : cpsAnnotations) {
+				backendClasses.put(cpsType.id(), (Class<? extends Form>) subclass);
+			}
+		}
+		return backendClasses.build();
+	}
+
+	/**
+	 * Frontend form configurations can be provided from different sources.
+	 * Each source must register a provider with {@link FormScanner#registerFrontendFormConfigProvider(Consumer)} beforehand.
+	 */
+	@SneakyThrows
+	private List<FormFrontendConfigInformation> findFrontendFormConfigs() {
+
+		final ImmutableList.Builder<FormFrontendConfigInformation> frontendConfigs = ImmutableList.builder();
+
+		try {
+			providerChain.accept(frontendConfigs);
+		}
+		catch (Exception e) {
+			log.error("Unable to collect all frontend form configurations.", e);
+		}
+		return frontendConfigs.build();
+	}
+
+	private static boolean validTypeId(JsonNode node) {
+		return node != null && node.isTextual() && !node.asText().isEmpty();
 	}
 
 	private TextNode relativizeManualUrl(@NonNull String formTypeIdentifier, @NonNull URI manualUri, @NonNull URL manualBaseUrl) {
@@ -180,15 +208,6 @@ public class FormScanner extends Task {
 			log.error("Unable to build url", e);
 			return null;
 		}
-	}
-
-	private static boolean validTypeId(JsonNode node) {
-		return node != null && node.isTextual() && !node.asText().isEmpty();
-	}
-
-	@Override
-	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
-		FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
 	}
 
 }
