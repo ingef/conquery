@@ -459,6 +459,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "blurred": "Data visibility",
     "emptyTimeline": {
       "headline": "History",
       "description": "Exploring individual events chronologically.",

@@ -25,6 +25,7 @@ import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import SourcesControl from "./SourcesControl";
 import Timeline from "./Timeline";
+import VisibilityControl from "./VisibilityControl";
 import { useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
 
@@ -119,6 +120,10 @@ export const History = () => {
   const resultUrls = useSelector<StateT, ResultUrlWithLabel[]>(
     (state) => state.entityHistory.resultUrls,
   );
+
+  const [blurred, setBlurred] = useState(true);
+  const toggleBlurred = useCallback(() => setBlurred((v) => !v), []);
+  useHotkeys("p", toggleBlurred, [toggleBlurred]);
 
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
 
@@ -216,6 +221,10 @@ export const History = () => {
             </Header>
             <Flex>
               <Sidebar>
+                <VisibilityControl
+                  blurred={blurred}
+                  toggleBlurred={toggleBlurred}
+                />
                 {showAdvancedControls && (
                   <DetailControl
                     detailLevel={detailLevel}
@@ -238,6 +247,7 @@ export const History = () => {
                 </SidebarBottom>
               </Sidebar>
               <SxTimeline
+                blurred={blurred}
                 detailLevel={detailLevel}
                 sources={sourcesSet}
                 contentFilter={contentFilter}
