@@ -1,3 +1,4 @@
+import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -8,9 +9,8 @@ import {
   faFileExcel,
   faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode, useContext, forwardRef } from "react";
+import { ReactNode, useContext, forwardRef, useMemo } from "react";
 
-import { theme } from "../../app-theme";
 import { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { getEnding } from "../query-runner/DownloadResultsDropdownButton";
@@ -30,22 +30,27 @@ interface FileIcon {
   color?: string;
 }
 
-const fileTypeToFileIcon: Record<string, FileIcon> = {
-  ZIP: { icon: faFileArchive, color: theme.col.fileTypes.zip },
-  XLSX: { icon: faFileExcel, color: theme.col.fileTypes.xlsx },
-  PDF: { icon: faFilePdf, color: theme.col.fileTypes.pdf },
-  CSV: { icon: faFileCsv, color: theme.col.fileTypes.csv },
-};
+function useFileIcon(url: string): FileIcon {
+  const theme = useTheme();
 
-function getFileInfo(url: string): FileIcon {
-  // Forms
+  const fileTypeToFileIcon: Record<string, FileIcon> = useMemo(
+    () => ({
+      ZIP: { icon: faFileArchive, color: theme.col.fileTypes.zip },
+      XLSX: { icon: faFileExcel, color: theme.col.fileTypes.xlsx },
+      PDF: { icon: faFilePdf, color: theme.col.fileTypes.pdf },
+      CSV: { icon: faFileCsv, color: theme.col.fileTypes.csv },
+    }),
+    [theme],
+  );
 
   if (url.includes(".")) {
     const ext = getEnding(url);
+
     if (ext in fileTypeToFileIcon) {
       return fileTypeToFileIcon[ext];
     }
   }
+
   return { icon: faFileDownload };
 }
 
