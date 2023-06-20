@@ -50,10 +50,10 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 
 		Table<Record> joinedQuery = this.getIntitialJoinTable(queriesToJoin);
 
-		for (int i = 1; i < queriesToJoin.size(); i++) {
+		for (int i = 0; i < queriesToJoin.size() - 1; i++) {
 
-			QueryStep leftPartQS = queriesToJoin.get(i - 1);
-			QueryStep rightPartQS = queriesToJoin.get(i);
+			QueryStep leftPartQS = queriesToJoin.get(i);
+			QueryStep rightPartQS = queriesToJoin.get(i + 1);
 
 			Field<Object> leftPartPrimaryColumn = leftPartQS.getQualifiedSelects().getPrimaryColumn();
 			Field<Object> rightPartPrimaryColumn = rightPartQS.getQualifiedSelects().getPrimaryColumn();
