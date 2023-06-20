@@ -54,13 +54,8 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
 
   return (
     <>
-      <Root
-        ref={addZoneRef}
-        height={isOver  ? height : 0}
-      ></Root>
-      {isOver && (
-        <DropzoneContainer height={height}/>
-      )}
+      <Root ref={addZoneRef} height={isOver ? height : 0}></Root>
+      {isOver && <DropzoneContainer height={height} />}
     </>
   );
 };
