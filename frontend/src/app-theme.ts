@@ -27,6 +27,12 @@ export const theme: Theme = {
       "#777",
       "#fff",
     ],
+    fileTypes: {
+      csv: "#007BFF",
+      pdf: "#d73a49",
+      zip: "#6f42c1",
+      xlsx: "#28a745",
+    },
     bgAlt: "#f4f6f5",
     blueGrayDark: "#1f5f30",
     blueGray: "#98b099",

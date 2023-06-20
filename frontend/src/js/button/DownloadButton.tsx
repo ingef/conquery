@@ -1,3 +1,4 @@
+import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -8,7 +9,7 @@ import {
   faFileExcel,
   faFilePdf,
 } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode, useContext, forwardRef } from "react";
+import { ReactNode, useContext, forwardRef, useMemo } from "react";
 
 import { ResultUrlWithLabel } from "../api/types";
 import { AuthTokenContext } from "../authorization/AuthTokenProvider";
@@ -24,21 +25,33 @@ const Link = styled("a")`
   line-height: 1;
 `;
 
-const fileTypeToIcon: Record<string, IconProp> = {
-  ZIP: faFileArchive,
-  XLSX: faFileExcel,
-  PDF: faFilePdf,
-  CSV: faFileCsv,
-};
-function getFileIcon(url: string): IconProp {
-  // Forms
+interface FileIcon {
+  icon: IconProp;
+  color?: string;
+}
+
+function useFileIcon(url: string): FileIcon {
+  const theme = useTheme();
+
+  const fileTypeToFileIcon: Record<string, FileIcon> = useMemo(
+    () => ({
+      ZIP: { icon: faFileArchive, color: theme.col.fileTypes.zip },
+      XLSX: { icon: faFileExcel, color: theme.col.fileTypes.xlsx },
+      PDF: { icon: faFilePdf, color: theme.col.fileTypes.pdf },
+      CSV: { icon: faFileCsv, color: theme.col.fileTypes.csv },
+    }),
+    [theme],
+  );
+
   if (url.includes(".")) {
     const ext = getEnding(url);
-    if (ext in fileTypeToIcon) {
-      return fileTypeToIcon[ext];
+
+    if (ext in fileTypeToFileIcon) {
+      return fileTypeToFileIcon[ext];
     }
   }
-  return faFileDownload;
+
+  return { icon: faFileDownload };
 }
 
 interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
@@ -60,12 +73,16 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
       authToken,
     )}&charset=ISO_8859_1`;
 
+    const { icon, color } = useFileIcon(resultUrl.url);
+
     return (
       <Link href={href} className={className} ref={ref}>
         <SxIconButton
           {...restProps}
-          icon={simpleIcon ? faDownload : getFileIcon(resultUrl.url)}
+          large
+          icon={simpleIcon ? faDownload : icon}
           onClick={onClick}
+          iconColor={color}
         >
           {children}
         </SxIconButton>
