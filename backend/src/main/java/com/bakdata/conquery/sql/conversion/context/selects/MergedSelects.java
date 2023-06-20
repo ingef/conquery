@@ -45,14 +45,12 @@ public class MergedSelects implements Selects {
 
 	private Optional<Field<Object>> extractValidityDate(List<QueryStep> querySteps) {
 		// TODO: date aggregation...
-		return querySteps.stream()
-						 .map(queryStep -> this.mapFieldStreamToQualifier(
-									  queryStep.getCteName(),
-									  queryStep.getSelects().getValidityDate().stream()
-							  ).findFirst()
-						 )
-						 .findFirst()
-						 .orElse(Optional.empty());
+		if (!querySteps.isEmpty()) {
+			QueryStep firstQueryStep = querySteps.get(0);
+			return this.mapFieldStreamToQualifier(firstQueryStep.getCteName(), firstQueryStep.getSelects().getValidityDate().stream())
+					   .findFirst();
+		}
+		return Optional.empty();
 	}
 
 	private List<Field<Object>> mergeSelects(List<QueryStep> queriesToJoin) {
