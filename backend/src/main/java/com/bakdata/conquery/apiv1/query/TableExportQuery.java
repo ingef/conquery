@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.query;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -172,6 +173,15 @@ public class TableExportQuery extends Query {
 	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
 		final Map<Column, Integer> positions = new HashMap<>();
 
+		// We need to know if a column is a concept column so we can prioritize it if it is also a SecondaryId
+		final Set<Column> conceptColumns = tables.stream()
+										   .map(CQConcept::getTables)
+										   .flatMap(Collection::stream)
+										   .map(CQTable::getConnector)
+										   .map(Connector::getColumn)
+										   .filter(Objects::nonNull)
+										   .collect(Collectors.toSet());
+
 		for (CQConcept concept : tables) {
 			for (CQTable table : concept.getTables()) {
 
@@ -188,7 +198,8 @@ public class TableExportQuery extends Query {
 						continue;
 					}
 
-					if (column.getSecondaryId() != null) {
+					// We want to have ConceptColumns separate here.
+					if (column.getSecondaryId() != null && !conceptColumns.contains(column)) {
 						positions.putIfAbsent(column, secondaryIdPositions.get(column.getSecondaryId()));
 						continue;
 					}
