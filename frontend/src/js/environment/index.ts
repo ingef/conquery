@@ -28,6 +28,9 @@ const idpRealmEnv =
 const idpClientIdEnv =
   runtimeVar("REACT_APP_IDP_CLIENT_ID") ||
   import.meta.env.REACT_APP_IDP_CLIENT_ID;
+const entityBlurredByDefaultEnv =
+  runtimeVar("REACT_APP_BLURRED_ENTITY_DEFAULT") ||
+  import.meta.env.REACT_APP_BLURRED_ENTITY_DEFAULT;
 
 export const isProduction = isProductionEnv === "production" || true;
 export const language = languageEnv === "de" ? "de" : "en";
@@ -38,6 +41,7 @@ export const basename = basenameEnv || "";
 export const idpUrl = idpUrlEnv || "";
 export const idpRealm = idpRealmEnv || "";
 export const idpClientId = idpClientIdEnv || "";
+export const isEntityBlurredByDefault = entityBlurredByDefaultEnv === "true";
 
 export interface CustomEnvironment {
   getExternalSupportedErrorMessage?: (
