@@ -163,6 +163,7 @@ export interface ConceptBaseT {
   description?: string; // Empty array: key not defined
   additionalInfos?: InfoT[]; // Empty array: key not defined
   dateRange?: DateRangeT;
+  excludeFromTimeAggregation?: boolean; // To default-exclude some concepts from time aggregation
 }
 
 export type ConceptStructT = ConceptBaseT;
