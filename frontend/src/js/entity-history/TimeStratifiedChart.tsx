@@ -8,13 +8,13 @@ import {
   Tooltip,
   ChartOptions,
 } from "chart.js";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
-import { useSelector } from "react-redux";
 
-import { CurrencyConfigT, TimeStratifiedInfo } from "../api/types";
-import { StateT } from "../app/reducers";
+import { TimeStratifiedInfo } from "../api/types";
 import { exists } from "../common/helpers/exists";
+
+const TRUNCATE_X_AXIS_LABELS_LEN = 18;
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
@@ -42,27 +42,13 @@ function interpolateDecreasingOpacity(index: number) {
   return Math.min(1, 1 / (index + 0.3));
 }
 
-const useFormatCurrency = () => {
-  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-    (state) => state.startup.config.currency,
-  );
-
-  const formatCurrency = useCallback(
-    (value: number) => {
-      return value.toLocaleString("de-DE", {
-        style: "currency",
-        currency: "EUR",
-        minimumFractionDigits: currencyConfig.decimalScale,
-        maximumFractionDigits: currencyConfig.decimalScale,
-      });
-    },
-    [currencyConfig],
-  );
-
-  return {
-    formatCurrency,
-  };
-};
+const formatCurrency = (value: number) =>
+  value.toLocaleString("de-DE", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 
 export const TimeStratifiedChart = ({
   timeStratifiedInfo,
@@ -92,8 +78,6 @@ export const TimeStratifiedChart = ({
     labels,
     datasets,
   };
-
-  const { formatCurrency } = useFormatCurrency();
 
   const options: ChartOptions<"bar"> = useMemo(() => {
     return {
@@ -144,8 +128,9 @@ export const TimeStratifiedChart = ({
         x: {
           ticks: {
             callback: (idx: any) => {
-              return labels[idx].length > 12
-                ? labels[idx].substring(0, 9) + "..."
+              return labels[idx].length > TRUNCATE_X_AXIS_LABELS_LEN
+                ? labels[idx].substring(0, TRUNCATE_X_AXIS_LABELS_LEN - 3) +
+                    "..."
                 : labels[idx];
             },
           },
@@ -158,7 +143,7 @@ export const TimeStratifiedChart = ({
         },
       },
     };
-  }, [timeStratifiedInfo, labels, formatCurrency]);
+  }, [timeStratifiedInfo, labels]);
 
   return (
     <ChartContainer>
