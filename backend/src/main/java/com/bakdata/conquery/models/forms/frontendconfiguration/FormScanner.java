@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
@@ -55,6 +57,8 @@ public class FormScanner extends Task {
 		providerChain = providerChain.andThen(provider);
 	}
 
+
+	@Nullable
 	public static FormType resolveFormType(String formType) {
 		return FRONTEND_FORM_CONFIGS.get(formType);
 	}
