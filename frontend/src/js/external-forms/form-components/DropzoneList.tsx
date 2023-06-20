@@ -102,7 +102,6 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
                 <DropzoneBetweenElements
                   acceptedDropTypes={acceptedDropTypes}
                   onDrop={dropBetween(i)}
-                  isFirstElement={i === 0}
                 />
               )}
               <ListItem>

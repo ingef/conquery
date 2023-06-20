@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { useState } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 
 import { PossibleDroppableObject } from "../../ui-components/Dropzone";
@@ -6,51 +7,60 @@ import { PossibleDroppableObject } from "../../ui-components/Dropzone";
 interface Props<DroppableObject> {
   onDrop: (item: DroppableObject, monitor: DropTargetMonitor) => void;
   acceptedDropTypes: string[];
-  isFirstElement: boolean;
 }
 
 const Root = styled("div")<{
-  isOver: boolean;
-  isDroppable: boolean;
-  isFirstElement: boolean;
+  height: number;
 }>`
   width: 100%;
   left: 0;
-  top: -17px;
-  height: 40px;
+  top: -15px;
+  height: ${({ height }) => height + 40}px;
   right: 0;
   position: relative;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-const DropzoneContainer = styled("div")`
+const DropzoneContainer = styled("div")<{
+  height: number;
+}>`
   overflow: hidden;
-  height: 20px;
+  margin-top: ${({ height }) => -height}px;
+  display: block;
+  height: ${({ height }) => height}px;
 `;
 
 const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   acceptedDropTypes,
   onDrop,
-  isFirstElement,
 }: Props<DroppableObject>) => {
-  const [{ isOver, isDroppable }, addZoneRef] = useDrop({
+  const [height, setHeight] = useState(40);
+
+  const [{ isOver }, addZoneRef] = useDrop({
     accept: acceptedDropTypes,
     drop: onDrop,
+    hover(item) {
+      if (item.type === "CONCEPT_TREE_NODE") {
+        return setHeight(item.dragContext.height);
+      }
+      return setHeight(0);
+    },
+
     collect: (monitor) => ({
       isOver: monitor.isOver(),
       isDroppable: monitor.canDrop(),
     }),
   });
+
   return (
     <>
       <Root
         ref={addZoneRef}
-        isOver={isOver}
-        isDroppable={isDroppable}
-        isFirstElement={isFirstElement}
+        height={isOver  ? height : 0}
       ></Root>
-
-      {isOver && <DropzoneContainer />}
+      {isOver && (
+        <DropzoneContainer height={height}/>
+      )}
     </>
   );
 };
