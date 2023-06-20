@@ -350,7 +350,7 @@ public class ImportJob extends Job {
 
 	private void awaitFreeJobQueue(WorkerInformation responsibleWorker) {
 		try {
-			responsibleWorker.getConnectedShardNode().waitForFreeJobqueue();
+			responsibleWorker.getConnectedShardNode().waitForFreeJobQueue();
 		}
 		catch (InterruptedException e) {
 			log.error("Interrupted while waiting for worker[{}] to have free space in queue", responsibleWorker, e);

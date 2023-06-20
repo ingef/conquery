@@ -314,23 +314,27 @@ public class ShardNode extends ConqueryCommand implements IoHandler, Managed {
 
 
 		// Collect the ShardNode and all its workers jobs into a single queue
-		final JobManagerStatus jobManagerStatus = jobManager.reportStatus();
 
 		for (Worker worker : workers.getWorkers().values()) {
-			jobManagerStatus.getJobs().addAll(worker.getJobManager().reportStatus().getJobs());
-		}
+			final JobManagerStatus jobManagerStatus = new JobManagerStatus(
+					null, worker.getInfo().getDataset(),
+					worker.getJobManager().getJobStatus()
+			);
 
+			try {
+				context.trySend(new UpdateJobManagerStatus(jobManagerStatus));
+			}
+			catch (Exception e) {
+				log.warn("Failed to report job manager status", e);
 
-		try {
-			context.trySend(new UpdateJobManagerStatus(jobManagerStatus));
-		}
-		catch (Exception e) {
-			log.warn("Failed to report job manager status", e);
-
-			if (config.isFailOnError()) {
-				System.exit(1);
+				if (config.isFailOnError()) {
+					System.exit(1);
+				}
 			}
 		}
+
+
+
 	}
 
 	public boolean isBusy() {
