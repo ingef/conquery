@@ -54,7 +54,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		// only relevant for debugging purposes as it will be part of the generated SQL query
 		return node.getUserOrDefaultLabel(Locale.ENGLISH)
 				   .toLowerCase()
-				   .replace(' ', '_');
+				   .replace(' ', '_')
+				   .replaceAll("\\s", "_");
 	}
 
 	/**
