@@ -148,9 +148,18 @@ public class TableExportQuery extends Query {
 
 		final Map<SecondaryIdDescription, Integer> secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
 
-		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions);
+		// We need to know if a column is a concept column so we can prioritize it if it is also a SecondaryId
+		final Set<Column> conceptColumns = tables.stream()
+												 .map(CQConcept::getTables)
+												 .flatMap(Collection::stream)
+												 .map(CQTable::getConnector)
+												 .map(Connector::getColumn)
+												 .filter(Objects::nonNull)
+												 .collect(Collectors.toSet());
 
-		resultInfos = createResultInfos(secondaryIdPositions);
+		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions, conceptColumns);
+
+		resultInfos = createResultInfos(secondaryIdPositions, conceptColumns);
 	}
 
 	private Map<SecondaryIdDescription, Integer> calculateSecondaryIdPositions(AtomicInteger currentPosition) {
@@ -170,17 +179,9 @@ public class TableExportQuery extends Query {
 		return secondaryIdPositions;
 	}
 
-	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
+	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Set<Column> conceptColumns) {
 		final Map<Column, Integer> positions = new HashMap<>();
 
-		// We need to know if a column is a concept column so we can prioritize it if it is also a SecondaryId
-		final Set<Column> conceptColumns = tables.stream()
-										   .map(CQConcept::getTables)
-										   .flatMap(Collection::stream)
-										   .map(CQTable::getConnector)
-										   .map(Connector::getColumn)
-										   .filter(Objects::nonNull)
-										   .collect(Collectors.toSet());
 
 		for (CQConcept concept : tables) {
 			for (CQTable table : concept.getTables()) {
@@ -212,7 +213,7 @@ public class TableExportQuery extends Query {
 		return positions;
 	}
 
-	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions) {
+	private List<ResultInfo> createResultInfos(Map<SecondaryIdDescription, Integer> secondaryIdPositions, Set<Column> conceptColumns) {
 
 		final int size = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
 
@@ -263,7 +264,7 @@ public class TableExportQuery extends Query {
 			}
 
 			// SecondaryIds and date columns are pulled to the front, thus already covered.
-			if (column.getSecondaryId() != null) {
+			if (column.getSecondaryId() != null && !conceptColumns.contains(column)) {
 				infos[secondaryIdPositions.get(column.getSecondaryId())].getSemantics()
 																		.add(new SemanticType.ColumnT(column));
 				continue;
