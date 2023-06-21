@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -148,7 +149,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	private List<Condition> buildDateRestriction(ConversionContext context, QueryStep previous) {
 		return ((ConceptSelects) previous.getSelects()).getDateRestriction()
 													   .map(dateRestrictionColumn -> getDateRestrictionAsCondition(context, previous, dateRestrictionColumn))
-													   .orElseGet(List::of);
+													   .orElseGet(Collections::emptyList);
 	}
 
 	private static List<Condition> getDateRestrictionAsCondition(ConversionContext context, QueryStep previous, Field<Object> dateRestrictionColumn) {
