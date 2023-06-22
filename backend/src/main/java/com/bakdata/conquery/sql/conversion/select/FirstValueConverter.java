@@ -9,7 +9,7 @@ public class FirstValueConverter implements SelectConverter<FirstValueSelect> {
 
 	public Field<Object> convert(FirstValueSelect select, ConversionContext context) {
 		SqlFunctionProvider fn = context.getSqlDialect().getFunction();
-		return fn.first(select.getColumnName());
+		return fn.first(select.getColumn().getName());
 	}
 
 	@Override
