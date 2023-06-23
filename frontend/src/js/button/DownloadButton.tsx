@@ -60,11 +60,12 @@ interface Props extends Omit<IconButtonPropsT, "icon" | "onClick"> {
   children?: ReactNode;
   simpleIcon?: boolean;
   onClick?: () => void;
+  showColoredIcon?: boolean;
 }
 
 const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
   (
-    { simpleIcon, resultUrl, className, children, onClick, ...restProps },
+    { simpleIcon, resultUrl, className, children, onClick, showColoredIcon, ...restProps },
     ref,
   ) => {
     const { authToken } = useContext(AuthTokenContext);
@@ -82,7 +83,7 @@ const DownloadButton = forwardRef<HTMLAnchorElement, Props>(
           large
           icon={simpleIcon ? faDownload : icon}
           onClick={onClick}
-          iconColor={color}
+          iconColor={showColoredIcon ?  color : undefined}
         >
           {children}
         </SxIconButton>
