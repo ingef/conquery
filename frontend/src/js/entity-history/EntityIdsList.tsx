@@ -54,19 +54,23 @@ const Gray = styled("span")`
   color: ${({ theme }) => theme.col.gray};
 `;
 
-interface Props {
-  currentEntityId: EntityId | null;
-  entityIds: EntityId[];
-  updateHistorySession: ReturnType<typeof useUpdateHistorySession>;
-  entityIdsStatus: EntityIdsStatus;
-}
+const Blurred = styled("span")<{ blurred?: boolean }>`
+  ${({ blurred }) => blurred && "filter: blur(6px);"}
+`;
 
 export const EntityIdsList = ({
+  blurred,
   currentEntityId,
   entityIds,
   entityIdsStatus,
   updateHistorySession,
-}: Props) => {
+}: {
+  blurred?: boolean;
+  currentEntityId: EntityId | null;
+  entityIds: EntityId[];
+  updateHistorySession: ReturnType<typeof useUpdateHistorySession>;
+  entityIdsStatus: EntityIdsStatus;
+}) => {
   const numberWidth = useMemo(() => {
     const magnitude = Math.ceil(Math.log(entityIds.length) / Math.log(10));
 
@@ -85,7 +89,8 @@ export const EntityIdsList = ({
       >
         <Number style={{ width: numberWidth }}>#{index + 1}</Number>
         <TheEntityId>
-          {entityId.id} <Gray>({entityId.kind})</Gray>
+          <Blurred blurred={blurred}>{entityId.id}</Blurred>{" "}
+          <Gray>({entityId.kind})</Gray>
         </TheEntityId>
         <Statuses>
           {entityIdsStatus[entityId.id] &&
