@@ -1,6 +1,9 @@
 import styled from "@emotion/styled";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useMemo } from "react";
 import ReactList from "react-list";
+
+import FaIcon from "../icon/FaIcon";
 
 import type { EntityIdsStatus } from "./History";
 import { useUpdateHistorySession } from "./actions";
@@ -54,6 +57,10 @@ const Gray = styled("span")`
   color: ${({ theme }) => theme.col.gray};
 `;
 
+const SxFaIcon = styled(FaIcon)`
+  margin: 3px 6px;
+`;
+
 const Blurred = styled("span")<{ blurred?: boolean }>`
   ${({ blurred }) => blurred && "filter: blur(6px);"}
 `;
@@ -64,12 +71,16 @@ export const EntityIdsList = ({
   entityIds,
   entityIdsStatus,
   updateHistorySession,
+  loadingId,
 }: {
   blurred?: boolean;
   currentEntityId: EntityId | null;
   entityIds: EntityId[];
-  updateHistorySession: ReturnType<typeof useUpdateHistorySession>;
+  updateHistorySession: ReturnType<
+    typeof useUpdateHistorySession
+  >["updateHistorySession"];
   entityIdsStatus: EntityIdsStatus;
+  loadingId?: string;
 }) => {
   const numberWidth = useMemo(() => {
     const magnitude = Math.ceil(Math.log(entityIds.length) / Math.log(10));
@@ -92,6 +103,7 @@ export const EntityIdsList = ({
           <Blurred blurred={blurred}>{entityId.id}</Blurred>{" "}
           <Gray>({entityId.kind})</Gray>
         </TheEntityId>
+        {loadingId === entityId.id && <SxFaIcon icon={faSpinner} />}
         <Statuses>
           {entityIdsStatus[entityId.id] &&
             entityIdsStatus[entityId.id].map((val) => (

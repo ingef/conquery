@@ -107,7 +107,7 @@ export const Navigation = memo(
   }) => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const updateHistorySession = useUpdateHistorySession();
+    const { loadingId, updateHistorySession } = useUpdateHistorySession();
     const onCloseHistory = useCallback(() => {
       dispatch(closeHistory());
     }, [dispatch]);
@@ -207,6 +207,7 @@ export const Navigation = memo(
               entityIds={entityIds}
               updateHistorySession={updateHistorySession}
               entityIdsStatus={entityIdsStatus}
+              loadingId={loadingId}
             />
           </SxLoadHistoryDropzone>
           {!empty && (
