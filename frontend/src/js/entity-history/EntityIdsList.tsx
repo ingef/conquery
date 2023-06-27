@@ -61,13 +61,19 @@ const SxFaIcon = styled(FaIcon)`
   margin: 3px 6px;
 `;
 
+const Blurred = styled("span")<{ blurred?: boolean }>`
+  ${({ blurred }) => blurred && "filter: blur(6px);"}
+`;
+
 export const EntityIdsList = ({
+  blurred,
   currentEntityId,
   entityIds,
   entityIdsStatus,
   updateHistorySession,
   loadingId,
 }: {
+  blurred?: boolean;
   currentEntityId: EntityId | null;
   entityIds: EntityId[];
   updateHistorySession: ReturnType<
@@ -94,7 +100,8 @@ export const EntityIdsList = ({
       >
         <Number style={{ width: numberWidth }}>#{index + 1}</Number>
         <TheEntityId>
-          {entityId.id} <Gray>({entityId.kind})</Gray>
+          <Blurred blurred={blurred}>{entityId.id}</Blurred>{" "}
+          <Gray>({entityId.kind})</Gray>
         </TheEntityId>
         {loadingId === entityId.id && <SxFaIcon icon={faSpinner} />}
         <Statuses>

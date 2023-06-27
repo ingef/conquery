@@ -83,6 +83,7 @@ const ButtonWithTooltip = styled(WithTooltip)`
 
 export const Navigation = memo(
   ({
+    blurred,
     className,
     entityIds,
     entityIdsStatus,
@@ -93,6 +94,7 @@ export const Navigation = memo(
     onLoadFromFile,
     onResetHistory,
   }: {
+    blurred?: boolean;
     className?: string;
     entityIds: EntityId[];
     entityIdsStatus: EntityIdsStatus;
@@ -200,6 +202,7 @@ export const Navigation = memo(
               <SearchEntites onLoad={onLoadFromFile} />
             )}
             <EntityIdsList
+              blurred={blurred}
               currentEntityId={currentEntityId}
               entityIds={entityIds}
               updateHistorySession={updateHistorySession}
