@@ -86,10 +86,6 @@ const Timeline = ({
     secondaryIds: columnBuckets.secondaryIds,
   });
 
-  if (eventsByQuarterWithGroups.length === 0) {
-    return <TimelineEmptyPlaceholder />;
-  }
-
   return (
     <Root className={className}>
       <SxEntityCard
@@ -97,6 +93,7 @@ const Timeline = ({
         infos={currentEntityInfos}
         timeStratifiedInfos={currentEntityTimeStratifiedInfos}
       />
+      {eventsByQuarterWithGroups.length === 0 && <TimelineEmptyPlaceholder />}
       {eventsByQuarterWithGroups.map(({ year, quarterwiseData }, i) => (
         <Fragment key={year}>
           <Year
