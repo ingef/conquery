@@ -2,24 +2,21 @@ import styled from "@emotion/styled";
 import { faCaretDown, faCaretRight } from "@fortawesome/free-solid-svg-icons";
 import { Fragment, memo } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
 
 import {
   ColumnDescriptionSemanticConceptColumn,
   TimeStratifiedInfo,
 } from "../../api/types";
-import { StateT } from "../../app/reducers";
 import { exists } from "../../common/helpers/exists";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
 
 import { SmallHeading } from "./SmallHeading";
-import { isConceptColumn, isMoneyColumn } from "./util";
+import { formatCurrency, isConceptColumn, isMoneyColumn } from "./util";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme }) => theme.col.gray};
   padding: 0 10px 0 0;
 `;
 const StickyWrap = styled("div")`
@@ -55,19 +52,20 @@ const ConceptRow = styled("div")`
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 `;
 
 const ConceptBubble = styled("span")`
-  padding: 0 2px;
+  padding: 0 3px;
   border-radius: ${({ theme }) => theme.borderRadius};
   color: ${({ theme }) => theme.col.black};
-  border: 1px solid ${({ theme }) => theme.col.blueGrayLight};
-  font-size: ${({ theme }) => theme.font.tiny};
+  border: 1px solid ${({ theme }) => theme.col.gray};
+  background-color: white;
+  font-size: ${({ theme }) => theme.font.sm};
 `;
 
 const Value = styled("div")`
-  font-size: ${({ theme }) => theme.font.tiny};
+  font-size: ${({ theme }) => theme.font.sm};
   font-weight: 400;
   justify-self: end;
   white-space: nowrap;
@@ -78,7 +76,7 @@ const Value = styled("div")`
 `;
 
 const Label = styled("div")`
-  font-size: ${({ theme }) => theme.font.tiny};
+  font-size: ${({ theme }) => theme.font.sm};
   max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
@@ -92,10 +90,6 @@ const TimeStratifiedInfos = ({
   year: number;
   timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
-  const currencyUnit = useSelector<StateT, string>(
-    (state) => state.startup.config.currency.unit,
-  );
-
   const infos = timeStratifiedInfos
     .map((info) => {
       return {
@@ -139,7 +133,15 @@ const TimeStratifiedInfos = ({
                   if (value instanceof Array) {
                     const concepts = value
                       .map((v) => getConceptById(v, semantic!.concept))
-                      .filter(exists);
+                      .filter(exists)
+                      .sort((c1, c2) => {
+                        const n1 = Number(c1.label);
+                        const n2 = Number(c2.label);
+                        if (!isNaN(n1) && !isNaN(n2)) {
+                          return n1 - n2;
+                        }
+                        return c1.label.localeCompare(c2.label);
+                      });
 
                     return (
                       <Fragment key={label}>
@@ -169,7 +171,9 @@ const TimeStratifiedInfos = ({
 
                 let valueFormatted: string | number | string[] = value;
                 if (typeof value === "number") {
-                  valueFormatted = Math.round(value);
+                  valueFormatted = isMoneyColumn(column)
+                    ? formatCurrency(value)
+                    : Math.round(value);
                 } else if (value instanceof Array) {
                   valueFormatted = value.join(", ");
                 }
@@ -179,7 +183,6 @@ const TimeStratifiedInfos = ({
                     <Label>{label}</Label>
                     <Value title={String(valueFormatted)}>
                       {valueFormatted}
-                      {isMoneyColumn(column) ? " " + currencyUnit : ""}
                     </Value>
                   </Fragment>
                 );

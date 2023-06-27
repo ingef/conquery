@@ -14,6 +14,8 @@ import { Bar } from "react-chartjs-2";
 import { TimeStratifiedInfo } from "../api/types";
 import { exists } from "../common/helpers/exists";
 
+import { formatCurrency } from "./timeline/util";
+
 const TRUNCATE_X_AXIS_LABELS_LEN = 18;
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
@@ -41,14 +43,6 @@ function hexToRgbA(hex: string) {
 function interpolateDecreasingOpacity(index: number) {
   return Math.min(1, 1 / (index + 0.3));
 }
-
-const formatCurrency = (value: number) =>
-  value.toLocaleString("de-DE", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  });
 
 export const TimeStratifiedChart = ({
   timeStratifiedInfo,
