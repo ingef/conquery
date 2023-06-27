@@ -11,6 +11,7 @@ import { exists } from "../../common/helpers/exists";
 import { getConceptById } from "../../concept-trees/globalTreeStoreHelper";
 import FaIcon from "../../icon/FaIcon";
 import WithTooltip from "../../tooltip/WithTooltip";
+import { ConceptBubble } from "../ConceptBubble";
 
 import { SmallHeading } from "./SmallHeading";
 import { formatCurrency, isConceptColumn, isMoneyColumn } from "./util";
@@ -53,15 +54,6 @@ const ConceptRow = styled("div")`
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
-`;
-
-const ConceptBubble = styled("span")`
-  padding: 0 3px;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  color: ${({ theme }) => theme.col.black};
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  background-color: white;
-  font-size: ${({ theme }) => theme.font.sm};
 `;
 
 const Value = styled("div")`

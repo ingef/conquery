@@ -5,6 +5,7 @@ import { TimeStratifiedInfo } from "../api/types";
 import SmallTabNavigation from "../small-tab-navigation/SmallTabNavigation";
 
 import { TimeStratifiedChart } from "./TimeStratifiedChart";
+import { TimeStratifiedConceptChart } from "./TimeStratifiedConceptChart";
 import { isConceptColumn, isMoneyColumn } from "./timeline/util";
 
 const Container = styled("div")`
@@ -59,10 +60,10 @@ export const TabbableTimeStratifiedInfos = ({
         selectedTab={activeTab}
         onSelectTab={setActiveTab}
       />
-      {data && type === "money" && (
+      {/* {data && type === "money" && (
         <TimeStratifiedChart timeStratifiedInfo={data} />
-      )}
-      {data && type === "concept" && <div>Concept</div>}
+      )} */}
+      {data && <TimeStratifiedConceptChart timeStratifiedInfo={data} />}
     </Container>
   );
 };
