@@ -132,7 +132,7 @@ export const History = () => {
   });
 
   const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
-  const updateHistorySession = useUpdateHistorySession();
+  const { updateHistorySession } = useUpdateHistorySession();
 
   const { options, sourcesSet, sourcesFilter, setSourcesFilter } =
     useSourcesControl();
