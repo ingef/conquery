@@ -46,6 +46,7 @@ import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.PermissionCleanupTask;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
+import com.bakdata.conquery.tasks.ReloadMetaStorageTask;
 import com.bakdata.conquery.tasks.ReportConsistencyTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.fasterxml.jackson.databind.DeserializationConfig;
@@ -194,8 +195,9 @@ public class ManagerNode extends IoHandlerAdapter implements Managed {
 				)));
 		environment.admin().addTask(new PermissionCleanupTask(storage));
 		environment.admin().addTask(new ReportConsistencyTask(datasetRegistry));
+		environment.admin().addTask(new ReloadMetaStorageTask(storage));
 
-		ShutdownTask shutdown = new ShutdownTask();
+		final ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
 		environment.lifecycle().addServerLifecycleListener(shutdown);
 	}
