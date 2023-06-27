@@ -121,7 +121,7 @@ export const History = () => {
     (state) => state.entityHistory.resultUrls,
   );
 
-  const [blurred, setBlurred] = useState(true);
+  const [blurred, setBlurred] = useState(false);
   const toggleBlurred = useCallback(() => setBlurred((v) => !v), []);
   useHotkeys("p", toggleBlurred, [toggleBlurred]);
 
@@ -132,7 +132,7 @@ export const History = () => {
   });
 
   const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
-  const updateHistorySession = useUpdateHistorySession();
+  const { updateHistorySession } = useUpdateHistorySession();
 
   const { options, sourcesSet, sourcesFilter, setSourcesFilter } =
     useSourcesControl();
@@ -190,6 +190,7 @@ export const History = () => {
         defaultSize="400px"
       >
         <SxNavigation
+          blurred={blurred}
           entityIds={entityIds}
           entityIdsStatus={entityIdsStatus}
           currentEntityId={currentEntityId}
@@ -211,6 +212,7 @@ export const History = () => {
               </Controls>
               {currentEntityId && (
                 <EntityHeader
+                  blurred={blurred}
                   currentEntityIndex={currentEntityIndex}
                   currentEntityId={currentEntityId}
                   status={currentEntityStatus}
