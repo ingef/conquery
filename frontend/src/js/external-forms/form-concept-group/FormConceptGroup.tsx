@@ -59,6 +59,7 @@ import {
 } from "./formConceptGroupState";
 import { useCopyModal } from "./useCopyModal";
 import { useUploadConceptListModal } from "./useUploadConceptListModal";
+import { useFormContext } from "react-hook-form";
 
 interface Props {
   formType: string;
@@ -178,6 +179,8 @@ const FormConceptGroup = (props: Props) => {
       : null;
   }, [editedFormQueryNodePosition, props.value]);
 
+  const { getValues } = useFormContext();
+
   return (
     <div>
       <DropzoneList /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType> */
@@ -208,20 +211,15 @@ const FormConceptGroup = (props: Props) => {
               return null;
 
             if (isMovedObject(item)) {
-              let removed =
-                props.value[item.dragContext.movedFromAndIdx].concepts
-                  .length === 1
-                  ? removeValue(props.value, item.dragContext.movedFromAndIdx)
-                  : removeConcept(
-                      props.value,
-                      item.dragContext.movedFromAndIdx,
-                      item.dragContext.movedFromOrIdx,
-                    );
+              if (exists(item.dragContext.deleteInOrigin)){
+                item.dragContext.deleteInOrigin();
+              }
+              
               let insertIndex =
                 i > item.dragContext.movedFromAndIdx ? i - 1 : i;
               return props.onChange(
                 addConcept(
-                  insertValue(removed, insertIndex, newValue),
+                  insertValue(getValues(props.fieldName), insertIndex, newValue),
                   insertIndex,
                   copyConcept(item),
                 ),
@@ -257,10 +255,14 @@ const FormConceptGroup = (props: Props) => {
           if (props.isValidConcept && !props.isValidConcept(item)) return;
 
           if (isMovedObject(item)) {
+            if (exists(item.dragContext.deleteInOrigin)){
+              item.dragContext.deleteInOrigin();
+            }
+            const updatedValue = getValues(props.fieldName);
             return props.onChange(
               addConcept(
-                addValue(props.value, newValue),
-                props.value.length,
+                addValue(updatedValue, newValue),
+                updatedValue.length,
                 copyConcept(item),
               ),
             );
@@ -338,6 +340,13 @@ const FormConceptGroup = (props: Props) => {
                           conceptIdx: j,
                         })
                       }
+                      deleteInForm={() => {
+                        return props.onChange(
+                           props.value[i].concepts.length === 1
+                             ? removeValue(props.value, i)
+                             : removeConcept(props.value, i, j)
+                        );
+                      }}
                       expand={{
                         onClick: () =>
                           props.onChange(
@@ -372,15 +381,15 @@ const FormConceptGroup = (props: Props) => {
 
                           return;
                         }
+                        
+                        if (props.isValidConcept && !props.isValidConcept(item))
+                          return null;
 
                         if (isMovedObject(item)) {
                           return props.onChange(
-                            setConcept(props.value, i, j, copyConcept(item)),
+                            setConcept(getValues(props.fieldName), i, j, copyConcept(item)),
                           );
                         }
-
-                        if (props.isValidConcept && !props.isValidConcept(item))
-                          return null;
 
                         return props.onChange(
                           setConcept(
@@ -438,9 +447,13 @@ const FormConceptGroup = (props: Props) => {
             );
           }}
           onDropConcept={(concept) => {
+            if (isMovedObject(concept) && exists(concept.dragContext.deleteInOrigin)) {
+              concept.dragContext.deleteInOrigin();
+            }
+
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
-              setConceptProperties(props.value, valueIdx, conceptIdx, {
+              setConceptProperties(getValues(props.fieldName), valueIdx, conceptIdx, {
                 ids: [...concept.ids, ...editedNode.ids],
               }),
             );

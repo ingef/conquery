@@ -81,6 +81,7 @@ interface PropsT {
     expandable: boolean;
     active: boolean;
   };
+  deleteInForm: () => void;
 }
 
 // generalized node to handle concepts queried in forms
@@ -92,6 +93,7 @@ const FormConceptNode: FC<PropsT> = ({
   hasNonDefaultSettings,
   hasFilterValues,
   expand,
+  deleteInForm,
 }) => {
   const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(conceptNode);
@@ -113,6 +115,7 @@ const FormConceptNode: FC<PropsT> = ({
       dragContext: {
         ...item.dragContext,
         ...getWidthAndHeight(ref),
+        deleteInOrigin: deleteInForm,
       },
     }),
   });
