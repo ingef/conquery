@@ -25,24 +25,25 @@ public class ShutdownTask extends Task implements ServerLifecycleListener {
 
 	@Override
 	public void execute(Map<String, List<String>> parameters, PrintWriter output) throws Exception {
+		log.info("Received Shutdown command");
+
 		if(server == null) {
 			output.print("Server not yet started");
+			return;
 		}
-		else {
-			output.print("Shutting down");
-			log.info("Received Shutdown command");
-			//this must be done in an extra step or the shutdown will wait for this request to be resolved
-			new Thread("shutdown waiter thread") {
-				@Override
-				public void run() {
-					try {
-						server.stop();
-					} catch (Exception e) {
-						log.error("Failed while shutting down", e);
-					}
+
+		output.print("Shutting down");
+		//this must be done in an extra step or the shutdown will wait for this request to be resolved
+		new Thread("shutdown waiter thread") {
+			@Override
+			public void run() {
+				try {
+					server.stop();
+				} catch (Exception e) {
+					log.error("Failed while shutting down", e);
 				}
-			}.start();
-		}
+			}
+		}.start();
 	}
 
 }
