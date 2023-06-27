@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { ReactNode, useEffect, useState, useRef, useMemo } from "react";
+import { useFormContext } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -59,7 +60,6 @@ import {
 } from "./formConceptGroupState";
 import { useCopyModal } from "./useCopyModal";
 import { useUploadConceptListModal } from "./useUploadConceptListModal";
-import { useFormContext } from "react-hook-form";
 
 interface Props {
   formType: string;
@@ -211,15 +211,19 @@ const FormConceptGroup = (props: Props) => {
               return null;
 
             if (isMovedObject(item)) {
-              if (exists(item.dragContext.deleteInOrigin)){
+              if (exists(item.dragContext.deleteInOrigin)) {
                 item.dragContext.deleteInOrigin();
               }
-              
+
               let insertIndex =
                 i > item.dragContext.movedFromAndIdx ? i - 1 : i;
               return props.onChange(
                 addConcept(
-                  insertValue(getValues(props.fieldName), insertIndex, newValue),
+                  insertValue(
+                    getValues(props.fieldName),
+                    insertIndex,
+                    newValue,
+                  ),
                   insertIndex,
                   copyConcept(item),
                 ),
@@ -255,7 +259,7 @@ const FormConceptGroup = (props: Props) => {
           if (props.isValidConcept && !props.isValidConcept(item)) return;
 
           if (isMovedObject(item)) {
-            if (exists(item.dragContext.deleteInOrigin)){
+            if (exists(item.dragContext.deleteInOrigin)) {
               item.dragContext.deleteInOrigin();
             }
             const updatedValue = getValues(props.fieldName);
@@ -342,9 +346,9 @@ const FormConceptGroup = (props: Props) => {
                       }
                       deleteInForm={() => {
                         return props.onChange(
-                           props.value[i].concepts.length === 1
-                             ? removeValue(props.value, i)
-                             : removeConcept(props.value, i, j)
+                          props.value[i].concepts.length === 1
+                            ? removeValue(props.value, i)
+                            : removeConcept(props.value, i, j),
                         );
                       }}
                       expand={{
@@ -381,13 +385,18 @@ const FormConceptGroup = (props: Props) => {
 
                           return;
                         }
-                        
+
                         if (props.isValidConcept && !props.isValidConcept(item))
                           return null;
 
                         if (isMovedObject(item)) {
                           return props.onChange(
-                            setConcept(getValues(props.fieldName), i, j, copyConcept(item)),
+                            setConcept(
+                              getValues(props.fieldName),
+                              i,
+                              j,
+                              copyConcept(item),
+                            ),
                           );
                         }
 
@@ -447,15 +456,23 @@ const FormConceptGroup = (props: Props) => {
             );
           }}
           onDropConcept={(concept) => {
-            if (isMovedObject(concept) && exists(concept.dragContext.deleteInOrigin)) {
+            if (
+              isMovedObject(concept) &&
+              exists(concept.dragContext.deleteInOrigin)
+            ) {
               concept.dragContext.deleteInOrigin();
             }
 
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             props.onChange(
-              setConceptProperties(getValues(props.fieldName), valueIdx, conceptIdx, {
-                ids: [...concept.ids, ...editedNode.ids],
-              }),
+              setConceptProperties(
+                getValues(props.fieldName),
+                valueIdx,
+                conceptIdx,
+                {
+                  ids: [...concept.ids, ...editedNode.ids],
+                },
+              ),
             );
           }}
           onRemoveConcept={(conceptId) => {
