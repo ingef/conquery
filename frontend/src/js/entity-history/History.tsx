@@ -14,7 +14,6 @@ import type {
   TimeStratifiedInfo,
 } from "../api/types";
 import type { StateT } from "../app/reducers";
-import { isEntityBlurredByDefault } from "../environment";
 import ErrorFallback from "../error-fallback/ErrorFallback";
 import DownloadResultsDropdownButton from "../query-runner/DownloadResultsDropdownButton";
 
@@ -122,7 +121,7 @@ export const History = () => {
     (state) => state.entityHistory.resultUrls,
   );
 
-  const [blurred, setBlurred] = useState(isEntityBlurredByDefault);
+  const [blurred, setBlurred] = useState(false);
   const toggleBlurred = useCallback(() => setBlurred((v) => !v), []);
   useHotkeys("p", toggleBlurred, [toggleBlurred]);
 
