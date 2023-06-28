@@ -39,7 +39,9 @@ export const EntityCard = ({
       <Centered>
         <EntityInfos blurred={blurred} infos={infos} />
       </Centered>
-      <TabbableTimeStratifiedInfos infos={timeStratifiedInfos} />
+      {timeStratifiedInfos.length === 0 && (
+        <TabbableTimeStratifiedInfos infos={timeStratifiedInfos} />
+      )}
     </Container>
   );
 };
