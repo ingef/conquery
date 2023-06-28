@@ -51,8 +51,6 @@ export const TabbableTimeStratifiedInfos = ({
     return { data: infoData, type: infoType };
   }, [infos, activeTab]);
 
-  console.log(data);
-
   return (
     <Container>
       <SmallTabNavigation

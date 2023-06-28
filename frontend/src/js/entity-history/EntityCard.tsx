@@ -39,7 +39,7 @@ export const EntityCard = ({
       <Centered>
         <EntityInfos blurred={blurred} infos={infos} />
       </Centered>
-      {timeStratifiedInfos.length === 0 && (
+      {timeStratifiedInfos.length > 0 && (
         <TabbableTimeStratifiedInfos infos={timeStratifiedInfos} />
       )}
     </Container>

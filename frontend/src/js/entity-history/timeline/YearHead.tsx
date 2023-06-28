@@ -60,9 +60,6 @@ const Value = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
   font-weight: 400;
   justify-self: end;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   width: 100%;
   text-align: right;
 `;
