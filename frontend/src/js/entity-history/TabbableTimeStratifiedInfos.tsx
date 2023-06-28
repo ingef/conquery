@@ -31,7 +31,7 @@ export const TabbableTimeStratifiedInfos = ({
     let infoType = "money";
     let infoData = infos.find((info) => info.label === activeTab);
 
-    if (infoData?.columns.some((c) => !isMoneyColumn(c))) {
+    if (infoData?.columns.some((c) => isMoneyColumn(c))) {
       const columns = infoData?.columns.filter(isMoneyColumn);
 
       infoData = {
@@ -61,7 +61,9 @@ export const TabbableTimeStratifiedInfos = ({
       {data && type === "money" && (
         <TimeStratifiedChart timeStratifiedInfo={data} />
       )}
-      {data && <TimeStratifiedConceptChart timeStratifiedInfo={data} />}
+      {data && type === "concept" && (
+        <TimeStratifiedConceptChart timeStratifiedInfo={data} />
+      )}
     </Container>
   );
 };
