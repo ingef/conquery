@@ -185,12 +185,11 @@ public class FrontEndConceptBuilder {
 														  .collect(Collectors.toSet()))
 							 .build();
 
-		if (con.getValidityDates().size() > 1) {
-			result.setDateColumn(new FrontendValidityDate(con.getValidityDatesDescription(), null, con.getValidityDates()
-																									  .stream()
-																									  .map(vd -> new FrontendValue(vd.getId()
-																																	 .toString(), vd.getLabel()))
-																									  .collect(Collectors.toList())));
+		if (!con.getValidityDates().isEmpty()) {
+			result.setDateColumn(new FrontendValidityDate(con.getValidityDatesDescription(), null,
+														  con.getValidityDates().stream()
+															 .map(vd -> new FrontendValue(vd.getId().toString(), vd.getLabel()))
+															 .collect(Collectors.toList())));
 
 			if (!result.getDateColumn().getOptions().isEmpty()) {
 				result.getDateColumn().setDefaultValue(result.getDateColumn().getOptions().get(0).getValue());
