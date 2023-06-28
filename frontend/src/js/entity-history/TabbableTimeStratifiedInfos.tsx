@@ -60,9 +60,9 @@ export const TabbableTimeStratifiedInfos = ({
         selectedTab={activeTab}
         onSelectTab={setActiveTab}
       />
-      {/* {data && type === "money" && (
+      {data && type === "money" && (
         <TimeStratifiedChart timeStratifiedInfo={data} />
-      )} */}
+      )}
       {data && <TimeStratifiedConceptChart timeStratifiedInfo={data} />}
     </Container>
   );
