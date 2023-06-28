@@ -29,6 +29,10 @@ const BubbleNo = styled("div")`
   background-color: ${({ theme }) => theme.col.grayLight};
 `;
 
+const Year = styled("div")`
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+
 export const TimeStratifiedConceptChart = ({
   timeStratifiedInfo,
 }: {
@@ -46,7 +50,6 @@ export const TimeStratifiedConceptChart = ({
   if (!conceptSemantic) return null;
 
   const years = timeStratifiedInfo.years.map((y) => y.year);
-  console.log(timeStratifiedInfo.years, conceptColumn);
   const valuesPerYear = timeStratifiedInfo.years.map((y) =>
     ((y.values[Object.keys(y.values)[0]] as string[]) || []).map(
       (conceptId) => getConceptById(conceptId, conceptSemantic?.concept)!,
@@ -80,7 +83,7 @@ export const TimeStratifiedConceptChart = ({
       ))}
       {years.map((y, i) => (
         <>
-          <div>{y}</div>
+          <Year>{y}</Year>
           {allValues.map((val) =>
             valuesPerYear[i].includes(val) ? <BubbleYes /> : <BubbleNo />,
           )}

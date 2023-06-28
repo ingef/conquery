@@ -432,7 +432,7 @@ export function EditorV2({
               )}
               <ConfirmableTooltip
                 onConfirm={onReset}
-                confirmationText={t("editorV2.clearConfirmation")}
+                confirmationText={t("editorV2.clearConfirm")}
               >
                 <WithTooltip text={t("editorV2.clear")}>
                   <IconButton
