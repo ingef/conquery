@@ -3,8 +3,7 @@ import styled from "@emotion/styled";
 import { EntityInfo, TimeStratifiedInfo } from "../api/types";
 
 import EntityInfos from "./EntityInfos";
-import { TabbableTimeStratifiedCharts } from "./TabbableTimeStratifiedCharts";
-import { isMoneyColumn } from "./timeline/util";
+import { TabbableTimeStratifiedInfos } from "./TabbableTimeStratifiedInfos";
 
 const Container = styled("div")`
   display: grid;
@@ -35,16 +34,12 @@ export const EntityCard = ({
   infos: EntityInfo[];
   timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
-  const infosWithOnlyMoneyColumns = timeStratifiedInfos.filter((info) =>
-    info.columns.every(isMoneyColumn),
-  );
-
   return (
     <Container className={className}>
       <Centered>
         <EntityInfos blurred={blurred} infos={infos} />
       </Centered>
-      <TabbableTimeStratifiedCharts infos={infosWithOnlyMoneyColumns} />
+      <TabbableTimeStratifiedInfos infos={timeStratifiedInfos} />
     </Container>
   );
 };

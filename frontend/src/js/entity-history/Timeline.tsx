@@ -32,7 +32,7 @@ const Root = styled("div")`
   -webkit-overflow-scrolling: touch;
   padding: 0 20px 20px 10px;
   display: inline-grid;
-  grid-template-columns: 200px auto;
+  grid-template-columns: 280px auto;
   grid-auto-rows: minmax(min-content, max-content);
   gap: 20px 4px;
   width: 100%;
