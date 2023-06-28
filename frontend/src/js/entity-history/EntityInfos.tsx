@@ -10,7 +10,7 @@ const Grid = styled("div")`
   place-items: center start;
 `;
 const Label = styled("div")`
-  font-size: ${({ theme }) => theme.font.xs};
+  font-size: ${({ theme }) => theme.font.sm};
 `;
 const Value = styled("div")<{ blurred?: boolean }>`
   font-size: ${({ theme }) => theme.font.sm};
