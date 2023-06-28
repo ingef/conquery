@@ -21,7 +21,7 @@ const Row = styled("div")`
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: ${({ theme }) => theme.font.xs};
+  font-size: ${({ theme }) => theme.font.sm};
 `;
 
 const ConceptName = styled("span")`
@@ -30,15 +30,15 @@ const ConceptName = styled("span")`
 `;
 const Timestamp = styled("span")`
   font-weight: bold;
-  color: ${({ theme }) => theme.col.palette[6]};
+  color: ${({ theme }) => theme.col.palette[0]};
 `;
 const Interval = styled("span")`
   font-weight: bold;
-  color: ${({ theme }) => theme.col.orange};
+  color: ${({ theme }) => theme.col.palette[1]};
 `;
 const Operator = styled("span")`
   font-weight: bold;
-  color: ${({ theme }) => theme.col.green};
+  color: ${({ theme }) => theme.col.palette[2]};
 `;
 
 export const TimeConnection = memo(
