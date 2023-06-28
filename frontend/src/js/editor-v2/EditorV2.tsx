@@ -21,6 +21,8 @@ import {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
+import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
+import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone from "../ui-components/Dropzone";
 
 import { Connector, Grid } from "./EditorLayout";
@@ -350,20 +352,6 @@ export function EditorV2({
                   </IconButton>
                 </KeyboardShortcutTooltip>
               )}
-              {selectedNode?.children && (
-                <KeyboardShortcutTooltip keyname={HOTKEYS.flip.keyname}>
-                  <IconButton
-                    icon={faRefresh}
-                    tight
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onFlip();
-                    }}
-                  >
-                    {t("editorV2.flip")}
-                  </IconButton>
-                </KeyboardShortcutTooltip>
-              )}
               {featureConnectorRotate && selectedNode?.children && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.rotateConnector.keyname}
@@ -410,6 +398,22 @@ export function EditorV2({
                   </IconButton>
                 </KeyboardShortcutTooltip>
               )}
+            </Flex>
+            <Flex>
+              {selectedNode?.children && (
+                <KeyboardShortcutTooltip keyname={HOTKEYS.flip.keyname}>
+                  <IconButton
+                    icon={faRefresh}
+                    tight
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onFlip();
+                    }}
+                  >
+                    {t("editorV2.flip")}
+                  </IconButton>
+                </KeyboardShortcutTooltip>
+              )}
               {selectedNode && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.delete.keyname.join(" | ")}
@@ -426,12 +430,18 @@ export function EditorV2({
                   </IconButton>
                 </KeyboardShortcutTooltip>
               )}
+              <ConfirmableTooltip
+                onConfirm={onReset}
+                confirmationText={t("editorV2.clearConfirmation")}
+              >
+                <WithTooltip text={t("editorV2.clear")}>
+                  <IconButton
+                    style={{ marginLeft: "20px", height: "32.5px" }}
+                    icon={faTrash}
+                  />
+                </WithTooltip>
+              </ConfirmableTooltip>
             </Flex>
-            <KeyboardShortcutTooltip keyname={HOTKEYS.reset.keyname}>
-              <IconButton icon={faTrash} onClick={onReset}>
-                {t("editorV2.clear")}
-              </IconButton>
-            </KeyboardShortcutTooltip>
           </Actions>
         )}
         <Grid
@@ -442,22 +452,15 @@ export function EditorV2({
         >
           {tree ? (
             <TreeNode
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                if (!selectedNode) return;
-                if (
-                  selectedNode?.data &&
-                  nodeIsConceptQueryNode(selectedNode.data)
-                ) {
-                  onOpenQueryNodeEditor();
-                }
-              }}
               tree={tree}
               updateTreeNode={updateTreeNode}
               selectedNode={selectedNode}
               setSelectedNodeId={setSelectedNodeId}
               droppable={{ h: true, v: true }}
               featureContentInfos={featureContentInfos}
+              onOpenQueryNodeEditor={onOpenQueryNodeEditor}
+              onOpenTimeModal={onOpenTimeModal}
+              onRotateConnector={onRotateConnector}
             />
           ) : (
             <SxDropzone
