@@ -33,7 +33,7 @@ const Root = styled("div")`
   padding: 0 20px 20px 10px;
   display: inline-grid;
   grid-template-columns: 280px auto;
-  grid-auto-rows: minmax(min-content, max-content);
+  grid-auto-rows: minmax(min-content, max-content) 1fr;
   gap: 20px 4px;
   width: 100%;
 `;
@@ -46,6 +46,11 @@ const Divider = styled("div")`
 
 const SxEntityCard = styled(EntityCard)`
   grid-column: span 2;
+`;
+
+const SxTimelineEmptyPlaceholder = styled(TimelineEmptyPlaceholder)`
+  grid-column: span 2;
+  height: 100%;
 `;
 
 const Timeline = ({
@@ -93,7 +98,7 @@ const Timeline = ({
         infos={currentEntityInfos}
         timeStratifiedInfos={currentEntityTimeStratifiedInfos}
       />
-      {eventsByQuarterWithGroups.length === 0 && <TimelineEmptyPlaceholder />}
+      {eventsByQuarterWithGroups.length === 0 && <SxTimelineEmptyPlaceholder />}
       {eventsByQuarterWithGroups.map(({ year, quarterwiseData }, i) => (
         <Fragment key={year}>
           <Year
