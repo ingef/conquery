@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,7 +37,7 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 										  .cteName(this.constructAndQueryStepLabel(queriesToJoin))
 										  .selects(new MergedSelects(queriesToJoin))
 										  .fromTable(this.constructJoinedTable(queriesToJoin))
-										  .conditions(List.of())
+										  .conditions(Collections.emptyList())
 										  .predecessors(queriesToJoin)
 										  .build();
 

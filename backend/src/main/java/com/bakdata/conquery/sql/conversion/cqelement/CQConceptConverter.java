@@ -109,7 +109,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 						.cteName(createCteName(conceptLabel, "_event_select"))
 						.fromTable(QueryStep.toTableLike(previous.getCteName()))
 						.selects(eventSelectSelects)
-						.conditions(List.of())
+						.conditions(Collections.emptyList())
 						.predecessors(List.of(previous))
 						.build();
 	}
@@ -171,7 +171,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	private ConceptSelects prepareEventFilterSelects(QueryStep previous) {
-		return ((ConceptSelects) previous.getQualifiedSelects()).withEventFilter(List.of());
+		return ((ConceptSelects) previous.getQualifiedSelects()).withEventFilter(Collections.emptyList());
 	}
 
 	private List<Condition> buildEventFilterConditions(ConversionContext context, CQTable table) {
@@ -196,7 +196,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 						.cteName(createCteName(conceptLabel, ""))
 						.fromTable(QueryStep.toTableLike(previous.getCteName()))
 						.selects(finalSelects)
-						.conditions(List.of())
+						.conditions(Collections.emptyList())
 						.predecessors(List.of(previous))
 						.build();
 	}

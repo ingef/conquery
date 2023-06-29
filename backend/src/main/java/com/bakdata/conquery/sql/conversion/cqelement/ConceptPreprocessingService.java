@@ -14,6 +14,7 @@ import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import org.checkerframework.checker.units.qual.C;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
@@ -60,15 +61,15 @@ public class ConceptPreprocessingService {
 		selectsBuilder.eventFilter(deduplicatedFilterFields);
 
 		// not part of preprocessing yet
-		selectsBuilder.groupSelect(List.of())
-					  .groupFilter(List.of());
+		selectsBuilder.groupSelect(Collections.emptyList())
+					  .groupFilter(Collections.emptyList());
 
 		return QueryStep.builder()
 						.cteName(this.getPreprocessingStepLabel(conceptLabel))
 						.fromTable(QueryStep.toTableLike(this.getFromTableName(table)))
 						.selects(selectsBuilder.build())
-						.conditions(List.of())
-						.predecessors(List.of())
+						.conditions(Collections.emptyList())
+						.predecessors(Collections.emptyList())
 						.build();
 	}
 
