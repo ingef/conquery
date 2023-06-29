@@ -40,7 +40,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		ConceptPreprocessingService preprocessingService = new ConceptPreprocessingService(node, context);
 		CQTable table = node.getTables().get(0);
-		String conceptLabel = this.getConceptLabel(node);
+		String conceptLabel = this.getConceptLabel(node, context);
 
 		QueryStep preprocessingStep = preprocessingService.buildPreprocessingQueryStepForTable(conceptLabel, table);
 		QueryStep dateRestriction = this.buildDateRestrictionQueryStep(context, node, conceptLabel, preprocessingStep);
@@ -48,15 +48,19 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		QueryStep eventFilter = this.buildEventFilterQueryStep(context, table, conceptLabel, eventSelect);
 		QueryStep finalStep = this.buildFinalQueryStep(conceptLabel, eventFilter);
 
-		return context.withQuerySteps(List.of(finalStep));
+		return context.withQueryStep(finalStep);
 	}
 
-	private String getConceptLabel(CQConcept node) {
+	private String getConceptLabel(CQConcept node, ConversionContext context) {
 		// only relevant for debugging purposes as it will be part of the generated SQL query
-		return node.getUserOrDefaultLabel(Locale.ENGLISH)
-				   .toLowerCase()
-				   .replace(' ', '_')
-				   .replaceAll("\\s", "_");
+			// we prefix each cte name of a concept with an incrementing counter to prevent naming collisions if the same concept is selected multiple times
+			return "%s_%s".formatted(
+					context.getQueryStepCounter(),
+					node.getUserOrDefaultLabel(Locale.ENGLISH)
+						.toLowerCase()
+						.replace(' ', '_')
+						.replaceAll("\\s", "_")
+			);
 	}
 
 	/**

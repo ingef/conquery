@@ -1,8 +1,10 @@
 package com.bakdata.conquery.sql.conversion.cqelement;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
@@ -24,11 +26,12 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 			return context.getNodeConverterService().convert(node.getChildren().get(0), context);
 		}
 
-		List<QueryStep> queriesToJoin = node.getChildren().stream()
-											.map(child -> context.getNodeConverterService().convert(child, context))
-											.flatMap(resultContext -> resultContext.getQuerySteps().stream())
-											.toList();
+		ConversionContext childrenContext = context;
+		for (CQElement child : node.getChildren()) {
+			childrenContext = context.getNodeConverterService().convert(child, childrenContext);
+		}
 
+		List<QueryStep> queriesToJoin = childrenContext.getQuerySteps();
 		QueryStep andQueryStep = QueryStep.builder()
 										  .cteName(this.constructAndQueryStepLabel(queriesToJoin))
 										  .selects(new MergedSelects(queriesToJoin))
@@ -37,13 +40,13 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 										  .predecessors(queriesToJoin)
 										  .build();
 
-		return context.withQuerySteps(List.of(andQueryStep));
+		return context.withQueryStep(andQueryStep);
 	}
 
 	private String constructAndQueryStepLabel(List<QueryStep> queriesToJoin) {
 		return queriesToJoin.stream()
 							.map(QueryStep::getCteName)
-							.collect(Collectors.joining("_")) + "_AND";
+							.collect(Collectors.joining("_AND_"));
 	}
 
 	private TableLike<Record> constructJoinedTable(List<QueryStep> queriesToJoin) {
