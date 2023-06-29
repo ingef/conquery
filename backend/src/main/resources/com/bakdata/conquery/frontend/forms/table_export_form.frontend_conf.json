@@ -27,8 +27,8 @@
         "en": "Cohort (Previous Query)"
       },
       "dropzoneLabel": {
-        "de": "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu.",
-        "en": "Add a cohort from a previous query"
+        "de": "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu. Ist das Feld leer wird die Gesamtpopulation verwendet.",
+        "en": "Add a cohort from a previous query. When no population is provided, the entire dataset's population is used."
       },
       "validations": [
       ],
