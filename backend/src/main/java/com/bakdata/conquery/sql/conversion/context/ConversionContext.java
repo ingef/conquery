@@ -26,9 +26,18 @@ public class ConversionContext {
 	List<QueryStep> querySteps;
 	Select<Record> finalQuery;
 	CDateRange dateRestrictionRange;
+	int queryStepCounter;
+
 
 	public boolean dateRestrictionActive() {
 		return this.dateRestrictionRange != null;
+	}
+
+	public ConversionContext withQueryStep(QueryStep queryStep) {
+		return this.toBuilder()
+				   .queryStep(queryStep)
+				   .queryStepCounter(queryStepCounter + 1)
+				   .build();
 	}
 
 }

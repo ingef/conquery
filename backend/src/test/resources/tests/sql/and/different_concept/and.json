@@ -1,5 +1,5 @@
 {
-  "label": "Simple AND query",
+  "label": "Simple AND query for 3 different concepts",
   "expectedCsv": "expected.csv",
   "type": "SQL_TEST",
   "query": {
@@ -163,7 +163,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/and/content_1.csv",
+        "csv": "tests/sql/and/different_concept/content_1.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
@@ -181,7 +181,7 @@
         ]
       },
       {
-        "csv": "tests/sql/and/content_2.csv",
+        "csv": "tests/sql/and/different_concept/content_2.csv",
         "name": "table2",
         "primaryColumn": {
           "name": "pid",
