@@ -2,12 +2,11 @@ package com.bakdata.conquery.models.config;
 
 import java.net.URI;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
@@ -29,10 +28,10 @@ public class FrontendConfig {
 	private CurrencyConfig currency = new CurrencyConfig();
 
 	/**
-	 * Default start-date for EntityPreview and DatePicker.
+	 * Years to include in entity preview.
 	 */
-	@NotNull
-	private LocalDate observationStart = LocalDate.now().minus(10, ChronoUnit.YEARS);
+	@Min(0)
+	private int observationPeriodYears = 6;
 
 	/**
 	 * The url that points a manual. This is also used by the {@link FormScanner}
