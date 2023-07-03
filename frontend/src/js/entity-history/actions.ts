@@ -1,4 +1,6 @@
-import { useCallback } from "react";
+import startOfYear from "date-fns/startOfYear";
+import subYears from "date-fns/subYears";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
@@ -117,7 +119,7 @@ function getPreferredIdColumns(columns: ColumnDescription[]) {
 export function useNewHistorySession() {
   const dispatch = useDispatch();
   const loadPreviewData = useLoadPreviewData();
-  const updateHistorySession = useUpdateHistorySession();
+  const { updateHistorySession } = useUpdateHistorySession();
 
   return async (url: string, columns: ColumnDescription[], label: string) => {
     dispatch(loadHistoryData.request());
@@ -169,6 +171,8 @@ export function useNewHistorySession() {
   };
 }
 
+const SHOW_LOADING_DELAY = 300;
+
 export function useUpdateHistorySession() {
   const dispatch = useDispatch();
   const datasetId = useDatasetId();
@@ -176,12 +180,21 @@ export function useUpdateHistorySession() {
   const getAuthorizedUrl = useGetAuthorizedUrl();
   const { t } = useTranslation();
 
+  const loadingIdTimeout = useRef<NodeJS.Timeout>();
+  const [loadingId, setLoadingId] = useState<string>();
+
   const defaultEntityHistoryParams = useSelector<
     StateT,
     StateT["entityHistory"]["defaultParams"]
   >((state) => state.entityHistory.defaultParams);
+  const observationPeriodMin = useSelector<StateT, string>((state) => {
+    return (
+      state.startup.config.observationPeriodStart ||
+      formatStdDate(subYears(startOfYear(new Date()), 1))
+    );
+  });
 
-  return useCallback(
+  const updateHistorySession = useCallback(
     async ({
       entityId,
       entityIds,
@@ -194,6 +207,13 @@ export function useUpdateHistorySession() {
     }) => {
       if (!datasetId) return;
 
+      if (loadingIdTimeout.current) {
+        clearTimeout(loadingIdTimeout.current);
+      }
+      loadingIdTimeout.current = setTimeout(() => {
+        setLoadingId(entityId.id);
+      }, SHOW_LOADING_DELAY);
+
       try {
         dispatch(loadHistoryData.request());
 
@@ -203,7 +223,7 @@ export function useUpdateHistorySession() {
             entityId,
             defaultEntityHistoryParams.sources,
             {
-              min: defaultEntityHistoryParams.observationPeriodMin,
+              min: observationPeriodMin,
               max: formatStdDate(new Date()),
             },
           );
@@ -262,6 +282,11 @@ export function useUpdateHistorySession() {
           }),
         );
       }
+
+      if (loadingIdTimeout.current) {
+        clearTimeout(loadingIdTimeout.current);
+      }
+      setLoadingId(undefined);
     },
     [
       t,
@@ -270,8 +295,14 @@ export function useUpdateHistorySession() {
       dispatch,
       getAuthorizedUrl,
       getEntityHistory,
+      observationPeriodMin,
     ],
   );
+
+  return {
+    loadingId,
+    updateHistorySession,
+  };
 }
 
 const transformEntityData = (data: { [key: string]: any }[]): EntityEvent[] => {

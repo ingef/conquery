@@ -29,9 +29,10 @@ const Buttons = styled("div")`
   gap: 5px;
 `;
 
-const SxHeading3 = styled(Heading3)`
+const SxHeading3 = styled(Heading3)<{ blurred?: boolean }>`
   flex-shrink: 0;
   margin: 0;
+  ${({ blurred }) => blurred && "filter: blur(6px);"}
 `;
 const Subtitle = styled("div")`
   font-size: ${({ theme }) => theme.font.xs};
@@ -47,23 +48,23 @@ const Avatar = styled(SxHeading3)`
   font-weight: 300;
 `;
 
-interface Props {
-  className?: string;
-  currentEntityIndex: number;
-  currentEntityId: EntityId;
-  status: SelectOptionT[];
-  setStatus: (value: SelectOptionT[]) => void;
-  entityStatusOptions: SelectOptionT[];
-}
-
 export const EntityHeader = ({
+  blurred,
   className,
   currentEntityIndex,
   currentEntityId,
   status,
   setStatus,
   entityStatusOptions,
-}: Props) => {
+}: {
+  blurred?: boolean;
+  className?: string;
+  currentEntityIndex: number;
+  currentEntityId: EntityId;
+  status: SelectOptionT[];
+  setStatus: (value: SelectOptionT[]) => void;
+  entityStatusOptions: SelectOptionT[];
+}) => {
   const totalEvents = useSelector<StateT, number>(
     (state) => state.entityHistory.currentEntityData.length,
   );
@@ -87,7 +88,7 @@ export const EntityHeader = ({
         <div>
           <EntityBadge>
             <Avatar>#{currentEntityIndex + 1}</Avatar>
-            <SxHeading3>{currentEntityId.id}</SxHeading3>
+            <SxHeading3 blurred={blurred}>{currentEntityId.id}</SxHeading3>
           </EntityBadge>
           <Subtitle>
             {totalEvents} {t("history.events", { count: totalEvents })}

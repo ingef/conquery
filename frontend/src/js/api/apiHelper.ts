@@ -242,7 +242,16 @@ const transformTreeToApi = (tree: Tree): unknown => {
         node = {
           type: "BEFORE", // SHOULD BE: tree.children.operator,
           days: {
-            ...(tree.children.interval || {}),
+            min: tree.children.interval
+              ? tree.children.interval.min === null
+                ? 1
+                : tree.children.interval.max
+              : undefined,
+            max: tree.children.interval
+              ? tree.children.interval.max === null
+                ? undefined
+                : tree.children.interval.max
+              : undefined,
           },
           // TODO: improve this to be more flexible with the "preceding" and "index" keys
           // based on the operator, which would be "before" | "after" | "while"

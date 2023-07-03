@@ -7,7 +7,7 @@ export function getRootNodeLabel(node: StandardQueryNodeT) {
   if (!nodeIsConceptQueryNode(node) || !node.ids || !node.tree) return null;
 
   const nodeIsRootNode = node.ids.includes(node.tree);
-  const root = getConceptById(node.tree);
+  const root = getConceptById(node.tree, node.tree);
 
   if (nodeIsRootNode) {
     const noRootOrSameLabel = !root || root.label === node.label;

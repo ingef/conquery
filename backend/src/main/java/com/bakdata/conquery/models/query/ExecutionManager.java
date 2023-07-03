@@ -30,6 +30,9 @@ public interface ExecutionManager {
 
 	void cancelQuery(final Dataset dataset, final ManagedExecution query);
 
+	/**
+	 * Discard the query's results.
+	 */
 	void clearQueryResults(ManagedExecution execution);
 
 	/**

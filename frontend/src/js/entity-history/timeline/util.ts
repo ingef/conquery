@@ -1,7 +1,10 @@
-import { ColumnDescription, TimeStratifiedInfo } from "../../api/types";
+import { ColumnDescription } from "../../api/types";
 
 export const isIdColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "ID");
+
+export const isDateColumn = (columnDescription: ColumnDescription) =>
+  columnDescription.semantics.some((s) => s.type === "EVENT_DATE");
 
 export const isGroupableColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "GROUP");
@@ -19,9 +22,12 @@ export const isMoneyColumn = (columnDescription: ColumnDescription) =>
 export const isSecondaryIdColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "SECONDARY_ID");
 
-export const getColumnType = (
-  timeStratifiedInfo: TimeStratifiedInfo,
-  label: string,
-) => {
-  return timeStratifiedInfo.columns.find((c) => c.label === label)?.type;
-};
+export const formatCurrency = (value: number) =>
+  value.toLocaleString(navigator.language, {
+    style: "currency",
+
+    currency: "EUR",
+    unitDisplay: "short",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });

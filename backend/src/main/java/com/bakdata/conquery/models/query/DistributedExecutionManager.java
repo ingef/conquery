@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -65,18 +66,23 @@ public class DistributedExecutionManager implements ExecutionManager {
 		execute(namespace, execution, config);
 
 		return execution;
+
 	}
 
 	@Override
 	public void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
-		// Initialize the query / create subqueries
 		try {
 			execution.initExecutable(namespace, config);
 		}
 		catch (Exception e) {
-			log.error("Failed to initialize Query[{}]", execution.getId(), e);
+			// ConqueryErrors are usually user input errors so no need to log them at level=ERROR
+			if (e instanceof ConqueryError) {
+				log.warn("Failed to initialize Query[{}]", execution.getId(), e);
+			}
+			else {
+				log.error("Failed to initialize Query[{}]", execution.getId(), e);
+			}
 
-			//TODO we don't want to store completely faulty queries but is that right like this?
 			storage.removeExecution(execution.getId());
 			throw e;
 		}
@@ -121,7 +127,6 @@ public class DistributedExecutionManager implements ExecutionManager {
 	 */
 	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result) {
 
-
 		final E query = (E) storage.getExecution(result.getQueryId());
 
 		if (query.getState() != ExecutionState.RUNNING) {
@@ -138,6 +143,7 @@ public class DistributedExecutionManager implements ExecutionManager {
 			ExecutionMetrics.getQueryStateCounter(query.getState(), primaryGroupName).inc();
 			ExecutionMetrics.getQueriesTimeHistogram(primaryGroupName).update(query.getExecutionTime().toMillis());
 		}
+
 	}
 
 
@@ -167,6 +173,7 @@ public class DistributedExecutionManager implements ExecutionManager {
 		return resultParts == null
 			   ? Stream.empty()
 			   : resultParts.stream().flatMap(List::stream);
+
 	}
 
 	@Override

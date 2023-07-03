@@ -25,6 +25,7 @@ import type { LoadingPayload } from "./LoadHistoryDropzone";
 import { Navigation } from "./Navigation";
 import SourcesControl from "./SourcesControl";
 import Timeline from "./Timeline";
+import VisibilityControl from "./VisibilityControl";
 import { useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
 
@@ -120,6 +121,10 @@ export const History = () => {
     (state) => state.entityHistory.resultUrls,
   );
 
+  const [blurred, setBlurred] = useState(false);
+  const toggleBlurred = useCallback(() => setBlurred((v) => !v), []);
+  useHotkeys("p", toggleBlurred, [toggleBlurred]);
+
   const [showAdvancedControls, setShowAdvancedControls] = useState(false);
 
   useHotkeys("shift+alt+h", () => {
@@ -127,7 +132,7 @@ export const History = () => {
   });
 
   const [detailLevel, setDetailLevel] = useState<DetailLevel>("summary");
-  const updateHistorySession = useUpdateHistorySession();
+  const { updateHistorySession } = useUpdateHistorySession();
 
   const { options, sourcesSet, sourcesFilter, setSourcesFilter } =
     useSourcesControl();
@@ -185,6 +190,7 @@ export const History = () => {
         defaultSize="400px"
       >
         <SxNavigation
+          blurred={blurred}
           entityIds={entityIds}
           entityIdsStatus={entityIdsStatus}
           currentEntityId={currentEntityId}
@@ -206,6 +212,7 @@ export const History = () => {
               </Controls>
               {currentEntityId && (
                 <EntityHeader
+                  blurred={blurred}
                   currentEntityIndex={currentEntityIndex}
                   currentEntityId={currentEntityId}
                   status={currentEntityStatus}
@@ -216,6 +223,10 @@ export const History = () => {
             </Header>
             <Flex>
               <Sidebar>
+                <VisibilityControl
+                  blurred={blurred}
+                  toggleBlurred={toggleBlurred}
+                />
                 {showAdvancedControls && (
                   <DetailControl
                     detailLevel={detailLevel}
@@ -238,6 +249,7 @@ export const History = () => {
                 </SidebarBottom>
               </Sidebar>
               <SxTimeline
+                blurred={blurred}
                 detailLevel={detailLevel}
                 sources={sourcesSet}
                 contentFilter={contentFilter}

@@ -47,7 +47,11 @@ const Description = styled("p")`
   margin: 0;
 `;
 
-export const TimelineEmptyPlaceholder = () => {
+export const TimelineEmptyPlaceholder = ({
+  className,
+}: {
+  className?: string;
+}) => {
   const { t } = useTranslation();
 
   const ids = useSelector<StateT, EntityHistoryStateT["entityIds"]>(
@@ -58,7 +62,7 @@ export const TimelineEmptyPlaceholder = () => {
   );
 
   return (
-    <Root>
+    <Root className={className}>
       <Row>
         <BigIcon icon={faListUl} />
         <div>

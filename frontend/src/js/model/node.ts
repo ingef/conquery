@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 
 import { ConceptElementT, ConceptT } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
+import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import type {
   ConceptQueryNodeType,
   DragItemConceptTreeNode,
@@ -55,8 +56,16 @@ export const nodeHasEmptySettings = (node: StandardQueryNodeT) => {
 export const nodeHasFilterValues = (node: StandardQueryNodeT) =>
   nodeIsConceptQueryNode(node) && tablesHaveFilterValues(node.tables);
 
+const nodeHasNonDefaultExcludeTimestamps = (node: StandardQueryNodeT) => {
+  if (!nodeIsConceptQueryNode(node)) return node.excludeTimestamps;
+
+  const root = getConceptById(node.tree, node.tree);
+
+  return node.excludeTimestamps !== root?.excludeFromTimeAggregation;
+};
+
 export const nodeHasNonDefaultSettings = (node: StandardQueryNodeT) =>
-  node.excludeTimestamps ||
+  nodeHasNonDefaultExcludeTimestamps(node) ||
   node.excludeFromSecondaryId ||
   (nodeIsConceptQueryNode(node) &&
     (objectHasNonDefaultSelects(node) ||

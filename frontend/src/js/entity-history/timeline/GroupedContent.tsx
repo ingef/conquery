@@ -8,7 +8,6 @@ import {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
-  DatasetT,
 } from "../../api/types";
 import { ContentFilterValue, ContentType } from "../ContentControl";
 import { formatHistoryDayRange } from "../RowDates";
@@ -18,6 +17,7 @@ import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";
 import {
   isConceptColumn,
+  isDateColumn,
   isMoneyColumn,
   isSecondaryIdColumn,
   isVisibleColumn,
@@ -54,7 +54,6 @@ const getColumnDescriptionContentType = (
 
 const SORT_ORDER: ContentType[] = ["concept", "secondaryId", "rest", "money"];
 interface Props {
-  datasetId: DatasetT["id"];
   columns: Record<string, ColumnDescription>;
   groupedRows: EntityEvent[];
   groupedRowsKeysWithDifferentValues: string[];
@@ -64,7 +63,6 @@ interface Props {
 }
 
 const GroupedContent = ({
-  datasetId,
   columns,
   groupedRows,
   groupedRowsKeysWithDifferentValues,
@@ -114,7 +112,6 @@ const GroupedContent = ({
           differencesKeys.map((key) => (
             <Cell
               key={key}
-              datasetId={datasetId}
               columnDescription={columns[key]}
               cell={groupedRow[key]}
               currencyConfig={currencyConfig}
@@ -145,16 +142,14 @@ const Cell = memo(
     columnDescription,
     currencyConfig,
     cell,
-    datasetId,
     rootConceptIdsByColumn,
   }: {
     columnDescription: ColumnDescription;
     currencyConfig: CurrencyConfigT;
     cell: any;
-    datasetId: DatasetT["id"];
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
   }) => {
-    if (!columnDescription) {
+    if (isDateColumn(columnDescription)) {
       return cell.from === cell.to ? (
         <CellWrap>{formatHistoryDayRange(cell.from)}</CellWrap>
       ) : (
@@ -169,7 +164,6 @@ const Cell = memo(
         <SxConceptName
           rootConceptId={rootConceptIdsByColumn[columnDescription.label]}
           conceptId={cell}
-          datasetId={datasetId}
           title={columnDescription.defaultLabel}
         />
       );

@@ -134,8 +134,10 @@ export function TreeNode({
   droppable,
   selectedNode,
   setSelectedNodeId,
-  onDoubleClick,
   featureContentInfos,
+  onOpenQueryNodeEditor,
+  onOpenTimeModal,
+  onRotateConnector,
 }: {
   tree: Tree;
   treeParent?: Tree;
@@ -146,8 +148,10 @@ export function TreeNode({
   };
   selectedNode: Tree | undefined;
   setSelectedNodeId: (id: Tree["id"] | undefined) => void;
-  onDoubleClick?: DOMAttributes<HTMLElement>["onDoubleClick"];
   featureContentInfos?: boolean;
+  onOpenQueryNodeEditor?: () => void;
+  onOpenTimeModal?: () => void;
+  onRotateConnector?: () => void;
 }) {
   const gridStyles = getGridStyles(tree);
 
@@ -256,14 +260,25 @@ export function TreeNode({
                 negated={tree.negation}
                 leaf={!tree.children}
                 selected={selectedNode?.id === tree.id}
-                onDoubleClick={onDoubleClick}
+                onDoubleClick={(e) => {
+                  if (tree.data && nodeIsConceptQueryNode(tree.data)) {
+                    e.stopPropagation();
+                    onOpenQueryNodeEditor?.();
+                  }
+                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedNodeId(tree.id);
                 }}
               >
                 {tree.children && tree.children.connection === "time" && (
-                  <TimeConnection conditions={tree.children} />
+                  <TimeConnection
+                    conditions={tree.children}
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      onOpenTimeModal?.();
+                    }}
+                  />
                 )}
                 {tree.dates?.restriction && (
                   <Dates>
@@ -315,6 +330,9 @@ export function TreeNode({
                           updateTreeNode={updateTreeNode}
                           selectedNode={selectedNode}
                           setSelectedNodeId={setSelectedNodeId}
+                          onOpenQueryNodeEditor={onOpenQueryNodeEditor}
+                          onOpenTimeModal={onOpenTimeModal}
+                          onRotateConnector={onRotateConnector}
                           droppable={{
                             h:
                               !item.children &&
@@ -337,6 +355,10 @@ export function TreeNode({
                           >
                             {() => (
                               <Connection
+                                onDoubleClick={(e) => {
+                                  e.stopPropagation();
+                                  onRotateConnector?.();
+                                }}
                                 connection={tree.children?.connection}
                               />
                             )}
@@ -384,8 +406,20 @@ export function TreeNode({
   );
 }
 
-const Connection = memo(({ connection }: { connection?: ConnectionKind }) => {
-  const getTranslatedConnection = useGetTranslatedConnection();
+const Connection = memo(
+  ({
+    connection,
+    onDoubleClick,
+  }: {
+    connection?: ConnectionKind;
+    onDoubleClick?: DOMAttributes<HTMLElement>["onDoubleClick"];
+  }) => {
+    const getTranslatedConnection = useGetTranslatedConnection();
 
-  return <Connector>{getTranslatedConnection(connection)}</Connector>;
-});
+    return (
+      <Connector onDoubleClick={onDoubleClick}>
+        {getTranslatedConnection(connection)}
+      </Connector>
+    );
+  },
+);

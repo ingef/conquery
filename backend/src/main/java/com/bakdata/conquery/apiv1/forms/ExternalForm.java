@@ -37,6 +37,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -60,15 +61,21 @@ public class ExternalForm extends Form implements SubTyped {
 	@JsonValue
 	@ToString.Exclude
 	private final ObjectNode node;
+	private final String subType;
+
+	public JsonNode getExternalApiPayload() {
+		return ((ObjectNode) node.deepCopy()
+								 .without("values"))
+				.set("type", new TextNode(subType));
+
+	}
 
 	@Nullable
 	@Override
 	@JsonIgnore
 	public JsonNode getValues() {
-		return node;
+		return node.get("values");
 	}
-
-	private final String subType;
 
 	@Override
 	public String getLocalizedTypeLabel() {
@@ -79,7 +86,7 @@ public class ExternalForm extends Form implements SubTyped {
 
 		// Form had no specific title set. Try localized lookup in FormConfig
 		final Locale preferredLocale = I18n.LOCALE.get();
-		final FormType frontendConfig = FormScanner.FRONTEND_FORM_CONFIGS.get(getFormType());
+		final FormType frontendConfig = FormScanner.resolveFormType(getFormType());
 
 		if (frontendConfig == null) {
 			return getSubType();
