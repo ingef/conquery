@@ -6,30 +6,32 @@ import java.net.URL;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.forms.frontendconfiguration.FormScanner;
 import com.fasterxml.jackson.annotation.JsonAlias;
-import groovy.transform.ToString;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.With;
 import lombok.extern.slf4j.Slf4j;
 
-@ToString
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Slf4j
 @With
+@Data
 public class FrontendConfig {
 	@Valid
 	@NotNull
 	private CurrencyConfig currency = new CurrencyConfig();
+
+	/**
+	 * Years to include in entity preview.
+	 */
+	@Min(0)
+	private int observationPeriodYears = 6;
 
 	/**
 	 * The url that points a manual. This is also used by the {@link FormScanner}

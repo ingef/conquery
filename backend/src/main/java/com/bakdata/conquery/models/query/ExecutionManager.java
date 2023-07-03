@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -34,13 +35,6 @@ public class ExecutionManager {
 
 	private final MetaStorage storage;
 
-	private final Cache<ManagedExecutionId, List<List<EntityResult>>> executionResults =
-			CacheBuilder.newBuilder()
-						.softValues()
-						.removalListener(this::executionRemoved)
-						.build();
-
-
 	/**
 	 * Manage state of evicted Queries, setting them to NEW.
 	 */
@@ -56,7 +50,11 @@ public class ExecutionManager {
 		log.warn("Evicted Results for Query[{}] (Reason: {})", executionId, removalNotification.getCause());
 
 		storage.getExecution(executionId).reset();
-	}
+	}	private final Cache<ManagedExecutionId, List<List<EntityResult>>> executionResults =
+			CacheBuilder.newBuilder()
+						.softValues()
+						.removalListener(this::executionRemoved)
+						.build();
 
 	public ManagedExecution runQuery(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
 		final ManagedExecution execution = createExecution(query, user, submittedDataset, system);
@@ -70,14 +68,18 @@ public class ExecutionManager {
 	}
 
 	public void execute(Namespace namespace, ManagedExecution execution, ConqueryConfig config) {
-		// Initialize the query / create subqueries
 		try {
 			execution.initExecutable(namespace, config);
 		}
 		catch (Exception e) {
-			log.error("Failed to initialize Query[{}]", execution.getId(), e);
+			// ConqueryErrors are usually user input errors so no need to log them at level=ERROR
+			if (e instanceof ConqueryError) {
+				log.warn("Failed to initialize Query[{}]", execution.getId(), e);
+			}
+			else {
+				log.error("Failed to initialize Query[{}]", execution.getId(), e);
+			}
 
-			//TODO we don't want to store completely faulty queries but is that right like this?
 			storage.removeExecution(execution.getId());
 			throw e;
 		}
@@ -95,7 +97,6 @@ public class ExecutionManager {
 			namespace.sendToAll(internalExecution.createExecutionMessage());
 		}
 	}
-
 
 	public ManagedExecution createQuery(QueryDescription query, UUID queryId, User user, Dataset submittedDataset, boolean system) {
 		// Transform the submitted query into an initialized execution

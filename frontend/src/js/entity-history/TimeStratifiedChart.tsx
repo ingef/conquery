@@ -8,18 +8,20 @@ import {
   Tooltip,
   ChartOptions,
 } from "chart.js";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
-import { useSelector } from "react-redux";
 
-import { CurrencyConfigT, TimeStratifiedInfo } from "../api/types";
-import { StateT } from "../app/reducers";
+import { TimeStratifiedInfo } from "../api/types";
 import { exists } from "../common/helpers/exists";
+
+import { formatCurrency } from "./timeline/util";
+
+const TRUNCATE_X_AXIS_LABELS_LEN = 18;
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
 
 const ChartContainer = styled("div")`
-  height: 185px;
+  height: 190px;
   width: 100%;
   display: flex;
   justify-content: flex-end;
@@ -42,39 +44,16 @@ function interpolateDecreasingOpacity(index: number) {
   return Math.min(1, 1 / (index + 0.3));
 }
 
-const useFormatCurrency = () => {
-  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
-    (state) => state.startup.config.currency,
-  );
-
-  const formatCurrency = useCallback(
-    (value: number) => {
-      return value.toLocaleString("de-DE", {
-        style: "currency",
-        currency: "EUR",
-        minimumFractionDigits: currencyConfig.decimalScale,
-        maximumFractionDigits: currencyConfig.decimalScale,
-      });
-    },
-    [currencyConfig],
-  );
-
-  return {
-    formatCurrency,
-  };
-};
-
 export const TimeStratifiedChart = ({
-  timeStratifiedInfos,
+  timeStratifiedInfo,
 }: {
-  timeStratifiedInfos: TimeStratifiedInfo[];
+  timeStratifiedInfo: TimeStratifiedInfo;
 }) => {
   const theme = useTheme();
-  const infosToVisualize = timeStratifiedInfos[0];
-  const labels = infosToVisualize.columns.map((col) => col.label);
+  const labels = timeStratifiedInfo.columns.map((col) => col.label);
 
   const datasets = useMemo(() => {
-    const sortedYears = [...infosToVisualize.years].sort(
+    const sortedYears = [...timeStratifiedInfo.years].sort(
       (a, b) => b.year - a.year,
     );
 
@@ -87,21 +66,19 @@ export const TimeStratifiedChart = ({
         )}, ${interpolateDecreasingOpacity(i)})`,
       };
     });
-  }, [theme, infosToVisualize, labels]);
+  }, [theme, timeStratifiedInfo, labels]);
 
   const data = {
     labels,
     datasets,
   };
 
-  const { formatCurrency } = useFormatCurrency();
-
   const options: ChartOptions<"bar"> = useMemo(() => {
     return {
       plugins: {
         title: {
           display: true,
-          text: infosToVisualize.label,
+          text: timeStratifiedInfo.label,
         },
         tooltip: {
           usePointStyle: true,
@@ -145,8 +122,9 @@ export const TimeStratifiedChart = ({
         x: {
           ticks: {
             callback: (idx: any) => {
-              return labels[idx].length > 12
-                ? labels[idx].substring(0, 9) + "..."
+              return labels[idx].length > TRUNCATE_X_AXIS_LABELS_LEN
+                ? labels[idx].substring(0, TRUNCATE_X_AXIS_LABELS_LEN - 3) +
+                    "..."
                 : labels[idx];
             },
           },
@@ -159,7 +137,7 @@ export const TimeStratifiedChart = ({
         },
       },
     };
-  }, [infosToVisualize, labels, formatCurrency]);
+  }, [timeStratifiedInfo, labels]);
 
   return (
     <ChartContainer>

@@ -49,7 +49,7 @@ const StandardQueryRunner = () => {
   const isDatasetValid = validateDataset(datasetId);
   const hasQueryValidDates = validateQueryDates(query);
   const isQueryValid = validateQueryLength(query) && hasQueryValidDates;
-  const isQueryNotStartedOrStopped = validateQueryStartStop(queryRunner);
+  const queryStartStopReady = validateQueryStartStop(queryRunner);
 
   const buttonTooltip = useButtonTooltip(hasQueryValidDates);
 
@@ -73,9 +73,7 @@ const StandardQueryRunner = () => {
     <QueryRunner
       queryRunner={queryRunner}
       buttonTooltip={buttonTooltip}
-      isButtonEnabled={
-        isDatasetValid && isQueryValid && isQueryNotStartedOrStopped
-      }
+      disabled={!isDatasetValid || !isQueryValid || !queryStartStopReady}
       isQueryRunning={!!queryRunner.runningQuery}
       startQuery={startQuery}
       stopQuery={stopQuery}

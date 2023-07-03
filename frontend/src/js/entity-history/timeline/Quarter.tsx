@@ -7,7 +7,6 @@ import {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
-  DatasetT,
 } from "../../api/types";
 import FaIcon from "../../icon/FaIcon";
 import { ContentFilterValue } from "../ContentControl";
@@ -55,7 +54,7 @@ const InlineGrid = styled("div")`
   cursor: pointer;
   border: 1px solid transparent;
   border-radius: ${({ theme }) => theme.borderRadius};
-  padding: 5px;
+  padding: 6px 10px;
   &:hover {
     border: 1px solid ${({ theme }) => theme.col.blueGray};
   }
@@ -90,7 +89,6 @@ const Quarter = ({
   currencyConfig,
   rootConceptIdsByColumn,
   contentFilter,
-  datasetId,
 }: {
   year: number;
   quarter: number;
@@ -100,7 +98,6 @@ const Quarter = ({
   detailLevel: DetailLevel;
   toggleOpenQuarter: (year: number, quarter: number) => void;
   differences: string[][];
-  datasetId: DatasetT["id"];
   columns: Record<string, ColumnDescription>;
   columnBuckets: ColumnBuckets;
   contentFilter: ContentFilterValue;
@@ -151,7 +148,6 @@ const Quarter = ({
                     key={`${index}-${evtIdx}`}
                     columns={columns}
                     columnBuckets={columnBuckets}
-                    datasetId={datasetId}
                     contentFilter={contentFilter}
                     rootConceptIdsByColumn={rootConceptIdsByColumn}
                     row={evt}
@@ -174,7 +170,6 @@ const Quarter = ({
                     key={index}
                     columns={columns}
                     columnBuckets={columnBuckets}
-                    datasetId={datasetId}
                     contentFilter={contentFilter}
                     rootConceptIdsByColumn={rootConceptIdsByColumn}
                     row={firstRowWithoutDifferences}

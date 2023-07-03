@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.admin.rest;
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -35,7 +36,6 @@ import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
-import com.google.common.collect.ImmutableMap;
 import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
 
@@ -89,7 +89,7 @@ public class AdminResource {
 
 	@GET
 	@Path("/jobs/")
-	public ImmutableMap<String, JobManagerStatus> getJobs() {
+	public Collection<JobManagerStatus> getJobs() {
 		return processor.getJobs();
 	}
 

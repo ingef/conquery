@@ -139,7 +139,6 @@ public class ConceptsProcessor {
 		// Connectors only act as bridge to table for the fronted, but also provide ConceptColumnT semantic
 
 		return new FrontendPreviewConfig(
-				previewConfig.getObservationStart(),
 				previewConfig.getAllConnectors()
 							 .stream()
 							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))

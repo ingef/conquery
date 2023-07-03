@@ -1,13 +1,6 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
 
-import type {
-  ConceptIdT,
-  InfoT,
-  DateRangeT,
-  ConceptT,
-  ConceptElementT,
-} from "../api/types";
+import type { ConceptIdT, ConceptT, ConceptElementT } from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 import { resetSelects } from "../model/select";
 import { resetTables } from "../model/table";
@@ -22,44 +15,18 @@ const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
-// Concept data that is necessary to display tree nodes. Includes additional infos
-// for the tooltip as well as the id of the corresponding tree
-interface TreeNodeData {
-  label: string;
-  description?: string;
-  active?: boolean;
-  matchingEntries: number | null;
-  matchingEntities: number | null;
-  dateRange?: DateRangeT;
-  additionalInfos?: InfoT[];
-  children?: ConceptIdT[];
-}
-
-interface PropsT {
-  rootConceptId: ConceptIdT;
-  conceptId: ConceptIdT;
-  data: TreeNodeData;
-  depth: number;
-  search: SearchT;
-}
-
-const selectTreeNodeData = (concept: ConceptT) => ({
-  label: concept.label,
-  description: concept.description,
-  active: concept.active,
-  matchingEntries: concept.matchingEntries,
-  matchingEntities: concept.matchingEntities,
-  dateRange: concept.dateRange,
-  additionalInfos: concept.additionalInfos,
-  children: concept.children,
-});
-
-const ConceptTreeNode: FC<PropsT> = ({
+const ConceptTreeNode = ({
   data,
   rootConceptId,
   conceptId,
   depth,
   search,
+}: {
+  rootConceptId: ConceptIdT;
+  conceptId: ConceptIdT;
+  data: ConceptT;
+  depth: number;
+  search: SearchT;
 }) => {
   const { open, onToggleOpen } = useOpenableConcept({
     conceptId,
@@ -121,6 +88,10 @@ const ConceptTreeNode: FC<PropsT> = ({
             matchingEntities: data.matchingEntities,
             dateRange: data.dateRange,
 
+            excludeTimestamps:
+              root.excludeFromTimeAggregation ||
+              data.excludeFromTimeAggregation,
+
             tree: rootConceptId,
           };
         }}
@@ -140,7 +111,7 @@ const ConceptTreeNode: FC<PropsT> = ({
                 key={childId}
                 rootConceptId={rootConceptId}
                 conceptId={childId}
-                data={selectTreeNodeData(child)}
+                data={child}
                 depth={depth + 1}
                 search={search}
               />

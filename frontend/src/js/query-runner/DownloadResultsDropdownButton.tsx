@@ -124,6 +124,7 @@ const DownloadResultsDropdownButton = ({
               resultUrl={resultUrl}
               onClick={() => setFileChoice({ label: resultUrl.label, ending })}
               bgHover
+              showColoredIcon
             >
               {truncate(resultUrl.label)}
             </SxDownloadButton>
@@ -137,7 +138,7 @@ const DownloadResultsDropdownButton = ({
     <Frame noborder={tiny}>
       {!tiny && (
         <>
-          <SxDownloadButton bgHover resultUrl={urlChoice}>
+          <SxDownloadButton bgHover resultUrl={urlChoice} showColoredIcon>
             {truncChosenLabel}
           </SxDownloadButton>
           <Separator />

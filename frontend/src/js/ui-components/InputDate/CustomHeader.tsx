@@ -5,8 +5,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { ReactDatePickerCustomHeaderProps } from "react-datepicker";
+import { useSelector } from "react-redux";
 
 import { SelectOptionT } from "../../api/types";
+import { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import { TransparentButton } from "../../button/TransparentButton";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
@@ -79,13 +81,19 @@ const YearMonthSelect = ({
   ReactDatePickerCustomHeaderProps,
   "date" | "changeYear" | "changeMonth"
 >) => {
-  const yearSelectionSpan = 10;
-  const yearOptions: SelectOptionT[] = [...Array(yearSelectionSpan).keys()]
+  const numLastYearsToShow = useSelector<StateT, number>((state) => {
+    if (state.startup.config.observationPeriodStart) {
+      return (
+        new Date().getFullYear() -
+        new Date(state.startup.config.observationPeriodStart).getFullYear()
+      );
+    } else {
+      return 10;
+    }
+  });
+  const yearOptions: SelectOptionT[] = [...Array(numLastYearsToShow).keys()]
     .map((n) => new Date().getFullYear() - n)
-    .map((year) => ({
-      label: String(year),
-      value: year,
-    }))
+    .map((year) => ({ label: String(year), value: year }))
     .reverse();
 
   const monthNames = useMonthNames();
