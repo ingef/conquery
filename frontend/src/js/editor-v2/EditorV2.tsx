@@ -10,11 +10,12 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
+import { useDatasetId } from "../dataset/selectors";
 import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { EmptyQueryEditorDropzone } from "../standard-query-editor/EmptyQueryEditorDropzone";
 import {
@@ -121,6 +122,13 @@ const useEditorState = () => {
   };
 };
 
+const useResetOnDatasetChange = (onReset: () => void) => {
+  const datasetId = useDatasetId();
+  useEffect(() => {
+    onReset();
+  }, [datasetId, onReset]);
+};
+
 export function EditorV2({
   featureDates,
   featureNegate,
@@ -148,6 +156,8 @@ export function EditorV2({
     selectedNodeActive,
     setSelectedNodeId,
   } = useEditorState();
+
+  useResetOnDatasetChange(onReset);
 
   const onFlip = useCallback(() => {
     if (!selectedNode || !selectedNode.children) return;
