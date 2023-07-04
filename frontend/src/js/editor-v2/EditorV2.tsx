@@ -15,7 +15,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { nodeIsConceptQueryNode } from "../model/node";
+import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { EmptyQueryEditorDropzone } from "../standard-query-editor/EmptyQueryEditorDropzone";
 import {
   DragItemConceptTreeNode,
@@ -92,6 +92,8 @@ const useEditorState = () => {
     return findNodeById(tree, selectedNodeId);
   }, [tree, selectedNodeId]);
 
+  const { active: selectedNodeActive } = useActiveState(selectedNode?.data);
+
   const onReset = useCallback(() => {
     setTree(undefined);
   }, []);
@@ -114,6 +116,7 @@ const useEditorState = () => {
     updateTreeNode,
     onReset,
     selectedNode,
+    selectedNodeActive,
     setSelectedNodeId,
   };
 };
@@ -142,6 +145,7 @@ export function EditorV2({
     updateTreeNode,
     onReset,
     selectedNode,
+    selectedNodeActive,
     setSelectedNodeId,
   } = useEditorState();
 
@@ -311,7 +315,7 @@ export function EditorV2({
                     <IconButton
                       icon={faEdit}
                       tight
-                      active={false}
+                      active={selectedNodeActive}
                       onClick={(e) => {
                         e.stopPropagation();
                         onOpenQueryNodeEditor();
