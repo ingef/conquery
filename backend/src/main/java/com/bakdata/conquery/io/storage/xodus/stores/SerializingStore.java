@@ -238,7 +238,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		executorService.shutdown();
 
-		while (executorService.awaitTermination(1, TimeUnit.MINUTES)){
+		while (!executorService.awaitTermination(1, TimeUnit.MINUTES)){
 			log.debug("Still waiting for {} to load.", this);
 		}
 
