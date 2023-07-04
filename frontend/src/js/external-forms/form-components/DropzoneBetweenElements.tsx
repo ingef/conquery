@@ -21,7 +21,7 @@ const Root = styled("div")<{
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-const DropzoneContainer = styled("div")<{
+const Expander = styled("div")<{
   height: number;
 }>`
   overflow: hidden;
@@ -55,7 +55,7 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   return (
     <>
       <Root ref={addZoneRef} height={isOver ? height : 0}></Root>
-      {isOver && <DropzoneContainer height={height} />}
+      {isOver && <Expander height={height} />}
     </>
   );
 };

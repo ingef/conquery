@@ -91,6 +91,7 @@ interface Props {
 const DropzoneListItem = styled("div")`
   margin-top: -30px;
 `;
+
 const Row = styled("div")`
   display: flex;
   align-items: center;
