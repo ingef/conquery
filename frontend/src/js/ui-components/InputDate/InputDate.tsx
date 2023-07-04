@@ -45,6 +45,10 @@ type Props = Omit<BaseInputProps, "inputType"> & {
   onCalendarSelect?: (val: string) => void;
 };
 
+// TODO: Remove this once we have solved
+// - that the date picker overlays other fields in forms
+const TEMPORARILY_DISABLED_DATE_PICKER = true;
+
 const InputDate = forwardRef<HTMLInputElement, Props>(
   (
     {
@@ -126,6 +130,7 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
           customInput={createElement(HiddenInput)}
           calendarContainer={StyledCalendar}
           calendarStartDay={1}
+          disabled={TEMPORARILY_DISABLED_DATE_PICKER}
         />
       </Root>
     );
