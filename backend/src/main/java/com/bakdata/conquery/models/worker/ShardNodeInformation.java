@@ -57,8 +57,10 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 	 * Calculate the time in Milliseconds since we last received a {@link JobManagerStatus} from the corresponding shard.
 	 */
 	private long getMillisSinceLastStatus() {
-		if(getJobManagerStatus().isEmpty()){
-			return -1;
+		synchronized (jobManagerStatus) {
+			if (getJobManagerStatus().isEmpty()) {
+				return -1;
+			}
 		}
 
 		return lastStatusTime.until(LocalDateTime.now(), ChronoUnit.MILLIS);
@@ -71,10 +73,6 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 		SharedMetricRegistries.getDefault().remove(getLatenessMetricName());
 	}
 
-	public long calculatePressure() {
-		return jobManagerStatus.stream().mapToLong(status -> status.getJobs().size()).sum();
-	}
-
 	public void addJobManagerStatus(JobManagerStatus incoming) {
 		lastStatusTime = LocalDateTime.now();
 
@@ -82,23 +80,24 @@ public class ShardNodeInformation extends MessageSender.Simple<MessageToShardNod
 			// replace with new status
 			jobManagerStatus.remove(incoming);
 			jobManagerStatus.add(incoming);
-		}
 
-		if (calculatePressure() < backpressure) {
-			synchronized (jobManagerSync) {
+			if (calculatePressure() < backpressure) {
 				jobManagerSync.notifyAll();
 			}
+		}
+
+	}
+
+	public long calculatePressure() {
+		synchronized (jobManagerStatus) {
+			return jobManagerStatus.stream().mapToLong(status -> status.getJobs().size()).sum();
 		}
 	}
 
 	public void waitForFreeJobQueue() throws InterruptedException {
-		if (jobManagerStatus.isEmpty()) {
-			return;
-		}
-
 		if (calculatePressure() >= backpressure) {
-			log.trace("Have to wait for free JobQueue (size = {})", jobManagerStatus.size());
 			synchronized (jobManagerSync) {
+				log.trace("Have to wait for free JobQueue (size = {})", jobManagerStatus.size());
 				jobManagerSync.wait();
 			}
 		}
