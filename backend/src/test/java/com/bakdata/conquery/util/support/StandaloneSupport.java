@@ -23,7 +23,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -39,7 +39,7 @@ public class StandaloneSupport {
 
 	private final TestConquery testConquery;
 	@Getter
-	private final Namespace namespace;
+	private final DistributedNamespace namespace;
 	@Getter
 	private final Dataset dataset;
 	@Getter
@@ -54,7 +54,7 @@ public class StandaloneSupport {
 	private final User testUser;
 
 	public AuthorizationController getAuthorizationController() {
-		return testConquery.getStandaloneCommand().getManager().getAuthController();
+		return testConquery.getStandaloneCommand().getManagerNode().getAuthController();
 	}
 
 	public void waitUntilWorkDone() {
@@ -84,19 +84,19 @@ public class StandaloneSupport {
 
 
 	public Validator getValidator() {
-		return testConquery.getStandaloneCommand().getManager().getValidator();
+		return testConquery.getStandaloneCommand().getManagerNode().getValidator();
 	}
 
 	public MetaStorage getMetaStorage() {
-		return testConquery.getStandaloneCommand().getManager().getStorage();
+		return testConquery.getStandaloneCommand().getManagerNode().getStorage();
 	}
 
 	public NamespaceStorage getNamespaceStorage() {
-		return testConquery.getStandaloneCommand().getManager().getDatasetRegistry().get(dataset.getId()).getStorage();
+		return testConquery.getStandaloneCommand().getManagerNode().getDatasetRegistry().get(dataset.getId()).getStorage();
 	}
 
 	public DatasetRegistry getDatasetRegistry() {
-		return testConquery.getStandaloneCommand().getManager().getDatasetRegistry();
+		return testConquery.getStandaloneCommand().getManagerNode().getDatasetRegistry();
 	}
 
 	public List<ShardNode> getShardNodes() {

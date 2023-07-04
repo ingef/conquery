@@ -60,7 +60,6 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
-import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.SingleTableResult;
@@ -86,7 +85,7 @@ import lombok.extern.slf4j.Slf4j;
 public class QueryProcessor {
 
 	@Inject
-	private DatasetRegistry datasetRegistry;
+	private DatasetRegistry<? extends Namespace> datasetRegistry;
 	@Inject
 	private MetaStorage storage;
 	@Inject
@@ -305,11 +304,10 @@ public class QueryProcessor {
 
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
-		final Namespace namespace = datasetRegistry.get(dataset.getId());
-
 		query.reset();
 
-		namespace.sendToAll(new CancelQuery(query.getId()));
+		final ExecutionManager executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
+		executionManager.cancelQuery(dataset, query);
 	}
 
 	public void patchQuery(Subject subject, ManagedExecution execution, MetaDataPatch patch) {
