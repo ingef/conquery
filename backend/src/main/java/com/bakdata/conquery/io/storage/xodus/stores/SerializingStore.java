@@ -332,9 +332,9 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final IterationStatistic result = new IterationStatistic();
 		final ArrayList<ByteIterable> unreadables = new ArrayList<>();
 
-		final ThreadPoolExecutor executorService = new ThreadPoolExecutor(5, 10,
-																		  10L, TimeUnit.SECONDS,
-																		  new ArrayBlockingQueue<>(10),
+		final ThreadPoolExecutor executorService = new ThreadPoolExecutor(5, 5,
+																		  60L, TimeUnit.SECONDS,
+																		  new ArrayBlockingQueue<>(5),
 																		  Executors.defaultThreadFactory(),
 																		  new ThreadPoolExecutor.CallerRunsPolicy()
 		);
