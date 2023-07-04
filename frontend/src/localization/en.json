@@ -37,7 +37,6 @@
     "showingMismatches": "Showing full trees"
   },
   "queryRunner": {
-    "errorDates": "Invalid: all date ranges excluded from time calculation",
     "start": "Start Query",
     "stop": "Stop Query",
     "stopSuccess": "Query stopped",
