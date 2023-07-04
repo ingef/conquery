@@ -202,7 +202,7 @@ const FormConceptGroup = (props: Props) => {
         }
         dropzoneChildren={({ isOver, item }) =>
           isOver && isMovedObject(item)
-            ? t("externalForms.common.concept.copying")
+            ? t("externalForms.common.concept.moving")
             : props.attributeDropzoneText
         }
         dropBetween={(i: number) => {

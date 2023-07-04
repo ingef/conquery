@@ -312,7 +312,7 @@
       "concept": {
         "expand": "Include / exclude sub-attributes",
         "copyFrom": "Copy from ...",
-        "copying": "Copy"
+        "moving": "Move"
       },
       "clear": "Clear form",
       "clearConfirm": "Clear form now"

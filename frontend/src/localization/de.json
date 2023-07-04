@@ -311,7 +311,8 @@
       "concept": {
         "expand": "Untergeordnete Attribute einbeziehen / wieder ausschließen.",
         "copyFrom": "Kopieren von ...",
-        "copying": "Kopieren"
+        "copying": "Kopieren",
+        "moving": "Verschieben"
       },
       "clear": "Formular leeren",
       "clearConfirm": "Formular jetzt leeren"
