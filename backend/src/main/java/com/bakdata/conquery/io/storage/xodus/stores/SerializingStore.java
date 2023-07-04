@@ -7,7 +7,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -333,7 +334,9 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		final ThreadPoolExecutor executorService = new ThreadPoolExecutor(5, 20,
 																		  10L, TimeUnit.SECONDS,
-																		  new SynchronousQueue<>()
+																		  new ArrayBlockingQueue<>(100),
+																		  Executors.defaultThreadFactory(),
+																		  new ThreadPoolExecutor.CallerRunsPolicy()
 		);
 
 		store.forEach((k, v) -> {
