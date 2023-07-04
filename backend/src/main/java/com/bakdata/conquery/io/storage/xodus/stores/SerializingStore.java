@@ -69,7 +69,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * Deserializer for values
 	 */
-	private final ObjectReader valueReader;
+	private final ThreadLocal<ObjectReader> valueReader;
 
 	/**
 	 * Optional validator used for serialization.
@@ -119,7 +119,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		valueWriter = objectMapper.writerFor(this.valueType);
 
-		valueReader = objectMapper.readerFor(this.valueType);
+		valueReader = ThreadLocal.withInitial(() -> objectMapper.readerFor(this.valueType));
 
 		keyWriter = objectMapper.writerFor(keyType);
 
@@ -215,7 +215,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Deserialize value with {@code valueReader}.
 	 */
 	private VALUE readValue(ByteIterable value) {
-		return read(valueReader, value);
+		return read(valueReader.get(), value);
 	}
 
 	/**
