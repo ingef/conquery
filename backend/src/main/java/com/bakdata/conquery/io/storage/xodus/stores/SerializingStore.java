@@ -59,7 +59,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * Deserializer for keys
 	 */
-	private final ObjectReader keyReader;
+	private final ThreadLocal<ObjectReader> keyReader;
 
 	/**
 	 * Serializer for values
@@ -123,14 +123,14 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		keyWriter = objectMapper.writerFor(keyType);
 
-		keyReader = objectMapper.readerFor(keyType);
+		keyReader = ThreadLocal.withInitial(() -> objectMapper.readerFor(keyType));
 
 		removeUnreadablesFromUnderlyingStore = removeUnreadableFromStore;
 
 		unreadableValuesDumpDir = unreadableDataDumpDirectory;
 
 		if (shouldDumpUnreadables()) {
-			if(!unreadableValuesDumpDir.exists() && !unreadableValuesDumpDir.mkdirs()) {
+			if (!unreadableValuesDumpDir.exists() && !unreadableValuesDumpDir.mkdirs()) {
 				throw new IllegalStateException("Could not create dump directory: " + unreadableValuesDumpDir);
 			}
 			else if (!unreadableValuesDumpDir.isDirectory()) {
@@ -155,19 +155,51 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		store.add(writeKey(key), writeValue(value));
 	}
 
+	/**
+	 * Serialize key with {@code keyWriter}.
+	 */
+	private ByteIterable writeKey(KEY key) {
+		return write(key, keyWriter);
+	}
+
+	/**
+	 * Serialize value with {@code valueWriter}.
+	 */
+	private ByteIterable writeValue(VALUE value) {
+		return write(value, valueWriter);
+	}
+
+	/**
+	 * Try writing object with writer.
+	 */
+	private ByteIterable write(Object obj, ObjectWriter writer) {
+		try {
+			final byte[] bytes = writer.writeValueAsBytes(obj);
+			if (log.isTraceEnabled()) {
+				final String json = JacksonUtil.toJsonDebug(bytes);
+				log.trace("Written ({}): {}", valueType.getName(), json);
+			}
+			return new ArrayByteIterable(bytes);
+		}
+		catch (JsonProcessingException e) {
+			throw new RuntimeException("Failed to write " + obj, e);
+		}
+	}
+
 	@Override
 	public VALUE get(KEY key) {
 		final ByteIterable binValue = store.get(writeKey(key));
 
 		try {
-			return readValue(binValue);			
-		} catch (Exception e) {
+			return readValue(binValue);
+		}
+		catch (Exception e) {
 
-			if(unreadableValuesDumpDir != null) {
+			if (unreadableValuesDumpDir != null) {
 				dumpToFile(binValue, key.toString(), e, unreadableValuesDumpDir, store.getName(), objectMapper);
 			}
 
-			if(removeUnreadablesFromUnderlyingStore) {
+			if (removeUnreadablesFromUnderlyingStore) {
 				remove(key);
 				// Null seems to be an acceptable return value in this case
 				return null;
@@ -177,6 +209,115 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 			throw new RuntimeException(e);
 		}
+	}
+
+	/**
+	 * Deserialize value with {@code valueReader}.
+	 */
+	private VALUE readValue(ByteIterable value) {
+		return read(valueReader, value);
+	}
+
+	/**
+	 * Dumps the content of an unreadable value to a file as a json (it tries to parse it as an object and than tries to dump it as a json).
+	 *
+	 * @param obj               The object to dump.
+	 * @param keyOfDump         The key under which the unreadable value is accessible. It is used for the file name.
+	 * @param reason            The exception causing us to dump the file
+	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
+	 * @param storeName         The name of the store which is also used in the dump file name.
+	 */
+	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, Exception reason, @NonNull File unreadableDumpDir, String storeName, ObjectMapper objectMapper) {
+		// Create dump filehandle
+		final File dumpfile = makeDumpFileName(keyOfDump, unreadableDumpDir, storeName);
+		final File exceptionFileName = makeExceptionFileName(keyOfDump, unreadableDumpDir, storeName);
+
+		if (dumpfile.exists() || exceptionFileName.exists()) {
+			log.trace("Abort dumping of file {} because it already exists.", dumpfile);
+			return;
+		}
+
+		if (!dumpfile.getParentFile().exists() && !dumpfile.getParentFile().mkdirs()) {
+			throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
+		}
+
+		//TODO FK: dump in a separate thread so we are not blocking the reader thread.
+
+		// Write json
+		try {
+			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
+
+			final JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
+			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
+		}
+		catch (IOException e) {
+			log.error("Failed to dump unreadable value of key `{}` to file `{}`", keyOfDump, dumpfile, e);
+		}
+
+		try (PrintStream out = new PrintStream(exceptionFileName)) {
+			reason.printStackTrace(out);
+		}
+		catch (IOException e) {
+			log.error("Failed to dump exception for `{}` to file `{}`.", keyOfDump, exceptionFileName, e);
+		}
+
+	}
+
+	@Override
+	public void remove(KEY key) {
+		log.trace("Removing value to key {} from Store[{}]", key, store.getName());
+		store.remove(writeKey(key));
+	}
+
+	/**
+	 * Try read value with reader.
+	 */
+	private <T> T read(ObjectReader reader, ByteIterable obj) {
+		if (obj == null) {
+			return null;
+		}
+		try {
+			return reader.readValue(obj.getBytesUnsafe(), 0, obj.getLength());
+		}
+		catch (IOException e) {
+			throw new RuntimeException("Failed to read " + JacksonUtil.toJsonDebug(obj.getBytesUnsafe()), e);
+		}
+	}
+
+	/**
+	 * Generates a valid file name from the key of the dump object, the store and the current time.
+	 * However, it does not ensure that there is no file with such a name.
+	 * <p>
+	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.json`
+	 */
+	@NotNull
+	public static File makeDumpFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
+		return unreadableDumpDir.toPath()
+								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
+								.resolve(storeName)
+								.resolve(sanitiseFileName(keyOfDump) + "." + DUMP_FILE_EXTENSION)
+								.toFile();
+
+	}
+
+	/**
+	 * Generates a valid file name from the key of the dump object, the store and the current time.
+	 * However, it does not ensure that there is no file with such a name.
+	 * <p>
+	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.exception`
+	 */
+	@NotNull
+	public static File makeExceptionFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
+		return unreadableDumpDir.toPath()
+								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
+								.resolve(storeName)
+								.resolve(sanitiseFileName(keyOfDump) + "." + EXCEPTION_FILE_EXTENSION)
+								.toFile();
+
+	}
+
+	private static String sanitiseFileName(@NotNull String name) {
+		return FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(name).replaceAll("_");
 	}
 
 	/**
@@ -238,21 +379,22 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		executorService.shutdown();
 
-		while (!executorService.awaitTermination(1, TimeUnit.MINUTES)){
+		while (!executorService.awaitTermination(1, TimeUnit.MINUTES)) {
 			log.debug("Still waiting for {} to load.", this);
 		}
 
 		// Print some statistics
 		final int total = result.getTotalProcessed();
 		log.debug(
-			String.format(
-				"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
-				store.getName(),
-				total,
-				result.getFailedKeys(),
-				total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
-				result.getFailedValues(),
-				total > 0 ? (float) result.getFailedValues() / total * 100 : 0));
+				String.format(
+						"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
+						store.getName(),
+						total,
+						result.getFailedKeys(),
+						total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
+						result.getFailedValues(),
+						total > 0 ? (float) result.getFailedValues() / total * 100 : 0
+				));
 
 		// Remove corrupted entries from the store if configured so
 		if (removeUnreadablesFromUnderlyingStore) {
@@ -288,6 +430,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return null;
 	}
 
+	/**
+	 * Deserialize value with {@code keyReader}.
+	 */
+	private KEY readKey(ByteIterable key) {
+		return read(keyReader.get(), key);
+	}
+
 	@Override
 	public void update(KEY key, VALUE value) {
 		if (!valueType.isInstance(value)) {
@@ -299,153 +448,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 
 		store.update(writeKey(key), writeValue(value));
-	}
-
-	@Override
-	public void remove(KEY key) {
-		log.trace("Removing value to key {} from Store[{}]", key, store.getName());
-		store.remove(writeKey(key));
-	}
-
-	/**
-	 * Serialize value with {@code valueWriter}.
-	 */
-	private ByteIterable writeValue(VALUE value) {
-		return write(value, valueWriter);
-	}
-
-	/**
-	 * Serialize key with {@code keyWriter}.
-	 */
-	private ByteIterable writeKey(KEY key) {
-		return write(key, keyWriter);
-	}
-
-	/**
-	 * Deserialize value with {@code valueReader}.
-	 */
-	private VALUE readValue(ByteIterable value) {
-		return read(valueReader, value);
-	}
-
-	/**
-	 * Deserialize value with {@code keyReader}.
-	 */
-	private KEY readKey(ByteIterable key) {
-		return read(keyReader, key);
-	}
-
-	/**
-	 * Try writing object with writer.
-	 */
-	private ByteIterable write(Object obj, ObjectWriter writer) {
-		try {
-			final byte[] bytes = writer.writeValueAsBytes(obj);
-			if (log.isTraceEnabled()) {
-				final String json = JacksonUtil.toJsonDebug(bytes);
-				log.trace("Written ({}): {}", valueType.getName(), json);
-			}
-			return new ArrayByteIterable(bytes);
-		}
-		catch (JsonProcessingException e) {
-			throw new RuntimeException("Failed to write " + obj, e);
-		}
-	}
-
-	/**
-	 * Try read value with reader.
-	 */
-	private <T> T read(ObjectReader reader, ByteIterable obj) {
-		if (obj == null) {
-			return null;
-		}
-		try {
-			return reader.readValue(obj.getBytesUnsafe(), 0, obj.getLength());
-		}
-		catch (IOException e) {
-			throw new RuntimeException("Failed to read " + JacksonUtil.toJsonDebug(obj.getBytesUnsafe()), e);
-		}
-	}
-
-	/**
-	 * Dumps the content of an unreadable value to a file as a json (it tries to parse it as an object and than tries to dump it as a json).
-	 *
-	 * @param obj               The object to dump.
-	 * @param keyOfDump         The key under which the unreadable value is accessible. It is used for the file name.
-	 * @param reason			The exception causing us to dump the file
-	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
-	 * @param storeName         The name of the store which is also used in the dump file name.
-	 */
-	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, Exception reason, @NonNull File unreadableDumpDir, String storeName, ObjectMapper objectMapper) {
-		// Create dump filehandle
-		final File dumpfile = makeDumpFileName(keyOfDump, unreadableDumpDir, storeName);
-		final File exceptionFileName = makeExceptionFileName(keyOfDump, unreadableDumpDir, storeName);
-
-		if (dumpfile.exists() || exceptionFileName.exists()) {
-			log.trace("Abort dumping of file {} because it already exists.", dumpfile);
-			return;
-		}
-
-		if(!dumpfile.getParentFile().exists() && !dumpfile.getParentFile().mkdirs()){
-			throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
-		}
-
-		//TODO FK: dump in a separate thread so we are not blocking the reader thread.
-
-		// Write json
-		try {
-			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
-
-			final JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
-			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
-		}
-		catch (IOException e) {
-			log.error("Failed to dump unreadable value of key `{}` to file `{}`", keyOfDump, dumpfile, e);
-		}
-
-		try(PrintStream out = new PrintStream(exceptionFileName)) {
-			reason.printStackTrace(out);
-		}
-		catch (IOException e) {
-			log.error("Failed to dump exception for `{}` to file `{}`.", keyOfDump, exceptionFileName, e);
-		}
-
-	}
-
-	/**
-	 * Generates a valid file name from the key of the dump object, the store and the current time.
-	 * However, it does not ensure that there is no file with such a name.
-	 *
-	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.json`
-	 */
-	@NotNull
-	public static File makeDumpFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
-		return unreadableDumpDir.toPath()
-								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
-								.resolve(storeName)
-								.resolve(sanitiseFileName(keyOfDump) + "." + DUMP_FILE_EXTENSION)
-								.toFile();
-
-	}
-
-	private static String sanitiseFileName(@NotNull String name) {
-		return FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(name).replaceAll("_");
-	}
-
-	/**
-	 * Generates a valid file name from the key of the dump object, the store and the current time.
-	 * However, it does not ensure that there is no file with such a name.
-	 *
-	 * Current implementation is `$unreadableDumpDir/$today/$store/$key.exception`
-	 */
-	@NotNull
-	public static File makeExceptionFileName(@NotNull String keyOfDump, @NotNull File unreadableDumpDir, @NotNull String storeName) {
-		return unreadableDumpDir.toPath()
-								.resolve(DateTimeFormatter.BASIC_ISO_DATE.format(LocalDateTime.now()))
-								.resolve(storeName)
-								.resolve(sanitiseFileName(keyOfDump) + "." + EXCEPTION_FILE_EXTENSION)
-								.toFile();
-
 	}
 
 	@Override
@@ -487,15 +489,15 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		private int totalProcessed;
 		private int failedKeys;
 		private int failedValues;
-		
+
 		public void incrTotalProcessed() {
 			totalProcessed++;
 		}
-		
+
 		public void incrFailedKeys() {
 			failedKeys++;
 		}
-		
+
 		public void incrFailedValues() {
 			failedValues++;
 		}
