@@ -31,7 +31,7 @@ import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
+public abstract class AbstractQueryEngineTest extends ConqueryTestSpec<StandaloneSupport> {
 
 
 	@Override
