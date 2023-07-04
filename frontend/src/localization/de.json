@@ -67,7 +67,7 @@
     "hasSecondaryId": "Analyse-Ebene aktiv",
     "removeNode": "Knoten entfernen",
     "removeColumn": "Spalte entfernen",
-    "clear": "Editor-Oberfläche zurücksetzen",
+    "clear": "Editor zurücksetzen",
     "clearConfirm": "Jetzt zurücksetzen",
     "hasDefaultSettings": "Standardeinstellungen",
     "hasNonDefaultSettings": "Eigene Einstellungen"
@@ -318,8 +318,8 @@
         "copyFrom": "Kopieren von ...",
         "copying": "Kopieren"
       },
-      "clear": "Formular leeren",
-      "clearConfirm": "Formular jetzt leeren"
+      "clear": "Formular zurücksetzen",
+      "clearConfirm": "Jetzt zurücksetzen"
     }
   },
   "uploadQueryResultsModal": {
@@ -524,7 +524,7 @@
     "time": "ZEIT",
     "and": "UND",
     "or": "ODER",
-    "clear": "Editor vollständig zurücksetzen",
+    "clear": "Editor zurücksetzen",
     "clearConfirm": "Jetzt zurücksetzen",
     "flip": "Drehen",
     "dates": "Datum",

@@ -66,7 +66,7 @@
     "hasSecondaryId": "Analysis layer active",
     "removeNode": "Remove node",
     "removeColumn": "Remove column",
-    "clear": "Clear the Editor",
+    "clear": "Clear settings",
     "clearConfirm": "Clear now",
     "hasDefaultSettings": "Uses default settings",
     "hasNonDefaultSettings": "Has changed settings"
@@ -524,7 +524,7 @@
     "time": "TIME",
     "and": "AND",
     "or": "OR",
-    "clear": "Reset editor completely",
+    "clear": "Reset editor",
     "clearConfirm": "Reset now",
     "flip": "Flip",
     "dates": "Dates",
