@@ -7,6 +7,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -28,6 +31,7 @@ import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -180,52 +184,64 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Depending on the {@link XodusStoreFactory} corrupt entries may be dump to a file and/or removed from the store.
 	 * These entries are not submitted to the consumer.
 	 */
+	@SneakyThrows
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		final IterationStatistic result = new IterationStatistic();
 		final ArrayList<ByteIterable> unreadables = new ArrayList<>();
 
+		final ExecutorService executorService = Executors.newWorkStealingPool(10);
+
 		store.forEach((k, v) -> {
-			result.incrTotalProcessed();
+			executorService.submit(() -> {
 
-			// Try to read the key first
-			final KEY key = getDeserializedAndDumpFailed(
-					k,
-					this::readKey,
-					() -> new String(k.getBytesUnsafe()),
-					v,
-					"Could not parse key [{}]"
-			);
-			if (key == null) {
-				unreadables.add(k);
-				result.incrFailedKeys();
-				return;
-			}
+				result.incrTotalProcessed();
 
-			// Try to read the value
-			final VALUE value = getDeserializedAndDumpFailed(
-					v,
-					this::readValue,
-					key::toString,
-					v,
-					"Could not parse value for key [{}]"
-			);
+				// Try to read the key first
+				final KEY key = getDeserializedAndDumpFailed(
+						k,
+						this::readKey,
+						() -> new String(k.getBytesUnsafe()),
+						v,
+						"Could not parse key [{}]"
+				);
+				if (key == null) {
+					unreadables.add(k);
+					result.incrFailedKeys();
+					return;
+				}
 
-			if (value == null) {
-				unreadables.add(k);
-				result.incrFailedValues();
-				return;
-			}
+				// Try to read the value
+				final VALUE value = getDeserializedAndDumpFailed(
+						v,
+						this::readValue,
+						key::toString,
+						v,
+						"Could not parse value for key [{}]"
+				);
 
-			// Apply the consumer to key and value
-			try {
-				consumer.accept(key, value, v.getLength());
-			}
-			catch (Exception e) {
-				log.warn("Unable to apply for-each consumer on key[{}]", key, e);
-			}
+				if (value == null) {
+					unreadables.add(k);
+					result.incrFailedValues();
+					return;
+				}
 
+				// Apply the consumer to key and value
+				try {
+					consumer.accept(key, value, v.getLength());
+				}
+				catch (Exception e) {
+					log.warn("Unable to apply for-each consumer on key[{}]", key, e);
+				}
+			});
 		});
+
+		executorService.shutdown();
+
+		while (executorService.awaitTermination(1, TimeUnit.MINUTES)){
+			log.debug("Still waiting for {} to load.", this);
+		}
+
 		// Print some statistics
 		final int total = result.getTotalProcessed();
 		log.debug(
@@ -254,7 +270,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * @param deserializer            The concrete deserializer to use.
 	 * @param onFailKeyStringSupplier When deserilization failed and dump is enabled this is used in the dump file name.
 	 * @param onFailOrigValue         Will be the dumpfile content rendered as a json.
-	 * @param onFailWarnMsgFmt        The warn message that will be logged on failure.
+	 * @param onFailWarnMsgFmt        The warning message that will be logged on failure.
 	 * @return The deserialized value
 	 */
 	private <TYPE> TYPE getDeserializedAndDumpFailed(ByteIterable serial, Function<ByteIterable, TYPE> deserializer, Supplier<String> onFailKeyStringSupplier, ByteIterable onFailOrigValue, String onFailWarnMsgFmt) {
