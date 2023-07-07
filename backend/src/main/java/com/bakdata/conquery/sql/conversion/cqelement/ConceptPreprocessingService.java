@@ -1,4 +1,3 @@
-
 package com.bakdata.conquery.sql.conversion.cqelement;
 
 import java.util.Collections;
@@ -14,14 +13,13 @@ import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import org.checkerframework.checker.units.qual.C;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 public class ConceptPreprocessingService {
 
 	private static final String DATE_RESTRICTION_COLUMN_NAME = "date_restriction";
-	private static final String VALIDITY_DATE_COLUMN_NAME = "validity_date";
+	private static final String VALIDITY_DATE_COLUMN_NAME_SUFFIX = "_validity_date";
 	private final CQConcept concept;
 	private final ConversionContext context;
 	private final SqlFunctionProvider sqlFunctionProvider;
@@ -46,7 +44,7 @@ public class ConceptPreprocessingService {
 
 		selectsBuilder.primaryColumn(DSL.field(context.getConfig().getPrimaryColumn()));
 		selectsBuilder.dateRestriction(this.getDateRestrictionSelect(table));
-		selectsBuilder.validityDate(this.getValidityDateSelect(table));
+		selectsBuilder.validityDate(this.getValidityDateSelect(table, conceptLabel));
 
 		List<Field<Object>> conceptSelectFields = this.getColumnSelectReferences(table);
 		List<Field<Object>> conceptFilterFields = this.getColumnFilterReferences(table);
@@ -83,12 +81,12 @@ public class ConceptPreprocessingService {
 		return Optional.of(dateRestriction);
 	}
 
-	private Optional<Field<Object>> getValidityDateSelect(CQTable table) {
+	private Optional<Field<Object>> getValidityDateSelect(CQTable table, String conceptLabel) {
 		if (!this.validityDateIsRequired(table)) {
 			return Optional.empty();
 		}
 		Field<Object> validityDateRange = this.sqlFunctionProvider.daterange(table.findValidityDateColumn())
-																  .as(VALIDITY_DATE_COLUMN_NAME);
+																  .as(conceptLabel + VALIDITY_DATE_COLUMN_NAME_SUFFIX);
 		return Optional.of(validityDateRange);
 	}
 

@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import org.jooq.Field;
+import org.jooq.impl.DSL;
 
 /**
  * {@link MergedSelects} represent the combination of multiple {@link Selects}.
@@ -31,16 +32,17 @@ public class MergedSelects implements Selects {
 	List<Field<Object>> mergedSelects;
 
 	public MergedSelects(List<QueryStep> querySteps) {
-		this.primaryColumn = this.extractPrimaryColumnSelect(querySteps);
+		this.primaryColumn = this.coalescePrimaryColumns(querySteps);
 		this.validityDate = this.extractValidityDate(querySteps);
 		this.mergedSelects = this.mergeSelects(querySteps);
 	}
 
-	private Field<Object> extractPrimaryColumnSelect(List<QueryStep> querySteps) {
-		// as we join all QuerySteps / CTEs onto the same primary column,
-		// it's sufficient to obtain it from the first one in the list
-		QueryStep firstQueryStep = querySteps.iterator().next();
-		return this.mapFieldToQualifier(firstQueryStep.getCteName(), firstQueryStep.getSelects().getPrimaryColumn());
+	private Field<Object> coalescePrimaryColumns(List<QueryStep> querySteps) {
+		List<Field<Object>> primaryColumns = querySteps.stream()
+													   .map(queryStep -> this.mapFieldToQualifier(queryStep.getCteName(), queryStep.getSelects().getPrimaryColumn()))
+													   .toList();
+		return DSL.coalesce((Object) primaryColumns.get(0), primaryColumns.subList(1, primaryColumns.size()).toArray())
+				  .as("primary_column");
 	}
 
 	private Optional<Field<Object>> extractValidityDate(List<QueryStep> querySteps) {
