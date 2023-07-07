@@ -19,7 +19,7 @@ import DropzoneBetweenElements from "./DropzoneBetweenElements";
 
 const ListItem = styled("div")`
   position: relative;
-  padding: 0px 5px 0px 5px;
+  padding: 0 5px;
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};

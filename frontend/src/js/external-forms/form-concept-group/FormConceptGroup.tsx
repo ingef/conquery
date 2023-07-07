@@ -282,7 +282,6 @@ const FormConceptGroup = (props: Props) => {
           );
         }}
         items={props.value.map((row, i) => (
-          <>
             <DropzoneListItem>
               {props.renderRowPrefix
                 ? props.renderRowPrefix({
@@ -421,7 +420,6 @@ const FormConceptGroup = (props: Props) => {
                 )}
               />
             </DropzoneListItem>
-          </>
         ))}
       />
       {isCopyModalOpen && (

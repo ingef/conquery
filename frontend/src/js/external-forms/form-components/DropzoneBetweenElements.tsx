@@ -9,32 +9,27 @@ interface Props<DroppableObject> {
   acceptedDropTypes: string[];
 }
 
-const Root = styled("div")<{
-  height: number;
-}>`
+const RootHeightBase = 40;
+
+const Root = styled("div")`
   width: 100%;
   left: 0;
   top: -15px;
-  height: ${({ height }) => height + 40}px;
   right: 0;
   position: relative;
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-const Expander = styled("div")<{
-  height: number;
-}>`
+const Expander = styled("div")`
   overflow: hidden;
-  margin-top: ${({ height }) => -height}px;
   display: block;
-  height: ${({ height }) => height}px;
 `;
 
 const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   acceptedDropTypes,
   onDrop,
 }: Props<DroppableObject>) => {
-  const [height, setHeight] = useState(40);
+  const [height, setHeight] = useState(0);
 
   const [{ isOver }, addZoneRef] = useDrop({
     accept: acceptedDropTypes,
@@ -43,7 +38,6 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
       if (item.type === "CONCEPT_TREE_NODE") {
         return setHeight(item.dragContext.height);
       }
-      return setHeight(0);
     },
 
     collect: (monitor) => ({
@@ -54,8 +48,8 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
 
   return (
     <>
-      <Root ref={addZoneRef} height={isOver ? height : 0}></Root>
-      {isOver && <Expander height={height} />}
+      <Root ref={addZoneRef} style={{height: RootHeightBase + (isOver ? height : 0)}}></Root>
+      {isOver && <Expander style={{height: height}}/>}
     </>
   );
 };
