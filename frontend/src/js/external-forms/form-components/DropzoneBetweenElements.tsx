@@ -10,6 +10,7 @@ interface Props<DroppableObject> {
 }
 
 const RootHeightBase = 40;
+const HeightFactor = 0.5;
 
 const Root = styled("div")`
   width: 100%;
@@ -36,7 +37,7 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
     drop: onDrop,
     hover(item) {
       if (item.type === "CONCEPT_TREE_NODE") {
-        return setHeight(item.dragContext.height);
+        return setHeight(item.dragContext.height * HeightFactor);
       }
     },
 
@@ -48,8 +49,11 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
 
   return (
     <>
-      <Root ref={addZoneRef} style={{height: RootHeightBase + (isOver ? height : 0)}}></Root>
-      {isOver && <Expander style={{height: height}}/>}
+      <Root
+        ref={addZoneRef}
+        style={{ height: RootHeightBase + (isOver ? height : 0) }}
+      ></Root>
+      {isOver && <Expander style={{ height: height }} />}
     </>
   );
 };
