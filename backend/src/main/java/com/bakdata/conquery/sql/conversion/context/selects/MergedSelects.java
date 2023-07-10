@@ -20,6 +20,8 @@ import org.jooq.impl.DSL;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MergedSelects implements Selects {
 
+	String PRIMARY_COLUMN_ALIAS = "primary_column";
+
 	Field<Object> primaryColumn;
 
 	Optional<Field<Object>> validityDate;
@@ -42,7 +44,7 @@ public class MergedSelects implements Selects {
 													   .map(queryStep -> this.mapFieldToQualifier(queryStep.getCteName(), queryStep.getSelects().getPrimaryColumn()))
 													   .toList();
 		return DSL.coalesce((Object) primaryColumns.get(0), primaryColumns.subList(1, primaryColumns.size()).toArray())
-				  .as("primary_column");
+				  .as(PRIMARY_COLUMN_ALIAS);
 	}
 
 	private Optional<Field<Object>> extractValidityDate(List<QueryStep> querySteps) {
