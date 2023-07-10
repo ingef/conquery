@@ -150,8 +150,8 @@ const Cell = memo(
     rootConceptIdsByColumn: Record<string, ConceptIdT>;
   }) => {
     const { t } = useTranslation();
-    if(!columnDescription)
-      return (<CellWrap>{t("history.elementError")}</CellWrap>)
+    if (!columnDescription)
+      return <CellWrap>{t("history.elementError")}</CellWrap>;
 
     if (isDateColumn(columnDescription)) {
       return cell.from === cell.to ? (
