@@ -481,6 +481,7 @@
     "dates": "Dates",
     "searchEntitiesButton": "Start History",
     "error": "Couldn't load history for this ID.",
+    "elementError": "Couldn't load history for this element.",
     "options": {
       "check": "interesting",
       "noCheck": "not interesting"

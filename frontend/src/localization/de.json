@@ -481,6 +481,7 @@
     "dates": "Datumswerte",
     "searchEntitiesButton": "Historie starten",
     "error": "Konnte Historie für diese ID nicht laden.",
+    "elementError": "Konte Historie für dieses Element nicht laden.",
     "options": {
       "check": "auffällig",
       "noCheck": "unauffällig"
