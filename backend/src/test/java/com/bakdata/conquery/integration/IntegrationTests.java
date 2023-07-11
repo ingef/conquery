@@ -143,8 +143,10 @@ public class IntegrationTests {
 
 		Stream<Path> paths = Files.walk(testRootDir);
 		List<DynamicTest> dynamicTestStream = paths.filter(path -> !Files.isDirectory(path) && path.toString().endsWith(".json"))
-													 .map(path -> SqlIntegrationTest.fromPath(path, sqlDialect, sqlConfig))
-													 .map(test -> DynamicTest.dynamicTest(test.getTestSpec().getLabel(), test)).toList();
+												   .map(path -> SqlIntegrationTest.fromPath(path, sqlDialect, sqlConfig))
+												   .filter(sqlIntegrationTest -> sqlIntegrationTest.getTestSpec()
+																								   .supportsDialects(sqlConfig.getDialect()))
+												   .map(test -> DynamicTest.dynamicTest(test.getTestSpec().getLabel(), test)).toList();
 		return dynamicTestStream.stream();
 	}
 

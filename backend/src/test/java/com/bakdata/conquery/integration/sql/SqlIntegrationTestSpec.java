@@ -14,13 +14,12 @@ import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
-import com.bakdata.conquery.sql.execution.SqlEntityResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -40,6 +39,8 @@ import org.assertj.core.api.Assertions;
 public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSupport> {
 
 	private static final String EXPECTED_SQL_FILENAME = "expected.sql";
+
+	private List<Dialect> supportedDialects;
 
 	@NotNull
 	@JsonProperty("query")
@@ -65,6 +66,13 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 	@JsonIgnore
 	private Path specDir;
 
+	/**
+	 * @return True if the test specification contains the dialect, or if no allowed dialects are specified,
+	 * 	which considers the spec to be allowed for all dialects.
+	 */
+	public boolean supportsDialects(Dialect dialect) {
+		return getSupportedDialects() == null || getSupportedDialects().contains(dialect);
+	}
 
 	@SneakyThrows
 	public static SqlIntegrationTestSpec fromJsonSpec(Path path) {
