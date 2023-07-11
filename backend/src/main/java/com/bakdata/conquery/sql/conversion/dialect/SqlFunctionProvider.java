@@ -5,9 +5,13 @@ import java.sql.Date;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import org.jooq.Condition;
 import org.jooq.DatePart;
 import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Table;
+import org.jooq.TableOnConditionStep;
 import org.jooq.impl.DSL;
 
 /**
@@ -52,6 +56,28 @@ public interface SqlFunctionProvider {
 	default Field<Object> first(String columnName) {
 		// TODO: this is just a temporary placeholder
 		return DSL.field(columnName);
+	}
+
+	default TableOnConditionStep<Record> innerJoin(
+			Table<Record> leftPartQueryBase,
+			QueryStep rightPartQS,
+			Field<Object> leftPartPrimaryColumn,
+			Field<Object> rightPartPrimaryColumn
+	) {
+		return leftPartQueryBase
+				.innerJoin(DSL.name(rightPartQS.getCteName()))
+				.on(leftPartPrimaryColumn.eq(rightPartPrimaryColumn));
+	}
+
+	default TableOnConditionStep<Record> fullOuterJoin(
+			Table<Record> leftPartQueryBase,
+			QueryStep rightPartQS,
+			Field<Object> leftPartPrimaryColumn,
+			Field<Object> rightPartPrimaryColumn
+	) {
+		return leftPartQueryBase
+				.fullOuterJoin(DSL.name(rightPartQS.getCteName()))
+				.on(leftPartPrimaryColumn.eq(rightPartPrimaryColumn));
 	}
 
 }
