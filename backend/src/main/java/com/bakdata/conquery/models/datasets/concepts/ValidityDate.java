@@ -1,10 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
@@ -24,8 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedIdentifiable<ValidityDateId> {
 
 	@NsIdRef
-	@NotNull
 	private Column column;
+	@NsIdRef
+	private Column startColumn;
+	@NsIdRef
+	private Column endColumn;
 	@JsonBackReference
 	@EqualsAndHashCode.Exclude
 	private Connector connector;
@@ -36,26 +38,66 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	}
 
 	@JsonIgnore
-	@ValidationMethod(message = "Column is not of Date or DateRange.")
-	public boolean isValidValidityDates() {
-		if (getColumn().getType().isDateCompatible()) {
-			return true;
+	@ValidationMethod(message = "ValidityDate is not for Connectors' Table.")
+	public boolean isForConnectorsTable() {
+
+		if ((startColumn != null && !startColumn.getTable().equals(connector.getTable()))
+			|| (endColumn != null && !endColumn.getTable().equals(connector.getTable()))) {
+			log.error("ValidityDate[{}](StartColumn = `{}`, EndColumn = `{}`) do not belong to Connector[{}]#Table[{}]",
+					  getId(), startColumn.getId(), endColumn.getId(), getId(), connector.getTable().getId());
+			return false;
 		}
 
-		log.error("ValidityDate-Column[{}] is not of type DATE or DATERANGE", getColumn().getId());
+		if (column != null && !column.getTable().equals(connector.getTable())) {
+			log.error("ValidityDate[{}](Column = `{}`) does not belong to Connector[{}]#Table[{}]",
+					  getId(), column.getId(), getId(), connector.getTable().getId());
+			return false;
+		}
+
+		return true;
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Single column date range (set via column) and two column date range (set via startColumn and endColumn) are exclusive.")
+	public boolean isExclusiveValidityDates() {
+
+		if ((column == null && startColumn != null && endColumn != null)
+			|| (column != null && startColumn == null && endColumn == null)) {
+			return true;
+		}
+		log.error("Single column date range (set via column) and two column date range (set via startColumn and endColumn) are exclusive.");
 		return false;
 	}
 
 	@JsonIgnore
-	@ValidationMethod(message = "ValidityDate is not for Connectors' Table.")
-	public boolean isForConnectorsTable() {
+	@ValidationMethod(message = "Both columns of a two-column validity date have to be of type DATE.")
+	public boolean isValidTwoColumnValidityDates() {
 
-		if (getColumn().getTable().equals(connector.getTable())) {
+		if (startColumn == null || endColumn == null) {
 			return true;
 		}
 
-		log.error("ValidityDate[{}](Column = `{}`) does not belong to Connector[{}]#Table[{}]", getId(), getColumn().getId(), getId(), connector.getTable().getId());
+		if (startColumn.getType() == MajorTypeId.DATE && endColumn.getType() == MajorTypeId.DATE) {
+			return true;
+		}
 
+		log.error("Start column [{}] and end column [{}] have to be of type DATE.", startColumn.getId(), endColumn.getId());
+		return false;
+	}
+
+	@JsonIgnore
+	@ValidationMethod(message = "Column is not of type DATE or DATE_RANGE.")
+	public boolean isValidValidityDatesSingleColumn() {
+
+		if (column == null) {
+			return true;
+		}
+
+		if (column.getType().isDateCompatible()) {
+			return true;
+		}
+
+		log.error("ValidityDate-Column[{}] is not of type DATE or DATERANGE", column.getId());
 		return false;
 	}
 
@@ -64,4 +106,5 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	public Dataset getDataset() {
 		return connector.getDataset();
 	}
+
 }
