@@ -12,6 +12,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -89,4 +90,19 @@ public class CQTable {
 
 		return null;
 	}
+
+	@CheckForNull
+	public ValidityDate findValidityDate() {
+
+		if (dateColumn != null) {
+			return dateColumn.getValue();
+		}
+
+		if (!connector.getValidityDates().isEmpty()) {
+			return connector.getValidityDates().get(0);
+		}
+
+		return null;
+	}
+
 }
