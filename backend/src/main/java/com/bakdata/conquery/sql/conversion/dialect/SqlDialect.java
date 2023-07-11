@@ -1,20 +1,12 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.Converter;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStepTransformer;
-import com.bakdata.conquery.sql.conversion.cqelement.CQAndConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.CQConceptConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.*;
 import com.bakdata.conquery.sql.conversion.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.filter.FilterConverterService;
 import com.bakdata.conquery.sql.conversion.filter.MultiSelectConverter;
@@ -26,6 +18,11 @@ import com.bakdata.conquery.sql.conversion.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.select.SelectConverterService;
 import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import org.jooq.DSLContext;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public interface SqlDialect {
 
@@ -44,6 +41,7 @@ public interface SqlDialect {
 				new CQDateRestrictionConverter(),
 				new CQAndConverter(),
 				new CQOrConverter(),
+				new CQNegationConverter(),
 				new CQConceptConverter(new FilterConverterService(getFilterConverters()), new SelectConverterService(getSelectConverters())),
 				new ConceptQueryConverter(new QueryStepTransformer(getDSLContext()))
 		);
