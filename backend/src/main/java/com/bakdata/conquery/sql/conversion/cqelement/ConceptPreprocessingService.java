@@ -85,7 +85,7 @@ public class ConceptPreprocessingService {
 		if (!this.validityDateIsRequired(table)) {
 			return Optional.empty();
 		}
-		Field<Object> validityDateRange = this.sqlFunctionProvider.daterange(table.findValidityDateColumn())
+		Field<Object> validityDateRange = this.sqlFunctionProvider.daterange(table.findValidityDate().getColumn())
 																  .as(conceptLabel + VALIDITY_DATE_COLUMN_NAME_SUFFIX);
 		return Optional.of(validityDateRange);
 	}
