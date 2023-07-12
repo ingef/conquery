@@ -80,7 +80,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		for (Map.Entry<CQTable, QPNode> entry : tables.entrySet()) {
 
 			final CQTable cqTable = entry.getKey();
-			final Column validityDateColumn = cqTable.findValidityDateColumn();
+			final Column validityDateColumn = cqTable.findValidityDate().getColumn();
 			final QPNode query = entry.getValue();
 			final Map<Bucket, CBlock> cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, cqTable.getConnector());
 

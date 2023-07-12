@@ -186,7 +186,7 @@ public class TableExportQuery extends Query {
 		for (CQConcept concept : tables) {
 			for (CQTable table : concept.getTables()) {
 
-				final Column validityDateColumn = table.findValidityDateColumn();
+				final Column validityDateColumn = table.findValidityDate().getColumn();
 
 				if (validityDateColumn != null) {
 					positions.putIfAbsent(validityDateColumn, 0);
