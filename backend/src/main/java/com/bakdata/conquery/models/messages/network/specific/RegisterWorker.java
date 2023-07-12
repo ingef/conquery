@@ -36,10 +36,10 @@ public class RegisterWorker extends MessageToManagerNode {
 		}
 
 		info.setConnectedShardNode(node);
-		context.getNamespaces().register(node, info);
+		context.getClusterState().register(node, info);
 
 		// Request consistency report
-		context.getNamespaces().getWorkers().get(info.getId()).send(new RequestConsistency());
+		context.getClusterState().getWorker(info.getId(), info.getDataset()).send(new RequestConsistency());
 	}
 
 	/**
@@ -48,7 +48,7 @@ public class RegisterWorker extends MessageToManagerNode {
 	 * @return the found slave or null if none was found
 	 */
 	private ShardNodeInformation getShardNode(ManagerNodeNetworkContext context) {
-		return context.getNamespaces()
+		return context.getClusterState()
 			.getShardNodes()
 			.get(context.getRemoteAddress());
 	}

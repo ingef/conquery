@@ -105,10 +105,12 @@ export const useTranslatedInterval = (
 
   const { min, max } = interval;
 
-  if (!min && !max) return t("editorV2.intervalSome");
-  if (min && !max) return t("editorV2.intervalMinDays", { days: min });
-  if (!min && max) return t("editorV2.intervalMaxDays", { days: max });
-  if (min && max)
+  if (min === null && max === null) return t("editorV2.intervalSome");
+  if (min !== null && max === null)
+    return t("editorV2.intervalMinDays", { days: min });
+  if (min === null && max !== null)
+    return t("editorV2.intervalMaxDays", { days: max });
+  if (min !== null && max !== null)
     return t("editorV2.intervalMinMaxDays", { minDays: min, maxDays: max });
 
   return t("editorV2.intervalSome");

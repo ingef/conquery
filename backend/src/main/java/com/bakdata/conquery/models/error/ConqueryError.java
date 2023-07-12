@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.error;
 
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -376,5 +377,24 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 			super("No SecondaryId was selected");
 
 		}
+	}
+
+	@CPSType(base = ConqueryError.class, id = "CQ_SQL_ERROR")
+	public static class SqlError extends ContextError {
+
+		private static final String SQL_ERROR = "ERROR";
+
+		private static final String TEMPLATE = "Something went wrong while querying the database: ${" + SQL_ERROR + "}.";
+
+		@JsonCreator
+		private SqlError() {
+			super(TEMPLATE);
+		}
+
+		public SqlError(SQLException sqlException) {
+			this();
+			getContext().put(SQL_ERROR, sqlException.toString());
+		}
+
 	}
 }

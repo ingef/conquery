@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -35,7 +36,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	private final StoreFactory storageFactory;
 
 	@Getter
-	protected final DatasetRegistry datasetRegistry;
+	protected final DatasetRegistry<? extends Namespace> datasetRegistry;
 	private IdentifiableStore<ManagedExecution> executions;
 	private IdentifiableStore<FormConfig> formConfigs;
 	private IdentifiableStore<User> authUser;

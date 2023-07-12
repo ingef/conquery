@@ -1,4 +1,4 @@
-import { faTrashAlt } from "@fortawesome/free-regular-svg-icons";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -25,7 +25,7 @@ const QueryClearButton: FC<PropsT> = ({ className }) => {
         onConfirm={onClearQuery}
       >
         <WithTooltip text={t("queryEditor.clear")}>
-          <IconButton tiny icon={faTrashAlt} tabIndex={-1} />
+          <IconButton tiny icon={faTrash} tabIndex={-1} />
         </WithTooltip>
       </ConfirmableTooltip>
     </div>

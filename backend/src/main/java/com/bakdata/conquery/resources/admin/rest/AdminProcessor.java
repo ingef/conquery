@@ -4,11 +4,11 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.validation.Validator;
@@ -28,10 +28,10 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvWriter;
 import groovy.lang.GroovyShell;
@@ -52,19 +52,12 @@ public class AdminProcessor {
 
 	private final ConqueryConfig config;
 	private final MetaStorage storage;
-	private final DatasetRegistry datasetRegistry;
+	private final DatasetRegistry<? extends Namespace> datasetRegistry;
 	private final JobManager jobManager;
 	private final ScheduledExecutorService maintenanceService;
 	private final Validator validator;
 	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
-
-
-
-	public synchronized void addRole(Role role) throws JSONException {
-		ValidatorHelper.failOnError(log, validator.validate(role));
-		log.trace("New role:\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
-		storage.addRole(role);
-	}
+	private final Supplier<Collection<ShardNodeInformation>> nodeProvider;
 
 	public void addRoles(List<Role> roles) {
 
@@ -76,6 +69,12 @@ public class AdminProcessor {
 				log.error(String.format("Failed to add Role: %s", role), e);
 			}
 		}
+	}
+
+	public synchronized void addRole(Role role) throws JSONException {
+		ValidatorHelper.failOnError(log, validator.validate(role));
+		log.trace("New role:\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
+		storage.addRole(role);
 	}
 
 	/**
@@ -106,7 +105,7 @@ public class AdminProcessor {
 	/**
 	 * Handles creation of permissions.
 	 *
-	 * @param owner to which the permission is assigned
+	 * @param owner      to which the permission is assigned
 	 * @param permission The permission to create.
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
@@ -117,8 +116,7 @@ public class AdminProcessor {
 	/**
 	 * Handles deletion of permissions.
 	 *
-	 *
-	 * @param owner the owner of the permission
+	 * @param owner      the owner of the permission
 	 * @param permission The permission to delete.
 	 */
 	public void deletePermission(PermissionOwner<?> owner, ConqueryPermission permission) {
@@ -138,11 +136,6 @@ public class AdminProcessor {
 		log.trace("Removed user {} from the storage.", user.getId());
 	}
 
-	public void addUser(User user) {
-		storage.addUser(user);
-		log.trace("New user:\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
-	}
-
 	public void addUsers(List<User> users) {
 
 		for (User user : users) {
@@ -155,15 +148,13 @@ public class AdminProcessor {
 		}
 	}
 
-	public TreeSet<Group> getAllGroups() {
-		return new TreeSet<>(storage.getAllGroups());
+	public void addUser(User user) {
+		storage.addUser(user);
+		log.trace("New user:\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
 	}
 
-	public synchronized void addGroup(Group group) throws JSONException {
-		ValidatorHelper.failOnError(log, validator.validate(group));
-		storage.addGroup(group);
-		log.trace("New group:\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
-
+	public TreeSet<Group> getAllGroups() {
+		return new TreeSet<>(storage.getAllGroups());
 	}
 
 	public void addGroups(List<Group> groups) {
@@ -176,6 +167,13 @@ public class AdminProcessor {
 				log.error(String.format("Failed to add Group: %s", group), e);
 			}
 		}
+	}
+
+	public synchronized void addGroup(Group group) throws JSONException {
+		ValidatorHelper.failOnError(log, validator.validate(group));
+		storage.addGroup(group);
+		log.trace("New group:\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
+
 	}
 
 	public void addUserToGroup(Group group, User user) {
@@ -193,12 +191,12 @@ public class AdminProcessor {
 		log.trace("Removed group {}", group);
 	}
 
-	public void  deleteRoleFrom(RoleOwner owner, Role role) {
+	public void deleteRoleFrom(RoleOwner owner, Role role) {
 		owner.removeRole(role);
 		log.trace("Removed role {} from {}", role, owner);
 	}
 
-	public  void addRoleTo(RoleOwner owner, Role role) {
+	public void addRoleTo(RoleOwner owner, Role role) {
 		owner.addRole(role);
 		log.trace("Added role {} to {}", role, owner);
 	}
@@ -210,23 +208,15 @@ public class AdminProcessor {
 		return getPermissionOverviewAsCSV(storage.getAllUsers());
 	}
 
-
-	/**
-	 * Renders the permission overview for all users in a certain {@link Group} in form of a CSV.
-	 */
-	public String getPermissionOverviewAsCSV(Group group) {
-		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser).collect(Collectors.toList()));
-	}
-
 	/**
 	 * Renders the permission overview for certain {@link User} in form of a CSV.
 	 */
 	public String getPermissionOverviewAsCSV(Collection<User> users) {
-		StringWriter sWriter = new StringWriter();
-		CsvWriter writer = config.getCsv().createWriter(sWriter);
-		List<String> scope = config
-									 .getAuthorizationRealms()
-									 .getOverviewScope();
+		final StringWriter sWriter = new StringWriter();
+		final CsvWriter writer = config.getCsv().createWriter(sWriter);
+		final List<String> scope = config
+				.getAuthorizationRealms()
+				.getOverviewScope();
 		// Header
 		writeAuthOverviewHeader(writer, scope);
 		// Body
@@ -240,7 +230,7 @@ public class AdminProcessor {
 	 * Writes the header of the CSV auth overview to the specified writer.
 	 */
 	private static void writeAuthOverviewHeader(CsvWriter writer, List<String> scope) {
-		List<String> headers = new ArrayList<>();
+		final List<String> headers = new ArrayList<>();
 		headers.add("User");
 		headers.addAll(scope);
 		writer.writeHeaders(headers);
@@ -254,7 +244,7 @@ public class AdminProcessor {
 		writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
 
 		// Print the permission per domain in the remaining columns
-		Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user, scope, storage);
+		final Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user, scope, storage);
 		for (String domain : scope) {
 			writer.addValue(permissions.get(domain).stream()
 									   .map(Object::toString)
@@ -262,41 +252,45 @@ public class AdminProcessor {
 		}
 		writer.writeValuesToRow();
 	}
-	public ImmutableMap<String, JobManagerStatus> getJobs() {
-		return ImmutableMap.<String, JobManagerStatus>builder()
-				.put("ManagerNode", getJobManager().reportStatus())
-				// Namespace JobManagers on ManagerNode
-				.putAll(
-						getDatasetRegistry().getDatasets().stream()
-								.collect(Collectors.toMap(
-										ns -> String.format("ManagerNode::%s", ns.getDataset().getId()),
-										ns -> ns.getJobManager().reportStatus()
-								)))
-				// Remote Worker JobManagers
-				.putAll(
-						getDatasetRegistry()
-								.getShardNodes()
-								.values()
-								.stream()
-								.collect(Collectors.toMap(
-										si -> Objects.toString(si.getRemoteAddress()),
-										ShardNodeInformation::getJobManagerStatus
-								))
-				)
-				.build();
+
+	/**
+	 * Renders the permission overview for all users in a certain {@link Group} in form of a CSV.
+	 */
+	public String getPermissionOverviewAsCSV(Group group) {
+		return getPermissionOverviewAsCSV(group.getMembers().stream().map(storage::getUser).collect(Collectors.toList()));
 	}
 
 	public boolean isBusy() {
 		//Note that this does not and cannot check for fast jobs!
-		return getJobs().values().stream()
+		return getJobs().stream()
 						.map(JobManagerStatus::getJobs)
 						.anyMatch(Predicate.not(Collection::isEmpty));
 	}
 
+	public Collection<JobManagerStatus> getJobs() {
+		final List<JobManagerStatus> out = new ArrayList<>();
+
+		out.add(new JobManagerStatus("Manager", null, getJobManager().getJobStatus()));
+
+		for (Namespace namespace : getDatasetRegistry().getDatasets()) {
+			out.add(new JobManagerStatus(
+					"Manager", namespace.getDataset().getId(),
+					namespace.getJobManager().getJobStatus()
+			));
+		}
+
+		for (ShardNodeInformation si : nodeProvider.get()) {
+			out.addAll(si.getJobManagerStatus());
+		}
+
+		return out;
+	}
 
 	public Object executeScript(String script) {
-		CompilerConfiguration config = new CompilerConfiguration();
-		GroovyShell groovy = new GroovyShell(config);
+
+		final CompilerConfiguration config = new CompilerConfiguration();
+		final GroovyShell groovy = new GroovyShell(config);
+
 		groovy.setProperty("datasetRegistry", getDatasetRegistry());
 		groovy.setProperty("jobManager", getJobManager());
 		groovy.setProperty("config", getConfig());
@@ -305,7 +299,7 @@ public class AdminProcessor {
 		try {
 			return groovy.evaluate(script);
 		}
-		catch(Exception e) {
+		catch (Exception e) {
 			return ExceptionUtils.getStackTrace(e);
 		}
 	}

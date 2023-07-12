@@ -10,17 +10,20 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { nodeIsConceptQueryNode } from "../model/node";
+import { useDatasetId } from "../dataset/selectors";
+import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { EmptyQueryEditorDropzone } from "../standard-query-editor/EmptyQueryEditorDropzone";
 import {
   DragItemConceptTreeNode,
   DragItemQuery,
 } from "../standard-query-editor/types";
+import { ConfirmableTooltip } from "../tooltip/ConfirmableTooltip";
+import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone from "../ui-components/Dropzone";
 
 import { Connector, Grid } from "./EditorLayout";
@@ -90,6 +93,8 @@ const useEditorState = () => {
     return findNodeById(tree, selectedNodeId);
   }, [tree, selectedNodeId]);
 
+  const { active: selectedNodeActive } = useActiveState(selectedNode?.data);
+
   const onReset = useCallback(() => {
     setTree(undefined);
   }, []);
@@ -112,8 +117,16 @@ const useEditorState = () => {
     updateTreeNode,
     onReset,
     selectedNode,
+    selectedNodeActive,
     setSelectedNodeId,
   };
+};
+
+const useResetOnDatasetChange = (onReset: () => void) => {
+  const datasetId = useDatasetId();
+  useEffect(() => {
+    onReset();
+  }, [datasetId, onReset]);
 };
 
 export function EditorV2({
@@ -140,8 +153,11 @@ export function EditorV2({
     updateTreeNode,
     onReset,
     selectedNode,
+    selectedNodeActive,
     setSelectedNodeId,
   } = useEditorState();
+
+  useResetOnDatasetChange(onReset);
 
   const onFlip = useCallback(() => {
     if (!selectedNode || !selectedNode.children) return;
@@ -309,7 +325,7 @@ export function EditorV2({
                     <IconButton
                       icon={faEdit}
                       tight
-                      active={false}
+                      active={selectedNodeActive}
                       onClick={(e) => {
                         e.stopPropagation();
                         onOpenQueryNodeEditor();
@@ -347,20 +363,6 @@ export function EditorV2({
                     }}
                   >
                     {t("editorV2.negate")}
-                  </IconButton>
-                </KeyboardShortcutTooltip>
-              )}
-              {selectedNode?.children && (
-                <KeyboardShortcutTooltip keyname={HOTKEYS.flip.keyname}>
-                  <IconButton
-                    icon={faRefresh}
-                    tight
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onFlip();
-                    }}
-                  >
-                    {t("editorV2.flip")}
                   </IconButton>
                 </KeyboardShortcutTooltip>
               )}
@@ -410,6 +412,22 @@ export function EditorV2({
                   </IconButton>
                 </KeyboardShortcutTooltip>
               )}
+            </Flex>
+            <Flex>
+              {selectedNode?.children && (
+                <KeyboardShortcutTooltip keyname={HOTKEYS.flip.keyname}>
+                  <IconButton
+                    icon={faRefresh}
+                    tight
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onFlip();
+                    }}
+                  >
+                    {t("editorV2.flip")}
+                  </IconButton>
+                </KeyboardShortcutTooltip>
+              )}
               {selectedNode && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.delete.keyname.join(" | ")}
@@ -426,12 +444,18 @@ export function EditorV2({
                   </IconButton>
                 </KeyboardShortcutTooltip>
               )}
+              <ConfirmableTooltip
+                onConfirm={onReset}
+                confirmationText={t("editorV2.clearConfirm")}
+              >
+                <WithTooltip text={t("editorV2.clear")}>
+                  <IconButton
+                    style={{ marginLeft: "20px", height: "32.5px" }}
+                    icon={faTrash}
+                  />
+                </WithTooltip>
+              </ConfirmableTooltip>
             </Flex>
-            <KeyboardShortcutTooltip keyname={HOTKEYS.reset.keyname}>
-              <IconButton icon={faTrash} onClick={onReset}>
-                {t("editorV2.clear")}
-              </IconButton>
-            </KeyboardShortcutTooltip>
           </Actions>
         )}
         <Grid
@@ -442,22 +466,15 @@ export function EditorV2({
         >
           {tree ? (
             <TreeNode
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                if (!selectedNode) return;
-                if (
-                  selectedNode?.data &&
-                  nodeIsConceptQueryNode(selectedNode.data)
-                ) {
-                  onOpenQueryNodeEditor();
-                }
-              }}
               tree={tree}
               updateTreeNode={updateTreeNode}
               selectedNode={selectedNode}
               setSelectedNodeId={setSelectedNodeId}
               droppable={{ h: true, v: true }}
               featureContentInfos={featureContentInfos}
+              onOpenQueryNodeEditor={onOpenQueryNodeEditor}
+              onOpenTimeModal={onOpenTimeModal}
+              onRotateConnector={onRotateConnector}
             />
           ) : (
             <SxDropzone

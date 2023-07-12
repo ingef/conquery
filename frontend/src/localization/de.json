@@ -38,7 +38,6 @@
     "showingMismatches": "Zeige vollständig"
   },
   "queryRunner": {
-    "errorDates": "Ungültig: Alle Datumsbereiche sind von Zeitberechnung ausgeschlossen",
     "start": "Anfrage starten",
     "stop": "Anfrage stoppen",
     "stopSuccess": "Anfrage gestoppt.",
@@ -67,7 +66,7 @@
     "hasSecondaryId": "Analyse-Ebene aktiv",
     "removeNode": "Knoten entfernen",
     "removeColumn": "Spalte entfernen",
-    "clear": "Editor-Oberfläche zurücksetzen",
+    "clear": "Editor zurücksetzen",
     "clearConfirm": "Jetzt zurücksetzen",
     "hasDefaultSettings": "Standardeinstellungen",
     "hasNonDefaultSettings": "Eigene Einstellungen"
@@ -318,8 +317,8 @@
         "copyFrom": "Kopieren von ...",
         "copying": "Kopieren"
       },
-      "clear": "Formular leeren",
-      "clearConfirm": "Formular jetzt leeren"
+      "clear": "Formular zurücksetzen",
+      "clearConfirm": "Jetzt zurücksetzen"
     }
   },
   "uploadQueryResultsModal": {
@@ -524,7 +523,8 @@
     "time": "ZEIT",
     "and": "UND",
     "or": "ODER",
-    "clear": "Leeren",
+    "clear": "Editor zurücksetzen",
+    "clearConfirm": "Jetzt zurücksetzen",
     "flip": "Drehen",
     "dates": "Datum",
     "negate": "Nicht",

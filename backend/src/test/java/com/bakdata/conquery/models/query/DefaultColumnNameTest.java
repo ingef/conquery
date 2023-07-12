@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
+import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.SneakyThrows;
@@ -43,7 +44,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 @Slf4j
 public class DefaultColumnNameTest {
-	private static final Namespace NAMESPACE = mock(Namespace.class);
+	private static final Namespace NAMESPACE = mock(LocalNamespace.class);
 	private static final PrintSettings SETTINGS = new PrintSettings(false, Locale.ENGLISH, NAMESPACE, new ConqueryConfig(), null);
 	private static final Validator VALIDATOR = Validators.newValidator();
 

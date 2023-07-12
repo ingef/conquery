@@ -83,6 +83,7 @@ const ButtonWithTooltip = styled(WithTooltip)`
 
 export const Navigation = memo(
   ({
+    blurred,
     className,
     entityIds,
     entityIdsStatus,
@@ -93,6 +94,7 @@ export const Navigation = memo(
     onLoadFromFile,
     onResetHistory,
   }: {
+    blurred?: boolean;
     className?: string;
     entityIds: EntityId[];
     entityIdsStatus: EntityIdsStatus;
@@ -105,7 +107,7 @@ export const Navigation = memo(
   }) => {
     const { t } = useTranslation();
     const dispatch = useDispatch();
-    const updateHistorySession = useUpdateHistorySession();
+    const { loadingId, updateHistorySession } = useUpdateHistorySession();
     const onCloseHistory = useCallback(() => {
       dispatch(closeHistory());
     }, [dispatch]);
@@ -200,10 +202,12 @@ export const Navigation = memo(
               <SearchEntites onLoad={onLoadFromFile} />
             )}
             <EntityIdsList
+              blurred={blurred}
               currentEntityId={currentEntityId}
               entityIds={entityIds}
               updateHistorySession={updateHistorySession}
               entityIdsStatus={entityIdsStatus}
+              loadingId={loadingId}
             />
           </SxLoadHistoryDropzone>
           {!empty && (

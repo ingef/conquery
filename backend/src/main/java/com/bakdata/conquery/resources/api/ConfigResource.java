@@ -1,5 +1,7 @@
 package com.bakdata.conquery.resources.api;
 
+import java.time.Year;
+
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -38,7 +40,7 @@ public class ConfigResource {
 				idColumns,
 				frontendConfig.getManualUrl(),
 				frontendConfig.getContactEmail(),
-				frontendConfig.getObservationStart()
+				Year.now().minusYears(frontendConfig.getObservationPeriodYears()).atDay(1)
 		);
 	}
 

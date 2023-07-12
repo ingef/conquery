@@ -14,6 +14,7 @@ export const Connector = styled("span")`
   text-transform: uppercase;
   font-size: ${({ theme }) => theme.font.sm};
   color: black;
+  user-select: none;
 
   border-radius: ${({ theme }) => theme.borderRadius};
   padding: 0px 5px;

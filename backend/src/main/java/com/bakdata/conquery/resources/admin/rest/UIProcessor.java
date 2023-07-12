@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.ui.model.FrontendAuthOverview;
 import com.bakdata.conquery.resources.admin.ui.model.FrontendGroupContent;
 import com.bakdata.conquery.resources.admin.ui.model.FrontendPermission;
@@ -57,7 +58,7 @@ public class UIProcessor {
 	@Getter
 	private final AdminProcessor adminProcessor;
 
-	public DatasetRegistry getDatasetRegistry() {
+	public DatasetRegistry<? extends Namespace> getDatasetRegistry() {
 		return adminProcessor.getDatasetRegistry();
 	}
 
@@ -66,7 +67,7 @@ public class UIProcessor {
 	}
 
 	public UIContext getUIContext() {
-		return new UIContext(getDatasetRegistry());
+		return new UIContext(adminProcessor.getNodeProvider());
 	}
 
 	public FrontendAuthOverview getAuthOverview() {

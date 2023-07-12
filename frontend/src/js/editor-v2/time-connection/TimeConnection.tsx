@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { memo } from "react";
+import { DOMAttributes, memo } from "react";
 import { useTranslation } from "react-i18next";
 
 import { TreeChildrenTime } from "../types";
@@ -14,13 +14,14 @@ const Container = styled("div")`
   margin: 0 auto;
   display: inline-flex;
   flex-direction: column;
+  user-select: none;
 `;
 
 const Row = styled("div")`
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: ${({ theme }) => theme.font.xs};
+  font-size: ${({ theme }) => theme.font.sm};
 `;
 
 const ConceptName = styled("span")`
@@ -29,19 +30,25 @@ const ConceptName = styled("span")`
 `;
 const Timestamp = styled("span")`
   font-weight: bold;
-  color: ${({ theme }) => theme.col.palette[6]};
+  color: ${({ theme }) => theme.col.palette[0]};
 `;
 const Interval = styled("span")`
   font-weight: bold;
-  color: ${({ theme }) => theme.col.orange};
+  color: ${({ theme }) => theme.col.palette[1]};
 `;
 const Operator = styled("span")`
   font-weight: bold;
-  color: ${({ theme }) => theme.col.green};
+  color: ${({ theme }) => theme.col.palette.at(-2)};
 `;
 
 export const TimeConnection = memo(
-  ({ conditions }: { conditions: TreeChildrenTime }) => {
+  ({
+    conditions,
+    onDoubleClick,
+  }: {
+    conditions: TreeChildrenTime;
+    onDoubleClick: DOMAttributes<HTMLElement>["onDoubleClick"];
+  }) => {
     const { t } = useTranslation();
     const getNodeLabel = useGetNodeLabel();
     const getTranslatedTimestamp = useGetTranslatedTimestamp();
@@ -54,7 +61,7 @@ export const TimeConnection = memo(
     const interval = useTranslatedInterval(conditions.interval);
 
     return (
-      <Container>
+      <Container onDoubleClick={onDoubleClick}>
         <Row>
           <Timestamp>{aTimestamp}</Timestamp>
           <span>{t("editorV2.dateRangeFrom")}</span>
