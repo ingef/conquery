@@ -62,7 +62,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	/**
 	 * For 0 and Integer.MAX_VALUE TrieSearch has the same behaviour and the ngram trie is empty.
 	 */
-	private final int ngramLength;
+	private final int ngramLength; //TODO can you rework this with n-grams?
 
 	private final Pattern splitPattern;
 
@@ -70,7 +70,6 @@ public class TrieSearch<T extends Comparable<T>> {
 	// such as checking and skipping ngrams when iterating through all whole words
 	private final PatriciaTrie<List<T>> ngrams = new PatriciaTrie<>();
 	private final PatriciaTrie<List<T>> whole = new PatriciaTrie<>();
-	private boolean shrunk = false;
 	private long size = -1;
 
 	public TrieSearch(int ngramLength, String split) {
@@ -264,7 +263,6 @@ public class TrieSearch<T extends Comparable<T>> {
 		whole.replaceAll((key, items) -> items.stream().distinct().collect(Collectors.toList()));
 
 		size = calculateSize();
-		shrunk = true;
 	}
 
 	/**

@@ -31,4 +31,9 @@ public class LocalNamespace extends Namespace {
 		super(preprocessMapper, communicationMapper, storage, executionManager, jobManager, filterSearch, indexService, injectables);
 		this.sqlExecutionService = sqlExecutionService;
 	}
+
+	@Override
+	public void postprocessData() {
+		// Not implemented yet
+	}
 }

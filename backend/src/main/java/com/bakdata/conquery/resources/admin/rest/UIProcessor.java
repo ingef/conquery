@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -29,7 +28,6 @@ import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.index.IndexKey;
@@ -189,13 +187,6 @@ public class UIProcessor {
 		return new TableStatistics(
 				table,
 				entries,
-				//total size of dictionaries
-				imports.stream()
-					   .flatMap(imp -> imp.getDictionaries().stream())
-					   .filter(Objects::nonNull)
-					   .map(storage::getDictionary)
-					   .mapToLong(Dictionary::estimateMemoryConsumption)
-					   .sum(),
 				//total size of entries
 				imports.stream()
 					   .mapToLong(Import::estimateMemoryConsumption)

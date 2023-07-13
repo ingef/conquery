@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,9 +16,9 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Functions;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
@@ -40,7 +41,7 @@ public class FilterSearch {
 	 * In the code below, the keys of this map will usually be called "reference".
 	 */
 	@JsonIgnore
-	private final Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
+	private Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
 	private Object2LongMap<Searchable<?>> totals = Object2LongMaps.emptyMap();
 
 	/**
@@ -63,9 +64,9 @@ public class FilterSearch {
 	 * For a {@link SelectFilter} collect all relevant {@link TrieSearch}.
 	 */
 	public final List<TrieSearch<FrontendValue>> getSearchesFor(Searchable<?> searchable) {
-		final List<Searchable<?>> references = searchable.getSearchReferences();
+		final List<? extends Searchable<?>> references = searchable.getSearchReferences();
 
-		if(log.isTraceEnabled()) {
+		if (log.isTraceEnabled()) {
 			log.trace("Got {} as searchables for {}", references.stream().map(Searchable::getId).collect(Collectors.toList()), searchable.getId());
 		}
 
@@ -83,11 +84,56 @@ public class FilterSearch {
 	/**
 	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
 	 */
-	public void updateSearch() {
+	public synchronized void updateSearch(Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache) {
 
-		totals = new Object2LongOpenHashMap<>();
-
-		jobManager.addSlowJob(new UpdateFilterSearchJob(storage, searchCache, indexConfig, totals));
+		this.searchCache.putAll(searchCache);
+		log.debug("BEGIN counting Search totals.");
+		// Precompute totals as that can be slow when doing it on-demand.
+		updateTotals(searchCache);
 	}
 
+
+	public void registerValues(Searchable<?> searchable, Collection<String> values) {
+		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(searchable, (ignored) -> searchable.createTrieSearch(indexConfig, storage));
+
+		synchronized (search) {
+			values.stream()
+				  .map(value -> new FrontendValue(value, value))
+				  .forEach(value -> search.addItem(value, extractKeywords(value)));
+
+			// Update totals for search
+			totals.put(searchable, getTotalFor(searchable));
+		}
+	}
+
+	private void updateTotals(Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache) {
+		final Object2LongOpenHashMap<Searchable<?>> partialTotals = new Object2LongOpenHashMap<>(searchCache.keySet().stream()
+																											.collect(Collectors.toMap(
+																													Functions.identity(),
+																													this::getTotalFor
+																											)));
+		totals.putAll(partialTotals);
+	}
+
+	private long getTotalFor(Searchable<?> searchable) {
+		return searchable.getSearchReferences()
+						 .stream()
+						 .map(searchCache::get)
+						 .filter(Objects::nonNull) // Failed or disabled searches are null
+						 .flatMap(TrieSearch::stream)
+						 .mapToInt(FrontendValue::hashCode)
+						 .distinct()
+						 .count();
+	}
+
+	public void shrinkSearches() {
+		final Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache = getSearchCache();
+
+		searchCache.values().forEach(TrieSearch::shrinkToFit);
+	}
+
+	public synchronized void clearSearch() {
+		totals = new Object2LongOpenHashMap<>();
+		searchCache.clear();
+	}
 }

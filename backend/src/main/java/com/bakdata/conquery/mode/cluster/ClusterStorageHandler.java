@@ -16,7 +16,7 @@ public class ClusterStorageHandler implements StorageHandler {
 							   .filter(imp -> imp.getTable().equals(column.getTable()))
 							   .flatMap(imp -> {
 								   final ImportColumn importColumn = imp.getColumns()[column.getPosition()];
-								   return ((StringStore) importColumn.getTypeDescription()).iterateValues();
+								   return ((StringStore) importColumn.getTypeDescription()).streamValues();
 							   });
 	}
 }

@@ -53,10 +53,10 @@ public class ResultTestUtil {
 	@NotNull
 	public static List<EntityResult> getTestEntityResults() {
 		return List.of(
-				new SinglelineEntityResult(1, new Object[]{Boolean.TRUE, 2345634, 123423.34, 5646, List.of(345, 534), "test_string", 4521, List.of(true, false), List.of(List.of(345, 534), List.of(1, 2)), List.of("fizz", "buzz")}),
-				new SinglelineEntityResult(2, new Object[]{Boolean.FALSE, null, null, null,  null, null, null, List.of(), List.of(List.of(1234, Integer.MAX_VALUE)), List.of()}),
-				new SinglelineEntityResult(2, new Object[]{Boolean.TRUE, null, null, null,  null, null, null, List.of(false, false), null, null}),
-				new MultilineEntityResult(3, List.of(
+				new SinglelineEntityResult("1", new Object[]{Boolean.TRUE, 2345634, 123423.34, 5646, List.of(345, 534), "test_string", 4521, List.of(true, false), List.of(List.of(345, 534), List.of(1, 2)), List.of("fizz", "buzz")}),
+				new SinglelineEntityResult("2", new Object[]{Boolean.FALSE, null, null, null,  null, null, null, List.of(), List.of(List.of(1234, Integer.MAX_VALUE)), List.of()}),
+				new SinglelineEntityResult("2", new Object[]{Boolean.TRUE, null, null, null,  null, null, null, List.of(false, false), null, null}),
+				new MultilineEntityResult("3", List.of(
 						new Object[]{Boolean.FALSE, null,null, null, null, null,  null, List.of(false), null, null},
 						new Object[]{Boolean.TRUE, null, null, null, null,  null, null, null, null, null},
 						new Object[]{Boolean.TRUE, null, null, null,  null, null, 4, List.of(true, false, true, false), null, null}

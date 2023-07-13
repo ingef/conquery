@@ -85,7 +85,7 @@ public abstract class Namespace extends IdResolveContext {
 	}
 
 	public int getNumberOfEntities() {
-		return getStorage().getPrimaryDictionary().getSize();
+		return getStorage().getNumberOfEntities();
 	}
 
 	public void updateInternToExternMappings() {
@@ -122,4 +122,9 @@ public abstract class Namespace extends IdResolveContext {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Hook for actions that are best done after all data has been imported and is in a consistent state.
+	 * Such actions are for example search initialization and collection of matching statistics.
+	 */
+	public abstract void postprocessData();
 }

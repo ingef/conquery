@@ -91,7 +91,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		filter.setTemplate(new FilterTemplate(conquery.getDataset(), "test", tmpCSv.toUri(), "id", "{{label}}", "Hello this is {{option}}", 2, true, indexService));
 
 		final URI matchingStatsUri = HierarchyHelper.hierarchicalPath(conquery.defaultAdminURIBuilder()
-															, AdminDatasetResource.class, "updateMatchingStats")
+															, AdminDatasetResource.class, "postprocessNamespace")
 													.buildFromMap(Map.of(DATASET, conquery.getDataset().getId()));
 
 		conquery.getClient().target(matchingStatsUri)

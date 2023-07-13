@@ -69,7 +69,7 @@ public class IdentifiableCachedStore<VALUE extends Identifiable<?>> extends Iden
 	
 	@Override
 	public void loadData() {
-		store.fillCache();
+		store.loadData();
 		for (Id<VALUE> key : getAllKeys()) {
 			centralRegistry.registerCacheable(key, this::get);
 		}

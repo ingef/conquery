@@ -1,49 +1,60 @@
 package com.bakdata.conquery.models.jobs;
 
+import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.models.messages.namespaces.specific.CollectColumnValuesJob;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.search.TrieSearch;
-import com.google.common.base.Functions;
 import com.google.common.collect.Sets;
-import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 
+/**
+ * Job that initializes the filter search for the frontend.
+ * It collects all sources of values for all filters, e.g.:
+ * <ul>
+ *     <li>explicit mappings in a {@link SelectFilter}</li>
+ *     <li>external reference mappings</li>
+ *     <li>columns of imported data which are referenced by a filter</li>
+ * </ul>
+ */
 @Slf4j
 @RequiredArgsConstructor
 public class UpdateFilterSearchJob extends Job {
-	@NonNull
-	private final NamespaceStorage storage;
 
-	@NonNull
-	private final Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache;
+	private final DistributedNamespace namespace;
 
 	@NonNull
 	private final IndexConfig indexConfig;
 
-	@NonNull
-	private final Object2LongMap<Searchable<?>> totals;
-
 	@Override
 	public void execute() throws Exception {
+
+		final NamespaceStorage storage = namespace.getStorage();
+
+		log.info("Clearing Search");
+		namespace.getFilterSearch().clearSearch();
 
 
 		log.info("BEGIN loading SourceSearch");
@@ -71,11 +82,18 @@ public class UpdateFilterSearchJob extends Job {
 		// Most computations are cheap but data intensive: we fork here to use as many cores as possible.
 		final ExecutorService service = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() - 1);
 
+		final HashMap<Searchable<?>, TrieSearch<FrontendValue>> searchCache = new HashMap<>();
 		final Map<Searchable<?>, TrieSearch<FrontendValue>> synchronizedResult = Collections.synchronizedMap(searchCache);
 
 		log.debug("Found {} searchable Objects.", collectedSearchables.size());
 
+		final Set<Column> columns = new HashSet<>();
+
 		for (Searchable<?> searchable : collectedSearchables) {
+			if (searchable instanceof Column column) {
+				columns.add(column);
+				continue;
+			}
 
 			service.submit(() -> {
 
@@ -102,6 +120,9 @@ public class UpdateFilterSearchJob extends Job {
 			});
 		}
 
+		log.debug("Sending columns to collect values on shards: {}", Arrays.toString(columns.toArray()));
+		namespace.getWorkerHandler().sendToAll(new CollectColumnValuesJob(columns));
+
 		service.shutdown();
 
 
@@ -114,32 +135,10 @@ public class UpdateFilterSearchJob extends Job {
 			log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables, synchronizedResult.keySet()));
 		}
 
-		log.debug("BEGIN counting Search totals.");
+		namespace.getFilterSearch().updateSearch(searchCache);
 
+		log.info("UpdateFilterSearchJob search finished");
 
-		// Precompute totals as that can be slow when doing it on-demand.
-		totals.putAll(
-				Stream.concat(
-							  // SelectFilters without their own labels are not "real" Searchables and therefore not in collectedSearchables
-							  // We however want the real totals of ALL Searchables (and especially SelectFilters), which is why we include them here explicitly
-							  allSelectFilters.parallelStream(),
-							  collectedSearchables.parallelStream()
-					  )
-					  .distinct()
-					  .collect(Collectors.toMap(
-							  Functions.identity(),
-							  filter -> filter.getSearchReferences().stream()
-											  .map(searchCache::get)
-											  .filter(Objects::nonNull) // Failed or disabled searches are null
-											  .flatMap(TrieSearch::stream)
-											  .mapToInt(FrontendValue::hashCode)
-											  .distinct()
-											  .count()
-					  ))
-		);
-
-
-		log.debug("DONE loading SourceSearch");
 	}
 
 	@Override

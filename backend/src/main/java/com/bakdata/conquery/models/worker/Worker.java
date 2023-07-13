@@ -2,9 +2,7 @@ package com.bakdata.conquery.models.worker;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 
@@ -17,16 +15,11 @@ import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
-import com.bakdata.conquery.models.events.stores.root.ColumnStore;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
@@ -177,11 +170,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	}
 
 	public void removeImport(Import imp) {
-
-		for (DictionaryId dictionary : imp.getDictionaries()) {
-			storage.removeDictionary(dictionary);
-		}
-
 		bucketManager.removeImport(imp);
 	}
 
@@ -199,55 +187,6 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 
 	public void updateDataset(Dataset dataset) {
 		storage.updateDataset(dataset);
-	}
-
-	public void updateDictionary(Dictionary dictionary) {
-		storage.updateDictionary(dictionary);
-
-		// Since we've updated a Dictionary, we also have to update the prior usages of that Dictionary in all Buckets and Imports
-		final DictionaryId dictionaryId = dictionary.getId();
-		final Set<Import> relevantImports =
-				storage.getAllImports().stream()
-					   .filter(imp -> imp.getDictionaries().contains(dictionaryId))
-					   .collect(Collectors.toSet());
-
-		// First replace in all Imports
-		for (Import imp : relevantImports) {
-			for (ImportColumn column : imp.getColumns()) {
-				final ColumnStore store = column.getTypeDescription();
-
-				if (!(store instanceof StringStore)) {
-					continue;
-				}
-
-				StringStore strings = ((StringStore) store);
-
-				if (!strings.isDictionaryHolding() || !strings.getUnderlyingDictionary().getId().equals(dictionaryId)) {
-					continue;
-				}
-				strings.setUnderlyingDictionary(dictionary);
-			}
-		}
-
-		// Then replace in all Buckets of those Imports
-		for (Bucket bucket : getStorage().getAllBuckets()) {
-			if (!relevantImports.contains(bucket.getImp())) {
-				continue;
-			}
-
-			for (ColumnStore store : bucket.getStores()) {
-				if (!(store instanceof StringStore)) {
-					continue;
-				}
-
-				StringStore strings = ((StringStore) store);
-
-				if (!strings.isDictionaryHolding() || !strings.getUnderlyingDictionary().getId().equals(dictionaryId)) {
-					continue;
-				}
-				strings.setUnderlyingDictionary(dictionary);
-			}
-		}
 	}
 
 	public void updateWorkerInfo(WorkerInformation info) {
