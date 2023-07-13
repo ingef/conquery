@@ -110,7 +110,7 @@ public class StringParser extends Parser<String, StringStore> {
 //		}
 		//TODO StringStoreNumbers
 
-		return new StringStoreString(new String[getLines()]);
+		return StringStoreString.create(getLines());
 	}
 
 

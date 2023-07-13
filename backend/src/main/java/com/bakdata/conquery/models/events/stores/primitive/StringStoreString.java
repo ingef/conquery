@@ -7,17 +7,31 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 @CPSType(id = "STRINGS", base = ColumnStore.class)
-@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Data
 public class StringStoreString implements StringStore {
 
 	@ToString.Exclude
 	private final String[] values;
+
+	public static StringStoreString create(int size) {
+		return new StringStoreString(new String[size]);
+	}
+
+	@JsonCreator
+	public static StringStoreString withInternedStrings(String[] values) {
+		for (int index = 0; index < values.length; index++) {
+			values[index] = values[index].intern();
+		}
+
+		return new StringStoreString(values);
+	}
 
 	@Override
 	public boolean has(int event) {
