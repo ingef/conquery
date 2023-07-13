@@ -1,15 +1,11 @@
 package com.bakdata.conquery.models.worker;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.function.Function;
 
 import com.bakdata.conquery.io.jackson.Injectable;
-import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.MappableSingleColumnSelect;
@@ -21,7 +17,6 @@ import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -94,7 +89,8 @@ public class LocalNamespace extends IdResolveContext  implements Namespace {
 
 	@Override
 	public int getNumberOfEntities() {
-		return getStorage().getPrimaryDictionary().getSize();
+//TODO		return getStorage().getPrimaryDictionary().getSize();
+		return 0;
 	}
 
 	@Override

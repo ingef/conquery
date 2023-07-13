@@ -69,17 +69,18 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	private ColumnStore[] stores;
 
 	//TODO consider usage of SortedSet but that would require custom deserializer, sorted set would have the benefit, that iteration of entities would also conform to layout of data giving some performance gains to CBlocks and Matching Stats
-	private final Set<Integer> entities;
+	private final Set<String> entities;
 
 	/**
 	 * start of each Entity in {@code stores}.
 	 */
-	private final int[] start;
+	//TODO Object2IntMap!
+	private final Map<String, Integer> start;
 
 	/**
 	 * Number of events per Entity in {@code stores}.
 	 */
-	private final int[] ends;
+	private final Map<String, Integer> ends;
 
 	@NsIdRef
 	private final Import imp;
@@ -105,31 +106,28 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	/**
 	 * Iterate entities
 	 */
-	public Collection<Integer> entities() {
+	public Collection<String> entities() {
 		return entities;
 	}
 
-	public boolean containsEntity(int entity) {
-		return getEntityStart(entity) != -1;
+	public boolean containsEntity(String entity) {
+		return start.containsKey(entity);
 	}
 
-	public int getEntityStart(int entityId) {
-		return start[getEntityIndex(entityId)];
+	public int getEntityStart(String entityId) {
+		return start.get(entityId);
 	}
 
-	public int getEntityIndex(int entityId) {
-		return entityId - root;
-	}
 
-	public int getEntityEnd(int entityId) {
-		return ends[getEntityIndex(entityId)];
+	public int getEntityEnd(String entityId) {
+		return ends.get(entityId);
 	}
 
 	public final boolean has(int event, Column column) {
 		return getStore(column).has(event);
 	}
 
-	public int getString(int event, @NotNull Column column) {
+	public String getString(int event, @NotNull Column column) {
 		return ((StringStore) getStore(column)).getString(event);
 	}
 

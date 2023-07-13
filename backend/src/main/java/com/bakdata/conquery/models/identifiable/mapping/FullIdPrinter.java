@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
-import com.bakdata.conquery.models.dictionary.EncodedDictionary;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.RequiredArgsConstructor;
 
@@ -11,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class FullIdPrinter implements IdPrinter {
 
-	private final EncodedDictionary dictionary;
 	private final EntityIdMap idMapping;
 
 	private final int size;
@@ -20,7 +18,7 @@ public class FullIdPrinter implements IdPrinter {
 	@Override
 	public EntityPrintId createId(EntityResult entityResult) {
 
-		String csvEntityId = dictionary.getElement(entityResult.getEntityId());
+		String csvEntityId = entityResult.getEntityId();
 		// The state may be uses by implementations of this class
 
 		if (idMapping == null) {

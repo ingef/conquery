@@ -20,7 +20,7 @@ public class EmptyBucket extends Bucket {
 	private static final EmptyBucket Instance = new EmptyBucket();
 
 	public EmptyBucket() {
-		super(0, 0, 0, Collections.emptySet(), new int[0], new int[0], null);
+		super(0, 0, 0, Collections.emptySet(), Collections.emptyMap(), Collections.emptyMap(), null);
 		this.setStores(new ColumnStore[0]);
 	}
 
@@ -31,24 +31,24 @@ public class EmptyBucket extends Bucket {
 	}
 
 	@Override
-	public boolean containsEntity(int entity) {
+	public boolean containsEntity(String entity) {
 		return false;
 	}
 
 
 	@Override
-	public int getEntityStart(int entityId) {
+	public int getEntityStart(String entityId) {
 		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 	@Override
-	public int getEntityEnd(int entityId) {
+	public int getEntityEnd(String entityId) {
 		throw new IllegalStateException("ALL_IDS Bucket does not do anything");
 	}
 
 
 	@Override
-	public int getString(int event, Column column) {
+	public String getString(int event, Column column) {
 		throw new IllegalStateException("Bucket for ALL_IDS_TABLE may not be evaluated.");
 	}
 

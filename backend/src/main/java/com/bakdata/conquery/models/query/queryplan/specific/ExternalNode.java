@@ -31,14 +31,14 @@ public class ExternalNode<T> extends QPNode {
 
 	@NotEmpty
 	@NonNull
-	private final Map<Integer, CDateSet> includedEntities;
+	private final Map<String, CDateSet> includedEntities;
 
-	private final Map<Integer, Map<String, T>> extraData;
+	private final Map<String, Map<String, T>> extraData;
 	private final String[] extraColumns;
 	private final Map<String, ConstantValueAggregator<T>> extraAggregators;
 	private CDateSet contained;
 
-	public Set<Integer> getEntities() {
+	public Set<String> getEntities() {
 		return includedEntities.keySet();
 	}
 

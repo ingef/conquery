@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import com.bakdata.conquery.models.events.stores.root.DateStore;
@@ -131,17 +130,16 @@ public enum EmptyStore implements
 	}
 
 	@Override
-	public int getString(int event) {
-		return 0;
+	public String getString(int event) {
+		return null;
 	}
 
 	@Override
-	public void setString(int event, int value) {
+	public void setString(int event, String value) {
 
 	}
 
-	@Override
-	public String getElement(int id) {
+	private String getElement(int id) {
 		return null;
 	}
 
@@ -153,31 +151,6 @@ public enum EmptyStore implements
 	@Override
 	public Stream<String> iterateValues() {
 		return Stream.empty();
-	}
-
-	@Override
-	public int getId(String value) {
-		return 0;
-	}
-
-	@Override
-	public Dictionary getUnderlyingDictionary() {
-		return null;
-	}
-
-	@Override
-	public void setUnderlyingDictionary(Dictionary dictionary) {
-		// No underlying Dictionary
-	}
-
-	@Override
-	public boolean isDictionaryHolding() {
-		return false;
-	}
-
-	@Override
-	public void setIndexStore(IntegerStore newType) {
-
 	}
 
 }

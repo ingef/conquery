@@ -15,7 +15,6 @@ import com.bakdata.conquery.commands.ShardNode;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -38,11 +37,6 @@ import com.bakdata.conquery.models.events.stores.specific.QuarterDateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
 import com.bakdata.conquery.models.events.stores.specific.string.DictionaryStore;
-import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
-import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore.Encoding;
-import com.bakdata.conquery.models.events.stores.specific.string.NumberStringStore;
-import com.bakdata.conquery.models.events.stores.specific.string.PrefixSuffixStringStore;
-import com.bakdata.conquery.models.events.stores.specific.string.SingletonStringStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -106,11 +100,6 @@ public class ColumnStoreSerializationTests {
 				new ScaledDecimalStore(13, IntArrayStore.create(10)),
 				new MoneyIntStore(IntArrayStore.create(10)),
 				new DictionaryStore(IntArrayStore.create(10), DICTIONARY),
-				new EncodedStringStore(new DictionaryStore(IntArrayStore.create(10), DICTIONARY), Encoding.Base16LowerCase),
-				new PrefixSuffixStringStore(new EncodedStringStore(new DictionaryStore(IntArrayStore.create(10), DICTIONARY), Encoding.Base16LowerCase), "a", "b"),
-
-				new NumberStringStore(new Range.IntegerRange(0, 7), ByteArrayStore.create(10)),
-				new SingletonStringStore("a", BitSetStore.create(10)),
 				new DirectDateRangeStore(IntegerDateStore.create(10), IntegerDateStore.create(10)),
 				new QuarterDateRangeStore(LongArrayStore.create(10)),
 				new IntegerDateStore(LongArrayStore.create(10)),

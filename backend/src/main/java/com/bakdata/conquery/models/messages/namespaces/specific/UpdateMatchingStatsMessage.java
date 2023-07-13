@@ -135,7 +135,7 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 					final Bucket bucket = cBlock.getBucket();
 					final Table table = bucket.getTable();
 
-					for (int entity : bucket.entities()) {
+					for (String entity : bucket.entities()) {
 
 						final int entityEnd = bucket.getEntityEnd(entity);
 

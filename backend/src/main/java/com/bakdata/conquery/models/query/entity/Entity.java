@@ -13,12 +13,12 @@ import lombok.RequiredArgsConstructor;
 @Data
 @RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class Entity {
-	private final int id;
+	private final String id;
 
 	/**
 	 * Calculate the bucket of the {@link Entity::getId}. Used for distributing partitions of the data to {@link com.bakdata.conquery.models.worker.Worker}s
 	 */
-	public static int getBucket(int entityId, int entityBucketSize) {
-		return entityId / entityBucketSize;
+	public static int getBucket(String entityId, int entityBucketSize) {
+		return entityId.hashCode() / entityBucketSize;
 	}
 }

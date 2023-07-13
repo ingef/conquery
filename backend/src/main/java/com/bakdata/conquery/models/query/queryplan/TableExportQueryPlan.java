@@ -77,7 +77,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		final List<Object[]> results = new ArrayList<>();
 
 		final int totalColumns = positions.values().stream().mapToInt(i -> i).max().getAsInt() + 1;
-		final int entityId = entity.getId();
+		final String entityId = entity.getId();
 
 		for (Map.Entry<CQTable, QPNode> entry : tables.entrySet()) {
 

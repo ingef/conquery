@@ -2,11 +2,7 @@ package com.bakdata.conquery.models.events.stores.root;
 
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * {@link ColumnStore} for dictionary encoded string values.
@@ -19,14 +15,9 @@ import org.slf4j.LoggerFactory;
  */
 public interface StringStore extends ColumnStore {
 
-	static final Logger log = LoggerFactory.getLogger(StringStore.class);
+	String getString(int event);
 
-
-	int getString(int event);
-
-	void setString(int event, int value);
-
-	String getElement(int id);
+	void setString(int event, String value);
 
 	/**
 	 * Maximum number of distinct values in this Store.
@@ -35,24 +26,5 @@ public interface StringStore extends ColumnStore {
 
 
 	Stream<String> iterateValues();
-
-	/**
-	 * Lookup the id of a value in the dictionary.
-	 */
-	int getId(String value);
-
-	@JsonIgnore
-	Dictionary getUnderlyingDictionary();
-
-	@JsonIgnore
-	void setUnderlyingDictionary(Dictionary dictionary);
-
-	@JsonIgnore
-	boolean isDictionaryHolding();
-
-	/**
-	 * After applying DictionaryMapping a new store might be needed.
-	 */
-	void setIndexStore(IntegerStore newType);
 
 }

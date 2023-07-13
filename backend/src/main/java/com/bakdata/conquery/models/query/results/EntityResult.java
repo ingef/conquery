@@ -1,16 +1,16 @@
 package com.bakdata.conquery.models.query.results;
 
-import com.bakdata.conquery.io.cps.CPSBase;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
+
+import com.bakdata.conquery.io.cps.CPSBase;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 public interface EntityResult {
 
-	int getEntityId();
+	String getEntityId();
 	/**
 	 * Provides the number of columns this result contains.
 	 */

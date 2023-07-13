@@ -42,8 +42,7 @@ public class PrefixTextFilterNode extends EventFilterNode<String> {
 			return false;
 		}
 
-		final int id = store.getString(event);
-		String value = store.getElement(id);
+		final String value = store.getString(event);
 
 		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
 		return value.startsWith(filterValue);

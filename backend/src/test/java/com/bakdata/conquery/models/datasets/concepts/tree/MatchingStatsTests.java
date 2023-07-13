@@ -10,9 +10,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class MatchingStatsTests {
 
     private final WorkerId workerId1 = new WorkerId(new DatasetId("sampleDataset"), "sampleWorker");
@@ -48,17 +45,17 @@ public class MatchingStatsTests {
 
 
         MatchingStats.Entry entry1 =  new MatchingStats.Entry();
-        entry1.addEvent(table, null, 1, 1);
-        entry1.addEvent(table, null, 2, 1);
+        entry1.addEvent(table, null, 1, "1");
+        entry1.addEvent(table, null, 2, "1");
 
-        entry1.addEvent(table, null, 3, 2);
-        entry1.addEvent(table, null, 4, 2);
+        entry1.addEvent(table, null, 3, "2");
+        entry1.addEvent(table, null, 4, "2");
 
-        entry1.addEvent(table, null, 5, 3);
-        entry1.addEvent(table, null, 6, 3);
+        entry1.addEvent(table, null, 5, "3");
+        entry1.addEvent(table, null, 6, "3");
 
-        entry1.addEvent(table, null, 7, 4);
-        entry1.addEvent(table, null, 8, 4);
+        entry1.addEvent(table, null, 7, "4");
+        entry1.addEvent(table, null, 8, "4");
 
 
 
@@ -69,20 +66,20 @@ public class MatchingStatsTests {
 
         MatchingStats.Entry entry2 =  new MatchingStats.Entry();
 
-        entry2.addEvent(table, null, 1, 1);
-        entry2.addEvent(table, null, 2, 2);
+        entry2.addEvent(table, null, 1, "1");
+        entry2.addEvent(table, null, 2, "2");
 
-        entry2.addEvent(table, null, 3, 3);
-        entry2.addEvent(table, null, 4, 4);
+        entry2.addEvent(table, null, 3, "3");
+        entry2.addEvent(table, null, 4, "4");
 
-        entry2.addEvent(table, null, 5, 5);
-        entry2.addEvent(table, null, 6, 6);
+        entry2.addEvent(table, null, 5, "5");
+        entry2.addEvent(table, null, 6, "6");
 
-        entry2.addEvent(table, null, 7, 7);
-        entry2.addEvent(table, null, 8, 8);
+        entry2.addEvent(table, null, 7, "7");
+        entry2.addEvent(table, null, 8, "8");
 
-        entry2.addEvent(table, null, 9, 9);
-        entry2.addEvent(table, null, 10, 10);
+        entry2.addEvent(table, null, 9, "9");
+        entry2.addEvent(table, null, 10, "10");
 
         stats.putEntry(workerId2, entry2);
         assertThat(stats.countEvents()).isEqualTo(18);

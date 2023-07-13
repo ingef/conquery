@@ -1,12 +1,11 @@
 package com.bakdata.conquery.models.datasets.concepts.tree;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tomgibara.bits.BitStore;
-import com.tomgibara.bits.Bits;
 import lombok.Getter;
 
 /**
@@ -29,43 +28,36 @@ public class ConceptTreeCache {
 	private final TreeConcept treeConcept;
 
 	/**
-	 * Stores if the value is present in the cache. Values are allowed to not be resolvable but we still want to cache the tree walk.
-	 */
-	@JsonIgnore
-	private final BitStore cached;
-
-	/**
 	 * Store of all cached values.
 	 */
+
 	@JsonIgnore
-	private final ConceptTreeChild[] values;
+	private final Map<String, ConceptTreeChild> cached;
 
 	public ConceptTreeCache(TreeConcept treeConcept, int size) {
 		this.treeConcept = treeConcept;
-		values = new ConceptTreeChild[size];
-		cached = Bits.store(size);
+		cached = new HashMap<>(size);
 	}
 
 	/**
 	 * If id is already in cache, use that. If not calculate it by querying treeConcept. If rowMap was not used to query, cache the response.
 	 *
 	 * @param id String id to resolve in conceptTree.
-	 * @param scriptValue
+	 * @param value
 	 */
-	public ConceptTreeChild findMostSpecificChild(int id, String scriptValue, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
+	public ConceptTreeChild findMostSpecificChild(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
 
-		if(cached.getBit(id)) {
+		if(cached.containsKey(value)) {
 			hits++;
-			return values[id];
+			return cached.get(value);
 		}
 
 		misses++;
 
-		final ConceptTreeChild child = treeConcept.findMostSpecificChild(scriptValue, rowMap);
+		final ConceptTreeChild child = treeConcept.findMostSpecificChild(value, rowMap);
 
 		if(!rowMap.isCalculated()) {
-			cached.setBit(id, true);
-			this.values[id] = child;
+			cached.put(value, child);
 		}
 
 		return child;

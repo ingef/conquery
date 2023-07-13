@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,8 +31,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -52,7 +51,7 @@ public class BucketManager {
 
 	private final Worker worker;
 	@Getter
-	private final Int2ObjectMap<Entity> entities;
+	private final Map<String, Entity> entities;
 
 
 	/**
@@ -71,7 +70,7 @@ public class BucketManager {
 	private final int entityBucketSize;
 
 	public static BucketManager create(Worker worker, WorkerStorage storage, int entityBucketSize) {
-		Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
+		Map<String, Entity> entities = new HashMap<>();
 		Map<Connector, Int2ObjectMap<Map<Bucket, CBlock>>> connectorCBlocks = new HashMap<>();
 		Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets = new HashMap<>();
 
@@ -95,8 +94,8 @@ public class BucketManager {
 	/**
 	 * register entities, and create query specific indices for bucket
 	 */
-	private static void registerBucket(Bucket bucket, Int2ObjectMap<Entity> entities, Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets) {
-		for (int entity : bucket.entities()) {
+	private static void registerBucket(Bucket bucket, Map<String, Entity> entities, Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets) {
+		for (String entity : bucket.entities()) {
 			entities.computeIfAbsent(entity, Entity::new);
 		}
 
@@ -220,7 +219,7 @@ public class BucketManager {
 			   .filter(cblock -> cblock.getBucket().equals(bucket))
 			   .forEach(this::removeCBlock);
 
-		for (int entityId : bucket.entities()) {
+		for (String entityId : bucket.entities()) {
 			final Entity entity = entities.get(entityId);
 
 			if (entity == null) {
@@ -330,10 +329,10 @@ public class BucketManager {
 	/**
 	 * Collects all Entites, that have any of the concepts on the connectors in a specific time.
 	 */
-	public IntSet getEntitiesWithConcepts(Collection<ConceptElement<?>> concepts, Set<Connector> connectors, CDateSet restriction) {
+	public Set<String> getEntitiesWithConcepts(Collection<ConceptElement<?>> concepts, Set<Connector> connectors, CDateSet restriction) {
 		final long requiredBits = ConceptNode.calculateBitMask(concepts);
 
-		final IntSet out = new IntOpenHashSet();
+		final Set<String> out = new HashSet<>();
 
 		for (Connector connector : connectors) {
 			if(!connectorToCblocks.containsKey(connector)) {
@@ -342,7 +341,7 @@ public class BucketManager {
 
 			for (Map<Bucket, CBlock> bucketCBlockMap : connectorToCblocks.get(connector).values()) {
 				for (CBlock cblock : bucketCBlockMap.values()) {
-					for (int entity : cblock.getBucket().entities()) {
+					for (String entity : cblock.getBucket().entities()) {
 
 						if (cblock.isConceptIncluded(entity, requiredBits) && restriction.intersects(cblock.getEntityDateRange(entity))) {
 							out.add(entity);

@@ -32,7 +32,7 @@ public class PreprocessedReader implements AutoCloseable {
 	@Accessors(fluent = true)
 	@RequiredArgsConstructor
 	public enum LastRead {
-		DATA(null), DICTIONARIES(DATA), HEADER(DICTIONARIES), BEGIN(HEADER);
+		DATA(null), HEADER(DATA), BEGIN(HEADER);
 
 		@Getter
 		private final LastRead next;
@@ -70,17 +70,10 @@ public class PreprocessedReader implements AutoCloseable {
 		return header;
 	}
 
-	public PreprocessedDictionaries readDictionaries() throws IOException {
-		Preconditions.checkState(lastRead.equals(LastRead.HEADER));
 
-		final PreprocessedDictionaries dictionaries = parser.readValueAs(PreprocessedDictionaries.class);
-
-		lastRead = lastRead.next();
-		return dictionaries;
-	}
 
 	public PreprocessedData readData() throws IOException {
-		Preconditions.checkState(lastRead.equals(LastRead.DICTIONARIES));
+		Preconditions.checkState(lastRead.equals(LastRead.HEADER));
 
 		final PreprocessedData dictionaries = parser.readValueAs(PreprocessedData.class);
 

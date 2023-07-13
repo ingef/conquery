@@ -60,7 +60,7 @@ public class IdColumnUtil {
 			if (execution instanceof SqlManagedQuery) {
 				return entityResult -> EntityPrintId.from(((SqlEntityResult) entityResult).getId());
 			}
-			return new FullIdPrinter(namespace.getStorage().getPrimaryDictionary(), namespace.getStorage().getIdMapping(), size, pos);
+			return new FullIdPrinter(namespace.getStorage().getIdMapping(), size, pos);
 		}
 
 

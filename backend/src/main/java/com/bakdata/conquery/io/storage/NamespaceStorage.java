@@ -5,16 +5,12 @@ import java.util.Objects;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.EncodedDictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
-import com.bakdata.conquery.models.events.stores.specific.string.EncodedStringStore;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -23,7 +19,6 @@ import com.bakdata.conquery.models.index.search.SearchIndex;
 import com.bakdata.conquery.models.worker.WorkerToBucketsMap;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -42,26 +37,6 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
 		super(storageFactory, pathName, validator);
-	}
-
-	public EncodedDictionary getPrimaryDictionary() {
-		return new EncodedDictionary(getPrimaryDictionaryRaw(), EncodedStringStore.Encoding.UTF8);
-	}
-
-	@NonNull
-	public Dictionary getPrimaryDictionaryRaw() {
-		final Dictionary dictionary = primaryDictionary.get();
-
-		if (dictionary == null) {
-			log.trace("No prior PrimaryDictionary, creating one");
-			final MapDictionary newPrimary = new MapDictionary(getDataset(), ConqueryConstants.PRIMARY_DICTIONARY);
-
-			primaryDictionary.update(newPrimary);
-
-			return newPrimary;
-		}
-
-		return dictionary;
 	}
 
 

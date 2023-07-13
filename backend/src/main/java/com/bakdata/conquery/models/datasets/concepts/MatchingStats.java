@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.datasets.concepts;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -9,9 +11,11 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -78,12 +82,12 @@ public class MatchingStats {
         private long numberOfEvents;
 
         @JsonIgnore
-        private final IntSet foundEntities = new IntOpenHashSet();
+        private final Set<String> foundEntities = new HashSet<>();
         private long numberOfEntities;
         private CDateRange span;
 
 
-        public void addEvent(Table table, Bucket bucket, int event, int entityForEvent) {
+        public void addEvent(Table table, Bucket bucket, int event, String entityForEvent) {
             numberOfEvents++;
             if (foundEntities.add(entityForEvent)) {
                 numberOfEntities++;
