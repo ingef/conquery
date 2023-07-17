@@ -14,6 +14,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
@@ -29,6 +30,7 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	@NsIdRef
 	private Column endColumn;
 	@JsonBackReference
+	@ToString.Exclude
 	@EqualsAndHashCode.Exclude
 	private Connector connector;
 
@@ -41,17 +43,13 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	@ValidationMethod(message = "ValidityDate is not for Connectors' Table.")
 	public boolean isForConnectorsTable() {
 
-		if ((startColumn != null && !startColumn.getTable().equals(connector.getTable()))
-			|| (endColumn != null && !endColumn.getTable().equals(connector.getTable()))) {
-			log.error("ValidityDate[{}](StartColumn = `{}`, EndColumn = `{}`) do not belong to Connector[{}]#Table[{}]",
-					  getId(), startColumn.getId(), endColumn.getId(), getId(), connector.getTable().getId());
-			return false;
-		}
+		boolean anyColumnNotForConnector = (startColumn != null && !startColumn.getTable().equals(connector.getTable()))
+										   || (endColumn != null && !endColumn.getTable().equals(connector.getTable()));
 
-		if (column != null && !column.getTable().equals(connector.getTable())) {
-			log.error("ValidityDate[{}](Column = `{}`) does not belong to Connector[{}]#Table[{}]",
-					  getId(), column.getId(), getId(), connector.getTable().getId());
-			return false;
+		boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getTable());
+
+		if (anyColumnNotForConnector || columnNotForConnector) {
+			log.error("{} does not belong to Connector[{}]#Table[{}]", this, connector.getId(), connector.getTable().getId());
 		}
 
 		return true;
