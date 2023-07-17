@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -24,7 +23,6 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -57,7 +55,6 @@ public enum StoreMappings {
 	DATASET(Dataset.class, Boolean.class),
 	ID_MAPPING(EntityIdMap.class, Boolean.class),
 	NAMESPACES(DatasetRegistry.class, Boolean.class),
-	DICTIONARIES(Dictionary.class, DictionaryId.class),
 	IMPORTS(Import.class, ImportId.class),
 	SECONDARY_IDS(SecondaryIdDescription.class, SecondaryIdDescriptionId.class),
 	TABLES(Table.class, TableId.class),
@@ -72,7 +69,6 @@ public enum StoreMappings {
 	STRUCTURE(StructureNode[].class, Boolean.class),
 	FORM_CONFIG(FormConfig.class, FormConfigId.class),
 	WORKER_TO_BUCKETS(WorkerToBucketsMap.class, Boolean.class),
-	PRIMARY_DICTIONARY(Dictionary.class, Boolean.class),
 
 	ENTITY_PREVIEW(PreviewConfig.class, Boolean.class),
 	INTERN_TO_EXTERN(InternToExternMapper.class, InternToExternMapperId.class),

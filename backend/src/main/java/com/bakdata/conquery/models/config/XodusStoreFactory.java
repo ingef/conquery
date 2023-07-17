@@ -36,7 +36,6 @@ import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.storage.xodus.stores.StoreInfo;
-import com.bakdata.conquery.io.storage.xodus.stores.WeakCachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -48,13 +47,11 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.configs.FormConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
 import com.bakdata.conquery.models.index.InternToExternMapper;
 import com.bakdata.conquery.models.index.search.SearchIndex;
@@ -102,8 +99,6 @@ public class XodusStoreFactory implements StoreFactory {
 			DATASET.storeInfo().getName(),
 			SECONDARY_IDS.storeInfo().getName(),
 			TABLES.storeInfo().getName(),
-			DICTIONARIES.storeInfo().getName() + BigStore.META,
-			DICTIONARIES.storeInfo().getName() + BigStore.DATA,
 			IMPORTS.storeInfo().getName(),
 			CONCEPTS.storeInfo().getName()
 	);
@@ -115,7 +110,6 @@ public class XodusStoreFactory implements StoreFactory {
 					ID_MAPPING.storeInfo().getName() + BigStore.DATA,
 					STRUCTURE.storeInfo().getName(),
 					WORKER_TO_BUCKETS.storeInfo().getName(),
-					PRIMARY_DICTIONARY.storeInfo().getName(),
 					ENTITY_PREVIEW.storeInfo().getName()
 			)
 	);
@@ -130,7 +124,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 	private Path directory = Path.of("storage");
 
-	private boolean validateOnWrite;
+	private boolean validateOnWrite = false;
 	@NotNull
 	@Valid
 	private XodusConfig xodus = new XodusConfig();
@@ -293,33 +287,6 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	@Override
-	public IdentifiableStore<Dictionary> createDictionaryStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
-		final Environment environment = findEnvironment(pathName);
-
-		final BigStore<Id<Dictionary>, Dictionary> bigStore;
-
-		synchronized (openStoresInEnv) {
-			bigStore =
-					new BigStore<>(
-							this,
-							validator,
-							environment,
-							DICTIONARIES.storeInfo(),
-							this::closeStore,
-							this::removeStore,
-							centralRegistry.injectIntoNew(objectMapper), getReaderExecutorService()
-					);
-			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
-			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
-		}
-
-		if (useWeakDictionaryCaching) {
-			return StoreMappings.identifiableCachedStore(new WeakCachedStore<>(bigStore, getWeakCacheDuration()), centralRegistry);
-		}
-		return StoreMappings.identifiable(StoreMappings.cached(bigStore), centralRegistry);
-	}
-
-	@Override
 	public IdentifiableStore<Concept<?>> createConceptStore(CentralRegistry centralRegistry, String pathName, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(pathName), validator, CONCEPTS, centralRegistry.injectIntoNew(objectMapper)), centralRegistry);
 	}
@@ -392,11 +359,6 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	public IdentifiableStore<Group> createGroupStore(CentralRegistry centralRegistry, String pathName, MetaStorage storage, ObjectMapper objectMapper) {
 		return StoreMappings.identifiable(createStore(findEnvironment(resolveSubDir(pathName, "groups")), validator, AUTH_GROUP, objectMapper), centralRegistry);
-	}
-
-	@Override
-	public SingletonStore<Dictionary> createPrimaryDictionaryStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
-		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, PRIMARY_DICTIONARY, centralRegistry.injectIntoNew(objectMapper)));
 	}
 
 	private File resolveSubDir(String... subdirs) {

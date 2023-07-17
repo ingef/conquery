@@ -17,8 +17,6 @@ import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.EmptyStore;
 import com.bakdata.conquery.models.events.stores.primitive.BitSetStore;
 import com.bakdata.conquery.models.events.stores.primitive.ByteArrayStore;
@@ -36,7 +34,6 @@ import com.bakdata.conquery.models.events.stores.specific.MoneyIntStore;
 import com.bakdata.conquery.models.events.stores.specific.QuarterDateRangeStore;
 import com.bakdata.conquery.models.events.stores.specific.RebasingIntegerStore;
 import com.bakdata.conquery.models.events.stores.specific.ScaledDecimalStore;
-import com.bakdata.conquery.models.events.stores.specific.string.DictionaryStore;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,14 +53,12 @@ public class ColumnStoreSerializationTests {
 	private static final Set<Class<? extends ColumnStore>> EXCLUDING = Set.of(CompoundDateRangeStore.class);
 
 	private static final CentralRegistry CENTRAL_REGISTRY = new CentralRegistry();
-	private static final Dictionary DICTIONARY = new MapDictionary(Dataset.PLACEHOLDER, "dictionary");
 
 	private static ObjectMapper shardInternalMapper;
 
 	@BeforeAll
 	public static void setupRegistry() {
 		CENTRAL_REGISTRY.register(Dataset.PLACEHOLDER);
-		CENTRAL_REGISTRY.register(DICTIONARY);
 
 
 		// Prepare shard node internal mapper
@@ -99,7 +94,6 @@ public class ColumnStoreSerializationTests {
 		return Arrays.asList(
 				new ScaledDecimalStore(13, IntArrayStore.create(10)),
 				new MoneyIntStore(IntArrayStore.create(10)),
-				new DictionaryStore(IntArrayStore.create(10), DICTIONARY),
 				new DirectDateRangeStore(IntegerDateStore.create(10), IntegerDateStore.create(10)),
 				new QuarterDateRangeStore(LongArrayStore.create(10)),
 				new IntegerDateStore(LongArrayStore.create(10)),

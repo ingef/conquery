@@ -10,7 +10,6 @@ import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.datasets.concepts.StructureNode;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.InternToExternMapperId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SearchIndexId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
@@ -32,8 +31,6 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected SingletonStore<PreviewConfig> preview;
 
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
-
-	protected SingletonStore<Dictionary> primaryDictionary;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
 		super(storageFactory, pathName, validator);
@@ -59,7 +56,6 @@ public class NamespaceStorage extends NamespacedStorage {
 		idMapping = getStorageFactory().createIdMappingStore(super.getPathName(), objectMapper);
 		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
-		primaryDictionary = getStorageFactory().createPrimaryDictionaryStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		preview = getStorageFactory().createPreviewStore(super.getPathName(), getCentralRegistry(), objectMapper);
 
 		decorateInternToExternMappingStore(internToExternMappers);
@@ -76,7 +72,6 @@ public class NamespaceStorage extends NamespacedStorage {
 
 				secondaryIds,
 				tables,
-				dictionaries,
 				imports,
 
 				// Concepts depend on internToExternMappers
@@ -85,8 +80,7 @@ public class NamespaceStorage extends NamespacedStorage {
 				preview,
 				idMapping,
 				structure,
-				workerToBuckets,
-				primaryDictionary
+				workerToBuckets
 		);
 	}
 
@@ -97,10 +91,6 @@ public class NamespaceStorage extends NamespacedStorage {
 		return idMapping.get();
 	}
 
-
-	public void updatePrimaryDictionary(Dictionary dictionary) {
-		primaryDictionary.update(dictionary);
-	}
 
 	public void updateIdMapping(EntityIdMap idMapping) {
 		this.idMapping.update(idMapping);

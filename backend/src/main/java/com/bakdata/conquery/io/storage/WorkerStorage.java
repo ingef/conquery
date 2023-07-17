@@ -50,7 +50,6 @@ public class WorkerStorage extends NamespacedStorage {
 				dataset,
 				secondaryIds,
 				tables,
-				dictionaries,
 				imports,
 				concepts,
 
