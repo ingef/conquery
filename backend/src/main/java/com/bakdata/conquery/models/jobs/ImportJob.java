@@ -3,13 +3,13 @@ package com.bakdata.conquery.models.jobs;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.BadRequestException;
@@ -37,11 +37,11 @@ import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.preproc.PreprocessedData;
 import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessedReader;
-import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.WorkerHandler;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
+import com.google.common.base.Functions;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.Getter;
@@ -55,19 +55,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImportJob extends Job {
 
+	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 	private final DistributedNamespace namespace;
-
 	@Getter
 	private final Table table;
 	private final int bucketSize;
 	private final PreprocessedHeader header;
 	private final PreprocessedData container;
 	private final ConqueryConfig config;
-
-	private final IdMutex<DictionaryId> sharedDictionaryLocks;
-
-
-	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
 	public static ImportJob createOrUpdate(DistributedNamespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, boolean update)
 			throws IOException {
@@ -173,6 +168,56 @@ public class ImportJob extends Job {
 
 	}
 
+	private void distributeWorkerResponsibilities(Set<String> entities) {
+		log.debug("Updating bucket assignments.");
+
+		synchronized (namespace) {
+			for (String entity : entities) {
+				final int bucket = namespace.getBucket(entity, bucketSize);
+
+				if (namespace.getWorkerHandler().getResponsibleWorkerForBucket(bucket) != null) {
+					continue;
+				}
+
+				namespace.getWorkerHandler().addResponsibility(bucket);
+			}
+		}
+	}
+
+	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size) {
+		final Import imp = new Import(table);
+
+		imp.setName(header.getName());
+		imp.setNumberOfEntries(header.getRows());
+		imp.setNumberOfEntities(size);
+
+		final ImportColumn[] importColumns = new ImportColumn[columns.length];
+
+		for (int i = 0; i < columns.length; i++) {
+			final ColumnStore store = stores.get(columns[i].getName());
+
+			final ImportColumn col = new ImportColumn(imp, store.createDescription(), store.getLines(), store.estimateMemoryConsumptionBytes());
+
+			col.setName(columns[i].getName());
+
+			importColumns[i] = col;
+		}
+
+		imp.setColumns(importColumns);
+
+		namespace.getWorkerHandler().sendToAll(new AddImport(imp));
+		return imp;
+	}
+
+	/**
+	 * Group entities by their global bucket id.
+	 */
+	private Map<Integer, List<String>> groupEntitiesByBucket(Set<String> entities, int bucketSize) {
+		return entities.stream()
+					   .collect(Collectors.groupingBy(entity -> namespace.getBucket(entity, bucketSize)));
+
+	}
+
 	/**
 	 * select, then send buckets.
 	 */
@@ -184,16 +229,33 @@ public class ImportJob extends Job {
 
 		for (Map.Entry<Integer, List<String>> bucket2entities : buckets2LocalEntities.entrySet()) {
 
+
+			final int bucketId = bucket2entities.getKey();
+			final List<String> entities = bucket2entities.getValue();
+
 			final WorkerInformation responsibleWorker = Objects.requireNonNull(
-				namespace
-					.getWorkerHandler()
-					.getResponsibleWorkerForBucket(bucket2entities.getKey()),
-				() -> "No responsible worker for Bucket#" + bucket2entities.getKey());
+					namespace
+							.getWorkerHandler()
+							.getResponsibleWorkerForBucket(bucketId),
+					() -> "No responsible worker for Bucket#" + bucketId
+			);
 
 			awaitFreeJobQueue(responsibleWorker);
 
+			final Map<String, Integer> bucketStarts = entities.stream()
+															  .filter(starts::containsKey)
+															  .collect(Collectors.toMap(Functions.identity(), starts::get));
+
+			final Map<String, Integer> bucketLengths = entities.stream()
+															   .filter(lengths::containsKey)
+															   .collect(Collectors.toMap(Functions.identity(), lengths::get));
+
+
+			assert !Collections.disjoint(bucketStarts.keySet(), bucketLengths.keySet());
+
+
 			final Bucket bucket =
-					selectBucket(starts, lengths, storesSorted, imp, bucket2entities.getKey());
+					selectBucket(bucketStarts, bucketLengths, storesSorted, imp, bucketId);
 
 			newWorkerAssignments.computeIfAbsent(responsibleWorker.getId(), (ignored) -> new HashSet<>())
 								.add(bucket.getId());
@@ -223,16 +285,14 @@ public class ImportJob extends Job {
 	 */
 	private Bucket selectBucket(Map<String, Integer> localStarts, Map<String, Integer> localLengths, ColumnStore[] stores, Import imp, int bucketId) {
 
-		final int root = bucketSize * bucketId;
 
 		final IntList selectionStart = new IntArrayList();
 		final IntList selectionLength = new IntArrayList();
-		final Set<String> entities = new HashSet<>(localStarts.keySet());
 
 
 		// First entity of Bucket starts at 0, the following are appended.
-		final Map<String, Integer> entityStarts = new HashMap<>(entities.size());
-		final Map<String, Integer> entityEnds = new HashMap<>(entities.size());
+		final Map<String, Integer> entityStarts = new HashMap<>(localStarts.size());
+		final Map<String, Integer> entityEnds = new HashMap<>(localStarts.size());
 
 
 		int currentStart = 0;
@@ -261,68 +321,13 @@ public class ImportJob extends Job {
 
 		return new Bucket(
 				bucketId,
-				root,
 				selectionLength.intStream().sum(),
 				bucketStores,
-				entities,
 				entityStarts,
 				entityEnds,
 				imp
 		);
 	}
-
-	private void distributeWorkerResponsibilities(Set<String> entities) {
-		log.debug("Updating bucket assignments.");
-
-		synchronized (namespace) {
-			for (String entity : entities) {
-				final int bucket = Entity.getBucket(entity, bucketSize);
-
-				if (namespace.getWorkerHandler().getResponsibleWorkerForBucket(bucket) != null) {
-					continue;
-				}
-
-				namespace.getWorkerHandler().addResponsibility(bucket);
-			}
-		}
-	}
-
-
-	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size) {
-		final Import imp = new Import(table);
-
-		imp.setName(header.getName());
-		imp.setNumberOfEntries(header.getRows());
-		imp.setNumberOfEntities(size);
-
-		final ImportColumn[] importColumns = new ImportColumn[columns.length];
-
-		for (int i = 0; i < columns.length; i++) {
-			final ColumnStore store = stores.get(columns[i].getName());
-
-			final ImportColumn col = new ImportColumn(imp, store.createDescription(), store.getLines(), store.estimateMemoryConsumptionBytes());
-
-			col.setName(columns[i].getName());
-
-			importColumns[i] = col;
-		}
-
-		imp.setColumns(importColumns);
-
-		namespace.getWorkerHandler().sendToAll(new AddImport(imp));
-		return imp;
-	}
-
-
-	/**
-	 * Group entities by their global bucket id.
-	 */
-	private Map<Integer, List<String>> groupEntitiesByBucket(Set<String> entities, int bucketSize) {
-		return entities.stream()
-					   .collect(Collectors.groupingBy(entity -> Entity.getBucket(entity, bucketSize)));
-
-	}
-
 
 	private Dataset getDataset() {
 		return namespace.getDataset();

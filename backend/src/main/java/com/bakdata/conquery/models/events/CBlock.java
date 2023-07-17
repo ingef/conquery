@@ -209,7 +209,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	private static Map<String, Long> calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
 		final Map<String, Long> includedConcepts = new HashMap<>(bucketSize);
 
-		for (String entity : bucket.getEntities()) {
+		for (String entity : bucket.entities()) {
 
 			final int end = bucket.getEntityEnd(entity);
 
@@ -258,7 +258,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 				continue;
 			}
 
-			for (String entity : bucket.getEntities()) {
+			for (String entity : bucket.entities()) {
 				final int end = bucket.getEntityEnd(entity);
 
 				// We unroll span for the whole bucket/entity, this avoids costly reallocation in a loop

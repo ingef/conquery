@@ -15,10 +15,4 @@ import lombok.RequiredArgsConstructor;
 public class Entity {
 	private final String id;
 
-	/**
-	 * Calculate the bucket of the {@link Entity::getId}. Used for distributing partitions of the data to {@link com.bakdata.conquery.models.worker.Worker}s
-	 */
-	public static int getBucket(String entityId, int entityBucketSize) {
-		return entityId.hashCode() / entityBucketSize;
-	}
 }

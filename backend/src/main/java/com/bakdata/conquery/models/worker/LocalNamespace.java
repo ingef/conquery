@@ -17,6 +17,8 @@ import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -26,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @ToString(onlyExplicitlyIncluded = true)
 @RequiredArgsConstructor
-public class LocalNamespace extends IdResolveContext  implements Namespace {
+public class LocalNamespace extends IdResolveContext implements Namespace {
 
 	private final ObjectMapper preprocessMapper;
 	private final ObjectMapper communicationMapper;
@@ -45,10 +47,11 @@ public class LocalNamespace extends IdResolveContext  implements Namespace {
 	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
 	private final List<Injectable> injectables;
 
+	//TODO move to storage
+	private final Object2IntMap<String> entity2bucket = new Object2IntOpenHashMap<>();
 
-	@Override
-	public Dataset getDataset() {
-		return storage.getDataset();
+	public synchronized int getBucket(String entity, int bucketSize) {
+		return entity2bucket.computeIfAbsent(entity, ignored -> (int) Math.ceil((1d + entity2bucket.size()) / (double) bucketSize));
 	}
 
 	@Override
@@ -89,8 +92,7 @@ public class LocalNamespace extends IdResolveContext  implements Namespace {
 
 	@Override
 	public int getNumberOfEntities() {
-//TODO		return getStorage().getPrimaryDictionary().getSize();
-		return 0;
+		return entity2bucket.size();
 	}
 
 	@Override
@@ -123,6 +125,11 @@ public class LocalNamespace extends IdResolveContext  implements Namespace {
 			throw new NoSuchElementException("Wrong dataset: '" + dataset + "' (expected: '" + this.getDataset().getId() + "')");
 		}
 		return storage.getCentralRegistry();
+	}
+
+	@Override
+	public Dataset getDataset() {
+		return storage.getDataset();
 	}
 
 	@Override

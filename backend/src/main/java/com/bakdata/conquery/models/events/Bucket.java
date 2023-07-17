@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -33,6 +32,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.google.common.collect.ImmutableSet;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -58,7 +58,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@Min(0)
 	private final int bucket;
 
-	private final int root;
 
 	@Min(0)
 	private final int numberOfEvents;
@@ -67,9 +66,6 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@JsonManagedReference
 	@Setter(AccessLevel.PROTECTED)
 	private ColumnStore[] stores;
-
-	//TODO consider usage of SortedSet but that would require custom deserializer, sorted set would have the benefit, that iteration of entities would also conform to layout of data giving some performance gains to CBlocks and Matching Stats
-	private final Set<String> entities;
 
 	/**
 	 * start of each Entity in {@code stores}.
@@ -107,7 +103,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	 * Iterate entities
 	 */
 	public Collection<String> entities() {
-		return entities;
+		return ImmutableSet.copyOf(start.keySet());
 	}
 
 	public boolean containsEntity(String entity) {

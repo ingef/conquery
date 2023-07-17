@@ -31,6 +31,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
+import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -53,6 +55,9 @@ public class BucketManager {
 	@Getter
 	private final Map<String, Entity> entities;
 
+	@Getter
+	private final Object2IntMap<String> entity2Bucket;
+
 
 	/**
 	 * The final Map is the way the APIs expect the data to be delivered.
@@ -73,6 +78,7 @@ public class BucketManager {
 		Map<String, Entity> entities = new HashMap<>();
 		Map<Connector, Int2ObjectMap<Map<Bucket, CBlock>>> connectorCBlocks = new HashMap<>();
 		Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets = new HashMap<>();
+		Object2IntMap<String> entity2Bucket = new Object2IntOpenHashMap<>();
 
 		IntArraySet assignedBucketNumbers = worker.getInfo().getIncludedBuckets();
 		log.trace("Trying to load these buckets that map to: {}", assignedBucketNumbers);
@@ -81,22 +87,23 @@ public class BucketManager {
 			if (!assignedBucketNumbers.contains(bucket.getBucket())) {
 				log.warn("Found Bucket[{}] in Storage that does not belong to this Worker according to the Worker information.", bucket.getId());
 			}
-			registerBucket(bucket, entities, tableBuckets);
+			registerBucket(bucket, entities, entity2Bucket, tableBuckets);
 		}
 
 		for (CBlock cBlock : storage.getAllCBlocks()) {
 			registerCBlock(cBlock, connectorCBlocks);
 		}
 
-		return new BucketManager(worker.getJobManager(), storage, worker, entities, connectorCBlocks, tableBuckets, entityBucketSize);
+		return new BucketManager(worker.getJobManager(), storage, worker, entities, entity2Bucket, connectorCBlocks, tableBuckets, entityBucketSize);
 	}
 
 	/**
 	 * register entities, and create query specific indices for bucket
 	 */
-	private static void registerBucket(Bucket bucket, Map<String, Entity> entities, Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets) {
+	private static void registerBucket(Bucket bucket, Map<String, Entity> entities, Map<String, Integer> entity2Bucket, Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets) {
 		for (String entity : bucket.entities()) {
 			entities.computeIfAbsent(entity, Entity::new);
+			entity2Bucket.put(entity, bucket.getBucket());
 		}
 
 		tableBuckets
@@ -126,7 +133,7 @@ public class BucketManager {
 			if (!(c instanceof TreeConcept)) {
 				continue;
 			}
-			for (ConceptTreeConnector con : ((TreeConcept)c).getConnectors()) {
+			for (ConceptTreeConnector con : ((TreeConcept) c).getConnectors()) {
 				for (Bucket bucket : storage.getAllBuckets()) {
 
 					CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
@@ -151,13 +158,17 @@ public class BucketManager {
 		}
 	}
 
+	public boolean hasCBlock(CBlockId id) {
+		return storage.getCBlock(id) != null;
+	}
+
 	public synchronized void addCalculatedCBlock(CBlock cBlock) {
 		registerCBlock(cBlock, connectorToCblocks);
 	}
 
 	public void addBucket(Bucket bucket) {
 		storage.addBucket(bucket);
-		registerBucket(bucket, entities, tableToBuckets);
+		registerBucket(bucket, entities, entity2Bucket, tableToBuckets);
 
 		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
@@ -165,7 +176,7 @@ public class BucketManager {
 			if (!(concept instanceof TreeConcept)) {
 				continue;
 			}
-			for (ConceptTreeConnector connector : ((TreeConcept)concept).getConnectors()) {
+			for (ConceptTreeConnector connector : ((TreeConcept) concept).getConnectors()) {
 				if (!connector.getTable().equals(bucket.getTable())) {
 					continue;
 				}
@@ -185,32 +196,18 @@ public class BucketManager {
 		jobManager.addSlowJob(job);
 	}
 
-	public void addConcept(Concept<?> concept) {
-		storage.updateConcept(concept);
+	public void removeTable(Table table) {
+		final Int2ObjectMap<List<Bucket>> removed = tableToBuckets.remove(table);
 
-		if (!(concept instanceof TreeConcept)){
-			return;
+		// It's possible no buckets were registered yet
+		if (removed != null) {
+			removed.values()
+				   .stream()
+				   .flatMap(List::stream)
+				   .forEach(this::removeBucket);
 		}
 
-		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
-
-		for (ConceptTreeConnector connector : ((TreeConcept)concept).getConnectors()) {
-
-			for (Bucket bucket : storage.getAllBuckets()) {
-				if (!bucket.getTable().equals(connector.getTable())) {
-					continue;
-				}
-
-				final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
-
-				if (hasCBlock(cBlockId)) {
-					continue;
-				}
-
-				job.addCBlock(bucket, connector);
-			}
-		}
-		jobManager.addSlowJob(job);
+		storage.removeTable(table.getId());
 	}
 
 	public void removeBucket(Bucket bucket) {
@@ -238,25 +235,6 @@ public class BucketManager {
 		storage.removeBucket(bucket.getId());
 	}
 
-	public void removeConcept(Concept<?> concept) {
-
-		// Just drop all CBlocks at once for the connectors
-		for (Connector connector : concept.getConnectors()) {
-			final Int2ObjectMap<Map<Bucket, CBlock>> removed = connectorToCblocks.remove(connector);
-
-			// It's possible that no data has been loaded yet
-			if(removed != null) {
-				removed.values().stream()
-					   .map(Map::values)
-					   .flatMap(Collection::stream)
-					   .map(CBlock::getId)
-					   .forEach(storage::removeCBlock);
-			}
-		}
-
-		storage.removeConcept(concept.getId());
-	}
-
 	private void removeCBlock(CBlock cBlock) {
 
 		connectorToCblocks.getOrDefault(cBlock.getConnector(), Int2ObjectMaps.emptyMap())
@@ -273,7 +251,7 @@ public class BucketManager {
 	 * @param entity
 	 */
 	public boolean isEntityEmpty(Entity entity) {
-		return !hasBucket(Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize()));
+		return !hasBucket(getBucket(entity.getId()));
 	}
 
 	private boolean hasBucket(int id) {
@@ -281,18 +259,8 @@ public class BucketManager {
 							 .anyMatch(buckets -> buckets.containsKey(id));
 	}
 
-	public void removeTable(Table table) {
-		final Int2ObjectMap<List<Bucket>> removed = tableToBuckets.remove(table);
-
-		// It's possible no buckets were registered yet
-		if (removed != null) {
-			removed.values()
-				   .stream()
-				   .flatMap(List::stream)
-				   .forEach(this::removeBucket);
-		}
-
-		storage.removeTable(table.getId());
+	private int getBucket(String id) {
+		return entity2Bucket.get(id);
 	}
 
 	/**
@@ -315,12 +283,8 @@ public class BucketManager {
 		storage.removeImport(imp.getId());
 	}
 
-	public boolean hasCBlock(CBlockId id) {
-		return storage.getCBlock(id) != null;
-	}
-
 	public List<Bucket> getEntityBucketsForTable(Entity entity, Table table) {
-		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
+		final int bucketId = getBucket(entity.getId());
 
 		return tableToBuckets.getOrDefault(table, Int2ObjectMaps.emptyMap())
 							 .getOrDefault(bucketId, Collections.emptyList());
@@ -335,7 +299,7 @@ public class BucketManager {
 		final Set<String> out = new HashSet<>();
 
 		for (Connector connector : connectors) {
-			if(!connectorToCblocks.containsKey(connector)) {
+			if (!connectorToCblocks.containsKey(connector)) {
 				continue;
 			}
 
@@ -355,19 +319,19 @@ public class BucketManager {
 	}
 
 	public Map<Bucket, CBlock> getEntityCBlocksForConnector(Entity entity, Connector connector) {
-		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
+		final int bucketId = getBucket(entity.getId());
 
 		return connectorToCblocks.getOrDefault(connector, Int2ObjectMaps.emptyMap())
 								 .getOrDefault(bucketId, Collections.emptyMap());
 	}
 
 	public boolean hasEntityCBlocksForConnector(Entity entity, Connector connector) {
-		final int bucketId = Entity.getBucket(entity.getId(), worker.getInfo().getEntityBucketSize());
+		final int bucketId = getBucket(entity.getId());
 		final Map<Bucket, CBlock> cblocks = connectorToCblocks.getOrDefault(connector, Int2ObjectMaps.emptyMap())
-																.getOrDefault(bucketId, Collections.emptyMap());
+															  .getOrDefault(bucketId, Collections.emptyMap());
 
 		for (Bucket bucket : cblocks.keySet()) {
-			if (bucket.containsEntity(entity.getId())){
+			if (bucket.containsEntity(entity.getId())) {
 				return true;
 			}
 		}
@@ -382,6 +346,53 @@ public class BucketManager {
 		}
 
 		addConcept(incoming);
+	}
+
+	public void removeConcept(Concept<?> concept) {
+
+		// Just drop all CBlocks at once for the connectors
+		for (Connector connector : concept.getConnectors()) {
+			final Int2ObjectMap<Map<Bucket, CBlock>> removed = connectorToCblocks.remove(connector);
+
+			// It's possible that no data has been loaded yet
+			if (removed != null) {
+				removed.values().stream()
+					   .map(Map::values)
+					   .flatMap(Collection::stream)
+					   .map(CBlock::getId)
+					   .forEach(storage::removeCBlock);
+			}
+		}
+
+		storage.removeConcept(concept.getId());
+	}
+
+	public void addConcept(Concept<?> concept) {
+		storage.updateConcept(concept);
+
+		if (!(concept instanceof TreeConcept)) {
+			return;
+		}
+
+		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
+
+		for (ConceptTreeConnector connector : ((TreeConcept) concept).getConnectors()) {
+
+			for (Bucket bucket : storage.getAllBuckets()) {
+				if (!bucket.getTable().equals(connector.getTable())) {
+					continue;
+				}
+
+				final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
+
+				if (hasCBlock(cBlockId)) {
+					continue;
+				}
+
+				job.addCBlock(bucket, connector);
+			}
+		}
+		jobManager.addSlowJob(job);
 	}
 
 
