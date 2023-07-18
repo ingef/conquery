@@ -4,20 +4,12 @@ import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
 /**
  * Base class, that is intended for external serialization, without type information.
  */
-@RequiredArgsConstructor
-@Getter
-@Setter
-@EqualsAndHashCode
-@ToString
+@Data
 public class SimpleErrorInfo implements ConqueryErrorInfo {
 	@NotNull
 	private final UUID id;

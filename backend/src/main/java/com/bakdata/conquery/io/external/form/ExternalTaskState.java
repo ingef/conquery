@@ -61,14 +61,11 @@ public class ExternalTaskState {
 	@JsonIgnore
 	@ValidationMethod(message = "Status is set to FAILURE, but no error information was set.")
 	public boolean isErrorInfoSet() {
-		if (status != TaskStatus.FAILURE) {
-			return true;
-		}
-
-		return error != null;
+		return (status == TaskStatus.FAILURE) ==  (error != null);
 	}
 
-	@JsonIgnore
+
+		@JsonIgnore
 	@ValidationMethod(message = "Result assets don't have unique ids")
 	public boolean isResultAssetIdUnique() {
 		return results.stream().map(ResultAsset::getAssetId).distinct().count() == results.size();
