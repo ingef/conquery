@@ -1,12 +1,8 @@
 package com.bakdata.conquery.models.error;
 
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 
 import javax.validation.constraints.NotNull;
 
@@ -21,11 +17,13 @@ import com.bakdata.conquery.util.VariableDefaultValue;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.text.StringSubstitutor;
 
 /**
  * Base class for errors that are thrown within Conquery and can be serialized
@@ -45,18 +43,16 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@NotNull
 	@ToString.Include
 	private UUID id = UUID.randomUUID();
-	private Map<String, String> context;
 	/**
 	 * Since Jackson does not seem to be able to deserialize throwable with super.cause set. We have our own member
 	 */
 	private ConqueryError conqueryCause;
 
 	protected ConqueryError() {
-		this(Collections.emptyMap(), null);
+		this(null);
 	}
 
-	protected ConqueryError(Map<String, String> context, ConqueryError conqueryCause) {
-		this.context = context;
+	protected ConqueryError(ConqueryError conqueryCause) {
 		this.conqueryCause = conqueryCause;
 	}
 
@@ -69,11 +65,7 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 	@Override
 	public SimpleErrorInfo asPlain() {
-		return new SimpleErrorInfo(
-				getId(),
-				getCode(),
-				getMessage()
-		);
+		return new SimpleErrorInfo(getId(), getCode(), getMessage());
 	}
 
 	@Override
@@ -86,174 +78,122 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	@JsonIgnore
 	@ToString.Include
 	public final String getMessage() {
-		return StringSubstitutor.replace(getMessageTemplate().apply(C10N.get(ErrorMessages.class)), context);
+		return getMessageTemplate(C10N.get(ErrorMessages.class));
 	}
 
-	public abstract Function<ErrorMessages, String> getMessageTemplate();
+	@JsonIgnore
+	public abstract String getMessageTemplate(ErrorMessages errorMessages);
 
 	@Slf4j
 	@CPSType(base = ConqueryError.class, id = "CQ_UNKNOWN_ERROR")
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class UnknownError extends ConqueryError {
 
 		public UnknownError(Throwable e) {
-			this();
+			super();
 			log.error("Encountered unknown Error[{}]", getId(), e);
 		}
 
-		/**
-		 * Constructor for deserialization.
-		 */
-		@JsonCreator
-		private UnknownError() {
-			super();
-		}
 
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::getUnknownError;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.unknownError();
 		}
 	}
 
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION")
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionCreationErrorUnspecified extends ConqueryError {
-
-		public ExecutionCreationErrorUnspecified() {
-			super();
-		}
-
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::executionCreationUnspecified;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.executionCreationUnspecified();
 		}
 	}
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE")
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionCreationResolveError extends ConqueryError {
 
-		static final String FAILED_ELEMENT = "ELEMENT";
-		static final String FAILED_ELEMENT_CLASS = "ELEMENT_CLASS";
+		private final String unknownId;
+		private final String clazz;
 
 		public ExecutionCreationResolveError(Id<?> unresolvableElementId) {
-			super(
-					Map.of(
-							FAILED_ELEMENT, unresolvableElementId.toString(),
-							FAILED_ELEMENT_CLASS, unresolvableElementId.getClass().getSimpleName()
-					),
-					null
-			);
-
+			unknownId = unresolvableElementId.toString();
+			clazz = unresolvableElementId.getClass().getSimpleName();
 		}
 
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::executionCreationResolve;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.executionCreationResolve(unknownId, clazz);
 		}
 	}
 
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_FORMAT")
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExternalResolveFormatError extends ConqueryError {
 
-		static final String FORMAT_ROW_LENGTH = "formatRowLength";
-		static final String DATA_ROW_LENGTH = "dataRowLength";
 
+		private final int formatRowLength;
+		private final int dataRowLength;
 
-		public ExternalResolveFormatError(int formatRowLength, int dataRowLength) {
-			super(Map.of(
-					FORMAT_ROW_LENGTH, Integer.toString(formatRowLength),
-					DATA_ROW_LENGTH, Integer.toString(dataRowLength)
-			), null);
-		}
 
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::externalResolveFormatError;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.externalResolveFormatError(formatRowLength, dataRowLength);
 		}
 	}
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_ONE_PER_ROW")
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExternalResolveOnePerRowError extends ConqueryError {
-		/**
-		 * Constructor for deserialization.
-		 */
-		@JsonCreator
-		public ExternalResolveOnePerRowError() {
-			super();
-		}
 
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::externalEntityUnique;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.externalEntityUnique();
 		}
 	}
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_RESOLVE_EXTERNAL_EMPTY")
+	@NoArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExternalResolveEmptyError extends ConqueryError {
 
-		/**
-		 * Constructor for deserialization.
-		 */
-		@JsonCreator
-		public ExternalResolveEmptyError() {
-			super();
-		}
-
-
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::externalResolveEmpty;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.externalResolveEmpty();
 		}
 	}
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_CREATION_PLAN_FLAGS_MISSING")
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionCreationPlanMissingFlagsError extends ConqueryError {
-		static final String ALIGNMENT = "ALIGNMENT";
+		private final Set<String> labels;
 
-		public ExecutionCreationPlanMissingFlagsError(Set<String> labels) {
-			super(Map.of(ALIGNMENT, String.join(", ", labels).trim()), null);
-		}
-
-		/**
-		 * Constructor for deserialization.
-		 */
-		@JsonCreator
-		private ExecutionCreationPlanMissingFlagsError() {
-			super();
-		}
 
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::missingFlags;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.missingFlags(String.join(", ", labels));
 		}
 
 	}
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_CREATION_CREATION_PLAN_DATECONTEXT_MISMATCH")
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionCreationPlanDateContextError extends ConqueryError {
 
-		static final String RESOLUTION = "resolution";
-		private static final String ALIGNMENT = "alignment";
+		private final Alignment alignment;
+		private final Resolution resolution;
 
-
-		/**
-		 * Constructor for deserialization.
-		 */
-		@JsonCreator
-		private ExecutionCreationPlanDateContextError() {
-			super();
-		}
-
-		public ExecutionCreationPlanDateContextError(Alignment alignment, Resolution resolution) {
-			super(Map.of(
-					ALIGNMENT, Objects.toString(alignment),
-					RESOLUTION, Objects.toString(resolution)
-			), null);
-		}
 
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::dateContextMismatch;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.dateContextMismatch(alignment, resolution);
 		}
 	}
 
@@ -261,26 +201,20 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	 * Unspecified execution processing error.
 	 */
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_JOB")
+	@Data
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionJobErrorWrapper extends ConqueryError {
 
-		static final String ENTITY = "entity";
-
-		/**
-		 * Constructor for deserialization.
-		 */
-		@JsonCreator
-		private ExecutionJobErrorWrapper() {
-			super();
-		}
-
+		private final Entity entity;
 
 		public ExecutionJobErrorWrapper(Entity entity, ConqueryError e) {
-			super(Map.of(ENTITY, Integer.toString(entity.getId())), e);
+			super(e);
+			this.entity = entity;
 		}
 
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::unknownQueryExecutionError;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.unknownQueryExecutionError(entity);
 		}
 	}
 
@@ -288,15 +222,12 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	 * Unspecified execution processing error.
 	 */
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_PROCESSING")
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionProcessingError extends ConqueryError {
 
-		public ExecutionProcessingError() {
-			super(null, null);
-		}
-
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::executionProcessingError;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.executionProcessingError();
 		}
 	}
 
@@ -304,52 +235,32 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 	 * Timeout during processing.
 	 */
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_PROCESSING_TIMEOUT")
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class ExecutionProcessingTimeoutError extends ConqueryError {
 
-		public ExecutionProcessingTimeoutError() {
-			super();
-		}
-
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::executionTimeout;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.executionTimeout();
 		}
 	}
 
 	@CPSType(base = ConqueryError.class, id = "CQ_EXECUTION_NO_SECONDARY_ID")
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class NoSecondaryIdSelectedError extends ConqueryError {
-		/**
-		 * Constructor for deserialization.
-		 */
-		@JsonCreator
-		public NoSecondaryIdSelectedError() {
-			super();
-		}
-
-		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::noSecondaryIdSelected;
+				@Override
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.noSecondaryIdSelected();
 		}
 	}
 
 	@CPSType(base = ConqueryError.class, id = "CQ_SQL_ERROR")
+	@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 	public static class SqlError extends ConqueryError {
-
-		static final String SQL_ERROR = "ERROR";
-
-
-		public SqlError(SQLException sqlException) {
-			super(Map.of(SQL_ERROR, sqlException.toString()), null);
-		}
-
-		@JsonCreator
-		private SqlError() {
-			super();
-		}
+		private final SQLException error;
 
 		@Override
-		public Function<ErrorMessages, String> getMessageTemplate() {
-			return ErrorMessages::sqlError;
+		public String getMessageTemplate(ErrorMessages errorMessages) {
+			return errorMessages.sqlError(error);
 		}
 
 
