@@ -22,9 +22,6 @@ public class ConqueryErrorTest {
 				"""
 						{\r
 						    "code": "TEST_ERROR",\r
-						    "context": {\r
-						      "group": "group"\r
-						    },\r
 						    "id": "c8be5f10-1ea8-11eb-8fb8-26885ec43e14",\r
 						    "message": "group was empty."\r
 						  }""");
