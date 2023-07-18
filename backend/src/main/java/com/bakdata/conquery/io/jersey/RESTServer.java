@@ -3,7 +3,7 @@ package com.bakdata.conquery.io.jersey;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.CachingFilter;
-import com.bakdata.conquery.io.jetty.ConqueryErrorExecptionMapper;
+import com.bakdata.conquery.io.jetty.ConqueryErrorExceptionMapper;
 import com.bakdata.conquery.io.jetty.ConqueryJsonExceptionMapper;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
 import com.bakdata.conquery.io.jetty.NoSuchElementExceptionMapper;
@@ -35,7 +35,7 @@ public class RESTServer {
 		jersey.register(ViewRenderExceptionMapper.class);
 		jersey.register(NoSuchElementExceptionMapper.class);
 		// default Dropwizard's exception mappers
-		jersey.register(new ConqueryErrorExecptionMapper());
+		jersey.register(new ConqueryErrorExceptionMapper());
 		jersey.register(ConqueryJsonExceptionMapper.class);
 		jersey.register(new LoggingExceptionMapper<Throwable>() {});
 		jersey.register(new EarlyEofExceptionMapper());

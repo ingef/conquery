@@ -10,7 +10,7 @@ import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
-import com.bakdata.conquery.models.error.PlainError;
+import com.bakdata.conquery.models.error.SimpleErrorInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -47,7 +47,7 @@ public class ExternalTaskState {
 	 * Short description of the possible Error.
 	 * Only set when {@link ExternalTaskState#status} {@code = FAILURE}.
 	 */
-	private final PlainError error;
+	private final SimpleErrorInfo error;
 
 	@JsonIgnore
 	@ValidationMethod(message = "Invalid 'taskId' for provided state")

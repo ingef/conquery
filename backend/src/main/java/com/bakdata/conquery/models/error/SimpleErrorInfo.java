@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.error;
 
-import java.util.Map;
 import java.util.UUID;
 
 import javax.validation.constraints.NotNull;
@@ -19,15 +18,14 @@ import lombok.ToString;
 @Setter
 @EqualsAndHashCode
 @ToString
-public class PlainError implements ConqueryErrorInfo {
+public class SimpleErrorInfo implements ConqueryErrorInfo {
 	@NotNull
 	private final UUID id;
 	private final String code;
 	private final String message;
-	private final Map<String,String> context;
-	
+
 	@Override
-	public PlainError asPlain() {
+	public SimpleErrorInfo asPlain() {
 		return this;
 	}
 }

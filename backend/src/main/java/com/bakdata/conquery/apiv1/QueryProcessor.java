@@ -415,7 +415,7 @@ public class QueryProcessor {
 
 
 		if (execution.getState() == ExecutionState.FAILED) {
-			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
+			throw new ConqueryError.ExecutionProcessingError();
 		}
 
 
@@ -463,7 +463,7 @@ public class QueryProcessor {
 		}
 
 		if (execution.getState() == ExecutionState.FAILED) {
-			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
+			throw new ConqueryError.ExecutionProcessingError();
 		}
 
 		final SingleTableResult result = (SingleTableResult) execution;

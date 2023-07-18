@@ -465,7 +465,7 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void executionCreationPlanError() throws JSONException, IOException {
-		ConqueryError error = new ConqueryError.ExecutionCreationPlanError();
+		ConqueryError error = new ConqueryError.ExecutionProcessingError();
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
