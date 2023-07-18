@@ -21,17 +21,11 @@ import org.jooq.Field;
 public class ConceptSelects implements Selects {
 
 	Field<Object> primaryColumn;
-
 	Optional<ColumnDateRange> dateRestrictionRange;
-
 	Optional<ColumnDateRange> validityDate;
-
 	List<Field<Object>> eventSelect;
-
 	List<Field<Object>> eventFilter;
-
 	List<Field<Object>> groupSelect;
-
 	List<Field<Object>> groupFilter;
 
 	@Override
