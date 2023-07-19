@@ -15,7 +15,7 @@ public interface ErrorMessages {
 	String unknownError();
 
 	@En("An unknown error occurred, while creating the query.")
-	@De("Ein unerwarteter Fehler ist aufgetreten, beim erzeugen der Anfrage.")
+	@De("Ein unerwarteter Fehler ist beim Erzeugen der Anfrage aufgetreten.")
 	String executionCreationUnspecified();
 
 	@En("Could not find an ${1} element called `${0}`")
@@ -23,7 +23,7 @@ public interface ErrorMessages {
 	String executionCreationResolve(String id, String clazz);
 
 	@En("There are ${0} columns in the format but ${1} in at least one row")
-	@De("Das Format gibt ${0} Spalten vor, eine Zeile enthält aber ${1} Spalten.")
+	@De("Das Format gibt ${0} Spalten vor, mindestens eine Zeile enthält aber ${1} Spalten.")
 	String externalResolveFormatError(int formatRowLength, int dataRowLength);
 
 	@En("Entities must be unique.")
@@ -55,7 +55,7 @@ public interface ErrorMessages {
 	String executionTimeout();
 
 	@En("No secondaryId could be selected.")
-	@De("Keine der ausgewählten Analyseebenen konnte in den ausgewählten Konzepten gefunden werden.")
+	@De("Die ausgewählte Analyseebenen konnte in keinem der ausgewählten Konzepten gefunden werden.")
 	String noSecondaryIdSelected();
 
 	@En("Something went wrong while querying the database: ${0}.")
