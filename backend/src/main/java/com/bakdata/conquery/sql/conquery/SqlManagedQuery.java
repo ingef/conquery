@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -64,6 +63,11 @@ public class SqlManagedQuery extends ManagedExecution implements SingleTableResu
 	@Override
 	protected String makeDefaultLabel(PrintSettings cfg) {
 		return QueryUtils.makeQueryLabel(query, cfg, getId());
+	}
+
+	@Override
+	public void cancel() {
+		//TODO when async is implemented.
 	}
 
 	@Override

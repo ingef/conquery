@@ -41,6 +41,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
@@ -119,7 +120,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	private transient Namespace namespace;
+	private transient DistributedNamespace namespace;
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
@@ -160,7 +161,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null));
 			}
 
-			this.namespace = namespace;
+			this.namespace = ((DistributedNamespace) namespace);
 			this.config = config;
 
 			doInitExecutable();
@@ -402,7 +403,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	public void reset() {
 		setState(ExecutionState.NEW);
-
-		namespace.getExecutionManager().clearQueryResults(this);
 	}
+
+	public abstract void cancel();
 }

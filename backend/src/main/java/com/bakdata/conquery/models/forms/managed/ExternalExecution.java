@@ -89,6 +89,8 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 		api = formBackendConfig.createApi();
 	}
 
+
+
 	@Override
 	public void start() {
 
@@ -118,6 +120,10 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 
 		final ExternalTaskState formState = api.getFormState(externalTaskId);
 
+		updateStatus(formState);
+	}
+
+	private void updateStatus(ExternalTaskState formState) {
 		switch (formState.getStatus()) {
 
 			case RUNNING -> {
@@ -129,15 +135,13 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 				resultsAssetMap = registerResultAssets(formState);
 				finish(ExecutionState.DONE);
 			}
+			case CANCELLED -> reset();
 		}
 	}
 
 	private List<Pair<ResultAsset, AssetBuilder>> registerResultAssets(ExternalTaskState response) {
 		final List<Pair<ResultAsset, AssetBuilder>> assetMap = new ArrayList<>();
-		response.getResults().forEach(asset ->
-									  {
-										  assetMap.add(Pair.of(asset, createResultAssetBuilder(asset)));
-									  });
+		response.getResults().forEach(asset -> assetMap.add(Pair.of(asset, createResultAssetBuilder(asset))));
 		return assetMap;
 	}
 
@@ -164,6 +168,13 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 	}
 
 	@Override
+	public void cancel() {
+		Preconditions.checkNotNull(externalTaskId, "Cannot check external task, because no Id is present");
+
+		updateStatus(api.cancelTask(externalTaskId));
+	}
+
+	@Override
 	public Stream<AssetBuilder> getResultAssets() {
 		return resultsAssetMap.stream().map(Pair::value);
 	}
@@ -182,6 +193,7 @@ public class ExternalExecution extends ManagedForm<ExternalForm> implements Exte
 		if (getState().equals(executionState)) {
 			return;
 		}
+
 		super.finish(executionState);
 		synchronized (this) {
 			AuthUtil.cleanUpUserAndBelongings(serviceUser, getStorage());
