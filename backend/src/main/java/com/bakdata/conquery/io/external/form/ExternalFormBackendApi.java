@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.auth.AuthenticationClientFilterProvider;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.dropwizard.health.check.http.HttpHealthCheck;
@@ -27,17 +28,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ExternalFormBackendApi {
 
+	public final static String TASK_ID = "task-id";
 	// Custom headers for form post
 	private static final String HTTP_HEADER_CQ_API_URL = "X-CQ-Api-Url";
 	private static final String HTTP_HEADER_CQ_AUTHENTICATION = "X-CQ-Authentication";
 	private static final String HTTP_HEADER_CQ_AUTHENTICATION_ORIGINAL = "X-CQ-Authentication-Original";
-
 	// Custom query-params for form post
 	private static final String QUERY_SCOPE = "scope";
 	private static final String QUERY_DATASET = "dataset";
-
-	public final static String TASK_ID = "task-id";
-
 	private final Client client;
 	private final WebTarget formConfigTarget;
 	private final WebTarget postFormTarget;
@@ -71,8 +69,10 @@ public class ExternalFormBackendApi {
 	public List<ObjectNode> getFormConfigs() {
 		log.debug("Getting form configurations from: {}", formConfigTarget);
 
-		return formConfigTarget.request(MediaType.APPLICATION_JSON_TYPE).buildGet().invoke(new GenericType<>() {
-		});
+		return formConfigTarget.request(MediaType.APPLICATION_JSON_TYPE)
+							   .acceptLanguage(I18n.LOCALE.get())
+							   .buildGet().invoke(new GenericType<>() {
+				});
 	}
 
 	public ExternalTaskState postForm(ExternalForm form, User originalUser, User serviceUser, Dataset dataset) {
@@ -81,13 +81,11 @@ public class ExternalFormBackendApi {
 		// Set headers
 		WebTarget webTarget = postFormTarget.queryParam(QUERY_DATASET, dataset.getId());
 
-		if (!originalUser.isPermitted(dataset, Ability.DOWNLOAD)) {
-			// If user is not allowed to download, only provide them with statistics.
-			webTarget = webTarget.queryParam(QUERY_SCOPE, DatasetDetail.STATISTIC);
-		}
-		else {
-			webTarget = webTarget.queryParam(QUERY_SCOPE, DatasetDetail.FULL);
-		}
+
+		// If user is not allowed to download, only provide them with statistics.
+
+		final DatasetDetail detail = originalUser.isPermitted(dataset, Ability.DOWNLOAD) ? DatasetDetail.FULL : DatasetDetail.STATISTIC;
+		webTarget = webTarget.queryParam(QUERY_SCOPE, detail);
 
 		final Invocation.Builder request = webTarget.request(MediaType.APPLICATION_JSON_TYPE);
 
@@ -97,23 +95,30 @@ public class ExternalFormBackendApi {
 
 		request.header(HTTP_HEADER_CQ_API_URL, conqueryApiUrl)
 			   .header(HTTP_HEADER_CQ_AUTHENTICATION, serviceUserToken)
-			   .header(HTTP_HEADER_CQ_AUTHENTICATION_ORIGINAL, originalUserToken);
+			   .header(HTTP_HEADER_CQ_AUTHENTICATION_ORIGINAL, originalUserToken)
+			   .acceptLanguage(I18n.LOCALE.get())
+		;
 
 		ExternalTaskState post = request.post(Entity.entity(form.getExternalApiPayload(), MediaType.APPLICATION_JSON_TYPE), ExternalTaskState.class);
 		return post;
 	}
 
 	public ExternalTaskState getFormState(UUID externalId) {
+
 		final WebTarget getStatusTargetResolved = getStatusTarget.resolveTemplate(TASK_ID, externalId);
 		log.debug("Getting status from: {}", getStatusTargetResolved);
 
-		return getStatusTargetResolved.request(MediaType.APPLICATION_JSON_TYPE).get(ExternalTaskState.class);
+		return getStatusTargetResolved.request(MediaType.APPLICATION_JSON_TYPE)
+									  .acceptLanguage(I18n.LOCALE.get())
+									  .get(ExternalTaskState.class);
 	}
 
 	public Response getResult(final URI resultURL) {
 		log.debug("Query external form result from {}", resultURL);
 
-		return client.target(baseTarget.getUri().resolve(resultURL)).request().get();
+		return client.target(baseTarget.getUri().resolve(resultURL)).request()
+					 .acceptLanguage(I18n.LOCALE.get())
+					 .get();
 
 	}
 
