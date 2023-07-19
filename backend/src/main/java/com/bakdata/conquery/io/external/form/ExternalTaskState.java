@@ -10,7 +10,7 @@ import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
-import com.bakdata.conquery.models.error.PlainError;
+import com.bakdata.conquery.models.error.SimpleErrorInfo;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
@@ -35,7 +35,11 @@ public class ExternalTaskState {
 	@DecimalMin("0.0")
 	@DecimalMax("1.0")
 	private final BigDecimal progress;
-
+	/**
+	 * Short description of the possible Error.
+	 * Only set when {@link ExternalTaskState#status} {@code = FAILURE}.
+	 */
+	private final SimpleErrorInfo error;
 	/**
 	 * The result url.
 	 * Only set when {@link ExternalTaskState#status} {@code = SUCCESS}.
@@ -43,16 +47,10 @@ public class ExternalTaskState {
 	@Valid
 	private List<@Valid ResultAsset> results;
 
-	/**
-	 * Short description of the possible Error.
-	 * Only set when {@link ExternalTaskState#status} {@code = FAILURE}.
-	 */
-	private final PlainError error;
-
 	@JsonIgnore
 	@ValidationMethod(message = "Invalid 'taskId' for provided state")
 	public boolean isValidTaskId() {
-		if (status.equals(TaskStatus.FAILURE)) {
+		if (status == TaskStatus.FAILURE) {
 			return true;
 		}
 		return id != null;
@@ -61,12 +59,13 @@ public class ExternalTaskState {
 	@JsonIgnore
 	@ValidationMethod(message = "Status is set to FAILURE, but no error information was set.")
 	public boolean isErrorInfoSet() {
-		if (status != TaskStatus.FAILURE) {
-			return true;
+		if (status == TaskStatus.FAILURE) {
+			return error != null;
 		}
 
-		return error != null;
+		return true;
 	}
+
 
 	@JsonIgnore
 	@ValidationMethod(message = "Result assets don't have unique ids")
