@@ -35,7 +35,11 @@ public class ExternalTaskState {
 	@DecimalMin("0.0")
 	@DecimalMax("1.0")
 	private final BigDecimal progress;
-
+	/**
+	 * Short description of the possible Error.
+	 * Only set when {@link ExternalTaskState#status} {@code = FAILURE}.
+	 */
+	private final SimpleErrorInfo error;
 	/**
 	 * The result url.
 	 * Only set when {@link ExternalTaskState#status} {@code = SUCCESS}.
@@ -43,16 +47,10 @@ public class ExternalTaskState {
 	@Valid
 	private List<@Valid ResultAsset> results;
 
-	/**
-	 * Short description of the possible Error.
-	 * Only set when {@link ExternalTaskState#status} {@code = FAILURE}.
-	 */
-	private final SimpleErrorInfo error;
-
 	@JsonIgnore
 	@ValidationMethod(message = "Invalid 'taskId' for provided state")
 	public boolean isValidTaskId() {
-		if (status.equals(TaskStatus.FAILURE)) {
+		if (status == TaskStatus.FAILURE) {
 			return true;
 		}
 		return id != null;
@@ -61,11 +59,15 @@ public class ExternalTaskState {
 	@JsonIgnore
 	@ValidationMethod(message = "Status is set to FAILURE, but no error information was set.")
 	public boolean isErrorInfoSet() {
-		return (status == TaskStatus.FAILURE) ==  (error != null);
+		if (status == TaskStatus.FAILURE) {
+			return error != null;
+		}
+
+		return true;
 	}
 
 
-		@JsonIgnore
+	@JsonIgnore
 	@ValidationMethod(message = "Result assets don't have unique ids")
 	public boolean isResultAssetIdUnique() {
 		return results.stream().map(ResultAsset::getAssetId).distinct().count() == results.size();
