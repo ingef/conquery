@@ -34,15 +34,14 @@ public class ConceptTreeCache {
 	@JsonIgnore
 	private final Map<String, ConceptTreeChild> cached;
 
-	public ConceptTreeCache(TreeConcept treeConcept, int size) {
+	public ConceptTreeCache(TreeConcept treeConcept) {
 		this.treeConcept = treeConcept;
-		cached = new HashMap<>(size);
+		cached = new HashMap<>();
 	}
 
 	/**
 	 * If id is already in cache, use that. If not calculate it by querying treeConcept. If rowMap was not used to query, cache the response.
 	 *
-	 * @param id String id to resolve in conceptTree.
 	 * @param value
 	 */
 	public ConceptTreeChild findMostSpecificChild(String value, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {

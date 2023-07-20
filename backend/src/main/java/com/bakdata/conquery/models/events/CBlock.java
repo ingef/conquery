@@ -98,7 +98,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 		final int[][] mostSpecificChildren = calculateSpecificChildrenPaths(bucket, connector);
 		//TODO Object2LongMap
 		final Map<String, Long> includedConcepts = calculateConceptElementPathBloomFilter(bucketSize, bucket, mostSpecificChildren);
-		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket, bucketSize);
+		final Map<String, CDateRange> entitySpans = calculateEntityDateIndices(bucket);
 
 		return new CBlock(bucket, connector, root, includedConcepts, entitySpans, mostSpecificChildren);
 	}
@@ -123,7 +123,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 			// Create index and insert into Tree.
 			TreeChildPrefixIndex.putIndexInto(treeConcept);
 
-			treeConcept.initializeIdCache(stringStore, bucket.getImp());
+			treeConcept.initializeIdCache(bucket.getImp());
 		}
 		// No column only possible if we have just one tree element!
 		else if (treeConcept.countElements() == 1) {
@@ -247,7 +247,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 *
 	 * @implNote This is an unrolled implementation of {@link CDateRange#span(CDateRange)}.
 	 */
-	private static Map<String, CDateRange> calculateEntityDateIndices(Bucket bucket, int bucketSize) {
+	private static Map<String, CDateRange> calculateEntityDateIndices(Bucket bucket) {
 		final Map<String, CDateRange> spans = new HashMap<>();
 
 		final Table table = bucket.getTable();

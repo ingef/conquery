@@ -90,7 +90,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 
 		final TrieSearch<FrontendValue> search = new TrieSearch<>(suffixLength, config.getSearchSplitChars());
 
-		// TODO
+		// TODO send message to shards to collect data, then on response create trieSearch proper?
 
 
 		return search;

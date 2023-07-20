@@ -14,25 +14,17 @@ import com.bakdata.conquery.models.datasets.concepts.conditions.PrefixRangeCondi
 import com.bakdata.conquery.util.dict.BytesTTMap;
 import com.bakdata.conquery.util.dict.ValueNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
 public class TreeChildPrefixIndex {
 
 	@JsonIgnore
-	private BytesTTMap valueToChildIndex = new BytesTTMap();
+	private final BytesTTMap valueToChildIndex;
 	@JsonIgnore
-	private ConceptTreeChild[] treeChildren;
-
-	public ConceptTreeChild findMostSpecificChild(String stringValue) {
-		ValueNode nearestNode = valueToChildIndex.getNearestNode(stringValue.getBytes());
-
-		if(nearestNode != null) {
-			return treeChildren[nearestNode.getValue()];
-		}
-
-		return null;
-	}
+	private final ConceptTreeChild[] treeChildren;
 
 	/***
 	 * Test if the condition maintains a prefix structure, this is necessary for creating an index.
@@ -41,36 +33,36 @@ public class TreeChildPrefixIndex {
 	 */
 	private static boolean isPrefixMaintainigCondition(CTCondition cond) {
 		return cond instanceof PrefixCondition
-				|| cond instanceof PrefixRangeCondition
-				|| (cond instanceof OrCondition
-					&& ((OrCondition) cond).getConditions().stream().allMatch(TreeChildPrefixIndex::isPrefixMaintainigCondition))
+			   || cond instanceof PrefixRangeCondition
+			   || (cond instanceof OrCondition
+				   && ((OrCondition) cond).getConditions().stream().allMatch(TreeChildPrefixIndex::isPrefixMaintainigCondition))
 				;
 	}
 
 	public static void putIndexInto(ConceptTreeNode<?> root) {
-		if(root.getChildIndex() != null) {
+		if (root.getChildIndex() != null) {
 			return;
 		}
 		synchronized (root) {
-			if(root.getChildIndex() != null) {
-				return;
-			}
-			
-			if(root.getChildren().isEmpty()) {
+			if (root.getChildIndex() != null) {
 				return;
 			}
 
-			TreeChildPrefixIndex index = new TreeChildPrefixIndex();
+			if (root.getChildren().isEmpty()) {
+				return;
+			}
 
+
+			final BytesTTMap valueToChildIndex = new BytesTTMap();
 			// collect all prefix children that are itself children of prefix nodes
-			Map<String, ConceptTreeChild> gatheredPrefixChildren = new HashMap<>();
+			final Map<String, ConceptTreeChild> gatheredPrefixChildren = new HashMap<>();
 
-			Queue<ConceptTreeChild> treeChildrenOrig = new ArrayDeque<>(root.getChildren());
+			final Queue<ConceptTreeChild> treeChildrenOrig = new ArrayDeque<>(root.getChildren());
 			ConceptTreeChild child;
 
 			// Iterate over all children that can be reached deterministically with prefixes
 			while ((child = treeChildrenOrig.poll()) != null) {
-				CTCondition condition = child.getCondition();
+				final CTCondition condition = child.getCondition();
 
 				// If the Condition is not deterministic wrt to prefixes, we will not build an index over it, but start a new one from there.
 				if (!isPrefixMaintainigCondition(condition)) {
@@ -87,36 +79,47 @@ public class TreeChildPrefixIndex {
 				for (String prefix : ((PrefixCondition) condition).getPrefixes()) {
 					// We are interested in the most specific child, therefore the deepest.
 					gatheredPrefixChildren.merge(prefix, child,
-						(newChild, oldChild) -> oldChild.getDepth() > newChild.getDepth() ? oldChild : newChild
+												 (newChild, oldChild) -> oldChild.getDepth() > newChild.getDepth() ? oldChild : newChild
 					);
 				}
 			}
 
 			// Insert children into index and build resolving list
-			List<ConceptTreeChild> gatheredChildren = new ArrayList<>();
+			final List<ConceptTreeChild> gatheredChildren = new ArrayList<>();
 
 			for (Map.Entry<String, ConceptTreeChild> entry : gatheredPrefixChildren.entrySet()) {
-				String k = entry.getKey();
-				ConceptTreeChild value = entry.getValue();
-				if (index.valueToChildIndex.put(k.getBytes(), gatheredChildren.size()) != -1) {
+				final String k = entry.getKey();
+				final ConceptTreeChild value = entry.getValue();
+
+				if (valueToChildIndex.put(k.getBytes(), gatheredChildren.size()) != -1) {
 					log.error("Duplicate Prefix '{}' in '{}' of '{}'", k, value, root);
 				}
 
 				gatheredChildren.add(value);
 			}
 
-			index.valueToChildIndex.balance();
+			valueToChildIndex.balance();
 
-			index.treeChildren = gatheredChildren.toArray(new ConceptTreeChild[0]);
+			final ConceptTreeChild[] treeChildren = gatheredChildren.toArray(new ConceptTreeChild[0]);
 
-			log.trace("Index below {} contains {} nodes", root.getId(), index.treeChildren.length);
+			log.trace("Index below {} contains {} nodes", root.getId(), treeChildren.length);
 
-			if(index.treeChildren.length == 0) {
+			if (treeChildren.length == 0) {
 				return;
 			}
 
 			// add lookup only if it contains any elements
-			root.setChildIndex(index);
+			root.setChildIndex(new TreeChildPrefixIndex(valueToChildIndex, treeChildren));
 		}
+	}
+
+	public ConceptTreeChild findMostSpecificChild(String stringValue) {
+		final ValueNode nearestNode = valueToChildIndex.getNearestNode(stringValue.getBytes());
+
+		if (nearestNode != null) {
+			return treeChildren[nearestNode.getValue()];
+		}
+
+		return null;
 	}
 }
