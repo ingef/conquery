@@ -56,11 +56,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		if (dateRestriction.hasLowerBound()) {
 			min = dateRestriction.getMin().toString();
 		}
-		else if (dateRestriction.hasUpperBound()) {
-			max = dateRestriction.getMax().toString();
-		}
-		else if (!dateRestriction.isAll()) {
-			min = dateRestriction.getMin().toString();
+		if (dateRestriction.hasUpperBound()) {
 			max = dateRestriction.getMax().toString();
 		}
 
