@@ -52,34 +52,31 @@ import lombok.ToString;
 @Getter
 @ToString(of = {"name", "keyType", "valueType"})
 public enum StoreMappings {
-	DATASET(Dataset.class, Boolean.class),
-	ID_MAPPING(EntityIdMap.class, Boolean.class),
-	NAMESPACES(DatasetRegistry.class, Boolean.class),
-	IMPORTS(Import.class, ImportId.class),
-	SECONDARY_IDS(SecondaryIdDescription.class, SecondaryIdDescriptionId.class),
-	TABLES(Table.class, TableId.class),
-	CONCEPTS(Concept.class, ConceptId.class),
-	BUCKETS(Bucket.class, BucketId.class),
-	C_BLOCKS(CBlock.class, CBlockId.class),
-	WORKER(WorkerInformation.class, Boolean.class),
-	EXECUTIONS(ManagedExecution.class, ManagedExecutionId.class),
+
+	AUTH_GROUP(Group.class, GroupId.class),
 	AUTH_ROLE(Role.class, RoleId.class),
 	AUTH_USER(User.class, UserId.class),
-	AUTH_GROUP(Group.class, GroupId.class),
-	STRUCTURE(StructureNode[].class, Boolean.class),
-	FORM_CONFIG(FormConfig.class, FormConfigId.class),
-	WORKER_TO_BUCKETS(WorkerToBucketsMap.class, Boolean.class),
-
+	BUCKETS(Bucket.class, BucketId.class),
+	CONCEPTS(Concept.class, ConceptId.class),
+	C_BLOCKS(CBlock.class, CBlockId.class),
+	DATASET(Dataset.class, Boolean.class),
 	ENTITY_PREVIEW(PreviewConfig.class, Boolean.class),
+	ENTITY_TO_BUCKET(Integer.class, String.class),
+	EXECUTIONS(ManagedExecution.class, ManagedExecutionId.class),
+	FORM_CONFIG(FormConfig.class, FormConfigId.class),
+	ID_MAPPING(EntityIdMap.class, Boolean.class),
+	IMPORTS(Import.class, ImportId.class),
 	INTERN_TO_EXTERN(InternToExternMapper.class, InternToExternMapperId.class),
-	SEARCH_INDEX(SearchIndex.class, SearchIndexId.class);
+	NAMESPACES(DatasetRegistry.class, Boolean.class),
+	SEARCH_INDEX(SearchIndex.class, SearchIndexId.class),
+	SECONDARY_IDS(SecondaryIdDescription.class, SecondaryIdDescriptionId.class),
+	STRUCTURE(StructureNode[].class, Boolean.class),
+	TABLES(Table.class, TableId.class),
+	WORKER(WorkerInformation.class, Boolean.class),
+	WORKER_TO_BUCKETS(WorkerToBucketsMap.class, Boolean.class);
 
 	private final Class<?> valueType;
 	private final Class<?> keyType;
-
-	public <KEY, VALUE, CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> StoreInfo<KEY, VALUE> storeInfo() {
-		return new StoreInfo<KEY, VALUE>(getName(), (CLASS_K) getKeyType(), (CLASS_V) getValueType());
-	}
 
 	/**
 	 * Store for identifiable values, with injectors. Store is also cached.
@@ -102,12 +99,15 @@ public enum StoreMappings {
 		return new IdentifiableCachedStore<T>(centralRegistry, baseStore);
 	}
 
-
 	/**
 	 * Store holding a single value.
 	 */
 	public static <VALUE> SingletonStore<VALUE> singleton(Store<Boolean, VALUE> baseStore) {
 		return new SingletonStore<>(baseStore);
+	}
+
+	public <KEY, VALUE, CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> StoreInfo<KEY, VALUE> storeInfo() {
+		return new StoreInfo<KEY, VALUE>(getName(), (CLASS_K) getKeyType(), (CLASS_V) getValueType());
 	}
 
 	private String getName() {

@@ -3,7 +3,7 @@ package com.bakdata.conquery.io.storage.xodus.stores;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
 import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
 import com.bakdata.conquery.io.storage.Store;
@@ -39,7 +39,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
-		throw new UnsupportedOperationException();
+		return store.forEach(consumer);
 	}
 
 	@Override
@@ -63,27 +63,30 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void fillCache() {
-		AtomicLong totalSize = new AtomicLong(0);
-		int count = count();
-		cache = new ConcurrentHashMap<KEY, VALUE>(count);
+	public void loadData() {
+		final LongAdder totalSize = new LongAdder();
+		final int count = count();
+		cache = new ConcurrentHashMap<>(count);
 		final ProgressBar bar;
-		Stopwatch timer = Stopwatch.createStarted();
 
 		if (count > 100) {
 			synchronized (PROGRESS_BAR) {
 				bar = PROGRESS_BAR;
 				bar.addMaxValue(count);
 			}
-			log.info("\tloading store {}", this);
 		}
 		else {
 			bar = null;
 		}
 
+		log.info("BEGIN loading store {}", this);
+
+
+		final Stopwatch timer = Stopwatch.createStarted();
+
 		store.forEach((key, value, size) -> {
 			try {
-				totalSize.addAndGet(size);
+				totalSize.add(size);
 				cache.put(key, value);
 			}
 			catch (RuntimeException e) {
@@ -107,7 +110,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		log.debug("\tloaded store {}: {} entries, {} within {}",
 				this,
 				cache.values().size(),
-				BinaryByteUnit.format(totalSize.get()),
+				BinaryByteUnit.format(totalSize.sum()),
 				timer.stop()
 		);
 	}
@@ -134,8 +137,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void deleteStore() {
-		store.deleteStore();
+	public void removeStore() {
+		store.removeStore();
 	}
 
 	@Override

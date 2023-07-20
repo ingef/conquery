@@ -179,10 +179,10 @@ public class CQExternal extends CQElement {
 	private static CDateSet[] readDates(String[][] values, List<String> format, DateReader dateReader) {
 		final CDateSet[] out = new CDateSet[values.length];
 
-		List<DateFormat> dateFormats = format.stream()
-											 .map(CQExternal::resolveDateFormat)
-											 // Don't use Stream#toList to preserve null-values
-											 .collect(Collectors.toList());
+		final List<DateFormat> dateFormats = format.stream()
+												   .map(CQExternal::resolveDateFormat)
+												   // Don't use Stream#toList to preserve null-values
+												   .collect(Collectors.toList());
 
 
 		/*

@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -54,7 +53,7 @@ public class MetaStorage extends ConqueryStorage implements Injectable {
 	}
 
 	@Override
-	public ImmutableList<KeyIncludingStore<?, ?>> getStores() {
+	public ImmutableList<ManagedStore> getStores() {
 		Preconditions.checkNotNull(authUser, "User storage was not created");
 		Preconditions.checkNotNull(authRole, "Role storage was not created");
 		Preconditions.checkNotNull(authGroup, "Group storage was not created");

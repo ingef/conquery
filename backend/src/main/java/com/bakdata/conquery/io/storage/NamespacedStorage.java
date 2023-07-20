@@ -8,7 +8,6 @@ import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.Column;
@@ -82,7 +81,7 @@ public abstract class NamespacedStorage extends ConqueryStorage {
 	}
 
 	@Override
-	public ImmutableList<KeyIncludingStore<?, ?>> getStores() {
+	public ImmutableList<ManagedStore> getStores() {
 		return ImmutableList.of(dataset, secondaryIds, tables, imports, concepts);
 	}
 

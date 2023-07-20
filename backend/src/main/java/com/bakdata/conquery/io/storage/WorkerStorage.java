@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
@@ -45,7 +44,7 @@ public class WorkerStorage extends NamespacedStorage {
 	}
 
 	@Override
-	public ImmutableList<KeyIncludingStore<?, ?>> getStores() {
+	public ImmutableList<ManagedStore> getStores() {
 		return ImmutableList.of(
 				dataset,
 				secondaryIds,

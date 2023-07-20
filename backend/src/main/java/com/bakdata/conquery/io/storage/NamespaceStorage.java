@@ -2,10 +2,11 @@ package com.bakdata.conquery.io.storage;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.OptionalInt;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.storage.xodus.stores.KeyIncludingStore;
+import com.bakdata.conquery.io.storage.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.storage.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StoreFactory;
 import com.bakdata.conquery.models.datasets.PreviewConfig;
@@ -27,10 +28,10 @@ public class NamespaceStorage extends NamespacedStorage {
 	protected IdentifiableStore<SearchIndex> searchIndexes;
 	protected SingletonStore<EntityIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
-
 	protected SingletonStore<PreviewConfig> preview;
-
 	protected SingletonStore<WorkerToBucketsMap> workerToBuckets;
+
+	protected CachedStore<String, Integer> entity2Bucket;
 
 	public NamespaceStorage(StoreFactory storageFactory, String pathName, Validator validator) {
 		super(storageFactory, pathName, validator);
@@ -57,13 +58,14 @@ public class NamespaceStorage extends NamespacedStorage {
 		structure = getStorageFactory().createStructureStore(super.getPathName(), getCentralRegistry(), objectMapper);
 		workerToBuckets = getStorageFactory().createWorkerToBucketsStore(super.getPathName(), objectMapper);
 		preview = getStorageFactory().createPreviewStore(super.getPathName(), getCentralRegistry(), objectMapper);
+		entity2Bucket = getStorageFactory().createEntity2BucketStore(super.getPathName(), objectMapper);
 
 		decorateInternToExternMappingStore(internToExternMappers);
 		decorateIdMapping(idMapping);
 	}
 
 	@Override
-	public ImmutableList<KeyIncludingStore<?, ?>> getStores() {
+	public ImmutableList<ManagedStore> getStores() {
 		return ImmutableList.of(
 				dataset,
 
@@ -80,7 +82,8 @@ public class NamespaceStorage extends NamespacedStorage {
 				preview,
 				idMapping,
 				structure,
-				workerToBuckets
+				workerToBuckets,
+				entity2Bucket
 		);
 	}
 
@@ -102,6 +105,28 @@ public class NamespaceStorage extends NamespacedStorage {
 
 	public WorkerToBucketsMap getWorkerBuckets() {
 		return workerToBuckets.get();
+	}
+
+	public int getNumberOfEntities() {
+		return entity2Bucket.count();
+	}
+
+	public OptionalInt getEntityBucket(String entity) {
+		final Integer bucket = entity2Bucket.get(entity);
+
+		if(bucket == null){
+			return OptionalInt.empty();
+		}
+
+		return OptionalInt.of(bucket);
+	}
+
+	public int assignEntityBucket(String entity, int bucketSize) {
+		final int bucket = (int) Math.ceil((1d + getNumberOfEntities()) / (double) bucketSize);
+
+		entity2Bucket.add(entity, bucket);
+
+		return bucket;
 	}
 
 

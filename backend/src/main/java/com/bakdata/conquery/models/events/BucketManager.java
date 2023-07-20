@@ -75,12 +75,12 @@ public class BucketManager {
 	private final int entityBucketSize;
 
 	public static BucketManager create(Worker worker, WorkerStorage storage, int entityBucketSize) {
-		Map<String, Entity> entities = new HashMap<>();
-		Map<Connector, Int2ObjectMap<Map<Bucket, CBlock>>> connectorCBlocks = new HashMap<>();
-		Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets = new HashMap<>();
-		Object2IntMap<String> entity2Bucket = new Object2IntOpenHashMap<>();
+		final Map<String, Entity> entities = new HashMap<>();
+		final Map<Connector, Int2ObjectMap<Map<Bucket, CBlock>>> connectorCBlocks = new HashMap<>();
+		final Map<Table, Int2ObjectMap<List<Bucket>>> tableBuckets = new HashMap<>();
+		final Object2IntMap<String> entity2Bucket = new Object2IntOpenHashMap<>();
 
-		IntArraySet assignedBucketNumbers = worker.getInfo().getIncludedBuckets();
+		final IntArraySet assignedBucketNumbers = worker.getInfo().getIncludedBuckets();
 		log.trace("Trying to load these buckets that map to: {}", assignedBucketNumbers);
 
 		for (Bucket bucket : storage.getAllBuckets()) {
@@ -127,7 +127,7 @@ public class BucketManager {
 
 	@SneakyThrows
 	public void fullUpdate() {
-		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
+		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
 		for (Concept<?> c : storage.getAllConcepts()) {
 			if (!(c instanceof TreeConcept)) {
@@ -136,7 +136,7 @@ public class BucketManager {
 			for (ConceptTreeConnector con : ((TreeConcept) c).getConnectors()) {
 				for (Bucket bucket : storage.getAllBuckets()) {
 
-					CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
+					final CBlockId cBlockId = new CBlockId(bucket.getId(), con.getId());
 
 					if (!con.getTable().equals(bucket.getTable())) {
 						continue;
@@ -170,7 +170,7 @@ public class BucketManager {
 		storage.addBucket(bucket);
 		registerBucket(bucket, entities, entity2Bucket, tableToBuckets);
 
-		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
+		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
 		for (Concept<?> concept : storage.getAllConcepts()) {
 			if (!(concept instanceof TreeConcept)) {
@@ -181,7 +181,7 @@ public class BucketManager {
 					continue;
 				}
 
-				CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
+				final CBlockId cBlockId = new CBlockId(bucket.getId(), connector.getId());
 
 
 				if (hasCBlock(cBlockId)) {
@@ -260,7 +260,7 @@ public class BucketManager {
 	}
 
 	private int getBucket(String id) {
-		return entity2Bucket.get(id);
+		return entity2Bucket.getInt(id);
 	}
 
 	/**
@@ -374,7 +374,7 @@ public class BucketManager {
 			return;
 		}
 
-		CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
+		final CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, worker.getJobsExecutorService());
 
 		for (ConceptTreeConnector connector : ((TreeConcept) concept).getConnectors()) {
 

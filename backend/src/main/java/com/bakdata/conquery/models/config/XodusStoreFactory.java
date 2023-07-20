@@ -110,7 +110,8 @@ public class XodusStoreFactory implements StoreFactory {
 					ID_MAPPING.storeInfo().getName() + BigStore.DATA,
 					STRUCTURE.storeInfo().getName(),
 					WORKER_TO_BUCKETS.storeInfo().getName(),
-					ENTITY_PREVIEW.storeInfo().getName()
+					ENTITY_PREVIEW.storeInfo().getName(),
+					ENTITY_TO_BUCKET.storeInfo().getName()
 			)
 	);
 	public static final Set<String> WORKER_STORES = Sets.union(
@@ -279,6 +280,11 @@ public class XodusStoreFactory implements StoreFactory {
 	@Override
 	public SingletonStore<PreviewConfig> createPreviewStore(String pathName, CentralRegistry centralRegistry, ObjectMapper objectMapper) {
 		return StoreMappings.singleton(createStore(findEnvironment(pathName), validator, ENTITY_PREVIEW, centralRegistry.injectIntoNew(objectMapper)));
+	}
+
+	@Override
+	public CachedStore<String, Integer> createEntity2BucketStore(String pathName, ObjectMapper objectMapper) {
+		return StoreMappings.cached(createStore(findEnvironment(pathName), validator, ENTITY_TO_BUCKET, objectMapper));
 	}
 
 	@Override

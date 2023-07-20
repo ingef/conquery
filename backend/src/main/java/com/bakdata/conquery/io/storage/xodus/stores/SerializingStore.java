@@ -496,7 +496,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void fillCache() {
+	public void loadData() {
 	}
 
 	@Override
@@ -520,7 +520,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void deleteStore() {
+	public void removeStore() {
 		store.deleteStore();
 	}
 

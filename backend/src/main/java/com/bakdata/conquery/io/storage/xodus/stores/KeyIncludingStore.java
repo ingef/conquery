@@ -6,7 +6,10 @@ import java.util.Collection;
 
 import com.bakdata.conquery.io.storage.Store;
 
-public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
+import com.bakdata.conquery.io.storage.ManagedStore;
+import com.bakdata.conquery.io.storage.Store;
+
+public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable, ManagedStore {
 
 	protected final Store<KEY, VALUE> store;
 	
@@ -40,7 +43,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 	}
 	
 	public void loadData() {
-		store.fillCache();
+		store.loadData();
 		for(VALUE value : getAll()) {
 			added(value);
 		}
@@ -70,7 +73,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 	}
 
 	public void removeStore() {
-		store.deleteStore();
+		store.removeStore();
 	}
 
 	@Override

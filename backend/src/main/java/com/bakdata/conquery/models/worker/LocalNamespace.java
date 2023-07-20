@@ -17,8 +17,6 @@ import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.FilterSearch;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -47,11 +45,9 @@ public class LocalNamespace extends IdResolveContext implements Namespace {
 	// Jackson's injectables that are available when deserializing requests (see PathParamInjector) or items from the storage
 	private final List<Injectable> injectables;
 
-	//TODO move to storage
-	private final Object2IntMap<String> entity2bucket = new Object2IntOpenHashMap<>();
-
-	public synchronized int getBucket(String entity, int bucketSize) {
-		return entity2bucket.computeIfAbsent(entity, ignored -> (int) Math.ceil((1d + entity2bucket.size()) / (double) bucketSize));
+	public int getBucket(String entity, int bucketSize) {
+		return storage.getEntityBucket(entity)
+					  .orElseGet(() -> storage.assignEntityBucket(entity, bucketSize));
 	}
 
 	@Override
@@ -92,7 +88,7 @@ public class LocalNamespace extends IdResolveContext implements Namespace {
 
 	@Override
 	public int getNumberOfEntities() {
-		return entity2bucket.size();
+		return storage.getNumberOfEntities();
 	}
 
 	@Override
