@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
@@ -181,6 +182,19 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
+	public void reset() {
+		super.reset();
+		getNamespace().getExecutionManager().clearQueryResults(this);
+	}
+
+	@Override
+	public void cancel() {
+		log.debug("Sending cancel message to all workers.");
+
+		getNamespace().getWorkerHandler().sendToAll(new CancelQuery(getId()));
+	}
+
+	@Override
 	@JsonIgnore
 	public QueryDescription getSubmitted() {
 		return query;
@@ -191,7 +205,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	 * The Label is customized by mentioning that a description contained a
 	 * {@link CQExternal}, {@link CQReusedQuery} or {@link CQConcept}, in this order.
 	 * In case of one ore more {@link CQConcept} the distinct labels of the concepts are chosen
-	 * and concatinated until a length of {@value #MAX_CONCEPT_LABEL_CONCAT_LENGTH} is reached.
+	 * and concatinated until a length of MAX_CONCEPT_LABEL_CONCAT_LENGTH is reached.
 	 * All further labels are dropped.
 	 */
 	@Override

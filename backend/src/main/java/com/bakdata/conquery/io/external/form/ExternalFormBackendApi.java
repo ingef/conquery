@@ -40,12 +40,13 @@ public class ExternalFormBackendApi {
 	private final WebTarget formConfigTarget;
 	private final WebTarget postFormTarget;
 	private final WebTarget getStatusTarget;
+	private final WebTarget cancelTaskTarget;
 	private final WebTarget getHealthTarget;
 	private final Function<User, String> tokenCreator;
 	private final WebTarget baseTarget;
 	private final URL conqueryApiUrl;
 
-	public ExternalFormBackendApi(Client client, URI baseURI, String formConfigPath, String postFormPath, String statusTemplatePath, String healthCheckPath, Function<User, String> tokenCreator, URL conqueryApiUrl, AuthenticationClientFilterProvider authFilterProvider) {
+	public ExternalFormBackendApi(Client client, URI baseURI, String formConfigPath, String postFormPath, String statusTemplatePath, String cancelTaskPath, String healthCheckPath, Function<User, String> tokenCreator, URL conqueryApiUrl, AuthenticationClientFilterProvider authFilterProvider) {
 
 		this.client = client;
 		this.tokenCreator = tokenCreator;
@@ -60,6 +61,7 @@ public class ExternalFormBackendApi {
 		postFormTarget = baseTarget.path(postFormPath);
 
 		getStatusTarget = baseTarget.path(statusTemplatePath);
+		cancelTaskTarget = baseTarget.path(cancelTaskPath);
 
 		getHealthTarget = baseTarget.path(healthCheckPath);
 	}
@@ -124,4 +126,13 @@ public class ExternalFormBackendApi {
 		return new HttpHealthCheck(getHealthTarget.getUri().toString(), client);
 	}
 
+	public ExternalTaskState cancelTask(UUID taskId) {
+		final ExternalTaskState taskState = cancelTaskTarget.queryParam(TASK_ID, taskId).request().post(null, ExternalTaskState.class);
+
+		if (taskState.getStatus() != TaskStatus.CANCELLED){
+			log.warn("Task `{}` was cancelled, but is still in state {}", taskId, taskState.getStatus());
+		}
+
+		return taskState;
+	}
 }

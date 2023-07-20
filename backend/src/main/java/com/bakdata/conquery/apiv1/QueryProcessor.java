@@ -304,8 +304,6 @@ public class QueryProcessor {
 
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
-		query.reset();
-
 		final ExecutionManager executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
 		executionManager.cancelQuery(dataset, query);
 	}

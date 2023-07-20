@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteForm;
 import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -121,6 +122,12 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		}
 		ManagedQuery subQuery = subQueries.entrySet().iterator().next().getValue();
 		status.setColumnDescriptions(subQuery.generateColumnDescriptions());
+	}
+
+	@Override
+	public void cancel() {
+		log.debug("Sending cancel message to all workers.");
+		getNamespace().getWorkerHandler().sendToAll(new CancelQuery(getId()));
 	}
 
 	@Override
