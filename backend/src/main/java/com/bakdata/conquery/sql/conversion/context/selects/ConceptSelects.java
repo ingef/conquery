@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.context.selects;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -59,7 +60,7 @@ public class ConceptSelects implements Selects {
 	private Stream<Field<Object>> primaryColumnAndValidityDate() {
 		return Stream.concat(
 				Stream.of(this.primaryColumn),
-				this.validityDate.isPresent() ? this.validityDate.get().toFields().stream() : Stream.of()
+				this.validityDate.map(ColumnDateRange::toFields).stream().flatMap(Collection::stream)
 		);
 	}
 

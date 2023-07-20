@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.context.selects;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -21,6 +22,7 @@ import org.jooq.impl.DSL;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class MergedSelects implements Selects {
 
+	public static final String PRIMARY_COLUMN_NAME = "primary_column";
 	Field<Object> primaryColumn;
 
 	/**
@@ -78,7 +80,7 @@ public class MergedSelects implements Selects {
 																																   .getPrimaryColumn()))
 													   .toList();
 		return DSL.coalesce((Object) primaryColumns.get(0), primaryColumns.subList(1, primaryColumns.size()).toArray())
-				  .as("primary_column");
+				  .as(PRIMARY_COLUMN_NAME);
 	}
 
 	private Optional<ColumnDateRange> extractValidityDates(List<QueryStep> querySteps) {
@@ -102,7 +104,7 @@ public class MergedSelects implements Selects {
 	private Stream<Field<Object>> primaryColumnAndValidityDate() {
 		return Stream.concat(
 				Stream.of(this.primaryColumn),
-				this.validityDate.isPresent() ? this.validityDate.get().toFields().stream() : Stream.empty()
+				this.validityDate.map(ColumnDateRange::toFields).stream().flatMap(Collection::stream)
 		);
 	}
 
