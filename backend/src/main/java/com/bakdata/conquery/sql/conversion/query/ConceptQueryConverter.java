@@ -16,6 +16,7 @@ import org.jooq.Select;
 
 public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
+	public static final String FINAL_VALIDITY_DATE_COLUMN_NAME = "dates";
 	private final QueryStepTransformer queryStepTransformer;
 
 	public ConceptQueryConverter(QueryStepTransformer queryStepTransformer) {
@@ -59,7 +60,7 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
 		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunction();
 		Field<Object> finalValidityDateSelect = functionProvider.daterangeString(finalSelects.getValidityDate().get())
-																.as("dates");
+																.as(FINAL_VALIDITY_DATE_COLUMN_NAME);
 
 		return finalSelects.withValidityDate(ColumnDateRange.of(finalValidityDateSelect));
 	}

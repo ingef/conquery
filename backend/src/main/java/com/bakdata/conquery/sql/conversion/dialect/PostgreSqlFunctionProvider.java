@@ -7,7 +7,6 @@ import java.util.Map;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.sql.models.ColumnDateRange;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
@@ -51,18 +50,16 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange daterange(CDateRange dateRestriction) {
 
-		String min;
-		String max;
+		String min = MINUS_INFINITY_DATE_VALUE;
+		String max = INFINITY_DATE_VALUE;
 
-		if (dateRestriction.isAtLeast()) {
+		if (dateRestriction.hasLowerBound()) {
 			min = dateRestriction.getMin().toString();
-			max = INFINITY_DATE_VALUE;
 		}
-		else if (dateRestriction.isAtMost()) {
-			min = MINUS_INFINITY_DATE_VALUE;
+		else if (dateRestriction.hasUpperBound()) {
 			max = dateRestriction.getMax().toString();
 		}
-		else {
+		else if (!dateRestriction.isAll()) {
 			min = dateRestriction.getMin().toString();
 			max = dateRestriction.getMax().toString();
 		}
@@ -120,11 +117,6 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		DatePart datePart = DATE_CONVERSION.get(timeUnit);
 		if (datePart == null) {
 			throw new UnsupportedOperationException("Chrono unit %s is not supported".formatted(timeUnit));
-		}
-
-		if (startDateColumn.getType() != MajorTypeId.DATE) {
-			throw new UnsupportedOperationException("Can't calculate date distance to column of type "
-													+ startDateColumn.getType());
 		}
 
 		// we can now safely cast to Field of type Date
