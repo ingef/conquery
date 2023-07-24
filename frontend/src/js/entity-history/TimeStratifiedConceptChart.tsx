@@ -49,8 +49,12 @@ export const TimeStratifiedConceptChart = ({
 
   if (!conceptSemantic) return null;
 
-  const years = timeStratifiedInfo.years.map((y) => y.year);
-  const valuesPerYear = timeStratifiedInfo.years.map((y) =>
+  const descYearInfos = [...timeStratifiedInfo.years].sort(
+    (a, b) => b.year - a.year,
+  );
+
+  const years = descYearInfos.map((y) => y.year);
+  const valuesPerYear = descYearInfos.map((y) =>
     ((y.values[Object.keys(y.values)[0]] as string[]) || []).map(
       (conceptId) => getConceptById(conceptId, conceptSemantic?.concept)!,
     ),
@@ -81,9 +85,9 @@ export const TimeStratifiedConceptChart = ({
           <ConceptBubble>{val.label}</ConceptBubble>
         </WithTooltip>
       ))}
-      {years.map((y, i) => (
+      {years.map((year, i) => (
         <>
-          <Year>{y}</Year>
+          <Year>{year}</Year>
           {allValues.map((val) =>
             valuesPerYear[i].includes(val) ? <BubbleYes /> : <BubbleNo />,
           )}
