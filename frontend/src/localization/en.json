@@ -454,6 +454,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "noData": "No data available",
     "blurred": "Data visibility",
     "emptyTimeline": {
       "headline": "History",
