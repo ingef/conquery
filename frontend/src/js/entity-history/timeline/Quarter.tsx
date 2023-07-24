@@ -16,7 +16,6 @@ import { EntityEvent } from "../reducer";
 
 import EventCard from "./EventCard";
 import { SmallHeading } from "./SmallHeading";
-import { isDateColumn } from "./util";
 
 const EventTimeline = styled("div")`
   display: grid;

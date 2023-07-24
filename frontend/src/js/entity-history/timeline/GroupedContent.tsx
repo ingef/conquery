@@ -1,7 +1,6 @@
 import { css, Theme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { memo, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 import { NumericFormat } from "react-number-format";
 
 import {
