@@ -150,10 +150,7 @@ export default function mockApi(app: Application) {
               id: 1,
               status: "FAILED",
               error: {
-                code: "EXAMPLE_ERROR_INTERPOLATED",
-                context: {
-                  adjective: "easy",
-                },
+                message: "This is an example message"
               },
             }),
           );
@@ -181,7 +178,7 @@ export default function mockApi(app: Application) {
               ],
               columnDescriptions: [
                 {
-                  label: "Money Range", 
+                  label: "Money Range",
                   selectId: null,
                   type: "MONEY",
                 },
