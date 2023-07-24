@@ -401,6 +401,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public void reset() {
+		// This avoids endless loops with already reset queries
+		if(getState().equals(ExecutionState.NEW)){
+			return;
+		}
+
 		setState(ExecutionState.NEW);
 
 		namespace.getExecutionManager().clearQueryResults(this);
