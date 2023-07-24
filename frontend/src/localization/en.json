@@ -475,7 +475,6 @@
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
     "openAll": "Open all",
-    "dates": "Dates",
     "searchEntitiesButton": "Start History",
     "error": "Couldn't load history for this ID.",
     "options": {
