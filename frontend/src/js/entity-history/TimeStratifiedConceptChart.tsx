@@ -33,13 +33,11 @@ const EmptyMsg = styled("p")`
 const BubbleYes = styled("div")`
   width: 14px;
   height: 14px;
-  border-radius: ${({ theme }) => theme.borderRadius};
   background-color: ${({ theme }) => theme.col.blueGray};
 `;
 const BubbleNo = styled("div")`
   width: 14px;
   height: 14px;
-  border-radius: ${({ theme }) => theme.borderRadius};
   background-color: ${({ theme }) => theme.col.grayLight};
 `;
 
