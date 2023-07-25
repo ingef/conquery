@@ -19,26 +19,22 @@
     function getJobs() {
       return fetch("/admin/jobs")
         .then((res) => res.json())
-        .then((nodes) => {
-          const categories = {};
-          Object.keys(nodes).forEach((node) => {
-            let categoryName = Object.keys(categories)
-              .filter((c) => node.includes(c))?.[0]
-              || node;
-
-            categories[categoryName] = {
-              ...categories[categoryName],
-              [node]: nodes[node]
-            };
+        .then((entries) => {
+          const origins = {};
+          entries.forEach((entry) => {
+            const origin = entry.origin
+            origins[entry.origin] = [
+              ...(origins[entry.origin] ?? []),
+              entry
+            ];
           });
-          return categories;
+          return origins;
         });
     }
 
     function findNodeOrCloneTemplate(templateId, newId = "", parentNode) {
-      const element = document.getElementById(newId);
-      if (newId !== "" && element) {
-        return element;
+      if (newId !== "" && document.getElementById(newId)) {
+        return document.getElementById(newId);
       } else {
         const clonedTemplate = document.getElementById(templateId).cloneNode(true);
         clonedTemplate.id = newId;
@@ -48,24 +44,31 @@
     }
 
     async function refreshJobs() {
-      const categories = await getJobs();
-      Object.keys(categories).forEach((category) => {
-        const categoryData = categories[category];
-        const accordion = findNodeOrCloneTemplate("categoryTemplate", "category_" + category, document.getElementById("nodesAccordionGroup"));
-        accordion.querySelector("h5").innerText = category;
+      const origins = await getJobs();
+      Object.keys(origins).forEach((origin) => {
+        const nodes = origins[origin];
+        const accordion = findNodeOrCloneTemplate("originTemplate", "origin_" + origin, document.getElementById("nodesAccordionGroup"));
+        accordion.querySelector("h5").innerText = origin;
 
-        Object.keys(categoryData).forEach((node) => {
-          const nodeData = categoryData[node];
-          const nodeElement = findNodeOrCloneTemplate("nodeTemplate", "node_" + node, accordion.querySelector(".accordionContent"));
-          nodeElement.querySelector(".nodeName").innerText = node;
-          const timeDifference = (new Date() - new Date(nodeData.timestamp)) / 1000;
-          nodeElement.querySelector(".ageString").innerText = timeDifference + "s";
-          nodeElement.querySelector(".jobsAmount").innerText = nodeData?.jobs?.length ?? "0";
+        const accordionDetails = findNodeOrCloneTemplate("originDetailsTemplate");
+        const timeDifference = (new Date() - new Date(nodes[0].timestamp)) / 1000;
+        accordionDetails.querySelector(".ageString").innerText = timeDifference + "s";
+        accordionDetails.querySelector(".jobsAmount").innerText = nodes
+          .map((node) => node?.jobs.length ?? 0)
+          .reduce((partialSum, x) => partialSum + x, 0);
+        accordion.querySelector(".accordion-infotext").innerHTML = "";
+        accordion.querySelector(".accordion-infotext").appendChild(accordionDetails);
+
+        nodes.forEach((node) => {
+          const fullName = node.origin + (node.dataset ? "::" + node.dataset : "")
+          const nodeElement = findNodeOrCloneTemplate("nodeTemplate", "node_" + fullName, accordion.querySelector(".accordionContent"));
+          nodeElement.querySelector(".nodeName").innerText = fullName;
+          nodeElement.querySelector(".jobsAmount").innerText = node?.jobs?.length ?? "0";
 
           const jobsList = nodeElement.querySelector(".jobsList");
-          if (nodeData?.jobs.length > 0) {
+          if (node?.jobs.length > 0) {
             jobsList.innerHTML = "";
-            nodeData.jobs.forEach((job) => {
+            node.jobs.forEach((job) => {
               const jobElement = findNodeOrCloneTemplate("jobTemplate", "job_" + job.jobId, jobsList);
               jobElement.querySelector(".jobLabel").innerText = job?.label;
               jobElement.querySelector(".jobLabel").title = job?.label;
@@ -116,13 +119,17 @@
 
 <!-- HTML Templates -->
 <div class="d-none">
-  <@accordion.accordion summary="" id="categoryTemplate"></@accordion.accordion>
+  <@accordion.accordion summary="" id="originTemplate"></@accordion.accordion>
+
+  <div id="originDetailsTemplate">
+    updated <span class="ageString"></span> ago
+    <span class="jobsAmount badge badge-secondary"></span>
+  </div>
 
   <div id="nodeTemplate">
     <div class="d-flex justify-content-between align-items-center">
       <span class="nodeName py-2" style="font-size: 1.2rem;"></span>
       <div>
-        updated <span class="ageString"></span> ago
         <span class="jobsAmount badge badge-secondary"></span>
       </div>
     </div>
