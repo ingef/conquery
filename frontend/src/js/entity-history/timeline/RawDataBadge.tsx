@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 
+import { ColumnDescription } from "../../api/types";
 import { EntityEvent } from "../reducer";
 
 const Badge = styled("div")`
@@ -14,9 +15,10 @@ const Badge = styled("div")`
 interface Props {
   event: EntityEvent;
   className?: string;
+  sourceColumn: ColumnDescription;
 }
 
-export const RawDataBadge = ({ className, event }: Props) => {
+export const RawDataBadge = ({ className, event, sourceColumn }: Props) => {
   return (
     <Badge
       className={className}
@@ -26,7 +28,7 @@ export const RawDataBadge = ({ className, event }: Props) => {
         }
       }}
     >
-      {event.source}
+      {event[sourceColumn.label]}
     </Badge>
   );
 };

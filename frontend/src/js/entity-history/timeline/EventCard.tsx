@@ -23,6 +23,7 @@ import type { EntityEvent } from "../reducer";
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
 import { TinyLabel } from "./TinyLabel";
+import { isDateColumn, isSourceColumn } from "./util";
 
 const Card = styled("div")`
   display: grid;
@@ -95,6 +96,8 @@ const Bullet = styled("div")`
 const EventCard = ({
   row,
   columns,
+  dateColumn,
+  sourceColumn,
   columnBuckets,
   currencyConfig,
   contentFilter,
@@ -104,6 +107,8 @@ const EventCard = ({
 }: {
   row: EntityEvent;
   columns: Record<string, ColumnDescription>;
+  dateColumn: ColumnDescription;
+  sourceColumn: ColumnDescription;
   columnBuckets: ColumnBuckets;
   contentFilter: ContentFilterValue;
   currencyConfig: CurrencyConfigT;
@@ -116,8 +121,8 @@ const EventCard = ({
   const applicableGroupableIds = columnBuckets.groupableIds.filter(
     (column) =>
       exists(row[column.label]) &&
-      column.label !== "dates" && // Because they're already displayed somewhere else
-      column.label !== "source", // Because they're already displayed somewhere else
+      !isDateColumn(column) && // Because they're already displayed somewhere else
+      !isSourceColumn(column), // Because they're already displayed somewhere else
   );
   const groupableIdsTooltip = t("history.content.fingerprint");
 
@@ -134,8 +139,8 @@ const EventCard = ({
   return (
     <Card>
       <Bullet />
-      <RowDates dates={row.dates} />
-      <SxRawDataBadge event={row} />
+      <RowDates dates={row[dateColumn.label]} />
+      <SxRawDataBadge event={row} sourceColumn={sourceColumn} />
       <EventItemContent>
         {contentFilter.money && applicableMoney.length > 0 && (
           <Flex>

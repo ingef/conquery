@@ -6,6 +6,9 @@ export const isIdColumn = (columnDescription: ColumnDescription) =>
 export const isDateColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "EVENT_DATE");
 
+export const isSourceColumn = (columnDescription: ColumnDescription) =>
+  columnDescription.semantics.some((s) => s.type === "SOURCES");
+
 export const isGroupableColumn = (columnDescription: ColumnDescription) =>
   columnDescription.semantics.some((s) => s.type === "GROUP");
 

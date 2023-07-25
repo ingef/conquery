@@ -32,6 +32,7 @@ import { setMessage } from "../snack-message/actions";
 import { SnackMessageType } from "../snack-message/reducer";
 
 import { EntityEvent, EntityId } from "./reducer";
+import { isDateColumn, isSourceColumn } from "./timeline/util";
 
 export type EntityHistoryActions = ActionType<
   | typeof openHistory
@@ -235,15 +236,28 @@ export function useUpdateHistorySession() {
         }
 
         const authorizedCSVUrl = getAuthorizedUrl(csvUrl.url);
-        const csv = await loadCSV(authorizedCSVUrl, { english: true });
+        const csv = await loadCSV(authorizedCSVUrl);
         const currentEntityData = await parseCSVWithHeaderToObj(
           csv.data.map((r) => r.join(";")).join("\n"),
         );
+        const dateColumn = columnDescriptions.find(isDateColumn);
+        if (!dateColumn) {
+          throw new Error("No date column found");
+        }
+        const sourceColumn = columnDescriptions.find(isSourceColumn);
+        if (!sourceColumn) {
+          throw new Error("No sources column found");
+        }
 
-        const currentEntityDataProcessed =
-          transformEntityData(currentEntityData);
+        const currentEntityDataProcessed = transformEntityData(
+          currentEntityData,
+          { dateColumn },
+        );
+
         const uniqueSources = [
-          ...new Set(currentEntityDataProcessed.map((row) => row.source)),
+          ...new Set(
+            currentEntityDataProcessed.map((row) => row[sourceColumn.label]),
+          ),
         ];
 
         const csvHeader = csv.data[0];
@@ -305,15 +319,24 @@ export function useUpdateHistorySession() {
   };
 }
 
-const transformEntityData = (data: { [key: string]: any }[]): EntityEvent[] => {
+const transformEntityData = (
+  data: { [key: string]: any }[],
+  {
+    dateColumn,
+  }: {
+    dateColumn: ColumnDescription;
+  },
+): EntityEvent[] => {
+  const dateKey = dateColumn.label;
+
   return data
     .map((row) => {
-      const { first, last } = getFirstAndLastDateOfRange(row["dates"]);
+      const { first, last } = getFirstAndLastDateOfRange(row[dateKey]);
 
       return first && last
         ? {
             ...row,
-            dates: {
+            [dateKey]: {
               from: first,
               to: last,
             },
@@ -321,16 +344,15 @@ const transformEntityData = (data: { [key: string]: any }[]): EntityEvent[] => {
         : row;
     })
     .sort((a, b) => {
-      return a.dates.from - b.dates.from > 0 ? -1 : 1;
+      return a[dateKey].from - b[dateKey].from > 0 ? -1 : 1;
     })
     .map((row) => {
-      const { dates, ...rest } = row;
       return {
-        dates: {
-          from: formatStdDate(row.dates?.from),
-          to: formatStdDate(row.dates?.to),
+        ...row,
+        [dateKey]: {
+          from: formatStdDate(row[dateKey]?.from),
+          to: formatStdDate(row[dateKey]?.to),
         },
-        ...rest,
       };
     });
 };
