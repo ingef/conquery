@@ -5,8 +5,8 @@ import java.util.Objects;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -15,30 +15,24 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.google.common.base.Preconditions;
 import lombok.ToString;
 
-@ToString(of = "validityDateColumn", callSuper = true)
+@ToString(of = "validityDate", callSuper = true)
 public class ValidityDateNode extends QPChainNode {
 
-	private final Column validityDateColumn;
+	private final ValidityDate validityDate;
 	private transient CDateSet restriction;
 
 	protected Map<Bucket, CBlock> preCurrentRow;
 
-	public ValidityDateNode(Column validityDateColumn, QPNode child) {
+	public ValidityDateNode(ValidityDate validityDate, QPNode child) {
 		super(child);
-		Preconditions.checkNotNull(validityDateColumn, this.getClass().getSimpleName() + " needs a validityDateColumn");
-		this.validityDateColumn = validityDateColumn;
+		Preconditions.checkNotNull(validityDate, this.getClass().getSimpleName() + " needs a validityDate");
+		this.validityDate = validityDate;
 	}
 
 	@Override
 	public void acceptEvent(Bucket bucket, int event) {
-
-		//if event has null validityDate cancel
-		if (!bucket.has(event, validityDateColumn)) {
-			return;
-		}
-
 		//no dateRestriction or event is in date restriction
-		if (restriction.isAll() || bucket.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
+		if (restriction.isAll() || bucket.eventIsContainedIn(event, validityDate, context.getDateRestriction())) {
 			getChild().acceptEvent(bucket, event);
 		}
 	}
@@ -59,7 +53,7 @@ public class ValidityDateNode extends QPChainNode {
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
-		super.nextTable(ctx.withValidityDateColumn(validityDateColumn), currentTable);
+		super.nextTable(ctx.withValidityDateColumn(validityDate), currentTable);
 		restriction = ctx.getDateRestriction();
 
 		preCurrentRow = ctx.getBucketManager().getEntityCBlocksForConnector(getEntity(), context.getConnector());

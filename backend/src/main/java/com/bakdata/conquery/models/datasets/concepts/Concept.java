@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.auth.permissions.Authorized;
 import com.bakdata.conquery.models.auth.permissions.ConceptPermission;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
@@ -89,12 +88,12 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	/**
 	 * Allows concepts to create their own altered FiltersNode if necessary.
 	 */
-	public QPNode createConceptQuery(QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators, Column validityDateColumn) {
+	public QPNode createConceptQuery(QueryPlanContext context, List<FilterNode<?>> filters, List<Aggregator<?>> aggregators, List<Aggregator<CDateSet>> eventDateAggregators, ValidityDate validityDate) {
 		final QPNode child = filters.isEmpty() && aggregators.isEmpty() ? new Leaf() : FiltersNode.create(filters, aggregators, eventDateAggregators);
 
 
 		// Only if a validityDateColumn exists, capsule children in ValidityDateNode
-		return validityDateColumn != null ? new ValidityDateNode(validityDateColumn, child) : child;
+		return validityDate != null ? new ValidityDateNode(validityDate, child) : child;
 	}
 
 	@Override

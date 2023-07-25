@@ -8,6 +8,7 @@ import java.util.Optional;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -80,7 +81,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		for (Map.Entry<CQTable, QPNode> entry : tables.entrySet()) {
 
 			final CQTable cqTable = entry.getKey();
-			final Column validityDateColumn = cqTable.findValidityDate().getColumn();
+			final ValidityDate validityDate = cqTable.findValidityDate();
 			final QPNode query = entry.getValue();
 			final Map<Bucket, CBlock> cblocks = ctx.getBucketManager().getEntityCBlocksForConnector(entity, cqTable.getConnector());
 
@@ -95,8 +96,8 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 				for (int event = start; event < end; event++) {
 
-					if (validityDateColumn != null
-						&& !bucket.eventIsContainedIn(event, validityDateColumn, dateRange)) {
+					if (validityDate != null
+						&& !bucket.eventIsContainedIn(event, validityDate, dateRange)) {
 						continue;
 					}
 
@@ -104,7 +105,7 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 						continue;
 					}
 
-					final Object[] resultRow = collectRow(totalColumns, cqTable, bucket, event, validityDateColumn, cblocks.get(bucket));
+					final Object[] resultRow = collectRow(totalColumns, cqTable, bucket, event, validityDate, cblocks.get(bucket));
 
 					results.add(resultRow);
 				}
@@ -146,10 +147,11 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return query.isContained();
 	}
 
-	private Object[] collectRow(int totalColumns, CQTable exportDescription, Bucket bucket, int event, Column validityDateColumn, CBlock cblock) {
+	private Object[] collectRow(int totalColumns, CQTable exportDescription, Bucket bucket, int event, ValidityDate validityDate, CBlock cblock) {
 
 		final Object[] entry = new Object[totalColumns];
 		entry[1] = exportDescription.getConnector().getTable().getLabel();
+		entry[0] = List.of(validityDate.getValidityDate(event, bucket));
 
 		for (Column column : exportDescription.getConnector().getTable().getColumns()) {
 
@@ -157,18 +159,18 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 				continue;
 			}
 
-			final int position = positions.get(column);
-
-			if (column.equals(validityDateColumn)) {
-				entry[position] = List.of(bucket.getAsDateRange(event, column));
+			if (positions.containsKey(column)) {
 				continue;
 			}
+
+			final int position = positions.get(column);
+
 
 			if (!rawConceptValues && column.equals(exportDescription.getConnector().getColumn())) {
 				entry[position] = cblock.getMostSpecificChildLocalId(event);
 				continue;
 			}
-			
+
 			entry[position] = bucket.createScriptValue(event, column);
 		}
 		return entry;

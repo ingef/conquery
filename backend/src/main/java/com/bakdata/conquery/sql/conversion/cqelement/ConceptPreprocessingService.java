@@ -86,6 +86,7 @@ public class ConceptPreprocessingService {
 			return Optional.empty();
 		}
 		Field<Object> validityDateRange = this.sqlFunctionProvider.daterange(table.findValidityDate().getColumn())
+																  //TODO @jarnhold Please fix the handling here
 																  .as(conceptLabel + VALIDITY_DATE_COLUMN_NAME_SUFFIX);
 		return Optional.of(validityDateRange);
 	}

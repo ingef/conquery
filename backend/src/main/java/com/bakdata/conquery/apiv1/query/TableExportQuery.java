@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -148,6 +149,16 @@ public class TableExportQuery extends Query {
 
 		final Map<SecondaryIdDescription, Integer> secondaryIdPositions = calculateSecondaryIdPositions(currentPosition);
 
+		final Set<ValidityDate> validityDates = tables.stream()
+													  .map(CQConcept::getTables)
+													  .flatMap(Collection::stream)
+													  .map(CQTable::findValidityDate)
+													  .filter(Objects::nonNull)
+													  .collect(Collectors.toSet());
+
+
+
+
 		// We need to know if a column is a concept column so we can prioritize it if it is also a SecondaryId
 		final Set<Column> conceptColumns = tables.stream()
 												 .map(CQConcept::getTables)
@@ -186,11 +197,7 @@ public class TableExportQuery extends Query {
 		for (CQConcept concept : tables) {
 			for (CQTable table : concept.getTables()) {
 
-				final Column validityDateColumn = table.findValidityDate().getColumn();
-
-				if (validityDateColumn != null) {
-					positions.putIfAbsent(validityDateColumn, 0);
-				}
+				// TODO no position if validityDate
 
 				// Set column positions, set SecondaryId positions to precomputed ones.
 				for (Column column : table.getConnector().getTable().getColumns()) {
