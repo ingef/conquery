@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.external.form;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -127,9 +128,13 @@ public class ExternalFormBackendApi {
 	}
 
 	public ExternalTaskState cancelTask(UUID taskId) {
-		final ExternalTaskState taskState = cancelTaskTarget.queryParam(TASK_ID, taskId).request().post(null, ExternalTaskState.class);
+		log.debug("Cancelling task {}", taskId);
 
-		if (taskState.getStatus() != TaskStatus.CANCELLED){
+		final ExternalTaskState taskState = cancelTaskTarget.resolveTemplates(Map.of(TASK_ID, taskId))
+															.request()
+															.post(null, ExternalTaskState.class);
+
+		if (taskState.getStatus() != TaskStatus.CANCELLED) {
 			log.warn("Task `{}` was cancelled, but is still in state {}", taskId, taskState.getStatus());
 		}
 
