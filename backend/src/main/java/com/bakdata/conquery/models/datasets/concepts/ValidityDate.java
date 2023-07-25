@@ -42,7 +42,6 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	@JsonIgnore
 	@ValidationMethod(message = "ValidityDate is not for Connectors' Table.")
 	public boolean isForConnectorsTable() {
-
 		boolean anyColumnNotForConnector = (startColumn != null && !startColumn.getTable().equals(connector.getTable()))
 										   || (endColumn != null && !endColumn.getTable().equals(connector.getTable()));
 
