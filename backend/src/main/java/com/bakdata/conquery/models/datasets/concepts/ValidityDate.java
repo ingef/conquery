@@ -48,32 +48,55 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 
 		boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getTable());
 
-		return !anyColumnNotForConnector && !columnNotForConnector;
+		if (anyColumnNotForConnector || columnNotForConnector) {
+			log.error("{} does not belong to Connector[{}]#Table[{}]", this, connector.getId(), connector.getTable().getId());
+		}
+
+		return true;
 	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "Single column date range (set via column) and two column date range (set via startColumn and endColumn) are exclusive.")
 	public boolean isExclusiveValidityDates() {
-		return (column == null && startColumn != null && endColumn != null)
-			   || (column != null && startColumn == null && endColumn == null);
+
+		if ((column == null && startColumn != null && endColumn != null)
+			|| (column != null && startColumn == null && endColumn == null)) {
+			return true;
+		}
+		log.error("Single column date range (set via column) and two column date range (set via startColumn and endColumn) are exclusive.");
+		return false;
 	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "Both columns of a two-column validity date have to be of type DATE.")
 	public boolean isValidTwoColumnValidityDates() {
+
 		if (startColumn == null || endColumn == null) {
 			return true;
 		}
-		return startColumn.getType() == MajorTypeId.DATE && endColumn.getType() == MajorTypeId.DATE;
+
+		if (startColumn.getType() == MajorTypeId.DATE && endColumn.getType() == MajorTypeId.DATE) {
+			return true;
+		}
+
+		log.error("Start column [{}] and end column [{}] have to be of type DATE.", startColumn.getId(), endColumn.getId());
+		return false;
 	}
 
 	@JsonIgnore
 	@ValidationMethod(message = "Column is not of type DATE or DATE_RANGE.")
 	public boolean isValidValidityDatesSingleColumn() {
+
 		if (column == null) {
 			return true;
 		}
-		return column.getType().isDateCompatible();
+
+		if (column.getType().isDateCompatible()) {
+			return true;
+		}
+
+		log.error("ValidityDate-Column[{}] is not of type DATE or DATERANGE", column.getId());
+		return false;
 	}
 
 	@JsonIgnore
