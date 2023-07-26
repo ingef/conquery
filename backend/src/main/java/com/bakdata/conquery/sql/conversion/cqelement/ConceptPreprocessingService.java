@@ -7,19 +7,17 @@ import java.util.Optional;
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.models.ColumnDateRange;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 public class ConceptPreprocessingService {
 
-	private static final String DATE_RESTRICTION_COLUMN_NAME = "date_restriction";
-	private static final String VALIDITY_DATE_COLUMN_NAME_SUFFIX = "_validity_date";
 	private final CQConcept concept;
 	private final ConversionContext context;
 	private final SqlFunctionProvider sqlFunctionProvider;
@@ -43,7 +41,7 @@ public class ConceptPreprocessingService {
 		ConceptSelects.ConceptSelectsBuilder selectsBuilder = ConceptSelects.builder();
 
 		selectsBuilder.primaryColumn(DSL.field(context.getConfig().getPrimaryColumn()));
-		selectsBuilder.dateRestriction(this.getDateRestrictionSelect(table));
+		selectsBuilder.dateRestrictionRange(this.getDateRestrictionSelect(table));
 		selectsBuilder.validityDate(this.getValidityDateSelect(table, conceptLabel));
 
 		List<Field<Object>> conceptSelectFields = this.getColumnSelectReferences(table);
@@ -71,24 +69,19 @@ public class ConceptPreprocessingService {
 						.build();
 	}
 
-	private Optional<Field<Object>> getDateRestrictionSelect(CQTable table) {
+	private Optional<ColumnDateRange> getDateRestrictionSelect(CQTable table) {
 		if (!this.context.dateRestrictionActive() || !this.tableHasValidityDates(table)) {
 			return Optional.empty();
 		}
-		CDateRange dateRestrictionRange = this.context.getDateRestrictionRange();
-		Field<Object> dateRestriction = this.sqlFunctionProvider.daterange(dateRestrictionRange)
-																.as(DATE_RESTRICTION_COLUMN_NAME);
-		return Optional.of(dateRestriction);
+		return Optional.of(sqlFunctionProvider.daterange(context.getDateRestrictionRange()));
 	}
 
-	private Optional<Field<Object>> getValidityDateSelect(CQTable table, String conceptLabel) {
+	private Optional<ColumnDateRange> getValidityDateSelect(CQTable table, String conceptLabel) {
 		if (!this.validityDateIsRequired(table)) {
 			return Optional.empty();
 		}
-		Field<Object> validityDateRange = this.sqlFunctionProvider.daterange(table.findValidityDate().getColumn())
-																  //TODO @jarnhold Please fix the handling here
-																  .as(conceptLabel + VALIDITY_DATE_COLUMN_NAME_SUFFIX);
-		return Optional.of(validityDateRange);
+
+		return Optional.of(sqlFunctionProvider.daterange(table.findValidityDate(), conceptLabel));
 	}
 
 	/**
