@@ -63,7 +63,7 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	@CheckForNull
 	public CDateRange getValidityDate(int event, Bucket bucket) {
 		// I spent a lot of time trying to create two classes implementing single/multi-column valditiy dates separately.
-		// JsonCreator was not happy and I could not figure out why. This is probably the most performant implementation that's not two classes.
+		// JsonCreator was not happy, and I could not figure out why. This is probably the most performant implementation that's not two classes.
 
 		if (getColumn() != null) {
 			if (bucket.has(event, getColumn())) {
@@ -76,15 +76,21 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 		final Column startColumn = getStartColumn();
 		final Column endColumn = getEndColumn();
 
-		final int start = bucket.has(event, startColumn) ? bucket.getDate(event, startColumn) : Integer.MIN_VALUE;
-		final int end = bucket.has(event, endColumn) ? bucket.getDate(event, endColumn) : Integer.MAX_VALUE;
+		final boolean hasStart = bucket.has(event, startColumn);
+		final boolean hasEnd = bucket.has(event, endColumn);
 
-		if (start == Integer.MIN_VALUE && end == Integer.MAX_VALUE) {
+		if (!hasStart && !hasEnd) {
 			return null;
 		}
 
-		return CDateRange.of(start, end);
+		final int start = hasStart ? bucket.getDate(event, startColumn) : Integer.MIN_VALUE;
+		final int end = hasEnd ? bucket.getDate(event, endColumn) : Integer.MAX_VALUE;
 
+		return CDateRange.of(start, end);
+	}
+
+	public boolean containsColumn(Column column) {
+		return column.equals(getColumn()) || column.equals(getStartColumn()) || column.equals(getEndColumn());
 	}
 
 	@JsonIgnore
@@ -104,7 +110,12 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	@JsonIgnore
 	@ValidationMethod(message = "Single column date range (set via column) and two column date range (set via startColumn and endColumn) are exclusive.")
 	public boolean isExclusiveValidityDates() {
-		return (column == null && startColumn != null && endColumn != null) || (column != null && startColumn == null && endColumn == null);
+		if (column == null) {
+			return startColumn != null && endColumn != null;
+		}
+		else {
+			return startColumn == null && endColumn == null;
+		}
 	}
 
 	@JsonIgnore

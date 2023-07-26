@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
@@ -150,21 +151,31 @@ public class TableExportQueryPlan implements QueryPlan<MultilineEntityResult> {
 	private Object[] collectRow(int totalColumns, CQTable exportDescription, Bucket bucket, int event, ValidityDate validityDate, CBlock cblock) {
 
 		final Object[] entry = new Object[totalColumns];
+
+		final CDateRange date;
+
+		if(validityDate != null && (date = validityDate.getValidityDate(event, bucket)) !=  null) {
+			entry[0] = List.of(date);
+		}
+
 		entry[1] = exportDescription.getConnector().getTable().getLabel();
-		entry[0] = List.of(validityDate.getValidityDate(event, bucket));
 
 		for (Column column : exportDescription.getConnector().getTable().getColumns()) {
+
+			// ValidityDates are handled separately.
+			if (validityDate != null && validityDate.containsColumn(column)){
+				continue;
+			}
+
+			if (!positions.containsKey(column)) {
+				continue;
+			}
 
 			if (!bucket.has(event, column)) {
 				continue;
 			}
 
-			if (positions.containsKey(column)) {
-				continue;
-			}
-
 			final int position = positions.get(column);
-
 
 			if (!rawConceptValues && column.equals(exportDescription.getConnector().getColumn())) {
 				entry[position] = cblock.getMostSpecificChildLocalId(event);

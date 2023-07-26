@@ -168,7 +168,7 @@ public class TableExportQuery extends Query {
 												 .filter(Objects::nonNull)
 												 .collect(Collectors.toSet());
 
-		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions, conceptColumns);
+		positions = calculateColumnPositions(currentPosition, tables, secondaryIdPositions, conceptColumns, validityDates);
 
 		resultInfos = createResultInfos(secondaryIdPositions, conceptColumns);
 	}
@@ -190,17 +190,20 @@ public class TableExportQuery extends Query {
 		return secondaryIdPositions;
 	}
 
-	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Set<Column> conceptColumns) {
+	private static Map<Column, Integer> calculateColumnPositions(AtomicInteger currentPosition, List<CQConcept> tables, Map<SecondaryIdDescription, Integer> secondaryIdPositions, Set<Column> conceptColumns, Set<ValidityDate> validityDates) {
 		final Map<Column, Integer> positions = new HashMap<>();
 
 
 		for (CQConcept concept : tables) {
 			for (CQTable table : concept.getTables()) {
 
-				// TODO no position if validityDate
-
 				// Set column positions, set SecondaryId positions to precomputed ones.
 				for (Column column : table.getConnector().getTable().getColumns()) {
+
+					// ValidityDates are handled separately in column=0
+					if (validityDates.stream().anyMatch(vd -> vd.containsColumn(column))) {
+						continue;
+					}
 
 					if (positions.containsKey(column)) {
 						continue;
