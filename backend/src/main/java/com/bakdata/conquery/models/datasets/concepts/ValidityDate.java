@@ -97,10 +97,9 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 	@ValidationMethod(message = "ValidityDate is not for Connectors' Table.")
 	public boolean isForConnectorsTable() {
 
-		final boolean
-				anyColumnNotForConnector =
-				(startColumn != null && !startColumn.getTable().equals(connector.getTable())) || (endColumn != null && !endColumn.getTable()
-																																 .equals(connector.getTable()));
+		final boolean anyColumnNotForConnector =
+				(startColumn != null && !startColumn.getTable().equals(connector.getTable()))
+				|| (endColumn != null && !endColumn.getTable().equals(connector.getTable()));
 
 		final boolean columnNotForConnector = column != null && !column.getTable().equals(connector.getTable());
 
@@ -113,9 +112,7 @@ public class ValidityDate extends Labeled<ValidityDateId> implements NamespacedI
 		if (column == null) {
 			return startColumn != null && endColumn != null;
 		}
-		else {
-			return startColumn == null && endColumn == null;
-		}
+		return startColumn == null && endColumn == null;
 	}
 
 	@JsonIgnore
