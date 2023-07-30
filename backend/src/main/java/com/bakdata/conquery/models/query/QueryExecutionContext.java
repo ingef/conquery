@@ -7,10 +7,10 @@ import java.util.Optional;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.SecondaryIdDescription;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -36,7 +36,7 @@ public class QueryExecutionContext {
 	private final BucketManager bucketManager;
 
 
-	private Column validityDateColumn;
+	private ValidityDate validityDateColumn;
 	@NonNull
 	private CDateSet dateRestriction = CDateSet.createFull();
 	private Connector connector;
