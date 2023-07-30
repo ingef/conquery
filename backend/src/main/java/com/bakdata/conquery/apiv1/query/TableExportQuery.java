@@ -156,9 +156,6 @@ public class TableExportQuery extends Query {
 													  .filter(Objects::nonNull)
 													  .collect(Collectors.toSet());
 
-
-
-
 		// We need to know if a column is a concept column so we can prioritize it if it is also a SecondaryId
 		final Set<Column> conceptColumns = tables.stream()
 												 .map(CQConcept::getTables)

@@ -80,7 +80,6 @@ public class ConceptPreprocessingService {
 		if (!this.validityDateIsRequired(table)) {
 			return Optional.empty();
 		}
-
 		return Optional.of(sqlFunctionProvider.daterange(table.findValidityDate(), conceptLabel));
 	}
 
