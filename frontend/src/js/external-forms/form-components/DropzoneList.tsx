@@ -110,6 +110,11 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
               </ListItem>
             </div>
           ))}
+          <DropzoneBetweenElements
+            acceptedDropTypes={acceptedDropTypes}
+            onDrop={dropBetween(items.length)}
+            lastElement
+          />
         </div>
       )}
       <div ref={ref}>
