@@ -211,24 +211,42 @@ const FormConceptGroup = (props: Props) => {
             if (props.isValidConcept && !props.isValidConcept(item))
               return null;
 
-            if (isMovedObject(item)) {
-              if (exists(item.dragContext.deleteInOrigin)) {
-                item.dragContext.deleteInOrigin();
+              if (isMovedObject(item)) {
+              let insertIndex =
+                i > item.dragContext.movedFromAndIdx && item.dragContext.movedFromOrIdx === 0 ? i - 1 : i;
+              if( item.dragContext.movedFromFieldName === props.fieldName) {
+                const updatedValue = props.value[item.dragContext.movedFromAndIdx].concepts.length === 1
+                ? removeValue(props.value, item.dragContext.movedFromAndIdx)
+                : removeConcept(props.value, item.dragContext.movedFromAndIdx, item.dragContext.movedFromOrIdx);
+                return props.onChange(
+                  addConcept(
+                    insertValue(
+                      updatedValue,
+                      insertIndex,
+                      newValue,
+                    ),
+                    insertIndex,
+                    copyConcept(item),
+                  ),
+                );
+              } else{
+                if (exists(item.dragContext.deleteFromOtherField)) {
+                  item.dragContext.deleteFromOtherField();
+                }
+  
+                return props.onChange(
+                  addConcept(
+                    insertValue(
+                      props.value,
+                      insertIndex,
+                      newValue,
+                    ),
+                    insertIndex,
+                    copyConcept(item),
+                  ),
+                );
               }
 
-              let insertIndex =
-                i > item.dragContext.movedFromAndIdx ? i - 1 : i;
-              return props.onChange(
-                addConcept(
-                  insertValue(
-                    getValues(props.fieldName),
-                    insertIndex,
-                    newValue,
-                  ),
-                  insertIndex,
-                  copyConcept(item),
-                ),
-              );
             }
 
             return props.onChange(
@@ -260,8 +278,8 @@ const FormConceptGroup = (props: Props) => {
           if (props.isValidConcept && !props.isValidConcept(item)) return;
 
           if (isMovedObject(item)) {
-            if (exists(item.dragContext.deleteInOrigin)) {
-              item.dragContext.deleteInOrigin();
+            if (exists(item.dragContext.deleteFromOtherField)) {
+              item.dragContext.deleteFromOtherField();
             }
             const updatedValue = getValues(props.fieldName);
             return props.onChange(
@@ -344,7 +362,8 @@ const FormConceptGroup = (props: Props) => {
                         conceptIdx: j,
                       })
                     }
-                    deleteInForm={() => {
+                    fieldName={props.fieldName}
+                    deleteFromOtherField={() => {
                       return props.onChange(
                         props.value[i].concepts.length === 1
                           ? removeValue(props.value, i)
@@ -455,9 +474,9 @@ const FormConceptGroup = (props: Props) => {
           onDropConcept={(concept) => {
             if (
               isMovedObject(concept) &&
-              exists(concept.dragContext.deleteInOrigin)
+              exists(concept.dragContext.deleteFromOtherField)
             ) {
-              concept.dragContext.deleteInOrigin();
+              concept.dragContext.deleteFromOtherField();
             }
 
             const { valueIdx, conceptIdx } = editedFormQueryNodePosition;

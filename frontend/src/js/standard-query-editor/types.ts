@@ -56,7 +56,8 @@ export interface DragContext {
   height: number;
   movedFromAndIdx?: number;
   movedFromOrIdx?: number;
-  deleteInOrigin?: () => void;
+  deleteFromOtherField?: () => void;
+  movedFromFieldName?: string;
 }
 
 export interface DragItemQuery extends PreviousQueryQueryNodeType {
