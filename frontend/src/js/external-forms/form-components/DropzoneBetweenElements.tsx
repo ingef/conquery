@@ -10,11 +10,11 @@ interface Props<DroppableObject> {
 }
 
 const RootHeightBase = 40;
+const lineHeight = 3;
 
 const Root = styled("div")<{ lastElement?: boolean }>`
   width: 100%;
   left: 0;
-  top: ${({ lastElement }) => (lastElement ? -10 : -15)}px;
   right: 0;
   position: relative;
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -24,8 +24,9 @@ const Line = styled("div")`
   overflow: hidden;
   display: block;
   background-color: ${({ theme }) => theme.col.blueGrayLight};
-  margin: 5px 0;
-  height: 2px;
+  margin: 4px 0;
+  height: ${lineHeight}px;
+  border-radius: 2px;
 `;
 
 const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
@@ -43,8 +44,10 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   });
 
   const rootHeightMultiplier = lastElement ? 0.5 : 1;
-  const rootDefaultMarginTop = lastElement ? -10 : -5;
-  const rootOverMarginTop = lastElement ? -22 : -12;
+  const rootDefaultMarginTop = (lastElement ? -15 : -5) - lineHeight;
+  const rootOverMarginTop = lastElement ? -29 : -12;
+  const rootDefaultTop = lastElement ? -5 : -15;
+  const rootOverTop = (lastElement ? -2 : -19) - lineHeight;
 
   return (
     <>
@@ -52,8 +55,12 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
       <Root
         ref={addZoneRef}
         style={{
-          height: RootHeightBase * rootHeightMultiplier,
+          height:
+            RootHeightBase * rootHeightMultiplier +
+            (isOver && !lastElement ? 0 : lineHeight + 4) +
+            (lastElement ? lineHeight + 4 : 0),
           marginTop: isOver ? rootOverMarginTop : rootDefaultMarginTop,
+          top: isOver ? rootOverTop : rootDefaultTop,
         }}
         lastElement={lastElement}
       ></Root>
