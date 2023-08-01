@@ -211,42 +211,42 @@ const FormConceptGroup = (props: Props) => {
             if (props.isValidConcept && !props.isValidConcept(item))
               return null;
 
-              if (isMovedObject(item)) {
+            if (isMovedObject(item)) {
               let insertIndex =
-                i > item.dragContext.movedFromAndIdx && item.dragContext.movedFromOrIdx === 0 ? i - 1 : i;
-              if( item.dragContext.movedFromFieldName === props.fieldName) {
-                const updatedValue = props.value[item.dragContext.movedFromAndIdx].concepts.length === 1
-                ? removeValue(props.value, item.dragContext.movedFromAndIdx)
-                : removeConcept(props.value, item.dragContext.movedFromAndIdx, item.dragContext.movedFromOrIdx);
+                i > item.dragContext.movedFromAndIdx &&
+                item.dragContext.movedFromOrIdx === 0
+                  ? i - 1
+                  : i;
+              if (item.dragContext.movedFromFieldName === props.fieldName) {
+                const updatedValue =
+                  props.value[item.dragContext.movedFromAndIdx].concepts
+                    .length === 1
+                    ? removeValue(props.value, item.dragContext.movedFromAndIdx)
+                    : removeConcept(
+                        props.value,
+                        item.dragContext.movedFromAndIdx,
+                        item.dragContext.movedFromOrIdx,
+                      );
                 return props.onChange(
                   addConcept(
-                    insertValue(
-                      updatedValue,
-                      insertIndex,
-                      newValue,
-                    ),
+                    insertValue(updatedValue, insertIndex, newValue),
                     insertIndex,
                     copyConcept(item),
                   ),
                 );
-              } else{
+              } else {
                 if (exists(item.dragContext.deleteFromOtherField)) {
                   item.dragContext.deleteFromOtherField();
                 }
-  
+
                 return props.onChange(
                   addConcept(
-                    insertValue(
-                      props.value,
-                      insertIndex,
-                      newValue,
-                    ),
+                    insertValue(props.value, insertIndex, newValue),
                     insertIndex,
                     copyConcept(item),
                   ),
                 );
               }
-
             }
 
             return props.onChange(
