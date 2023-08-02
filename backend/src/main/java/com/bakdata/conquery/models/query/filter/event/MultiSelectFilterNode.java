@@ -56,6 +56,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	@Override
 	public void nextBlock(Bucket bucket) {
 		selectedValues = selectedValuesCache.computeIfAbsent(bucket.getImp(),imp -> findIds(bucket, filterValue));
+		super.nextBlock(bucket);
 	}
 
 	private int[] findIds(Bucket bucket, String[] values) {

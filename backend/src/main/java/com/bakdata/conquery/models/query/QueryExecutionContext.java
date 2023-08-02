@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescriptionId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.google.common.collect.HashBasedTable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -42,6 +43,9 @@ public class QueryExecutionContext {
 	private Connector connector;
 	@NonNull
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
+
+
+	private final com.google.common.collect.Table<Bucket, Object /* this should be FilterValue */, boolean[]> hitCache = HashBasedTable.create();
 
 
 	/**

@@ -96,7 +96,7 @@ public class FiltersNode extends QPNode {
 	@Override
 	public final void acceptEvent(Bucket bucket, int event) {
 		for (EventFilterNode<?> f : eventFilters) {
-			if (!f.checkEvent(bucket, event)) {
+			if (!f.included(bucket, event)) {
 				return;
 			}
 		}
