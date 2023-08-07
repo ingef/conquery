@@ -33,6 +33,7 @@ const Root = styled("div")<{
   display: grid;
   grid-template-columns: 1fr auto;
   font-size: ${({ theme }) => theme.font.sm};
+  margin-top: 5px;
 `;
 
 const Label = styled("p")`
