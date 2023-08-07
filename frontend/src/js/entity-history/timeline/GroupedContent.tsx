@@ -1,7 +1,6 @@
 import { css, Theme } from "@emotion/react";
 import styled from "@emotion/styled";
 import { memo, useMemo } from "react";
-import { useTranslation } from "react-i18next";
 import { NumericFormat } from "react-number-format";
 
 import {
@@ -70,12 +69,11 @@ const GroupedContent = ({
   rootConceptIdsByColumn,
   contentFilter,
 }: Props) => {
-  const { t } = useTranslation();
   const differencesKeys = useMemo(
     () =>
       groupedRowsKeysWithDifferentValues
         .filter((key) => {
-          if (key === "dates") return true;
+          if (isDateColumn(columns[key])) return true;
 
           if (!isVisibleColumn(columns[key])) {
             return false;
@@ -104,9 +102,7 @@ const GroupedContent = ({
         }}
       >
         {differencesKeys.map((key) => (
-          <TinyLabel key={key}>
-            {key === "dates" ? t("history.dates") : columns[key].defaultLabel}
-          </TinyLabel>
+          <TinyLabel key={key}>{columns[key].defaultLabel}</TinyLabel>
         ))}
         {groupedRows.map((groupedRow) =>
           differencesKeys.map((key) => (

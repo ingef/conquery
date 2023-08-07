@@ -24,7 +24,6 @@ import {
   successPayload,
 } from "../common/actions/genericActions";
 import { EditorV2Query } from "../editor-v2/types";
-import { getExternalSupportedErrorMessage } from "../environment";
 import {
   useLoadFormConfigs,
   useLoadQueries,
@@ -179,12 +178,7 @@ const getQueryErrorMessage = ({
     return t("queryRunner.queryCanceled");
   }
 
-  return (
-    (error &&
-      error.code &&
-      getExternalSupportedErrorMessage(t, error.code, error.context)) ||
-    t("queryRunner.queryFailed")
-  );
+  return error?.message || t("queryRunner.queryFailed");
 };
 
 export const queryResultErrorAction = createAction(
