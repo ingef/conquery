@@ -74,11 +74,6 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
   }: PropsT<DroppableObject>,
   ref: Ref<HTMLDivElement>,
 ) => {
-  const SxDropzoneWithFileInput = styled(
-    DropzoneWithFileInput<DroppableObject>,
-  )`
-    margin-top: 5px;
-  `;
   // allow at least one column
   const showDropzone =
     (items && items.length === 0) || !disallowMultipleColumns;
@@ -119,13 +114,13 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
       )}
       <div ref={ref}>
         {showDropzone && onImportLines && (
-          <SxDropzoneWithFileInput
+          <DropzoneWithFileInput
             acceptedDropTypes={acceptedDropTypes}
             onDrop={onDrop}
             onImportLines={onImportLines}
           >
             {dropzoneChildren}
-          </SxDropzoneWithFileInput>
+          </DropzoneWithFileInput>
         )}
       </div>
     </div>
