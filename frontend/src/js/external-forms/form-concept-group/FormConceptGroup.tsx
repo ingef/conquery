@@ -462,7 +462,6 @@ const FormConceptGroup = (props: Props) => {
           onDropConcept={(concept) => {
             let { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             if (isMovedObject(concept)) {
-              // TODO validate or is only length 1
               valueIdx =
                 valueIdx > concept.dragContext.movedFromAndIdx
                   ? valueIdx - 1
