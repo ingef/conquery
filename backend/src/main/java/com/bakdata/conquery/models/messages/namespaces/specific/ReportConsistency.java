@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,10 +40,10 @@ public class ReportConsistency extends NamespaceMessage {
 
 
     @Override
-    public void react(Namespace context) throws Exception {
+    public void react(DistributedNamespace context) throws Exception {
         Set<ImportId> managerImports = context.getStorage().getAllImports().stream().map(Import::getId).collect(Collectors.toSet());
 
-        Set<BucketId> assignedWorkerBuckets = context.getBucketsForWorker(workerId);
+        Set<BucketId> assignedWorkerBuckets = context.getWorkerHandler().getBucketsForWorker(workerId);
 
         boolean importsOkay = isConsistent("Imports", managerImports, workerImports, workerId);
         boolean bucketsOkay = isConsistent("Buckets", assignedWorkerBuckets, workerBuckets, workerId);

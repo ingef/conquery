@@ -44,10 +44,10 @@ public class IntegrationUtils {
 		}
 
 		for (RequiredUser rUser : rUsers) {
-			User user = rUser.getUser();
+			final User user = rUser.getUser();
 			storage.addUser(user);
 
-			RoleId[] rolesInjected = rUser.getRolesInjected();
+			final RoleId[] rolesInjected = rUser.getRolesInjected();
 
 			for (RoleId mandatorId : rolesInjected) {
 				user.addRole(storage.getRole(mandatorId));
@@ -60,6 +60,54 @@ public class IntegrationUtils {
 		return ConqueryTestSpec.parseSubTree(support, rawQuery, Query.class);
 	}
 
+	/**
+	 * Send a query onto the conquery instance and assert the result's size.
+	 *
+	 * @return
+	 */
+	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, long expectedSize, ExecutionState expectedState, User user, int expectedResponseCode) {
+		final URI postQueryURI = getPostQueryURI(conquery);
+
+		final String userToken = conquery.getAuthorizationController()
+										 .getConqueryTokenRealm()
+										 .createTokenForUser(user.getId());
+
+		// Submit Query
+		final Response response = conquery.getClient()
+										  .target(postQueryURI)
+										  .request(MediaType.APPLICATION_JSON_TYPE)
+										  .header("Authorization", "Bearer " + userToken)
+										  .post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
+
+
+		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", postQueryURI)
+															.isEqualTo(expectedResponseCode);
+
+		if (expectedState == ExecutionState.FAILED && !response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
+			return null;
+		}
+
+		final JsonNode jsonNode = response.readEntity(JsonNode.class);
+
+		final String id = jsonNode.get(ExecutionStatus.Fields.id).asText();
+
+		// TODO implement this properly: ExecutionStatus status = response.readEntity(ExecutionStatus.Full.class);
+
+		final JsonNode execStatusRaw = getRawExecutionStatus(id, conquery, user);
+
+		final String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
+		final long numberOfResults = execStatusRaw.get(ExecutionStatus.Fields.numberOfResults).asLong(0);
+
+		assertThat(status).isEqualTo(expectedState.name());
+
+		if (expectedState == ExecutionState.DONE && expectedSize != -1) {
+			assertThat(numberOfResults)
+					.describedAs("Query results")
+					.isEqualTo(expectedSize);
+		}
+
+		return ManagedExecutionId.Parser.INSTANCE.parse(id);
+	}
 
 	private static URI getPostQueryURI(StandaloneSupport conquery) {
 		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), DatasetQueryResource.class, "postQuery")
@@ -75,14 +123,14 @@ public class IntegrationUtils {
 		for (int trial = 0; trial < 5; trial++) {
 			log.debug("Trying to get Query result");
 
-			JsonNode execStatusRaw =
+			final JsonNode execStatusRaw =
 					conquery.getClient()
 							.target(queryStatusURI)
 							.request(MediaType.APPLICATION_JSON_TYPE)
 							.header("Authorization", "Bearer " + conquery.getAuthorizationController().getConqueryTokenRealm().createTokenForUser(user.getId()))
 							.get(JsonNode.class);
 
-			String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
+			final String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
 
 			if (!ExecutionState.RUNNING.name().equals(status)) {
 				return execStatusRaw;
@@ -99,74 +147,46 @@ public class IntegrationUtils {
 							  ));
 	}
 
-	/**
-	 * Send a query onto the conquery instance and assert the result's size.
-	 *
-	 * @return
-	 */
-	public static ManagedExecutionId assertQueryResult(StandaloneSupport conquery, Object query, long expectedSize, ExecutionState expectedState, User user, int expectedResponseCode) {
-		final URI postQueryURI = getPostQueryURI(conquery);
-
-		final String userToken = conquery.getAuthorizationController()
-										 .getConqueryTokenRealm()
-										 .createTokenForUser(user.getId());
-
-		// Submit Query
-		Response response = conquery.getClient()
-									.target(postQueryURI)
-									.request(MediaType.APPLICATION_JSON_TYPE)
-									.header("Authorization", "Bearer " + userToken)
-									.post(Entity.entity(query, MediaType.APPLICATION_JSON_TYPE));
-
-
-		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", postQueryURI)
-				.isEqualTo(expectedResponseCode);
-
-		if (expectedState == ExecutionState.FAILED && !response.getStatusInfo().getFamily().equals(Response.Status.Family.SUCCESSFUL)) {
-			return null;
-		}
-
-		final JsonNode jsonNode = response.readEntity(JsonNode.class);
-
-		final String id = jsonNode.get(ExecutionStatus.Fields.id).asText();
-
-		// TODO implement this properly: ExecutionStatus status = response.readEntity(ExecutionStatus.Full.class);
-
-		JsonNode execStatusRaw = getRawExecutionStatus(id, conquery, user);
-
-		String status = execStatusRaw.get(ExecutionStatus.Fields.status).asText();
-		long numberOfResults = execStatusRaw.get(ExecutionStatus.Fields.numberOfResults).asLong(0);
-
-		assertThat(status).isEqualTo(expectedState.name());
-
-		if (expectedState == ExecutionState.DONE && expectedSize !=  -1) {
-			assertThat(numberOfResults)
-					.describedAs("Query results")
-					.isEqualTo(expectedSize);
-		}
-
-		return ManagedExecutionId.Parser.INSTANCE.parse(id);
+	private static URI getQueryCancelURI(StandaloneSupport conquery, String id) {
+		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "cancel")
+							  .buildFromMap(Map.of(
+									  "query", id, "dataset", conquery.getDataset().getId()
+							  ));
 	}
 
 	public static FullExecutionStatus getExecutionStatus(StandaloneSupport conquery, ManagedExecutionId executionId, User user, int expectedResponseCode) {
 		final URI queryStatusURI = getQueryStatusURI(conquery, executionId.toString());
 
 		final String userToken = conquery.getAuthorizationController()
-				.getConqueryTokenRealm()
-				.createTokenForUser(user.getId());
+										 .getConqueryTokenRealm()
+										 .createTokenForUser(user.getId());
 
-		Response response = conquery.getClient()
-				.target(queryStatusURI)
-				.request(MediaType.APPLICATION_JSON_TYPE)
-				.header("Authorization", "Bearer " + userToken)
-				.get();
+		final Response response = conquery.getClient()
+										  .target(queryStatusURI)
+										  .request(MediaType.APPLICATION_JSON_TYPE)
+										  .header("Authorization", "Bearer " + userToken)
+										  .get();
 
 
 		assertThat(response.getStatusInfo().getStatusCode()).as("Result of %s", queryStatusURI)
-				.isEqualTo(expectedResponseCode);
+															.isEqualTo(expectedResponseCode);
 
 
 		return response.readEntity(FullExecutionStatus.class);
 	}
 
+	public static Response cancelQuery(StandaloneSupport conquery, ManagedExecutionId executionId, User user) {
+		final URI cancelQueryURI = getQueryCancelURI(conquery, executionId.toString());
+
+		final String userToken = conquery.getAuthorizationController()
+										 .getConqueryTokenRealm()
+										 .createTokenForUser(user.getId());
+
+		return conquery.getClient()
+										  .target(cancelQueryURI)
+										  .request(MediaType.APPLICATION_JSON_TYPE)
+										  .header("Authorization", "Bearer " + userToken)
+										  .post(null);
+
+	}
 }

@@ -7,7 +7,6 @@ import "../fonts.css";
 import AppRoot from "./AppRoot";
 import GlobalStyles from "./GlobalStyles";
 import type { StateT } from "./app/reducers";
-import { initializeEnvironment, CustomEnvironment } from "./environment";
 import { makeStore } from "./store";
 
 // TODO: OG image required?
@@ -18,7 +17,6 @@ let store: Store<StateT>;
 
 const initialState = {};
 
-// Render the App including Hot Module Replacement
 const renderRoot = (theme: Theme) => {
   store = store || makeStore(initialState);
 
@@ -32,13 +30,6 @@ const renderRoot = (theme: Theme) => {
   );
 };
 
-export default function conquery({
-  theme,
-  customEnvironment,
-}: {
-  theme: Theme; // React-Emotion theme, will at some point completely replace sass
-  customEnvironment: CustomEnvironment;
-}) {
-  initializeEnvironment(customEnvironment);
-  renderRoot(theme);
+export default function conquery({ theme }: { theme: Theme }) {
+  return renderRoot(theme);
 }

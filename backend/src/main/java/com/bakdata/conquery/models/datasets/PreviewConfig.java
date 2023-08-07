@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.datasets;
 
-import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +26,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -46,11 +47,6 @@ import lombok.extern.slf4j.Slf4j;
 @NoArgsConstructor
 public class PreviewConfig {
 
-	/**
-	 * Default start-date for EntityPreview, end date will always be LocalDate.now()
-	 */
-	@NotNull
-	private LocalDate observationStart;
 
 	/**
 	 * Selects to be used in {@link com.bakdata.conquery.apiv1.QueryProcessor#getSingleEntityExport(Subject, UriBuilder, String, String, List, Dataset, Range)}.
@@ -97,7 +93,7 @@ public class PreviewConfig {
 
 	@JacksonInject(useInput = OptBoolean.FALSE)
 	@NotNull
-	private DatasetRegistry datasetRegistry;
+	private DatasetRegistry<Namespace> datasetRegistry;
 
 	public boolean isGroupingColumn(SecondaryIdDescription desc) {
 		return getGrouping().contains(desc.getId());
@@ -120,17 +116,18 @@ public class PreviewConfig {
 	 * Defines a group of selects that will be evaluated per quarter and year in the requested period of the entity-preview.
 	 */
 	public record TimeStratifiedSelects(@NotNull String label, String description, @NotEmpty List<InfoCardSelect> selects){
-		@ValidationMethod(message = "Selects may be referenced only once.")
-		@JsonIgnore
-		public boolean isSelectsUnique() {
-			return selects().stream().map(InfoCardSelect::select).distinct().count() == selects().size();
-		}
+	}
 
-		@ValidationMethod(message = "Labels must be unique.")
-		@JsonIgnore
-		public boolean isLabelsUnique() {
-			return selects().stream().map(InfoCardSelect::label).distinct().count() == selects().size();
-		}
+	@ValidationMethod(message = "Selects may be referenced only once.")
+	@JsonIgnore
+	public boolean isSelectsUnique() {
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::select).distinct().count() == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
+	}
+
+	@ValidationMethod(message = "Labels must be unique.")
+	@JsonIgnore
+	public boolean isLabelsUnique() {
+		return timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).map(InfoCardSelect::label).distinct().count() == timeStratifiedSelects.stream().map(TimeStratifiedSelects::selects).flatMap(Collection::stream).count();
 	}
 
 	@JsonIgnore

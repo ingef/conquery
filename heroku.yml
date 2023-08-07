@@ -1,4 +1,0 @@
-#deploys develop pushes to https://conquery-dev.herokuapp.com/app/static and master to https://conquery.herokuapp.com/app/static
-build:
-  docker:
-    web: frontend/Dockerfile

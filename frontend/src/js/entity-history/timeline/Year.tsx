@@ -5,7 +5,6 @@ import {
   ColumnDescription,
   ConceptIdT,
   CurrencyConfigT,
-  DatasetT,
   TimeStratifiedInfo,
 } from "../../api/types";
 import { ContentFilterValue } from "../ContentControl";
@@ -22,7 +21,6 @@ const YearGroup = styled("div")`
 `;
 
 const Year = ({
-  datasetId,
   year,
   getIsOpen,
   toggleOpenYear,
@@ -31,12 +29,13 @@ const Year = ({
   detailLevel,
   contentFilter,
   columns,
+  dateColumn,
+  sourceColumn,
   columnBuckets,
   currencyConfig,
   rootConceptIdsByColumn,
   timeStratifiedInfos,
 }: {
-  datasetId: DatasetT["id"];
   year: number;
   getIsOpen: (year: number, quarter?: number) => boolean;
   toggleOpenYear: (year: number) => void;
@@ -48,6 +47,8 @@ const Year = ({
   currencyConfig: CurrencyConfigT;
   columnBuckets: ColumnBuckets;
   columns: Record<string, ColumnDescription>;
+  dateColumn: ColumnDescription;
+  sourceColumn: ColumnDescription;
   timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
   const isYearOpen = getIsOpen(year);
@@ -78,7 +79,6 @@ const Year = ({
             <Quarter
               key={quarter}
               isOpen={isYearOpen || isQuarterOpen}
-              datasetId={datasetId}
               totalEventsPerQuarter={totalEventsPerQuarter}
               detailLevel={detailLevel}
               quarter={quarter}
@@ -88,6 +88,8 @@ const Year = ({
               differences={differences}
               contentFilter={contentFilter}
               columns={columns}
+              dateColumn={dateColumn}
+              sourceColumn={sourceColumn}
               columnBuckets={columnBuckets}
               currencyConfig={currencyConfig}
               rootConceptIdsByColumn={rootConceptIdsByColumn}

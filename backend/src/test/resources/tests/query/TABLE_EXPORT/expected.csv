@@ -1,8 +1,8 @@
 result,dates,source,SecondaryId,table1 value,table1 code,table2 value,table2 code
-a,{2020-06-30/2020-06-30},table2,,,,13.0,concept.a_child
-a,{2014-06-30/2015-06-30},table1,f_a1,1.0,concept.a_child,,
-a,{2016-06-30/2016-06-30},table1,f_a1,1.0,concept.a_child,,
-a,{2014-06-30/2015-06-30},table1,f_a2,1.0,concept.a_child,,
-a,{2010-06-30/2010-06-30},table1,,1.0,concept.a_child,,
-b,{2015-02-03/2015-06-30},table1,f_b1,1.0,concept,,
-a,{2020-06-30/2020-06-30},table2,,,,13.0,concept
+a,{2020-06-30/2020-06-30},table2,,,,13.0,TABLE_EXPORT$20Test.concept.a_child
+a,{2014-06-30/2015-06-30},table1,f_a1,1.0,TABLE_EXPORT$20Test.concept.a_child,,
+a,{2016-06-30/2016-06-30},table1,f_a1,1.0,TABLE_EXPORT$20Test.concept.a_child,,
+a,{2014-06-30/2015-06-30},table1,f_a2,1.0,TABLE_EXPORT$20Test.concept.a_child,,
+a,{2010-06-30/2010-06-30},table1,,1.0,TABLE_EXPORT$20Test.concept.a_child,,
+b,{2015-02-03/2015-06-30},table1,f_b1,1.0,TABLE_EXPORT$20Test.concept,,
+a,{2020-06-30/2020-06-30},table2,,,,13.0,TABLE_EXPORT$20Test.concept

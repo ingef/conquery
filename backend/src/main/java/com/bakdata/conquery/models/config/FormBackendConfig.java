@@ -17,7 +17,6 @@ import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.external.form.ExternalFormBackendApi;
-import com.bakdata.conquery.io.external.form.ExternalFormBackendHealthCheck;
 import com.bakdata.conquery.io.external.form.ExternalFormMixin;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -32,18 +31,14 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableCollection;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * {@link PluginConfig} for an external form backend.
  * The external form backend must implement the <a href="https://github.com/ingef/conquery/tree/develop/backend/src/main/resources/com/bakdata/conquery/external/openapi-form-backend.yaml">OpenAPI spec</a> for external form backend.
  */
-@NoArgsConstructor
-@Setter
-@Getter
+@Data
 @CPSType(id = "FORM_BACKEND", base = PluginConfig.class)
 @Slf4j
 public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
@@ -63,6 +58,9 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	@NotEmpty
 	@Pattern(regexp = ".+/\\{" + ExternalFormBackendApi.TASK_ID + "}")
 	private String statusTemplatePath = "task/{" + ExternalFormBackendApi.TASK_ID + "}";
+
+	private String cancelTaskPath = "task/{" + ExternalFormBackendApi.TASK_ID + "}/cancel";
+
 
 	@NotEmpty
 	private String healthCheckPath = "health";
@@ -94,7 +92,9 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		client.register(new JacksonMessageBodyProvider(om));
 
 		// Register health check
-		managerNode.getEnvironment().healthChecks().register(getId(), new ExternalFormBackendHealthCheck(createApi()));
+		final ExternalFormBackendApi externalApi = createApi();
+
+		managerNode.getEnvironment().healthChecks().register(getId(), externalApi.createHealthCheck());
 
 		// Register form configuration provider
 		managerNode.getFormScanner().registerFrontendFormConfigProvider(this::registerFormConfigs);
@@ -106,7 +106,7 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	}
 
 	public ExternalFormBackendApi createApi() {
-		return new ExternalFormBackendApi(client, baseURI, formConfigPath, postFormPath, statusTemplatePath, healthCheckPath, this::createAccessToken, conqueryApiUrl, getAuthentication());
+		return new ExternalFormBackendApi(client, baseURI, formConfigPath, postFormPath, statusTemplatePath, cancelTaskPath,  healthCheckPath, this::createAccessToken, conqueryApiUrl, getAuthentication());
 	}
 
 	public boolean supportsFormType(String formType) {
@@ -121,11 +121,11 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	 * @param formConfigs Collection to add received form configs to.
 	 */
 	private void registerFormConfigs(ImmutableCollection.Builder<FormFrontendConfigInformation> formConfigs) {
-		Set<String> supportedFormTypes = new HashSet<>();
+		final Set<String> supportedFormTypes = new HashSet<>();
 
 		for (ObjectNode formConfig : createApi().getFormConfigs()) {
 			final String subType = formConfig.get("type").asText();
-			String formType = createSubTypedId(subType);
+			final String formType = createSubTypedId(subType);
 
 			// Override type with our subtype
 			formConfig.set("type", new TextNode(formType));
@@ -155,7 +155,7 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 		// the actual user and download permissions.
 		final User
 				serviceUser =
-				managerNode.getAuthController().flatCopyUser(originalUser, String.format("%s_%s", this.getClass().getSimpleName().toLowerCase(), getId()));
+				managerNode.getAuthController().flatCopyUser(originalUser, String.format("%s_%s", getClass().getSimpleName().toLowerCase(), getId()));
 
 		// The user is able to read the dataset, ensure that the service user can download results
 		serviceUser.addPermission(dataset.createPermission(Ability.DOWNLOAD.asSet()));

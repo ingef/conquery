@@ -20,9 +20,10 @@ const Root = styled("div")`
   position: relative;
 `;
 
-const Input = styled("input")<{ large?: boolean }>`
+const Input = styled("input")<{ large?: boolean; disabled?: boolean }>`
   outline: 0;
   width: 100%;
+  opacity: ${({ disabled }) => (disabled ? 0.5 : 1)};
 
   border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
   padding: ${({ large }) =>
@@ -86,8 +87,10 @@ export interface Props {
   large?: boolean;
   inputProps?: InputProps;
   currencyConfig?: CurrencyConfigT;
+  disabled?: boolean;
   onFocus?: (e: FocusEvent<HTMLInputElement>) => void;
   onBlur?: (e: FocusEvent<HTMLInputElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLInputElement>) => void;
   onChange: (val: string | number | null) => void;
 }
 
@@ -123,12 +126,14 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
       onChange,
       onFocus,
       onBlur,
+      onClick,
       placeholder,
       large,
       inputType,
       valid,
       invalid,
       invalidText,
+      disabled,
     },
     ref,
   ) => {
@@ -177,8 +182,10 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
             }}
             value={exists(value) ? value : ""}
             large={large}
+            disabled={disabled}
             onFocus={onFocus}
             onBlur={onBlur}
+            onClick={onClick}
             onWheel={
               (e) =>
                 (e.target as any).blur() /* to disable scrolling for number */
@@ -201,6 +208,7 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
               tiny
               icon={faTimes}
               tabIndex={-1}
+              disabled={disabled}
               title={t("common.clearValue")}
               aria-label={t("common.clearValue")}
               onClick={() => onChange(null)}

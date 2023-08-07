@@ -1,4 +1,4 @@
-import type { SelectOptionT } from "../api/types";
+import type { DatasetT, SelectOptionT } from "../api/types";
 import type { Language } from "../localization/useActiveLang";
 
 import type { FormField, GeneralField, Group } from "./config-types";
@@ -72,7 +72,11 @@ export function collectAllFormFields(fields: GeneralField[]): FormField[] {
 
 export function getInitialValue(
   field: Exclude<FormField, Group>,
-  context: { availableDatasets: SelectOptionT[]; activeLang: Language },
+  context: {
+    availableDatasets: SelectOptionT[];
+    activeLang: Language;
+    datasetId: DatasetT["id"] | null;
+  },
 ):
   | string
   | number
@@ -84,7 +88,11 @@ export function getInitialValue(
   switch (field.type) {
     case "DATASET_SELECT":
       if (context.availableDatasets.length > 0) {
-        return context.availableDatasets[0];
+        return (
+          context.availableDatasets.find(
+            (opt) => opt.value === context.datasetId,
+          ) || context.availableDatasets[0]
+        );
       } else {
         return undefined;
       }

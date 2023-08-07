@@ -116,6 +116,7 @@ const FormConfigLoader: FC<Props> = ({
       if (!formConfig || !formConfigToLoadNext) return;
 
       const entries = Object.entries(formConfigToLoadNext.values);
+      const formFields = collectAllFormFields(formConfig.fields);
 
       for (const [fieldname, value] of entries) {
         // --------------------------
@@ -123,7 +124,7 @@ const FormConfigLoader: FC<Props> = ({
         // because we changed the SELECT values:
         // from string, e.g. 'next'
         // to SelectValueT, e.g. { value: 'next', label: 'Next' }
-        const field = collectAllFormFields(formConfig.fields).find(
+        const field = formFields.find(
           (f): f is Field | Tabs =>
             f.type !== "GROUP" &&
             f.name === getUniqueFieldname(formConfig.type, fieldname),

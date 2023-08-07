@@ -3,12 +3,11 @@
   "headline": "Queries and Analyses",
   "error": {
     "sorry": "Sorry, something went wrong here",
-    "description": "Please try again. If this happens again, please leave us a message. That way, we can fix this issue.",
-    "reload": "Refresh page"
-  },
-  "errorCodes": {
-    "EXAMPLE_ERROR": "This is an example error",
-    "EXAMPLE_ERROR_INTERPOLATED": "This is a {{adjective}} example error"
+    "description": "But it's not your fault. It's an issue on our side.",
+    "reset": "Reset",
+    "resetDescription": "Try to reset. If the issue happens again, please reach out to us. Then we can fix this issue sooner.",
+    "reload": "Refresh page",
+    "reloadDescription": "If this happens again, please leave us a message. That way, we can fix this issue sooner."
   },
   "leftPane": {
     "conceptTrees": "Concepts",
@@ -34,7 +33,6 @@
     "showingMismatches": "Showing full trees"
   },
   "queryRunner": {
-    "errorDates": "Invalid: all date ranges excluded from time calculation",
     "start": "Start Query",
     "stop": "Stop Query",
     "stopSuccess": "Query stopped",
@@ -63,7 +61,7 @@
     "hasSecondaryId": "Analysis layer active",
     "removeNode": "Remove node",
     "removeColumn": "Remove column",
-    "clear": "Clear the Editor",
+    "clear": "Clear settings",
     "clearConfirm": "Clear now",
     "hasDefaultSettings": "Uses default settings",
     "hasNonDefaultSettings": "Has changed settings"
@@ -170,7 +168,8 @@
     "dateInvalid": "Invalid date",
     "missingLabel": "Unknown",
     "import": "Import",
-    "openFileDialog": "Select file"
+    "openFileDialog": "Select file",
+    "shortcut": "Key"
   },
   "tooltip": {
     "headline": "Info",
@@ -443,6 +442,7 @@
     "tabQueryEditor": "In the Editor, a query may be built and sent.",
     "tabTimebasedEditor": "In the Timebased Editor, a time-based query may be built and sent. That means, previous queries may be combined using time based relations, such as 'before' and 'after'.",
     "tabFormEditor": "The Form Editor allows for further analysis and statistics of previous queries.",
+    "tabEditorV2": "An extended editor that allows advanced queries.",
     "datasetSelector": "Select the dataset – concept trees, previous queries and forms will be loaded.",
     "excludeTimestamps": "If selected, will avoid using the date values from this concept within a query.",
     "excludeFromSecondaryId": "If selected, will avoid using this concept in the analysis layer, should an analysis layer be selected.",
@@ -454,6 +454,8 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "noData": "No data available",
+    "blurred": "Data visibility",
     "emptyTimeline": {
       "headline": "History",
       "description": "Exploring individual events chronologically.",
@@ -473,7 +475,6 @@
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
     "openAll": "Open all",
-    "dates": "Dates",
     "searchEntitiesButton": "Start History",
     "error": "Couldn't load history for this ID.",
     "options": {
@@ -513,5 +514,38 @@
     "paste": "Paste from clipboard",
     "submit": "Submit",
     "pasted": "Imported"
+  },
+  "editorV2": {
+    "time": "TIME",
+    "and": "AND",
+    "or": "OR",
+    "clear": "Reset editor",
+    "clearConfirm": "Reset now",
+    "flip": "Flip",
+    "dates": "Dates",
+    "negate": "Negate",
+    "connector": "Connector",
+    "timeConnection": "Time connection",
+    "editTimeConnection": "Edit time connection",
+    "delete": "Delete",
+    "expand": "Expand",
+    "edit": "Details",
+    "initialDropText": "Drop a concept or query here.",
+    "datesExcluded": "No dates",
+    "outputSection": "Output values",
+    "filtersSection": "Filters",
+    "every": "Every",
+    "some": "Some",
+    "earliest": "The earliest",
+    "latest": "The latest",
+    "dateRangeFrom": "date range from",
+    "dayInterval": "Days",
+    "intervalSome": "some time",
+    "intervalMinDays": "at least {{days}} days",
+    "intervalMaxDays": "at most {{days}} days",
+    "intervalMinMaxDays": "between {{minDays}} and {{maxDays}} days",
+    "before": "before",
+    "after": "after",
+    "while": "while"
   }
 }

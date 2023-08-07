@@ -60,7 +60,7 @@ import org.apache.commons.lang3.tuple.Pair;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class ConceptsProcessor {
 
-	private final DatasetRegistry namespaces;
+	private final DatasetRegistry<? extends Namespace> namespaces;
 	private final Validator validator;
 
 	private final ConqueryConfig config;
@@ -139,7 +139,6 @@ public class ConceptsProcessor {
 		// Connectors only act as bridge to table for the fronted, but also provide ConceptColumnT semantic
 
 		return new FrontendPreviewConfig(
-				previewConfig.getObservationStart(),
 				previewConfig.getAllConnectors()
 							 .stream()
 							 .map(id -> new FrontendPreviewConfig.Labelled(id.toString(), namespace.getCentralRegistry().resolve(id).getTable().getLabel()))

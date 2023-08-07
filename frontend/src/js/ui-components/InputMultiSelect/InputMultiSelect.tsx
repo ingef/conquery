@@ -38,7 +38,6 @@ import { useCloseOnClickOutside } from "./useCloseOnClickOutside";
 import { useFilteredOptions } from "./useFilteredOptions";
 import { useLoadMoreInitially } from "./useLoadMoreInitially";
 import { useResolvableSelect } from "./useResolvableSelect";
-import { useSyncWithValueFromAbove } from "./useSyncWithValueFromAbove";
 
 const MAX_SELECTED_ITEMS_LIMIT = 200;
 
@@ -104,8 +103,6 @@ const InputMultiSelect = ({
   const [inputValue, setInputValue] = useState("");
   const { t } = useTranslation();
 
-  const [syncingState, setSyncingState] = useState(false);
-
   const {
     getSelectedItemProps,
     getDropdownProps,
@@ -117,9 +114,9 @@ const InputMultiSelect = ({
     activeIndex,
   } = useMultipleSelection<SelectOptionT>({
     initialSelectedItems: defaultValue || [],
-    onSelectedItemsChange: (changes) => {
+    selectedItems: value,
+    onStateChange: (changes) => {
       if (changes.selectedItems) {
-        setSyncingState(true);
         onChange(changes.selectedItems);
       }
     },
@@ -166,27 +163,31 @@ const InputMultiSelect = ({
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.InputBlur:
         case useCombobox.stateChangeTypes.ItemClick:
+          // Support disabled items
           if (changes.selectedItem?.disabled) {
             return state;
           }
 
+          // Make sure we're staying around the index of the item that was just selected
           const stayAlmostAtTheSamePositionIndex =
             state.highlightedIndex === filteredOptions.length - 1
               ? state.highlightedIndex - 1
               : state.highlightedIndex;
 
+          // Determine the right item to be "chosen", supporting "creatable" items
           const hasChosenCreatableItem =
             creatable && state.highlightedIndex === 0 && inputValue.length > 0;
 
-          // The item that will be "chosen"
           const selectedItem = hasChosenCreatableItem
             ? { value: inputValue, label: inputValue }
             : changes.selectedItem;
 
-          if (
-            selectedItem &&
-            !selectedItems.find((item) => selectedItem.value === item.value)
-          ) {
+          const hasItemHighlighted = state.highlightedIndex > -1;
+          const isNotSelectedYet =
+            !!selectedItem &&
+            !selectedItems.find((item) => selectedItem.value === item.value);
+
+          if (isNotSelectedYet && hasItemHighlighted) {
             addSelectedItem(selectedItem);
           }
 
@@ -246,14 +247,6 @@ const InputMultiSelect = ({
 
   const clickOutsideRef = useCloseOnClickOutside({ isOpen, toggleMenu });
 
-  useSyncWithValueFromAbove({
-    value,
-    selectedItems,
-    setSelectedItems,
-    syncingState,
-    setSyncingState,
-  });
-
   const clearStaleSearch = () => {
     if (!isOpen) {
       setInputValue("");
@@ -288,12 +281,12 @@ const InputMultiSelect = ({
     >
       <Control disabled={disabled}>
         <ItemsInputContainer>
-          {selectedItems.map((option, index) => {
+          {selectedItems.map((item, index) => {
             return (
               <SelectedItem
-                key={`${option.value}${index}`}
+                key={`${item.value}${index}`}
                 index={index}
-                option={option}
+                item={item}
                 active={index === activeIndex}
                 disabled={disabled}
                 getSelectedItemProps={getSelectedItemProps}

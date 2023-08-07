@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { faTrashAlt } from "@fortawesome/free-regular-svg-icons";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import {
   faCheckCircle,
   faDownload,
@@ -282,7 +282,7 @@ const CSVColumnPicker: FC<PropsT> = ({
             <FileName>{csv.length} Zeilen</FileName>
           </div>
           <WithTooltip text={t("common.clear")}>
-            <IconButton frame icon={faTrashAlt} onClick={onReset} />
+            <IconButton frame icon={faTrash} onClick={onReset} />
           </WithTooltip>
         </Grow>
         {csv.length > 0 && (

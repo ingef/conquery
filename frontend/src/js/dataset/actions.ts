@@ -9,8 +9,12 @@ import { StateT } from "../app/reducers";
 import { ErrorObject } from "../common/actions/genericActions";
 import { exists } from "../common/helpers/exists";
 import { useLoadTrees } from "../concept-trees/actions";
-import { useLoadDefaultHistoryParams } from "../entity-history/actions";
+import {
+  resetHistory,
+  useLoadDefaultHistoryParams,
+} from "../entity-history/actions";
 import { useLoadQueries } from "../previous-queries/list/actions";
+import { queryResultReset } from "../query-runner/actions";
 import { setMessage } from "../snack-message/actions";
 import { SnackMessageType } from "../snack-message/reducer";
 import { clearQuery, loadSavedQuery } from "../standard-query-editor/actions";
@@ -108,6 +112,12 @@ export const useSelectDataset = () => {
       }
 
       dispatch(selectDatasetInput({ id: datasetId }));
+
+      dispatch(resetHistory());
+      dispatch(queryResultReset({ queryType: "standard" }));
+      dispatch(queryResultReset({ queryType: "timebased" }));
+      dispatch(queryResultReset({ queryType: "editorV2" }));
+      dispatch(queryResultReset({ queryType: "externalForms" }));
 
       // To allow loading trees to check whether they should abort or not
       setDatasetId(datasetId);

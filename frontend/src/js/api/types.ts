@@ -163,6 +163,7 @@ export interface ConceptBaseT {
   description?: string; // Empty array: key not defined
   additionalInfos?: InfoT[]; // Empty array: key not defined
   dateRange?: DateRangeT;
+  excludeFromTimeAggregation?: boolean; // To default-exclude some concepts from time aggregation
 }
 
 export type ConceptStructT = ConceptBaseT;
@@ -296,6 +297,7 @@ export interface GetFrontendConfigResponseT {
   queryUpload: QueryUploadConfigT;
   manualUrl?: string;
   contactEmail?: string;
+  observationPeriodStart?: string; // yyyy-mm-dd format, start of the data
 }
 
 export type GetConceptResponseT = Record<ConceptIdT, ConceptElementT>;
@@ -326,7 +328,8 @@ export type ColumnDescriptionKind =
   | "MONEY"
   | "DATE"
   | "DATE_RANGE"
-  | "LIST[DATE_RANGE]";
+  | "LIST[DATE_RANGE]"
+  | "LIST[STRING]";
 
 export interface ColumnDescriptionSemanticColumn {
   type: "COLUMN";
@@ -384,6 +387,7 @@ export interface ColumnDescription {
   // `label` matches column name in CSV
   // So it's more of an id, TODO: rename this to 'id',
   label: string;
+  description: string | null;
 
   type: ColumnDescriptionKind;
   semantics: ColumnDescriptionSemantic[];
@@ -424,9 +428,8 @@ export interface GetQueryErrorResponseT {
 }
 
 export interface ErrorResponseT {
-  code: string; // To translate to localized messages
-  message?: string; // For developers / debugging only
-  context?: Record<string, string>; // More information to maybe display in translated messages
+  message?: string; // Localized error message (based on Accept-Language header) to show to users
+  code: string; // Previously used to translate to localized messages, now unused
 }
 
 export type GetQueryResponseStatusT =
@@ -533,7 +536,6 @@ export interface HistorySources {
 export type GetEntityHistoryDefaultParamsResponse = HistorySources & {
   searchConcept: string | null; // concept id
   searchFilters?: string[]; // allowlisted filter ids within the searchConcept
-  observationPeriodMin: string; // yyyy-MM-dd
 };
 
 export interface EntityInfo {
@@ -553,7 +555,7 @@ export interface TimeStratifiedInfoQuarter {
 export interface TimeStratifiedInfoYear {
   year: number;
   values: {
-    [label: string]: number;
+    [label: string]: number | string[];
   };
   quarters: TimeStratifiedInfoQuarter[];
 }
@@ -562,15 +564,11 @@ export interface TimeStratifiedInfo {
   label: string;
   description: string | null;
   totals: {
-    [label: string]: number;
+    [label: string]: number | string[];
   };
-  columns: {
-    label: string; // Matches `label` with `year.values` and `year.quarters[].values`
-    defaultLabel: string; // Probably not used by us
-    description: string | null;
-    type: ColumnDescriptionKind; // Relevant to show e.g. € for money
-    semantics: ColumnDescriptionSemantic[]; // Probably not used by us
-  }[];
+  // `columns[].label` matches with
+  // `year.values` and `year.quarters[].values`
+  columns: ColumnDescription[];
   years: TimeStratifiedInfoYear[];
 }
 

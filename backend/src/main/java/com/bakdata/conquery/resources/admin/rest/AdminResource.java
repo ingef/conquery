@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.admin.rest;
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
@@ -33,9 +34,9 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
-import com.google.common.collect.ImmutableMap;
 import io.dropwizard.auth.Auth;
 import lombok.RequiredArgsConstructor;
 
@@ -78,7 +79,7 @@ public class AdminResource {
 
 		processor.getJobManager().cancelJob(jobId);
 
-		for (ShardNodeInformation info : processor.getDatasetRegistry().getShardNodes().values()) {
+		for (ShardNodeInformation info : processor.getNodeProvider().get()) {
 			info.send(new CancelJobMessage(jobId));
 		}
 
@@ -89,7 +90,7 @@ public class AdminResource {
 
 	@GET
 	@Path("/jobs/")
-	public ImmutableMap<String, JobManagerStatus> getJobs() {
+	public Collection<JobManagerStatus> getJobs() {
 		return processor.getJobs();
 	}
 
@@ -115,7 +116,7 @@ public class AdminResource {
 		final long limit = maybeLimit.orElse(100);
 
 		final MetaStorage storage = processor.getStorage();
-		final DatasetRegistry datasetRegistry = processor.getDatasetRegistry();
+		final DatasetRegistry<? extends Namespace> datasetRegistry = processor.getDatasetRegistry();
 
 
 		return storage.getAllExecutions().stream()

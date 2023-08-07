@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,13 +22,17 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
+import com.bakdata.conquery.integration.sql.SqlIntegrationTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.TestConquery;
+import com.codahale.metrics.SharedMetricRegistries;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
@@ -125,6 +130,22 @@ public class IntegrationTests {
 					}
 				})
 				.map(this::createDynamicProgrammaticTestNode);
+	}
+
+
+	@SneakyThrows
+	public Stream<DynamicTest> sqlTests(SqlDialect sqlDialect, SqlConnectorConfig sqlConfig) {
+		SharedMetricRegistries.setDefault("test");
+		final Path testRootDir = Path.of(Objects.requireNonNullElse(
+				System.getenv(TestTags.SQL_BACKEND_TEST_DIRECTORY_ENVIRONMENT_VARIABLE),
+				SqlIntegrationTest.SQL_TEST_DIR
+		));
+
+		Stream<Path> paths = Files.walk(testRootDir);
+		List<DynamicTest> dynamicTestStream = paths.filter(path -> !Files.isDirectory(path) && path.toString().endsWith(".json"))
+													 .map(path -> SqlIntegrationTest.fromPath(path, sqlDialect, sqlConfig))
+													 .map(test -> DynamicTest.dynamicTest(test.getTestSpec().getLabel(), test)).toList();
+		return dynamicTestStream.stream();
 	}
 
 	private DynamicTest createDynamicProgrammaticTestNode(ProgrammaticIntegrationTest test) {

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 import static org.mockserver.model.HttpRequest.request;
 
 import java.io.File;
@@ -34,6 +33,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.mockserver.integration.ClientAndServer;
+import org.mockserver.mock.Expectation;
 import org.mockserver.mock.OpenAPIExpectation;
 import org.mockserver.model.HttpResponse;
 import org.mockserver.model.StringBody;
@@ -52,14 +52,15 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 		log.info("Test health");
 		assertThat(testConquery.getStandaloneCommand()
-							   .getManager()
+							   .getManagerNode()
 							   .getEnvironment()
 							   .healthChecks()
 							   .runHealthCheck(FORM_BACKEND_ID)
-							   .isHealthy()).describedAs("Checking health of form backend").isTrue();
+							   .isHealthy())
+				.describedAs("Checking health of form backend").isTrue();
 
 		log.info("Get external form configs");
-		final FormScanner formScanner = testConquery.getStandaloneCommand().getManager().getFormScanner();
+		final FormScanner formScanner = testConquery.getStandaloneCommand().getManagerNode().getFormScanner();
 		formScanner.execute(Collections.emptyMap(), null);
 
 		final String externalFormId = FormBackendConfig.createSubTypedId("SOME_EXTERNAL_FORM");
@@ -76,11 +77,8 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 
 		// Generate asset urls and check them in the status
-		final UriBuilder apiUriBuilder = testConquery.getSupport(name)
-													 .defaultApiURIBuilder();
-		final ManagedExecution storedExecution = testConquery.getSupport(name)
-															 .getMetaStorage()
-															 .getExecution(managedExecutionId);
+		final UriBuilder apiUriBuilder = testConquery.getSupport(name).defaultApiURIBuilder();
+		final ManagedExecution storedExecution = testConquery.getSupport(name).getMetaStorage().getExecution(managedExecutionId);
 		final URI
 				downloadURLasset1 =
 				ResultExternalResource.getDownloadURL(apiUriBuilder.clone(), (ManagedExecution & ExternalResult) storedExecution, executionStatus.getResultUrls()
@@ -94,18 +92,12 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 
 		assertThat(executionStatus.getStatus()).isEqualTo(ExecutionState.DONE);
-		assertThat(executionStatus.getResultUrls()).containsExactly(
-				new ResultAsset("Result", downloadURLasset1),
-				new ResultAsset("Another Result", downloadURLasset2)
-		);
+		assertThat(executionStatus.getResultUrls()).containsExactly(new ResultAsset("Result", downloadURLasset1), new ResultAsset("Another Result", downloadURLasset2));
 
 		log.info("Download Result");
 		final String
 				response =
-				support.getClient()
-					   .target(executionStatus.getResultUrls().get(0).url())
-					   .request(javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE)
-					   .get(String.class);
+				support.getClient().target(executionStatus.getResultUrls().get(0).url()).request(javax.ws.rs.core.MediaType.TEXT_PLAIN_TYPE).get(String.class);
 
 		assertThat(response).isEqualTo("Hello");
 
@@ -139,6 +131,7 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 		return conf.withStorage(storageConfig.withDirectory(storageDir));
 	}
 
+	@SneakyThrows
 	@NotNull
 	private URI createFormServer() throws IOException {
 		log.info("Starting mock form backend server");
@@ -146,26 +139,17 @@ public class ExternalFormBackendTest implements ProgrammaticIntegrationTest {
 
 		final URI baseURI = URI.create(String.format("http://127.0.0.1:%d", formBackend.getPort()));
 
-		formBackend.upsert(OpenAPIExpectation.openAPIExpectation("/com/bakdata/conquery/external/openapi-form-backend.yaml"));
+		Expectation[] expectations = formBackend.upsert(OpenAPIExpectation.openAPIExpectation("/com/bakdata/conquery/external/openapi-form-backend.yaml"));
+
 
 		// Result request matcher
-		formBackend.when(request("/result.txt"))
-				   .respond(HttpResponse.response()
-										.withBody(StringBody.exact("Hello")
-										)
-				   );
+		formBackend.when(request("/result.txt")).respond(HttpResponse.response().withBody(StringBody.exact("Hello")));
+
 
 		// Trap: Log failed request
 		formBackend.when(request()).respond(httpRequest -> {
-			log.error(
-					"{} on {}\n\t Headers: {}\n\tBody {}",
-					httpRequest.getMethod(),
-					httpRequest.getPath(),
-					httpRequest.getHeaderList(),
-					httpRequest.getBodyAsString()
-			);
-			fail("Trapped because request did not match. See log.");
-			throw new Error("Received unmappable request");
+			log.error("{} on {}\n\t Headers: {}\n\tBody {}", httpRequest.getMethod(), httpRequest.getPath(), httpRequest.getHeaderList(), httpRequest.getBodyAsString());
+			return HttpResponse.notFoundResponse();
 		});
 		return baseURI;
 	}

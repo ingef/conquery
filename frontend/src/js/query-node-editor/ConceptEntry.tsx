@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { faTrashAlt } from "@fortawesome/free-regular-svg-icons";
+import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import { useTranslation } from "react-i18next";
 
 import type { ConceptIdT, ConceptT } from "../api/types";
@@ -77,7 +77,7 @@ const ConceptEntry = ({
         <SxIconButton
           onClick={() => onRemoveConcept(conceptId)}
           tiny
-          icon={faTrashAlt}
+          icon={faTrashCan}
         />
       )}
     </Concept>

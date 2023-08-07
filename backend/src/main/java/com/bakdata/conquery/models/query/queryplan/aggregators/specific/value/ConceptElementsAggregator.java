@@ -49,7 +49,7 @@ public class ConceptElementsAggregator extends Aggregator<Set<Integer>> {
 
 	@Override
 	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
-		Connector connector = tableConnectors.get(currentTable);
+		final Connector connector = tableConnectors.get(currentTable);
 
 		if (connector == null) {
 			column = null;

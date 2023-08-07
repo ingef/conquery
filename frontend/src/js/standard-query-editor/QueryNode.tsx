@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { memo, useCallback, useRef } from "react";
 import { useDrag } from "react-dnd";
-import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 
 import type { QueryT } from "../api/types";
@@ -9,10 +8,9 @@ import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import {
-  nodeHasNonDefaultSettings,
-  nodeHasFilterValues,
   nodeIsConceptQueryNode,
   canNodeBeDropped,
+  useActiveState,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
 import { HoverNavigatable } from "../small-tab-navigation/HoverNavigatable";
@@ -93,20 +91,18 @@ const QueryNode = ({
   onToggleTimestamps,
   onToggleSecondaryIdExclude,
 }: PropsT) => {
-  const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(node);
   const ref = useRef<HTMLDivElement | null>(null);
 
   const activeSecondaryId = useSelector<StateT, string | null>(
     (state) => state.queryEditor.selectedSecondaryId,
   );
-
-  const hasNonDefaultSettings = !node.error && nodeHasNonDefaultSettings(node);
-  const hasFilterValues = nodeHasFilterValues(node);
   const hasActiveSecondaryId = nodeHasActiveSecondaryId(
     node,
     activeSecondaryId,
   );
+
+  const { active, tooltipText } = useActiveState(node);
 
   const item: StandardQueryNodeT = {
     // Return the data describing the dragged item
@@ -161,12 +157,6 @@ const QueryNode = ({
       } as StandardQueryNodeT),
   });
 
-  const tooltipText = hasNonDefaultSettings
-    ? t("queryEditor.hasNonDefaultSettings")
-    : hasFilterValues
-    ? t("queryEditor.hasDefaultSettings")
-    : undefined;
-
   const expandClick = useCallback(() => {
     if (nodeIsConceptQueryNode(node) || !node.query) return;
 
@@ -195,7 +185,7 @@ const QueryNode = ({
           ref.current = instance;
           drag(instance);
         }}
-        active={hasNonDefaultSettings || hasFilterValues}
+        active={active}
         onClick={node.error ? undefined : () => onEditClick(andIdx, orIdx)}
       >
         <QueryNodeContent
