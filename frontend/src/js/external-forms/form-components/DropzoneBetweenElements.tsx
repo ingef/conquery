@@ -11,7 +11,7 @@ interface Props<DroppableObject> {
 
 const RootHeightBase = 30;
 const LineHeight = 3;
-
+const MarginTopOffsetOver = 5;
 const Root = styled("div")`
   width: 100%;
   left: 0;
@@ -23,13 +23,13 @@ const Root = styled("div")`
 const Line = styled("div")`
   overflow: hidden;
   display: block;
-  background-color: ${({ theme }) => theme.col.blueGrayLight};
+  background-color: ${({ theme }) => theme.col.blueGrayDark};
   margin: 1px 0;
   height: ${LineHeight}px;
   border-radius: 2px;
 `;
 
-const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
+const DropzoneBetweenElements = <DroppableObject extends PossibleDroppableObject>({
   acceptedDropTypes,
   onDrop,
   lastElement,
@@ -44,10 +44,9 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   });
 
   const rootHeightMultiplier = lastElement ? 0.5 : 1;
-  const rootDefaultMarginTop = (lastElement ? -15 : -5) - LineHeight;
-  const rootOverMarginTop = lastElement ? -23 : -10;
+  const rootMarginTop = (lastElement ? -15 : -5) - LineHeight;
   const rootDefaultTop = lastElement ? -5 : -10;
-  const rootOverTop = (lastElement ? -2 : -15) - LineHeight;
+  const rootOverTop = (lastElement ? -5 : -15) - LineHeight;
 
   return (
     <>
@@ -57,9 +56,8 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
         style={{
           height:
             RootHeightBase * rootHeightMultiplier +
-            (isOver && !lastElement ? 0 : LineHeight) +
-            (lastElement ? LineHeight + 4 : 0),
-          marginTop: isOver ? rootOverMarginTop : rootDefaultMarginTop,
+            (isOver ? 0 : LineHeight),
+          marginTop: (isOver ? MarginTopOffsetOver : 0) + rootMarginTop,
           top: isOver ? rootOverTop : rootDefaultTop,
         }}
       ></Root>
@@ -67,4 +65,4 @@ const BetweenElements = <DroppableObject extends PossibleDroppableObject>({
   );
 };
 
-export default BetweenElements;
+export default DropzoneBetweenElements;

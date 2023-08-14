@@ -33,7 +33,6 @@ const Root = styled("div")<{
   display: grid;
   grid-template-columns: 1fr auto;
   font-size: ${({ theme }) => theme.font.sm};
-  margin-top: 5px;
 `;
 
 const Label = styled("p")`
@@ -67,6 +66,10 @@ const RootNode = styled("p")`
   font-size: ${({ theme }) => theme.font.xs};
   color: ${({ theme }) => theme.col.blueGrayDark};
   word-break: break-word;
+`;
+
+const TopMargin = styled("div")`
+  margin-top: 5px;
 `;
 
 interface PropsT {
@@ -131,46 +134,48 @@ const FormConceptNode: FC<PropsT> = ({
     : undefined;
 
   return (
-    <HoverNavigatable
-      triggerNavigate={onClick}
-      canDrop={(item) => canNodeBeDropped(conceptNode, item)}
-      highlightDroppable
-    >
-      <Root
-        ref={(instance) => {
-          ref.current = instance;
-          drag(instance);
-        }}
-        active={hasNonDefaultSettings || hasFilterValues}
-        onClick={onClick}
+    <TopMargin>
+      <HoverNavigatable
+        triggerNavigate={onClick}
+        canDrop={(item) => canNodeBeDropped(conceptNode, item)}
+        highlightDroppable
       >
-        <div>
-          <WithTooltip text={tooltipText}>
-            <>
-              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
-              <Label>{conceptNode && conceptNode.label}</Label>
-              {conceptNode && !!conceptNode.description && (
-                <Description>{conceptNode.description}</Description>
-              )}
-            </>
-          </WithTooltip>
-        </div>
-        <Right>
-          {expand && expand.expandable && (
-            <WithTooltip text={t("externalForms.common.concept.expand")}>
-              <SxIconButton
-                icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
-                tiny
-                onClick={(e) => {
-                  e.stopPropagation();
-                  expand.onClick();
-                }}
-              />
+        <Root
+          ref={(instance) => {
+            ref.current = instance;
+            drag(instance);
+          }}
+          active={hasNonDefaultSettings || hasFilterValues}
+          onClick={onClick}
+        >
+          <div>
+            <WithTooltip text={tooltipText}>
+              <>
+                {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
+                <Label>{conceptNode && conceptNode.label}</Label>
+                {conceptNode && !!conceptNode.description && (
+                  <Description>{conceptNode.description}</Description>
+                )}
+              </>
             </WithTooltip>
-          )}
-        </Right>
-      </Root>
-    </HoverNavigatable>
+          </div>
+          <Right>
+            {expand && expand.expandable && (
+              <WithTooltip text={t("externalForms.common.concept.expand")}>
+                <SxIconButton
+                  icon={expand.active ? faCompressArrowsAlt : faExpandArrowsAlt}
+                  tiny
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    expand.onClick();
+                  }}
+                />
+              </WithTooltip>
+            )}
+          </Right>
+        </Root>
+      </HoverNavigatable>
+    </TopMargin>
   );
 };
 
