@@ -241,7 +241,11 @@ const FormConceptGroup = (props: Props) => {
             }
 
             return props.onChange(
-              addConcept(insertValue(newPropsValue, insertIndex, newValue), insertIndex, concept),
+              addConcept(
+                insertValue(newPropsValue, insertIndex, newValue),
+                insertIndex,
+                concept,
+              ),
             );
           };
         }}
