@@ -107,6 +107,10 @@ const SxDescription = styled(Description)`
   font-size: ${({ theme }) => theme.font.xs};
 `;
 
+const SxFormConceptNode = styled(FormConceptNode)`
+  margin-top: 5px;
+`;
+
 export interface EditedFormQueryNodePosition {
   valueIdx: number;
   conceptIdx: number;
@@ -208,50 +212,36 @@ const FormConceptGroup = (props: Props) => {
             if (props.isValidConcept && !props.isValidConcept(item))
               return null;
 
+            const concept = isMovedObject(item)
+              ? copyConcept(item)
+              : initializeConcept(item, defaults, tableConfig);
+            let newPropsValue = props.value;
+            let insertIndex = i;
             if (isMovedObject(item)) {
-              let insertIndex =
-                i > item.dragContext.movedFromAndIdx &&
-                item.dragContext.movedFromOrIdx === 0
-                  ? i - 1
-                  : i;
-              if (item.dragContext.movedFromFieldName === props.fieldName) {
-                const updatedValue =
-                  props.value[item.dragContext.movedFromAndIdx].concepts
-                    .length === 1
-                    ? removeValue(props.value, item.dragContext.movedFromAndIdx)
+              const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
+                item.dragContext;
+
+              if (movedFromFieldName === props.fieldName) {
+                if (i > movedFromAndIdx && movedFromOrIdx === 0) {
+                  insertIndex = i - 1;
+                }
+                newPropsValue =
+                  props.value[movedFromAndIdx].concepts.length === 1
+                    ? removeValue(props.value, movedFromAndIdx)
                     : removeConcept(
                         props.value,
-                        item.dragContext.movedFromAndIdx,
-                        item.dragContext.movedFromOrIdx,
+                        movedFromAndIdx,
+                        movedFromOrIdx,
                       );
-                return props.onChange(
-                  addConcept(
-                    insertValue(updatedValue, insertIndex, newValue),
-                    insertIndex,
-                    copyConcept(item),
-                  ),
-                );
               } else {
                 if (exists(item.dragContext.deleteFromOtherField)) {
                   item.dragContext.deleteFromOtherField();
                 }
-
-                return props.onChange(
-                  addConcept(
-                    insertValue(props.value, insertIndex, newValue),
-                    insertIndex,
-                    copyConcept(item),
-                  ),
-                );
               }
             }
 
             return props.onChange(
-              addConcept(
-                insertValue(props.value, i, newValue),
-                i,
-                initializeConcept(item, defaults, tableConfig),
-              ),
+              addConcept(insertValue(newPropsValue, insertIndex, newValue), insertIndex, concept),
             );
           };
         }}
@@ -274,21 +264,14 @@ const FormConceptGroup = (props: Props) => {
 
           if (props.isValidConcept && !props.isValidConcept(item)) return;
 
-          if (isMovedObject(item)) {
-            return props.onChange(
-              addConcept(
-                addValue(props.value, newValue),
-                props.value.length,
-                copyConcept(item),
-              ),
-            );
-          }
-
+          const concept = isMovedObject(item)
+            ? copyConcept(item)
+            : initializeConcept(item, defaults, tableConfig);
           return props.onChange(
             addConcept(
               addValue(props.value, newValue),
               props.value.length, // Assuming the last index has increased after addValue
-              initializeConcept(item, defaults, tableConfig),
+              concept,
             ),
           );
         }}
@@ -338,7 +321,7 @@ const FormConceptGroup = (props: Props) => {
               }
               items={row.concepts.map((concept, j) =>
                 concept ? (
-                  <FormConceptNode
+                  <SxFormConceptNode
                     key={j}
                     valueIdx={i}
                     conceptIdx={j}
