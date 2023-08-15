@@ -38,7 +38,7 @@ const Interval = styled("span")`
 `;
 const Operator = styled("span")`
   font-weight: bold;
-  color: ${({ theme }) => theme.col.palette[2]};
+  color: ${({ theme }) => theme.col.palette.at(-2)};
 `;
 
 export const TimeConnection = memo(

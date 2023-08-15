@@ -85,6 +85,8 @@ const Quarter = ({
   toggleOpenQuarter,
   differences,
   columns,
+  dateColumn,
+  sourceColumn,
   columnBuckets,
   currencyConfig,
   rootConceptIdsByColumn,
@@ -99,6 +101,8 @@ const Quarter = ({
   toggleOpenQuarter: (year: number, quarter: number) => void;
   differences: string[][];
   columns: Record<string, ColumnDescription>;
+  dateColumn: ColumnDescription;
+  sourceColumn: ColumnDescription;
   columnBuckets: ColumnBuckets;
   contentFilter: ContentFilterValue;
   currencyConfig: CurrencyConfigT;
@@ -147,6 +151,8 @@ const Quarter = ({
                   <EventCard
                     key={`${index}-${evtIdx}`}
                     columns={columns}
+                    dateColumn={dateColumn}
+                    sourceColumn={sourceColumn}
                     columnBuckets={columnBuckets}
                     contentFilter={contentFilter}
                     rootConceptIdsByColumn={rootConceptIdsByColumn}
@@ -157,7 +163,7 @@ const Quarter = ({
               } else {
                 const firstRowWithoutDifferences = Object.fromEntries(
                   Object.entries(group[0]).filter(([key]) => {
-                    if (key === "dates") {
+                    if (key === dateColumn.label) {
                       return true; // always show dates, despite it being part of groupDifferences
                     }
 
@@ -169,6 +175,8 @@ const Quarter = ({
                   <EventCard
                     key={index}
                     columns={columns}
+                    dateColumn={dateColumn}
+                    sourceColumn={sourceColumn}
                     columnBuckets={columnBuckets}
                     contentFilter={contentFilter}
                     rootConceptIdsByColumn={rootConceptIdsByColumn}

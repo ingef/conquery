@@ -4,15 +4,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import c10n.C10N;
 import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -21,7 +17,6 @@ import com.bakdata.conquery.apiv1.query.SecondaryIdQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
-import com.bakdata.conquery.internationalization.CQElementC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
@@ -33,17 +28,19 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -57,7 +54,6 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
 public class ManagedQuery extends ManagedExecution implements SingleTableResult, InternalExecution<ShardResult> {
 
-	private static final int MAX_CONCEPT_LABEL_CONCAT_LENGTH = 70;
 	// Needs to be resolved externally before being executed
 	private Query query;
 	/**
@@ -129,7 +125,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	@Override
 	public void start() {
 		super.start();
-		involvedWorkers = Collections.synchronizedSet(getNamespace().getWorkers().stream()
+		involvedWorkers = Collections.synchronizedSet(getNamespace().getWorkerHandler().getWorkers().stream()
 																	.map(WorkerInformation::getId)
 																	.collect(Collectors.toSet()));
 	}
@@ -186,6 +182,19 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	}
 
 	@Override
+	public void reset() {
+		super.reset();
+		getNamespace().getExecutionManager().clearQueryResults(this);
+	}
+
+	@Override
+	public void cancel() {
+		log.debug("Sending cancel message to all workers.");
+
+		getNamespace().getWorkerHandler().sendToAll(new CancelQuery(getId()));
+	}
+
+	@Override
 	@JsonIgnore
 	public QueryDescription getSubmitted() {
 		return query;
@@ -196,84 +205,12 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	 * The Label is customized by mentioning that a description contained a
 	 * {@link CQExternal}, {@link CQReusedQuery} or {@link CQConcept}, in this order.
 	 * In case of one ore more {@link CQConcept} the distinct labels of the concepts are chosen
-	 * and concatinated until a length of {@value #MAX_CONCEPT_LABEL_CONCAT_LENGTH} is reached.
+	 * and concatinated until a length of MAX_CONCEPT_LABEL_CONCAT_LENGTH is reached.
 	 * All further labels are dropped.
 	 */
 	@Override
 	protected String makeDefaultLabel(PrintSettings cfg) {
-		final StringBuilder sb = new StringBuilder();
-
-		final Map<Class<? extends Visitable>, List<Visitable>> sortedContents =
-				Visitable.stream(query)
-						 .collect(Collectors.groupingBy(Visitable::getClass));
-
-		int sbStartSize = sb.length();
-
-		// Check for CQExternal
-		List<Visitable> externals = sortedContents.getOrDefault(CQExternal.class, Collections.emptyList());
-		if (!externals.isEmpty()) {
-			if (sb.length() > 0) {
-				sb.append(" ");
-			}
-			sb.append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).external());
-		}
-
-		// Check for CQReused
-		if (sortedContents.containsKey(CQReusedQuery.class)) {
-			if (sb.length() > 0) {
-				sb.append(" ");
-			}
-			sb.append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).reused());
-		}
-
-
-		// Check for CQConcept
-		if (sortedContents.containsKey(CQConcept.class)) {
-			if (sb.length() > 0) {
-				sb.append(" ");
-			}
-			// Track length of text we are appending for concepts.
-			final AtomicInteger length = new AtomicInteger();
-
-			sortedContents.get(CQConcept.class)
-						  .stream()
-						  .map(CQConcept.class::cast)
-
-						  .map(c -> makeLabelWithRootAndChild(c, cfg))
-						  .filter(Predicate.not(Strings::isNullOrEmpty))
-						  .distinct()
-
-						  .takeWhile(elem -> length.addAndGet(elem.length()) < MAX_CONCEPT_LABEL_CONCAT_LENGTH)
-						  .forEach(label -> sb.append(label).append(" "));
-
-			// Last entry will output one Space that we don't want
-			if (sb.length() > 0) {
-				sb.deleteCharAt(sb.length() - 1);
-			}
-
-			// If not all Concept could be included in the name, point that out
-			if (length.get() > MAX_CONCEPT_LABEL_CONCAT_LENGTH) {
-				sb.append(" ").append(C10N.get(CQElementC10n.class, I18n.LOCALE.get()).furtherConcepts());
-			}
-		}
-
-
-		// Fallback to id if nothing could be extracted from the query description
-		if (sbStartSize == sb.length()) {
-			sb.append(getId().getExecution());
-		}
-
-		return sb.toString();
-	}
-
-	private static String makeLabelWithRootAndChild(CQConcept cqConcept, PrintSettings cfg) {
-		String label = cqConcept.getUserOrDefaultLabel(cfg.getLocale());
-		if (label == null) {
-			label = cqConcept.getConcept().getLabel();
-		}
-
-		// Concat everything with dashes
-		return label.replace(" ", "-");
+		return QueryUtils.makeQueryLabel(query, cfg, getId());
 	}
 
 	@Override
@@ -286,4 +223,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 		visitor.accept(this);
 		query.visit(visitor);
 	}
+
+	public DistributedNamespace getNamespace() {
+		return (DistributedNamespace) super.getNamespace();
+	}
+
 }

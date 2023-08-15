@@ -21,10 +21,6 @@ import {
 
 // TODO: This is quite inaccurate
 export type EntityEvent = {
-  dates: {
-    from: string; // e.g. 2022-01-31
-    to: string; // e.g. 2022-01-31
-  };
   [key: string]: any;
 };
 

@@ -116,6 +116,11 @@ public class ConqueryConfig extends Configuration implements Injectable {
 	@Valid
 	@NotNull
 	private List<PluginConfig> plugins = new ArrayList<>();
+
+	@Valid
+	@NotNull
+	private SqlConnectorConfig sqlConnectorConfig = new SqlConnectorConfig();
+
 	/**
 	 * null means here that we try to deduce from an attached agent
 	 */

@@ -147,6 +147,13 @@ public class IntegrationUtils {
 							  ));
 	}
 
+	private static URI getQueryCancelURI(StandaloneSupport conquery, String id) {
+		return HierarchyHelper.hierarchicalPath(conquery.defaultApiURIBuilder(), QueryResource.class, "cancel")
+							  .buildFromMap(Map.of(
+									  "query", id, "dataset", conquery.getDataset().getId()
+							  ));
+	}
+
 	public static FullExecutionStatus getExecutionStatus(StandaloneSupport conquery, ManagedExecutionId executionId, User user, int expectedResponseCode) {
 		final URI queryStatusURI = getQueryStatusURI(conquery, executionId.toString());
 
@@ -168,4 +175,18 @@ public class IntegrationUtils {
 		return response.readEntity(FullExecutionStatus.class);
 	}
 
+	public static Response cancelQuery(StandaloneSupport conquery, ManagedExecutionId executionId, User user) {
+		final URI cancelQueryURI = getQueryCancelURI(conquery, executionId.toString());
+
+		final String userToken = conquery.getAuthorizationController()
+										 .getConqueryTokenRealm()
+										 .createTokenForUser(user.getId());
+
+		return conquery.getClient()
+										  .target(cancelQueryURI)
+										  .request(MediaType.APPLICATION_JSON_TYPE)
+										  .header("Authorization", "Bearer " + userToken)
+										  .post(null);
+
+	}
 }

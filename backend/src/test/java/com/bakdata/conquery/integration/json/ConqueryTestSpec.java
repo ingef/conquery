@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.IdUtil;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.StandaloneSupport;
+import com.bakdata.conquery.util.support.TestSupport;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
@@ -36,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @Slf4j @CPSBase
-public abstract class ConqueryTestSpec {
+public abstract class ConqueryTestSpec<S extends TestSupport> {
 
 	@Getter
 	@Setter
@@ -58,9 +59,9 @@ public abstract class ConqueryTestSpec {
 		return config.withStorage(new NonPersistentStoreFactory());
 	}
 
-	public abstract void executeTest(StandaloneSupport support) throws Exception;
+	public abstract void executeTest(S support) throws Exception;
 
-	public abstract void importRequiredData(StandaloneSupport support) throws Exception;
+	public abstract void importRequiredData(S support) throws Exception;
 
 
 	@Override
@@ -68,19 +69,19 @@ public abstract class ConqueryTestSpec {
 		return label;
 	}
 
-	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass) throws IOException, JSONException {
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, Class<T> expectedClass) throws IOException, JSONException {
 		return parseSubTree(support, node, expectedClass, null);
 	}
 
-	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory().constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation);
 	}
 
-	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType) throws IOException, JSONException {
+	public static <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType) throws IOException, JSONException {
 		return parseSubTree(support, node, expectedType, null);
 	}
 
-	public static  <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static  <T> T parseSubTree(TestSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		final ObjectMapper om = Jackson.MAPPER.copy();
 		ObjectMapper mapper = support.getDataset().injectIntoNew(
 				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry(), support.getMetaStorage().getCentralRegistry())
@@ -102,7 +103,7 @@ public abstract class ConqueryTestSpec {
 		return result;
 	}
 
-	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static <T> List<T> parseSubTreeList(TestSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		final ObjectMapper om = Jackson.MAPPER.copy();
 		ObjectMapper mapper = support.getDataset().injectInto(
 				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectIntoNew(
@@ -150,7 +151,7 @@ public abstract class ConqueryTestSpec {
 	@RequiredArgsConstructor
 	private static class DatasetPlaceHolderFiller extends DeserializationProblemHandler {
 
-		private final StandaloneSupport support;
+		private final TestSupport support;
 
 		@Override
 		public Object handleWeirdStringValue(DeserializationContext ctxt, Class<?> targetType, String valueToConvert, String failureMsg) throws IOException {

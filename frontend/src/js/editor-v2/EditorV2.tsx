@@ -10,12 +10,13 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { nodeIsConceptQueryNode } from "../model/node";
+import { useDatasetId } from "../dataset/selectors";
+import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { EmptyQueryEditorDropzone } from "../standard-query-editor/EmptyQueryEditorDropzone";
 import {
   DragItemConceptTreeNode,
@@ -92,6 +93,8 @@ const useEditorState = () => {
     return findNodeById(tree, selectedNodeId);
   }, [tree, selectedNodeId]);
 
+  const { active: selectedNodeActive } = useActiveState(selectedNode?.data);
+
   const onReset = useCallback(() => {
     setTree(undefined);
   }, []);
@@ -114,8 +117,16 @@ const useEditorState = () => {
     updateTreeNode,
     onReset,
     selectedNode,
+    selectedNodeActive,
     setSelectedNodeId,
   };
+};
+
+const useResetOnDatasetChange = (onReset: () => void) => {
+  const datasetId = useDatasetId();
+  useEffect(() => {
+    onReset();
+  }, [datasetId, onReset]);
 };
 
 export function EditorV2({
@@ -142,8 +153,11 @@ export function EditorV2({
     updateTreeNode,
     onReset,
     selectedNode,
+    selectedNodeActive,
     setSelectedNodeId,
   } = useEditorState();
+
+  useResetOnDatasetChange(onReset);
 
   const onFlip = useCallback(() => {
     if (!selectedNode || !selectedNode.children) return;
@@ -311,7 +325,7 @@ export function EditorV2({
                     <IconButton
                       icon={faEdit}
                       tight
-                      active={false}
+                      active={selectedNodeActive}
                       onClick={(e) => {
                         e.stopPropagation();
                         onOpenQueryNodeEditor();

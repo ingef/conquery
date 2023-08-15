@@ -44,7 +44,7 @@ const Col = styled("div")`
 
 const Grid = styled("div")`
   display: grid;
-  grid-template-columns: auto 45px;
+  grid-template-columns: auto minmax(min-content, 25px);
   gap: 0px 10px;
 `;
 

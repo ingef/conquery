@@ -9,9 +9,11 @@ import { TimeStratifiedConceptChart } from "./TimeStratifiedConceptChart";
 import { isConceptColumn, isMoneyColumn } from "./timeline/util";
 
 const Container = styled("div")`
+  align-self: flex-start;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  overflow-x: hidden;
 `;
 
 export const TabbableTimeStratifiedInfos = ({

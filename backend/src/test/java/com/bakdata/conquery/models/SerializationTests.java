@@ -74,6 +74,7 @@ import com.bakdata.conquery.models.forms.managed.ExternalExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedInternalForm;
 import com.bakdata.conquery.models.forms.util.Alignment;
 import com.bakdata.conquery.models.forms.util.Resolution;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -465,7 +466,10 @@ public class SerializationTests extends AbstractSerializationTest {
 
 	@Test
 	public void executionCreationPlanError() throws JSONException, IOException {
-		ConqueryError error = new ConqueryError.ExecutionCreationPlanError();
+
+		I18n.init();
+
+		ConqueryError error = new ConqueryError.ExecutionProcessingError();
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
