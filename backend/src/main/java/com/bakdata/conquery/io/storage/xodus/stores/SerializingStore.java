@@ -36,6 +36,7 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -332,12 +333,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		final IterationStatistic result = new IterationStatistic();
 		final ArrayList<ByteIterable> unreadables = new ArrayList<>();
+		final CallerBlocksRejectionHandler rejectionHandler = new CallerBlocksRejectionHandler(TimeUnit.MINUTES.toMillis(5));
 
-		final ThreadPoolExecutor executorService = new ThreadPoolExecutor(10, 10,
+		final ThreadPoolExecutor executorService = new ThreadPoolExecutor(2, 2,
 																		  0, TimeUnit.SECONDS,
-																		  new ArrayBlockingQueue<>(50),
+																		  new ArrayBlockingQueue<>(10),
 																		  Executors.defaultThreadFactory(),
-																		  new CallerBlocksRejectionHandler(TimeUnit.MINUTES.toMillis(5))
+																		  rejectionHandler
 		);
 
 		store.forEach((k, v) -> {
@@ -390,6 +392,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			log.debug("Still waiting for {} to load.", this);
 		}
 
+		log.debug("Waited {} on workers.", DurationFormatUtils.formatDurationHMS(rejectionHandler.getWaitedMillis().sum()));
 		// Print some statistics
 		final int total = result.getTotalProcessed();
 		log.debug(
