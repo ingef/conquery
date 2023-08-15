@@ -20,10 +20,12 @@ import { TimelineEmptyPlaceholder } from "./timeline/TimelineEmptyPlaceholder";
 import Year from "./timeline/Year";
 import {
   isConceptColumn,
+  isDateColumn,
   isGroupableColumn,
   isIdColumn,
   isMoneyColumn,
   isSecondaryIdColumn,
+  isSourceColumn,
   isVisibleColumn,
 } from "./timeline/util";
 
@@ -83,13 +85,23 @@ const Timeline = ({
     (state) => state.startup.config.currency,
   );
 
-  const { columns, columnBuckets, rootConceptIdsByColumn } =
-    useColumnInformation();
+  const {
+    columns,
+    dateColumn,
+    sourceColumn,
+    columnBuckets,
+    rootConceptIdsByColumn,
+  } = useColumnInformation();
 
   const { eventsByQuarterWithGroups } = useTimeBucketedSortedData(data, {
+    sourceColumn,
+    dateColumn,
     sources,
     secondaryIds: columnBuckets.secondaryIds,
   });
+
+  const isEmpty =
+    eventsByQuarterWithGroups.length === 0 || !dateColumn || !sourceColumn;
 
   return (
     <Root className={className}>
@@ -98,26 +110,30 @@ const Timeline = ({
         infos={currentEntityInfos}
         timeStratifiedInfos={currentEntityTimeStratifiedInfos}
       />
-      {eventsByQuarterWithGroups.length === 0 && <SxTimelineEmptyPlaceholder />}
-      {eventsByQuarterWithGroups.map(({ year, quarterwiseData }, i) => (
-        <Fragment key={year}>
-          <Year
-            year={year}
-            quarterwiseData={quarterwiseData}
-            timeStratifiedInfos={currentEntityTimeStratifiedInfos}
-            getIsOpen={getIsOpen}
-            toggleOpenYear={toggleOpenYear}
-            toggleOpenQuarter={toggleOpenQuarter}
-            detailLevel={detailLevel}
-            currencyConfig={currencyConfig}
-            rootConceptIdsByColumn={rootConceptIdsByColumn}
-            columnBuckets={columnBuckets}
-            contentFilter={contentFilter}
-            columns={columns}
-          />
-          {i < eventsByQuarterWithGroups.length - 1 && <Divider />}
-        </Fragment>
-      ))}
+      {isEmpty && <SxTimelineEmptyPlaceholder />}
+      {dateColumn &&
+        sourceColumn &&
+        eventsByQuarterWithGroups.map(({ year, quarterwiseData }, i) => (
+          <Fragment key={year}>
+            <Year
+              year={year}
+              quarterwiseData={quarterwiseData}
+              timeStratifiedInfos={currentEntityTimeStratifiedInfos}
+              getIsOpen={getIsOpen}
+              toggleOpenYear={toggleOpenYear}
+              toggleOpenQuarter={toggleOpenQuarter}
+              detailLevel={detailLevel}
+              currencyConfig={currencyConfig}
+              rootConceptIdsByColumn={rootConceptIdsByColumn}
+              columnBuckets={columnBuckets}
+              contentFilter={contentFilter}
+              columns={columns}
+              dateColumn={dateColumn}
+              sourceColumn={sourceColumn}
+            />
+            {i < eventsByQuarterWithGroups.length - 1 && <Divider />}
+          </Fragment>
+        ))}
     </Root>
   );
 };
@@ -149,7 +165,11 @@ const diffObjects = (objects: Object[]): string[] => {
 };
 
 const findGroupsWithinQuarter =
-  (secondaryIds: ColumnDescription[]) =>
+  (
+    secondaryIds: ColumnDescription[],
+    dateColumn: ColumnDescription,
+    sourceColumn: ColumnDescription,
+  ) =>
   ({ quarter, events }: { quarter: number; events: EntityEvent[] }) => {
     if (events.length < 2) {
       return { quarter, groupedEvents: [events], differences: [[]] };
@@ -168,7 +188,7 @@ const findGroupsWithinQuarter =
       }
 
       const groupKey =
-        evt.source +
+        evt[sourceColumn.label] +
         secondaryIds
           .filter(isGroupableColumn)
           .map(({ label }) => evt[label])
@@ -186,9 +206,9 @@ const findGroupsWithinQuarter =
         return [
           {
             ...events[0],
-            dates: {
-              from: events[0].dates.from,
-              to: events[events.length - 1].dates.to,
+            [dateColumn.label]: {
+              from: events[0][dateColumn.label].from,
+              to: events[events.length - 1][dateColumn.label].to,
             },
           },
           ...events.slice(1),
@@ -208,6 +228,8 @@ const findGroupsWithinQuarter =
 const findGroups = (
   eventsPerYears: EventsPerYear[],
   secondaryIds: ColumnDescription[],
+  dateColumn: ColumnDescription,
+  sourceColumn: ColumnDescription,
 ) => {
   const findGroupsWithinYear = ({
     year,
@@ -216,7 +238,7 @@ const findGroups = (
     return {
       year,
       quarterwiseData: quarterwiseData.map(
-        findGroupsWithinQuarter(secondaryIds),
+        findGroupsWithinQuarter(secondaryIds, dateColumn, sourceColumn),
       ),
     };
   };
@@ -247,19 +269,25 @@ const useTimeBucketedSortedData = (
   {
     sources,
     secondaryIds,
+    sourceColumn,
+    dateColumn,
   }: {
     sources: Set<string>;
     secondaryIds: ColumnDescription[];
+    sourceColumn?: ColumnDescription;
+    dateColumn?: ColumnDescription;
   },
 ) => {
   const groupByQuarter = (
     entityData: EntityHistoryStateT["currentEntityData"],
     sources: Set<string>,
+    dateColumn: ColumnDescription,
+    sourceColumn: ColumnDescription,
   ) => {
     const result: { [year: string]: { [quarter: number]: EntityEvent[] } } = {};
 
     for (const row of entityData) {
-      const [year, month] = row.dates.from.split("-");
+      const [year, month] = row[dateColumn.label].from.split("-");
       const quarter = Math.floor((parseInt(month) - 1) / 3) + 1;
 
       if (!result[year]) {
@@ -268,7 +296,7 @@ const useTimeBucketedSortedData = (
         result[year][quarter] = [];
       }
 
-      if (sources.has(row.source)) {
+      if (sources.has(row[sourceColumn.label])) {
         result[year][quarter].push(row);
       }
     }
@@ -311,13 +339,29 @@ const useTimeBucketedSortedData = (
   };
 
   return useMemo(() => {
-    const eventsByQuarter = groupByQuarter(data, sources);
-    const eventsByQuarterWithGroups = findGroups(eventsByQuarter, secondaryIds);
+    if (!data || !dateColumn || !sourceColumn) {
+      return {
+        eventsByQuarterWithGroups: [],
+      };
+    }
+
+    const eventsByQuarter = groupByQuarter(
+      data,
+      sources,
+      dateColumn,
+      sourceColumn,
+    );
+    const eventsByQuarterWithGroups = findGroups(
+      eventsByQuarter,
+      secondaryIds,
+      dateColumn,
+      sourceColumn,
+    );
 
     return {
       eventsByQuarterWithGroups,
     };
-  }, [data, sources, secondaryIds]);
+  }, [data, sources, secondaryIds, dateColumn, sourceColumn]);
 };
 
 export interface ColumnBuckets {
@@ -335,6 +379,16 @@ const useColumnInformation = () => {
 
   const columns = useSelector<StateT, EntityHistoryStateT["columns"]>(
     (state) => state.entityHistory.columns,
+  );
+
+  const dateColumn = useMemo(
+    () => Object.values(columns).find(isDateColumn),
+    [columns],
+  );
+
+  const sourceColumn = useMemo(
+    () => Object.values(columns).find(isSourceColumn),
+    [columns],
   );
 
   const columnBuckets: ColumnBuckets = useMemo(() => {
@@ -376,6 +430,8 @@ const useColumnInformation = () => {
   return {
     columns,
     columnBuckets,
+    dateColumn,
+    sourceColumn,
     rootConceptIdsByColumn,
   };
 };

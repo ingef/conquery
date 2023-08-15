@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.error;
 
 import java.util.Comparator;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -17,14 +16,9 @@ public interface ConqueryErrorInfo {
 	String getCode();
 	
 	String getMessage();
-	
-	Map<String,String> getContext();
 
-	/**
-	 * Returns a {@link ConqueryErrorInfo} POJO without the internal type information.
-	 * @return
-	 */
-	PlainError asPlain();
+	SimpleErrorInfo asPlain();
+
 	
 	/**
 	 * Method to check if two errors are basically the same, by not checking the id and the context (which possibly checks on hashcode basis).

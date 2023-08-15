@@ -1,5 +1,4 @@
 // See index.html for an inject marker, that we use to inject env vars
-import { TFunction } from "i18next";
 
 // at container runtime
 function runtimeVar(variable: string): string | null {
@@ -38,26 +37,3 @@ export const basename = basenameEnv || "";
 export const idpUrl = idpUrlEnv || "";
 export const idpRealm = idpRealmEnv || "";
 export const idpClientId = idpClientIdEnv || "";
-
-export interface CustomEnvironment {
-  getExternalSupportedErrorMessage?: (
-    t: TFunction,
-    code: string,
-    context?: Record<string, string>,
-  ) => string | undefined;
-}
-
-let customEnvironment: CustomEnvironment | null = null;
-
-export const initializeEnvironment = (env: CustomEnvironment) => {
-  customEnvironment = env;
-};
-
-export const getExternalSupportedErrorMessage = (
-  t: TFunction,
-  code: string,
-  context?: Record<string, string>,
-) =>
-  customEnvironment && customEnvironment.getExternalSupportedErrorMessage
-    ? customEnvironment.getExternalSupportedErrorMessage(t, code, context)
-    : undefined;

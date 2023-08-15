@@ -428,9 +428,8 @@ export interface GetQueryErrorResponseT {
 }
 
 export interface ErrorResponseT {
-  code: string; // To translate to localized messages
-  message?: string; // For developers / debugging only
-  context?: Record<string, string>; // More information to maybe display in translated messages
+  message?: string; // Localized error message (based on Accept-Language header) to show to users
+  code: string; // Previously used to translate to localized messages, now unused
 }
 
 export type GetQueryResponseStatusT =

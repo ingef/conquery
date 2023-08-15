@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -178,7 +177,7 @@ public class DistributedExecutionManager implements ExecutionManager {
 
 	@Override
 	public void cancelQuery(Dataset dataset, ManagedExecution query) {
-		clusterState.getWorkerHandlers().get(dataset.getId()).sendToAll(new CancelQuery(query.getId()));
+		query.cancel();
 	}
 
 }

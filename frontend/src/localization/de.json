@@ -9,10 +9,6 @@
     "reload": "Seite vollständig neu laden",
     "reloadDescription": "Bitte hinterlasse uns eine Nachricht, damit wir dieses Problem beheben können."
   },
-  "errorCodes": {
-    "EXAMPLE_ERROR": "Dies ist eine Beispiel-Fehlermeldung",
-    "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {{adjective}} Beispiel-Fehlermeldung"
-  },
   "leftPane": {
     "conceptTrees": "Konzepte",
     "previousQueries": "Anfragen und Formulare"
@@ -458,6 +454,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "noData": "Keine Daten verfügbar",
     "blurred": "Daten-Sichtbarkeit",
     "emptyTimeline": {
       "headline": "Historie",
@@ -478,7 +475,6 @@
     "differencesTooltip": "Unterschiede aus den einzelnen Einträgen",
     "closeAll": "Alle schließen",
     "openAll": "Alle aufklappen",
-    "dates": "Datumswerte",
     "searchEntitiesButton": "Historie starten",
     "error": "Konnte Historie für diese ID nicht laden.",
     "options": {

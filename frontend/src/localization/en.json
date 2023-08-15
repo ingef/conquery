@@ -9,10 +9,6 @@
     "reload": "Refresh page",
     "reloadDescription": "If this happens again, please leave us a message. That way, we can fix this issue sooner."
   },
-  "errorCodes": {
-    "EXAMPLE_ERROR": "This is an example error",
-    "EXAMPLE_ERROR_INTERPOLATED": "This is a {{adjective}} example error"
-  },
   "leftPane": {
     "conceptTrees": "Concepts",
     "previousQueries": "Queries and Forms"
@@ -458,6 +454,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "noData": "No data available",
     "blurred": "Data visibility",
     "emptyTimeline": {
       "headline": "History",
@@ -478,7 +475,6 @@
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
     "openAll": "Open all",
-    "dates": "Dates",
     "searchEntitiesButton": "Start History",
     "error": "Couldn't load history for this ID.",
     "options": {

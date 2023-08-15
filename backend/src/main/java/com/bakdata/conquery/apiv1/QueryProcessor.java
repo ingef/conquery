@@ -304,8 +304,6 @@ public class QueryProcessor {
 
 		log.info("User[{}] cancelled Query[{}]", subject.getId(), query.getId());
 
-		query.reset();
-
 		final ExecutionManager executionManager = datasetRegistry.get(dataset.getId()).getExecutionManager();
 		executionManager.cancelQuery(dataset, query);
 	}
@@ -415,7 +413,7 @@ public class QueryProcessor {
 
 
 		if (execution.getState() == ExecutionState.FAILED) {
-			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
+			throw new ConqueryError.ExecutionProcessingError();
 		}
 
 
@@ -463,7 +461,7 @@ public class QueryProcessor {
 		}
 
 		if (execution.getState() == ExecutionState.FAILED) {
-			throw ConqueryError.ContextError.fromErrorInfo(execution.getError());
+			throw new ConqueryError.ExecutionProcessingError();
 		}
 
 		final SingleTableResult result = (SingleTableResult) execution;
