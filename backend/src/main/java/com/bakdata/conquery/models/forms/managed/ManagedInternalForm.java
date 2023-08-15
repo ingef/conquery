@@ -28,6 +28,7 @@ import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FormShardResult;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -204,5 +205,9 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 		synchronized (this) {
 			return flatSubQueries.values().stream().allMatch(q -> q.getState().equals(ExecutionState.DONE));
 		}
+	}
+
+	public DistributedNamespace getNamespace() {
+		return (DistributedNamespace) super.getNamespace();
 	}
 }
