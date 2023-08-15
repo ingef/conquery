@@ -21,6 +21,7 @@ import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.util.CallerBlocksRejectionHandler;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -332,11 +333,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final IterationStatistic result = new IterationStatistic();
 		final ArrayList<ByteIterable> unreadables = new ArrayList<>();
 
-		final ThreadPoolExecutor executorService = new ThreadPoolExecutor(5, 5,
-																		  60L, TimeUnit.SECONDS,
-																		  new ArrayBlockingQueue<>(5),
+		final ThreadPoolExecutor executorService = new ThreadPoolExecutor(10, 10,
+																		  0, TimeUnit.SECONDS,
+																		  new ArrayBlockingQueue<>(50),
 																		  Executors.defaultThreadFactory(),
-																		  new ThreadPoolExecutor.CallerRunsPolicy()
+																		  new CallerBlocksRejectionHandler(TimeUnit.MINUTES.toMillis(5))
 		);
 
 		store.forEach((k, v) -> {
