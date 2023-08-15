@@ -41,6 +41,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
@@ -401,8 +402,13 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public void reset() {
-		setState(ExecutionState.NEW);
+		// This avoids endless loops with already reset queries
+		if(getState().equals(ExecutionState.NEW)){
+			return;
+		}
 
-		namespace.getExecutionManager().clearQueryResults(this);
+		setState(ExecutionState.NEW);
 	}
+
+	public abstract void cancel();
 }

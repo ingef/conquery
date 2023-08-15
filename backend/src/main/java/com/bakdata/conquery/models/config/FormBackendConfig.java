@@ -31,18 +31,14 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableCollection;
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * {@link PluginConfig} for an external form backend.
  * The external form backend must implement the <a href="https://github.com/ingef/conquery/tree/develop/backend/src/main/resources/com/bakdata/conquery/external/openapi-form-backend.yaml">OpenAPI spec</a> for external form backend.
  */
-@NoArgsConstructor
-@Setter
-@Getter
+@Data
 @CPSType(id = "FORM_BACKEND", base = PluginConfig.class)
 @Slf4j
 public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
@@ -62,6 +58,9 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	@NotEmpty
 	@Pattern(regexp = ".+/\\{" + ExternalFormBackendApi.TASK_ID + "}")
 	private String statusTemplatePath = "task/{" + ExternalFormBackendApi.TASK_ID + "}";
+
+	private String cancelTaskPath = "task/{" + ExternalFormBackendApi.TASK_ID + "}/cancel";
+
 
 	@NotEmpty
 	private String healthCheckPath = "health";
@@ -107,7 +106,7 @@ public class FormBackendConfig implements PluginConfig, MultiInstancePlugin {
 	}
 
 	public ExternalFormBackendApi createApi() {
-		return new ExternalFormBackendApi(client, baseURI, formConfigPath, postFormPath, statusTemplatePath, healthCheckPath, this::createAccessToken, conqueryApiUrl, getAuthentication());
+		return new ExternalFormBackendApi(client, baseURI, formConfigPath, postFormPath, statusTemplatePath, cancelTaskPath,  healthCheckPath, this::createAccessToken, conqueryApiUrl, getAuthentication());
 	}
 
 	public boolean supportsFormType(String formType) {

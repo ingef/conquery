@@ -9,10 +9,6 @@
     "reload": "Seite vollständig neu laden",
     "reloadDescription": "Bitte hinterlasse uns eine Nachricht, damit wir dieses Problem beheben können."
   },
-  "errorCodes": {
-    "EXAMPLE_ERROR": "Dies ist eine Beispiel-Fehlermeldung",
-    "EXAMPLE_ERROR_INTERPOLATED": "Dies ist eine {{adjective}} Beispiel-Fehlermeldung"
-  },
   "leftPane": {
     "conceptTrees": "Konzepte",
     "previousQueries": "Anfragen und Formulare"
@@ -38,7 +34,6 @@
     "showingMismatches": "Zeige vollständig"
   },
   "queryRunner": {
-    "errorDates": "Ungültig: Alle Datumsbereiche sind von Zeitberechnung ausgeschlossen",
     "start": "Anfrage starten",
     "stop": "Anfrage stoppen",
     "stopSuccess": "Anfrage gestoppt.",
@@ -67,7 +62,7 @@
     "hasSecondaryId": "Analyse-Ebene aktiv",
     "removeNode": "Knoten entfernen",
     "removeColumn": "Spalte entfernen",
-    "clear": "Editor-Oberfläche zurücksetzen",
+    "clear": "Editor zurücksetzen",
     "clearConfirm": "Jetzt zurücksetzen",
     "hasDefaultSettings": "Standardeinstellungen",
     "hasNonDefaultSettings": "Eigene Einstellungen"
@@ -318,8 +313,8 @@
         "copyFrom": "Kopieren von ...",
         "copying": "Kopieren"
       },
-      "clear": "Formular leeren",
-      "clearConfirm": "Formular jetzt leeren"
+      "clear": "Formular zurücksetzen",
+      "clearConfirm": "Jetzt zurücksetzen"
     }
   },
   "uploadQueryResultsModal": {
@@ -459,6 +454,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "noData": "Keine Daten verfügbar",
     "blurred": "Daten-Sichtbarkeit",
     "emptyTimeline": {
       "headline": "Historie",
@@ -479,7 +475,6 @@
     "differencesTooltip": "Unterschiede aus den einzelnen Einträgen",
     "closeAll": "Alle schließen",
     "openAll": "Alle aufklappen",
-    "dates": "Datumswerte",
     "searchEntitiesButton": "Historie starten",
     "error": "Konnte Historie für diese ID nicht laden.",
     "options": {
@@ -524,7 +519,7 @@
     "time": "ZEIT",
     "and": "UND",
     "or": "ODER",
-    "clear": "Editor vollständig zurücksetzen",
+    "clear": "Editor zurücksetzen",
     "clearConfirm": "Jetzt zurücksetzen",
     "flip": "Drehen",
     "dates": "Datum",

@@ -29,6 +29,8 @@ const Year = ({
   detailLevel,
   contentFilter,
   columns,
+  dateColumn,
+  sourceColumn,
   columnBuckets,
   currencyConfig,
   rootConceptIdsByColumn,
@@ -45,6 +47,8 @@ const Year = ({
   currencyConfig: CurrencyConfigT;
   columnBuckets: ColumnBuckets;
   columns: Record<string, ColumnDescription>;
+  dateColumn: ColumnDescription;
+  sourceColumn: ColumnDescription;
   timeStratifiedInfos: TimeStratifiedInfo[];
 }) => {
   const isYearOpen = getIsOpen(year);
@@ -84,6 +88,8 @@ const Year = ({
               differences={differences}
               contentFilter={contentFilter}
               columns={columns}
+              dateColumn={dateColumn}
+              sourceColumn={sourceColumn}
               columnBuckets={columnBuckets}
               currencyConfig={currencyConfig}
               rootConceptIdsByColumn={rootConceptIdsByColumn}

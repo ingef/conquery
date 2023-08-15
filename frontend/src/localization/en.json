@@ -9,10 +9,6 @@
     "reload": "Refresh page",
     "reloadDescription": "If this happens again, please leave us a message. That way, we can fix this issue sooner."
   },
-  "errorCodes": {
-    "EXAMPLE_ERROR": "This is an example error",
-    "EXAMPLE_ERROR_INTERPOLATED": "This is a {{adjective}} example error"
-  },
   "leftPane": {
     "conceptTrees": "Concepts",
     "previousQueries": "Queries and Forms"
@@ -37,7 +33,6 @@
     "showingMismatches": "Showing full trees"
   },
   "queryRunner": {
-    "errorDates": "Invalid: all date ranges excluded from time calculation",
     "start": "Start Query",
     "stop": "Stop Query",
     "stopSuccess": "Query stopped",
@@ -66,7 +61,7 @@
     "hasSecondaryId": "Analysis layer active",
     "removeNode": "Remove node",
     "removeColumn": "Remove column",
-    "clear": "Clear the Editor",
+    "clear": "Clear settings",
     "clearConfirm": "Clear now",
     "hasDefaultSettings": "Uses default settings",
     "hasNonDefaultSettings": "Has changed settings"
@@ -459,6 +454,7 @@
     "queryNodeDetails": "Detail-Einstellungen bearbeiten"
   },
   "history": {
+    "noData": "No data available",
     "blurred": "Data visibility",
     "emptyTimeline": {
       "headline": "History",
@@ -479,7 +475,6 @@
     "differencesTooltip": "Differences from the individual events",
     "closeAll": "Close all",
     "openAll": "Open all",
-    "dates": "Dates",
     "searchEntitiesButton": "Start History",
     "error": "Couldn't load history for this ID.",
     "options": {
@@ -524,7 +519,7 @@
     "time": "TIME",
     "and": "AND",
     "or": "OR",
-    "clear": "Reset editor completely",
+    "clear": "Reset editor",
     "clearConfirm": "Reset now",
     "flip": "Flip",
     "dates": "Dates",

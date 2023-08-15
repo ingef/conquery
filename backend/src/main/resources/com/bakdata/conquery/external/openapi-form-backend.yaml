@@ -132,6 +132,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/error'
+  /task/{id}/cancel:
+    parameters:
+      - in: path
+        name: id
+        schema:
+          $ref: "#/components/schemas/taskId"
+        required: true
+        description: The task id
+    post:
+      summary: Request the cancellation of a task
+      operationId: cancelTask
+      security:
+        - ApiKeyAuth: [ ]
+        - { }
+      tags:
+        - Task
+      responses:
+        "200":
+          description: State of the now cancelled task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/taskState"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
   /health:
     get:
       summary: Request health State

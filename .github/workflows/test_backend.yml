@@ -14,7 +14,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Cache local Maven repository
         uses: actions/cache@v2
@@ -35,8 +35,10 @@ jobs:
       - name: Build Backend
         run: mvn -T 1C install -pl backend -DskipTests -am
       - name: Unit Test
-        run: mvn test -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+        run: mvn test -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON, INTEGRATION_SQL_BACKEND"
       - name: Programmatic Integration Tests
         run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
       - name: JSON based Integration Tests
         run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
+      - name: SQL based Integration Tests
+        run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_SQL_BACKEND"

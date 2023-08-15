@@ -48,7 +48,8 @@ import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PreprocessedReader;
 import com.bakdata.conquery.models.preproc.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.WorkerHandler;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
@@ -67,7 +68,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ImportJob extends Job {
 
-	private final Namespace namespace;
+	private final DistributedNamespace namespace;
 
 	@Getter
 	private final Table table;
@@ -80,7 +81,7 @@ public class ImportJob extends Job {
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
-	public static ImportJob createOrUpdate(Namespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, boolean update)
+	public static ImportJob createOrUpdate(DistributedNamespace namespace, InputStream inputStream, int entityBucketSize, IdMutex<DictionaryId> sharedDictionaryLocks, ConqueryConfig config, boolean update)
 			throws IOException {
 
 		try (PreprocessedReader parser = new PreprocessedReader(inputStream, namespace.getPreprocessMapper())) {
@@ -113,7 +114,7 @@ public class ImportJob extends Job {
 					throw new WebApplicationException(String.format("Import[%s] is not present.", importId), Response.Status.NOT_FOUND);
 				}
 				// before updating the import, make sure that all workers removed the last import
-				namespace.sendToAll(new RemoveImportJob(processedImport));
+				namespace.getWorkerHandler().sendToAll(new RemoveImportJob(processedImport));
 				namespace.getStorage().removeImport(importId);
 			}
 			else if (processedImport != null) {
@@ -196,7 +197,7 @@ public class ImportJob extends Job {
 	 * Create mappings for shared dictionaries dict.
 	 * This is not synchronized because the methods is called within the job execution.
 	 */
-	private static Map<String, DictionaryMapping> importDictionaries(Namespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName, Table table) {
+	private static Map<String, DictionaryMapping> importDictionaries(DistributedNamespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName, Table table) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
@@ -256,10 +257,10 @@ public class ImportJob extends Job {
 		return out;
 	}
 
-	private static void distributeDictionary(Namespace namespace, Dictionary dictionary) {
+	private static void distributeDictionary(DistributedNamespace namespace, Dictionary dictionary) {
 		log.trace("Sending {} to all Workers", dictionary);
 		namespace.getStorage().updateDictionary(dictionary);
-		namespace.sendToAll(new UpdateDictionary(dictionary));
+		namespace.getWorkerHandler().sendToAll(new UpdateDictionary(dictionary));
 	}
 
 
@@ -312,7 +313,8 @@ public class ImportJob extends Job {
 		final Map<WorkerId, Set<BucketId>> workerAssignments =
 				sendBuckets(container.getStarts(), container.getLengths(), primaryMapping, imp, buckets2LocalEntities, storesSorted);
 
-		workerAssignments.forEach(namespace::addBucketsToWorker);
+		WorkerHandler handler = namespace.getWorkerHandler();
+		workerAssignments.forEach(handler::addBucketsToWorker);
 
 	}
 
@@ -327,9 +329,11 @@ public class ImportJob extends Job {
 
 		for (Map.Entry<Integer, List<Integer>> bucket2entities : buckets2LocalEntities.entrySet()) {
 
-			WorkerInformation responsibleWorker =
-					Objects.requireNonNull(namespace.getResponsibleWorkerForBucket(bucket2entities.getKey()), () -> "No responsible worker for Bucket#"
-																													+ bucket2entities.getKey());
+			WorkerInformation responsibleWorker = Objects.requireNonNull(
+				namespace
+					.getWorkerHandler()
+					.getResponsibleWorkerForBucket(bucket2entities.getKey()),
+				() -> "No responsible worker for Bucket#" + bucket2entities.getKey());
 
 			awaitFreeJobQueue(responsibleWorker);
 
@@ -456,11 +460,11 @@ public class ImportJob extends Job {
 			for (int entity : primaryMapping.target()) {
 				int bucket = Entity.getBucket(entity, bucketSize);
 
-				if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
+				if (namespace.getWorkerHandler().getResponsibleWorkerForBucket(bucket) != null) {
 					continue;
 				}
 
-				namespace.addResponsibility(bucket);
+				namespace.getWorkerHandler().addResponsibility(bucket);
 			}
 		}
 	}
@@ -552,7 +556,7 @@ public class ImportJob extends Job {
 		}
 
 		imp.setDictionaries(dictionaries);
-		namespace.sendToAll(new AddImport(imp));
+		namespace.getWorkerHandler().sendToAll(new AddImport(imp));
 		return imp;
 	}
 

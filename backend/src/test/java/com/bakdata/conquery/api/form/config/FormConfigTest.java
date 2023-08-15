@@ -46,6 +46,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FormConfigId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.IdResolveContext;
+import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -101,7 +102,7 @@ public class FormConfigTest {
 
 		doAnswer(invocation -> {
 			final DatasetId id = invocation.getArgument(0);
-			Namespace namespaceMock = Mockito.mock(Namespace.class);
+			Namespace namespaceMock = Mockito.mock(LocalNamespace.class);
 			if (id.equals(datasetId)) {
 				when(namespaceMock.getDataset()).thenReturn(dataset);
 			}

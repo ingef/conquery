@@ -10,12 +10,13 @@ import {
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { createId } from "@paralleldrive/cuid2";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";
-import { nodeIsConceptQueryNode } from "../model/node";
+import { useDatasetId } from "../dataset/selectors";
+import { nodeIsConceptQueryNode, useActiveState } from "../model/node";
 import { EmptyQueryEditorDropzone } from "../standard-query-editor/EmptyQueryEditorDropzone";
 import {
   DragItemConceptTreeNode,
@@ -92,6 +93,8 @@ const useEditorState = () => {
     return findNodeById(tree, selectedNodeId);
   }, [tree, selectedNodeId]);
 
+  const { active: selectedNodeActive } = useActiveState(selectedNode?.data);
+
   const onReset = useCallback(() => {
     setTree(undefined);
   }, []);
@@ -114,8 +117,16 @@ const useEditorState = () => {
     updateTreeNode,
     onReset,
     selectedNode,
+    selectedNodeActive,
     setSelectedNodeId,
   };
+};
+
+const useResetOnDatasetChange = (onReset: () => void) => {
+  const datasetId = useDatasetId();
+  useEffect(() => {
+    onReset();
+  }, [datasetId, onReset]);
 };
 
 export function EditorV2({
@@ -142,8 +153,11 @@ export function EditorV2({
     updateTreeNode,
     onReset,
     selectedNode,
+    selectedNodeActive,
     setSelectedNodeId,
   } = useEditorState();
+
+  useResetOnDatasetChange(onReset);
 
   const onFlip = useCallback(() => {
     if (!selectedNode || !selectedNode.children) return;
@@ -236,9 +250,14 @@ export function EditorV2({
   });
 
   const getTranslatedConnection = useGetTranslatedConnection();
-  const connection = getTranslatedConnection(
-    selectedNode?.children?.connection,
-  );
+  const relevantConnection =
+    selectedNode?.children?.connection ||
+    (tree && selectedNode?.parentId
+      ? findNodeById(tree, selectedNode.parentId)?.children?.connection ||
+        undefined
+      : undefined);
+
+  const connection = getTranslatedConnection(relevantConnection);
 
   const onChangeData = useCallback(
     (data: DragItemConceptTreeNode) => {
@@ -302,25 +321,27 @@ export function EditorV2({
         {tree && (
           <Actions>
             <Flex>
-              {featureQueryNodeEdit &&
-                selectedNode?.data &&
-                nodeIsConceptQueryNode(selectedNode.data) && (
-                  <KeyboardShortcutTooltip
-                    keyname={HOTKEYS.editQueryNode.keyname}
+              {featureQueryNodeEdit && selectedNode && (
+                <KeyboardShortcutTooltip
+                  keyname={HOTKEYS.editQueryNode.keyname}
+                >
+                  <IconButton
+                    icon={faEdit}
+                    tight
+                    disabled={
+                      !selectedNode?.data ||
+                      !nodeIsConceptQueryNode(selectedNode.data)
+                    }
+                    active={selectedNodeActive}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenQueryNodeEditor();
+                    }}
                   >
-                    <IconButton
-                      icon={faEdit}
-                      tight
-                      active={false}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onOpenQueryNodeEditor();
-                      }}
-                    >
-                      {t("editorV2.edit")}
-                    </IconButton>
-                  </KeyboardShortcutTooltip>
-                )}
+                    {t("editorV2.edit")}
+                  </IconButton>
+                </KeyboardShortcutTooltip>
+              )}
               {featureDates && selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.editDates.keyname}>
                   <IconButton
@@ -352,13 +373,14 @@ export function EditorV2({
                   </IconButton>
                 </KeyboardShortcutTooltip>
               )}
-              {featureConnectorRotate && selectedNode?.children && (
+              {featureConnectorRotate && selectedNode && connection && (
                 <KeyboardShortcutTooltip
                   keyname={HOTKEYS.rotateConnector.keyname}
                 >
                   <SxIconButton
                     icon={faCircleNodes}
                     tight
+                    disabled={!selectedNode?.children}
                     onClick={(e) => {
                       e.stopPropagation();
                       onRotateConnector();
@@ -400,11 +422,12 @@ export function EditorV2({
               )}
             </Flex>
             <Flex>
-              {selectedNode?.children && (
+              {selectedNode && (
                 <KeyboardShortcutTooltip keyname={HOTKEYS.flip.keyname}>
                   <IconButton
                     icon={faRefresh}
                     tight
+                    disabled={!selectedNode?.children}
                     onClick={(e) => {
                       e.stopPropagation();
                       onFlip();
