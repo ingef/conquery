@@ -77,8 +77,7 @@ public class SerialisationObjectsUtil {
 
 		concept.setConnectors(List.of(connector));
 
-		ValidityDate valDate = new ValidityDate();
-		valDate.setColumn(dateColumn);
+		ValidityDate valDate = ValidityDate.create(dateColumn);
 		valDate.setConnector(connector);
 		valDate.setLabel("valLabel");
 		valDate.setName("valName");

@@ -4,6 +4,8 @@ import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.sql.conversion.Converter;
 import org.jooq.Condition;
+import org.jooq.Name;
+import org.jooq.impl.DSL;
 
 /**
  * Converts a {@link com.bakdata.conquery.apiv1.query.concept.filter.FilterValue}
@@ -13,9 +15,9 @@ import org.jooq.Condition;
  */
 public interface FilterConverter<F extends FilterValue<?>> extends Converter<F, Condition> {
 
-	static String getColumnName(FilterValue<?> filter) {
+	static Name getColumnName(FilterValue<?> filter) {
 		// works for now but we might have to distinguish later if we encounter non-SingleColumnFilters
-		return ((SingleColumnFilter<?>) filter.getFilter()).getColumn().getName();
+		return DSL.name(((SingleColumnFilter<?>) filter.getFilter()).getColumn().getName());
 	}
 
 }

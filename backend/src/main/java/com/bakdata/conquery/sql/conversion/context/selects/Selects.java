@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.sql.models.ColumnDateRange;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
@@ -11,7 +12,9 @@ public interface Selects {
 
 	Field<Object> getPrimaryColumn();
 
-	Optional<Field<Object>> getValidityDate();
+	Optional<ColumnDateRange> getValidityDate();
+
+	Selects withValidityDate(ColumnDateRange validityDate);
 
 	/**
 	 * Returns the selected columns as fully qualified reference.

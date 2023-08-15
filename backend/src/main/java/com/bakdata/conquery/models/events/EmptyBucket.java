@@ -7,6 +7,7 @@ import java.util.Map;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
 import lombok.Getter;
 
@@ -25,7 +26,7 @@ public class EmptyBucket extends Bucket {
 
 
 	@Override
-	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
+	public boolean eventIsContainedIn(int event, ValidityDate column, CDateSet dateRanges) {
 		return false;
 	}
 

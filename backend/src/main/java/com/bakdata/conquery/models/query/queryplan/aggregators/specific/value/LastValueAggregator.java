@@ -5,6 +5,7 @@ import java.util.OptionalInt;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -26,7 +27,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	private Bucket selectedBucket;
 	private int date;
 
-	private Column validityDateColumn;
+	private ValidityDate validityDateColumn;
 
 	public LastValueAggregator(Column column) {
 		super(column);
@@ -60,14 +61,14 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			}
 			return;			
 		}
-		
-		if(! bucket.has(event, validityDateColumn)) {
-			// TODO this might be an IllegalState
+
+		final CDateRange dateRange = validityDateColumn.getValidityDate(event, bucket);
+
+		if (dateRange == null){
 			return;
 		}
 
-
-		int next = bucket.getAsDateRange(event, validityDateColumn).getMaxValue();
+		int next = dateRange.getMaxValue();
 
 		if (next > date) {
 			date = next;
