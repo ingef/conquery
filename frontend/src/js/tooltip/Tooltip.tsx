@@ -1,9 +1,17 @@
 import styled from "@emotion/styled";
 import { faThumbtack, IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode } from "react";
+import {
+  Children,
+  DetailedHTMLProps,
+  ElementType,
+  HTMLAttributes,
+  ReactElement,
+  ReactNode,
+} from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
+import { ReactMarkdownProps } from "react-markdown/lib/complex-types";
 import { useDispatch, useSelector } from "react-redux";
 import remarkGfm from "remark-gfm";
 
@@ -158,6 +166,52 @@ const ConceptLabel = ({
   );
 };
 
+function isReactElement(element: any): element is ReactElement {
+  return (
+    element &&
+    typeof element === "object" &&
+    element.hasOwnProperty("type") &&
+    element.hasOwnProperty("props")
+  );
+}
+
+function highlight(
+  words: string[],
+  Element: Omit<
+    DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>,
+    "ref"
+  > &
+    ReactMarkdownProps,
+): ReactElement | null {
+  let children = Children.map(Element.children, (child): ReactElement => {
+    if (!child) return <></>;
+    if (typeof child === "string") {
+      return HighlightedText({ words, text: child });
+    }
+    if (typeof child === "number" || typeof child === "boolean") {
+      return <>{child}</>;
+    }
+    if (isReactElement(child)) {
+      if (Array.isArray(Element)) {
+        return child;
+      }
+      let TagName = child.type as ElementType;
+      return (
+        <TagName {...child.props}>
+          {highlight(words, child.props.children)}
+        </TagName>
+      );
+    }
+    return <>{child}</>;
+  });
+
+  if (Array.isArray(Element) || !Element.node) {
+    return <>{children}</>;
+  }
+  let TagName = Element.node?.tagName as ElementType;
+  return <TagName {...Element.node.properties}>{children}</TagName>;
+}
+
 const Tooltip = () => {
   const words = useSelector<StateT, string[]>(
     (state) => state.conceptTrees.search.words || [],
@@ -236,15 +290,15 @@ const Tooltip = () => {
                 </InfoHeadline>
                 <Markdown
                   remarkPlugins={[remarkGfm]}
-                  components={
-                    {
-                      // TODO: Won't work anymore with the latest react-markdown, because
-                      // node is now a ReactElement, not a string.
-                      // Try to use another package for highlighting that doesn't depend on a string
-                      // or just highlight ourselves
-                      // p: ({ node }) => searchHighlight(node)
-                    }
-                  }
+                  components={{
+                    // TODO: Won't work anymore with the latest react-markdown, because
+                    // Try to use another package for highlighting that doesn't depend on a string
+                    // or just highlight ourselves
+                    p: (a) => highlight(words, a),
+                    td: (a) => highlight(words, a),
+                    b: (a) => highlight(words, a),
+                    th: (a) => highlight(words, a),
+                  }}
                 >
                   {info.value}
                 </Markdown>
