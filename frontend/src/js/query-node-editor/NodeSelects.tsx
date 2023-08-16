@@ -27,11 +27,10 @@ const NodeSelects = ({
       sortSelects(selects).map((select) => ({
         value: select.id,
         label: select.label,
-        disabled: isSelectDisabled(
-          select,
+        disabled: isSelectDisabled(select, {
           blocklistedSelects,
           allowlistedSelects,
-        ),
+        }),
       })),
     [selects, allowlistedSelects, blocklistedSelects],
   );
