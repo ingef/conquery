@@ -105,13 +105,11 @@ public class MigrateCommand extends ConqueryCommand {
 	@Override
 	protected void run(io.dropwizard.setup.Environment environment, Namespace namespace, ConqueryConfig configuration) throws Exception {
 
-		log.debug("Attrs: {}", namespace.getAttrs());
-
 		final File inStoreDirectory = namespace.get("in");
 		final File outStoreDirectory = namespace.get("out");
 
-		final boolean inGzip = namespace.get("in-gzip");
-		final boolean outGzip = namespace.get("out-gzip");
+		final boolean inGzip = namespace.get("in_gzip");
+		final boolean outGzip = namespace.get("out_gzip");
 
 
 		final long logsize = ((XodusStoreFactory) configuration.getStorage()).getXodus().getLogFileSize().toKilobytes();
