@@ -337,9 +337,9 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final IterationStatistic result = new IterationStatistic();
 		final ArrayList<ByteIterable> unreadables = new ArrayList<>();
 
-		final int nWorkers = 5;
+		final int nWorkers = 10;
 
-		final BlockingQueue<Pair> workQueue = new ArrayBlockingQueue<>(nWorkers * 5);
+		final BlockingQueue<Pair> workQueue = new ArrayBlockingQueue<>(nWorkers * 20);
 		final AtomicBoolean done = new AtomicBoolean(false);
 
 		final ExecutorService executorService = Executors.newFixedThreadPool(nWorkers);
