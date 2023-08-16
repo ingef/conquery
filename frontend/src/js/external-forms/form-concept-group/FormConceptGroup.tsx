@@ -448,21 +448,15 @@ const FormConceptGroup = (props: Props) => {
             let { valueIdx, conceptIdx } = editedFormQueryNodePosition;
             let updatedValue = props.value;
             if (isMovedObject(concept)) {
-              const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } = concept.dragContext;
-              valueIdx =
-                valueIdx > movedFromAndIdx
-                  ? valueIdx - 1
-                  : valueIdx;
+              const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
+                concept.dragContext;
+              valueIdx = valueIdx > movedFromAndIdx ? valueIdx - 1 : valueIdx;
               if (movedFromFieldName === props.fieldName) {
                 updatedValue =
-                  updatedValue[movedFromAndIdx].concepts
-                    .length === 1
-                    ? removeValue(
-                      updatedValue,
-                        movedFromAndIdx,
-                      )
+                  updatedValue[movedFromAndIdx].concepts.length === 1
+                    ? removeValue(updatedValue, movedFromAndIdx)
                     : removeConcept(
-                      updatedValue,
+                        updatedValue,
                         movedFromAndIdx,
                         movedFromOrIdx,
                       );

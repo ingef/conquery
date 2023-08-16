@@ -20,10 +20,10 @@ const Root = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-const Line = styled("div")<{show:boolean}>`
+const Line = styled("div")<{ show: boolean }>`
   overflow: hidden;
   display: block;
-  visibility: ${({show}) => show ? "visible" : "hidden"};
+  visibility: ${({ show }) => (show ? "visible" : "hidden")};
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   margin: 1px 0;
   height: ${LineHeight}px;
@@ -36,7 +36,7 @@ const DropzoneBetweenElements = <
   acceptedDropTypes,
   onDrop,
   lastElement,
-  top
+  top,
 }: Props<DroppableObject>) => {
   const [{ isOver }, addZoneRef] = useDrop({
     accept: acceptedDropTypes,
@@ -51,12 +51,11 @@ const DropzoneBetweenElements = <
 
   return (
     <>
-      <Line show={isOver}/>
+      <Line show={isOver} />
       <Root
         ref={addZoneRef}
         style={{
-          height:
-            RootHeightBase * rootHeightMultiplier,
+          height: RootHeightBase * rootHeightMultiplier,
           top: top,
         }}
       ></Root>

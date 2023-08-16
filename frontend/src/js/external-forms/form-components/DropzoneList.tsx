@@ -82,7 +82,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
   const showDropzone =
     (items && items.length === 0) || !disallowMultipleColumns;
 
-  function genItems(){
+  function genItems() {
     return items.map((item, i) => (
       <ConceptContainer key={i}>
         {!disallowMultipleColumns && (
@@ -97,7 +97,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
           {item}
         </ListItem>
       </ConceptContainer>
-    ))
+    ));
   }
 
   return (
@@ -113,18 +113,18 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
       </Row>
       {items && items.length > 0 && (
         <>
-        { genItems()}
+          {genItems()}
 
-        <ConceptContainer>
-          {!disallowMultipleColumns && (
-            <DropzoneBetweenElements
-              acceptedDropTypes={acceptedDropTypes}
-              onDrop={dropBetween(items.length)}
-              top={-20}
-              lastElement
-            />
-          )}
-        </ConceptContainer>
+          <ConceptContainer>
+            {!disallowMultipleColumns && (
+              <DropzoneBetweenElements
+                acceptedDropTypes={acceptedDropTypes}
+                onDrop={dropBetween(items.length)}
+                top={-20}
+                lastElement
+              />
+            )}
+          </ConceptContainer>
         </>
       )}
       <div ref={ref}>
