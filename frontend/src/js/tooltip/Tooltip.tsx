@@ -316,6 +316,8 @@ const Tooltip = () => {
                     i: (el) => highlight(words, el),
                     ul: (el) => highlight(words, el),
                     ol: (el) => highlight(words, el),
+                    h1: (el) => highlight(words, el),
+                    h2: (el) => highlight(words, el),
                   }}
                 >
                   {info.value}
