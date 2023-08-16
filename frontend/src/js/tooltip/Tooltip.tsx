@@ -219,12 +219,13 @@ function highlight(
     return <>{Children.map(Element, mappingFunction)}</>;
   }
 
-  if (typeof Element === "object" && Element.hasOwnProperty("children")) {
-    let children = Children.map(Element.children, mappingFunction);
-    let TagName = Element.node?.tagName as ElementType;
-    return <TagName {...Element.node.properties}>{children}</TagName>;
-  }
-  return <>{Element}</>;
+  let children =
+    typeof Element === "object" && Element.hasOwnProperty("children")
+      ? Children.map(Element.children, mappingFunction)
+      : Element.children;
+
+  let TagName = Element.node?.tagName as ElementType;
+  return <TagName {...Element.node.properties}>{children}</TagName>;
 }
 
 const Tooltip = () => {
@@ -306,9 +307,6 @@ const Tooltip = () => {
                 <Markdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    // TODO: Won't work anymore with the latest react-markdown, because
-                    // Try to use another package for highlighting that doesn't depend on a string
-                    // or just highlight ourselves
                     p: (el) => highlight(words, el),
                     td: (el) => highlight(words, el),
                     b: (el) => highlight(words, el),
