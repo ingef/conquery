@@ -87,9 +87,7 @@ interface Props {
   }) => ReactNode;
 }
 
-const DropzoneListItem = styled("div")`
-  margin-top: -20px;
-`;
+const DropzoneListItem = styled("div")``;
 
 const Row = styled("div")`
   display: flex;
@@ -448,29 +446,27 @@ const FormConceptGroup = (props: Props) => {
           }}
           onDropConcept={(concept) => {
             let { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            let updatedValue = props.value;
             if (isMovedObject(concept)) {
+              const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } = concept.dragContext;
               valueIdx =
-                valueIdx > concept.dragContext.movedFromAndIdx
+                valueIdx > movedFromAndIdx
                   ? valueIdx - 1
                   : valueIdx;
-              if (concept.dragContext.movedFromFieldName === props.fieldName) {
-                const updatedValue =
-                  props.value[concept.dragContext.movedFromAndIdx].concepts
+              if (movedFromFieldName === props.fieldName) {
+                updatedValue =
+                  updatedValue[movedFromAndIdx].concepts
                     .length === 1
                     ? removeValue(
-                        props.value,
-                        concept.dragContext.movedFromAndIdx,
+                      updatedValue,
+                        movedFromAndIdx,
                       )
                     : removeConcept(
-                        props.value,
-                        concept.dragContext.movedFromAndIdx,
-                        concept.dragContext.movedFromOrIdx,
+                      updatedValue,
+                        movedFromAndIdx,
+                        movedFromOrIdx,
                       );
-                return props.onChange(
-                  setConceptProperties(updatedValue, valueIdx, conceptIdx, {
-                    ids: [...concept.ids, ...editedNode.ids],
-                  }),
-                );
+                setEditedFormQueryNodePosition({ valueIdx, conceptIdx });
               } else {
                 if (exists(concept.dragContext.deleteFromOtherField)) {
                   concept.dragContext.deleteFromOtherField();
@@ -478,7 +474,7 @@ const FormConceptGroup = (props: Props) => {
               }
             }
             props.onChange(
-              setConceptProperties(props.value, valueIdx, conceptIdx, {
+              setConceptProperties(updatedValue, valueIdx, conceptIdx, {
                 ids: [...concept.ids, ...editedNode.ids],
               }),
             );

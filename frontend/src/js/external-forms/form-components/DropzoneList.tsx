@@ -19,7 +19,7 @@ import DropzoneBetweenElements from "./DropzoneBetweenElements";
 
 const ListItem = styled("div")`
   position: relative;
-  padding: 0 5px;
+  padding: 5px;
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
@@ -34,6 +34,10 @@ const StyledIconButton = styled(IconButton)`
 const Row = styled("div")`
   display: flex;
   align-items: center;
+`;
+
+const ConceptContainer = styled("div")`
+  position: relative;
 `;
 
 interface PropsT<DroppableObject> {
@@ -78,6 +82,24 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
   const showDropzone =
     (items && items.length === 0) || !disallowMultipleColumns;
 
+  function genItems(){
+    return items.map((item, i) => (
+      <ConceptContainer key={i}>
+        {!disallowMultipleColumns && (
+          <DropzoneBetweenElements
+            acceptedDropTypes={acceptedDropTypes}
+            onDrop={dropBetween(i)}
+            top={-15}
+          />
+        )}
+        <ListItem>
+          <StyledIconButton icon={faTimes} onClick={() => onDelete(i)} />
+          {item}
+        </ListItem>
+      </ConceptContainer>
+    ))
+  }
+
   return (
     <div className={className}>
       <Row>
@@ -90,30 +112,20 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
         {tooltip && <InfoTooltip text={tooltip} />}
       </Row>
       {items && items.length > 0 && (
-        <div>
-          {items.map((item, i) => (
-            <div key={i}>
-              {!disallowMultipleColumns && (
-                <DropzoneBetweenElements
-                  acceptedDropTypes={acceptedDropTypes}
-                  onDrop={dropBetween(i)}
-                />
-              )}
-              <ListItem>
-                <StyledIconButton icon={faTimes} onClick={() => onDelete(i)} />
-                {item}
-              </ListItem>
-            </div>
-          ))}
+        <>
+        { genItems()}
 
+        <ConceptContainer>
           {!disallowMultipleColumns && (
             <DropzoneBetweenElements
               acceptedDropTypes={acceptedDropTypes}
               onDrop={dropBetween(items.length)}
+              top={-20}
               lastElement
             />
           )}
-        </div>
+        </ConceptContainer>
+        </>
       )}
       <div ref={ref}>
         {showDropzone && onImportLines && (
