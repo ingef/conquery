@@ -7,10 +7,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -21,7 +25,6 @@ import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.util.CallerBlocksRejectionHandler;
 import com.bakdata.conquery.util.io.FileUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -32,11 +35,11 @@ import com.google.common.base.Throwables;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -333,66 +336,28 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		final IterationStatistic result = new IterationStatistic();
 		final ArrayList<ByteIterable> unreadables = new ArrayList<>();
-		final CallerBlocksRejectionHandler rejectionHandler = new CallerBlocksRejectionHandler(TimeUnit.MINUTES.toMillis(5));
 
-		final ThreadPoolExecutor executorService = new ThreadPoolExecutor(2, 2,
-																		  0, TimeUnit.SECONDS,
-																		  new ArrayBlockingQueue<>(10),
-																		  Executors.defaultThreadFactory(),
-																		  rejectionHandler
-		);
+		final int nWorkers = 5;
 
-		store.forEach((k, v) -> {
-			executorService.submit(() -> {
+		final BlockingQueue<Pair> workQueue = new ArrayBlockingQueue<>(nWorkers * 5);
+		final AtomicBoolean done = new AtomicBoolean(false);
 
-				result.incrTotalProcessed();
+		final ExecutorService executorService = Executors.newFixedThreadPool(nWorkers);
 
-				// Try to read the key first
-				final KEY key = getDeserializedAndDumpFailed(
-						k,
-						this::readKey,
-						() -> new String(k.getBytesUnsafe()),
-						v,
-						"Could not parse key [{}]"
-				);
-				if (key == null) {
-					unreadables.add(k);
-					result.incrFailedKeys();
-					return;
-				}
-
-				// Try to read the value
-				final VALUE value = getDeserializedAndDumpFailed(
-						v,
-						this::readValue,
-						key::toString,
-						v,
-						"Could not parse value for key [{}]"
-				);
-
-				if (value == null) {
-					unreadables.add(k);
-					result.incrFailedValues();
-					return;
-				}
-
-				// Apply the consumer to key and value
-				try {
-					consumer.accept(key, value, v.getLength());
-				}
-				catch (Exception e) {
-					log.warn("Unable to apply for-each consumer on key[{}]", key, e);
-				}
-			});
-		});
-
-		executorService.shutdown();
-
-		while (!executorService.awaitTermination(1, TimeUnit.MINUTES)) {
-			log.debug("Still waiting for {} to load.", this);
+		for (int ignored = 0; ignored < nWorkers; ignored++) {
+			final Reader reader = new Reader(workQueue, done, consumer, result, unreadables);
+			executorService.submit(reader::run);
 		}
 
-		log.debug("Waited {} on workers.", DurationFormatUtils.formatDurationHMS(rejectionHandler.getWaitedMillis().sum()));
+		store.forEach((k, v) -> workQueue.add(new Pair(k, v)));
+
+		executorService.shutdown();
+		done.set(true);
+
+		while(!executorService.awaitTermination(30, TimeUnit.SECONDS)){
+			log.debug("Still waiting for {} jobs.", workQueue.size());
+		}
+
 		// Print some statistics
 		final int total = result.getTotalProcessed();
 		log.debug(
@@ -494,22 +459,117 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		store.close();
 	}
 
-	@Data
+	@NoArgsConstructor
 	public static class IterationStatistic {
-		private int totalProcessed;
-		private int failedKeys;
-		private int failedValues;
+		private final AtomicInteger totalProcessed = new AtomicInteger();
+		private final AtomicInteger failedKeys = new AtomicInteger();
+		private final AtomicInteger failedValues = new AtomicInteger();
 
 		public void incrTotalProcessed() {
-			totalProcessed++;
+			totalProcessed.incrementAndGet();
 		}
 
 		public void incrFailedKeys() {
-			failedKeys++;
+			failedKeys.incrementAndGet();
 		}
 
 		public void incrFailedValues() {
-			failedValues++;
+			failedValues.incrementAndGet();
+		}
+
+		public void setTotalProcessed(int totalProcessed) {
+			this.totalProcessed.set(totalProcessed);
+		}
+
+		public void setFailedKeys(int failedKeys) {
+			this.failedKeys.set(failedKeys);
+		}
+
+		public void setFailedValues(int failedValues) {
+			this.failedValues.set(failedValues);
+		}
+
+		public int getFailedKeys() {
+			return failedKeys.get();
+		}
+
+		public int getFailedValues() {
+			return failedValues.get();
+		}
+
+		public int getTotalProcessed() {
+			return totalProcessed.get();
+		}
+	}
+
+	private record Pair(ByteIterable key, ByteIterable value) {
+	}
+
+	@Data
+	private class Reader {
+		private final BlockingQueue<Pair> queue;
+		private final AtomicBoolean done;
+		private final StoreEntryConsumer<KEY, VALUE> consumer;
+		private final IterationStatistic result;
+		private final List<ByteIterable> unreadables;
+
+		public void run() {
+
+			while (!done.get() || !queue.isEmpty()) {
+				try {
+					final Pair next = queue.poll(100, TimeUnit.MILLISECONDS);
+
+					if (next == null) {
+						continue;
+					}
+
+					handle(consumer, result, unreadables, next.key, next.value);
+				}
+				catch (Exception exception) {
+					log.warn("", exception);
+				}
+			}
+		}
+
+		private void handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, List<ByteIterable> unreadables, ByteIterable k, ByteIterable v) {
+			result.incrTotalProcessed();
+
+			// Try to read the key first
+			final KEY key = getDeserializedAndDumpFailed(
+					k,
+					SerializingStore.this::readKey,
+					() -> new String(k.getBytesUnsafe()),
+					v,
+					"Could not parse key [{}]"
+			);
+			if (key == null) {
+				unreadables.add(k);
+				result.incrFailedKeys();
+				return;
+			}
+
+			// Try to read the value
+			final VALUE value = getDeserializedAndDumpFailed(
+					v,
+					SerializingStore.this::readValue,
+					key::toString,
+					v,
+					"Could not parse value for key [{}]"
+			);
+
+			if (value == null) {
+				unreadables.add(k);
+				result.incrFailedValues();
+				return;
+			}
+
+			// Apply the consumer to key and value
+			try {
+				consumer.accept(key, value, v.getLength());
+			}
+			catch (Exception e) {
+				log.warn("Unable to apply for-each consumer on key[{}]", key, e);
+			}
 		}
 	}
 }
