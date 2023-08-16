@@ -72,7 +72,7 @@ public class SerializingStoreDumpTest {
 				storeId.getValueType(),
 				config.isValidateOnWrite(),
 				config.isRemoveUnreadableFromStore(),
-				config.getUnreadableDataDumpDirectory()
+				config.getUnreadableDataDumpDirectory(), 1, 1
 		);
 	}
 

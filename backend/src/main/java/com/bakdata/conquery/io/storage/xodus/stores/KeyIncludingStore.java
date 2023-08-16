@@ -1,11 +1,10 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
-import com.bakdata.conquery.io.storage.Store;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.function.Consumer;
+
+import com.bakdata.conquery.io.storage.Store;
 
 public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 
@@ -26,9 +25,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 		return store.get(key);
 	}
 
-	public void forEach(Consumer<VALUE> consumer) {
-		store.forEach((key, value, size) -> consumer.accept(value));
-	}
+
 
 	public void update(VALUE value) {
 		updated(value);

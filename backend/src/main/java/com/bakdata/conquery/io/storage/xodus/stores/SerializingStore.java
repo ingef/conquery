@@ -5,18 +5,18 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 import javax.validation.Validator;
 
@@ -106,6 +106,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final boolean removeUnreadablesFromUnderlyingStore;
 
 	private final ObjectMapper objectMapper;
+	private final int nWorkers;
+	private final int bufferPerWorker;
 
 	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStore store,
 																					   Validator validator,
@@ -114,7 +116,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 																					   CLASS_V valueType,
 																					   boolean validateOnWrite,
 																					   boolean removeUnreadableFromStore,
-																					   File unreadableDataDumpDirectory) {
+																					   File unreadableDataDumpDirectory, int nWorkers, int bufferPerWorker) {
 		this.store = store;
 		this.validator = validator;
 		this.validateOnWrite = validateOnWrite;
@@ -134,6 +136,9 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		removeUnreadablesFromUnderlyingStore = removeUnreadableFromStore;
 
 		unreadableValuesDumpDir = unreadableDataDumpDirectory;
+
+		this.nWorkers = nWorkers;
+		this.bufferPerWorker = bufferPerWorker;
 
 		if (shouldDumpUnreadables()) {
 			if (!unreadableValuesDumpDir.exists() && !unreadableValuesDumpDir.mkdirs()) {
@@ -247,8 +252,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
 		}
 
-		//TODO FK: dump in a separate thread so we are not blocking the reader thread.
-
 		// Write json
 		try {
 			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
@@ -330,36 +333,38 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Iterates a given consumer over the entries of this store.
 	 * Depending on the {@link XodusStoreFactory} corrupt entries may be dump to a file and/or removed from the store.
 	 * These entries are not submitted to the consumer.
+	 *
+	 * @implNote This method is concurrent!
 	 */
 	@SneakyThrows
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		final IterationStatistic result = new IterationStatistic();
-		final ArrayList<ByteIterable> unreadables = new ArrayList<>();
+		final Collection<ByteIterable> unreadables = new ConcurrentLinkedQueue<>();
 
-		final int nWorkers = 10;
-
-		final BlockingQueue<Pair> workQueue = new ArrayBlockingQueue<>(nWorkers * 20);
-		final AtomicBoolean done = new AtomicBoolean(false);
+		// Some magic number of buffering per worker, that isn't so high, that we fill up RAM with useless stuff, but have enough data to keep the workers occupied.
+		final BlockingQueue<Pair> workQueue = new ArrayBlockingQueue<>(nWorkers * bufferPerWorker);
 
 		final ExecutorService executorService = Executors.newFixedThreadPool(nWorkers);
 
-		for (int ignored = 0; ignored < nWorkers; ignored++) {
-			final Reader reader = new Reader(workQueue, done, consumer, result, unreadables);
-			executorService.submit(reader::run);
-		}
+		final List<Reader> readers = IntStream.range(0, nWorkers)
+											  .mapToObj(ignored -> new Reader(workQueue, consumer, result, unreadables))
+											  .peek(reader -> executorService.submit(reader::run))
+											  .toList();
 
+		// We read in  single thread, and deserialise and dispatch in multiple threads.
 		store.forEach((k, v) -> {
 			try {
 				workQueue.put(new Pair(k, v));
 			}
 			catch (InterruptedException e) {
+				//TODO wat do?
 				throw new RuntimeException(e);
 			}
 		});
 
 		executorService.shutdown();
-		done.set(true);
+		readers.forEach(Reader::finish);
 
 		while(!executorService.awaitTermination(30, TimeUnit.SECONDS)){
 			log.debug("Still waiting for {} jobs.", workQueue.size());
@@ -466,8 +471,10 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		store.close();
 	}
 
+
 	@NoArgsConstructor
 	public static class IterationStatistic {
+		//TODO move into reader?
 		private final AtomicInteger totalProcessed = new AtomicInteger();
 		private final AtomicInteger failedKeys = new AtomicInteger();
 		private final AtomicInteger failedValues = new AtomicInteger();
@@ -515,16 +522,16 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Data
 	private class Reader {
 		private final BlockingQueue<Pair> queue;
-		private final AtomicBoolean done;
+		private boolean done = false;
 		private final StoreEntryConsumer<KEY, VALUE> consumer;
 		private final IterationStatistic result;
-		private final List<ByteIterable> unreadables;
+		private final Collection<ByteIterable> unreadables;
 
 		public void run() {
 
-			while (!done.get() || !queue.isEmpty()) {
+			while (!done || !queue.isEmpty()) {
 				try {
-					final Pair next = queue.poll(100, TimeUnit.MILLISECONDS);
+					final Pair next = queue.poll(1, TimeUnit.SECONDS);
 
 					if (next == null) {
 						continue;
@@ -533,12 +540,17 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 					handle(consumer, result, unreadables, next.key, next.value);
 				}
 				catch (Exception exception) {
+					//TODO probably split for InterrupedException? No idea how to handle that though
 					log.warn("", exception);
 				}
 			}
 		}
 
-		private void handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, List<ByteIterable> unreadables, ByteIterable k, ByteIterable v) {
+		public void finish() {
+			done = true;
+		}
+
+		private void handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, Collection<ByteIterable> unreadables, ByteIterable k, ByteIterable v) {
 			result.incrTotalProcessed();
 
 			// Try to read the key first

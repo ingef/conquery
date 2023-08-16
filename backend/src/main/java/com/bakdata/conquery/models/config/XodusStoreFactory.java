@@ -16,6 +16,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import javax.validation.Valid;
 import javax.validation.Validator;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -125,32 +126,45 @@ public class XodusStoreFactory implements StoreFactory {
 
 	private Path directory = Path.of("storage");
 
-	private boolean validateOnWrite = false;
+	private boolean validateOnWrite;
 	@NotNull
 	@Valid
 	private XodusConfig xodus = new XodusConfig();
 
-	private boolean useWeakDictionaryCaching = false;
+	/**
+	 * Number of threads reading from XoduStore.
+	 * @implNote it's always only one thread reading from disk, dispatching to multiple reader threads.
+	 */
+	@Min(1)
+	private int readerWorkers = 10;
+
+	/**
+	 * How many slots of buffering to use before the IO thread is put to sleep.
+	 */
+	@Min(1)
+	private int bufferPerWorker = 20;
+
+	private boolean useWeakDictionaryCaching;
 	@NotNull
 	private Duration weakCacheDuration = Duration.hours(48);
 
 	/**
 	 * Flag for the {@link SerializingStore} whether to delete values from the underlying store, that cannot be mapped to an object anymore.
 	 */
-	private boolean removeUnreadableFromStore = false;
+	private boolean removeUnreadableFromStore;
 
 	/**
 	 * When set, all values that could not be deserialized from the persistent store, are dump into individual files.
 	 */
 	@Nullable
-	private File unreadableDataDumpDirectory = null;
+	private File unreadableDataDumpDirectory;
 
 	/**
 	 * If set, an environment will not be loaded if it misses a required store.
 	 * If not set, the environment is loaded and the application needs to create the store.
 	 * This is useful if a new version introduces a new store, but will also alter the environment upon reading.
 	 */
-	private boolean loadEnvironmentWithMissingStores = false;
+	private boolean loadEnvironmentWithMissingStores;
 
 	@JsonIgnore
 	private transient Validator validator;
@@ -175,13 +189,13 @@ public class XodusStoreFactory implements StoreFactory {
 
 
 	private <T extends NamespacedStorage> List<T> loadNamespacedStores(String prefix, Function<String, T> creator, Set<String> storesToTest) {
-		File baseDir = getDirectory().toFile();
+		final File baseDir = getDirectory().toFile();
 
 		if (baseDir.mkdirs()) {
 			log.warn("Had to create Storage Dir at `{}`", baseDir);
 		}
 
-		List<T> storages = new ArrayList<>();
+		final List<T> storages = new ArrayList<>();
 
 		for (File directory : Objects.requireNonNull(baseDir.listFiles((file, name) -> file.isDirectory() && name.startsWith(prefix)))) {
 
@@ -194,7 +208,7 @@ public class XodusStoreFactory implements StoreFactory {
 				continue;
 			}
 
-			T namespacedStorage = creator.apply(name);
+			final T namespacedStorage = creator.apply(name);
 
 			storages.add(namespacedStorage);
 		}
@@ -203,8 +217,8 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	private boolean environmentHasStores(File pathName, Set<String> storesToTest) {
-		Environment env = findEnvironment(pathName);
-		boolean exists = env.computeInTransaction(t -> {
+		final Environment env = findEnvironment(pathName);
+		final boolean exists = env.computeInTransaction(t -> {
 			final List<String> allStoreNames = env.getAllStoreNames(t);
 			final boolean complete = new HashSet<>(allStoreNames).containsAll(storesToTest);
 			if (complete) {
@@ -273,7 +287,7 @@ public class XodusStoreFactory implements StoreFactory {
 							DICTIONARIES.storeInfo(),
 							this::closeStore,
 							this::removeStore,
-							centralRegistry.injectIntoNew(objectMapper)
+							centralRegistry.injectIntoNew(objectMapper), getReaderWorkers(), getBufferPerWorker()
 					);
 			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
 			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
@@ -316,7 +330,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 		synchronized (openStoresInEnv) {
 			final BigStore<Boolean, EntityIdMap> bigStore =
-					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), this::closeStore, this::removeStore, objectMapper);
+					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), this::closeStore, this::removeStore, objectMapper, 10, 20);
 
 			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
 			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
@@ -396,14 +410,14 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	private Environment findEnvironment(String pathName) {
-		File path = getStorageDir(pathName);
+		final File path = getStorageDir(pathName);
 		return findEnvironment(path);
 	}
 
 	private void closeStore(XodusStore store) {
-		Environment env = store.getEnvironment();
+		final Environment env = store.getEnvironment();
 		synchronized (openStoresInEnv) {
-			Collection<XodusStore> stores = openStoresInEnv.get(env);
+			final Collection<XodusStore> stores = openStoresInEnv.get(env);
 			stores.remove(store);
 			log.info("Closed XodusStore: {}", store);
 
@@ -427,9 +441,9 @@ public class XodusStoreFactory implements StoreFactory {
 	}
 
 	private void removeStore(XodusStore store) {
-		Environment env = store.getEnvironment();
+		final Environment env = store.getEnvironment();
 		synchronized (openStoresInEnv){
-			Collection<XodusStore> stores = openStoresInEnv.get(env);
+			final Collection<XodusStore> stores = openStoresInEnv.get(env);
 
 			stores.remove(store);
 
@@ -467,9 +481,11 @@ public class XodusStoreFactory implements StoreFactory {
 			if(openStoresInEnv.get(environment).stream().map(XodusStore::getName).anyMatch(name -> storeInfo.getName().equals(name))){
 				throw new IllegalStateException("Attempted to open an already opened store:" + storeInfo.getName());
 			}
-			final XodusStore store =
-					new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore);
+
+			final XodusStore store = new XodusStore(environment, storeInfo.getName(), this::closeStore, this::removeStore);
+
 			openStoresInEnv.put(environment, store);
+
 			return new CachedStore<>(
 					new SerializingStore<>(
 							store,
@@ -477,9 +493,10 @@ public class XodusStoreFactory implements StoreFactory {
 							objectMapper,
 							storeInfo.getKeyType(),
 							storeInfo.getValueType(),
-							this.isValidateOnWrite(),
-							this.isRemoveUnreadableFromStore(),
-							this.getUnreadableDataDumpDirectory()
+							isValidateOnWrite(),
+							isRemoveUnreadableFromStore(),
+							getUnreadableDataDumpDirectory(),
+							getReaderWorkers(), getBufferPerWorker()
 					));
 		}
 	}

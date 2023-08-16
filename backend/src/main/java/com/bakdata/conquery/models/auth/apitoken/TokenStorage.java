@@ -72,7 +72,7 @@ public class TokenStorage implements Managed {
 				ApiTokenData.class,
 				true,
 				false,
-				null
+				null, 1,  100
 		));
 		openStoresInEnv.add(data);
 
@@ -90,7 +90,7 @@ public class TokenStorage implements Managed {
 				ApiTokenData.MetaData.class,
 				true,
 				false,
-				null
+				null, 1, 100
 		));
 		openStoresInEnv.add(meta);
 	}

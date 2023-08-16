@@ -108,7 +108,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 						PasswordHasher.HashedEntry.class,
 						false,
 						true,
-						null
+						null, 1, 100
 				));
 	}
 
