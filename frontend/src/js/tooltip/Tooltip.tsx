@@ -178,6 +178,16 @@ function isReactElement(
   );
 }
 
+type MarkdownElement =
+  | ReactFragment
+  | ReactElement
+  | ReactPortal
+  | boolean
+  | number
+  | boolean
+  | string
+  | null
+  | undefined;
 function highlight(
   words: string[],
   Element: Omit<
@@ -186,7 +196,10 @@ function highlight(
   > &
     ReactMarkdownProps,
 ): ReactElement | null {
-  let children = Children.map(Element.children, (child): ReactElement => {
+  if (!Element) {
+    return Element;
+  }
+  const mappingFunction = (child: MarkdownElement): ReactElement => {
     if (!child) return <></>;
     if (typeof child === "string") {
       return HighlightedText({ words, text: child });
@@ -200,13 +213,18 @@ function highlight(
       );
     }
     return <>{child}</>;
-  });
+  };
 
-  if (Array.isArray(Element) || !Element.node) {
-    return <>{children}</>;
+  if (Array.isArray(Element)) {
+    return <>{Children.map(Element, mappingFunction)}</>;
   }
-  let TagName = Element.node?.tagName as ElementType;
-  return <TagName {...Element.node.properties}>{children}</TagName>;
+
+  if (typeof Element === "object" && Element.hasOwnProperty("children")) {
+    let children = Children.map(Element.children, mappingFunction);
+    let TagName = Element.node?.tagName as ElementType;
+    return <TagName {...Element.node.properties}>{children}</TagName>;
+  }
+  return <>{Element}</>;
 }
 
 const Tooltip = () => {
@@ -291,10 +309,13 @@ const Tooltip = () => {
                     // TODO: Won't work anymore with the latest react-markdown, because
                     // Try to use another package for highlighting that doesn't depend on a string
                     // or just highlight ourselves
-                    p: (a) => highlight(words, a),
-                    td: (a) => highlight(words, a),
-                    b: (a) => highlight(words, a),
-                    th: (a) => highlight(words, a),
+                    p: (el) => highlight(words, el),
+                    td: (el) => highlight(words, el),
+                    b: (el) => highlight(words, el),
+                    th: (el) => highlight(words, el),
+                    i: (el) => highlight(words, el),
+                    ul: (el) => highlight(words, el),
+                    ol: (el) => highlight(words, el),
                   }}
                 >
                   {info.value}
