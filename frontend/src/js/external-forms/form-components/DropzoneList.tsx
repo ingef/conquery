@@ -82,24 +82,6 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
   const showDropzone =
     (items && items.length === 0) || !disallowMultipleColumns;
 
-  function genItems() {
-    return items.map((item, i) => (
-      <ConceptContainer key={i}>
-        {!disallowMultipleColumns && (
-          <DropzoneBetweenElements
-            acceptedDropTypes={acceptedDropTypes}
-            onDrop={dropBetween(i)}
-            top={-15}
-          />
-        )}
-        <ListItem>
-          <StyledIconButton icon={faTimes} onClick={() => onDelete(i)} />
-          {item}
-        </ListItem>
-      </ConceptContainer>
-    ));
-  }
-
   return (
     <div className={className}>
       <Row>
@@ -113,7 +95,21 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
       </Row>
       {items && items.length > 0 && (
         <>
-          {genItems()}
+          {items.map((item, i) => (
+            <ConceptContainer key={i}>
+              {!disallowMultipleColumns && (
+                <DropzoneBetweenElements
+                  acceptedDropTypes={acceptedDropTypes}
+                  onDrop={dropBetween(i)}
+                  top={-15}
+                />
+              )}
+              <ListItem>
+                <StyledIconButton icon={faTimes} onClick={() => onDelete(i)} />
+                {item}
+              </ListItem>
+            </ConceptContainer>
+          ))}
 
           <ConceptContainer>
             {!disallowMultipleColumns && (
