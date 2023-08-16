@@ -6,7 +6,9 @@ import {
   ElementType,
   HTMLAttributes,
   ReactElement,
+  ReactFragment,
   ReactNode,
+  ReactPortal,
 } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
@@ -166,9 +168,10 @@ const ConceptLabel = ({
   );
 };
 
-function isReactElement(element: any): element is ReactElement {
+function isReactElement(
+  element: ReactFragment | ReactElement | ReactPortal | boolean | number,
+): element is ReactElement {
   return (
-    element &&
     typeof element === "object" &&
     element.hasOwnProperty("type") &&
     element.hasOwnProperty("props")
@@ -188,13 +191,7 @@ function highlight(
     if (typeof child === "string") {
       return HighlightedText({ words, text: child });
     }
-    if (typeof child === "number" || typeof child === "boolean") {
-      return <>{child}</>;
-    }
     if (isReactElement(child)) {
-      if (Array.isArray(Element)) {
-        return child;
-      }
       let TagName = child.type as ElementType;
       return (
         <TagName {...child.props}>
