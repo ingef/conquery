@@ -349,7 +349,14 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			executorService.submit(reader::run);
 		}
 
-		store.forEach((k, v) -> workQueue.add(new Pair(k, v)));
+		store.forEach((k, v) -> {
+			try {
+				workQueue.put(new Pair(k, v));
+			}
+			catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+		});
 
 		executorService.shutdown();
 		done.set(true);
