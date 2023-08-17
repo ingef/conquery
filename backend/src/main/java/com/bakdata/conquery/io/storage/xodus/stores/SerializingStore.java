@@ -192,48 +192,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		return FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(name).replaceAll("_");
 	}
 
-	/**
-	 * Dumps the content of an unreadable value to a file as a json (it tries to parse it as an object and than tries to dump it as a json).
-	 *
-	 * @param obj               The object to dump.
-	 * @param keyOfDump         The key under which the unreadable value is accessible. It is used for the file name.
-	 * @param reason            The exception causing us to dump the file
-	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
-	 * @param storeName         The name of the store which is also used in the dump file name.
-	 */
-	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, Exception reason, @NonNull File unreadableDumpDir, String storeName, ObjectMapper objectMapper) {
-		// Create dump filehandle
-		final File dumpfile = makeDumpFileName(keyOfDump, unreadableDumpDir, storeName);
-		final File exceptionFileName = makeExceptionFileName(keyOfDump, unreadableDumpDir, storeName);
-
-		if (dumpfile.exists() || exceptionFileName.exists()) {
-			log.trace("Abort dumping of file {} because it already exists.", dumpfile);
-			return;
-		}
-
-		if (!dumpfile.getParentFile().exists() && !dumpfile.getParentFile().mkdirs()) {
-			throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
-		}
-
-		// Write json
-		try {
-			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
-
-			final JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
-			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
-		}
-		catch (IOException e) {
-			log.error("Failed to dump unreadable value of key `{}` to file `{}`", keyOfDump, dumpfile, e);
-		}
-
-		try (PrintStream out = new PrintStream(exceptionFileName)) {
-			reason.printStackTrace(out);
-		}
-		catch (IOException e) {
-			log.error("Failed to dump exception for `{}` to file `{}`.", keyOfDump, exceptionFileName, e);
-		}
-
-	}
 
 	@Override
 	public void add(KEY key, VALUE value) {
@@ -324,7 +282,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
 	 * @param storeName         The name of the store which is also used in the dump file name.
 	 */
-	private static void dumpToFile(@NonNull byte[] gzippedObj, @NonNull String keyOfDump, Exception reason, @NonNull File unreadableDumpDir, String storeName, ObjectMapper objectMapper) {
+	private static void dumpToFile(byte[] gzippedObj, @NonNull String keyOfDump, Exception reason, @NonNull File unreadableDumpDir, String storeName, ObjectMapper objectMapper) {
 		// Create dump filehandle
 		final File dumpfile = makeDumpFileName(keyOfDump, unreadableDumpDir, storeName);
 		final File exceptionFileName = makeExceptionFileName(keyOfDump, unreadableDumpDir, storeName);
@@ -338,13 +296,11 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
 		}
 
-		//TODO FK: dump in a separate thread so we are not blocking the reader thread.
-
 		// Write json
 		try {
 			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
 
-			final JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(debugUnGzip(gzippedObj));
+			final JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(new GZIPInputStream(new ByteArrayInputStream(gzippedObj)));
 			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
 		}
 		catch (IOException e) {
@@ -411,11 +367,14 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		final ListenableFuture<List<ByteIterable>> allJobs = Futures.allAsList(jobs);
 
-		while (allJobs.get(30, TimeUnit.SECONDS) == null) {
+
+		List<ByteIterable> maybeFailed;
+
+		while ((maybeFailed = allJobs.get(30, TimeUnit.SECONDS)) == null) {
 			log.debug("Still waiting for {} jobs.", jobs.stream().filter(Predicate.not(Future::isDone)).count());
 		}
 
-		final List<ByteIterable> unreadables = allJobs.get().stream().filter(Objects::nonNull).toList();
+		final List<ByteIterable> unreadables = maybeFailed.stream().filter(Objects::nonNull).toList();
 
 		// Print some statistics
 		final int total = result.getTotalProcessed();
@@ -491,7 +450,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), log.isTraceEnabled() ? e : null);
 
 			if (shouldDumpUnreadables()) {
-				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), e, unreadableValuesDumpDir, store.getName(), objectMapper);
+				dumpToFile(onFailOrigValue.getBytesUnsafe(), onFailKeyStringSupplier.get(), e, unreadableValuesDumpDir, store.getName(), objectMapper);
 			}
 		}
 		return null;
