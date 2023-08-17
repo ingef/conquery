@@ -310,7 +310,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 								.resolve(storeName)
 								.resolve(sanitiseFileName(keyOfDump) + "." + DUMP_FILE_EXTENSION)
 								.toFile();
-
 	}
 
 	/**
@@ -326,7 +325,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 								.resolve(storeName)
 								.resolve(sanitiseFileName(keyOfDump) + "." + EXCEPTION_FILE_EXTENSION)
 								.toFile();
-
 	}
 
 	private static String sanitiseFileName(@NotNull String name) {
@@ -518,7 +516,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 	}
 
-	private ByteIterable handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, ByteIterable keyRaw, ByteIterable v) {
+	private ByteIterable handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, ByteIterable keyRaw, ByteIterable valueRaw) {
 		result.incrTotalProcessed();
 
 		// Try to read the key first
@@ -526,7 +524,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				keyRaw,
 				SerializingStore.this::readKey,
 				() -> new String(keyRaw.getBytesUnsafe()),
-				v,
+				valueRaw,
 				"Could not parse key [{}]"
 		);
 		if (key == null) {
@@ -536,10 +534,10 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		// Try to read the value
 		final VALUE value = getDeserializedAndDumpFailed(
-				v,
+				valueRaw,
 				SerializingStore.this::readValue,
 				key::toString,
-				v,
+				valueRaw,
 				"Could not parse value for key [{}]"
 		);
 
@@ -550,7 +548,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		// Apply the consumer to key and value
 		try {
-			consumer.accept(key, value, v.getLength());
+			consumer.accept(key, value, valueRaw.getLength());
 		}
 		catch (Exception e) {
 			log.warn("Unable to apply for-each consumer on key[{}]", key, e);
