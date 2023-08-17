@@ -337,8 +337,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final IterationStatistic result = new IterationStatistic();
 		final Collection<ByteIterable> unreadables = new ConcurrentLinkedQueue<>();
 
-		// Some magic number of buffering per worker, that isn't so high, that we fill up RAM with useless stuff, but have enough data to keep the workers occupied.
-
 		final ThreadPoolExecutor executorService = new ThreadPoolExecutor(
 				nWorkers, nWorkers,
 				0, TimeUnit.SECONDS,
@@ -357,16 +355,17 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		// Print some statistics
 		final int total = result.getTotalProcessed();
+
 		log.debug(
-				String.format(
-						"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)",
-						store.getName(),
-						total,
-						result.getFailedKeys(),
-						total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
-						result.getFailedValues(),
-						total > 0 ? (float) result.getFailedValues() / total * 100 : 0
-				));
+				"While processing store %s:\n\tEntries processed:\t%d\n\tKey read failure:\t%d (%.2f%%)\n\tValue read failure:\t%d (%.2f%%)"
+						.formatted(
+								store.getName(),
+								total,
+								result.getFailedKeys(),
+								total > 0 ? (float) result.getFailedKeys() / total * 100 : 0,
+								result.getFailedValues(),
+								total > 0 ? (float) result.getFailedValues() / total * 100 : 0
+						));
 
 		// Remove corrupted entries from the store if configured so
 		if (removeUnreadablesFromUnderlyingStore) {
