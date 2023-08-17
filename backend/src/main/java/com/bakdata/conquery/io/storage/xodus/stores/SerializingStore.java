@@ -6,17 +6,13 @@ import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 import javax.validation.Validator;
 
@@ -34,7 +30,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -343,31 +338,21 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final Collection<ByteIterable> unreadables = new ConcurrentLinkedQueue<>();
 
 		// Some magic number of buffering per worker, that isn't so high, that we fill up RAM with useless stuff, but have enough data to keep the workers occupied.
-		final BlockingQueue<Pair> workQueue = new ArrayBlockingQueue<>(nWorkers * bufferPerWorker);
 
-		final ExecutorService executorService = Executors.newFixedThreadPool(nWorkers);
-
-		final List<Reader> readers = IntStream.range(0, nWorkers)
-											  .mapToObj(ignored -> new Reader(workQueue, consumer, result, unreadables))
-											  .peek(reader -> executorService.submit(reader::run))
-											  .toList();
+		final ThreadPoolExecutor executorService = new ThreadPoolExecutor(
+				nWorkers, nWorkers,
+				0, TimeUnit.SECONDS,
+				new ArrayBlockingQueue<>(nWorkers * bufferPerWorker),
+				new ThreadPoolExecutor.CallerRunsPolicy()
+		);
 
 		// We read in  single thread, and deserialise and dispatch in multiple threads.
-		store.forEach((k, v) -> {
-			try {
-				workQueue.put(new Pair(k, v));
-			}
-			catch (InterruptedException e) {
-				//TODO wat do?
-				throw new RuntimeException(e);
-			}
-		});
+		store.forEach((k, v) -> executorService.submit(() -> handle(consumer, result, unreadables, k, v)));
 
 		executorService.shutdown();
-		readers.forEach(Reader::finish);
 
 		while(!executorService.awaitTermination(30, TimeUnit.SECONDS)){
-			log.debug("Still waiting for {} jobs.", workQueue.size());
+			log.debug("Still waiting for {} jobs.", executorService.getQueue().size());
 		}
 
 		// Print some statistics
@@ -474,7 +459,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@NoArgsConstructor
 	public static class IterationStatistic {
-		//TODO move into reader?
 		private final AtomicInteger totalProcessed = new AtomicInteger();
 		private final AtomicInteger failedKeys = new AtomicInteger();
 		private final AtomicInteger failedValues = new AtomicInteger();
@@ -516,79 +500,44 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 	}
 
-	private record Pair(ByteIterable key, ByteIterable value) {
-	}
+	private void handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, Collection<ByteIterable> unreadables, ByteIterable k, ByteIterable v) {
+		result.incrTotalProcessed();
 
-	@Data
-	private class Reader {
-		private final BlockingQueue<Pair> queue;
-		private boolean done = false;
-		private final StoreEntryConsumer<KEY, VALUE> consumer;
-		private final IterationStatistic result;
-		private final Collection<ByteIterable> unreadables;
-
-		public void run() {
-
-			while (!done || !queue.isEmpty()) {
-				try {
-					final Pair next = queue.poll(1, TimeUnit.SECONDS);
-
-					if (next == null) {
-						continue;
-					}
-
-					handle(consumer, result, unreadables, next.key, next.value);
-				}
-				catch (Exception exception) {
-					//TODO probably split for InterrupedException? No idea how to handle that though
-					log.warn("", exception);
-				}
-			}
+		// Try to read the key first
+		final KEY key = getDeserializedAndDumpFailed(
+				k,
+				SerializingStore.this::readKey,
+				() -> new String(k.getBytesUnsafe()),
+				v,
+				"Could not parse key [{}]"
+		);
+		if (key == null) {
+			unreadables.add(k);
+			result.incrFailedKeys();
+			return;
 		}
 
-		public void finish() {
-			done = true;
+		// Try to read the value
+		final VALUE value = getDeserializedAndDumpFailed(
+				v,
+				SerializingStore.this::readValue,
+				key::toString,
+				v,
+				"Could not parse value for key [{}]"
+		);
+
+		if (value == null) {
+			unreadables.add(k);
+			result.incrFailedValues();
+			return;
 		}
 
-		private void handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, Collection<ByteIterable> unreadables, ByteIterable k, ByteIterable v) {
-			result.incrTotalProcessed();
-
-			// Try to read the key first
-			final KEY key = getDeserializedAndDumpFailed(
-					k,
-					SerializingStore.this::readKey,
-					() -> new String(k.getBytesUnsafe()),
-					v,
-					"Could not parse key [{}]"
-			);
-			if (key == null) {
-				unreadables.add(k);
-				result.incrFailedKeys();
-				return;
-			}
-
-			// Try to read the value
-			final VALUE value = getDeserializedAndDumpFailed(
-					v,
-					SerializingStore.this::readValue,
-					key::toString,
-					v,
-					"Could not parse value for key [{}]"
-			);
-
-			if (value == null) {
-				unreadables.add(k);
-				result.incrFailedValues();
-				return;
-			}
-
-			// Apply the consumer to key and value
-			try {
-				consumer.accept(key, value, v.getLength());
-			}
-			catch (Exception e) {
-				log.warn("Unable to apply for-each consumer on key[{}]", key, e);
-			}
+		// Apply the consumer to key and value
+		try {
+			consumer.accept(key, value, v.getLength());
+		}
+		catch (Exception e) {
+			log.warn("Unable to apply for-each consumer on key[{}]", key, e);
 		}
 	}
 }
