@@ -6,7 +6,7 @@ import Dropzone, {
   PossibleDroppableObject,
 } from "../../ui-components/Dropzone";
 
-interface  Props {
+interface Props {
   onDrop: (props: PossibleDroppableObject, monitor: DropTargetMonitor) => void;
   acceptedDropTypes: string[];
   top: number;
