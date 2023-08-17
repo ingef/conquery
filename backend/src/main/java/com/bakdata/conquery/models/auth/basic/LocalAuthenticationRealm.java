@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 
 import javax.validation.Validator;
 
@@ -108,7 +109,7 @@ public class LocalAuthenticationRealm extends AuthenticatingRealm implements Con
 						PasswordHasher.HashedEntry.class,
 						false,
 						true,
-						null
+						null, Executors.newSingleThreadExecutor()
 				));
 	}
 
