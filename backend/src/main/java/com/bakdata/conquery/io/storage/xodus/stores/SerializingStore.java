@@ -1,7 +1,11 @@
 package com.bakdata.conquery.io.storage.xodus.stores;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -13,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import javax.validation.Validator;
 
@@ -22,7 +28,6 @@ import com.bakdata.conquery.io.storage.Store;
 import com.bakdata.conquery.models.config.XodusStoreFactory;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.util.io.FileUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -182,14 +187,19 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 */
 	private ByteIterable write(Object obj, ObjectWriter writer) {
 		try {
-			final byte[] bytes = writer.writeValueAsBytes(obj);
-			if (log.isTraceEnabled()) {
-				final String json = JacksonUtil.toJsonDebug(bytes);
-				log.trace("Written ({}): {}", valueType.getName(), json);
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+			try (final OutputStream outputStream = new GZIPOutputStream(baos)) {
+				writer.writeValue(outputStream, obj);
 			}
+
+			baos.close();
+
+			final byte[] bytes = baos.toByteArray();
+
 			return new ArrayByteIterable(bytes);
 		}
-		catch (JsonProcessingException e) {
+		catch (IOException e) {
 			throw new RuntimeException("Failed to write " + obj, e);
 		}
 	}
@@ -204,7 +214,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		catch (Exception e) {
 
 			if (unreadableValuesDumpDir != null) {
-				dumpToFile(binValue, key.toString(), e, unreadableValuesDumpDir, store.getName(), objectMapper);
+				dumpToFile(binValue.getBytesUnsafe(), key.toString(), e, unreadableValuesDumpDir, store.getName(), objectMapper);
 			}
 
 			if (removeUnreadablesFromUnderlyingStore) {
@@ -229,13 +239,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * Dumps the content of an unreadable value to a file as a json (it tries to parse it as an object and than tries to dump it as a json).
 	 *
-	 * @param obj               The object to dump.
+	 * @param gzippedObj               The object to dump.
 	 * @param keyOfDump         The key under which the unreadable value is accessible. It is used for the file name.
 	 * @param reason            The exception causing us to dump the file
 	 * @param unreadableDumpDir The director to dump to. The method assumes that the directory exists and is okay to write to.
 	 * @param storeName         The name of the store which is also used in the dump file name.
 	 */
-	private static void dumpToFile(@NonNull ByteIterable obj, @NonNull String keyOfDump, Exception reason, @NonNull File unreadableDumpDir, String storeName, ObjectMapper objectMapper) {
+	private static void dumpToFile(@NonNull byte[] gzippedObj, @NonNull String keyOfDump, Exception reason, @NonNull File unreadableDumpDir, String storeName, ObjectMapper objectMapper) {
 		// Create dump filehandle
 		final File dumpfile = makeDumpFileName(keyOfDump, unreadableDumpDir, storeName);
 		final File exceptionFileName = makeExceptionFileName(keyOfDump, unreadableDumpDir, storeName);
@@ -249,11 +259,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
 		}
 
+		//TODO FK: dump in a separate thread so we are not blocking the reader thread.
+
 		// Write json
 		try {
 			log.info("Dumping value of key {} to {} (because it cannot be deserialized anymore).", keyOfDump, dumpfile.getCanonicalPath());
 
-			final JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(obj.getBytesUnsafe(), 0, obj.getLength());
+			final JsonNode dump = objectMapper.readerFor(JsonNode.class).readValue(debugUnGzip(gzippedObj));
 			Jackson.MAPPER.writer().writeValue(dumpfile, dump);
 		}
 		catch (IOException e) {
@@ -269,6 +281,10 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	}
 
+	private static byte[] debugUnGzip(byte[] bytes) throws IOException {
+		return new GZIPInputStream(new ByteArrayInputStream(bytes)).readAllBytes();
+	}
+
 	@Override
 	public void remove(KEY key) {
 		log.trace("Removing value to key {} from Store[{}]", key, store.getName());
@@ -282,11 +298,16 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		if (obj == null) {
 			return null;
 		}
-		try {
-			return reader.readValue(obj.getBytesUnsafe(), 0, obj.getLength());
+		try (final InputStream inputStream = new GZIPInputStream(new ByteArrayInputStream(obj.getBytesUnsafe(), 0, obj.getLength()))) {
+			return reader.readValue(inputStream);
 		}
 		catch (IOException e) {
-			throw new RuntimeException("Failed to read " + JacksonUtil.toJsonDebug(obj.getBytesUnsafe()), e);
+			try {
+				throw new RuntimeException("Failed to read " + JacksonUtil.toJsonDebug(debugUnGzip(obj.getBytesUnsafe())), e);
+			}
+			catch (IOException ex) {
+				throw new RuntimeException(ex);
+			}
 		}
 	}
 
@@ -321,6 +342,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 								.toFile();
 
 	}
+
 
 	private static String sanitiseFileName(@NotNull String name) {
 		return FileUtil.SAVE_FILENAME_REPLACEMENT_MATCHER.matcher(name).replaceAll("_");
@@ -397,7 +419,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			log.warn(onFailWarnMsgFmt, onFailKeyStringSupplier.get(), log.isTraceEnabled() ? e : null);
 
 			if (shouldDumpUnreadables()) {
-				dumpToFile(onFailOrigValue, onFailKeyStringSupplier.get(), e, unreadableValuesDumpDir, store.getName(), objectMapper);
+				dumpToFile(onFailOrigValue.getBytesUnsafe(), onFailKeyStringSupplier.get(), e, unreadableValuesDumpDir, store.getName(), objectMapper);
 			}
 		}
 		return null;
@@ -468,6 +490,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		private final AtomicInteger failedKeys = new AtomicInteger();
 		@EqualsAndHashCode.Exclude
 		private final AtomicInteger failedValues = new AtomicInteger();
+
 
 		public void incrTotalProcessed() {
 			totalProcessed.incrementAndGet();
