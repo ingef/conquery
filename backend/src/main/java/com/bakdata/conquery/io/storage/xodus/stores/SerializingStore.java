@@ -30,6 +30,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.SneakyThrows;
@@ -457,9 +459,14 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 
 	@NoArgsConstructor
+	@EqualsAndHashCode
+	@Data
 	public static class IterationStatistic {
+		@EqualsAndHashCode.Exclude
 		private final AtomicInteger totalProcessed = new AtomicInteger();
+		@EqualsAndHashCode.Exclude
 		private final AtomicInteger failedKeys = new AtomicInteger();
+		@EqualsAndHashCode.Exclude
 		private final AtomicInteger failedValues = new AtomicInteger();
 
 		public void incrTotalProcessed() {
@@ -486,14 +493,17 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			this.failedValues.set(failedValues);
 		}
 
+		@EqualsAndHashCode.Include
 		public int getFailedKeys() {
 			return failedKeys.get();
 		}
 
+		@EqualsAndHashCode.Include
 		public int getFailedValues() {
 			return failedValues.get();
 		}
 
+		@EqualsAndHashCode.Include
 		public int getTotalProcessed() {
 			return totalProcessed.get();
 		}
