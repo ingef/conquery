@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Executors;
 
 import javax.validation.Validator;
 
@@ -72,7 +73,7 @@ public class TokenStorage implements Managed {
 				ApiTokenData.class,
 				true,
 				false,
-				null, 1,  100
+				null, Executors.newSingleThreadExecutor()
 		));
 		openStoresInEnv.add(data);
 
@@ -90,7 +91,7 @@ public class TokenStorage implements Managed {
 				ApiTokenData.MetaData.class,
 				true,
 				false,
-				null, 1, 100
+				null, Executors.newSingleThreadExecutor()
 		));
 		openStoresInEnv.add(meta);
 	}

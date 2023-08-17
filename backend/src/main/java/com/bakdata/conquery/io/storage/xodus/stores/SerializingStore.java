@@ -6,12 +6,16 @@ import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.List;
+import java.util.Objects;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.validation.Validator;
@@ -28,6 +32,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Throwables;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import lombok.Data;
@@ -38,6 +46,7 @@ import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.TestOnly;
 
 /**
  * Key-value-store from {@link KEY} type values to {@link VALUE} values. ACID consistent, stored on disk using {@link jetbrains.exodus.env.Store} via {@link XodusStore}.
@@ -62,7 +71,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * Deserializer for keys
 	 */
-	private final ThreadLocal<ObjectReader> keyReader;
+	private final ObjectReader keyReader;
 
 	/**
 	 * Serializer for values
@@ -72,7 +81,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	/**
 	 * Deserializer for values
 	 */
-	private final ThreadLocal<ObjectReader> valueReader;
+	private final ObjectReader valueReader;
 
 	/**
 	 * Optional validator used for serialization.
@@ -103,8 +112,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	private final boolean removeUnreadablesFromUnderlyingStore;
 
 	private final ObjectMapper objectMapper;
-	private final int nWorkers;
-	private final int bufferPerWorker;
+	private final ExecutorService executor;
 
 	public <CLASS_K extends Class<KEY>, CLASS_V extends Class<VALUE>> SerializingStore(XodusStore store,
 																					   Validator validator,
@@ -113,7 +121,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 																					   CLASS_V valueType,
 																					   boolean validateOnWrite,
 																					   boolean removeUnreadableFromStore,
-																					   File unreadableDataDumpDirectory, int nWorkers, int bufferPerWorker) {
+																					   File unreadableDataDumpDirectory, ExecutorService executorService) {
 		this.store = store;
 		this.validator = validator;
 		this.validateOnWrite = validateOnWrite;
@@ -124,22 +132,21 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 		valueWriter = objectMapper.writerFor(this.valueType);
 
-		valueReader = ThreadLocal.withInitial(() -> objectMapper.readerFor(this.valueType));
+		valueReader = objectMapper.readerFor(this.valueType);
 
 		keyWriter = objectMapper.writerFor(keyType);
 
-		keyReader = ThreadLocal.withInitial(() -> objectMapper.readerFor(keyType));
+		keyReader = objectMapper.readerFor(keyType);
 
 		removeUnreadablesFromUnderlyingStore = removeUnreadableFromStore;
 
 		unreadableValuesDumpDir = unreadableDataDumpDirectory;
 
-		this.nWorkers = nWorkers;
-		this.bufferPerWorker = bufferPerWorker;
+		executor = executorService;
 
 		if (shouldDumpUnreadables()) {
 			if (!unreadableValuesDumpDir.exists() && !unreadableValuesDumpDir.mkdirs()) {
-				throw new IllegalStateException("Could not create dump directory: " + unreadableValuesDumpDir);
+				throw new IllegalStateException("Could not create dump directory: %s".formatted(unreadableValuesDumpDir));
 			}
 			else if (!unreadableValuesDumpDir.isDirectory()) {
 				throw new IllegalArgumentException(String.format("The provided path points to an existing file which is not a directory. Was: %s", unreadableValuesDumpDir.getAbsolutePath()));
@@ -154,7 +161,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void add(KEY key, VALUE value) {
 		if (!valueType.isInstance(value)) {
-			throw new IllegalStateException("The element " + value + " is not of the required type " + valueType);
+			throw new IllegalStateException("The element %s is not of the required type %s".formatted(value, valueType));
 		}
 		if (validateOnWrite) {
 			ValidatorHelper.failOnError(log, validator.validate(value));
@@ -190,7 +197,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			return new ArrayByteIterable(bytes);
 		}
 		catch (JsonProcessingException e) {
-			throw new RuntimeException("Failed to write " + obj, e);
+			throw new RuntimeException("Failed to write %s".formatted(obj), e);
 		}
 	}
 
@@ -223,7 +230,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Deserialize value with {@code valueReader}.
 	 */
 	private VALUE readValue(ByteIterable value) {
-		return read(valueReader.get(), value);
+		return read(valueReader, value);
 	}
 
 	/**
@@ -286,7 +293,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			return reader.readValue(obj.getBytesUnsafe(), 0, obj.getLength());
 		}
 		catch (IOException e) {
-			throw new RuntimeException("Failed to read " + JacksonUtil.toJsonDebug(obj.getBytesUnsafe()), e);
+			throw new RuntimeException("Failed to read %s".formatted(JacksonUtil.toJsonDebug(obj.getBytesUnsafe())), e);
 		}
 	}
 
@@ -337,23 +344,24 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		final IterationStatistic result = new IterationStatistic();
-		final Collection<ByteIterable> unreadables = new ConcurrentLinkedQueue<>();
 
-		final ThreadPoolExecutor executorService = new ThreadPoolExecutor(
-				nWorkers, nWorkers,
-				0, TimeUnit.SECONDS,
-				new ArrayBlockingQueue<>(nWorkers * bufferPerWorker),
-				new ThreadPoolExecutor.CallerRunsPolicy()
-		);
+		final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(executor);
 
-		// We read in  single thread, and deserialise and dispatch in multiple threads.
-		store.forEach((k, v) -> executorService.submit(() -> handle(consumer, result, unreadables, k, v)));
+		final Queue<ListenableFuture<ByteIterable>> jobs = new ConcurrentLinkedQueue<>();
 
-		executorService.shutdown();
+		// We read in  single thread, and deserialize and dispatch in multiple threads.
+		store.forEach((k, v) -> jobs.add(executorService.submit(() -> handle(consumer, result, k, v))));
 
-		while(!executorService.awaitTermination(30, TimeUnit.SECONDS)){
-			log.debug("Still waiting for {} jobs.", executorService.getQueue().size());
+		final ListenableFuture<List<ByteIterable>> allJobs = Futures.allAsList(jobs);
+
+		while(allJobs.get(30, TimeUnit.SECONDS) == null){
+			log.debug("Still waiting for {} jobs.", jobs.stream().filter(Predicate.not(Future::isDone)).count());
 		}
+
+		final List<ByteIterable> unreadables = allJobs.get()
+													  .stream()
+													  .filter(Objects::nonNull)
+													  .toList();
 
 		// Print some statistics
 		final int total = result.getTotalProcessed();
@@ -407,13 +415,13 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 * Deserialize value with {@code keyReader}.
 	 */
 	private KEY readKey(ByteIterable key) {
-		return read(keyReader.get(), key);
+		return read(keyReader, key);
 	}
 
 	@Override
 	public void update(KEY key, VALUE value) {
 		if (!valueType.isInstance(value)) {
-			throw new IllegalStateException("The element " + value + " is not of the required type " + valueType);
+			throw new IllegalStateException("The element %s is not of the required type %s".formatted(value, valueType));
 		}
 
 		if (validateOnWrite) {
@@ -461,12 +469,10 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@NoArgsConstructor
 	@EqualsAndHashCode
 	@Data
+	@ToString(onlyExplicitlyIncluded = false)
 	public static class IterationStatistic {
-		@EqualsAndHashCode.Exclude
 		private final AtomicInteger totalProcessed = new AtomicInteger();
-		@EqualsAndHashCode.Exclude
 		private final AtomicInteger failedKeys = new AtomicInteger();
-		@EqualsAndHashCode.Exclude
 		private final AtomicInteger failedValues = new AtomicInteger();
 
 		public void incrTotalProcessed() {
@@ -481,14 +487,17 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			failedValues.incrementAndGet();
 		}
 
+		@TestOnly
 		public void setTotalProcessed(int totalProcessed) {
 			this.totalProcessed.set(totalProcessed);
 		}
 
+		@TestOnly
 		public void setFailedKeys(int failedKeys) {
 			this.failedKeys.set(failedKeys);
 		}
 
+		@TestOnly
 		public void setFailedValues(int failedValues) {
 			this.failedValues.set(failedValues);
 		}
@@ -509,21 +518,20 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 	}
 
-	private void handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, Collection<ByteIterable> unreadables, ByteIterable k, ByteIterable v) {
+	private ByteIterable handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, ByteIterable keyRaw, ByteIterable v) {
 		result.incrTotalProcessed();
 
 		// Try to read the key first
 		final KEY key = getDeserializedAndDumpFailed(
-				k,
+				keyRaw,
 				SerializingStore.this::readKey,
-				() -> new String(k.getBytesUnsafe()),
+				() -> new String(keyRaw.getBytesUnsafe()),
 				v,
 				"Could not parse key [{}]"
 		);
 		if (key == null) {
-			unreadables.add(k);
 			result.incrFailedKeys();
-			return;
+			return keyRaw;
 		}
 
 		// Try to read the value
@@ -536,9 +544,8 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		);
 
 		if (value == null) {
-			unreadables.add(k);
 			result.incrFailedValues();
-			return;
+			return keyRaw;
 		}
 
 		// Apply the consumer to key and value
@@ -548,5 +555,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		catch (Exception e) {
 			log.warn("Unable to apply for-each consumer on key[{}]", key, e);
 		}
+
+		return null;
 	}
 }

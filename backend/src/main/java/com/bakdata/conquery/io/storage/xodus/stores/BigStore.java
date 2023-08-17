@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -63,7 +64,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 					StoreInfo<KEY, VALUE> storeInfo,
 					Consumer<XodusStore> storeCloseHook,
 					Consumer<XodusStore> storeRemoveHook,
-					ObjectMapper mapper, int nWorkers, int bufferPerWorker) {
+					ObjectMapper mapper, ExecutorService executorService) {
 		this.storeInfo = storeInfo;
 
 		// Recommendation by the author of Xodus is to have logFileSize at least be 4 times the biggest file size.
@@ -78,7 +79,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 				BigStoreMetaKeys.class,
 				config.isValidateOnWrite(),
 				config.isRemoveUnreadableFromStore(),
-				config.getUnreadableDataDumpDirectory(), nWorkers, bufferPerWorker
+				config.getUnreadableDataDumpDirectory(), executorService
 
 		);
 
@@ -91,7 +92,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE>, Closeable {
 				byte[].class,
 				config.isValidateOnWrite(),
 				config.isRemoveUnreadableFromStore(),
-				config.getUnreadableDataDumpDirectory(), nWorkers, bufferPerWorker
+				config.getUnreadableDataDumpDirectory(), executorService
 		);
 
 

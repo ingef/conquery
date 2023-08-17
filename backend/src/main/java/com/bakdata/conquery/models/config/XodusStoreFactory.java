@@ -11,6 +11,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -136,13 +140,29 @@ public class XodusStoreFactory implements StoreFactory {
 	 * @implNote it's always only one thread reading from disk, dispatching to multiple reader threads.
 	 */
 	@Min(1)
-	private int readerWorkers = 10;
+	private int readerWorkers = Runtime.getRuntime().availableProcessors();
 
 	/**
 	 * How many slots of buffering to use before the IO thread is put to sleep.
 	 */
 	@Min(1)
 	private int bufferPerWorker = 20;
+
+	@JsonIgnore
+	private ExecutorService readerExecutorService;
+
+	public ExecutorService getReaderExecutorService() {
+		if (readerExecutorService == null){
+			readerExecutorService = new ThreadPoolExecutor(
+					1, getReaderWorkers(),
+					5, TimeUnit.MINUTES,
+					new ArrayBlockingQueue<>(getReaderWorkers() * getBufferPerWorker()),
+					new ThreadPoolExecutor.CallerRunsPolicy()
+			);
+		}
+
+		return readerExecutorService;
+	}
 
 	private boolean useWeakDictionaryCaching;
 	@NotNull
@@ -287,7 +307,7 @@ public class XodusStoreFactory implements StoreFactory {
 							DICTIONARIES.storeInfo(),
 							this::closeStore,
 							this::removeStore,
-							centralRegistry.injectIntoNew(objectMapper), getReaderWorkers(), getBufferPerWorker()
+							centralRegistry.injectIntoNew(objectMapper), getReaderExecutorService()
 					);
 			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
 			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
@@ -330,7 +350,7 @@ public class XodusStoreFactory implements StoreFactory {
 
 		synchronized (openStoresInEnv) {
 			final BigStore<Boolean, EntityIdMap> bigStore =
-					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), this::closeStore, this::removeStore, objectMapper,  getReaderWorkers(), getBufferPerWorker());
+					new BigStore<>(this, validator, environment, ID_MAPPING.storeInfo(), this::closeStore, this::removeStore, objectMapper, getReaderExecutorService());
 
 			openStoresInEnv.put(bigStore.getDataXodusStore().getEnvironment(), bigStore.getDataXodusStore());
 			openStoresInEnv.put(bigStore.getMetaXodusStore().getEnvironment(), bigStore.getMetaXodusStore());
@@ -496,7 +516,7 @@ public class XodusStoreFactory implements StoreFactory {
 							isValidateOnWrite(),
 							isRemoveUnreadableFromStore(),
 							getUnreadableDataDumpDirectory(),
-							getReaderWorkers(), getBufferPerWorker()
+							getReaderExecutorService()
 					));
 		}
 	}
