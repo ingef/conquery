@@ -16,7 +16,7 @@ import {
   nodeHasNonDefaultSettings,
 } from "../../model/node";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import { isMovedObject } from "../../ui-components/Dropzone";
+import { PossibleDroppableObject, isMovedObject } from "../../ui-components/Dropzone";
 import DropzoneWithFileInput, {
   DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
@@ -206,7 +206,9 @@ const FormConceptGroup = (props: Props) => {
             : props.attributeDropzoneText
         }
         dropBetween={(i: number) => {
-          return (item: DragItemConceptTreeNode) => {
+          return (item: PossibleDroppableObject) => {
+            if (item.type !== DNDType.CONCEPT_TREE_NODE)return;
+            
             if (props.isValidConcept && !props.isValidConcept(item))
               return null;
 

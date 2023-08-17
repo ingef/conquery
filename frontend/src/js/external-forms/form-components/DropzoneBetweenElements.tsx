@@ -1,24 +1,19 @@
 import styled from "@emotion/styled";
-import { DropTargetMonitor, useDrop } from "react-dnd";
+import { useState } from "react";
+import { DropTargetMonitor } from "react-dnd";
 
-import { PossibleDroppableObject } from "../../ui-components/Dropzone";
+import Dropzone, {
+  PossibleDroppableObject,
+} from "../../ui-components/Dropzone";
 
-interface Props<DroppableObject> {
-  onDrop: (item: DroppableObject, monitor: DropTargetMonitor) => void;
+interface  Props {
+  onDrop: (props: PossibleDroppableObject, monitor: DropTargetMonitor) => void;
   acceptedDropTypes: string[];
-  lastElement?: boolean;
-  top?: number;
+  top: number;
+  height: number;
 }
 
-const RootHeightBase = 30;
 const LineHeight = 3;
-const Root = styled("div")`
-  width: 100%;
-  left: 0;
-  right: 0;
-  position: absolute;
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
 
 const Line = styled("div")<{ show: boolean }>`
   overflow: hidden;
@@ -30,35 +25,33 @@ const Line = styled("div")<{ show: boolean }>`
   border-radius: 2px;
 `;
 
-const DropzoneBetweenElements = <
-  DroppableObject extends PossibleDroppableObject,
->({
+const SxDropzone = styled(Dropzone)<{ height: number; top: number }>`
+  height: ${({ height }) => height}px;
+  top: ${({ top }) => top}px;
+  position: absolute;
+  background-color: transparent;
+`;
+
+const DropzoneBetweenElements = ({
   acceptedDropTypes,
   onDrop,
-  lastElement,
+  height,
   top,
-}: Props<DroppableObject>) => {
-  const [{ isOver }, addZoneRef] = useDrop({
-    accept: acceptedDropTypes,
-    drop: onDrop,
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      isDroppable: monitor.canDrop(),
-    }),
-  });
-
-  const rootHeightMultiplier = lastElement ? 0.7 : 1;
+}: Props) => {
+  let [isOver, setIsOver] = useState<boolean>(false);
 
   return (
     <>
       <Line show={isOver} />
-      <Root
-        ref={addZoneRef}
-        style={{
-          height: RootHeightBase * rootHeightMultiplier,
-          top: top,
-        }}
-      ></Root>
+      <SxDropzone
+        bare
+        naked
+        acceptedDropTypes={acceptedDropTypes}
+        onDrop={onDrop}
+        setIsOver={setIsOver}
+        height={height}
+        top={top}
+      />
     </>
   );
 };

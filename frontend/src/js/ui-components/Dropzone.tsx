@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ForwardedRef, forwardRef, ReactNode } from "react";
+import { ForwardedRef, forwardRef, ReactNode, useEffect } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 
 import { DNDType } from "../common/constants/dndTypes";
@@ -67,6 +67,7 @@ export interface DropzoneProps<DroppableObject> {
   canDrop?: (props: DroppableObject, monitor: DropTargetMonitor) => boolean;
   onClick?: () => void;
   children?: (args: ChildArgs<DroppableObject>) => ReactNode;
+  setIsOver?: (state: boolean) => void;
 }
 
 export type PossibleDroppableObject =
@@ -107,6 +108,7 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>(
     onClick,
     invisible,
     children,
+    setIsOver,
   }: DropzoneProps<DroppableObject>,
   ref?: ForwardedRef<HTMLDivElement>,
 ) => {
@@ -125,6 +127,10 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>(
       item: monitor.getItem(),
     }),
   });
+
+  useEffect(() => {
+    if (setIsOver) setIsOver(isOver);
+  }, [isOver, setIsOver]);
 
   return (
     <Root

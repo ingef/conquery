@@ -58,7 +58,7 @@ interface PropsT<DroppableObject> {
   onImportLines: (lines: string[]) => void;
   dropBetween: (
     i: number,
-  ) => (item: DroppableObject, monitor: DropTargetMonitor) => void;
+  ) => (item: PossibleDroppableObject, monitor: DropTargetMonitor) => void;
 }
 
 const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
@@ -102,6 +102,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
                   acceptedDropTypes={acceptedDropTypes}
                   onDrop={dropBetween(i)}
                   top={-15}
+                  height={30}
                 />
               )}
               <ListItem>
@@ -117,7 +118,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
                 acceptedDropTypes={acceptedDropTypes}
                 onDrop={dropBetween(items.length)}
                 top={-20}
-                lastElement
+                height={15}
               />
             )}
           </ConceptContainer>
