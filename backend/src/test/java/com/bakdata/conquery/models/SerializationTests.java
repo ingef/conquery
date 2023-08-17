@@ -54,8 +54,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -87,8 +85,6 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.util.SerialisationObjectsUtil;
-import com.bakdata.conquery.util.dict.SuccinctTrie;
-import com.bakdata.conquery.util.dict.SuccinctTrieTest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -96,7 +92,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.github.powerlibraries.io.In;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import io.dropwizard.jersey.validation.Validators;
@@ -219,15 +214,14 @@ public class SerializationTests extends AbstractSerializationTest {
 		imp.setName("importTest");
 
 
-		CompoundDateRangeStore
-				compoundStore =
+		CompoundDateRangeStore compoundStore =
 				new CompoundDateRangeStore(startCol.getName(), endCol.getName(), new BitSetStore(BitSet.valueOf(new byte[]{0b1000}), new BitSet(), 4));
 		//0b1000 is a binary representation of 8 so that the 4th is set to make sure that BitSet length is 4.
 
 		ColumnStore startStore = new IntegerDateStore(new ShortArrayStore(new short[]{1, 2, 3, 4}, Short.MIN_VALUE));
 		ColumnStore endStore = new IntegerDateStore(new ShortArrayStore(new short[]{5, 6, 7, 8}, Short.MIN_VALUE));
 
-		Bucket bucket = new Bucket(0, 1, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptySet(), new int[0], new int[0], imp);
+		Bucket bucket = new Bucket(0, 4, new ColumnStore[]{startStore, endStore, compoundStore}, Collections.emptyMap(), Collections.emptyMap(), imp);
 
 		compoundStore.setParent(bucket);
 
@@ -491,7 +485,7 @@ public class SerializationTests extends AbstractSerializationTest {
 	@Test
 	public void executionQueryJobError() throws JSONException, IOException {
 		log.info("Beware, this test will print an ERROR message.");
-		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity(5), new ConqueryError.UnknownError(null));
+		ConqueryError error = new ConqueryError.ExecutionJobErrorWrapper(new Entity("5"), new ConqueryError.UnknownError(null));
 
 		SerializationTestUtil
 				.forType(ConqueryError.class)
@@ -591,25 +585,6 @@ public class SerializationTests extends AbstractSerializationTest {
 	}
 
 	@Test
-	void testMapDictionary() throws IOException, JSONException {
-
-		MapDictionary map = new MapDictionary(Dataset.PLACEHOLDER, "dictionary");
-
-		map.add("a".getBytes());
-		map.add("b".getBytes());
-		map.add("c".getBytes());
-
-		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
-		registry.register(Dataset.PLACEHOLDER);
-
-		SerializationTestUtil
-				.forType(MapDictionary.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
-				.registry(registry)
-				.test(map);
-	}
-
-	@Test
 	public void serialize() throws IOException, JSONException {
 		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
 
@@ -633,7 +608,7 @@ public class SerializationTests extends AbstractSerializationTest {
 		final Import imp = new Import(table);
 		imp.setName("import");
 
-		final Bucket bucket = new Bucket(0, 0, 0, new ColumnStore[0], Collections.emptySet(), new int[10], new int[10], imp);
+		final Bucket bucket = new Bucket(0, 0, new ColumnStore[0], Collections.emptyMap(), Collections.emptyMap(), imp);
 
 
 		final CBlock cBlock = CBlock.createCBlock(connector, bucket, 10);
@@ -650,27 +625,6 @@ public class SerializationTests extends AbstractSerializationTest {
 							 .registry(registry)
 							 .test(cBlock);
 	}
-
-	@Test
-	public void testSuccinctTrie()
-			throws IOException, JSONException {
-
-		final CentralRegistry registry = getMetaStorage().getCentralRegistry();
-		registry.register(Dataset.PLACEHOLDER);
-
-		SuccinctTrie dict = new SuccinctTrie(Dataset.PLACEHOLDER, "testDict");
-
-		In.resource(SuccinctTrieTest.class, "SuccinctTrieTest.data").streamLines()
-		  .forEach(value -> dict.put(value.getBytes()));
-
-		dict.compress();
-		SerializationTestUtil
-				.forType(Dictionary.class)
-				.objectMappers(getManagerInternalMapper(), getShardInternalMapper())
-				.registry(registry)
-				.test(dict);
-	}
-
 
 	@Test
 	public void testBiMapSerialization() throws JSONException, IOException {
@@ -700,11 +654,11 @@ public class SerializationTests extends AbstractSerializationTest {
 				.forType(EntityResult.class)
 				.objectMappers(getApiMapper(), getManagerInternalMapper())
 				.test(
-						new MultilineEntityResult(4, List.of(
+						new MultilineEntityResult("4", List.of(
 								new Object[]{0, 1, 2},
 								new Object[]{Double.NaN, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY}
 						)),
-						new MultilineEntityResult(4, List.of(
+						new MultilineEntityResult("4", List.of(
 								new Object[]{0, 1, 2},
 								new Object[]{null, null, null}
 						))

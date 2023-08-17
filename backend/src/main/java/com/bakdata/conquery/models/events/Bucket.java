@@ -58,11 +58,8 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 	@Min(0)
 	private final int bucket;
 
-
 	@Min(0)
 	private final int numberOfEvents;
-
-
 	@JsonManagedReference
 	@Setter(AccessLevel.PROTECTED)
 	private ColumnStore[] stores;
@@ -83,7 +80,7 @@ public class Bucket extends IdentifiableImpl<BucketId> implements NamespacedIden
 
 
 	@JsonIgnore
-	@ValidationMethod(message = "Number of events does not match to the number of stores")
+	@ValidationMethod(message = "Number of events does not match the length of some stores.")
 	public boolean isNumberOfEventsEqualsNumberOfStores() {
 		return Arrays.stream(stores).allMatch(columnStore -> columnStore.getLines() == getNumberOfEvents());
 	}
