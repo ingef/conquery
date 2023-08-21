@@ -46,6 +46,8 @@ public class FullExecutionStatus extends ExecutionStatus {
 	 */
 	private boolean canExpand;
 
+	private boolean containsDates;
+
 	/**
 	 * Is set to the query description if the user can expand all included concepts.
 	 */
