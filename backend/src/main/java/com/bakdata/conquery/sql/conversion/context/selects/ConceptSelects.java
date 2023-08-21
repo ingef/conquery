@@ -37,7 +37,7 @@ public class ConceptSelects implements Selects {
 	}
 
 	@Override
-	public ConceptSelects byName(String qualifier) {
+	public ConceptSelects qualifiedWith(String qualifier) {
 		return builder()
 				.primaryColumn(this.mapFieldToQualifier(qualifier, this.primaryColumn))
 				.dateRestrictionRange(this.dateRestrictionRange.map(dateRestriction -> dateRestriction.qualify(qualifier)))

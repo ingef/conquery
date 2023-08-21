@@ -2,16 +2,15 @@ package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.models.ColumnDateRange;
-import org.jetbrains.annotations.NotNull;
 import org.jooq.Condition;
 import org.jooq.DatePart;
 import org.jooq.Field;
+import org.jooq.Name;
 import org.jooq.impl.DSL;
 
 /**
@@ -23,14 +22,6 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	private static final String INFINITY_DATE_VALUE = "infinity";
 	private static final String MINUS_INFINITY_DATE_VALUE = "-infinity";
-
-	private static final Map<ChronoUnit, DatePart> DATE_CONVERSION = Map.of(
-			ChronoUnit.DECADES, DatePart.DECADE,
-			ChronoUnit.YEARS, DatePart.YEAR,
-			ChronoUnit.DAYS, DatePart.DAY,
-			ChronoUnit.MONTHS, DatePart.MONTH,
-			ChronoUnit.CENTURIES, DatePart.CENTURY
-	);
 
 	@Override
 	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange validityDate) {
@@ -50,20 +41,20 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange daterange(CDateRange dateRestriction) {
 
-		String min = MINUS_INFINITY_DATE_VALUE;
-		String max = INFINITY_DATE_VALUE;
+		String startDateExpression = MINUS_INFINITY_DATE_VALUE;
+		String endDateExpression = INFINITY_DATE_VALUE;
 
 		if (dateRestriction.hasLowerBound()) {
-			min = dateRestriction.getMin().toString();
+			startDateExpression = dateRestriction.getMin().toString();
 		}
 		if (dateRestriction.hasUpperBound()) {
-			max = dateRestriction.getMax().toString();
+			endDateExpression = dateRestriction.getMax().toString();
 		}
 
 		Field<Object> dateRestrictionRange = DSL.field(
 				"daterange({0}::date, {1}::date, '[]')",
-				DSL.val(min),
-				DSL.val(max)
+				DSL.val(startDateExpression),
+				DSL.val(endDateExpression)
 		);
 
 		return ColumnDateRange.of(dateRestrictionRange)
@@ -108,26 +99,42 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Integer> dateDistance(ChronoUnit timeUnit, Column startDateColumn, Date endDateExpression) {
+	public Field<Integer> dateDistance(ChronoUnit timeUnit, Name startDateColumnName, Date endDateExpression) {
 
-		DatePart datePart = DATE_CONVERSION.get(timeUnit);
-		if (datePart == null) {
-			throw new UnsupportedOperationException("Chrono unit %s is not supported".formatted(timeUnit));
+		Field<Date> startDate = DSL.field(startDateColumnName, Date.class);
+		Field<Date> endDate = toDate(endDateExpression.toString());
+
+		if (timeUnit == ChronoUnit.DAYS) {
+			return endDate.minus(startDate).coerce(Integer.class);
 		}
 
-		// we can now safely cast to Field of type Date
-		Field<Date> startDate = DSL.field(DSL.name(startDateColumn.getName()), Date.class);
-		return DSL.dateDiff(datePart, startDate, endDateExpression);
+		Field<Object> age = DSL.function("AGE", Object.class, endDate, startDate);
+
+		return switch (timeUnit) {
+			case MONTHS -> extract(DatePart.YEAR, age).multiply(12)
+													  .plus(extract(DatePart.MONTH, age));
+			case YEARS -> extract(DatePart.YEAR, age);
+			case DECADES -> extract(DatePart.DECADE, age);
+			case CENTURIES -> extract(DatePart.CENTURY, age);
+			default -> throw new UnsupportedOperationException("Given ChronoUnit %s is not supported.");
+		};
 	}
 
-	@NotNull
-	private static Field<Object> daterange(Column startColumn, Column endColumn, String bounds) {
+	private Field<Object> daterange(Column startColumn, Column endColumn, String bounds) {
 		return DSL.function(
 				"daterange",
 				Object.class,
 				DSL.field(DSL.name(startColumn.getName())),
 				DSL.field(DSL.name(endColumn.getName())),
 				DSL.val(bounds)
+		);
+	}
+
+	private Field<Integer> extract(DatePart datePart, Field<Object> timeInterval) {
+		return DSL.function(
+				"EXTRACT",
+				Integer.class,
+				DSL.inlined(DSL.field("%s FROM %s".formatted(datePart, timeInterval)))
 		);
 	}
 

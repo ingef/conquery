@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.context;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.sql.conversion.NodeConverterService;
@@ -12,8 +14,6 @@ import lombok.With;
 import org.jooq.Record;
 import org.jooq.Select;
 
-import java.util.List;
-
 @Value
 @With
 @Builder(toBuilder = true)
@@ -25,20 +25,23 @@ public class ConversionContext {
 	@Singular
 	List<QueryStep> querySteps;
 	Select<Record> finalQuery;
-	boolean negation;
 	CDateRange dateRestrictionRange;
 	int queryStepCounter;
-
+	boolean negation;
+	boolean isGroupBy;
 
 	public boolean dateRestrictionActive() {
 		return this.dateRestrictionRange != null;
 	}
 
+	/**
+	 * Adds a converted {@link QueryStep} to the list of query steps of this {@link ConversionContext} and increments its conceptCounter by 1.
+	 */
 	public ConversionContext withQueryStep(QueryStep queryStep) {
 		return this.toBuilder()
-				   .queryStep(queryStep)
-				   .queryStepCounter(queryStepCounter + 1)
-				   .build();
+				.queryStep(queryStep)
+				.queryStepCounter(queryStepCounter + 1)
+				.build();
 	}
 
 }

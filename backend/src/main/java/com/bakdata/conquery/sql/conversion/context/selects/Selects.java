@@ -23,7 +23,7 @@ public interface Selects {
 	 * @return selects as fully qualified reference
 	 * @see Selects#mapFieldToQualifier(String, Field)
 	 */
-	Selects byName(String qualifier);
+	Selects qualifiedWith(String qualifier);
 
 	/**
 	 * @return A list of all select fields including the primary column and validity date.
@@ -55,9 +55,6 @@ public interface Selects {
 	 * <p>
 	 * This function maps the select {@code c1 - c2 as c} to {@code t1.c}.
 	 *
-	 * @param qualifier
-	 * @param field
-	 * @return
 	 */
 	default Field<Object> mapFieldToQualifier(String qualifier, Field<Object> field) {
 		return DSL.field(DSL.name(qualifier, field.getName()));

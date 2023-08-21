@@ -63,10 +63,6 @@
           {
             "name": "value",
             "type": "REAL"
-          },
-          {
-            "name": "datum",
-            "type": "DATE_RANGE"
           }
         ]
       }

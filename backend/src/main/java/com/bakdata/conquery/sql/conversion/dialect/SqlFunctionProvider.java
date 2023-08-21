@@ -4,7 +4,6 @@ import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.models.ColumnDateRange;
@@ -35,7 +34,7 @@ public interface SqlFunctionProvider {
 
 	Field<Object> daterangeString(ColumnDateRange columnDateRange);
 
-	Field<Integer> dateDistance(ChronoUnit datePart, Column startDateColumn, Date endDateExpression);
+	Field<Integer> dateDistance(ChronoUnit datePart, Name startDateColumn, Date endDateExpression);
 
 	default Condition in(Name columnName, String[] values) {
 		return DSL.field(columnName)

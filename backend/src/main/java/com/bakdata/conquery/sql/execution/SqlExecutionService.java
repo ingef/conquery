@@ -10,7 +10,6 @@ import java.util.stream.IntStream;
 
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
 import com.google.common.base.Stopwatch;
 import lombok.RequiredArgsConstructor;
@@ -33,8 +32,10 @@ public class SqlExecutionService {
 
 	private SqlExecutionResult createStatementAndExecute(SqlManagedQuery sqlQuery, Connection connection) {
 
+		String sqlString = sqlQuery.getSqlQuery().getSqlString();
+		log.debug("Executing query: \n{}", sqlString);
 		try (Statement statement = connection.createStatement();
-			 ResultSet resultSet = statement.executeQuery(sqlQuery.getSqlQuery().getSqlString())) {
+			 ResultSet resultSet = statement.executeQuery(sqlString)) {
 			int columnCount = resultSet.getMetaData().getColumnCount();
 			List<String> columnNames = this.getColumnNames(resultSet, columnCount);
 			List<EntityResult> resultTable = this.createResultTable(resultSet, columnCount);

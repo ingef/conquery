@@ -25,5 +25,6 @@ public class SqlConnectorConfig {
 	private String databasePassword;
 
 	private String jdbcConnectionUrl;
+
 	private String primaryColumn = "pid";
 }
