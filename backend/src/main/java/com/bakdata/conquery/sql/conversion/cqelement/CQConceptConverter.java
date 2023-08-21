@@ -73,20 +73,36 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			String conceptLabel,
 			QueryStep previous
 	) {
-		if (((ConceptSelects) previous.getSelects()).getDateRestriction().isEmpty()) {
+		if (((ConceptSelects) previous.getSelects()).getDateRestrictionRange().isEmpty()) {
 			return previous;
 		}
 
 		ConceptSelects dateRestrictionSelects = this.prepareDateRestrictionSelects(node, previous);
-		List<Condition> dateRestriction = this.buildDateRestriction(context, previous);
+		Condition dateRestriction = this.buildDateRestriction(context, previous);
+		String dateRestrictionCteName = "concept_%s_date_restriction".formatted(conceptLabel);
 
 		return QueryStep.builder()
-						.cteName(createCteName(conceptLabel, "_date_restriction"))
+						.cteName(dateRestrictionCteName)
 						.fromTable(QueryStep.toTableLike(previous.getCteName()))
 						.selects(dateRestrictionSelects)
-						.conditions(dateRestriction)
+						.conditions(List.of(dateRestriction))
 						.predecessors(List.of(previous))
 						.build();
+	}
+
+	private ConceptSelects prepareDateRestrictionSelects(CQConcept conceptNode, QueryStep previous) {
+		ConceptSelects.ConceptSelectsBuilder selectsBuilder = ((ConceptSelects) previous.getQualifiedSelects()).toBuilder();
+		selectsBuilder.dateRestrictionRange(Optional.empty());
+		if (conceptNode.isExcludeFromTimeAggregation()) {
+			selectsBuilder.validityDate(Optional.empty());
+		}
+		return selectsBuilder.build();
+	}
+
+	private Condition buildDateRestriction(ConversionContext context, QueryStep previous) {
+		ConceptSelects previousSelects = (ConceptSelects) previous.getSelects();
+		return context.getSqlDialect().getFunction()
+					  .dateRestriction(previousSelects.getDateRestrictionRange().get(), previousSelects.getValidityDate().get());
 	}
 
 	/**
@@ -139,27 +155,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 						.conditions(eventFilterConditions)
 						.predecessors(List.of(previous))
 						.build();
-	}
-
-	private ConceptSelects prepareDateRestrictionSelects(CQConcept node, QueryStep previous) {
-		ConceptSelects.ConceptSelectsBuilder selectsBuilder = ((ConceptSelects) previous.getQualifiedSelects()).toBuilder();
-		selectsBuilder.dateRestriction(Optional.empty());
-		if (node.isExcludeFromTimeAggregation()) {
-			selectsBuilder.validityDate(Optional.empty());
-		}
-		return selectsBuilder.build();
-	}
-
-	private List<Condition> buildDateRestriction(ConversionContext context, QueryStep previous) {
-		return ((ConceptSelects) previous.getSelects()).getDateRestriction()
-													   .map(dateRestrictionColumn -> getDateRestrictionAsCondition(context, previous, dateRestrictionColumn))
-													   .orElseGet(Collections::emptyList);
-	}
-
-	private static List<Condition> getDateRestrictionAsCondition(ConversionContext context, QueryStep previous, Field<Object> dateRestrictionColumn) {
-		return previous.getSelects().getValidityDate().stream()
-					   .map(validityDateColumn -> context.getSqlDialect().getFunction().dateRestriction(dateRestrictionColumn, validityDateColumn))
-					   .toList();
 	}
 
 	private ConceptSelects prepareEventSelectSelects(

@@ -120,7 +120,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
-	private transient DistributedNamespace namespace;
+	private transient Namespace namespace;
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
@@ -161,7 +161,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 				label = makeAutoLabel(new PrintSettings(true, I18n.LOCALE.get(), namespace, config, null));
 			}
 
-			this.namespace = ((DistributedNamespace) namespace);
+			this.namespace = namespace;
 			this.config = config;
 
 			doInitExecutable();
