@@ -1,13 +1,10 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
 import com.bakdata.conquery.models.query.results.EntityResult;
-import lombok.RequiredArgsConstructor;
+import lombok.Data;
 
 
-/**
- * IdPrinter using {@link EncodedDictionary} and {@link EntityIdMap} to generate full ids.
- */
-@RequiredArgsConstructor
+@Data
 public class FullIdPrinter implements IdPrinter {
 
 	private final EntityIdMap idMapping;

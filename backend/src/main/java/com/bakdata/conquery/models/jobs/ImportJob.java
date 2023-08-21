@@ -130,8 +130,6 @@ public class ImportJob extends Job {
 
 		log.trace("Updating primary dictionary");
 
-		// Update primary dictionary: load new data, and create mapping.
-
 		getProgressReporter().report(1);
 
 		// Distribute the new IDs among workers
@@ -139,9 +137,7 @@ public class ImportJob extends Job {
 
 		getProgressReporter().report(1);
 
-
 		final Import imp = createImport(header, container.getStores(), table.getColumns(), container.size());
-
 
 		namespace.getStorage().updateImport(imp);
 

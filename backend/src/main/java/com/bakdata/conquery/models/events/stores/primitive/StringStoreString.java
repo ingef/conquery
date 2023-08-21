@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.stores.primitive;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.stores.root.ColumnStore;
@@ -83,8 +82,4 @@ public class StringStoreString implements StringStore {
 		return (int) Arrays.stream(values).distinct().count();
 	}
 
-	@Override
-	public Stream<String> iterateValues() {
-		return Arrays.stream(values).distinct();
-	}
 }

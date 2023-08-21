@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events;
 
 import java.math.BigDecimal;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.events.stores.root.BooleanStore;
@@ -146,11 +145,6 @@ public enum EmptyStore implements
 	@Override
 	public int size() {
 		return 0;
-	}
-
-	@Override
-	public Stream<String> iterateValues() {
-		return Stream.empty();
 	}
 
 }

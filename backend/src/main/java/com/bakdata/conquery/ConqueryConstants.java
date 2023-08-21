@@ -45,7 +45,6 @@ public class ConqueryConstants {
 			OBSERVATION_SCOPE_INFO =
 			new LocalizedDefaultResultInfo((l) -> C10N.get(ResultHeadersC10n.class, l).observationScope(), new ResultType.StringT(FeatureGroup::localizeValue), Set.of());
 
-	public static final String PRIMARY_DICTIONARY = "PRIMARY_DICTIONARY";
 	/**
 	 * Drawn from random.org
 	 */

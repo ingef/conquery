@@ -17,8 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Analyze all strings for common suffix/prefix, or if they are singleton.
- * <p>
- * Values are stored DictionaryEncoded(Integer->String), Integers are stored using {@link IntegerParser}.
  */
 @Slf4j
 @Getter

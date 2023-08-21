@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.dropwizard.validation.ValidationMethod;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -49,11 +48,6 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@Getter(lazy = true)
 	private final int position = ArrayUtils.indexOf(getTable().getColumns(), this);
 	/**
-	 * if set this column should use the given dictionary
-	 * if it is of type string, instead of its own dictionary
-	 */
-	private String sharedDictionary;
-	/**
 	 * if this is set this column counts as the secondary id of the given name for this
 	 * table
 	 */
@@ -68,12 +62,6 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@Override
 	public String toString() {
 		return "Column(id = " + getId() + ", type = " + getType() + ")";
-	}
-
-	@ValidationMethod(message = "Only STRING columns can be part of shared Dictionaries.")
-	@JsonIgnore
-	public boolean isSharedString() {
-		return sharedDictionary == null || type.equals(MajorTypeId.STRING);
 	}
 
 	@JsonIgnore
