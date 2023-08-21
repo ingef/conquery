@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -20,6 +21,9 @@ import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
+import com.bakdata.conquery.apiv1.query.concept.specific.external.DateFormat;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -41,7 +45,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
@@ -347,6 +350,30 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 */
 	protected void setAdditionalFieldsForStatusWithSource(Subject subject, FullExecutionStatus status) {
 		QueryDescription query = getSubmitted();
+
+		status.setCanExpand(canSubjectExpand(subject, query));
+
+		status.setContainsDates(containsDates(query));
+
+		status.setQuery(canSubjectExpand(subject, query) ? getSubmitted() : null);
+	}
+
+	private boolean containsDates(QueryDescription query) {
+		return Visitable.stream(query)
+						.anyMatch(visitable -> {
+							if (visitable instanceof CQConcept cqConcept) {
+								return cqConcept.isAggregateEventDates();
+							}
+
+							if (visitable instanceof CQExternal external) {
+								return Arrays.stream(DateFormat.values()).anyMatch(external.getFormat()::contains);
+							}
+
+							return false;
+						});
+	}
+
+	private boolean canSubjectExpand(Subject subject, QueryDescription query) {
 		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
 		query.visit(namespacesIdCollector);
 
@@ -358,9 +385,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 														   .collect(Collectors.toSet());
 
 		boolean canExpand = subject.isPermittedAll(concepts, Ability.READ);
-
-		status.setCanExpand(canExpand);
-		status.setQuery(canExpand ? getSubmitted() : null);
+		return canExpand;
 	}
 
 	@JsonIgnore
