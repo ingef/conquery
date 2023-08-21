@@ -40,8 +40,8 @@
       <@infoCard.infoCard
         class="d-inline-flex"
         title="Dataset ${c.ds.label}"
-        labels=["ID", "Label", "Dictionaries", "Size", "IdMapping"]
-        values=[c.ds.id, label, layout.si(c.dictionariesSize)+"B", layout.si(c.size)+"B", idMapping]
+        labels=["ID", "Label", "Size", "IdMapping"]
+        values=[c.ds.id, label, layout.si(c.size)+"B", idMapping]
       />
       <!-- File Upload -->
       <div class="card d-inline-flex mx-3">

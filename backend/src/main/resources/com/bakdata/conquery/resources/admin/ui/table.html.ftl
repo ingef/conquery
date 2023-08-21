@@ -14,9 +14,6 @@
     ?first
   />
   <ul>
-      <#if element.sharedDictionary??>
-          <li style="display: inline;">Shared Dictionary  ${("<code>"?no_esc+element.sharedDictionary+"</code>"?no_esc)!}</li>
-      </#if>
       <#if element.secondaryId??>
           <li style="display: inline;">${element.secondaryId}</li>
       </#if>
@@ -35,8 +32,8 @@
   <@infoCard.infoCard
     class="d-inline-flex"
     title="Table ${c.table.label}"
-    labels=["ID", "Label", "Dictionaries", "CBlocks", "Size"]
-    values=[c.table.id, c.table.label, layout.si(c.dictionariesSize)+"B", layout.si(c.getCBlocksSize())+"B", layout.si(c.size)+"B"]
+    labels=["ID", "Label", "CBlocks", "Size"]
+    values=[c.table.id, c.table.label, layout.si(c.getCBlocksSize())+"B", layout.si(c.size)+"B"]
   />
 
   <@accordion.accordionGroup class="mt-3">
