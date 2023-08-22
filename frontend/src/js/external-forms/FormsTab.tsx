@@ -94,8 +94,18 @@ const useInitializeForm = ({
     mode: "onChange",
   });
 
+  useEffect(
+    function triggerValidationInitially() {
+      methods.trigger();
+    },
+    [methods, config],
+  );
+
   const onReset = useCallback(() => {
     methods.reset(defaultValues);
+    // Because for some reason, running this in the same tick doesn't work
+    // Asked about it: https://github.com/orgs/react-hook-form/discussions/10823
+    setTimeout(() => methods.trigger(), 0);
   }, [methods, defaultValues]);
 
   const onResetActiveForm = useCallback(() => {
@@ -103,6 +113,9 @@ const useInitializeForm = ({
       ...methods.getValues(),
       ...defaultValues,
     });
+    // Because for some reason, running this in the same tick doesn't work
+    // Asked about it: https://github.com/orgs/react-hook-form/discussions/10823
+    setTimeout(() => methods.trigger(), 0);
   }, [methods, defaultValues]);
 
   return { methods, config, datasetOptions, onReset, onResetActiveForm };

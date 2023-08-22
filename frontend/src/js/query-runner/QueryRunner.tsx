@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 
 import { exists } from "../common/helpers/exists";
@@ -37,22 +36,20 @@ const LoadingGroup = styled("div")`
   justify-content: flex-end;
 `;
 
-interface PropsT {
-  queryRunner?: QueryRunnerStateT;
-  isQueryRunning: boolean;
-  disabled: boolean;
-  buttonTooltip?: string;
-  startQuery: () => void;
-  stopQuery: () => void;
-}
-
-const QueryRunner: FC<PropsT> = ({
+const QueryRunner = ({
   queryRunner,
   startQuery,
   stopQuery,
   buttonTooltip,
   isQueryRunning,
   disabled,
+}: {
+  queryRunner?: QueryRunnerStateT;
+  isQueryRunning: boolean;
+  disabled: boolean;
+  buttonTooltip?: string;
+  startQuery: () => void;
+  stopQuery: () => void;
 }) => {
   const btnAction = isQueryRunning ? stopQuery : startQuery;
   const isStartStopLoading =

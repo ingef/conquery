@@ -81,11 +81,12 @@ const FieldContainer = styled("div")<{ noLabel?: boolean; hasError?: boolean }>`
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid
-    ${({ theme, hasError }) => (hasError ? theme.col.red : theme.col.grayLight)};
+    ${({ theme, hasError }) =>
+      hasError ? theme.col.blueGrayDark : theme.col.grayLight};
 `;
 
 const ErrorContainer = styled("div")`
-  color: ${({ theme }) => theme.col.red};
+  color: ${({ theme }) => theme.col.blueGrayDark};
   font-weight: 700;
   font-size: ${({ theme }) => theme.font.sm};
 `;
