@@ -1,9 +1,12 @@
 package com.bakdata.conquery.models.query;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import com.bakdata.conquery.apiv1.query.concept.specific.temporal.CQAbstractTemporalQuery;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -43,6 +46,8 @@ public class QueryExecutionContext {
 	@NonNull
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 
+
+	private final Map<CQAbstractTemporalQuery, Boolean> temporalQueryResult = new HashMap<>();
 
 	/**
 	 * Only set when in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the selected {@link SecondaryIdDescriptionId}.

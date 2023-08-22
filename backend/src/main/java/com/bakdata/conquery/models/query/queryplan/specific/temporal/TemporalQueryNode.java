@@ -17,12 +17,14 @@ import com.bakdata.conquery.models.query.queryplan.QPParentNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import lombok.Getter;
+import lombok.ToString;
 
 /**
  * QueryNode implementing the logic for TemporalQueries.
  * Executes two queries and compares the times they are included, the entity is included according to a specified {@link PrecedenceMatcher}.
  */
 @Getter
+@ToString(onlyExplicitlyIncluded = true)
 public class TemporalQueryNode extends QPParentNode {
 
 	@Override
@@ -37,21 +39,26 @@ public class TemporalQueryNode extends QPParentNode {
 	/**
 	 * Matcher to be used when testing for inclusion.
 	 */
+	@ToString.Include
 	private final PrecedenceMatcher matcher;
 
 	/**
 	 * QueryPlan for the events to be compared to.
 	 */
+	@ToString.Include
 	private final QPNode reference;
 
+	@ToString.Include
 	private TemporalSamplerFactory.Sampler referenceSampler;
 	private final TemporalSamplerFactory referenceSamplerFactory;
 
 	/**
 	 * QueryPlan for the events being compared.
 	 */
+	@ToString.Include
 	private final QPNode preceding;
 
+	@ToString.Include
 	private TemporalSamplerFactory.Sampler precedingSampler;
 	private final TemporalSamplerFactory precedingSamplerFactory;
 
@@ -133,13 +140,5 @@ public class TemporalQueryNode extends QPParentNode {
 		return Set.of(dateUnion);
 	}
 
-	@Override
-	public String toString() {
-		return "TemporalQueryNode(" +
-			   "matcher=" + matcher +
-			   ", reference=" + reference +
-			   ", preceding=" + preceding +
-			   ", dateAggregationAction=" + dateAggregationAction +
-			   ')';
-	}
+
 }

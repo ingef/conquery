@@ -13,9 +13,8 @@ import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
+import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.PrecedenceMatcher;
-import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQueryNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,12 +29,17 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 	/**
 	 * The query being executed as reference for preceding.
 	 */
+	@Getter
 	protected final CQSampled index;
 
 	/**
 	 * The query being executed, compared to index. Events in preceding will be cut-off to be always before index, or at the same day, depending on the queries specific implementations.
 	 */
+	@Getter
 	protected final CQSampled preceding;
+
+	private QPNode preceedingPlan;
+	private QPNode indexPlan;
 
 	/**
 	 * Create the {@link PrecedenceMatcher} specific to the implementing classes desired logic.
@@ -46,22 +50,10 @@ public abstract class CQAbstractTemporalQuery extends CQElement {
 
 	@Override
 	public final QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		SpecialDateUnion dateAggregator = new SpecialDateUnion();
-		plan.getDateAggregator().register(dateAggregator);
+		indexPlan = index.getChild().createQueryPlan(context, plan);
+		preceedingPlan = preceding.getChild().createQueryPlan(context, plan);
 
-		final PrecedenceMatcher matcher = createMatcher();
-
-		return new TemporalQueryNode(
-
-				index.getChild().createQueryPlan(context, plan),
-				index.getSampler(),
-
-				preceding.getChild().createQueryPlan(context, plan),
-				preceding.getSampler(),
-
-				matcher,
-				dateAggregator
-		);
+		return new Leaf();
 	}
 
 	@Override
