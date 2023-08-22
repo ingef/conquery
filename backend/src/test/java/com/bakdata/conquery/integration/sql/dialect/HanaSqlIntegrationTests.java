@@ -38,7 +38,7 @@ import org.testcontainers.utility.DockerImageName;
 public class HanaSqlIntegrationTests extends IntegrationTests {
 
 	private static final Path TMP_HANA_MOUNT_DIR = Paths.get("/tmp/data/hana");
-	private static boolean useLocalHanaDb;
+	private static boolean useLocalHanaDb = true;
 
 	static {
 		final String USE_LOCAL_HANA_DB = System.getenv("USE_LOCAL_HANA_DB");
