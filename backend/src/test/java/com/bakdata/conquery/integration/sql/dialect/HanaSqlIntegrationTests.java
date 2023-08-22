@@ -1,7 +1,14 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
@@ -16,8 +23,11 @@ import com.bakdata.conquery.sql.conversion.select.DateDistanceConverter;
 import com.bakdata.conquery.sql.conversion.select.SelectConverter;
 import com.google.common.base.Strings;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
@@ -27,15 +37,18 @@ import org.testcontainers.utility.DockerImageName;
 @Slf4j
 public class HanaSqlIntegrationTests extends IntegrationTests {
 
-	private boolean useLocalHanaDb = true;
+	private static final Path TMP_HANA_MOUNT_DIR = Paths.get("/tmp/data/hana");
+	private static boolean useLocalHanaDb;
 
-	public HanaSqlIntegrationTests() {
-		super("tests/", "com.bakdata.conquery.integration");
-
+	static {
 		final String USE_LOCAL_HANA_DB = System.getenv("USE_LOCAL_HANA_DB");
 		if (!Strings.isNullOrEmpty(USE_LOCAL_HANA_DB)) {
 			useLocalHanaDb = Boolean.parseBoolean(USE_LOCAL_HANA_DB);
 		}
+	}
+
+	public HanaSqlIntegrationTests() {
+		super("tests/", "com.bakdata.conquery.integration");
 	}
 
 	@TestFactory
@@ -52,6 +65,34 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		SqlConnectorConfig config = provider.getSqlConnectorConfig();
 
 		return super.sqlTests(new TestHanaDialect(dslContext), config);
+	}
+
+	@SneakyThrows
+	@BeforeAll
+	public static void prepareTmpHanaDir() {
+
+		if (!useLocalHanaDb) {
+			return;
+		}
+
+		Path masterPasswordFile = TMP_HANA_MOUNT_DIR.resolve("password.json");
+		String content = "{\"master_password\":\"%s\"}".formatted(HanaContainer.DEFAULT_MASTER_PASSWORD);
+
+		Files.createDirectories(TMP_HANA_MOUNT_DIR);
+		Files.write(masterPasswordFile, content.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+		Files.setPosixFilePermissions(TMP_HANA_MOUNT_DIR, Set.of(PosixFilePermission.values()));
+	}
+
+	@SneakyThrows
+	@AfterAll
+	public static void tearDownClass() {
+		if (!Files.exists(TMP_HANA_MOUNT_DIR)) {
+			return;
+		}
+		try (Stream<Path> walk = Files.walk(TMP_HANA_MOUNT_DIR)) {
+			walk.map(Path::toFile)
+				.forEach(File::delete);
+		}
 	}
 
 	private static class TestHanaDialect extends HanaSqlDialect {
