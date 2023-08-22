@@ -95,9 +95,9 @@ export function nodeIsBlocklisted(
   blocklistedConceptIds: string[],
 ) {
   return (
-    !!node.ids &&
-    blocklistedConceptIds.some((id) =>
-      node.ids.some((conceptId) => conceptId.indexOf(id.toLowerCase()) !== -1),
+    !!node.tree &&
+    blocklistedConceptIds.some(
+      (id) => node.tree.toLowerCase() === id.toLowerCase(),
     )
   );
 }
@@ -107,9 +107,9 @@ export function nodeIsAllowlisted(
   allowlistedConceptIds: string[],
 ) {
   return (
-    !!node.ids &&
-    allowlistedConceptIds.some((id) =>
-      node.ids.every((conceptId) => conceptId.indexOf(id.toLowerCase()) !== -1),
+    !!node.tree &&
+    allowlistedConceptIds.some(
+      (id) => node.tree.toLowerCase() === id.toLowerCase(),
     )
   );
 }
