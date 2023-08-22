@@ -7,7 +7,7 @@ import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.conversion.select.SelectConverterService;
 import org.jooq.Field;
 
-class EventSelectStep implements ConceptQueryStep {
+class EventSelectStep extends ConceptQueryStep {
 
 	private final SelectConverterService selectConverterService;
 

@@ -48,12 +48,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		for (ConceptQueryStep queryStep : this.querySteps) {
 			Optional<QueryStep> convert = queryStep.convert(stepContext);
-			if (convert.isPresent()) {
-				stepContext = stepContext.toBuilder()
-										 .previous(convert.get())
-										 .previousSelects((ConceptSelects) convert.get().getQualifiedSelects())
-										 .build();
+			if (convert.isEmpty()) {
+				continue;
 			}
+			stepContext = stepContext.toBuilder()
+									 .previous(convert.get())
+									 .previousSelects((ConceptSelects) convert.get().getQualifiedSelects())
+									 .build();
 		}
 
 		return context.withQueryStep(stepContext.getPrevious());

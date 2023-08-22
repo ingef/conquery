@@ -1,6 +1,7 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
@@ -98,7 +99,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 	@Getter
 	private static class RemoteHanaContextProvider implements TestContextProvider {
 
-		private final static String PORT = "39041";
+		private final static String PORT = Objects.requireNonNullElse(System.getenv("CONQUERY_SQL_PORT"), "39041");
 		private final static String HOST = System.getenv("CONQUERY_SQL_DB");
 		private final static String CONNECTION_URL = "jdbc:sap://%s:%s/databaseName=HXE&encrypt=true&validateCertificate=false".formatted(HOST, PORT);
 		private final static String USERNAME = System.getenv("CONQUERY_SQL_USER");

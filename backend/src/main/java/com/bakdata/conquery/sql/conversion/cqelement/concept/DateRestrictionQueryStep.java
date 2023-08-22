@@ -7,7 +7,7 @@ import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import org.jooq.Condition;
 
-class DateRestrictionQueryStep implements ConceptQueryStep {
+class DateRestrictionQueryStep extends ConceptQueryStep {
 
 	@Override
 	public boolean canConvert(StepContext stepContext) {

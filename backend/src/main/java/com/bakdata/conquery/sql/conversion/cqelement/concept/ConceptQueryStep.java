@@ -6,9 +6,9 @@ import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 
-interface ConceptQueryStep {
+abstract class ConceptQueryStep {
 
-	default Optional<QueryStep> convert(StepContext context) {
+	public Optional<QueryStep> convert(StepContext context) {
 		if (!canConvert(context)) {
 			return Optional.empty();
 		}
@@ -27,13 +27,14 @@ interface ConceptQueryStep {
 
 	}
 
-	boolean canConvert(StepContext stepContext);
+	abstract boolean canConvert(StepContext stepContext);
 
-	QueryStep.QueryStepBuilder convertStep(StepContext stepContext);
+	abstract QueryStep.QueryStepBuilder convertStep(StepContext stepContext);
 
-	String nameSuffix();
+	abstract String nameSuffix();
 
 	private String createCteName(StepContext stepContext) {
 		return "concept_%s%s".formatted(stepContext.getConceptLabel(), nameSuffix());
 	}
+
 }

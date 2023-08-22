@@ -13,7 +13,7 @@ import com.bakdata.conquery.sql.models.ColumnDateRange;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-class PreprocessingQueryStep implements ConceptQueryStep {
+class PreprocessingQueryStep extends ConceptQueryStep {
 
 	public boolean canConvert(StepContext stepContext) {
 		// We always apply preprocessing to select the required columns

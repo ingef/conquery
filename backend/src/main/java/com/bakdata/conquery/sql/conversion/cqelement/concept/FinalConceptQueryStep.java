@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 import com.bakdata.conquery.sql.conversion.context.selects.Selects;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 
-class FinalConceptQueryStep implements ConceptQueryStep {
+class FinalConceptQueryStep extends ConceptQueryStep {
 
 	@Override
 	public boolean canConvert(StepContext stepContext) {

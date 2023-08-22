@@ -99,18 +99,14 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		Field<Date> startDate = DSL.field(startDateColumnName, Date.class);
 		Field<Date> endDate = toDate(endDateExpression.toString());
-		Field<Integer> dateDistance;
+		Field<Integer> dateDistance = DSL.function(betweenFunction, Integer.class, startDate, endDate);
 
-		dateDistance = DSL.function(betweenFunction, Integer.class, startDate, endDate);
-
-		if (timeUnit == ChronoUnit.DECADES || timeUnit == ChronoUnit.CENTURIES) {
-			// HANA does not support decades or centuries directly
-			dateDistance = switch (timeUnit) {
-				case DECADES -> dateDistance.divide(10);
-				case CENTURIES -> dateDistance.divide(100);
-				default -> throw new UnsupportedOperationException("Given ChronoUnit %s is not supported.");
-			};
-		}
+		// HANA does not support decades or centuries directly
+		dateDistance = switch (timeUnit) {
+			case DECADES -> dateDistance.divide(10);
+			case CENTURIES -> dateDistance.divide(100);
+			default -> dateDistance;
+		};
 
 		// otherwise HANA would return floating point numbers for date distances
 		return dateDistance.cast(Integer.class);

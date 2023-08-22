@@ -8,7 +8,7 @@ import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.conversion.filter.FilterConverterService;
 import org.jooq.Condition;
 
-public class EventFilterQueryStep implements ConceptQueryStep {
+public class EventFilterQueryStep extends ConceptQueryStep {
 
 	private final FilterConverterService filterConverterService;
 
