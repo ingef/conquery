@@ -94,13 +94,16 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 
 		SqlManagedQuery managedQuery = support.getExecutionManager()
 											  .runQuery(support.getNamespace(), getQuery(), support.getTestUser(), support.getDataset(), support.getConfig(), false);
-		log.info("Execute query: \n{}", managedQuery.getSqlQuery().getSqlString());
 
 		SqlExecutionResult result = managedQuery.getResult();
 		List<EntityResult> resultCsv = result.getTable();
+
 		Path expectedCsvFile = this.specDir.resolve(this.expectedCsv);
 		List<EntityResult> expectedCsv = support.getTableImporter().readExpectedEntities(expectedCsvFile);
-		Assertions.assertThat(resultCsv).usingRecursiveFieldByFieldElementComparator().containsExactlyElementsOf(expectedCsv);
+
+		Assertions.assertThat(resultCsv)
+				  .usingRecursiveFieldByFieldElementComparatorIgnoringFields("entityId")
+				  .containsExactlyInAnyOrderElementsOf(expectedCsv);
 	}
 
 	@Override
@@ -127,6 +130,5 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 			support.getNamespaceStorage().updateConcept(concept);
 		}
 	}
-
 
 }

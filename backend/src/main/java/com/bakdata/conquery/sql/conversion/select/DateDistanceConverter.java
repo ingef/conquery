@@ -2,15 +2,15 @@ package com.bakdata.conquery.sql.conversion.select;
 
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect;
-import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import org.jooq.Field;
+import org.jooq.Name;
+import org.jooq.impl.DSL;
 
 public class DateDistanceConverter implements SelectConverter<DateDistanceSelect> {
 
@@ -23,17 +23,12 @@ public class DateDistanceConverter implements SelectConverter<DateDistanceSelect
 	@Override
 	public Field<Integer> convert(DateDistanceSelect select, ConversionContext context) {
 
-		Column startDateColumn = select.getColumn();
-		if (startDateColumn.getType() != MajorTypeId.DATE) {
-			throw new UnsupportedOperationException("Can't calculate date distance to column of type "
-													+ startDateColumn.getType());
-		}
-
-		SqlFunctionProvider functionProvider = context.getSqlDialect().getFunction();
+		ChronoUnit timeUnit = select.getTimeUnit();
+		Name startDateColumnName = DSL.name(select.getColumn().getName());
 		Date endDate = getEndDate(context);
 
-		return functionProvider.dateDistance(select.getTimeUnit(), startDateColumn, endDate)
-							   .as(select.getLabel());
+		return context.getSqlDialect().getFunction().dateDistance(timeUnit, startDateColumnName, endDate)
+					  .as(select.getLabel());
 	}
 
 	private Date getEndDate(ConversionContext context) {
@@ -53,4 +48,5 @@ public class DateDistanceConverter implements SelectConverter<DateDistanceSelect
 	public Class<DateDistanceSelect> getConversionClass() {
 		return DateDistanceSelect.class;
 	}
+
 }

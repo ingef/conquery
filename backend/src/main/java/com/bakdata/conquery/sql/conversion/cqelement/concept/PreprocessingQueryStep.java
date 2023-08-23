@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.cqelement;
+package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.Collections;
 import java.util.List;
@@ -6,43 +6,28 @@ import java.util.Optional;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
-import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.models.ColumnDateRange;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-public class ConceptPreprocessingService {
+class PreprocessingQueryStep extends ConceptQueryStep {
 
-	private final CQConcept concept;
-	private final ConversionContext context;
-	private final SqlFunctionProvider sqlFunctionProvider;
-
-	public ConceptPreprocessingService(CQConcept concept, ConversionContext context) {
-		this.concept = concept;
-		this.context = context;
-		this.sqlFunctionProvider = this.context.getSqlDialect().getFunction();
+	public boolean canConvert(StepContext stepContext) {
+		// We always apply preprocessing to select the required columns
+		return true;
 	}
 
-	/**
-	 * selects:
-	 * - (primary column)
-	 * - date restriction
-	 * - validity date
-	 * - any filter (group/event)
-	 * - any select (group/event)
-	 */
-	public QueryStep buildPreprocessingQueryStepForTable(String conceptLabel, CQTable table) {
+	public QueryStep.QueryStepBuilder convertStep(StepContext stepContext) {
 
+		CQTable table = stepContext.getTable();
 		ConceptSelects.ConceptSelectsBuilder selectsBuilder = ConceptSelects.builder();
 
-		selectsBuilder.primaryColumn(DSL.field(context.getConfig().getPrimaryColumn()));
-		selectsBuilder.dateRestrictionRange(this.getDateRestrictionSelect(table));
-		selectsBuilder.validityDate(this.getValidityDateSelect(table, conceptLabel));
+		selectsBuilder.primaryColumn(DSL.field(DSL.name(stepContext.getContext().getConfig().getPrimaryColumn())))
+					  .dateRestrictionRange(this.getDateRestrictionSelect(stepContext))
+					  .validityDate(this.getValidityDateSelect(stepContext));
 
 		List<Field<Object>> conceptSelectFields = this.getColumnSelectReferences(table);
 		List<Field<Object>> conceptFilterFields = this.getColumnFilterReferences(table);
@@ -53,43 +38,46 @@ public class ConceptPreprocessingService {
 																		  .filter(field -> !conceptSelectFields.contains(field))
 																		  .toList();
 
-		selectsBuilder.eventSelect(conceptSelectFields);
-		selectsBuilder.eventFilter(deduplicatedFilterFields);
+		selectsBuilder.eventSelect(conceptSelectFields).
+					  eventFilter(deduplicatedFilterFields);
 
 		// not part of preprocessing yet
 		selectsBuilder.groupSelect(Collections.emptyList())
 					  .groupFilter(Collections.emptyList());
 
 		return QueryStep.builder()
-						.cteName(this.getPreprocessingStepLabel(conceptLabel))
-						.fromTable(QueryStep.toTableLike(this.getFromTableName(table)))
 						.selects(selectsBuilder.build())
 						.conditions(Collections.emptyList())
-						.predecessors(Collections.emptyList())
-						.build();
+						.predecessors(Collections.emptyList());
 	}
 
-	private Optional<ColumnDateRange> getDateRestrictionSelect(CQTable table) {
-		if (!this.context.dateRestrictionActive() || !this.tableHasValidityDates(table)) {
-			return Optional.empty();
-		}
-		return Optional.of(sqlFunctionProvider.daterange(context.getDateRestrictionRange()));
+	@Override
+	public String nameSuffix() {
+		return "_preprocessing";
 	}
 
-	private Optional<ColumnDateRange> getValidityDateSelect(CQTable table, String conceptLabel) {
-		if (!this.validityDateIsRequired(table)) {
+	private Optional<ColumnDateRange> getDateRestrictionSelect(final StepContext stepContext) {
+		if (!stepContext.getContext().dateRestrictionActive() || !this.tableHasValidityDates(stepContext.getTable())) {
 			return Optional.empty();
 		}
-		return Optional.of(sqlFunctionProvider.daterange(table.findValidityDate(), conceptLabel));
+		ColumnDateRange dateRestriction = stepContext.getContext().getSqlDialect().getFunction().daterange(stepContext.getContext().getDateRestrictionRange());
+		return Optional.of(dateRestriction);
+	}
+
+	private Optional<ColumnDateRange> getValidityDateSelect(final StepContext stepContext) {
+		if (!this.validityDateIsRequired(stepContext)) {
+			return Optional.empty();
+		}
+		return Optional.of(stepContext.getSqlFunctions().daterange(stepContext.getTable().findValidityDate(), stepContext.getConceptLabel()));
 	}
 
 	/**
 	 * @return True, if a date restriction is active and the node is not excluded from time aggregation
 	 * OR there is no date restriction, but still existing validity dates which are included in time aggregation.
 	 */
-	private boolean validityDateIsRequired(CQTable table) {
-		return this.tableHasValidityDates(table)
-			   && !this.concept.isExcludeFromTimeAggregation();
+	private boolean validityDateIsRequired(final StepContext stepContext) {
+		return this.tableHasValidityDates(stepContext.getTable())
+			   && !stepContext.getNode().isExcludeFromTimeAggregation();
 	}
 
 	private boolean tableHasValidityDates(CQTable table) {
@@ -111,19 +99,9 @@ public class ConceptPreprocessingService {
 					.toList();
 	}
 
-	private String getFromTableName(CQTable table) {
-		return table.getConnector()
-					.getTable()
-					.getName();
-	}
 
 	private Field<Object> mapColumnOntoTable(Column column, CQTable table) {
-		return DSL.field(DSL.name(this.getFromTableName(table), column.getName()));
-	}
-
-	private String getPreprocessingStepLabel(String conceptLabel) {
-		return "concept_%s_preprocessing".formatted(conceptLabel);
-	}
+		return DSL.field(DSL.name(table.getConnector().getTable().getName(), column.getName()));}
 
 
 }

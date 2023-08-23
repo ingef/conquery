@@ -53,11 +53,11 @@ public class MergedSelects implements Selects {
 	}
 
 	@Override
-	public MergedSelects byName(String qualifier) {
+	public MergedSelects qualifiedWith(String cteName) {
 		return new MergedSelects(
-				this.mapFieldToQualifier(qualifier, this.primaryColumn),
-				this.validityDate.map(columnDateRange -> columnDateRange.qualify(qualifier)),
-				this.mapFieldStreamToQualifier(qualifier, this.mergedSelects.stream()).toList()
+				this.mapFieldToQualifier(cteName, this.primaryColumn),
+				this.validityDate.map(columnDateRange -> columnDateRange.qualify(cteName)),
+				this.mapFieldStreamToQualifier(cteName, this.mergedSelects.stream()).toList()
 		);
 	}
 
@@ -76,8 +76,7 @@ public class MergedSelects implements Selects {
 
 	private Field<Object> coalescePrimaryColumns(List<QueryStep> querySteps) {
 		List<Field<Object>> primaryColumns = querySteps.stream()
-													   .map(queryStep -> this.mapFieldToQualifier(queryStep.getCteName(), queryStep.getSelects()
-																																   .getPrimaryColumn()))
+													   .map(queryStep -> queryStep.getQualifiedSelects().getPrimaryColumn())
 													   .toList();
 		return DSL.coalesce((Object) primaryColumns.get(0), primaryColumns.subList(1, primaryColumns.size()).toArray())
 				  .as(PRIMARY_COLUMN_NAME);
@@ -87,17 +86,13 @@ public class MergedSelects implements Selects {
 		// TODO: date aggregation...
 		return querySteps.stream()
 						 .filter(queryStep -> queryStep.getSelects().getValidityDate().isPresent())
-						 .map(queryStep -> {
-							 ColumnDateRange validityDate = queryStep.getSelects().getValidityDate().get();
-							 return validityDate.qualify(queryStep.getCteName());
-						 })
+						 .map(queryStep -> queryStep.getQualifiedSelects().getValidityDate().get())
 						 .findFirst();
 	}
 
 	private List<Field<Object>> mergeSelects(List<QueryStep> queriesToJoin) {
 		return queriesToJoin.stream()
-							.flatMap(queryStep -> queryStep.getSelects().explicitSelects().stream()
-														   .map(field -> this.mapFieldToQualifier(queryStep.getCteName(), field)))
+							.flatMap(queryStep -> queryStep.getQualifiedSelects().explicitSelects().stream())
 							.toList();
 	}
 

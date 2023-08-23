@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.context.step;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.sql.conversion.context.selects.Selects;
@@ -20,7 +21,8 @@ public class QueryStep {
 	String cteName;
 	Selects selects;
 	TableLike<Record> fromTable;
-	List<Condition> conditions;
+	@Builder.Default
+	List<Condition> conditions = Collections.emptyList();
 	/**
 	 * The CTEs referenced by this QueryStep
 	 */
@@ -34,7 +36,7 @@ public class QueryStep {
 	 * @return All selects re-mapped to a qualifier, which is the cteName of this QueryStep.
 	 */
 	public Selects getQualifiedSelects() {
-		return this.selects.byName(this.cteName);
+		return this.selects.qualifiedWith(this.cteName);
 	}
 
 }

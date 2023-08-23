@@ -60,10 +60,6 @@
         },
         "columns":[
           {
-            "name":"datum",
-            "type":"DATE"
-          },
-          {
             "name":"geschlecht",
             "type":"STRING"
           }
