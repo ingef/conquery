@@ -90,7 +90,8 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 			return;
 		}
 		try (Stream<Path> walk = Files.walk(TMP_HANA_MOUNT_DIR)) {
-			walk.map(Path::toFile)
+			walk.sorted((p1, p2) -> - p1.compareTo(p2))
+				.map(Path::toFile)
 				.forEach(File::delete);
 		}
 	}
