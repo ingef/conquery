@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events.stores.root;
 
+import java.util.stream.Stream;
+
 public interface StringStore extends ColumnStore {
 
 	String getString(int event);
@@ -11,5 +13,6 @@ public interface StringStore extends ColumnStore {
 	 */
 	int size();
 
+	Stream<String> streamValues();
 
 }
