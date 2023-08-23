@@ -37,6 +37,7 @@ import org.testcontainers.utility.DockerImageName;
 @Slf4j
 public class HanaSqlIntegrationTests extends IntegrationTests {
 
+	private final static DockerImageName HANA_IMAGE = DockerImageName.parse("saplabs/hanaexpress:2.00.061.00.20220519.1");
 	private static final Path TMP_HANA_MOUNT_DIR = Paths.get("/tmp/data/hana");
 	private static boolean useLocalHanaDb = true;
 
@@ -114,7 +115,6 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 	@Getter
 	private static class HanaTestcontainerContextProvider implements TestContextProvider {
 
-		private final static DockerImageName HANA_IMAGE = DockerImageName.parse("saplabs/hanaexpress:2.00.061.00.20220519.1");
 		private final DSLContext dslContext;
 		private final SqlConnectorConfig sqlConnectorConfig;
 
