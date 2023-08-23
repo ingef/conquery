@@ -68,7 +68,7 @@ public interface SqlFunctionProvider {
 				.on(leftPartPrimaryColumn.eq(rightPartPrimaryColumn));
 	}
 
-	default Field<Date> toDate(String dateExpression) {
+	default Field<Date> toDateField(String dateExpression) {
 		return DSL.toDate(dateExpression, DEFAULT_DATE_FORMAT);
 	}
 

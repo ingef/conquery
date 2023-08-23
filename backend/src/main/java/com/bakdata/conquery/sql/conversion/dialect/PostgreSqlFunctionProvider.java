@@ -102,7 +102,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	public Field<Integer> dateDistance(ChronoUnit timeUnit, Name startDateColumnName, Date endDateExpression) {
 
 		Field<Date> startDate = DSL.field(startDateColumnName, Date.class);
-		Field<Date> endDate = toDate(endDateExpression.toString());
+		Field<Date> endDate = toDateField(endDateExpression.toString());
 
 		if (timeUnit == ChronoUnit.DAYS) {
 			return endDate.minus(startDate).coerce(Integer.class);

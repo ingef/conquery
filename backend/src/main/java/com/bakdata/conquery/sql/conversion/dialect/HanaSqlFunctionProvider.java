@@ -45,7 +45,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 			endDateExpression = dateRestriction.getMax().toString();
 		}
 
-		return ColumnDateRange.of(toDate(startDateExpression), toDate(endDateExpression))
+		return ColumnDateRange.of(toDateField(startDateExpression), toDateField(endDateExpression))
 							  .asDateRestrictionRange();
 	}
 
@@ -98,7 +98,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		};
 
 		Field<Date> startDate = DSL.field(startDateColumnName, Date.class);
-		Field<Date> endDate = toDate(endDateExpression.toString());
+		Field<Date> endDate = toDateField(endDateExpression.toString());
 		Field<Integer> dateDistance = DSL.function(betweenFunction, Integer.class, startDate, endDate);
 
 		// HANA does not support decades or centuries directly
@@ -113,7 +113,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Date> toDate(String dateExpression) {
+	public Field<Date> toDateField(String dateExpression) {
 		return DSL.function(
 				"TO_DATE",
 				Date.class,
