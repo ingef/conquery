@@ -20,7 +20,6 @@ public class HanaContainer<SELF extends HanaContainer<SELF>> extends JdbcDatabas
 						.withRegEx(".*Startup finished.*\\s")
 						.withStartupTimeout(Duration.ofMinutes(10))
 		);
-		withFileSystemBind("/tmp/data/hana", "/home/secrets");
 		addExposedPort(DEFAULT_TENANT_HANA_PORT);
 		setCommand(composeHanaArgs());
 	}

@@ -122,7 +122,8 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		private final HanaContainer<?> hanaContainer;
 
 		public HanaTestcontainerContextProvider() {
-			this.hanaContainer = new HanaContainer<>(HANA_IMAGE);
+			this.hanaContainer = new HanaContainer<>(HANA_IMAGE)
+					.withFileSystemBind(TMP_HANA_MOUNT_DIR.toString(), "/home/secrets");
 			this.hanaContainer.start();
 
 			this.sqlConnectorConfig = SqlConnectorConfig.builder()
