@@ -3,49 +3,46 @@
   "label": "Temporal Before",
   "expectedCsv": "tests/query/TEMPORAL_BEFORE_CONCEPT_QUERY/expected.csv",
   "query": {
-    "type": "TIME_QUERY",
-    "query": {
-      "type": "CONCEPT_QUERY",
-      "root": {
-        "type": "TEMPORAL",
-        "selector": "ANY",
-        "mode": "BEFORE",
-        "index": {
-          "ids": [
-            "concept"
-          ],
-          "type": "CONCEPT",
-          "tables": [
-            {
-              "id": "concept.connector",
-              "filters": [
-                {
-                  "filter": "concept.connector.filter",
-                  "type": "SELECT",
-                  "value": "f"
-                }
-              ]
-            }
-          ]
-        },
-        "preceding": {
-          "ids": [
-            "concept"
-          ],
-          "type": "CONCEPT",
-          "tables": [
-            {
-              "id": "concept.connector",
-              "filters": [
-                {
-                  "filter": "concept.connector.filter",
-                  "type": "SELECT",
-                  "value": "m"
-                }
-              ]
-            }
-          ]
-        }
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "TEMPORAL",
+      "selector": "ANY",
+      "mode": "BEFORE",
+      "index": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.filter",
+                "type": "SELECT",
+                "value": "f"
+              }
+            ]
+          }
+        ]
+      },
+      "preceding": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.filter",
+                "type": "SELECT",
+                "value": "m"
+              }
+            ]
+          }
+        ]
       }
     }
   },

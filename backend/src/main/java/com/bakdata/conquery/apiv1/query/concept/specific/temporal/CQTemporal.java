@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalSubQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import it.unimi.dsi.fastutil.booleans.BooleanList;
 import lombok.Data;
@@ -29,26 +30,20 @@ import lombok.Data;
 @CPSType(id = "TEMPORAL", base = CQElement.class)
 public class CQTemporal extends CQElement {
 
-	/**
-	 * The query being executed as reference for preceding.
-	 */
 	private final CQElement index;
 	private final Mode mode;
 	private final Selector selector;
-	/**
-	 * The query being executed, compared to index. Events in preceding will be cut-off to be always before index, or at the same day, depending on the queries specific implementations.
-	 */
+
 	private final CQElement preceding;
-	private QPNode preceedingPlan;
-	private QPNode indexPlan;
 
 	@Override
 	public final QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		// Will not actually be evaluated here!
-		indexPlan = index.createQueryPlan(context, plan);
-		preceedingPlan = preceding.createQueryPlan(context, plan);
+		final QPNode indexPlan = index.createQueryPlan(context, plan);
+		final QPNode precedingPlan = preceding.createQueryPlan(context, plan);
 
-		return new TemporalRefNode(context.getStorage().getDataset().getAllIdsTable(), this);
+		final TemporalSubQueryPlan subQuery = new TemporalSubQueryPlan(getSelector(), getMode(), indexPlan, precedingPlan);
+
+		return new TimeBasedQueryNode(context.getStorage().getDataset().getAllIdsTable(), subQuery);
 	}
 
 	@Override
@@ -66,7 +61,7 @@ public class CQTemporal extends CQElement {
 
 	@Override
 	public List<ResultInfo> getResultInfos() {
-		List<ResultInfo> resultInfos = new ArrayList<>();
+		final List<ResultInfo> resultInfos = new ArrayList<>();
 		resultInfos.addAll(index.getResultInfos());
 		resultInfos.addAll(preceding.getResultInfos());
 		return resultInfos;

@@ -32,8 +32,6 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 	private final QPNode after;
 
-	private final CQTemporal ref;
-
 	private ConceptQueryPlan beforePlan;
 
 	private CDateSet result;
