@@ -25,9 +25,14 @@ public class TimeBasedQueryPlan implements QueryPlan<EntityResult> {
 	@Override
 	public Optional<EntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 		for (TemporalSubQueryPlan subQueryPlan : temporalSubPlans) {
-			Optional result = subQueryPlan.execute(ctx, entity);
+			final Optional<?> result = subQueryPlan.execute(ctx, entity);
 
-			ctx.getTemporalQueryResult().put(subQueryPlan.getRef(), result.isPresent());
+			if (result.isPresent()) {
+				ctx.getTemporalQueryResult().put(subQueryPlan.getRef(),
+												 subQueryPlan.getValidityDateAggregator()
+															 .map(Aggregator::createAggregationResult)
+															 .orElseGet(CDateSet::createEmpty));
+			}
 		}
 
 		return subQuery.execute(ctx, entity);

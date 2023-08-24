@@ -3,12 +3,14 @@
   "label": "Temporal Before",
   "expectedCsv": "tests/query/TEMPORAL_BEFORE_CONCEPT_QUERY/expected.csv",
   "query": {
-    "type": "CONCEPT_QUERY",
-    "root": {
-      "type": "BEFORE",
-      "index": {
-        "sampler": "LATEST",
-        "child": {
+    "type": "TIME_QUERY",
+    "query": {
+      "type": "CONCEPT_QUERY",
+      "root": {
+        "type": "TEMPORAL",
+        "selector": "ANY",
+        "mode": "BEFORE",
+        "index": {
           "ids": [
             "concept"
           ],
@@ -25,11 +27,8 @@
               ]
             }
           ]
-        }
-      },
-      "preceding": {
-        "sampler": "LATEST",
-        "child": {
+        },
+        "preceding": {
           "ids": [
             "concept"
           ],

@@ -49,10 +49,11 @@ public class ExecuteQuery extends WorkerMessage {
 		queryExecutor.unsetQueryCancelled(executionId);
 
 		final ShardResult result = createShardResult(worker);
+		QueryPlanContext queryPlanContext = new QueryPlanContext(worker);
 
 		// Before we start the query, we create it once to test if it will succeed before creating it multiple times for evaluation per core.
 		try {
-			query.createQueryPlan(new QueryPlanContext(worker));
+			query.createQueryPlan(queryPlanContext);
 		}
 		catch (Exception e) {
 			ConqueryError err = asConqueryError(e);

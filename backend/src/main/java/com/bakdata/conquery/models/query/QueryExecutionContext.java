@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.bakdata.conquery.apiv1.query.concept.specific.temporal.CQAbstractTemporalQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.temporal.CQTemporal;
 import com.bakdata.conquery.io.storage.ModificationShieldedWorkerStorage;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -21,40 +21,46 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.With;
 
-@Getter
+@Data
 @AllArgsConstructor
-@RequiredArgsConstructor
 @With
 public class QueryExecutionContext {
 
 	private final ManagedExecutionId executionId;
-
 	private final QueryExecutor executor;
 	private final ModificationShieldedWorkerStorage storage;
 	private final BucketManager bucketManager;
 
+	private int today = CDate.ofLocalDate(LocalDate.now());
 
 	private ValidityDate validityDateColumn;
+
+	private Connector connector;
+
 	@NonNull
 	private CDateSet dateRestriction = CDateSet.createFull();
-	private Connector connector;
 	@NonNull
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 
 
-	private final Map<CQAbstractTemporalQuery, Boolean> temporalQueryResult = new HashMap<>();
+	private Map<CQTemporal, CDateSet> temporalQueryResult = new HashMap<>();
 
 	/**
 	 * Only set when in {@link com.bakdata.conquery.models.query.queryplan.SecondaryIdQueryPlan}, to the selected {@link SecondaryIdDescriptionId}.
 	 */
 	private SecondaryIdDescription activeSecondaryId = null;
 
-	private final int today = CDate.ofLocalDate(LocalDate.now());
+	public QueryExecutionContext(ManagedExecutionId executionId, QueryExecutor executor, ModificationShieldedWorkerStorage storage, BucketManager bucketManager) {
+		this.executionId = executionId;
+		this.executor = executor;
+		this.storage = storage;
+		this.bucketManager = bucketManager;
+
+	}
 
 	public List<Bucket> getEntityBucketsForTable(Entity entity, Table table) {
 		return bucketManager.getEntityBucketsForTable(entity, table);
