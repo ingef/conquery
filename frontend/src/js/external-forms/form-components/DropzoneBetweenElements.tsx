@@ -20,19 +20,22 @@ const SxDropzone = styled(Dropzone)`
   top: 0;
   left: 0;
   transform: translateY(calc(-50% - ${LINE_HEIGHT / 2}px));
-  z-index: 10;
+  z-index: 1;
   background-color: transparent;
 `;
 
 const DropzoneBetweenElements = ({
   acceptedDropTypes,
   onDrop,
+  className,
 }: {
   onDrop: (props: PossibleDroppableObject, monitor: DropTargetMonitor) => void;
   acceptedDropTypes: string[];
+  className?: string;
 }) => {
   return (
     <SxDropzone
+      className={className}
       bare
       naked
       acceptedDropTypes={acceptedDropTypes}
