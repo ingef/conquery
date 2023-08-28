@@ -102,8 +102,6 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
                 <DropzoneBetweenElements
                   acceptedDropTypes={acceptedDropTypes}
                   onDrop={dropBetween(i)}
-                  top={-15}
-                  height={30}
                 />
               )}
               <ListItem>
@@ -112,14 +110,11 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
               </ListItem>
             </ConceptContainer>
           ))}
-
           <ConceptContainer>
             {!disallowMultipleColumns && (
               <DropzoneBetweenElements
                 acceptedDropTypes={acceptedDropTypes}
                 onDrop={dropBetween(items.length)}
-                top={-15}
-                height={20}
               />
             )}
           </ConceptContainer>
