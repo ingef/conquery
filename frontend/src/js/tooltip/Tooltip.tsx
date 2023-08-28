@@ -1,20 +1,11 @@
 import styled from "@emotion/styled";
 import { faThumbtack, IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import {
-  Children,
-  DetailedHTMLProps,
-  ElementType,
-  HTMLAttributes,
-  ReactElement,
-  ReactFragment,
-  ReactNode,
-  ReactPortal,
-} from "react";
+import { ReactNode } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
-import { ReactMarkdownProps } from "react-markdown/lib/complex-types";
 import { useDispatch, useSelector } from "react-redux";
+import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
 
 import type { StateT } from "../app/reducers";
@@ -168,65 +159,10 @@ const ConceptLabel = ({
   );
 };
 
-function isReactElement(
-  element: ReactFragment | ReactElement | ReactPortal | boolean | number,
-): element is ReactElement {
-  return (
-    typeof element === "object" &&
-    element.hasOwnProperty("type") &&
-    element.hasOwnProperty("props")
-  );
-}
-
-type MarkdownElement =
-  | ReactFragment
-  | ReactElement
-  | ReactPortal
-  | boolean
-  | number
-  | boolean
-  | string
-  | null
-  | undefined;
-function highlight(
-  words: string[],
-  Element: Omit<
-    DetailedHTMLProps<HTMLAttributes<HTMLElement>, HTMLElement>,
-    "ref"
-  > &
-    ReactMarkdownProps,
-): ReactElement | null {
-  if (!Element) {
-    return Element;
-  }
-  const mappingFunction = (child: MarkdownElement): ReactElement => {
-    if (!child) return <></>;
-    if (typeof child === "string") {
-      return HighlightedText({ words, text: child });
-    }
-    if (isReactElement(child)) {
-      let TagName = child.type as ElementType;
-      return (
-        <TagName {...child.props}>
-          {highlight(words, child.props.children)}
-        </TagName>
-      );
-    }
-    return <>{child}</>;
-  };
-
-  if (Array.isArray(Element)) {
-    return <>{Children.map(Element, mappingFunction)}</>;
-  }
-
-  let children =
-    typeof Element === "object" && Element.hasOwnProperty("children")
-      ? Children.map(Element.children, mappingFunction)
-      : Element.children;
-
-  let TagName = Element.node?.tagName as ElementType;
-  return <TagName {...Element.node.properties}>{children}</TagName>;
-}
+const mark = (text: string, words: string[]): string => {
+  const regex = new RegExp(words.join("|"), "gi");
+  return text.replace(regex, "==$&==");
+};
 
 const Tooltip = () => {
   const words = useSelector<StateT, string[]>(
@@ -304,21 +240,8 @@ const Tooltip = () => {
                 <InfoHeadline>
                   <HighlightedText words={words} text={info.key} />
                 </InfoHeadline>
-                <Markdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    p: (el) => highlight(words, el),
-                    td: (el) => highlight(words, el),
-                    b: (el) => highlight(words, el),
-                    th: (el) => highlight(words, el),
-                    i: (el) => highlight(words, el),
-                    ul: (el) => highlight(words, el),
-                    ol: (el) => highlight(words, el),
-                    h1: (el) => highlight(words, el),
-                    h2: (el) => highlight(words, el),
-                  }}
-                >
-                  {info.value}
+                <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
+                  {mark(info.value, words)}
                 </Markdown>
               </PieceOfInfo>
             ))}

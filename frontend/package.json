@@ -76,6 +76,7 @@
     "react-window": "^1.8.6",
     "redux": "^4.1.2",
     "redux-devtools-extension": "^2.13.9",
+    "remark-flexible-markers": "^1.0.3",
     "remark-gfm": "^3.0.1",
     "resize-observer-polyfill": "^1.5.1",
     "typesafe-actions": "^5.1.0",
