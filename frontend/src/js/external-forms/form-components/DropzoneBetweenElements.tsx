@@ -5,52 +5,44 @@ import Dropzone, {
   PossibleDroppableObject,
 } from "../../ui-components/Dropzone";
 
-interface Props {
-  onDrop: (props: PossibleDroppableObject, monitor: DropTargetMonitor) => void;
-  acceptedDropTypes: string[];
-  top: number;
-  height: number;
-}
-
-const Root = styled("div")`
-  display: flex;
-  height: 4px;
-`;
+const LINE_HEIGHT = 4;
 
 const Line = styled("div")`
   background-color: ${({ theme }) => theme.col.blueGrayDark};
-  margin: 1px 0;
-  height: 4px;
-  border-radius: 2px;
-  flex-grow: 1;
+  height: ${LINE_HEIGHT}px;
+  width: 100%;
+  border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-const SxDropzone = styled(Dropzone)<{ height: number; top: number }>`
-  height: ${({ height }) => height}px;
-  top: ${({ top }) => top}px;
+const SxDropzone = styled(Dropzone)`
+  height: 30px;
   position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateY(calc(-50% - ${LINE_HEIGHT / 2}px));
+  z-index: 1;
   background-color: transparent;
 `;
 
 const DropzoneBetweenElements = ({
   acceptedDropTypes,
   onDrop,
-  height,
-  top,
-}: Props) => {
+  className,
+}: {
+  onDrop: (props: PossibleDroppableObject, monitor: DropTargetMonitor) => void;
+  acceptedDropTypes: string[];
+  className?: string;
+}) => {
   return (
-    <Root>
-      <SxDropzone
-        bare
-        naked
-        acceptedDropTypes={acceptedDropTypes}
-        onDrop={onDrop}
-        height={height}
-        top={top}
-      >
-        {({ isOver }) => isOver && <Line />}
-      </SxDropzone>
-    </Root>
+    <SxDropzone
+      className={className}
+      bare
+      naked
+      acceptedDropTypes={acceptedDropTypes}
+      onDrop={onDrop}
+    >
+      {({ isOver }) => isOver && <Line />}
+    </SxDropzone>
   );
 };
 
