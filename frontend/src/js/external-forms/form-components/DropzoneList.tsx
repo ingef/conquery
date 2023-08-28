@@ -40,6 +40,9 @@ const Row = styled("div")`
 const ConceptContainer = styled("div")`
   position: relative;
 `;
+const SxDropzoneBetweenElements = styled(DropzoneBetweenElements)`
+  height: 15px;
+`;
 
 interface PropsT<DroppableObject> {
   className?: string;
@@ -102,8 +105,6 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
                 <DropzoneBetweenElements
                   acceptedDropTypes={acceptedDropTypes}
                   onDrop={dropBetween(i)}
-                  top={-15}
-                  height={30}
                 />
               )}
               <ListItem>
@@ -112,14 +113,11 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
               </ListItem>
             </ConceptContainer>
           ))}
-
           <ConceptContainer>
             {!disallowMultipleColumns && (
-              <DropzoneBetweenElements
+              <SxDropzoneBetweenElements
                 acceptedDropTypes={acceptedDropTypes}
                 onDrop={dropBetween(items.length)}
-                top={-15}
-                height={20}
               />
             )}
           </ConceptContainer>
