@@ -15,6 +15,8 @@ import DropzoneWithFileInput, {
 import Label from "../../ui-components/Label";
 import Optional from "../../ui-components/Optional";
 
+import DropzoneBetweenElements from "./DropzoneBetweenElements";
+
 const ListItem = styled("div")`
   position: relative;
   padding: 5px;
@@ -35,6 +37,13 @@ const Row = styled("div")`
   align-items: center;
 `;
 
+const ConceptContainer = styled("div")`
+  position: relative;
+`;
+const SxDropzoneBetweenElements = styled(DropzoneBetweenElements)`
+  height: 15px;
+`;
+
 interface PropsT<DroppableObject> {
   className?: string;
   label?: ReactNode;
@@ -51,6 +60,9 @@ interface PropsT<DroppableObject> {
   ) => void;
   onDropFile: (file: File) => void;
   onImportLines: (lines: string[]) => void;
+  dropBetween: (
+    i: number,
+  ) => (item: PossibleDroppableObject, monitor: DropTargetMonitor) => void;
 }
 
 const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
@@ -66,6 +78,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
     disallowMultipleColumns,
     onDrop,
     onImportLines,
+    dropBetween,
   }: PropsT<DroppableObject>,
   ref: Ref<HTMLDivElement>,
 ) => {
@@ -85,14 +98,30 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
         {tooltip && <InfoTooltip text={tooltip} />}
       </Row>
       {items && items.length > 0 && (
-        <div>
+        <>
           {items.map((item, i) => (
-            <ListItem key={i}>
-              <StyledIconButton icon={faTimes} onClick={() => onDelete(i)} />
-              {item}
-            </ListItem>
+            <ConceptContainer key={i}>
+              {!disallowMultipleColumns && (
+                <DropzoneBetweenElements
+                  acceptedDropTypes={acceptedDropTypes}
+                  onDrop={dropBetween(i)}
+                />
+              )}
+              <ListItem>
+                <StyledIconButton icon={faTimes} onClick={() => onDelete(i)} />
+                {item}
+              </ListItem>
+            </ConceptContainer>
           ))}
-        </div>
+          <ConceptContainer>
+            {!disallowMultipleColumns && (
+              <SxDropzoneBetweenElements
+                acceptedDropTypes={acceptedDropTypes}
+                onDrop={dropBetween(items.length)}
+              />
+            )}
+          </ConceptContainer>
+        </>
       )}
       <div ref={ref}>
         {showDropzone && onImportLines && (
