@@ -188,10 +188,12 @@ const Tooltip = () => {
     (state) => state.tooltip.toggleAdditionalInfos,
   );
 
-  const highlightRegex = useMemo(
-    () => (words.length > 0 ? new RegExp(words.join("|"), "gi") : null),
-    [words],
-  );
+  const highlightRegex = useMemo(() => {
+    console.log("words", words);
+    return words.length > 0
+      ? new RegExp(words.filter((word) => word.length > 0).join("|"), "gi")
+      : null;
+  }, [words]);
 
   const dispatch = useDispatch();
   const onToggleAdditionalInfos = () => dispatch(toggleInfos());
