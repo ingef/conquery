@@ -189,7 +189,6 @@ const Tooltip = () => {
   );
 
   const highlightRegex = useMemo(() => {
-    console.log("words", words);
     return words.length > 0
       ? new RegExp(words.filter((word) => word.length > 0).join("|"), "gi")
       : null;
