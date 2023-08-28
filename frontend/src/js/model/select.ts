@@ -63,10 +63,20 @@ export function selectIsWithinTypes(
   );
 }
 
+interface AllowBlocklistedSelects {
+  blocklistedSelects?: SelectorResultType[];
+  allowlistedSelects?: SelectorResultType[];
+}
+
 export const isSelectDisabled = (
   select: SelectorT,
-  blocklistedSelects?: SelectorResultType[],
-  allowlistedSelects?: SelectorResultType[],
+  { blocklistedSelects, allowlistedSelects }: AllowBlocklistedSelects,
 ) =>
   (!!allowlistedSelects && !selectIsWithinTypes(select, allowlistedSelects)) ||
   (!!blocklistedSelects && selectIsWithinTypes(select, blocklistedSelects));
+
+export const isValidSelect =
+  ({ blocklistedSelects, allowlistedSelects }: AllowBlocklistedSelects) =>
+  (select: SelectedSelectorT) =>
+    !!select.selected &&
+    !isSelectDisabled(select, { blocklistedSelects, allowlistedSelects });

@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import type { SelectOptionT, SelectorResultType } from "../api/types";
-import { isSelectDisabled, sortSelects } from "../model/select";
+import { isSelectDisabled, isValidSelect, sortSelects } from "../model/select";
 import { SelectedSelectorT } from "../standard-query-editor/types";
 import InputMultiSelect from "../ui-components/InputMultiSelect/InputMultiSelect";
 
@@ -24,19 +24,18 @@ const TableSelects = ({
     return sortSelects(selects).map((select) => ({
       value: select.id,
       label: select.label,
-      disabled: isSelectDisabled(
-        select,
+      disabled: isSelectDisabled(select, {
         blocklistedSelects,
         allowlistedSelects,
-      ),
+      }),
     }));
   }, [selects, allowlistedSelects, blocklistedSelects]);
 
   const value = useMemo(() => {
     return selects
-      .filter(({ selected }) => !!selected)
+      .filter(isValidSelect({ blocklistedSelects, allowlistedSelects }))
       .map(({ id, label }) => ({ value: id, label: label }));
-  }, [selects]);
+  }, [selects, allowlistedSelects, blocklistedSelects]);
 
   return (
     <div>

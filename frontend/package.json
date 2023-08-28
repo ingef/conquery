@@ -64,7 +64,7 @@
     "react-dom": "^18.1.0",
     "react-error-boundary": "^3.1.4",
     "react-highlight-words": "^0.20.0",
-    "react-hook-form": "^7.43.5",
+    "react-hook-form": "^7.45.4",
     "react-hotkeys-hook": "^4.3.8",
     "react-i18next": "^12.2.0",
     "react-list": "^0.8.16",

@@ -73,12 +73,24 @@ type Props<T> = T & {
   noContainer?: boolean;
   noLabel?: boolean;
 };
-const FieldContainer = styled("div")<{ noLabel?: boolean }>`
+const FieldContainer = styled("div")<{ noLabel?: boolean; hasError?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   padding: ${({ noLabel }) => (noLabel ? "7px 10px" : "2px 10px 7px")};
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ theme }) => theme.col.grayLight};
+  border: 1px solid
+    ${({ theme, hasError }) =>
+      hasError ? theme.col.blueGrayDark : theme.col.grayLight};
 `;
+
+const ErrorContainer = styled("div")`
+  color: ${({ theme }) => theme.col.blueGrayDark};
+  font-weight: 700;
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+
 const ConnectedField = <T extends Object>({
   children,
   control,
@@ -89,7 +101,7 @@ const ConnectedField = <T extends Object>({
   ...props
 }: Props<T>) => {
   const { t } = useTranslation();
-  const { field } = useController<DynamicFormValues>({
+  const { field, fieldState } = useController<DynamicFormValues>({
     name: formField.name,
     defaultValue,
     control,
@@ -105,8 +117,9 @@ const ConnectedField = <T extends Object>({
   return noContainer ? (
     <div>{children({ ...field, ...props })}</div>
   ) : (
-    <FieldContainer noLabel={noLabel}>
+    <FieldContainer noLabel={noLabel} hasError={exists(fieldState.error)}>
       {children({ ...field, ...props })}
+      <ErrorContainer>{fieldState.error?.message}</ErrorContainer>
     </FieldContainer>
   );
 };

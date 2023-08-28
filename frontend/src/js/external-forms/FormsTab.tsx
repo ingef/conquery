@@ -94,8 +94,16 @@ const useInitializeForm = ({
     mode: "onChange",
   });
 
+  useEffect(
+    function triggerValidationInitially() {
+      methods.trigger();
+    },
+    [methods, config],
+  );
+
   const onReset = useCallback(() => {
     methods.reset(defaultValues);
+    methods.trigger();
   }, [methods, defaultValues]);
 
   const onResetActiveForm = useCallback(() => {
@@ -103,6 +111,7 @@ const useInitializeForm = ({
       ...methods.getValues(),
       ...defaultValues,
     });
+    methods.trigger();
   }, [methods, defaultValues]);
 
   return { methods, config, datasetOptions, onReset, onResetActiveForm };
