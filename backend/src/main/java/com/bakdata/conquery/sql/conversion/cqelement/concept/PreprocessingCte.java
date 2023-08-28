@@ -1,11 +1,11 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.Collections;
-import java.util.List;
-
 import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+
+import java.util.Collections;
+import java.util.List;
 
 class PreprocessingCte extends ConceptCte {
 
@@ -22,7 +22,6 @@ class PreprocessingCte extends ConceptCte {
 															  .toList();
 
 		return QueryStep.builder()
-						// TODO: check if signature can be simplified
 						.selects(new ConceptSelects(cteContext.getPrimaryColumn(), cteContext.getValidityDateRange(), preprocessingSelects))
 						.conditions(Collections.emptyList())
 						.predecessors(Collections.emptyList());

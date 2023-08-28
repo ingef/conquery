@@ -1,15 +1,11 @@
 package com.bakdata.conquery.sql.conversion.context.step;
 
+import org.jooq.Record;
+import org.jooq.*;
+import org.jooq.impl.DSL;
+
 import java.util.List;
 import java.util.stream.Stream;
-
-import org.jooq.CommonTableExpression;
-import org.jooq.DSLContext;
-import org.jooq.Record;
-import org.jooq.ResultQuery;
-import org.jooq.Select;
-import org.jooq.SelectGroupByStep;
-import org.jooq.impl.DSL;
 
 /**
  * Transformer for translating the intermediate representation of {@link QueryStep} into the final SQL query.
@@ -65,7 +61,6 @@ public class QueryStepTransformer {
 		}
 
 		return DSL.name(queryStep.getCteName()).as(query);
-
 	}
 
 }

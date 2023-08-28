@@ -25,6 +25,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -87,7 +88,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 			return;
 		}
 		try (Stream<Path> walk = Files.walk(TMP_HANA_MOUNT_DIR)) {
-			walk.sorted((p1, p2) -> -p1.compareTo(p2))
+			walk.sorted(Comparator.naturalOrder())
 				.map(Path::toFile)
 				.forEach(File::delete);
 		}
