@@ -1,10 +1,11 @@
 import styled from "@emotion/styled";
 import { faThumbtack, IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
 import { useDispatch, useSelector } from "react-redux";
+import remarkFlexibleMarkers from "remark-flexible-markers";
 import remarkGfm from "remark-gfm";
 
 import type { StateT } from "../app/reducers";
@@ -158,6 +159,11 @@ const ConceptLabel = ({
   );
 };
 
+const mark = (text: string, regex: RegExp | null): string => {
+  if (!regex) return text;
+  return text.replace(regex, "==$&==");
+};
+
 const Tooltip = () => {
   const words = useSelector<StateT, string[]>(
     (state) => state.conceptTrees.search.words || [],
@@ -180,6 +186,11 @@ const Tooltip = () => {
   );
   const toggleAdditionalInfos = useSelector<StateT, boolean>(
     (state) => state.tooltip.toggleAdditionalInfos,
+  );
+
+  const highlightRegex = useMemo(
+    () => (words.length > 0 ? new RegExp(words.join("|"), "gi") : null),
+    [words],
   );
 
   const dispatch = useDispatch();
@@ -234,19 +245,8 @@ const Tooltip = () => {
                 <InfoHeadline>
                   <HighlightedText words={words} text={info.key} />
                 </InfoHeadline>
-                <Markdown
-                  remarkPlugins={[remarkGfm]}
-                  components={
-                    {
-                      // TODO: Won't work anymore with the latest react-markdown, because
-                      // node is now a ReactElement, not a string.
-                      // Try to use another package for highlighting that doesn't depend on a string
-                      // or just highlight ourselves
-                      // p: ({ node }) => searchHighlight(node)
-                    }
-                  }
-                >
-                  {info.value}
+                <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
+                  {mark(info.value, highlightRegex)}
                 </Markdown>
               </PieceOfInfo>
             ))}
