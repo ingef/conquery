@@ -23,6 +23,7 @@ const ListItem = styled("div")`
   box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.1);
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
+  margin-bottom: 5px;
 `;
 
 const StyledIconButton = styled(IconButton)`
@@ -117,8 +118,8 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
               <DropzoneBetweenElements
                 acceptedDropTypes={acceptedDropTypes}
                 onDrop={dropBetween(items.length)}
-                top={-20}
-                height={15}
+                top={-15}
+                height={20}
               />
             )}
           </ConceptContainer>

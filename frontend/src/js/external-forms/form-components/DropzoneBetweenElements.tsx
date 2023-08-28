@@ -1,5 +1,4 @@
 import styled from "@emotion/styled";
-import { useState } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
 import Dropzone, {
@@ -13,16 +12,17 @@ interface Props {
   height: number;
 }
 
-const LineHeight = 3;
+const Root = styled("div")`
+  display: flex;
+  height: 4px;
+`;
 
-const Line = styled("div")<{ show: boolean }>`
-  overflow: hidden;
-  display: block;
-  visibility: ${({ show }) => (show ? "visible" : "hidden")};
+const Line = styled("div")`
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   margin: 1px 0;
-  height: ${LineHeight}px;
+  height: 4px;
   border-radius: 2px;
+  flex-grow: 1;
 `;
 
 const SxDropzone = styled(Dropzone)<{ height: number; top: number }>`
@@ -38,21 +38,19 @@ const DropzoneBetweenElements = ({
   height,
   top,
 }: Props) => {
-  let [isOver, setIsOver] = useState<boolean>(false);
-
   return (
-    <>
-      <Line show={isOver} />
+    <Root>
       <SxDropzone
         bare
         naked
         acceptedDropTypes={acceptedDropTypes}
         onDrop={onDrop}
-        setIsOver={setIsOver}
         height={height}
         top={top}
-      />
-    </>
+      >
+        {({ isOver }) => isOver && <Line />}
+      </SxDropzone>
+    </Root>
   );
 };
 

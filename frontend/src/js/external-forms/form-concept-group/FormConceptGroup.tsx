@@ -225,7 +225,10 @@ const FormConceptGroup = (props: Props) => {
                 item.dragContext;
 
               if (movedFromFieldName === props.fieldName) {
-                if (i > movedFromAndIdx && movedFromOrIdx === 0) {
+                const willConceptMoveUp =
+                  i > movedFromAndIdx &&
+                  props.value[movedFromAndIdx].concepts.length == 1;
+                if (willConceptMoveUp) {
                   insertIndex = i - 1;
                 }
                 newPropsValue =
