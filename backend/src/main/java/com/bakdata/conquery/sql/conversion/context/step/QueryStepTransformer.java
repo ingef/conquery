@@ -1,7 +1,11 @@
 package com.bakdata.conquery.sql.conversion.context.step;
 
+import org.jooq.CommonTableExpression;
+import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.*;
+import org.jooq.ResultQuery;
+import org.jooq.Select;
+import org.jooq.SelectGroupByStep;
 import org.jooq.impl.DSL;
 
 import java.util.List;
