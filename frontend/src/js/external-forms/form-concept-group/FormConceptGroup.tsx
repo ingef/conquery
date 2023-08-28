@@ -210,7 +210,7 @@ const FormConceptGroup = (props: Props) => {
         }
         dropBetween={(i: number) => {
           return (item: PossibleDroppableObject) => {
-            if (item.type !== DNDType.CONCEPT_TREE_NODE) return;
+            if (item.type !== DNDType.CONCEPT_TREE_NODE) return null;
 
             if (props.isValidConcept && !props.isValidConcept(item))
               return null;
@@ -225,10 +225,10 @@ const FormConceptGroup = (props: Props) => {
                 item.dragContext;
 
               if (movedFromFieldName === props.fieldName) {
-                const willConceptMoveUp =
+                const willConceptMoveDown =
                   i > movedFromAndIdx &&
                   props.value[movedFromAndIdx].concepts.length === 1;
-                if (willConceptMoveUp) {
+                if (willConceptMoveDown) {
                   insertIndex = i - 1;
                 }
                 newPropsValue =
@@ -458,7 +458,15 @@ const FormConceptGroup = (props: Props) => {
             if (isMovedObject(concept)) {
               const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
                 concept.dragContext;
-              valueIdx = valueIdx > movedFromAndIdx ? valueIdx - 1 : valueIdx;
+
+              // If the concept is moved from the same field and the concept is the only one
+              // in the value the index of the selected concept might change after the drop
+              const willSelectedConceptIndexChange =
+                valueIdx > movedFromAndIdx &&
+                props.value[movedFromOrIdx].concepts.length === 1;
+              valueIdx = willSelectedConceptIndexChange
+                ? valueIdx - 1
+                : valueIdx;
               if (movedFromFieldName === props.fieldName) {
                 updatedValue =
                   updatedValue[movedFromAndIdx].concepts.length === 1
