@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.DateAggregationMode;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -20,8 +22,11 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalSubQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import it.unimi.dsi.fastutil.booleans.BooleanList;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Abstract data class specifying the data needed for a TemporalQuery.
@@ -72,32 +77,88 @@ public class CQTemporal extends CQElement {
 		return getIndex().collectRequiredEntities(context); //TODO preceeding also?
 	}
 
-	public enum Mode {
-		BEFORE {
+
+	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "mode")
+	@CPSBase
+	public interface Mode {
+		CDateRange convert(CDateRange in);
+		@CPSType(id = "BEFORE", base = Mode.class)
+		@Data
+		@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+		class Before implements Mode {
+
+			private final Range.IntegerRange days;
+
 			public CDateRange convert(CDateRange in) {
 				if (!in.hasLowerBound()) {
 					return null;
 				}
 
-				return CDateRange.atMost(in.getMinValue() - 1);
+				if(days == null){
+					return in;
+				}
+
+				final int min = in.getMinValue();
+
+				if (!days.isOpen()) {
+					return CDateRange.of(min - days.getMax(), min - days.getMin());
+				}
+
+				if (days.hasLowerBound()) {
+					return CDateRange.atMost(min - days.getMin());
+				}
+
+				if (days.hasUpperBound()) {
+					return CDateRange.atLeast(min - days.getMax());
+				}
+
+				return in; // => days.isAll
 			}
-		},
-		AFTER {
+		}
+
+		@CPSType(id = "AFTER", base = Mode.class)
+		@Data
+		@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
+		class After implements Mode {
+
+			private final Range.IntegerRange days;
+
 			public CDateRange convert(CDateRange in) {
 				if (!in.hasUpperBound()) {
 					return null;
 				}
 
-				return CDateRange.atLeast(in.getMaxValue() + 1);
+				if(days == null){
+					return in;
+				}
+
+				final int max = in.getMaxValue();
+
+				if (!days.isOpen()) {
+					return CDateRange.of(max + days.getMin(), max + days.getMax());
+				}
+
+				if (days.hasLowerBound()) {
+					return CDateRange.atLeast(max + days.getMin());
+				}
+
+				if (days.hasUpperBound()) {
+					return CDateRange.atMost(max + days.getMax());
+				}
+
+				return in; // => days.isAll
 			}
-		},
-		WHILE {
+
+		}
+		@CPSType(id = "WHILE", base = Mode.class)
+		@Data
+		class While implements Mode {
+
 			public CDateRange convert(CDateRange in) {
 				return in;
 			}
-		};
+		}
 
-		public abstract CDateRange convert(CDateRange in);
 	}
 
 

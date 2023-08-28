@@ -1,13 +1,18 @@
 {
   "type": "QUERY_TEST",
   "label": "Temporal Before",
-  "expectedCsv": "tests/query/TEMPORAL_BEFORE_CONCEPT_QUERY/expected.csv",
+  "expectedCsv": "tests/query/TEMPORAL/TEMPORAL_BEFORE_CONCEPT_QUERY/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "TEMPORAL",
       "selector": "ANY",
-      "mode": "BEFORE",
+      "mode": {
+        "mode": "BEFORE",
+        "days": {
+          "min": 1
+        }
+      },
       "index": {
         "ids": [
           "concept"
@@ -70,7 +75,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/TEMPORAL_BEFORE_CONCEPT_QUERY/content.csv",
+        "csv": "tests/query/TEMPORAL/TEMPORAL_BEFORE_CONCEPT_QUERY/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",

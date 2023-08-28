@@ -67,7 +67,13 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 			final ConceptQueryPlan cqp = new ConceptQueryPlan(true);
 
-			cqp.setChild(new DateRestrictingNode(CDateSet.create(mode.convert(partition)), after));
+			final CDateRange converted = mode.convert(partition);
+
+			if (converted == null){
+				continue;
+			}
+
+			cqp.setChild(new DateRestrictingNode(CDateSet.create(converted), after));
 
 			cqp.getDateAggregator().registerAll(after.getDateAggregators());
 
