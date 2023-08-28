@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faThumbtack, IconDefinition } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
 import Markdown from "react-markdown";
@@ -159,8 +159,7 @@ const ConceptLabel = ({
   );
 };
 
-const mark = (text: string, words: string[]): string => {
-  const regex = new RegExp(words.join("|"), "gi");
+const mark = (text: string, regex: RegExp): string => {
   return text.replace(regex, "==$&==");
 };
 
@@ -187,6 +186,8 @@ const Tooltip = () => {
   const toggleAdditionalInfos = useSelector<StateT, boolean>(
     (state) => state.tooltip.toggleAdditionalInfos,
   );
+
+  const highlightRegex = useMemo(() => new RegExp(words.join("|"), "gi"), [words]);
 
   const dispatch = useDispatch();
   const onToggleAdditionalInfos = () => dispatch(toggleInfos());
@@ -241,7 +242,7 @@ const Tooltip = () => {
                   <HighlightedText words={words} text={info.key} />
                 </InfoHeadline>
                 <Markdown remarkPlugins={[remarkGfm, remarkFlexibleMarkers]}>
-                  {mark(info.value, words)}
+                  {mark(info.value, highlightRegex)}
                 </Markdown>
               </PieceOfInfo>
             ))}
