@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.Converter;
@@ -16,29 +15,47 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
+import com.bakdata.conquery.sql.conversion.filter.DateDistanceFilterConverter;
+import com.bakdata.conquery.sql.conversion.filter.FilterConversions;
 import com.bakdata.conquery.sql.conversion.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.filter.FilterConverterService;
 import com.bakdata.conquery.sql.conversion.filter.MultiSelectConverter;
-import com.bakdata.conquery.sql.conversion.filter.RealRangeConverter;
+import com.bakdata.conquery.sql.conversion.filter.NumberFilterConverter;
+import com.bakdata.conquery.sql.conversion.filter.SumConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
 import com.bakdata.conquery.sql.conversion.select.DateDistanceConverter;
+import com.bakdata.conquery.sql.conversion.select.ExistsSelectConverter;
 import com.bakdata.conquery.sql.conversion.select.FirstValueConverter;
+import com.bakdata.conquery.sql.conversion.select.SelectConversions;
 import com.bakdata.conquery.sql.conversion.select.SelectConverter;
-import com.bakdata.conquery.sql.conversion.select.SelectConverterService;
 import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import org.jooq.DSLContext;
 
 public interface SqlDialect {
 
+	SystemDateNowSupplier DEFAULT_DATE_NOW_SUPPLIER = new SystemDateNowSupplier();
+
 	SqlFunctionProvider getFunction();
 
 	List<NodeConverter<? extends Visitable>> getNodeConverters();
 
-	List<FilterConverter<? extends FilterValue<?>>> getFilterConverters();
+	private static <R, C extends Converter<?, R, ?>> List<C> customize(List<C> defaults, List<C> substitutes) {
+		Map<Class<?>, C> substituteMap = getSubstituteMap(substitutes);
+		return defaults.stream()
+					   .map(converter -> substituteMap.getOrDefault(converter.getConversionClass(), converter))
+					   .collect(Collectors.toList());
+	}
 
 	List<SelectConverter<? extends Select>> getSelectConverters();
 
 	DSLContext getDSLContext();
+
+	private static <R, C extends Converter<?, R, ?>> Map<Class<?>, C> getSubstituteMap(List<C> substitutes) {
+		return substitutes.stream()
+						  .collect(Collectors.toMap(
+								  Converter::getConversionClass,
+								  Function.identity()
+						  ));
+	}
 
 	default List<NodeConverter<? extends Visitable>> getDefaultNodeConverters() {
 		return List.of(
@@ -46,15 +63,8 @@ public interface SqlDialect {
 				new CQAndConverter(),
 				new CQOrConverter(),
 				new CQNegationConverter(),
-				new CQConceptConverter(new FilterConverterService(getFilterConverters()), new SelectConverterService(getSelectConverters())),
+				new CQConceptConverter(new FilterConversions(getFilterConverters()), new SelectConversions(getSelectConverters())),
 				new ConceptQueryConverter(new QueryStepTransformer(getDSLContext()))
-		);
-	}
-
-	default List<FilterConverter<? extends FilterValue<?>>> getDefaultFilterConverters() {
-		return List.of(
-				new MultiSelectConverter(),
-				new RealRangeConverter()
 		);
 	}
 
@@ -62,25 +72,22 @@ public interface SqlDialect {
 		return customize(getDefaultSelectConverters(), substitutes);
 	}
 
-	default List<SelectConverter<? extends Select>> getDefaultSelectConverters() {
+	List<FilterConverter<?, ?>> getFilterConverters();
+
+	default List<FilterConverter<?, ?>> getDefaultFilterConverters() {
 		return List.of(
-				new FirstValueConverter(),
-				new DateDistanceConverter(new SystemDateNowSupplier())
+				new DateDistanceFilterConverter(DEFAULT_DATE_NOW_SUPPLIER),
+				new MultiSelectConverter(),
+				new NumberFilterConverter(),
+				new SumConverter()
 		);
 	}
 
-	private static <R, C extends Converter<?, R>> List<C> customize(List<C> defaults, List<C> substitutes) {
-		Map<Class<?>, C> substituteMap = getSubstituteMap(substitutes);
-		return defaults.stream()
-					   .map(converter -> substituteMap.getOrDefault(converter.getConversionClass(), converter))
-					   .collect(Collectors.toList());
-	}
-
-	private static <R, C extends Converter<?, R>> Map<Class<?>, C> getSubstituteMap(List<C> substitutes) {
-		return substitutes.stream()
-						  .collect(Collectors.toMap(
-								  Converter::getConversionClass,
-								  Function.identity()
-						  ));
+	default List<SelectConverter<? extends Select>> getDefaultSelectConverters() {
+		return List.of(
+				new FirstValueConverter(),
+				new DateDistanceConverter(DEFAULT_DATE_NOW_SUPPLIER),
+				new ExistsSelectConverter()
+		);
 	}
 }

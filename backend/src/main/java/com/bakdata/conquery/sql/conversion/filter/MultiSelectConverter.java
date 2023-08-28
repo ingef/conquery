@@ -1,19 +1,48 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
-import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
-import com.bakdata.conquery.sql.conversion.context.ConversionContext;
-import org.jooq.Condition;
+import java.util.List;
 
-public class MultiSelectConverter implements FilterConverter<FilterValue.CQBigMultiSelectFilter> {
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.MultiSelectFilter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConceptFilter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterCondition;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.Filters;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter.MultiSelectCondition;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
+import org.jooq.impl.DSL;
+
+public class MultiSelectConverter implements FilterConverter<String[], MultiSelectFilter> {
 
 	@Override
-	public Condition convert(FilterValue.CQBigMultiSelectFilter filter, ConversionContext context) {
-		return context.getSqlDialect().getFunction()
-					  .in(FilterConverter.getColumnName(filter), filter.getValue());
+	public ConceptFilter convert(MultiSelectFilter multiSelectFilter, FilterContext<String[]> context) {
+
+		ConquerySelect rootSelect = new ExtractingSelect<>(
+				context.getConceptTableNames().rootTable(),
+				multiSelectFilter.getColumn().getName(),
+				String.class
+		);
+
+		FilterCondition condition = new MultiSelectCondition(
+				DSL.name(context.getConceptTableNames().tableNameFor(CteStep.PREPROCESSING), rootSelect.alias().getName()),
+				context.getValue(),
+				context.getParentContext().getSqlDialect().getFunction()
+		);
+
+		return new ConceptFilter(
+				SqlSelects.builder()
+						  .forPreprocessingStep(List.of(rootSelect))
+						  .build(),
+				Filters.builder()
+					   .event(List.of(condition))
+					   .build()
+		);
 	}
 
 	@Override
-	public Class<FilterValue.CQBigMultiSelectFilter> getConversionClass() {
-		return FilterValue.CQBigMultiSelectFilter.class;
+	public Class<? extends MultiSelectFilter> getConversionClass() {
+		return MultiSelectFilter.class;
 	}
+
 }

@@ -18,12 +18,9 @@ public class CQNegationConverter implements NodeConverter<CQNegation> {
     }
 
     private ConversionContext convertChildWithNegationActive(CQElement child, ConversionContext context) {
-		// TODO: handle negation properly after GroupSelect/GroupFilter has been implemented
-		// 	- anti-join vs. negating conditions
-		// 	- handle double negation
-        return context.getNodeConverterService()
-                .convert(child, context.withNegation(true))
-                .withNegation(false);
-    }
+		return context.getNodeConversions()
+					  .convert(child, context.withNegation(true))
+					  .withNegation(false);
+	}
 
 }

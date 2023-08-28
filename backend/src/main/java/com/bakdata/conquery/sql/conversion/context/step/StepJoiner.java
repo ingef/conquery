@@ -21,7 +21,7 @@ public class StepJoiner {
 
 		ConversionContext childrenContext = context;
 		for (CQElement childNode : children) {
-			childrenContext = context.getNodeConverterService().convert(childNode, childrenContext);
+			childrenContext = context.getNodeConversions().convert(childNode, childrenContext);
 		}
 
 		List<QueryStep> queriesToJoin = childrenContext.getQuerySteps();

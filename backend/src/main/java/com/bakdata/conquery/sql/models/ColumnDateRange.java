@@ -57,8 +57,8 @@ public class ColumnDateRange {
 			return List.of(this.range);
 		}
 		return Stream.of(this.start, this.end)
-				.map(dateField -> dateField.coerce(Object.class))
-				.toList();
+					 .map(dateField -> dateField.coerce(Object.class))
+					 .toList();
 	}
 
 	public ColumnDateRange qualify(String qualifier) {
@@ -79,6 +79,18 @@ public class ColumnDateRange {
 				this.start.as(alias + START_SUFFIX),
 				this.end.as(alias + END_SUFFIX)
 		);
+	}
+
+	public ColumnDateRange aggregated() {
+		if (isSingleColumnRange()) {
+			return of(DSL.field("range_agg({0})", this.range));
+		}
+		else {
+			return of(
+					DSL.min(this.start),
+					DSL.max(this.end)
+			);
+		}
 	}
 
 	private <Z> Field<Z> mapFieldOntoQualifier(Field<?> field, Class<Z> fieldType, String qualifier) {

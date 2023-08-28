@@ -16,7 +16,7 @@ public class CQAndConverter implements NodeConverter<CQAnd> {
 	@Override
 	public ConversionContext convert(CQAnd andNode, ConversionContext context) {
 		if (andNode.getChildren().size() == 1) {
-			return context.getNodeConverterService().convert(andNode.getChildren().get(0), context);
+			return context.getNodeConversions().convert(andNode.getChildren().get(0), context);
 		}
 		return StepJoiner.joinChildren(andNode.getChildren(), context, LogicalOperation.AND);
 	}

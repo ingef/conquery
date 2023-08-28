@@ -6,7 +6,9 @@ import java.util.stream.Stream;
 import org.jooq.CommonTableExpression;
 import org.jooq.DSLContext;
 import org.jooq.Record;
+import org.jooq.ResultQuery;
 import org.jooq.Select;
+import org.jooq.SelectGroupByStep;
 import org.jooq.impl.DSL;
 
 /**
@@ -49,11 +51,21 @@ public class QueryStepTransformer {
 	}
 
 	private CommonTableExpression<Record> toCte(QueryStep queryStep) {
-		return DSL.name(queryStep.getCteName()).as(
-				this.dslContext.select(queryStep.getSelects().all())
-							   .from(queryStep.getFromTable())
-							   .where(queryStep.getConditions())
-		);
+
+		SelectGroupByStep<Record> where = this.dslContext.select(queryStep.getSelects().all())
+														 .from(queryStep.getFromTable())
+														 .where(queryStep.getConditions());
+
+		ResultQuery<Record> query;
+		if (queryStep.isGroupBy()) {
+			query = where.groupBy(queryStep.getSelects().getPrimaryColumn());
+		}
+		else {
+			query = where;
+		}
+
+		return DSL.name(queryStep.getCteName()).as(query);
+
 	}
 
 }

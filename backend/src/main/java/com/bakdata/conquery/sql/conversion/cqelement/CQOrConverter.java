@@ -16,7 +16,7 @@ public class CQOrConverter implements NodeConverter<CQOr> {
 	@Override
 	public ConversionContext convert(CQOr orNode, ConversionContext context) {
 		if (orNode.getChildren().size() == 1) {
-			return context.getNodeConverterService().convert(orNode.getChildren().get(0), context);
+			return context.getNodeConversions().convert(orNode.getChildren().get(0), context);
 		}
 		return StepJoiner.joinChildren(orNode.getChildren(), context, LogicalOperation.OR);
 	}

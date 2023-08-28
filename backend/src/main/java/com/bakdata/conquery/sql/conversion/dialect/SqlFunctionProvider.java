@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
@@ -30,9 +31,9 @@ public interface SqlFunctionProvider {
 
 	ColumnDateRange daterange(CDateRange dateRestriction);
 
-	ColumnDateRange daterange(ValidityDate validityDate, String conceptLabel);
+	ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel);
 
-	Field<Object> daterangeString(ColumnDateRange columnDateRange);
+	Field<Object> validityDateStringAggregation(ColumnDateRange columnDateRange);
 
 	Field<Integer> dateDistance(ChronoUnit datePart, Name startDateColumn, Date endDateExpression);
 
@@ -41,10 +42,7 @@ public interface SqlFunctionProvider {
 				  .in(values);
 	}
 
-	default Field<Object> first(Name columnName) {
-		// TODO: this is just a temporary placeholder
-		return DSL.field(columnName);
-	}
+	Field<?> first(Name columnName, List<Field<?>> orderByColumn);
 
 	default TableOnConditionStep<Record> innerJoin(
 			Table<Record> leftPartQueryBase,

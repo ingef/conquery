@@ -1,20 +1,50 @@
 package com.bakdata.conquery.sql.conversion.select;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect;
-import com.bakdata.conquery.sql.conversion.context.ConversionContext;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.FirstValueGroupBy;
+import com.bakdata.conquery.sql.models.ColumnDateRange;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 public class FirstValueConverter implements SelectConverter<FirstValueSelect> {
 
-	public Field<Object> convert(FirstValueSelect select, ConversionContext context) {
-		SqlFunctionProvider fn = context.getSqlDialect().getFunction();
-		return fn.first(DSL.name(select.getColumn().getName()));
+	@Override
+	public SqlSelects convert(FirstValueSelect convert, SelectContext context) {
+
+		ExtractingSelect<Object> rootSelect = new ExtractingSelect<>(
+				context.getTables().rootTable(),
+				convert.getColumnName(),
+				Object.class
+		);
+
+		String groupByCte = context.getTables().tableNameFor(CteStep.GROUP_SELECT);
+		List<Field<Object>> validityDateFields = context.getValidityDate()
+														.map(ColumnDateRange::toFields)
+														.orElse(List.of(DSL.field("1")));
+
+		FirstValueGroupBy firstValueGroupBy = new FirstValueGroupBy(
+				rootSelect.alias(),
+				validityDateFields,
+				context.getParentContext().getSqlDialect().getFunction()
+		);
+
+		ExtractingSelect<Object> finalSelect = new ExtractingSelect<>(groupByCte, firstValueGroupBy.alias().getName(), Object.class);
+
+		return SqlSelects.builder()
+						 .forPreprocessingStep(List.of(rootSelect))
+						 .forGroupByStep(List.of(firstValueGroupBy))
+						 .forGroupFilterStep(List.of(finalSelect))
+						 .build();
 	}
 
 	@Override
 	public Class<FirstValueSelect> getConversionClass() {
 		return FirstValueSelect.class;
 	}
+
 }

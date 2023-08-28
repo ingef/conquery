@@ -1,10 +1,6 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
-import java.sql.Date;
-import java.time.temporal.ChronoUnit;
-
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.models.ColumnDateRange;
 import org.jooq.Condition;
@@ -12,6 +8,10 @@ import org.jooq.DatePart;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.impl.DSL;
+
+import java.sql.Date;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 /**
  * Provider of SQL functions for PostgresSQL.
@@ -62,22 +62,22 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange daterange(ValidityDate validityDate, String alias) {
+	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel) {
 
 		Field<Object> dateRange;
 
 		if (validityDate.getEndColumn() != null) {
 
-			Column startColumn = validityDate.getStartColumn();
-			Column endColumn = validityDate.getEndColumn();
+			Field<Object> startColumn = DSL.field(DSL.name(qualifier, validityDate.getStartColumn().getName()));
+			Field<Object> endColumn = DSL.field(DSL.name(qualifier, validityDate.getEndColumn().getName()));
 
 			dateRange = daterange(startColumn, endColumn, "[]");
 		}
 		else {
-			Column column = validityDate.getColumn();
-			dateRange = switch (column.getType()) {
+			Field<Object> column = DSL.field(DSL.name(qualifier, validityDate.getColumn().getName()));
+			dateRange = switch (validityDate.getColumn().getType()) {
 				// if validityDateColumn is a DATE_RANGE we can make use of Postgres' integrated daterange type.
-				case DATE_RANGE -> DSL.field(DSL.name(column.getName()));
+				case DATE_RANGE -> column;
 				// if the validity date column is not of daterange type, we construct it manually
 				case DATE -> daterange(column, column, "[]");
 				default -> throw new IllegalArgumentException(
@@ -87,14 +87,15 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		}
 
 		return ColumnDateRange.of(dateRange)
-							  .asValidityDateRange(alias);
+							  .asValidityDateRange(conceptLabel);
 	}
 
 	@Override
-	public Field<Object> daterangeString(ColumnDateRange columnDateRange) {
+	public Field<Object> validityDateStringAggregation(ColumnDateRange columnDateRange) {
 		if (!columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("All column date ranges should have been converted to single column ranges.");
 		}
+		// Postgres already displays ranges aggregated via range_agg function in the desired format, so there is no additional processing necessary
 		return columnDateRange.getRange();
 	}
 
@@ -120,12 +121,18 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		};
 	}
 
-	private Field<Object> daterange(Column startColumn, Column endColumn, String bounds) {
+
+	@Override
+	public Field<?> first(Name columnName, List<Field<?>> orderByColumn) {
+		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(DSL.field(columnName))));
+	}
+
+	private Field<Object> daterange(Field<Object> startColumn, Field<Object> endColumn, String bounds) {
 		return DSL.function(
 				"daterange",
 				Object.class,
-				DSL.field(DSL.name(startColumn.getName())),
-				DSL.field(DSL.name(endColumn.getName())),
+				startColumn,
+				endColumn,
 				DSL.val(bounds)
 		);
 	}

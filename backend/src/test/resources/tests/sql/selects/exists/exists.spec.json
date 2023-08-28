@@ -1,0 +1,84 @@
+{
+  "type": "SQL_TEST",
+  "label": "Single Concept EXISTS",
+  "expectedCsv": "expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector",
+          "filters": [
+            {
+              "filter": "concept.connector.filter",
+              "type": "REAL_RANGE",
+              "value": {
+                "min": 1,
+                "max": 1
+              }
+            }
+          ]
+        }
+      ],
+      "selects": "concept.exists"
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "selects": {
+        "type": "EXISTS",
+        "name": "exists"
+      },
+      "connectors": [
+        {
+          "label": "connector",
+          "table": "exists_table",
+          "validityDates": [
+            {
+              "label": "datum",
+              "startColumn": "exists_table.datum_start",
+              "endColumn": "exists_table.datum_end"
+            }
+          ],
+          "filters": {
+            "label": "filter",
+            "column": "exists_table.value",
+            "type": "NUMBER"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/exists/content.csv",
+        "name": "exists_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

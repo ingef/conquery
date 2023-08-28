@@ -27,6 +27,8 @@ public class QueryStep {
 	 * The CTEs referenced by this QueryStep
 	 */
 	List<QueryStep> predecessors;
+	@Builder.Default
+	boolean isGroupBy = false;
 
 	public static TableLike<Record> toTableLike(String fromTableName) {
 		return DSL.table(DSL.name(fromTableName));

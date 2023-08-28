@@ -1,16 +1,5 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.sql.testcontainer.hana.HanaContainer;
@@ -26,13 +15,20 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.*;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @Slf4j
 public class HanaSqlIntegrationTests extends IntegrationTests {
@@ -91,7 +87,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 			return;
 		}
 		try (Stream<Path> walk = Files.walk(TMP_HANA_MOUNT_DIR)) {
-			walk.sorted((p1, p2) -> - p1.compareTo(p2))
+			walk.sorted((p1, p2) -> -p1.compareTo(p2))
 				.map(Path::toFile)
 				.forEach(File::delete);
 		}

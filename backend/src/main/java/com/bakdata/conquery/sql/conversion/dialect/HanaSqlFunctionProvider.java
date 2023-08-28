@@ -1,10 +1,5 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
-import java.sql.Date;
-import java.time.temporal.ChronoUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
@@ -13,6 +8,12 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.impl.DSL;
+
+import java.sql.Date;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
@@ -50,7 +51,7 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public ColumnDateRange daterange(ValidityDate validityDate, String conceptLabel) {
+	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel) {
 
 		Column startColumn;
 		Column endColumn;
@@ -66,25 +67,28 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
-		Field<Date> rangeStart = DSL.field(DSL.name(startColumn.getName()), Date.class);
-		Field<Date> rangeEnd = addDay(endColumn);
+		Field<Date> rangeStart = DSL.field(DSL.name(qualifier, startColumn.getName()), Date.class);
+		Field<Date> rangeEnd = addDay(DSL.field(DSL.name(qualifier, endColumn.getName()), Date.class));
 
 		return ColumnDateRange.of(rangeStart, rangeEnd)
 							  .asValidityDateRange(conceptLabel);
 	}
 
 	@Override
-	public Field<Object> daterangeString(ColumnDateRange columnDateRange) {
+	public Field<Object> validityDateStringAggregation(ColumnDateRange columnDateRange) {
 
 		if (columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
 		}
 
-		String datesConcatenated = Stream.of(columnDateRange.getStart(), columnDateRange.getEnd())
+		String rangeConcatenated = Stream.of(columnDateRange.getStart(), columnDateRange.getEnd())
 										 .map(" || %s || "::formatted)
 										 .collect(Collectors.joining(" ',' ", "'['", "')'"));
-		
-		return DSL.field(datesConcatenated);
+
+		// TODO (ja): STRING_AGG
+
+		// encapsulate all ranges within curly braces
+		return DSL.field("'{' || %s || '}'".formatted(rangeConcatenated));
 	}
 
 	@Override
@@ -122,11 +126,16 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		);
 	}
 
-	private Field<Date> addDay(Column dateColumn) {
+	@Override
+	public Field<Object> first(Name columnName, List<Field<?>> orderByColumns) {
+		return DSL.field(DSL.sql("FIRST_VALUE({0} {1})", DSL.field(columnName), DSL.orderBy(orderByColumns)));
+	}
+
+	private Field<Date> addDay(Field<Date> dateColumn) {
 		return DSL.function(
 				"ADD_DAYS",
 				Date.class,
-				DSL.field(DSL.name(dateColumn.getName())),
+				dateColumn,
 				DSL.val(1)
 		);
 	}

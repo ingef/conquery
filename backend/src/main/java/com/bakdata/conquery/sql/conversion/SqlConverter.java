@@ -9,14 +9,14 @@ import org.jooq.conf.ParamType;
 
 public class SqlConverter {
 
-	private final NodeConverterService nodeConverterService;
+	private final NodeConversions nodeConversions;
 
 	public SqlConverter(SqlDialect dialect, SqlConnectorConfig config) {
-		this.nodeConverterService = new NodeConverterService(dialect, config);
+		this.nodeConversions = new NodeConversions(dialect, config);
 	}
 
 	public SqlQuery convert(QueryDescription queryDescription) {
-		ConversionContext converted = nodeConverterService.convert(queryDescription);
+		ConversionContext converted = nodeConversions.convert(queryDescription);
 		return new SqlQuery(converted.getFinalQuery().getSQL(ParamType.INLINED));
 	}
 }

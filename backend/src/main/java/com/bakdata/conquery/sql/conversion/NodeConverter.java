@@ -12,6 +12,6 @@ import com.bakdata.conquery.sql.conversion.context.ConversionContext;
  *
  * @param <V> type of the node to convert
  */
-public interface NodeConverter<V extends Visitable> extends Converter<V, ConversionContext> {
+public interface NodeConverter<V extends Visitable> extends Converter<V, ConversionContext, ConversionContext> {
 
 }
