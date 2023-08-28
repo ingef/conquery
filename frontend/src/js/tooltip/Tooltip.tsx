@@ -160,6 +160,7 @@ const ConceptLabel = ({
 };
 
 const mark = (text: string, regex: RegExp): string => {
+  if (!regex) return text;
   return text.replace(regex, "==$&==");
 };
 
@@ -187,7 +188,10 @@ const Tooltip = () => {
     (state) => state.tooltip.toggleAdditionalInfos,
   );
 
-  const highlightRegex = useMemo(() => new RegExp(words.join("|"), "gi"), [words]);
+  const highlightRegex = useMemo(
+    () => words.length > 0 ? new RegExp(words.join("|"), "gi") : null,
+    [words],
+  );
 
   const dispatch = useDispatch();
   const onToggleAdditionalInfos = () => dispatch(toggleInfos());
