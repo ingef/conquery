@@ -227,7 +227,7 @@ const FormConceptGroup = (props: Props) => {
               if (movedFromFieldName === props.fieldName) {
                 const willConceptMoveUp =
                   i > movedFromAndIdx &&
-                  props.value[movedFromAndIdx].concepts.length == 1;
+                  props.value[movedFromAndIdx].concepts.length === 1;
                 if (willConceptMoveUp) {
                   insertIndex = i - 1;
                 }

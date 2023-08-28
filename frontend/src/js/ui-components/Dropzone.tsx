@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ForwardedRef, forwardRef, ReactNode, useEffect } from "react";
+import { ForwardedRef, forwardRef, ReactNode } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 
 import { DNDType } from "../common/constants/dndTypes";
