@@ -159,7 +159,7 @@ const ConceptLabel = ({
   );
 };
 
-const mark = (text: string, regex: RegExp): string => {
+const mark = (text: string, regex: RegExp | null): string => {
   if (!regex) return text;
   return text.replace(regex, "==$&==");
 };
@@ -189,7 +189,7 @@ const Tooltip = () => {
   );
 
   const highlightRegex = useMemo(
-    () => words.length > 0 ? new RegExp(words.join("|"), "gi") : null,
+    () => (words.length > 0 ? new RegExp(words.join("|"), "gi") : null),
     [words],
   );
 
