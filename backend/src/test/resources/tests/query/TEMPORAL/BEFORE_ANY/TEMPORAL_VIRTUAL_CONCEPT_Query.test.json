@@ -1,0 +1,97 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Temporal Before",
+  "expectedCsv": "tests/query/TEMPORAL/BEFORE_ANY/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "TEMPORAL",
+      "selector": "ANY",
+      "mode": {
+        "mode": "BEFORE",
+        "days": {
+          "min": 1
+        }
+      },
+      "index": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.filter",
+                "type": "SELECT",
+                "value": "f"
+              }
+            ]
+          }
+        ]
+      },
+      "preceding": {
+        "ids": [
+          "concept"
+        ],
+        "type": "CONCEPT",
+        "tables": [
+          {
+            "id": "concept.connector",
+            "filters": [
+              {
+                "filter": "concept.connector.filter",
+                "type": "SELECT",
+                "value": "m"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "validityDates": {
+            "label": "datum",
+            "column": "table.datum"
+          },
+          "filters": {
+            "name": "filter",
+            "column": "table.value",
+            "type": "SINGLE_SELECT"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/TEMPORAL/BEFORE_ANY/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

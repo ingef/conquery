@@ -1,17 +1,14 @@
 {
   "type": "QUERY_TEST",
-  "label": "Temporal Before",
-  "expectedCsv": "tests/query/TEMPORAL/TEMPORAL_BEFORE_CONCEPT_QUERY/expected.csv",
+  "label": "Temporal While Earliest",
+  "expectedCsv": "tests/query/TEMPORAL/WHILE_EARLIEST/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "TEMPORAL",
-      "selector": "ANY",
+      "selector": "EARLIEST",
       "mode": {
-        "mode": "BEFORE",
-        "days": {
-          "min": 1
-        }
+        "mode": "WHILE"
       },
       "index": {
         "ids": [
@@ -75,7 +72,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/query/TEMPORAL/TEMPORAL_BEFORE_CONCEPT_QUERY/content.csv",
+        "csv": "tests/query/TEMPORAL/WHILE_EARLIEST/content.csv",
         "name": "table",
         "primaryColumn": {
           "name": "pid",
