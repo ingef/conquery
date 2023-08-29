@@ -5,11 +5,12 @@
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "type" : "TEMPORAL",
+      "type": "TEMPORAL",
       "mode": {
-        "mode" : "BEFORE",
+        "mode": "BEFORE",
         "days": {
-          "max" : 5
+          "max": 5,
+          "min" : 1
         }
       },
       "selector": "LATEST",
