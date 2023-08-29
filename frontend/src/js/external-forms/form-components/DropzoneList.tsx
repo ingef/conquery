@@ -40,8 +40,14 @@ const Row = styled("div")`
 const ConceptContainer = styled("div")`
   position: relative;
 `;
-const SxDropzoneBetweenElements = styled(DropzoneBetweenElements)`
+
+const SxDropzoneBetweenElements = styled(DropzoneBetweenElements)<{index: number}>`
+   ${({ index }) => index === 0 ? "top: 3px;" : ""}
+`;
+
+const SxLastDropzoneBetweenElements = styled(DropzoneBetweenElements)`
   height: 15px;
+  top: -5px;
 `;
 
 interface PropsT<DroppableObject> {
@@ -102,9 +108,10 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
           {items.map((item, i) => (
             <ConceptContainer key={i}>
               {!disallowMultipleColumns && (
-                <DropzoneBetweenElements
+                <SxDropzoneBetweenElements
                   acceptedDropTypes={acceptedDropTypes}
                   onDrop={dropBetween(i)}
+                  index={i}
                 />
               )}
               <ListItem>
@@ -115,7 +122,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
           ))}
           <ConceptContainer>
             {!disallowMultipleColumns && (
-              <SxDropzoneBetweenElements
+              <SxLastDropzoneBetweenElements
                 acceptedDropTypes={acceptedDropTypes}
                 onDrop={dropBetween(items.length)}
               />
