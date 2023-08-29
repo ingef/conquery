@@ -41,8 +41,10 @@ const ConceptContainer = styled("div")`
   position: relative;
 `;
 
-const SxDropzoneBetweenElements = styled(DropzoneBetweenElements)<{index: number}>`
-   ${({ index }) => index === 0 ? "top: 3px;" : ""}
+const SxDropzoneBetweenElements = styled(DropzoneBetweenElements)<{
+  index: number;
+}>`
+  ${({ index }) => (index === 0 ? "top: 3px;" : "")}
 `;
 
 const SxLastDropzoneBetweenElements = styled(DropzoneBetweenElements)`
