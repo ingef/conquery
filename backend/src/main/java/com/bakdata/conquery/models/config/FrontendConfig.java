@@ -60,6 +60,11 @@ public class FrontendConfig {
 	@Email
 	private String contactEmail;
 
+	/**
+	 * If true, users are always allowed to add custom values into SelectFilter input fields.
+	 */
+	private boolean alwaysAllowCreateValue = false;
+
 
 	@Data
 	public static class CurrencyConfig {
