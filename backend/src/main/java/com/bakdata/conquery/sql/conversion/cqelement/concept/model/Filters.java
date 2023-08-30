@@ -17,8 +17,8 @@ public class Filters {
 
 	public Filters negated() {
 		return new Filters(
-				event.stream().map(FilterCondition::invert).toList(),
-				group.stream().map(FilterCondition::invert).toList()
+				event.stream().map(FilterCondition::negate).toList(),
+				group.stream().map(FilterCondition::negate).toList()
 		);
 	}
 

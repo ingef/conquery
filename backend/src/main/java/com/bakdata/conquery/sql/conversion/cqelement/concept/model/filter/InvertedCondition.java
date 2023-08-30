@@ -22,7 +22,7 @@ public class InvertedCondition implements FilterCondition {
 	}
 
 	@Override
-	public FilterCondition invert() {
+	public FilterCondition negate() {
 		return filterCondition;
 	}
 

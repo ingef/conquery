@@ -9,7 +9,7 @@ public interface FilterCondition {
 
 	FilterType type();
 
-	default FilterCondition invert() {
+	default FilterCondition negate() {
 		return new InvertedCondition(this);
 	}
 

@@ -10,12 +10,12 @@ import org.jooq.Field;
 @RequiredArgsConstructor
 public class NumberCondition implements FilterCondition {
 
-	private final Field<? extends Number> sumColumn;
+	private final Field<? extends Number> numberColumn;
 	private final IRange<? extends Number, ?> range;
 
 	@Override
 	public Condition filterCondition() {
-		return ConditionUtil.rangeCondition(sumColumn, range);
+		return ConditionUtil.rangeCondition(numberColumn, range);
 	}
 
 	@Override

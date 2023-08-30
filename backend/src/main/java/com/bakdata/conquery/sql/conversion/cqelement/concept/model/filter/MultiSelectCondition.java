@@ -16,7 +16,7 @@ public class MultiSelectCondition implements FilterCondition {
 	private final SqlFunctionProvider functionProvider;
 
 	@Override
-	public FilterCondition invert() {
+	public FilterCondition negate() {
 		// we want all entries that don't satisfy a condition - because in SQL a comparison with NULL equals UNKNOWN and not FALSE,
 		// we need to check if the entry is NULL or does not fulfil the condition
 		Condition valueIsNull = DSL.field(column).isNull();
