@@ -12,7 +12,7 @@ import org.jooq.impl.DSL;
 
 import java.util.Collections;
 
-public class NumberFilterConverter implements FilterConverter<IRange<? extends Number, ?>, NumberFilter<IRange<? extends Number, ?>>> {
+public class NumberConverter implements FilterConverter<IRange<? extends Number, ?>, NumberFilter<IRange<? extends Number, ?>>> {
 	private static final Class<? extends NumberFilter> CLASS = NumberFilter.class;
 
 	@Override

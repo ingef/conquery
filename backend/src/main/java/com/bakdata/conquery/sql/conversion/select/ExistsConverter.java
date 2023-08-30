@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.Exi
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.Exists;
 
-public class ExistsSelectConverter implements SelectConverter<ExistsSelect> {
+public class ExistsConverter implements SelectConverter<ExistsSelect> {
 
 	@Override
 	public SqlSelects convert(ExistsSelect convert, SelectContext context) {

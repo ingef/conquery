@@ -15,18 +15,17 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
-import com.bakdata.conquery.sql.conversion.filter.DateDistanceFilterConverter;
+import com.bakdata.conquery.sql.conversion.filter.DateDistanceConverter;
 import com.bakdata.conquery.sql.conversion.filter.FilterConversions;
 import com.bakdata.conquery.sql.conversion.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.filter.MultiSelectConverter;
-import com.bakdata.conquery.sql.conversion.filter.NumberFilterConverter;
-import com.bakdata.conquery.sql.conversion.filter.SumConverter;
+import com.bakdata.conquery.sql.conversion.filter.NumberConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
-import com.bakdata.conquery.sql.conversion.select.DateDistanceConverter;
-import com.bakdata.conquery.sql.conversion.select.ExistsSelectConverter;
+import com.bakdata.conquery.sql.conversion.select.ExistsConverter;
 import com.bakdata.conquery.sql.conversion.select.FirstValueConverter;
 import com.bakdata.conquery.sql.conversion.select.SelectConversions;
 import com.bakdata.conquery.sql.conversion.select.SelectConverter;
+import com.bakdata.conquery.sql.conversion.select.SumConverter;
 import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import org.jooq.DSLContext;
 
@@ -76,18 +75,19 @@ public interface SqlDialect {
 
 	default List<FilterConverter<?, ?>> getDefaultFilterConverters() {
 		return List.of(
-				new DateDistanceFilterConverter(DEFAULT_DATE_NOW_SUPPLIER),
+				new DateDistanceConverter(DEFAULT_DATE_NOW_SUPPLIER),
 				new MultiSelectConverter(),
-				new NumberFilterConverter(),
-				new SumConverter()
+				new NumberConverter(),
+				new com.bakdata.conquery.sql.conversion.filter.SumConverter()
 		);
 	}
 
 	default List<SelectConverter<? extends Select>> getDefaultSelectConverters() {
 		return List.of(
 				new FirstValueConverter(),
-				new DateDistanceConverter(DEFAULT_DATE_NOW_SUPPLIER),
-				new ExistsSelectConverter()
+				new com.bakdata.conquery.sql.conversion.select.DateDistanceConverter(DEFAULT_DATE_NOW_SUPPLIER),
+				new ExistsConverter(),
+				new SumConverter()
 		);
 	}
 }

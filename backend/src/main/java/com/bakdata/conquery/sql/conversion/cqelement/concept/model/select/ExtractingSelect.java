@@ -14,6 +14,7 @@ import org.jooq.impl.DSL;
  * @param <V> type of column
  */
 @Value
+@EqualsAndHashCode(callSuper = false)
 public class ExtractingSelect<V> extends ConquerySelect {
 
 	String table;

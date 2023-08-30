@@ -1,11 +1,13 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.model.select;
 
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class Exists extends ConquerySelect {
 
 	private final String label;

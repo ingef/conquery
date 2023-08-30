@@ -12,11 +12,11 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter.DateDi
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.DateDistanceSelect;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 
-public class DateDistanceFilterConverter implements FilterConverter<Range.LongRange, DateDistanceFilter> {
+public class DateDistanceConverter implements FilterConverter<Range.LongRange, DateDistanceFilter> {
 
 	private final DateNowSupplier dateNowSupplier;
 
-	public DateDistanceFilterConverter(DateNowSupplier dateNowSupplier) {
+	public DateDistanceConverter(DateNowSupplier dateNowSupplier) {
 		this.dateNowSupplier = dateNowSupplier;
 	}
 

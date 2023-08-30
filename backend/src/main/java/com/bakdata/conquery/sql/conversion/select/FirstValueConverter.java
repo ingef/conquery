@@ -18,7 +18,7 @@ public class FirstValueConverter implements SelectConverter<FirstValueSelect> {
 
 		ExtractingSelect<Object> rootSelect = new ExtractingSelect<>(
 				context.getTables().rootTable(),
-				convert.getColumnName(),
+				convert.getColumn().getName(),
 				Object.class
 		);
 

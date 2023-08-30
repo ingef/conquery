@@ -5,11 +5,13 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class FirstValueGroupBy extends ConquerySelect {
 
 	private final Field<?> field;
