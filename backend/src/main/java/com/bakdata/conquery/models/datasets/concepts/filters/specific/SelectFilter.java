@@ -12,6 +12,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.IndexConfig;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.SingleColumnFilter;
@@ -56,12 +57,12 @@ public abstract class SelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> 
 	}
 
 	@Override
-	public void configureFrontend(FrontendFilterConfiguration.Top f) throws ConceptConfigurationException {
+	public void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		f.setTemplate(getTemplate());
 		f.setType(getFilterType());
 
 		// If either not searches are available or all are disabled, we allow users to supply their own values
-		f.setCreatable(getSearchReferences().stream().noneMatch(Predicate.not(Searchable::isSearchDisabled)));
+		f.setCreatable(conqueryConfig.getFrontend().isAlwaysAllowCreateValue() || getSearchReferences().stream().noneMatch(Predicate.not(Searchable::isSearchDisabled)));
 
 		f.setOptions(collectLabels());
 	}

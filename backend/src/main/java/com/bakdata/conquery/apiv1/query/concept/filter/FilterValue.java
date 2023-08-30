@@ -191,7 +191,7 @@ public abstract class FilterValue<VALUE> {
 	 * Values of group filters can have an arbitrary format which is set by the filter itself.
 	 * Hence, we treat the value for the filter as Object.class.
 	 * <p>
-	 * The resolved filter instructs the frontend on how to render and serialize the filter value using the {@link Filter#createFrontendConfig()} method. The filter must implement {@link GroupFilter} and provide the type information of the value to correctly deserialize the received object.
+	 * The resolved filter instructs the frontend on how to render and serialize the filter value using the {@link Filter#createFrontendConfig(com.bakdata.conquery.models.config.ConqueryConfig)} method. The filter must implement {@link GroupFilter} and provide the type information of the value to correctly deserialize the received object.
 	 */
 	public static class GroupFilterDeserializer extends StdDeserializer<GroupFilterValue> {
 		private final NsIdReferenceDeserializer<FilterId, Filter<?>> nsIdDeserializer = new NsIdReferenceDeserializer<>(Filter.class, null, FilterId.class);
