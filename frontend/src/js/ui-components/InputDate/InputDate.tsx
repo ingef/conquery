@@ -1,9 +1,12 @@
 import styled from "@emotion/styled";
-import { createElement, forwardRef, useRef, useState } from "react";
+import { faCalendar } from "@fortawesome/free-regular-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { createElement, forwardRef, useRef } from "react";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 import { formatDate, parseDate } from "../../common/helpers/dateHelper";
+import { mergeRefs } from "../../common/helpers/mergeRefs";
 import BaseInput, { Props as BaseInputProps } from "../BaseInput";
 
 import { CustomHeader } from "./CustomHeader";
@@ -19,11 +22,25 @@ const Root = styled("div")`
   }
   .react-datepicker-popper[data-placement^="bottom"] {
     padding-top: 4px;
-    transform: translate3d(0, 32px, 0) !important;
   }
   .react-datepicker-popper[data-placement^="top"] {
     padding-bottom: 0;
-    transform: translate3d(0, 32px, 0) !important;
+  }
+`;
+
+const CalendarIcon = styled(FontAwesomeIcon)`
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: calc(50% - 8px);
+  left: 5px;
+  cursor: pointer;
+  color: ${({ theme }) => theme.col.black};
+`;
+
+const StyledBaseInput = styled(BaseInput)`
+  input {
+    padding-left: 22px;
   }
 `;
 
@@ -45,28 +62,12 @@ type Props = Omit<BaseInputProps, "inputType"> & {
   onCalendarSelect?: (val: string) => void;
 };
 
-// TODO: Remove this once we have solved
-// - that the date picker overlays other fields in forms
-const TEMPORARILY_DISABLED_DATE_PICKER = true;
-
-const InputDate = forwardRef<HTMLInputElement, Props>(
+const InputDate = forwardRef<ReactDatePicker, Props>(
   (
-    {
-      className,
-      value,
-      dateFormat,
-      onChange,
-      onCalendarSelect,
-      onFocus,
-      onBlur,
-      onClick,
-      ...props
-    },
+    { className, value, dateFormat, onChange, onCalendarSelect, ...props },
     ref,
   ) => {
     const datePickerRef = useRef<ReactDatePicker>(null);
-    const [hasFocus, setHasFocus] = useState(false);
-    const [focusBlocked, setFocusBlocked] = useState(false);
 
     return (
       <Root
@@ -75,33 +76,12 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
           if (e.key === "Escape") datePickerRef.current?.setOpen(false);
         }}
       >
-        <BaseInput
+        <StyledBaseInput
           {...props}
-          ref={ref}
           inputType="text"
           value={value}
           onChange={(val) => {
             onChange(val as string);
-          }}
-          onFocus={(e) => {
-            if (focusBlocked) {
-              e.currentTarget.blur();
-              setFocusBlocked(false);
-            } else {
-              onFocus?.(e);
-              setHasFocus(true);
-              datePickerRef.current?.setOpen(true);
-            }
-          }}
-          onBlur={(e) => {
-            onBlur?.(e);
-            setHasFocus(false);
-          }}
-          onClick={(e) => {
-            onClick?.(e);
-            if (hasFocus) {
-              datePickerRef.current?.setOpen(true);
-            }
           }}
           inputProps={{
             ...props?.inputProps,
@@ -111,8 +91,12 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
             },
           }}
         />
+        <CalendarIcon
+          icon={faCalendar}
+          onClick={() => datePickerRef.current?.setOpen(true)}
+        />
         <ReactDatePicker
-          ref={datePickerRef}
+          ref={mergeRefs(datePickerRef, ref)}
           selected={value ? parseDate(value, dateFormat) : new Date()}
           onChange={(val) => {
             if (!val) {
@@ -122,7 +106,6 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
             const selectedDate = formatDate(val, dateFormat);
             onChange(selectedDate);
             onCalendarSelect?.(selectedDate);
-            setFocusBlocked(true);
             datePickerRef.current?.setOpen(false);
           }}
           onClickOutside={() => datePickerRef.current?.setOpen(false)}
@@ -130,7 +113,16 @@ const InputDate = forwardRef<HTMLInputElement, Props>(
           customInput={createElement(HiddenInput)}
           calendarContainer={StyledCalendar}
           calendarStartDay={1}
-          disabled={TEMPORARILY_DISABLED_DATE_PICKER}
+          popperProps={{
+            modifiers: [
+              {
+                name: "preventOverflow",
+                options: {
+                  mainAxis: false,
+                },
+              },
+            ],
+          }}
         />
       </Root>
     );
