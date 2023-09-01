@@ -1,5 +1,8 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterCondition;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterType;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -26,7 +29,18 @@ public class MultiSelectCondition implements FilterCondition {
 
 	@Override
 	public Condition filterCondition() {
-		return this.functionProvider.in(column, values);
+
+		// Note here that empty strings are used here as null/missing-value handles.
+		// So if values contain "" or null, we want to explicitly filter for empty/NULL entries as well.
+		String[] valuesWithoutNull = Arrays.stream(values)
+										   .filter(Objects::nonNull)
+										   .toArray(String[]::new);
+		Condition inCondition = this.functionProvider.in(column, valuesWithoutNull);
+
+		if (valuesWithoutNull.length < values.length) {
+			return inCondition.or(DSL.field(column).isNull());
+		}
+		return inCondition;
 	}
 
 	@Override
