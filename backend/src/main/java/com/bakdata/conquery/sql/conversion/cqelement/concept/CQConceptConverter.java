@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
@@ -56,7 +58,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	public ConversionContext convert(CQConcept node, ConversionContext context) {
 
 		if (node.getTables().size() > 1) {
-			throw new UnsupportedOperationException("Can't handle concepts with multiple tables for now.");
+			throw new ConqueryError.SqlConversionError("Can't handle concepts with multiple tables for now.");
 		}
 
 		CQTable table = node.getTables().get(0);
@@ -88,8 +90,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			cteContext = cteContext.withPrevious(lastQueryStep.get());
 		}
 
-		// TODO: check if already handled properly / ask Fabian about it?
-		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible.")));
+		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new ConqueryError.SqlConversionError("No conversion for concept possible.")));
 	}
 
 	private List<SqlSelects> getConceptSelects(
@@ -133,7 +134,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			String conceptLabel,
 			ConceptTableNames conceptTableNames
 	) {
-		if (table.getConnector().getValidityDates().isEmpty()) {
+		if (Objects.isNull(table.findValidityDate())) {
 			return Optional.empty();
 		}
 		return Optional.of(functionProvider.daterange(table.findValidityDate(), conceptTableNames.rootTable(), conceptLabel));

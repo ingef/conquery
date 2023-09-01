@@ -9,7 +9,7 @@ import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 public class SumGroupBy extends ConquerySelect {
 
 	private final Field<? extends Number> columnToSum;

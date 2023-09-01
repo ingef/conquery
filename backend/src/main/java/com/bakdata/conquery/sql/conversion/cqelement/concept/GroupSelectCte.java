@@ -24,9 +24,9 @@ class GroupSelectCte extends ConceptCte {
 		String previousCteName = cteContext.getPrevious().getCteName();
 		List<ConquerySelect> groupFilterSelects = cteContext.allConceptSelects()
 															.flatMap(sqlSelects -> sqlSelects.getForGroupByStep().stream())
-															.distinct()
 															// as we don't know if there is an event filter step, we just map the selects on the previous step
 															.map(conquerySelect -> conquerySelect.qualify(previousCteName))
+															.distinct()
 															.collect(Collectors.toList());
 
 		Optional<ColumnDateRange> aggregatedValidityDate = cteContext.getValidityDateRange()

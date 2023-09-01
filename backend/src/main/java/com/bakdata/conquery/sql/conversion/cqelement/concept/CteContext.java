@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
+import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConceptFilter;
@@ -18,7 +19,7 @@ import org.jooq.Field;
 
 @Value
 @Builder(toBuilder = true)
-class CteContext {
+class CteContext implements Context {
 
 	ConversionContext context;
 	Field<Object> primaryColumn;

@@ -12,7 +12,7 @@ import com.google.common.collect.MoreCollectors;
  * @param <X> context of the convertible
  * @see Converter
  */
-public abstract class Conversions<C, R, X> {
+public abstract class Conversions<C, R, X extends Context> {
 
 	private final List<? extends Converter<? extends C, R, X>> converters;
 

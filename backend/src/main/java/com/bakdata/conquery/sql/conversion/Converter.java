@@ -9,7 +9,7 @@ import java.util.Optional;
  * @param <R> type of the result
  * @param <X> context of the convertible
  */
-public interface Converter<C, R, X> {
+public interface Converter<C, R, X extends Context> {
 
 	default <I> Optional<R> tryConvert(I input, X context) {
 		if (getConversionClass().isInstance(input)) {

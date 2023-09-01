@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
@@ -17,7 +18,7 @@ import org.jooq.Select;
 @Value
 @With
 @Builder(toBuilder = true)
-public class ConversionContext {
+public class ConversionContext implements Context {
 
 	SqlConnectorConfig config;
 	NodeConversions nodeConversions;
