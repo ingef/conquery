@@ -8,7 +8,8 @@ public enum CteStep {
 	PREPROCESSING("_preprocessing"),
 	EVENT_FILTER("_event_filter"),
 	AGGREGATION_SELECT("_aggregation_select"),
-	AGGREGATION_FILTER("_aggregation_filter");
+	AGGREGATION_FILTER("_aggregation_filter"),
+	FINAL("");
 
 	private final String suffix;
 

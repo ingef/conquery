@@ -35,7 +35,7 @@ public class SumConverter implements SelectConverter<SumSelect> {
 		return SqlSelects.builder()
 						 .forPreprocessingStep(List.of(rootSelect))
 						 .forAggregationSelectStep(List.of(sumGroupBy))
-						 .forAggregationFilterStep(List.of(finalSelect))
+						 .forFinalStep(List.of(finalSelect))
 						 .build();
 	}
 

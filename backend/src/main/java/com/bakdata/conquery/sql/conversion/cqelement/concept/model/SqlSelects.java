@@ -18,5 +18,5 @@ public class SqlSelects {
 	List<ConquerySelect> forAggregationSelectStep = Collections.emptyList();
 	// Empty if only used in aggregation select
 	@Builder.Default
-	List<ConquerySelect> forAggregationFilterStep = Collections.emptyList();
+	List<ConquerySelect> forFinalStep = Collections.emptyList();
 }

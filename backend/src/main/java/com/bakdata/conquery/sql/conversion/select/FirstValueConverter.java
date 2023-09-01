@@ -41,7 +41,7 @@ public class FirstValueConverter implements SelectConverter<FirstValueSelect> {
 		return SqlSelects.builder()
 						 .forPreprocessingStep(List.of(rootSelect))
 						 .forAggregationSelectStep(List.of(firstValueGroupBy))
-						 .forAggregationFilterStep(List.of(finalSelect))
+						 .forFinalStep(List.of(finalSelect))
 						 .build();
 	}
 

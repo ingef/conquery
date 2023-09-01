@@ -45,7 +45,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 				new PreprocessingCte(),
 				new EventFilterCte(),
 				new AggregationSelectCte(),
-				new AggregationFilterCte()
+				new AggregationFilterCte(),
+				new FinalConceptCte()
 		);
 	}
 

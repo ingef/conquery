@@ -22,7 +22,7 @@ class AggregationFilterCte extends ConceptCte {
 
 		String aggregationSelectCteName = cteContext.getConceptTableNames().tableNameFor(CteStep.AGGREGATION_SELECT);
 		List<ConquerySelect> aggregationFilterSelects = cteContext.getSelects().stream()
-																  .flatMap(sqlSelects -> sqlSelects.getForAggregationFilterStep().stream())
+																  .flatMap(sqlSelects -> sqlSelects.getForFinalStep().stream())
 																  .toList();
 
 		final Optional<ColumnDateRange> validityDate;

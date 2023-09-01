@@ -55,7 +55,7 @@ public class DateDistanceConverter implements SelectConverter<DateDistanceSelect
 		return SqlSelects.builder()
 						 .forPreprocessingStep(Collections.singletonList(dateDistanceSelect))
 						 .forAggregationSelectStep(Collections.singletonList(firstValueGroupBy))
-						 .forAggregationFilterStep(Collections.singletonList(firstValueReference))
+						 .forFinalStep(Collections.singletonList(firstValueReference))
 						 .build();
 	}
 
