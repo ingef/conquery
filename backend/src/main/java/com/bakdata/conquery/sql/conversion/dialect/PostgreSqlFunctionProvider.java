@@ -1,5 +1,9 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+import java.sql.Date;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.models.ColumnDateRange;
@@ -8,10 +12,6 @@ import org.jooq.DatePart;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.impl.DSL;
-
-import java.sql.Date;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 /**
  * Provider of SQL functions for PostgresSQL.
@@ -88,6 +88,11 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 		return ColumnDateRange.of(dateRange)
 							  .asValidityDateRange(conceptLabel);
+	}
+
+	@Override
+	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
+		return ColumnDateRange.of(DSL.field("range_agg({0})", columnDateRange.getRange()));
 	}
 
 	@Override

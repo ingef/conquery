@@ -81,18 +81,6 @@ public class ColumnDateRange {
 		);
 	}
 
-	public ColumnDateRange aggregated() {
-		if (isSingleColumnRange()) {
-			return of(DSL.field("range_agg({0})", this.range));
-		}
-		else {
-			return of(
-					DSL.min(this.start),
-					DSL.max(this.end)
-			);
-		}
-	}
-
 	private <Z> Field<Z> mapFieldOntoQualifier(Field<?> field, Class<Z> fieldType, String qualifier) {
 		return DSL.field(DSL.name(qualifier, field.getName()), fieldType);
 	}

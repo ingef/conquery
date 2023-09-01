@@ -33,6 +33,8 @@ public interface SqlFunctionProvider {
 
 	ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel);
 
+	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
+
 	Field<Object> validityDateStringAggregation(ColumnDateRange columnDateRange);
 
 	Field<Integer> dateDistance(ChronoUnit datePart, Name startDateColumn, Date endDateExpression);

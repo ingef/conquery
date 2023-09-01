@@ -1,5 +1,11 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+import java.sql.Date;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
@@ -8,12 +14,6 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.impl.DSL;
-
-import java.sql.Date;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
@@ -72,6 +72,14 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		return ColumnDateRange.of(rangeStart, rangeEnd)
 							  .asValidityDateRange(conceptLabel);
+	}
+
+	@Override
+	public ColumnDateRange aggregated(ColumnDateRange columnDateRange) {
+		return ColumnDateRange.of(
+				DSL.min(columnDateRange.getStart()),
+				DSL.max(columnDateRange.getEnd())
+		);
 	}
 
 	@Override
