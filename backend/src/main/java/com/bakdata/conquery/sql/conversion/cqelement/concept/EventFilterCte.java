@@ -27,7 +27,7 @@ class EventFilterCte extends ConceptCte {
 				cteContext.getPrimaryColumn(),
 				cteContext.getValidityDateRange().map(validityDate -> validityDate.qualify(preprocessingCteName)),
 				// all selects we need to carry on for later steps have to be selected to be able to reference them from later steps
-				getSelectsForGroupByStep(cteContext, preprocessingCteName)
+				getSelectsForAggregationSelectStep(cteContext, preprocessingCteName)
 		);
 
 		List<Condition> eventFilterConditions = cteContext.getFilters().stream()
@@ -40,9 +40,9 @@ class EventFilterCte extends ConceptCte {
 						.conditions(eventFilterConditions);
 	}
 
-	private static List<ConquerySelect> getSelectsForGroupByStep(CteContext cteContext, String preprocessingCteName) {
+	private static List<ConquerySelect> getSelectsForAggregationSelectStep(CteContext cteContext, String preprocessingCteName) {
 		return cteContext.allConceptSelects()
-						 .flatMap(sqlSelects -> sqlSelects.getForGroupByStep().stream())
+						 .flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
 						 .map(conquerySelect -> new ExtractingSelect<>(preprocessingCteName, conquerySelect.alias().getName(), Object.class))
 						 .distinct()
 						 .collect(Collectors.toList());

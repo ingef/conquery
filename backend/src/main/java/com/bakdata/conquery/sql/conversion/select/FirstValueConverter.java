@@ -22,7 +22,6 @@ public class FirstValueConverter implements SelectConverter<FirstValueSelect> {
 				Object.class
 		);
 
-		String groupByCte = context.getTables().tableNameFor(CteStep.GROUP_SELECT);
 		List<Field<Object>> validityDateFields = context.getValidityDate()
 														.map(ColumnDateRange::toFields)
 														.orElse(List.of(DSL.field("1")));
@@ -33,12 +32,16 @@ public class FirstValueConverter implements SelectConverter<FirstValueSelect> {
 				context.getParentContext().getSqlDialect().getFunction()
 		);
 
-		ExtractingSelect<Object> finalSelect = new ExtractingSelect<>(groupByCte, firstValueGroupBy.alias().getName(), Object.class);
+		ExtractingSelect<Object> finalSelect = new ExtractingSelect<>(
+				context.getTables().tableNameFor(CteStep.AGGREGATION_SELECT),
+				firstValueGroupBy.alias().getName(),
+				Object.class
+		);
 
 		return SqlSelects.builder()
 						 .forPreprocessingStep(List.of(rootSelect))
-						 .forGroupByStep(List.of(firstValueGroupBy))
-						 .forGroupFilterStep(List.of(finalSelect))
+						 .forAggregationSelectStep(List.of(firstValueGroupBy))
+						 .forAggregationFilterStep(List.of(finalSelect))
 						 .build();
 	}
 

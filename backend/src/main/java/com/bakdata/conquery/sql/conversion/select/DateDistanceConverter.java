@@ -47,15 +47,15 @@ public class DateDistanceConverter implements SelectConverter<DateDistanceSelect
 		);
 
 		ExtractingSelect<Object> firstValueReference = new ExtractingSelect<>(
-				context.getTables().tableNameFor(CteStep.GROUP_SELECT),
+				context.getTables().tableNameFor(CteStep.AGGREGATION_SELECT),
 				firstValueGroupBy.alias().getName(),
 				Object.class
 		);
 
 		return SqlSelects.builder()
 						 .forPreprocessingStep(Collections.singletonList(dateDistanceSelect))
-						 .forGroupByStep(Collections.singletonList(firstValueGroupBy))
-						 .forGroupFilterStep(Collections.singletonList(firstValueReference))
+						 .forAggregationSelectStep(Collections.singletonList(firstValueGroupBy))
+						 .forAggregationFilterStep(Collections.singletonList(firstValueReference))
 						 .build();
 	}
 

@@ -33,7 +33,7 @@ public class SumConverter implements FilterConverter<IRange<? extends Number, ?>
 		return new ConceptFilter(
 				SqlSelects.builder()
 						  .forPreprocessingStep(Collections.singletonList(rootSelect))
-						  .forGroupByStep(Collections.singletonList(sumGroupBy))
+						  .forAggregationSelectStep(Collections.singletonList(sumGroupBy))
 						  .build(),
 				Filters.builder()
 					   .group(Collections.singletonList(sumFilterCondition))

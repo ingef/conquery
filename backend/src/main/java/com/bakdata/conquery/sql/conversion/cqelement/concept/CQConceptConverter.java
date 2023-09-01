@@ -44,8 +44,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		this.conceptCTEs = List.of(
 				new PreprocessingCte(),
 				new EventFilterCte(),
-				new GroupSelectCte(),
-				new GroupFilterCte()
+				new AggregationSelectCte(),
+				new AggregationFilterCte()
 		);
 	}
 

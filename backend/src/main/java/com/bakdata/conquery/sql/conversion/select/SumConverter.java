@@ -26,17 +26,16 @@ public class SumConverter implements SelectConverter<SumSelect> {
 				rootSelect.alias()
 		);
 
-		String groupByCteName = context.getTables().tableNameFor(CteStep.GROUP_SELECT);
 		ExtractingSelect<? extends Number> finalSelect = new ExtractingSelect<>(
-				groupByCteName,
+				context.getTables().tableNameFor(CteStep.AGGREGATION_SELECT),
 				sumGroupBy.alias().getName(),
 				numberClass
 		);
 
 		return SqlSelects.builder()
 						 .forPreprocessingStep(List.of(rootSelect))
-						 .forGroupByStep(List.of(sumGroupBy))
-						 .forGroupFilterStep(List.of(finalSelect))
+						 .forAggregationSelectStep(List.of(sumGroupBy))
+						 .forAggregationFilterStep(List.of(finalSelect))
 						 .build();
 	}
 

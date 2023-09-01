@@ -13,7 +13,7 @@ public class ExistsConverter implements SelectConverter<ExistsSelect> {
 	public SqlSelects convert(ExistsSelect convert, SelectContext context) {
 		return SqlSelects.builder()
 						 .forPreprocessingStep(Collections.emptyList())
-						 .forGroupFilterStep(List.of(new Exists(context.getLabel())))
+						 .forAggregationFilterStep(List.of(new Exists(context.getLabel())))
 						 .build();
 	}
 

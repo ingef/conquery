@@ -15,8 +15,8 @@ public class SqlSelects {
 	List<ConquerySelect> forPreprocessingStep;
 	// Empty if only used in event filter
 	@Builder.Default
-	List<ConquerySelect> forGroupByStep = Collections.emptyList();
-	// Empty if only used in group by
+	List<ConquerySelect> forAggregationSelectStep = Collections.emptyList();
+	// Empty if only used in aggregation select
 	@Builder.Default
-	List<ConquerySelect> forGroupFilterStep = Collections.emptyList();
+	List<ConquerySelect> forAggregationFilterStep = Collections.emptyList();
 }
