@@ -1,5 +1,11 @@
 package com.bakdata.conquery.sql.conversion.context.selects;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
@@ -10,20 +16,12 @@ import lombok.Value;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 /**
  * {@link ConceptSelects} represent all select fields of a {@link CQConcept}.
  */
 @Value
 @AllArgsConstructor
 public class ConceptSelects implements Selects {
-
-	private static final String PRIMARY_COLUMN_ALIAS = "primary_column";
 
 	Field<Object> primaryColumn;
 
