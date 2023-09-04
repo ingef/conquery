@@ -94,6 +94,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
 
+	private boolean containsDates;
+
 	@JsonAlias("machineGenerated")
 	private boolean system;
 
@@ -127,6 +129,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@JsonIgnore
 	@EqualsAndHashCode.Exclude
 	private transient ConqueryConfig config;
+
 
 	@JsonIgnore
 	@Getter(AccessLevel.PROTECTED)
@@ -166,6 +169,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 			this.namespace = namespace;
 			this.config = config;
+
+			// This can be quite slow, so setting this in overview is not optimal for users with a lot of queries.
+			containsDates = containsDates(getSubmitted());
 
 			doInitExecutable();
 			initialized = true;
@@ -216,7 +222,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	protected void finish(ExecutionState executionState) {
 		if (getState() == ExecutionState.NEW) {
-			log.error("Query[{}] was never run.", getId());
+			log.error("Query[{}] was never run.", getId(), new Exception());
 		}
 
 		synchronized (this) {
@@ -272,6 +278,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		status.setStartTime(startTime);
 		status.setFinishTime(finishTime);
 		status.setStatus(getState());
+		status.setContainsDates(containsDates);
+
 		if (owner != null) {
 			status.setOwner(owner.getId());
 			status.setOwnerName(owner.getLabel());
@@ -295,6 +303,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	public FullExecutionStatus buildStatusFull(Subject subject) {
 
 		initExecutable(namespace, config);
+
 		FullExecutionStatus status = new FullExecutionStatus();
 		setStatusFull(status, subject);
 
@@ -353,12 +362,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 		status.setCanExpand(canSubjectExpand(subject, query));
 
-		status.setContainsDates(containsDates(query));
 
 		status.setQuery(canSubjectExpand(subject, query) ? getSubmitted() : null);
 	}
 
-	private boolean containsDates(QueryDescription query) {
+	private static boolean containsDates(QueryDescription query) {
 		return Visitable.stream(query)
 						.anyMatch(visitable -> {
 							if (visitable instanceof CQConcept cqConcept) {
@@ -373,7 +381,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 						});
 	}
 
-	private boolean canSubjectExpand(Subject subject, QueryDescription query) {
+	private static boolean canSubjectExpand(Subject subject, QueryDescription query) {
 		NamespacedIdentifiableCollector namespacesIdCollector = new NamespacedIdentifiableCollector();
 		query.visit(namespacesIdCollector);
 
@@ -401,9 +409,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	@JsonIgnore
 	public String getLabelWithoutAutoLabelSuffix() {
-		int idx;
+		final int idx;
 		if (label != null && (idx = label.lastIndexOf(AUTO_LABEL_SUFFIX)) != -1) {
-
 			return label.substring(0, idx);
 		}
 		return label;
