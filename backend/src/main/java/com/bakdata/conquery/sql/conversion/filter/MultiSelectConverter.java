@@ -11,7 +11,6 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.Filters;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter.MultiSelectCondition;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
-import org.jooq.impl.DSL;
 
 public class MultiSelectConverter implements FilterConverter<String[], MultiSelectFilter> {
 
@@ -25,7 +24,7 @@ public class MultiSelectConverter implements FilterConverter<String[], MultiSele
 		);
 
 		FilterCondition condition = new MultiSelectCondition(
-				DSL.name(context.getConceptTableNames().tableNameFor(CteStep.PREPROCESSING), rootSelect.alias().getName()),
+				context.getConceptTableNames().qualify(CteStep.PREPROCESSING, rootSelect.alias()),
 				context.getValue(),
 				context.getParentContext().getSqlDialect().getFunction()
 		);

@@ -28,7 +28,7 @@ public interface Selects {
 	/**
 	 * @return A list of all select fields including the primary column and validity date.
 	 */
-	List<Field<Object>> all();
+	List<Field<?>> all();
 
 	/**
 	 * List of columns that the user explicitly referenced, either via a filter or a select.

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
+import java.util.Collections;
+
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.NumberFilter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
@@ -8,9 +10,6 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.Filters;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter.NumberCondition;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
-import org.jooq.impl.DSL;
-
-import java.util.Collections;
 
 public class NumberConverter implements FilterConverter<IRange<? extends Number, ?>, NumberFilter<IRange<? extends Number, ?>>> {
 	private static final Class<? extends NumberFilter> CLASS = NumberFilter.class;
@@ -26,9 +25,8 @@ public class NumberConverter implements FilterConverter<IRange<? extends Number,
 				numberClass
 		);
 
-		String preprocessingCteName = context.getConceptTableNames().tableNameFor(CteStep.PREPROCESSING);
 		NumberCondition condition = new NumberCondition(
-				DSL.field(DSL.name(preprocessingCteName, rootSelect.alias().getName()), numberClass),
+				context.getConceptTableNames().qualify(CteStep.PREPROCESSING, rootSelect.alias()),
 				context.getValue()
 		);
 

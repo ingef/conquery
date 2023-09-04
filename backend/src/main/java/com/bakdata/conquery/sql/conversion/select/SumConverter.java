@@ -8,6 +8,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.SumGroupBy;
 import com.bakdata.conquery.sql.conversion.filter.NumberMapUtil;
+import org.jooq.Field;
 
 public class SumConverter implements SelectConverter<SumSelect> {
 
@@ -17,17 +18,16 @@ public class SumConverter implements SelectConverter<SumSelect> {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumSelect.getColumn().getType());
 
 		ExtractingSelect<? extends Number> rootSelect = new ExtractingSelect<>(
-				context.getTables().rootTable(),
+				context.getConceptTableNames().rootTable(),
 				sumSelect.getColumn().getName(),
 				numberClass
 		);
 
-		SumGroupBy sumGroupBy = new SumGroupBy(
-				rootSelect.alias()
-		);
+		Field<? extends Number> qualifiedRootSelect = context.getConceptTableNames().qualify(CteStep.EVENT_FILTER, rootSelect.alias());
+		SumGroupBy sumGroupBy = new SumGroupBy(qualifiedRootSelect);
 
 		ExtractingSelect<? extends Number> finalSelect = new ExtractingSelect<>(
-				context.getTables().tableNameFor(CteStep.AGGREGATION_SELECT),
+				context.getConceptTableNames().tableNameFor(CteStep.AGGREGATION_SELECT),
 				sumGroupBy.alias().getName(),
 				numberClass
 		);

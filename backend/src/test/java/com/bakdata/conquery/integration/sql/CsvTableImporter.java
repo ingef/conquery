@@ -90,7 +90,7 @@ public class CsvTableImporter {
 			String insertRowStatement = dslContext.insertInto(table, columns)
 												  .values(rowN)
 												  .getSQL(ParamType.INLINED);
-			log.info("Inserting into table: {}", insertRowStatement);
+			log.debug("Inserting into table: {}", insertRowStatement);
 			statement.execute(insertRowStatement);
 		}
 	}
@@ -99,7 +99,7 @@ public class CsvTableImporter {
 		String createTableStatement = dslContext.createTable(table)
 												.columns(columns)
 												.getSQL(ParamType.INLINED);
-		log.info("Creating table: {}", createTableStatement);
+		log.debug("Creating table: {}", createTableStatement);
 		statement.execute(createTableStatement);
 	}
 
@@ -111,7 +111,7 @@ public class CsvTableImporter {
 			statement.execute(dropTableStatement);
 		}
 		catch (SQLException e) {
-			log.info("Dropping table {} failed.", table.getName(), e);
+			log.debug("Dropping table {} failed.", table.getName(), e);
 		}
 	}
 

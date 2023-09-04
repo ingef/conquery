@@ -7,8 +7,8 @@ import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class FieldSelect extends ConquerySelect {
+@EqualsAndHashCode
+public class FieldSelect implements ConquerySelect {
 
 	private final Field<?> field;
 

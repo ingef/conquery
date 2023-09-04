@@ -7,8 +7,8 @@ import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class Exists extends ConquerySelect {
+@EqualsAndHashCode
+public class Exists implements ConquerySelect {
 
 	private final String label;
 

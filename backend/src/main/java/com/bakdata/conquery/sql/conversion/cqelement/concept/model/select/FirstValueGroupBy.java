@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.model.select;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -12,18 +11,15 @@ import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class FirstValueGroupBy extends ConquerySelect {
+public class FirstValueGroupBy implements ConquerySelect {
 
 	private final Field<?> field;
-	private final List<Field<Object>> validityDateColumns;
+	private final List<Field<?>> validityDateColumns;
 	private final SqlFunctionProvider functionProvider;
 
 	@Override
 	public Field<?> select() {
-		List<Field<?>> qualifiedValidityDates = validityDateColumns.stream()
-																   .map(validityDate -> DSL.field(DSL.name(getQualifier(), validityDate.getName())))
-																   .collect(Collectors.toList());
-		return functionProvider.first(DSL.name(getQualifier(), field.getName()), qualifiedValidityDates)
+		return functionProvider.first(field, validityDateColumns)
 							   .as(field.getName());
 	}
 

@@ -25,8 +25,6 @@ class AggregationSelectCte extends ConceptCte {
 		String previousCteName = cteContext.getPrevious().getCteName();
 		List<ConquerySelect> aggregationFilterSelects = cteContext.allConceptSelects()
 																  .flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
-																  // as we don't know if there is an event filter step, we just map the selects on the previous step
-																  .map(conquerySelect -> conquerySelect.qualify(previousCteName))
 																  .distinct()
 																  .collect(Collectors.toList());
 

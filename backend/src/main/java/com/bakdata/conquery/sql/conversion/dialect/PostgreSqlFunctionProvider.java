@@ -128,8 +128,8 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 
 	@Override
-	public Field<?> first(Name columnName, List<Field<?>> orderByColumn) {
-		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(DSL.field(columnName))));
+	public Field<?> first(Field<?> column, List<Field<?>> orderByColumn) {
+		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(column)));
 	}
 
 	private Field<Object> daterange(Field<Object> startColumn, Field<Object> endColumn, String bounds) {

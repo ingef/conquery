@@ -17,23 +17,24 @@ public class FirstValueConverter implements SelectConverter<FirstValueSelect> {
 	public SqlSelects convert(FirstValueSelect convert, SelectContext context) {
 
 		ExtractingSelect<Object> rootSelect = new ExtractingSelect<>(
-				context.getTables().rootTable(),
+				context.getConceptTableNames().rootTable(),
 				convert.getColumn().getName(),
 				Object.class
 		);
 
-		List<Field<Object>> validityDateFields = context.getValidityDate()
-														.map(ColumnDateRange::toFields)
-														.orElse(List.of(DSL.field("1")));
+		List<Field<?>> validityDateFields = context.getValidityDate()
+												   .map(validityDate -> validityDate.qualify(context.getConceptTableNames().tableNameFor(CteStep.EVENT_FILTER)))
+												   .map(ColumnDateRange::toFields)
+												   .orElse(List.of(DSL.field("1")));
 
 		FirstValueGroupBy firstValueGroupBy = new FirstValueGroupBy(
-				rootSelect.alias(),
+				context.getConceptTableNames().qualify(CteStep.EVENT_FILTER, rootSelect.alias()),
 				validityDateFields,
 				context.getParentContext().getSqlDialect().getFunction()
 		);
 
 		ExtractingSelect<Object> finalSelect = new ExtractingSelect<>(
-				context.getTables().tableNameFor(CteStep.AGGREGATION_SELECT),
+				context.getConceptTableNames().tableNameFor(CteStep.AGGREGATION_SELECT),
 				firstValueGroupBy.alias().getName(),
 				Object.class
 		);

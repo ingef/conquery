@@ -9,14 +9,14 @@ import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class SumGroupBy extends ConquerySelect {
+@EqualsAndHashCode
+public class SumGroupBy implements ConquerySelect {
 
 	private final Field<? extends Number> columnToSum;
 
 	@Override
 	public Field<BigDecimal> select() {
-		return DSL.sum(DSL.field(DSL.name(getQualifier(), columnToSum.getName()), columnToSum.getType()))
+		return DSL.sum(DSL.field(DSL.name(columnToSum.getName()), columnToSum.getType()))
 				  .as(columnToSum.getName());
 	}
 

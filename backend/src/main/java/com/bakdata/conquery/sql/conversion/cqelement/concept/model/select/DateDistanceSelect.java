@@ -18,8 +18,8 @@ import org.jooq.Name;
 import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public class DateDistanceSelect extends ConquerySelect {
+@EqualsAndHashCode
+public class DateDistanceSelect implements ConquerySelect {
 
 	private final DateNowSupplier dateNowSupplier;
 	private final ChronoUnit timeUnit;

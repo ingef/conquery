@@ -62,7 +62,7 @@ public class MergedSelects implements Selects {
 	}
 
 	@Override
-	public List<Field<Object>> all() {
+	public List<Field<?>> all() {
 		return Stream.concat(
 				this.primaryColumnAndValidityDate(),
 				this.mergedSelects.stream()
@@ -96,7 +96,7 @@ public class MergedSelects implements Selects {
 							.toList();
 	}
 
-	private Stream<Field<Object>> primaryColumnAndValidityDate() {
+	private Stream<Field<?>> primaryColumnAndValidityDate() {
 		return Stream.concat(
 				Stream.of(this.primaryColumn),
 				this.validityDate.map(ColumnDateRange::toFields).stream().flatMap(Collection::stream)

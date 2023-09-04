@@ -1,16 +1,17 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
+import java.util.Collections;
+
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConceptFilter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.Filters;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter.SumCondition;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.SumGroupBy;
-import org.jooq.impl.DSL;
-
-import java.util.Collections;
+import org.jooq.Field;
 
 public class SumConverter implements FilterConverter<IRange<? extends Number, ?>, SumFilter<IRange<? extends Number, ?>>> {
 
@@ -21,14 +22,17 @@ public class SumConverter implements FilterConverter<IRange<? extends Number, ?>
 
 		// TODO(tm): convert getSubtractColumn and getDistinctByColumn
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumFilter.getColumn().getType());
-
 		ExtractingSelect<? extends Number> rootSelect = new ExtractingSelect<>(
 				context.getConceptTableNames().rootTable(),
 				sumFilter.getColumn().getName(),
 				numberClass
 		);
-		SumGroupBy sumGroupBy = new SumGroupBy(rootSelect.alias());
-		SumCondition sumFilterCondition = new SumCondition(DSL.field(sumGroupBy.alias()), context.getValue());
+
+		Field<? extends Number> qualifiedRootSelect = context.getConceptTableNames().qualify(CteStep.EVENT_FILTER, rootSelect.alias());
+		SumGroupBy sumGroupBy = new SumGroupBy(qualifiedRootSelect);
+
+		Field<? extends Number> qualifiedSumGroupBy = context.getConceptTableNames().qualify(CteStep.AGGREGATION_SELECT, sumGroupBy.alias());
+		SumCondition sumFilterCondition = new SumCondition(qualifiedSumGroupBy, context.getValue());
 
 		return new ConceptFilter(
 				SqlSelects.builder()

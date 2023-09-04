@@ -27,27 +27,26 @@ public class DateDistanceConverter implements SelectConverter<DateDistanceSelect
 		ConquerySelect dateDistanceSelect = new com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.DateDistanceSelect(
 				dateNowSupplier,
 				select.getTimeUnit(),
-				context.getTables().rootTable(),
+				context.getConceptTableNames().rootTable(),
 				select.getColumn(),
 				context.getParentContext().getDateRestrictionRange(),
 				select.getLabel(),
 				context.getParentContext().getSqlDialect().getFunction()
 		);
 
-		// TODO: @awildturtok How should we handle FIRST and LAST if there is no validity date?
-		List<Field<Object>> validityDateFields = context.getValidityDate()
-														.map(validityDate -> validityDate.qualify(context.getTables().tableNameFor(CteStep.EVENT_FILTER))
-																						 .toFields())
-														.orElse(List.of(DSL.field(DSL.name(context.getParentContext().getConfig().getPrimaryColumn()))));
+		List<Field<?>> validityDateFields = context.getValidityDate()
+												   .map(validityDate -> validityDate.qualify(context.getConceptTableNames().tableNameFor(CteStep.EVENT_FILTER))
+																					.toFields())
+												   .orElse(List.of(DSL.field(DSL.name(context.getParentContext().getConfig().getPrimaryColumn()))));
 
 		FirstValueGroupBy firstValueGroupBy = new FirstValueGroupBy(
-				dateDistanceSelect.alias(),
+				context.getConceptTableNames().qualify(CteStep.EVENT_FILTER, dateDistanceSelect.alias()),
 				validityDateFields,
 				context.getParentContext().getSqlDialect().getFunction()
 		);
 
 		ExtractingSelect<Object> firstValueReference = new ExtractingSelect<>(
-				context.getTables().tableNameFor(CteStep.AGGREGATION_SELECT),
+				context.getConceptTableNames().tableNameFor(CteStep.AGGREGATION_SELECT),
 				firstValueGroupBy.alias().getName(),
 				Object.class
 		);

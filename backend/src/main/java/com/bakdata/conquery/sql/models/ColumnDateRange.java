@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.models;
 
 import java.sql.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import lombok.Getter;
@@ -52,13 +53,13 @@ public class ColumnDateRange {
 		return this.range != null;
 	}
 
-	public List<Field<Object>> toFields() {
+	public List<Field<?>> toFields() {
 		if (isSingleColumnRange()) {
 			return List.of(this.range);
 		}
 		return Stream.of(this.start, this.end)
 					 .map(dateField -> dateField.coerce(Object.class))
-					 .toList();
+					 .collect(Collectors.toList());
 	}
 
 	public ColumnDateRange qualify(String qualifier) {

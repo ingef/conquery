@@ -8,13 +8,13 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterType;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
-import org.jooq.Name;
+import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 public class MultiSelectCondition implements FilterCondition {
 
-	private final Name column;
+	private final Field<String> column;
 	private final String[] values;
 	private final SqlFunctionProvider functionProvider;
 
@@ -22,7 +22,7 @@ public class MultiSelectCondition implements FilterCondition {
 	public FilterCondition negate() {
 		// we want all entries that don't satisfy a condition - because in SQL a comparison with NULL equals UNKNOWN and not FALSE,
 		// we need to check if the entry is NULL or does not fulfil the condition
-		Condition valueIsNull = DSL.field(column).isNull();
+		Condition valueIsNull = column.isNull();
 		Condition notOrNull = DSL.not(filterCondition()).or(valueIsNull);
 		return ConditionUtil.wrap(notOrNull, this.type());
 	}

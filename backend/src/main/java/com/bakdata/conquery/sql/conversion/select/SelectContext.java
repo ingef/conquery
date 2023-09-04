@@ -15,5 +15,5 @@ public class SelectContext implements Context {
 	CQConcept concept;
 	String label;
 	Optional<ColumnDateRange> validityDate;
-	ConceptTableNames tables;
+	ConceptTableNames conceptTableNames;
 }

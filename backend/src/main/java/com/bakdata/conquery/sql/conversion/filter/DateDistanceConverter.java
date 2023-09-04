@@ -4,6 +4,7 @@ import java.util.Collections;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.DateDistanceFilter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConceptFilter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterCondition;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.Filters;
@@ -33,7 +34,10 @@ public class DateDistanceConverter implements FilterConverter<Range.LongRange, D
 				context.getParentContext().getSqlDialect().getFunction()
 		);
 
-		FilterCondition dateDistanceCondition = new DateDistanceCondition(dateDistanceSelect.alias(), context.getValue());
+		FilterCondition dateDistanceCondition = new DateDistanceCondition(
+				context.getConceptTableNames().qualify(CteStep.PREPROCESSING, dateDistanceSelect.alias()),
+				context.getValue()
+		);
 
 		return new ConceptFilter(
 				SqlSelects.builder()

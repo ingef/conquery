@@ -42,7 +42,7 @@ public class ConceptSelects implements Selects {
 	}
 
 	@Override
-	public List<Field<Object>> all() {
+	public List<Field<?>> all() {
 		return Stream.of(
 							 Stream.of(this.primaryColumn),
 							 this.validityDate.stream().flatMap(range -> range.toFields().stream()),

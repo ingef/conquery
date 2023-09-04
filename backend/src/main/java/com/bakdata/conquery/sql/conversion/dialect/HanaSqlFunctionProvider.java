@@ -135,8 +135,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Object> first(Name columnName, List<Field<?>> orderByColumns) {
-		return DSL.field(DSL.sql("FIRST_VALUE({0} {1})", DSL.field(columnName), DSL.orderBy(orderByColumns)));
+	public Field<?> first(Field<?> column, List<Field<?>> orderByColumns) {
+		return DSL.field(DSL.sql("FIRST_VALUE({0} {1})", column, DSL.orderBy(orderByColumns)));
 	}
 
 	private Field<Date> addDay(Field<Date> dateColumn) {
