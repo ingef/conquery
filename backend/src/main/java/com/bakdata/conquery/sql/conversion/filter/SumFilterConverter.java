@@ -15,7 +15,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.Extrac
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.SumGroupBy;
 import org.jooq.Field;
 
-public class SumConverter implements FilterConverter<IRange<? extends Number, ?>, SumFilter<IRange<? extends Number, ?>>> {
+public class SumFilterConverter implements FilterConverter<IRange<? extends Number, ?>, SumFilter<IRange<? extends Number, ?>>> {
 
 	private static final Class<? extends SumFilter> CLASS = SumFilter.class;
 

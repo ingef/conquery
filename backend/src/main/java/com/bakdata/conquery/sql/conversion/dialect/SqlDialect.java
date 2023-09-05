@@ -15,17 +15,19 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
-import com.bakdata.conquery.sql.conversion.filter.DateDistanceConverter;
+import com.bakdata.conquery.sql.conversion.filter.DateDistanceFilterConverter;
 import com.bakdata.conquery.sql.conversion.filter.FilterConversions;
 import com.bakdata.conquery.sql.conversion.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.filter.MultiSelectConverter;
-import com.bakdata.conquery.sql.conversion.filter.NumberConverter;
+import com.bakdata.conquery.sql.conversion.filter.MultiSelectFilterConverter;
+import com.bakdata.conquery.sql.conversion.filter.NumberFilterConverter;
+import com.bakdata.conquery.sql.conversion.filter.SumFilterConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
-import com.bakdata.conquery.sql.conversion.select.ExistsConverter;
-import com.bakdata.conquery.sql.conversion.select.FirstValueConverter;
+import com.bakdata.conquery.sql.conversion.select.DateDistanceSelectConverter;
+import com.bakdata.conquery.sql.conversion.select.ExistsSelectConverter;
+import com.bakdata.conquery.sql.conversion.select.FirstValueSelectConverter;
 import com.bakdata.conquery.sql.conversion.select.SelectConversions;
 import com.bakdata.conquery.sql.conversion.select.SelectConverter;
-import com.bakdata.conquery.sql.conversion.select.SumConverter;
+import com.bakdata.conquery.sql.conversion.select.SumSelectConverter;
 import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
 import org.jooq.DSLContext;
 
@@ -75,19 +77,19 @@ public interface SqlDialect {
 
 	default List<FilterConverter<?, ?>> getDefaultFilterConverters() {
 		return List.of(
-				new DateDistanceConverter(DEFAULT_DATE_NOW_SUPPLIER),
-				new MultiSelectConverter(),
-				new NumberConverter(),
-				new com.bakdata.conquery.sql.conversion.filter.SumConverter()
+				new DateDistanceFilterConverter(DEFAULT_DATE_NOW_SUPPLIER),
+				new MultiSelectFilterConverter(),
+				new NumberFilterConverter(),
+				new SumFilterConverter()
 		);
 	}
 
 	default List<SelectConverter<? extends Select>> getDefaultSelectConverters() {
 		return List.of(
-				new FirstValueConverter(),
-				new com.bakdata.conquery.sql.conversion.select.DateDistanceConverter(DEFAULT_DATE_NOW_SUPPLIER),
-				new ExistsConverter(),
-				new SumConverter()
+				new FirstValueSelectConverter(),
+				new DateDistanceSelectConverter(DEFAULT_DATE_NOW_SUPPLIER),
+				new ExistsSelectConverter(),
+				new SumSelectConverter()
 		);
 	}
 }

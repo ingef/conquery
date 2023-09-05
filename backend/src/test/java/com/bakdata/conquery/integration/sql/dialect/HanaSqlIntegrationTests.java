@@ -1,5 +1,17 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.sql.testcontainer.hana.HanaContainer;
@@ -8,7 +20,7 @@ import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.conversion.dialect.HanaSqlDialect;
-import com.bakdata.conquery.sql.conversion.select.DateDistanceConverter;
+import com.bakdata.conquery.sql.conversion.select.DateDistanceSelectConverter;
 import com.bakdata.conquery.sql.conversion.select.SelectConverter;
 import com.google.common.base.Strings;
 import lombok.Getter;
@@ -22,18 +34,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.utility.DockerImageName;
-
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
 
 @Slf4j
 public class HanaSqlIntegrationTests extends IntegrationTests {
@@ -107,7 +107,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		@Override
 		public List<SelectConverter<? extends Select>> getSelectConverters() {
 			return this.customizeSelectConverters(List.of(
-					new DateDistanceConverter(new MockDateNowSupplier())
+					new DateDistanceSelectConverter(new MockDateNowSupplier())
 			));
 		}
 

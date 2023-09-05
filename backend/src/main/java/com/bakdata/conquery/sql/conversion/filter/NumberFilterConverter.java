@@ -13,7 +13,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter.NumberCondition;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
 
-public class NumberConverter implements FilterConverter<IRange<? extends Number, ?>, NumberFilter<IRange<? extends Number, ?>>> {
+public class NumberFilterConverter implements FilterConverter<IRange<? extends Number, ?>, NumberFilter<IRange<? extends Number, ?>>> {
 	private static final Class<? extends NumberFilter> CLASS = NumberFilter.class;
 
 	@Override

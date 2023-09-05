@@ -14,7 +14,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter.MultiSelectCondition;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
 
-public class MultiSelectConverter implements FilterConverter<String[], MultiSelectFilter> {
+public class MultiSelectFilterConverter implements FilterConverter<String[], MultiSelectFilter> {
 
 	@Override
 	public ConceptFilter convert(MultiSelectFilter multiSelectFilter, FilterContext<String[]> context) {

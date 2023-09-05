@@ -10,7 +10,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.SumGro
 import com.bakdata.conquery.sql.conversion.filter.NumberMapUtil;
 import org.jooq.Field;
 
-public class SumConverter implements SelectConverter<SumSelect> {
+public class SumSelectConverter implements SelectConverter<SumSelect> {
 
 	@Override
 	public SqlSelects convert(SumSelect sumSelect, SelectContext context) {

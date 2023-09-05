@@ -12,7 +12,7 @@ import com.bakdata.conquery.sql.models.ColumnDateRange;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-public class FirstValueConverter implements SelectConverter<FirstValueSelect> {
+public class FirstValueSelectConverter implements SelectConverter<FirstValueSelect> {
 
 	@Override
 	public SqlSelects convert(FirstValueSelect convert, SelectContext context) {

@@ -13,11 +13,11 @@ import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-public class DateDistanceConverter implements SelectConverter<DateDistanceSelect> {
+public class DateDistanceSelectConverter implements SelectConverter<DateDistanceSelect> {
 
 	private final DateNowSupplier dateNowSupplier;
 
-	public DateDistanceConverter(DateNowSupplier dateNowSupplier) {
+	public DateDistanceSelectConverter(DateNowSupplier dateNowSupplier) {
 		this.dateNowSupplier = dateNowSupplier;
 	}
 
