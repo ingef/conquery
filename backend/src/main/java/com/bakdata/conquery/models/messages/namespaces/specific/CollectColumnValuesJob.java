@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -59,7 +60,16 @@ public class CollectColumnValuesJob extends WorkerMessage {
 
 		col2Values.forEach((column, future) -> {
 			future.addListener(() -> {
-				// TODO send result to manager node
+				try {
+					context.send(new RegisterColumnValues(column, future.get()));
+				}
+				catch (InterruptedException e) {
+					//TODO
+					throw new RuntimeException(e);
+				}
+				catch (ExecutionException e) {
+					throw new RuntimeException(e);
+				}
 			}, jobsExecutorService);
 		})
 		;

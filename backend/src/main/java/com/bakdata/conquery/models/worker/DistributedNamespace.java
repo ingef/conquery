@@ -1,9 +1,11 @@
 package com.bakdata.conquery.models.worker;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -37,4 +39,7 @@ public class DistributedNamespace extends LocalNamespace {
 	}
 
 
+	public void addColumnValues(Column column, Collection<String> values) {
+		getFilterSearch().registerValues(column, values);
+	}
 }

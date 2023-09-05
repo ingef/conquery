@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -90,4 +91,10 @@ public class FilterSearch {
 		jobManager.addSlowJob(new UpdateFilterSearchJob(storage, searchCache, indexConfig, totals));
 	}
 
+	public void registerValues(Searchable<?> column, Collection<String> values) {
+		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(column, (ignored) -> column.createTrieSearch(indexConfig, storage));
+
+		values.forEach(search::addItem);
+		//TODO This requires re-counting values every time OR including state that tracks done-ness of UpdateFilterSearchJob
+	}
 }
