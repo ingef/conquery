@@ -312,6 +312,21 @@ public class QueryProcessor {
 
 		log.info("Patching {} ({}) with patch: {}", execution.getClass().getSimpleName(), execution, patch);
 
+		// If the patch shares the execution, we also share all subQueries
+		if (patch.getGroups() != null && !patch.getGroups().isEmpty()) {
+			final MetaDataPatch sharePatch = MetaDataPatch.builder()
+														  .groups(patch.getGroups())
+														  .build();
+
+			for (ManagedExecutionId managedExecutionId : execution.getSubmitted().collectRequiredQueries()) {
+				final ManagedExecution subQuery = storage.getExecution(managedExecutionId);
+
+				subject.authorize(subQuery, Ability.READ);
+
+				patchQuery(subject, subQuery, sharePatch);
+			}
+		}
+
 		patch.applyTo(execution, storage, subject);
 		storage.updateExecution(execution);
 	}
