@@ -6,10 +6,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -48,6 +50,7 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ColumnConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -58,6 +61,7 @@ import com.bakdata.conquery.models.datasets.concepts.Connector;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ExecutionManager;
@@ -314,14 +318,36 @@ public class QueryProcessor {
 
 		// If the patch shares the execution, we also share all subQueries
 		if (patch.getGroups() != null && !patch.getGroups().isEmpty()) {
-			final MetaDataPatch sharePatch = MetaDataPatch.builder()
-														  .groups(patch.getGroups())
-														  .build();
+
 
 			for (ManagedExecutionId managedExecutionId : execution.getSubmitted().collectRequiredQueries()) {
 				final ManagedExecution subQuery = storage.getExecution(managedExecutionId);
 
-				subject.authorize(subQuery, Ability.READ);
+				if (!subject.isPermitted(subQuery, Ability.READ)) {
+					log.warn("Not sharing {} as User {} is not allowed to see it themselves.", subQuery.getId(), subject);
+					continue;
+				}
+
+				final ConqueryPermission canReadQuery = subQuery.createPermission(Set.of(Ability.READ));
+
+				final Set<GroupId> groupsToShareWith = new HashSet<>(patch.getGroups());
+
+				// Find all groups the query is already shared with, so we do not remove them, as patch is absolute
+				for (Group group : storage.getAllGroups()) {
+					if (groupsToShareWith.contains(group.getId())){
+						continue;
+					}
+
+					final Set<ConqueryPermission> effectivePermissions = group.getEffectivePermissions();
+
+					if(effectivePermissions.stream().anyMatch(perm -> perm.implies(canReadQuery))) {
+						groupsToShareWith.add(group.getId());
+					}
+				}
+
+				final MetaDataPatch sharePatch = MetaDataPatch.builder()
+															  .groups(new ArrayList<>(groupsToShareWith))
+															  .build();
 
 				patchQuery(subject, subQuery, sharePatch);
 			}
