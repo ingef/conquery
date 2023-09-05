@@ -22,6 +22,15 @@ public class ExtractingSelect<V> implements ConquerySelect {
 	@EqualsAndHashCode.Exclude
 	Class<V> columnClass;
 
+	@SuppressWarnings("unchecked")
+	public static <V> ExtractingSelect<V> fromConquerySelect(String qualifier, ConquerySelect select) {
+		return (ExtractingSelect<V>) new ExtractingSelect<>(
+				qualifier,
+				select.alias().getName(),
+				select.alias().getType()
+		);
+	}
+
 	@Override
 	public Field<V> select() {
 		return DSL.field(DSL.name(table, column), columnClass);

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.conversion.select;
 
-import java.util.List;
+import java.util.Collections;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
@@ -18,24 +18,24 @@ public class SumConverter implements SelectConverter<SumSelect> {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumSelect.getColumn().getType());
 
 		ExtractingSelect<? extends Number> rootSelect = new ExtractingSelect<>(
-				context.getConceptTableNames().rootTable(),
+				context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
 				sumSelect.getColumn().getName(),
 				numberClass
 		);
 
-		Field<? extends Number> qualifiedRootSelect = context.getConceptTableNames().qualify(CteStep.EVENT_FILTER, rootSelect.alias());
+		Field<? extends Number> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, rootSelect.alias());
 		SumGroupBy sumGroupBy = new SumGroupBy(qualifiedRootSelect);
 
 		ExtractingSelect<? extends Number> finalSelect = new ExtractingSelect<>(
-				context.getConceptTableNames().tableNameFor(CteStep.AGGREGATION_SELECT),
+				context.getConceptTables().getPredecessorTableName(CteStep.FINAL),
 				sumGroupBy.alias().getName(),
 				numberClass
 		);
 
 		return SqlSelects.builder()
-						 .forPreprocessingStep(List.of(rootSelect))
-						 .forAggregationSelectStep(List.of(sumGroupBy))
-						 .forFinalStep(List.of(finalSelect))
+						 .forPreprocessingStep(Collections.singletonList(rootSelect))
+						 .forAggregationSelectStep(Collections.singletonList(sumGroupBy))
+						 .forFinalStep(Collections.singletonList(finalSelect))
 						 .build();
 	}
 

@@ -16,7 +16,7 @@ public class SumGroupBy implements ConquerySelect {
 
 	@Override
 	public Field<BigDecimal> select() {
-		return DSL.sum(DSL.field(DSL.name(columnToSum.getName()), columnToSum.getType()))
+		return DSL.sum(columnToSum)
 				  .as(columnToSum.getName());
 	}
 

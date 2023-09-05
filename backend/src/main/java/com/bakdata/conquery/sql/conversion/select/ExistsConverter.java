@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.select;
 
 import java.util.Collections;
-import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
@@ -12,8 +11,7 @@ public class ExistsConverter implements SelectConverter<ExistsSelect> {
 	@Override
 	public SqlSelects convert(ExistsSelect convert, SelectContext context) {
 		return SqlSelects.builder()
-						 .forPreprocessingStep(Collections.emptyList())
-						 .forFinalStep(List.of(new Exists(context.getLabel())))
+						 .forFinalStep(Collections.singletonList(new Exists(context.getLabel())))
 						 .build();
 	}
 

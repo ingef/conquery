@@ -13,12 +13,6 @@ import com.bakdata.conquery.sql.models.ColumnDateRange;
 class AggregationSelectCte extends ConceptCte {
 
 	@Override
-	public boolean canConvert(CteContext cteContext) {
-		// We always need to apply a group by
-		return true;
-	}
-
-	@Override
 	public QueryStep.QueryStepBuilder convertStep(CteContext cteContext) {
 
 		// all selects that are required in the aggregation filter step

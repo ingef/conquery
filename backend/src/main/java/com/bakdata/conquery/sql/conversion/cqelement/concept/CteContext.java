@@ -27,7 +27,7 @@ class CteContext implements Context {
 	boolean isExcludedFromDateAggregation;
 	List<SqlSelects> selects;
 	List<ConceptFilter> filters;
-	ConceptTableNames conceptTableNames;
+	ConceptTables conceptTables;
 	String conceptLabel;
 	@With
 	QueryStep previous;

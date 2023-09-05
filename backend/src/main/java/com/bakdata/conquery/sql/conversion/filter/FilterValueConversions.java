@@ -1,8 +1,12 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
+import java.util.Set;
+
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptTableNames;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptTables;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConceptFilter;
 
 public class FilterValueConversions {
@@ -12,12 +16,22 @@ public class FilterValueConversions {
 		this.filterConversions = filterConversions;
 	}
 
-	public ConceptFilter convert(FilterValue<?> filterValue, ConversionContext context, ConceptTableNames nameGenerator) {
-		ConceptFilter convert = this.filterConversions.convert(filterValue.getFilter(), new FilterContext<>(filterValue.getValue(), context, nameGenerator));
+	public ConceptFilter convert(FilterValue<?> filterValue, ConversionContext context, ConceptTables conceptTables) {
+		ConceptFilter convert = this.filterConversions.convert(filterValue.getFilter(), new FilterContext<>(filterValue.getValue(), context, conceptTables));
 		if (context.isNegation()) {
 			return new ConceptFilter(convert.getSelects(), convert.getFilters().negated());
 		}
 		return convert;
+	}
+
+	public Set<CteStep> requiredSteps(FilterValue<?> filterValue) {
+		return this.filterConversions.getConverters().stream()
+									 .filter(converter -> converter.getConversionClass().isInstance(filterValue.getFilter()))
+									 .findFirst()
+									 .orElseThrow(() -> new ConqueryError.SqlConversionError(
+											 "Could not find a matching converter for filter %s".formatted(filterValue.getFilter()))
+									 )
+									 .requiredSteps();
 	}
 
 }

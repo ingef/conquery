@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.select;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect;
@@ -17,32 +18,33 @@ public class FirstValueConverter implements SelectConverter<FirstValueSelect> {
 	public SqlSelects convert(FirstValueSelect convert, SelectContext context) {
 
 		ExtractingSelect<Object> rootSelect = new ExtractingSelect<>(
-				context.getConceptTableNames().rootTable(),
+				context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
 				convert.getColumn().getName(),
 				Object.class
 		);
 
 		List<Field<?>> validityDateFields = context.getValidityDate()
-												   .map(validityDate -> validityDate.qualify(context.getConceptTableNames().tableNameFor(CteStep.EVENT_FILTER)))
+												   .map(validityDate -> validityDate.qualify(context.getConceptTables()
+																									.getPredecessorTableName(CteStep.AGGREGATION_SELECT)))
 												   .map(ColumnDateRange::toFields)
 												   .orElse(List.of(DSL.field("1")));
 
 		FirstValueGroupBy firstValueGroupBy = new FirstValueGroupBy(
-				context.getConceptTableNames().qualify(CteStep.EVENT_FILTER, rootSelect.alias()),
+				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, rootSelect.alias()),
 				validityDateFields,
 				context.getParentContext().getSqlDialect().getFunction()
 		);
 
 		ExtractingSelect<Object> finalSelect = new ExtractingSelect<>(
-				context.getConceptTableNames().tableNameFor(CteStep.AGGREGATION_SELECT),
+				context.getConceptTables().getPredecessorTableName(CteStep.FINAL),
 				firstValueGroupBy.alias().getName(),
 				Object.class
 		);
 
 		return SqlSelects.builder()
-						 .forPreprocessingStep(List.of(rootSelect))
-						 .forAggregationSelectStep(List.of(firstValueGroupBy))
-						 .forFinalStep(List.of(finalSelect))
+						 .forPreprocessingStep(Collections.singletonList(rootSelect))
+						 .forAggregationSelectStep(Collections.singletonList(firstValueGroupBy))
+						 .forFinalStep(Collections.singletonList(finalSelect))
 						 .build();
 	}
 

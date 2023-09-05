@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,12 +36,12 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 	private final List<ConceptCte> conceptCTEs;
-	private final FilterValueConversions filterConverterService;
-	private final SelectConversions selectConverterService;
+	private final FilterValueConversions filterValueConversions;
+	private final SelectConversions selectConversions;
 
-	public CQConceptConverter(FilterConversions filterConversions, SelectConversions selectConverterService) {
-		this.filterConverterService = new FilterValueConversions(filterConversions);
-		this.selectConverterService = selectConverterService;
+	public CQConceptConverter(FilterConversions filterConversions, SelectConversions selectConversions) {
+		this.filterValueConversions = new FilterValueConversions(filterConversions);
+		this.selectConversions = selectConversions;
 		this.conceptCTEs = List.of(
 				new PreprocessingCte(),
 				new EventFilterCte(),
@@ -64,11 +65,11 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		CQTable table = node.getTables().get(0);
 		String conceptLabel = createConceptLabel(node, context);
-		ConceptTableNames conceptTableNames = new ConceptTableNames(conceptLabel, table.getConnector().getTable().getName());
 
-		Optional<ColumnDateRange> validityDateSelect = convertValidityDate(context.getSqlDialect().getFunction(), table, conceptLabel, conceptTableNames);
-		List<ConceptFilter> conceptFilters = convertConceptFilters(context, table, conceptTableNames, validityDateSelect);
-		List<SqlSelects> conceptSelects = getConceptSelects(node, context, table, conceptLabel, conceptTableNames, validityDateSelect);
+		ConceptTables conceptTables = new ConceptTables(conceptLabel, getRequiredSteps(table), table.getConnector().getTable().getName());
+		Optional<ColumnDateRange> validityDateSelect = convertValidityDate(context.getSqlDialect().getFunction(), table, conceptLabel, conceptTables);
+		List<ConceptFilter> conceptFilters = convertConceptFilters(context, table, conceptTables, validityDateSelect);
+		List<SqlSelects> conceptSelects = getConceptSelects(node, context, table, conceptLabel, conceptTables, validityDateSelect);
 
 		CteContext cteContext = CteContext.builder()
 										  .context(context)
@@ -77,7 +78,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 										  .primaryColumn(DSL.field(DSL.name(context.getConfig().getPrimaryColumn())))
 										  .validityDateRange(validityDateSelect)
 										  .isExcludedFromDateAggregation(node.isExcludeFromTimeAggregation())
-										  .conceptTableNames(conceptTableNames)
+										  .conceptTables(conceptTables)
 										  .conceptLabel(conceptLabel)
 										  .build();
 
@@ -94,28 +95,34 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new ConqueryError.SqlConversionError("No conversion for concept possible.")));
 	}
 
+	private Set<CteStep> getRequiredSteps(CQTable table) {
+		return table.getFilters().stream()
+					.flatMap(filterValue -> this.filterValueConversions.requiredSteps(filterValue).stream())
+					.collect(Collectors.toSet());
+	}
+
 	private List<SqlSelects> getConceptSelects(
 			CQConcept node,
 			ConversionContext context,
 			CQTable table,
 			String conceptLabel,
-			ConceptTableNames conceptTableNames,
+			ConceptTables conceptTables,
 			Optional<ColumnDateRange> validityDateSelect
 	) {
-		SelectContext selectContext = new SelectContext(context, node, conceptLabel, validityDateSelect, conceptTableNames);
+		SelectContext selectContext = new SelectContext(context, node, conceptLabel, validityDateSelect, conceptTables);
 		return Stream.concat(table.getSelects().stream(), node.getSelects().stream())
-					 .map(select -> this.selectConverterService.convert(select, selectContext))
+					 .map(select -> this.selectConversions.convert(select, selectContext))
 					 .toList();
 	}
 
 	private List<ConceptFilter> convertConceptFilters(
 			ConversionContext context,
 			CQTable table,
-			ConceptTableNames conceptTableNames,
+			ConceptTables conceptTables,
 			Optional<ColumnDateRange> validityDateSelect
 	) {
 		Stream<ConceptFilter> conceptFilters = table.getFilters().stream()
-													.map(filterValue -> this.filterConverterService.convert(filterValue, context, conceptTableNames));
+													.map(filterValue -> this.filterValueConversions.convert(filterValue, context, conceptTables));
 		Stream<ConceptFilter> dateRestrictionFilter = getDateRestriction(context, validityDateSelect).stream();
 		return Stream.concat(conceptFilters, dateRestrictionFilter).toList();
 	}
@@ -133,12 +140,12 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			SqlFunctionProvider functionProvider,
 			CQTable table,
 			String conceptLabel,
-			ConceptTableNames conceptTableNames
+			ConceptTables conceptTables
 	) {
 		if (Objects.isNull(table.findValidityDate())) {
 			return Optional.empty();
 		}
-		return Optional.of(functionProvider.daterange(table.findValidityDate(), conceptTableNames.rootTable(), conceptLabel));
+		return Optional.of(functionProvider.daterange(table.findValidityDate(), conceptTables.getPredecessorTableName(CteStep.PREPROCESSING), conceptLabel));
 	}
 
 	private static Optional<ConceptFilter> getDateRestriction(ConversionContext context, Optional<ColumnDateRange> validityDate) {

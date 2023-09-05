@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.MultiSelectFilter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
@@ -18,13 +20,13 @@ public class MultiSelectConverter implements FilterConverter<String[], MultiSele
 	public ConceptFilter convert(MultiSelectFilter multiSelectFilter, FilterContext<String[]> context) {
 
 		ConquerySelect rootSelect = new ExtractingSelect<>(
-				context.getConceptTableNames().rootTable(),
+				context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
 				multiSelectFilter.getColumn().getName(),
 				String.class
 		);
 
 		FilterCondition condition = new MultiSelectCondition(
-				context.getConceptTableNames().qualify(CteStep.PREPROCESSING, rootSelect.alias()),
+				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.EVENT_FILTER, rootSelect.alias()),
 				context.getValue(),
 				context.getParentContext().getSqlDialect().getFunction()
 		);
@@ -37,6 +39,14 @@ public class MultiSelectConverter implements FilterConverter<String[], MultiSele
 					   .event(List.of(condition))
 					   .build()
 		);
+	}
+
+	@Override
+	public Set<CteStep> requiredSteps() {
+		Set<CteStep> multiSelectFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
+		multiSelectFilterSteps.add(CteStep.EVENT_FILTER);
+		return multiSelectFilterSteps;
+
 	}
 
 	@Override

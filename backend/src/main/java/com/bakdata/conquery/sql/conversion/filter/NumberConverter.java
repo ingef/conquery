@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.NumberFilter;
@@ -20,13 +22,13 @@ public class NumberConverter implements FilterConverter<IRange<? extends Number,
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(numberFilter.getColumn().getType());
 
 		ExtractingSelect<? extends Number> rootSelect = new ExtractingSelect<>(
-				context.getConceptTableNames().rootTable(),
+				context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
 				numberFilter.getColumn().getName(),
 				numberClass
 		);
 
 		NumberCondition condition = new NumberCondition(
-				context.getConceptTableNames().qualify(CteStep.PREPROCESSING, rootSelect.alias()),
+				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.EVENT_FILTER, rootSelect.alias()),
 				context.getValue()
 		);
 
@@ -38,6 +40,13 @@ public class NumberConverter implements FilterConverter<IRange<? extends Number,
 					   .event(Collections.singletonList(condition))
 					   .build()
 		);
+	}
+
+	@Override
+	public Set<CteStep> requiredSteps() {
+		Set<CteStep> numberFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
+		numberFilterSteps.add(CteStep.EVENT_FILTER);
+		return numberFilterSteps;
 	}
 
 	@Override

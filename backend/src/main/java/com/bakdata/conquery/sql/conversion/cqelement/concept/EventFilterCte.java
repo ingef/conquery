@@ -13,15 +13,9 @@ import org.jooq.Condition;
 class EventFilterCte extends ConceptCte {
 
 	@Override
-	public boolean canConvert(CteContext cteContext) {
-		return cteContext.getFilters().stream()
-						 .anyMatch(filter -> !filter.getFilters().getEvent().isEmpty());
-	}
-
-	@Override
 	public QueryStep.QueryStepBuilder convertStep(CteContext cteContext) {
 
-		String preprocessingCteName = cteContext.getConceptTableNames().tableNameFor(CteStep.PREPROCESSING);
+		String preprocessingCteName = cteContext.getConceptTables().getPredecessorTableName(CteStep.EVENT_FILTER);
 
 		ConceptSelects eventFilterSelects = new ConceptSelects(
 				cteContext.getPrimaryColumn(),
@@ -43,7 +37,7 @@ class EventFilterCte extends ConceptCte {
 	private static List<ConquerySelect> getSelectsForAggregationSelectStep(CteContext cteContext, String preprocessingCteName) {
 		return cteContext.allConceptSelects()
 						 .flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
-						 .map(conquerySelect -> new ExtractingSelect<>(preprocessingCteName, conquerySelect.alias().getName(), Object.class))
+						 .map(conquerySelect -> ExtractingSelect.fromConquerySelect(preprocessingCteName, conquerySelect))
 						 .distinct()
 						 .collect(Collectors.toList());
 	}

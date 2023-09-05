@@ -10,11 +10,11 @@ abstract class ConceptCte {
 
 	protected Optional<QueryStep> convert(CteContext context, Optional<QueryStep> previous) {
 
-		if (!canConvert(context)) {
+		if (!isRequired(context.getConceptTables())) {
 			return Optional.empty();
 		}
 
-		String cteName = context.getConceptTableNames().tableNameFor(cteStep());
+		String cteName = context.getConceptTables().cteName(cteStep());
 		QueryStep.QueryStepBuilder queryStepBuilder = this.convertStep(context).cteName(cteName);
 
 		if (previous.isPresent()) {
@@ -22,14 +22,12 @@ abstract class ConceptCte {
 							.fromTable(QueryStep.toTableLike(previous.get().getCteName()));
 		}
 		else {
+			// only PREPROCESSING step has no predecessor
 			queryStepBuilder.predecessors(Collections.emptyList())
-							.fromTable(QueryStep.toTableLike(context.getConceptTableNames().rootTable()));
+							.fromTable(QueryStep.toTableLike(context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING)));
 		}
 		return Optional.of(queryStepBuilder.build());
-
 	}
-
-	protected abstract boolean canConvert(CteContext cteContext);
 
 	/**
 	 * @return The {@link CteStep} this instance belongs to.
@@ -37,5 +35,9 @@ abstract class ConceptCte {
 	protected abstract CteStep cteStep();
 
 	protected abstract QueryStep.QueryStepBuilder convertStep(CteContext cteContext);
+
+	private boolean isRequired(ConceptTables conceptTables) {
+		return conceptTables.isRequiredStep(cteStep());
+	}
 
 }

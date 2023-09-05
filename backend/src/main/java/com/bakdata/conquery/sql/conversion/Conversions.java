@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion;
 import java.util.List;
 
 import com.google.common.collect.MoreCollectors;
+import lombok.Getter;
 
 /**
  * Converts an input to a result with an applicable converter.
@@ -14,15 +15,16 @@ import com.google.common.collect.MoreCollectors;
  */
 public abstract class Conversions<C, R, X extends Context> {
 
+	@Getter
 	private final List<? extends Converter<? extends C, R, X>> converters;
 
 	protected Conversions(List<? extends Converter<? extends C, R, X>> converters) {
 		this.converters = converters;
 	}
 
-	public R convert(C selectNode, X context) {
+	public R convert(C node, X context) {
 		return converters.stream()
-						 .flatMap(converter -> converter.tryConvert(selectNode, context).stream())
+						 .flatMap(converter -> converter.tryConvert(node, context).stream())
 						 .collect(MoreCollectors.onlyElement());
 	}
 

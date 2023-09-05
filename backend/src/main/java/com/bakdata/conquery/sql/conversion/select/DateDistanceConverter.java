@@ -26,8 +26,8 @@ public class DateDistanceConverter implements SelectConverter<DateDistanceSelect
 
 		ConquerySelect dateDistanceSelect = new com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.DateDistanceSelect(
 				dateNowSupplier,
-				select.getTimeUnit(),
-				context.getConceptTableNames().rootTable(),
+				select.getTimeUnit(), context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
+
 				select.getColumn(),
 				context.getParentContext().getDateRestrictionRange(),
 				select.getLabel(),
@@ -35,18 +35,19 @@ public class DateDistanceConverter implements SelectConverter<DateDistanceSelect
 		);
 
 		List<Field<?>> validityDateFields = context.getValidityDate()
-												   .map(validityDate -> validityDate.qualify(context.getConceptTableNames().tableNameFor(CteStep.EVENT_FILTER))
+												   .map(validityDate -> validityDate.qualify(context.getConceptTables()
+																									.getPredecessorTableName(CteStep.AGGREGATION_SELECT))
 																					.toFields())
 												   .orElse(List.of(DSL.field(DSL.name(context.getParentContext().getConfig().getPrimaryColumn()))));
 
 		FirstValueGroupBy firstValueGroupBy = new FirstValueGroupBy(
-				context.getConceptTableNames().qualify(CteStep.EVENT_FILTER, dateDistanceSelect.alias()),
+				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, dateDistanceSelect.alias()),
 				validityDateFields,
 				context.getParentContext().getSqlDialect().getFunction()
 		);
 
 		ExtractingSelect<Object> firstValueReference = new ExtractingSelect<>(
-				context.getConceptTableNames().tableNameFor(CteStep.AGGREGATION_SELECT),
+				context.getConceptTables().getPredecessorTableName(CteStep.FINAL),
 				firstValueGroupBy.alias().getName(),
 				Object.class
 		);

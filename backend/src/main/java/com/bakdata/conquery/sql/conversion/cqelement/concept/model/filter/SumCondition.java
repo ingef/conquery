@@ -6,7 +6,6 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterType;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 public class SumCondition implements FilterCondition {
@@ -16,8 +15,7 @@ public class SumCondition implements FilterCondition {
 
 	@Override
 	public Condition filterCondition() {
-		Field<? extends Number> field = DSL.field(DSL.name(sumColumn.getName()), sumColumn.getType());
-		return ConditionUtil.rangeCondition(field, range);
+		return ConditionUtil.rangeCondition(sumColumn, range);
 	}
 
 	@Override
