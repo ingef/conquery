@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { createElement, forwardRef, useRef } from "react";
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { mergeRefs } from "react-merge-refs";
 
+import IconButton from "../../button/IconButton";
 import { formatDate, parseDate } from "../../common/helpers/dateHelper";
-import { mergeRefs } from "../../common/helpers/mergeRefs";
 import BaseInput, { Props as BaseInputProps } from "../BaseInput";
 
 import { CustomHeader } from "./CustomHeader";
@@ -28,19 +28,18 @@ const Root = styled("div")`
   }
 `;
 
-const CalendarIcon = styled(FontAwesomeIcon)`
+const CalendarIcon = styled(IconButton)`
   position: absolute;
   width: 16px;
   height: 16px;
   top: calc(50% - 8px);
   left: 5px;
-  cursor: pointer;
-  color: ${({ theme }) => theme.col.black};
+  padding: 0;
 `;
 
 const StyledBaseInput = styled(BaseInput)`
   input {
-    padding-left: 22px;
+    padding-left: 28px;
   }
 `;
 
@@ -93,10 +92,11 @@ const InputDate = forwardRef<ReactDatePicker, Props>(
         />
         <CalendarIcon
           icon={faCalendar}
+          iconProps={{ style: { width: "16px", height: "16px" } }}
           onClick={() => datePickerRef.current?.setOpen(true)}
         />
         <ReactDatePicker
-          ref={mergeRefs(datePickerRef, ref)}
+          ref={mergeRefs([datePickerRef, ref])}
           selected={value ? parseDate(value, dateFormat) : new Date()}
           onChange={(val) => {
             if (!val) {
