@@ -295,6 +295,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 
 		if (!dumpfile.getParentFile().exists() && !dumpfile.getParentFile().mkdirs()) {
+			//TODO this seems to occur sometimes, is it maybe just a race condition?
 			throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
 		}
 
@@ -412,24 +413,28 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	private ByteIterable handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, ByteIterable keyRaw, ByteIterable valueRaw) {
-		result.incrTotalProcessed();
+		final KEY key;
+		final VALUE value;
 
-		// Try to read the key first
-		final KEY
-				key =
-				getDeserializedAndDumpFailed(keyRaw, SerializingStore.this::readKey, () -> new String(keyRaw.getBytesUnsafe()), valueRaw, "Could not parse key [{}]");
-		if (key == null) {
-			result.incrFailedKeys();
-			return keyRaw;
-		}
+		try {
+			result.incrTotalProcessed();
 
-		// Try to read the value
-		final VALUE
-				value =
-				getDeserializedAndDumpFailed(valueRaw, SerializingStore.this::readValue, key::toString, valueRaw, "Could not parse value for key [{}]");
+			// Try to read the key first
+			key = getDeserializedAndDumpFailed(keyRaw, SerializingStore.this::readKey, () -> new String(keyRaw.getBytesUnsafe()), valueRaw, "Could not parse key [{}]");
+			if (key == null) {
+				result.incrFailedKeys();
+				return keyRaw;
+			}
 
-		if (value == null) {
-			result.incrFailedValues();
+			// Try to read the value
+			value = getDeserializedAndDumpFailed(valueRaw, SerializingStore.this::readValue, key::toString, valueRaw, "Could not parse value for key [{}]");
+
+			if (value == null) {
+				result.incrFailedValues();
+				return keyRaw;
+			}
+		}catch(Exception e){
+			log.error("Failed processing key/value", e);
 			return keyRaw;
 		}
 
