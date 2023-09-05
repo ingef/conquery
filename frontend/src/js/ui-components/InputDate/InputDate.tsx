@@ -28,13 +28,11 @@ const Root = styled("div")`
   }
 `;
 
-const CalendarIcon = styled(IconButton)`
+const CalendarButton = styled(IconButton)`
   position: absolute;
-  width: 16px;
-  height: 16px;
-  top: calc(50% - 8px);
-  left: 5px;
-  padding: 0;
+  left: 0;
+  top: 0;
+  padding: 8px 10px;
 `;
 
 const StyledBaseInput = styled(BaseInput)`
@@ -90,9 +88,8 @@ const InputDate = forwardRef<ReactDatePicker, Props>(
             },
           }}
         />
-        <CalendarIcon
+        <CalendarButton
           icon={faCalendar}
-          iconProps={{ style: { width: "16px", height: "16px" } }}
           onClick={() => datePickerRef.current?.setOpen(true)}
         />
         <ReactDatePicker
