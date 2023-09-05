@@ -172,7 +172,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
 		try {
-			final FrontendFilterConfiguration.Top actual = connector.getFilters().iterator().next().createFrontendConfig();
+			final FrontendFilterConfiguration.Top actual = connector.getFilters().iterator().next().createFrontendConfig(standaloneSupport.getConfig());
 
 			if (expectedFrontendConfig != null) {
 				log.info("Checking actual FrontendConfig: {}", actual);

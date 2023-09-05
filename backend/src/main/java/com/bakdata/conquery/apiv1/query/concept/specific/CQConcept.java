@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedIdentifiable;
 import com.bakdata.conquery.models.query.DateAggregationMode;
@@ -226,7 +227,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			final QPNode
 					conceptSpecificNode =
-					getConcept().createConceptQuery(context, filters, aggregators, eventDateUnionAggregators, selectValidityDateColumn(table));
+					getConcept().createConceptQuery(context, filters, aggregators, eventDateUnionAggregators, selectValidityDate(table));
 
 			// Link up the ExistsAggregators to the node
 			existsAggregators.forEach(agg -> agg.setReference(conceptSpecificNode));
@@ -272,14 +273,14 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 					  .collect(Collectors.toList());
 	}
 
-	private Column selectValidityDateColumn(CQTable table) {
+	private ValidityDate selectValidityDate(CQTable table) {
 		if (table.getDateColumn() != null) {
-			return table.getDateColumn().getValue().getColumn();
+			return table.getDateColumn().getValue();
 		}
 
 		//else use this first defined validity date column
 		if (!table.getConnector().getValidityDates().isEmpty()) {
-			return table.getConnector().getValidityDates().get(0).getColumn();
+			return table.getConnector().getValidityDates().get(0);
 		}
 
 		return null;

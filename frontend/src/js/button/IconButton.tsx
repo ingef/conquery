@@ -76,7 +76,7 @@ const SxBasicButton = styled(BasicButton)<{
 
   &:disabled {
     &:hover {
-      opacity: 0.6;
+      opacity: 0.4;
     }
   }
 `;

@@ -14,7 +14,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Cache local Maven repository
         uses: actions/cache@v2
@@ -41,5 +41,4 @@ jobs:
       - name: JSON based Integration Tests
         run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
       - name: SQL based Integration Tests
-        if: ${{ startsWith(github.head_ref, 'sql/') }}
         run: mvn test -T 1C -pl backend -Dgroups="INTEGRATION_SQL_BACKEND"

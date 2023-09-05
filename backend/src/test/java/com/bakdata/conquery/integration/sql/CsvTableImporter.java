@@ -1,12 +1,12 @@
 package com.bakdata.conquery.integration.sql;
 
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.Date;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +26,7 @@ import com.bakdata.conquery.sql.execution.SqlEntityResult;
 import com.google.common.base.Strings;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -38,8 +39,10 @@ import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
 import org.jooq.postgres.extensions.types.DateRange;
 
+@Slf4j
 public class CsvTableImporter {
 
+	private static final int DEFAULT_VARCHAR_LENGTH = 25; // HANA will use 1 as default otherwise
 	private final DSLContext dslContext;
 	private final DateRangeParser dateRangeParser;
 	private final CsvParser csvReader;
@@ -56,30 +59,17 @@ public class CsvTableImporter {
 	 */
 	public void importTableIntoDatabase(RequiredTable requiredTable) {
 
-		Table<Record> table = DSL.table(requiredTable.getName());
+		Table<Record> table = DSL.table(DSL.name(requiredTable.getName()));
 		List<RequiredColumn> allRequiredColumns = this.getAllRequiredColumns(requiredTable);
 		List<Field<?>> columns = this.createFieldsForColumns(allRequiredColumns);
 		List<RowN> content = this.getTablesContentFromCSV(requiredTable.getCsv(), allRequiredColumns);
 
-		// because we currently won't shut down the container between the testcases, we drop tables upfront if they
-		// exist to ensure consistency if table names of different testcases are the same
-		String dropTableStatement = dslContext.dropTableIfExists(table)
-											  .getSQL(ParamType.INLINED);
-
-		String createTableStatement = dslContext.createTable(table)
-												.columns(columns)
-												.getSQL(ParamType.INLINED);
-
-		String insertIntoTableStatement = dslContext.insertInto(table, columns)
-													.valuesOfRows(content)
-													.getSQL(ParamType.INLINED);
-
-		// we directly use JDBC because JOOQ can't cope with PostgreSQL custom types
+		// we directly use JDBC because JOOQ can't cope with some custom types like daterange
 		dslContext.connection((Connection connection) -> {
 			try (Statement statement = connection.createStatement()) {
-				statement.execute(dropTableStatement);
-				statement.execute(createTableStatement);
-				statement.execute(insertIntoTableStatement);
+				dropTable(table, statement);
+				createTable(table, columns, statement);
+				insertValuesIntoTable(table, columns, content, statement);
 			}
 		});
 	}
@@ -94,6 +84,36 @@ public class CsvTableImporter {
 		return results;
 	}
 
+	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
+		for (RowN rowN : content) {
+			// e.g. HANA does not support bulk insert, so we insert row by row
+			String insertRowStatement = dslContext.insertInto(table, columns)
+												  .values(rowN)
+												  .getSQL(ParamType.INLINED);
+			log.info("Inserting into table: {}", insertRowStatement);
+			statement.execute(insertRowStatement);
+		}
+	}
+
+	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
+		String createTableStatement = dslContext.createTable(table)
+												.columns(columns)
+												.getSQL(ParamType.INLINED);
+		log.info("Creating table: {}", createTableStatement);
+		statement.execute(createTableStatement);
+	}
+
+	private void dropTable(Table<Record> table, Statement statement) {
+		try {
+			// DROP TABLE IF EXISTS is not supported in HANA, we just ignore possible errors if the table does not exist
+			String dropTableStatement = dslContext.dropTable(table)
+												  .getSQL(ParamType.INLINED);
+			statement.execute(dropTableStatement);
+		}
+		catch (SQLException e) {
+			log.info("Dropping table {} failed.", table.getName(), e);
+		}
+	}
 
 	private List<Field<?>> createFieldsForColumns(List<RequiredColumn> requiredColumns) {
 		return requiredColumns.stream()
@@ -110,15 +130,16 @@ public class CsvTableImporter {
 
 	private Field<?> createField(RequiredColumn requiredColumn) {
 		DataType<?> dataType = switch (requiredColumn.getType()) {
-			case STRING -> SQLDataType.VARCHAR;
+			case STRING -> SQLDataType.VARCHAR(DEFAULT_VARCHAR_LENGTH);
 			case INTEGER -> SQLDataType.INTEGER;
 			case BOOLEAN -> SQLDataType.BOOLEAN;
-			case REAL -> SQLDataType.REAL;
+			// TODO: temporary workaround until we cast ResultSet elements back
+			case REAL -> SQLDataType.DECIMAL(10,2);
 			case DECIMAL, MONEY -> SQLDataType.DECIMAL;
 			case DATE -> SQLDataType.DATE;
 			case DATE_RANGE -> new BuiltInDataType<>(DateRange.class, "daterange");
 		};
-		return DSL.field(requiredColumn.getName(), dataType);
+		return DSL.field(DSL.name(requiredColumn.getName()), dataType);
 	}
 
 	@SneakyThrows

@@ -1,14 +1,15 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.sql.Date;
+import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.MajorTypeId;
+import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
+import com.bakdata.conquery.sql.models.ColumnDateRange;
 import org.jooq.Condition;
-import org.jooq.DatePart;
 import org.jooq.Field;
+import org.jooq.Name;
 import org.jooq.Record;
 import org.jooq.Table;
 import org.jooq.TableOnConditionStep;
@@ -21,39 +22,26 @@ public interface SqlFunctionProvider {
 
 	String DEFAULT_DATE_FORMAT = "yyyy-mm-dd";
 
-
-	Condition dateRestriction(Field<Object> dateRestrictionColumn, Field<Object> validityDateColumn);
-
 	/**
-	 * @return A daterange for a date restriction.
+	 * A date restriction condition is true if holds:
+	 * dateRestrictionStart <= validityDateEnd and dateRestrictionEnd >= validityDateStart
 	 */
-	Field<Object> daterange(CDateRange dateRestriction);
+	Condition dateRestriction(ColumnDateRange dateRestrictionRange, ColumnDateRange validityFieldRange);
 
-	/**
-	 * @return A daterange for an existing column.
-	 */
-	Field<Object> daterange(Column column);
+	ColumnDateRange daterange(CDateRange dateRestriction);
 
-	default Field<Date> toDate(String dateColumn) {
-		return DSL.toDate(dateColumn, DEFAULT_DATE_FORMAT);
-	}
+	ColumnDateRange daterange(ValidityDate validityDate, String conceptLabel);
 
-	default Field<Integer> dateDistance(DatePart timeUnit, Date endDate, Column startDateColumn) {
-		if (startDateColumn.getType() != MajorTypeId.DATE) {
-			throw new UnsupportedOperationException("Can't calculate date distance to column of type "
-													+ startDateColumn.getType());
-		}
-		// we can now safely cast to Field of type Date
-		Field<Date> startDate = DSL.field(startDateColumn.getName(), Date.class);
-		return DSL.dateDiff(timeUnit, startDate, endDate);
-	}
+	Field<Object> daterangeString(ColumnDateRange columnDateRange);
 
-	default Condition in(String columnName, String[] values) {
+	Field<Integer> dateDistance(ChronoUnit datePart, Name startDateColumn, Date endDateExpression);
+
+	default Condition in(Name columnName, String[] values) {
 		return DSL.field(columnName)
 				  .in(values);
 	}
 
-	default Field<Object> first(String columnName) {
+	default Field<Object> first(Name columnName) {
 		// TODO: this is just a temporary placeholder
 		return DSL.field(columnName);
 	}
@@ -78,6 +66,10 @@ public interface SqlFunctionProvider {
 		return leftPartQueryBase
 				.fullOuterJoin(DSL.name(rightPartQS.getCteName()))
 				.on(leftPartPrimaryColumn.eq(rightPartPrimaryColumn));
+	}
+
+	default Field<Date> toDateField(String dateExpression) {
+		return DSL.toDate(dateExpression, DEFAULT_DATE_FORMAT);
 	}
 
 }

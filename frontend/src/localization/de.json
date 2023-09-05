@@ -269,7 +269,8 @@
     "formValidation": {
       "mustBePositiveNumber": "Muss positive Zahl sein",
       "isRequired": "Erforderlich",
-      "invalidDateRange": "Enddatum liegt vor Startdatum"
+      "invalidDateRange": "Enddatum liegt vor Startdatum",
+      "validSelectRequired": "Kompatibler Ausgabewert erforderlich"
     },
     "default": {
       "conceptDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu",

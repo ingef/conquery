@@ -1,11 +1,13 @@
 package com.bakdata.conquery.sql.conversion.context.selects;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
+import com.bakdata.conquery.sql.models.ColumnDateRange;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
@@ -20,19 +22,26 @@ import org.jooq.Field;
 public class ConceptSelects implements Selects {
 
 	Field<Object> primaryColumn;
-	Optional<Field<Object>> dateRestriction;
-	Optional<Field<Object>> validityDate;
+	Optional<ColumnDateRange> dateRestrictionRange;
+	Optional<ColumnDateRange> validityDate;
 	List<Field<Object>> eventSelect;
 	List<Field<Object>> eventFilter;
 	List<Field<Object>> groupSelect;
 	List<Field<Object>> groupFilter;
 
 	@Override
-	public ConceptSelects byName(String qualifier) {
+	public Selects withValidityDate(ColumnDateRange validityDate) {
+		return this.toBuilder()
+				   .validityDate(Optional.of(validityDate))
+				   .build();
+	}
+
+	@Override
+	public ConceptSelects qualifiedWith(String qualifier) {
 		return builder()
 				.primaryColumn(this.mapFieldToQualifier(qualifier, this.primaryColumn))
-				.dateRestriction(this.mapFieldStreamToQualifier(qualifier, this.dateRestriction.stream()).findFirst())
-				.validityDate(this.mapFieldStreamToQualifier(qualifier, this.validityDate.stream()).findFirst())
+				.dateRestrictionRange(this.dateRestrictionRange.map(dateRestriction -> dateRestriction.qualify(qualifier)))
+				.validityDate(this.validityDate.map(validityDate -> validityDate.qualify(qualifier)))
 				.eventSelect(this.mapFieldStreamToQualifier(qualifier, this.eventSelect.stream()).toList())
 				.eventFilter(this.mapFieldStreamToQualifier(qualifier, this.eventFilter.stream()).toList())
 				.groupSelect(this.mapFieldStreamToQualifier(qualifier, this.groupSelect.stream()).toList())
@@ -51,19 +60,22 @@ public class ConceptSelects implements Selects {
 	private Stream<Field<Object>> primaryColumnAndValidityDate() {
 		return Stream.concat(
 				Stream.of(this.primaryColumn),
-				this.validityDate.stream()
+				this.validityDate.map(ColumnDateRange::toFields).stream().flatMap(Collection::stream)
 		);
 	}
 
 	@Override
 	public List<Field<Object>> explicitSelects() {
-		return Stream.of(
-				this.dateRestriction.stream(),
-				this.eventSelect.stream(),
-				this.eventFilter.stream(),
-				this.groupSelect.stream(),
-				this.groupFilter.stream()
-		).flatMap(Function.identity()).toList();
+
+		List<Field<Object>> explicitSelects = new ArrayList<>();
+
+		dateRestrictionRange.ifPresent(columnDateRange -> explicitSelects.addAll(columnDateRange.toFields()));
+		explicitSelects.addAll(eventSelect);
+		explicitSelects.addAll(eventFilter);
+		explicitSelects.addAll(groupSelect);
+		explicitSelects.addAll(groupFilter);
+
+		return explicitSelects;
 	}
 
 }

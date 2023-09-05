@@ -54,6 +54,9 @@ public class IntegrationTests {
 	private static final ObjectWriter CONFIG_WRITER;
 
 	static {
+
+		SharedMetricRegistries.setDefault("test");
+
 		final ObjectMapper mapper = Jackson.MAPPER.copy();
 
 		MAPPER = mapper.setConfig(mapper.getDeserializationConfig().withView(View.Persistence.class))
@@ -135,7 +138,6 @@ public class IntegrationTests {
 
 	@SneakyThrows
 	public Stream<DynamicTest> sqlTests(SqlDialect sqlDialect, SqlConnectorConfig sqlConfig) {
-		SharedMetricRegistries.setDefault("test");
 		final Path testRootDir = Path.of(Objects.requireNonNullElse(
 				System.getenv(TestTags.SQL_BACKEND_TEST_DIRECTORY_ENVIRONMENT_VARIABLE),
 				SqlIntegrationTest.SQL_TEST_DIR
@@ -143,8 +145,10 @@ public class IntegrationTests {
 
 		Stream<Path> paths = Files.walk(testRootDir);
 		List<DynamicTest> dynamicTestStream = paths.filter(path -> !Files.isDirectory(path) && path.toString().endsWith(".json"))
-													 .map(path -> SqlIntegrationTest.fromPath(path, sqlDialect, sqlConfig))
-													 .map(test -> DynamicTest.dynamicTest(test.getTestSpec().getLabel(), test)).toList();
+												   .map(path -> SqlIntegrationTest.fromPath(path, sqlDialect, sqlConfig))
+												   .filter(sqlIntegrationTest -> sqlIntegrationTest.getTestSpec()
+																								   .supportsDialects(sqlConfig.getDialect()))
+												   .map(test -> DynamicTest.dynamicTest(test.getTestSpec().getLabel(), test)).toList();
 		return dynamicTestStream.stream();
 	}
 

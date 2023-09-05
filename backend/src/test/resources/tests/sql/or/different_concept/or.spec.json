@@ -93,7 +93,8 @@
           "table": "table1",
           "validityDates": {
             "label": "datum",
-            "column": "table1.datum"
+            "startColumn": "table1.datum_start",
+            "endColumn": "table1.datum_end"
           },
           "filters": {
             "label": "value",
@@ -175,8 +176,12 @@
             "type": "REAL"
           },
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
           }
         ]
       },

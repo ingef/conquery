@@ -11,6 +11,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendFilterType;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.error.ConqueryError;
@@ -39,7 +40,7 @@ public class FlagFilter extends Filter<String[]> {
 	private final Map<String, Column> flags;
 
 	@Override
-	protected void configureFrontend(FrontendFilterConfiguration.Top f) throws ConceptConfigurationException {
+	protected void configureFrontend(FrontendFilterConfiguration.Top f, ConqueryConfig conqueryConfig) throws ConceptConfigurationException {
 		f.setType(FrontendFilterType.Fields.MULTI_SELECT);
 
 		f.setOptions(flags.keySet().stream().map(key -> new FrontendValue(key, key)).toList());

@@ -1,5 +1,6 @@
-package com.bakdata.conquery.integration.sql;
+package com.bakdata.conquery.integration.sql.dialect;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
@@ -7,10 +8,15 @@ import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.error.ConqueryError;
+import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.SqlQuery;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
+import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
+import com.bakdata.conquery.sql.conversion.select.DateDistanceConverter;
+import com.bakdata.conquery.sql.conversion.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -30,9 +36,9 @@ import org.testcontainers.utility.DockerImageName;
 public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 	private static final DockerImageName postgreSqlImageName = DockerImageName.parse("postgres:alpine3.17");
-	private static final String databaseName = "test";
-	private static final String username = "user";
-	private static final String password = "pass";
+	private static final String DATABASE_NAME = "test";
+	private static final String USERNAME = "user";
+	private static final String PASSWORD = "pass";
 	private static DSLContext dslContext;
 	private static SqlConnectorConfig sqlConfig;
 
@@ -41,20 +47,20 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	}
 
 	@Container
-	private static final PostgreSQLContainer<?> postgresqlContainer = new PostgreSQLContainer<>(postgreSqlImageName)
-			.withDatabaseName(databaseName)
-			.withUsername(username)
-			.withPassword(password);
+	private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER = new PostgreSQLContainer<>(postgreSqlImageName)
+			.withDatabaseName(DATABASE_NAME)
+			.withUsername(USERNAME)
+			.withPassword(PASSWORD);
 
 
 	@BeforeAll
 	static void before() {
-		postgresqlContainer.start();
+		POSTGRESQL_CONTAINER.start();
 		sqlConfig = SqlConnectorConfig.builder()
 									  .dialect(Dialect.POSTGRESQL)
-									  .jdbcConnectionUrl(postgresqlContainer.getJdbcUrl())
-									  .databaseUsername(username)
-									  .databasePassword(password)
+									  .jdbcConnectionUrl(POSTGRESQL_CONTAINER.getJdbcUrl())
+									  .databaseUsername(USERNAME)
+									  .databasePassword(PASSWORD)
 									  .withPrettyPrinting(true)
 									  .primaryColumn("pid")
 									  .build();
@@ -64,6 +70,8 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	@Test
 	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
 	public void shouldThrowException() {
+		// This can be removed as soon as we switch to a full integration test including the REST API
+		I18n.init();
 		SqlExecutionService executionService = new SqlExecutionService(dslContext);
 		SqlManagedQuery validQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, new SqlQuery("SELECT 1"));
 		Assertions.assertThatNoException().isThrownBy(() -> executionService.execute(validQuery));
@@ -72,7 +80,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		SqlManagedQuery emptyQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, new SqlQuery(""));
 		Assertions.assertThatThrownBy(() -> executionService.execute(emptyQuery))
 				  .isInstanceOf(ConqueryError.SqlError.class)
-				  .hasMessageContaining("Something went wrong while querying the database: org.postgresql.util.PSQLException");
+				  .hasMessageContaining("$org.postgresql.util.PSQLException");
 	}
 
 
@@ -82,5 +90,19 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		return super.sqlTests(new TestPostgreSqlDialect(dslContext), sqlConfig);
 	}
 
+	private static class TestPostgreSqlDialect extends PostgreSqlDialect {
+
+		public TestPostgreSqlDialect(DSLContext dslContext) {
+			super(dslContext);
+		}
+
+		@Override
+		public List<SelectConverter<? extends Select>> getSelectConverters() {
+			return this.customizeSelectConverters(List.of(
+					new DateDistanceConverter(new MockDateNowSupplier())
+			));
+		}
+
+	}
 
 }

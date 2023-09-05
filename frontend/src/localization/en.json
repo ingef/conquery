@@ -269,7 +269,8 @@
     "formValidation": {
       "mustBePositiveNumber": "Must be a positive number",
       "isRequired": "Required",
-      "invalidDateRange": "End date is smaller than start date"
+      "invalidDateRange": "End date is smaller than start date",
+      "validSelectRequired": "Valid select required"
     },
     "default": {
       "conceptDropzoneLabel": "Add a concept or a concept list",
