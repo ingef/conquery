@@ -16,7 +16,10 @@ import {
   nodeHasNonDefaultSettings,
 } from "../../model/node";
 import type { DragItemConceptTreeNode } from "../../standard-query-editor/types";
-import { isMovedObject } from "../../ui-components/Dropzone";
+import {
+  PossibleDroppableObject,
+  isMovedObject,
+} from "../../ui-components/Dropzone";
 import DropzoneWithFileInput, {
   DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
@@ -40,6 +43,7 @@ import {
   copyConcept,
   FormConceptGroupT,
   initializeConcept,
+  insertValue,
   onToggleIncludeSubnodes,
   removeConcept,
   removeValue,
@@ -87,6 +91,7 @@ interface Props {
 }
 
 const DropzoneListItem = styled("div")``;
+
 const Row = styled("div")`
   display: flex;
   align-items: center;
@@ -101,6 +106,10 @@ const SxTransparentButton = styled(TransparentButton)`
 const SxDescription = styled(Description)`
   margin: 0 5px 0 0;
   font-size: ${({ theme }) => theme.font.xs};
+`;
+
+const SxFormConceptNode = styled(FormConceptNode)`
+  margin-top: 5px;
 `;
 
 export interface EditedFormQueryNodePosition {
@@ -199,6 +208,53 @@ const FormConceptGroup = (props: Props) => {
             ? t("externalForms.common.concept.copying")
             : props.attributeDropzoneText
         }
+        dropBetween={(i: number) => {
+          return (item: PossibleDroppableObject) => {
+            if (item.type !== DNDType.CONCEPT_TREE_NODE) return null;
+
+            if (props.isValidConcept && !props.isValidConcept(item))
+              return null;
+
+            const concept = isMovedObject(item)
+              ? copyConcept(item)
+              : initializeConcept(item, defaults, tableConfig);
+            let newPropsValue = props.value;
+            let insertIndex = i;
+            if (isMovedObject(item)) {
+              const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
+                item.dragContext;
+
+              if (movedFromFieldName === props.fieldName) {
+                const willConceptMoveDown =
+                  i > movedFromAndIdx &&
+                  props.value[movedFromAndIdx].concepts.length === 1;
+                if (willConceptMoveDown) {
+                  insertIndex = i - 1;
+                }
+                newPropsValue =
+                  props.value[movedFromAndIdx].concepts.length === 1
+                    ? removeValue(props.value, movedFromAndIdx)
+                    : removeConcept(
+                        props.value,
+                        movedFromAndIdx,
+                        movedFromOrIdx,
+                      );
+              } else {
+                if (exists(item.dragContext.deleteFromOtherField)) {
+                  item.dragContext.deleteFromOtherField();
+                }
+              }
+            }
+
+            return props.onChange(
+              addConcept(
+                insertValue(newPropsValue, insertIndex, newValue),
+                insertIndex,
+                concept,
+              ),
+            );
+          };
+        }}
         acceptedDropTypes={[DNDType.CONCEPT_TREE_NODE]}
         disallowMultipleColumns={props.disallowMultipleColumns}
         onDelete={(i) => props.onChange(removeValue(props.value, i))}
@@ -216,23 +272,16 @@ const FormConceptGroup = (props: Props) => {
             return;
           }
 
-          if (isMovedObject(item)) {
-            return props.onChange(
-              addConcept(
-                addValue(props.value, newValue),
-                props.value.length,
-                copyConcept(item),
-              ),
-            );
-          }
-
           if (props.isValidConcept && !props.isValidConcept(item)) return;
 
+          const concept = isMovedObject(item)
+            ? copyConcept(item)
+            : initializeConcept(item, defaults, tableConfig);
           return props.onChange(
             addConcept(
               addValue(props.value, newValue),
               props.value.length, // Assuming the last index has increased after addValue
-              initializeConcept(item, defaults, tableConfig),
+              concept,
             ),
           );
         }}
@@ -282,7 +331,7 @@ const FormConceptGroup = (props: Props) => {
               }
               items={row.concepts.map((concept, j) =>
                 concept ? (
-                  <FormConceptNode
+                  <SxFormConceptNode
                     key={j}
                     valueIdx={i}
                     conceptIdx={j}
@@ -299,6 +348,14 @@ const FormConceptGroup = (props: Props) => {
                         conceptIdx: j,
                       })
                     }
+                    fieldName={props.fieldName}
+                    deleteFromOtherField={() => {
+                      return props.onChange(
+                        props.value[i].concepts.length === 1
+                          ? removeValue(props.value, i)
+                          : removeConcept(props.value, i, j),
+                      );
+                    }}
                     expand={{
                       onClick: () =>
                         props.onChange(
@@ -332,14 +389,14 @@ const FormConceptGroup = (props: Props) => {
                         return;
                       }
 
+                      if (props.isValidConcept && !props.isValidConcept(item))
+                        return null;
+
                       if (isMovedObject(item)) {
                         return props.onChange(
                           setConcept(props.value, i, j, copyConcept(item)),
                         );
                       }
-
-                      if (props.isValidConcept && !props.isValidConcept(item))
-                        return null;
 
                       return props.onChange(
                         setConcept(
@@ -396,9 +453,38 @@ const FormConceptGroup = (props: Props) => {
             );
           }}
           onDropConcept={(concept) => {
-            const { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            let { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            let updatedValue = props.value;
+            if (isMovedObject(concept)) {
+              const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
+                concept.dragContext;
+
+              // If the concept is moved from the same field and the concept is the only one
+              // in the value the index of the selected concept might change after the drop
+              const willSelectedConceptIndexChange =
+                valueIdx > movedFromAndIdx &&
+                props.value[movedFromOrIdx].concepts.length === 1;
+              valueIdx = willSelectedConceptIndexChange
+                ? valueIdx - 1
+                : valueIdx;
+              if (movedFromFieldName === props.fieldName) {
+                updatedValue =
+                  updatedValue[movedFromAndIdx].concepts.length === 1
+                    ? removeValue(updatedValue, movedFromAndIdx)
+                    : removeConcept(
+                        updatedValue,
+                        movedFromAndIdx,
+                        movedFromOrIdx,
+                      );
+                setEditedFormQueryNodePosition({ valueIdx, conceptIdx });
+              } else {
+                if (exists(concept.dragContext.deleteFromOtherField)) {
+                  concept.dragContext.deleteFromOtherField();
+                }
+              }
+            }
             props.onChange(
-              setConceptProperties(props.value, valueIdx, conceptIdx, {
+              setConceptProperties(updatedValue, valueIdx, conceptIdx, {
                 ids: [...concept.ids, ...editedNode.ids],
               }),
             );

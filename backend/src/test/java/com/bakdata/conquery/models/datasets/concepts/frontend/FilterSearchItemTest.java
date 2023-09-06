@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendTable;
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -67,7 +68,7 @@ public class FilterSearchItemTest {
 		connector.setColumn(column);
 		connector.setConcept(concept);
 		connector.setValidityDates(validityDates);
-		FrontendTable feTable = FrontEndConceptBuilder.createTable(connector);
+		FrontendTable feTable = new FrontEndConceptBuilder(new ConqueryConfig()).createTable(connector);
 		
 		assertThat(feTable.getDateColumn().getOptions()).containsExactly(
 				new FrontendValue(val0.getId().toString(), "val0"),

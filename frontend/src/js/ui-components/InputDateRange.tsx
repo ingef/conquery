@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { FC, ReactNode, createRef, useMemo } from "react";
+import ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
@@ -166,7 +167,7 @@ const InputDateRange: FC<PropsT> = ({
   const min = getDisplayDate("min", value, displayDateFormat);
   const max = getDisplayDate("max", value, displayDateFormat);
 
-  const maxRef = createRef<HTMLInputElement>();
+  const maxRef = createRef<ReactDatePicker>();
 
   const isMinValid = exists(value.min && parseDate(min, displayDateFormat));
   const isMaxValid = exists(value.max && parseDate(max, displayDateFormat));
@@ -213,7 +214,7 @@ const InputDateRange: FC<PropsT> = ({
             onChange={(val) =>
               onChangeRaw("min", val as string, displayDateFormat)
             }
-            onCalendarSelect={() => maxRef.current?.focus()}
+            onCalendarSelect={() => maxRef.current?.setOpen(true)}
             onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
             inputProps={{
               autoFocus,

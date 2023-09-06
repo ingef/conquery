@@ -44,6 +44,8 @@ public abstract class ExecutionStatus {
 	private String queryType;
 	private SecondaryIdDescriptionId secondaryId;
 
+	private boolean containsDates;
+
 
 	/**
 	 * The urls under from which the result of the execution can be downloaded as soon as it finished successfully.

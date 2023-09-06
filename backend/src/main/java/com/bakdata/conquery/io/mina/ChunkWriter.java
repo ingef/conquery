@@ -26,7 +26,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 
 	@Getter
 	@Setter
-	private int bufferSize = Ints.checkedCast(Size.megabytes(32).toBytes());
+	private int bufferSize = Ints.checkedCast(Size.megabytes(2).toBytes());
 	private final SoftPool<IoBuffer> bufferPool = new SoftPool<>(() -> IoBuffer.allocate(bufferSize));
 	@SuppressWarnings("rawtypes")
 	private final CQCoder coder;
