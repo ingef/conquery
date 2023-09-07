@@ -12,7 +12,6 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
@@ -60,7 +59,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	public ConversionContext convert(CQConcept node, ConversionContext context) {
 
 		if (node.getTables().size() > 1) {
-			throw new ConqueryError.SqlConversionError("Can't handle concepts with multiple tables for now.");
+			throw new UnsupportedOperationException("Can't handle concepts with multiple tables for now.");
 		}
 
 		CQTable table = node.getTables().get(0);
@@ -92,7 +91,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			cteContext = cteContext.withPrevious(lastQueryStep.get());
 		}
 
-		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new ConqueryError.SqlConversionError("No conversion for concept possible.")));
+		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible.")));
 	}
 
 	private Set<CteStep> getRequiredSteps(CQTable table) {

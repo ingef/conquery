@@ -1,11 +1,11 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterCondition;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterType;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.google.common.base.Strings;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.jooq.Field;
@@ -30,10 +30,9 @@ public class MultiSelectCondition implements FilterCondition {
 	@Override
 	public Condition filterCondition() {
 
-		// Note here that empty strings are used here as null/missing-value handles.
-		// So if values contain "" or null, we want to explicitly filter for empty/NULL entries as well.
+		// values can contain empty or null Strings
 		String[] valuesWithoutNull = Arrays.stream(values)
-										   .filter(Objects::nonNull)
+										   .filter(value -> !Strings.isNullOrEmpty(value))
 										   .toArray(String[]::new);
 		Condition inCondition = this.functionProvider.in(column, valuesWithoutNull);
 
