@@ -91,7 +91,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			cteContext = cteContext.withPrevious(lastQueryStep.get());
 		}
 
-		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible.")));
+		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible. Required steps: %s".formatted(requiredSteps()))));
 	}
 
 	private Set<CteStep> getRequiredSteps(CQTable table) {
@@ -111,6 +111,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		SelectContext selectContext = new SelectContext(context, node, conceptLabel, validityDateSelect, conceptTables);
 		return Stream.concat(table.getSelects().stream(), node.getSelects().stream())
 					 .map(select -> this.selectConversions.convert(select, selectContext))
+					 .map(sqlSelects -> sqlSelects)
 					 .toList();
 	}
 

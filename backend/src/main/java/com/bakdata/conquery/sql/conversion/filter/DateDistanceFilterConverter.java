@@ -31,13 +31,13 @@ public class DateDistanceFilterConverter implements FilterConverter<Range.LongRa
 				dateDistanceFilter.getTimeUnit(),
 				context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
 				dateDistanceFilter.getColumn(),
+				dateDistanceFilter.getName(),
 				context.getParentContext().getDateRestrictionRange(),
-				dateDistanceFilter.getLabel(),
 				context.getParentContext().getSqlDialect().getFunction()
 		);
 
 		FilterCondition dateDistanceCondition = new DateDistanceCondition(
-				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.EVENT_FILTER, dateDistanceSelect.alias()),
+				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.EVENT_FILTER, dateDistanceSelect.aliased()),
 				context.getValue()
 		);
 

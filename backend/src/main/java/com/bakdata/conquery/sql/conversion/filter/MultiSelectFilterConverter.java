@@ -26,7 +26,7 @@ public class MultiSelectFilterConverter implements FilterConverter<String[], Mul
 		);
 
 		FilterCondition condition = new MultiSelectCondition(
-				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.EVENT_FILTER, rootSelect.alias()),
+				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.EVENT_FILTER, rootSelect.aliased()),
 				context.getValue(),
 				context.getParentContext().getSqlDialect().getFunction()
 		);

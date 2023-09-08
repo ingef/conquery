@@ -13,16 +13,22 @@ import org.jooq.impl.DSL;
 public class MinGroupBy implements ConquerySelect {
 
 	private final Field<?> minColumn;
+	private final String alias;
 
 	@Override
 	public Field<?> select() {
 		return DSL.min(minColumn)
-				  .as(minColumn.getName());
+				  .as(alias);
 	}
 
 	@Override
-	public Field<?> alias() {
-		return DSL.field(minColumn.getName(), BigDecimal.class);
+	public Field<?> aliased() {
+		return DSL.field(alias, BigDecimal.class);
+	}
+
+	@Override
+	public String columnName() {
+		return minColumn.getName();
 	}
 
 }

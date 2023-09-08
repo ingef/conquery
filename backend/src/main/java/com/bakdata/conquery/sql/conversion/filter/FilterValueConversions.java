@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.filter;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
+import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptTables;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
@@ -24,11 +25,19 @@ public class FilterValueConversions {
 	}
 
 	public Set<CteStep> requiredSteps(FilterValue<?> filterValue) {
+
 		return this.filterConversions.getConverters().stream()
-									 .filter(converter -> converter.getConversionClass().isInstance(filterValue.getFilter()))
+									 .filter(converter -> {
+
+										 Class<? extends Filter<?>> conversionClass = converter.getConversionClass();
+										 Filter<?> filter = filterValue.getFilter();
+										 boolean isInstance = conversionClass.isInstance(filter);
+
+										 return converter.getConversionClass().isInstance(filterValue.getFilter());
+									 })
 									 .findFirst()
 									 .orElseThrow(() -> new RuntimeException(
-											 "Could not find a matching converter for filter %s".formatted(filterValue.getFilter()))
+											 "Could not find a matching converter for filter %s. Converters: %s".formatted(filterValue.getFilter(), this.filterConversions.getConverters()))
 									 )
 									 .requiredSteps();
 	}

@@ -37,7 +37,7 @@ class EventFilterCte extends ConceptCte {
 	private static List<ConquerySelect> getSelectsForAggregationSelectStep(CteContext cteContext, String preprocessingCteName) {
 		return cteContext.allConceptSelects()
 						 .flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
-						 .map(conquerySelect -> ExtractingSelect.fromConquerySelect(preprocessingCteName, conquerySelect))
+						 .map(conquerySelect -> ExtractingSelect.fromConquerySelect(conquerySelect, preprocessingCteName))
 						 .distinct()
 						 .collect(Collectors.toList());
 	}

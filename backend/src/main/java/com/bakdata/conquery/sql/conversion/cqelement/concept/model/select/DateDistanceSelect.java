@@ -25,8 +25,9 @@ public class DateDistanceSelect implements ConquerySelect {
 	private final ChronoUnit timeUnit;
 	private final String sourceTable;
 	private final Column column;
+	private final String alias;
 	private final CDateRange dateRestriction;
-	private final String label;
+	@EqualsAndHashCode.Exclude
 	private final SqlFunctionProvider functionProvider;
 
 	@Override
@@ -39,7 +40,7 @@ public class DateDistanceSelect implements ConquerySelect {
 
 		Name dateColumnName = DSL.name(sourceTable, column.getName());
 		return functionProvider.dateDistance(timeUnit, dateColumnName, endDate)
-							   .as(label);
+							   .as(alias);
 	}
 
 	private Date getEndDate(CDateRange dateRange) {
@@ -56,8 +57,13 @@ public class DateDistanceSelect implements ConquerySelect {
 	}
 
 	@Override
-	public Field<Integer> alias() {
-		return DSL.field(label, Integer.class);
+	public Field<Integer> aliased() {
+		return DSL.field(alias, Integer.class);
+	}
+
+	@Override
+	public String columnName() {
+		return column.getName();
 	}
 
 }

@@ -19,8 +19,13 @@ public class ExistsSelect implements ConquerySelect {
 	}
 
 	@Override
-	public Field<Integer> alias() {
+	public Field<Integer> aliased() {
 		return DSL.field(label + "_exists", Integer.class);
+	}
+
+	@Override
+	public String columnName() {
+		return label;
 	}
 
 }

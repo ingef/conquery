@@ -18,8 +18,14 @@ public class FieldSelect implements ConquerySelect {
 	}
 
 	@Override
-	public Field<?> alias() {
+	public Field<?> aliased() {
 		return DSL.field(field.getName());
 	}
+
+	@Override
+	public String columnName() {
+		return field.getName();
+	}
+
 
 }

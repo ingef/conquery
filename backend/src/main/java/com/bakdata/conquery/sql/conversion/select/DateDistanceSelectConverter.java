@@ -20,28 +20,28 @@ public class DateDistanceSelectConverter implements SelectConverter<DateDistance
 	}
 
 	@Override
-	public SqlSelects convert(DateDistanceSelect select, SelectContext context) {
+	public SqlSelects convert(DateDistanceSelect dateDistanceSelect, SelectContext context) {
 
-		ConquerySelect dateDistanceSelect = new com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.DateDistanceSelect(
+		ConquerySelect rootSelect = new com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.DateDistanceSelect(
 				dateNowSupplier,
-				select.getTimeUnit(), context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
-				select.getColumn(),
+				dateDistanceSelect.getTimeUnit(), context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
+				dateDistanceSelect.getColumn(),
+				dateDistanceSelect.getName(),
 				context.getParentContext().getDateRestrictionRange(),
-				select.getLabel(),
 				context.getParentContext().getSqlDialect().getFunction()
 		);
 
-		Field<Object> qualifiedDateDistance = context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, dateDistanceSelect.alias());
-		MinGroupBy minDateDistance = new MinGroupBy(qualifiedDateDistance);
+		Field<Object> qualifiedDateDistance = context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		MinGroupBy minDateDistance = new MinGroupBy(qualifiedDateDistance, dateDistanceSelect.getName());
 
 		ExtractingSelect<Object> firstValueReference = new ExtractingSelect<>(
 				context.getConceptTables().getPredecessorTableName(CteStep.FINAL),
-				minDateDistance.alias().getName(),
+				minDateDistance.aliased().getName(),
 				Object.class
 		);
 
 		return SqlSelects.builder()
-						 .forPreprocessingStep(Collections.singletonList(dateDistanceSelect))
+						 .forPreprocessingStep(Collections.singletonList(rootSelect))
 						 .forAggregationSelectStep(Collections.singletonList(minDateDistance))
 						 .forFinalStep(Collections.singletonList(firstValueReference))
 						 .build();

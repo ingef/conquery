@@ -23,12 +23,14 @@ public class SumSelectConverter implements SelectConverter<SumSelect> {
 				numberClass
 		);
 
-		Field<? extends Number> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, rootSelect.alias());
-		SumGroupBy sumGroupBy = new SumGroupBy(qualifiedRootSelect);
+		Field<? extends Number>
+				qualifiedRootSelect =
+				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		SumGroupBy sumGroupBy = new SumGroupBy(qualifiedRootSelect, sumSelect.getName());
 
 		ExtractingSelect<? extends Number> finalSelect = new ExtractingSelect<>(
 				context.getConceptTables().getPredecessorTableName(CteStep.FINAL),
-				sumGroupBy.alias().getName(),
+				sumGroupBy.aliased().getName(),
 				numberClass
 		);
 
