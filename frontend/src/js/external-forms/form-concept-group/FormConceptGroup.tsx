@@ -70,7 +70,6 @@ interface Props {
   tooltip?: string;
   newValue: FormConceptGroupT;
   isSingle?: boolean;
-  optional?: boolean;
   disallowMultipleColumns?: boolean;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
@@ -189,7 +188,6 @@ const FormConceptGroup = (props: Props) => {
       <DropzoneList /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType> */
         ref={dropzoneRef}
         tooltip={props.tooltip}
-        optional={props.optional}
         label={
           <>
             {props.label}
