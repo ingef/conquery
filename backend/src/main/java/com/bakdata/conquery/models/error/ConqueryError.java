@@ -265,5 +265,4 @@ public abstract class ConqueryError extends RuntimeException implements Conquery
 
 
 	}
-
 }

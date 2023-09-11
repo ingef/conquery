@@ -23,7 +23,7 @@ public class ExternalTaskState {
 	private final UUID id;
 
 	/**
-	 * ExistsSelect for every response.
+	 * Exists for every response.
 	 */
 	@NotNull
 	private final TaskStatus status;

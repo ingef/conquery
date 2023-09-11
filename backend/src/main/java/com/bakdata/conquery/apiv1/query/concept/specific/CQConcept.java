@@ -206,7 +206,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 
 			final List<Aggregator<?>> connectorAggregators = createAggregators(plan, table.getSelects());
 
-			// ExistsSelect aggregators hold a reference to their parent FiltersNode so they need to be treated separately.
+			// Exists aggregators hold a reference to their parent FiltersNode so they need to be treated separately.
 			// They also don't need aggregation as they simply imitate their reference.
 			final List<ExistsAggregator> existsAggregators =
 					connectorAggregators.stream()
@@ -254,7 +254,7 @@ public class CQConcept extends CQElement implements NamespacedIdentifiableHoldin
 		// We always merge on concept level
 		final QPNode outNode = OrNode.of(tableNodes, aggregateEventDates ? DateAggregationAction.MERGE : DateAggregationAction.BLOCK);
 
-		// Link concept-level ExistsSelect-select to outer node.
+		// Link concept-level Exists-select to outer node.
 		conceptAggregators.stream()
 						  .filter(aggregator -> aggregator instanceof ExistsAggregator)
 						  .forEach(aggregator -> ((ExistsAggregator) aggregator).setReference(outNode));

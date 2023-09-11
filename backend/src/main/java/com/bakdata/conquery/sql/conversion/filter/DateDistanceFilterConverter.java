@@ -56,7 +56,6 @@ public class DateDistanceFilterConverter implements FilterConverter<Range.LongRa
 		Set<CteStep> dateDistanceFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
 		dateDistanceFilterSteps.add(CteStep.EVENT_FILTER);
 		return dateDistanceFilterSteps;
-
 	}
 
 	@Override

@@ -111,7 +111,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		SelectContext selectContext = new SelectContext(context, node, conceptLabel, validityDateSelect, conceptTables);
 		return Stream.concat(table.getSelects().stream(), node.getSelects().stream())
 					 .map(select -> this.selectConversions.convert(select, selectContext))
-					 .map(sqlSelects -> sqlSelects)
 					 .toList();
 	}
 

@@ -14,6 +14,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter.Number
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
 
 public class NumberFilterConverter implements FilterConverter<IRange<? extends Number, ?>, NumberFilter<IRange<? extends Number, ?>>> {
+
 	private static final Class<? extends NumberFilter> CLASS = NumberFilter.class;
 
 	@Override
@@ -54,4 +55,5 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 	public Class<? extends NumberFilter<IRange<? extends Number, ?>>> getConversionClass() {
 		return (Class<? extends NumberFilter<IRange<? extends Number, ?>>>) CLASS;
 	}
+
 }

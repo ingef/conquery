@@ -46,7 +46,6 @@ public class MultiSelectFilterConverter implements FilterConverter<String[], Mul
 		Set<CteStep> multiSelectFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
 		multiSelectFilterSteps.add(CteStep.EVENT_FILTER);
 		return multiSelectFilterSteps;
-
 	}
 
 	@Override

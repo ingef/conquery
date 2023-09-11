@@ -30,14 +30,12 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 				numberClass
 		);
 
-		Field<? extends Number>
-				qualifiedRootSelect =
-				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		Field<? extends Number> qualifiedRootSelect = context.getConceptTables()
+															 .qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, rootSelect.aliased());
 		SumGroupBy sumGroupBy = new SumGroupBy(qualifiedRootSelect, sumFilter.getName());
 
-		Field<? extends Number>
-				qualifiedSumGroupBy =
-				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_FILTER, sumGroupBy.aliased());
+		Field<? extends Number> qualifiedSumGroupBy = context.getConceptTables()
+															 .qualifyOnPredecessorTableName(CteStep.AGGREGATION_FILTER, sumGroupBy.aliased());
 		SumCondition sumFilterCondition = new SumCondition(qualifiedSumGroupBy, context.getValue());
 
 		return new ConceptFilter(
@@ -56,7 +54,6 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 		Set<CteStep> sumFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
 		sumFilterSteps.add(CteStep.AGGREGATION_FILTER);
 		return sumFilterSteps;
-
 	}
 
 	@Override

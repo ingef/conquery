@@ -33,7 +33,7 @@ public class SqlExecutionService {
 	private SqlExecutionResult createStatementAndExecute(SqlManagedQuery sqlQuery, Connection connection) {
 
 		String sqlString = sqlQuery.getSqlQuery().getSqlString();
-		log.info("Executing query: \n{}", sqlString);
+		log.debug("Executing query: \n{}", sqlString);
 		try (Statement statement = connection.createStatement();
 			 ResultSet resultSet = statement.executeQuery(sqlString)) {
 			int columnCount = resultSet.getMetaData().getColumnCount();
