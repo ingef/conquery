@@ -73,7 +73,11 @@ type Props<T> = T & {
   noContainer?: boolean;
   noLabel?: boolean;
 };
-const FieldContainer = styled("div")<{ noLabel?: boolean; hasError?: boolean }>`
+const FieldContainer = styled("div")<{
+  noLabel?: boolean;
+  hasError?: boolean;
+  red?: boolean;
+}>`
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -81,12 +85,16 @@ const FieldContainer = styled("div")<{ noLabel?: boolean; hasError?: boolean }>`
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid
-    ${({ theme, hasError }) =>
-      hasError ? theme.col.blueGrayDark : theme.col.grayLight};
+    ${({ theme, hasError, red }) =>
+      hasError
+        ? red
+          ? theme.col.red
+          : theme.col.blueGrayDark
+        : theme.col.grayLight};
 `;
 
-const ErrorContainer = styled("div")`
-  color: ${({ theme }) => theme.col.blueGrayDark};
+const ErrorContainer = styled("div")<{ red?: boolean }>`
+  color: ${({ theme, red }) => (red ? theme.col.red : theme.col.blueGrayDark)};
   font-weight: 700;
   font-size: ${({ theme }) => theme.font.sm};
 `;
@@ -114,12 +122,21 @@ const ConnectedField = <T extends Object>({
   // TODO: REFINE COLORS
   // const color = useColorByField(formField.type);
 
+  const requiredMsg = t("externalForms.formValidation.isRequired");
+  const isRedError = fieldState.error?.message !== requiredMsg;
+
   return noContainer ? (
     <div>{children({ ...field, ...props })}</div>
   ) : (
-    <FieldContainer noLabel={noLabel} hasError={exists(fieldState.error)}>
+    <FieldContainer
+      noLabel={noLabel}
+      hasError={exists(fieldState.error)}
+      red={isRedError}
+    >
       {children({ ...field, ...props })}
-      <ErrorContainer>{fieldState.error?.message}</ErrorContainer>
+      <ErrorContainer red={isRedError}>
+        {fieldState.error?.message}
+      </ErrorContainer>
     </FieldContainer>
   );
 };
