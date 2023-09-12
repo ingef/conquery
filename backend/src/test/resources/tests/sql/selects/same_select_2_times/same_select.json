@@ -1,0 +1,111 @@
+{
+  "label": "Same select 2 times",
+  "description": "Selecting the same select 2 times should not cause a name collision",
+  "type": "SQL_TEST",
+  "expectedCsv": "expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "number"
+          ],
+          "type": "CONCEPT",
+          "label": "vs",
+          "excludeFromTimeAggregation": true,
+          "tables": [
+            {
+              "id": "number.number_connector",
+              "filters": [
+                {
+                  "filter": "number.number_connector.value",
+                  "type": "REAL_RANGE",
+                  "value": {
+                    "min": 0.5,
+                    "max": 1
+                  }
+                }
+              ],
+              "selects": "number.number_connector.value"
+            }
+          ]
+        },
+        {
+          "ids": [
+            "number"
+          ],
+          "type": "CONCEPT",
+          "label": "vs",
+          "excludeFromTimeAggregation": true,
+          "tables": [
+            {
+              "id": "number.number_connector",
+              "filters": [
+                {
+                  "filter": "number.number_connector.value",
+                  "type": "REAL_RANGE",
+                  "value": {
+                    "min": 0.5,
+                    "max": 1
+                  }
+                }
+              ],
+              "selects": "number.number_connector.value"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "number",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "number_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
+          },
+          "filters": {
+            "label": "value",
+            "description": "xy",
+            "column": "table1.value",
+            "type": "NUMBER"
+          },
+          "selects": {
+            "name": "value",
+            "column": "table1.value",
+            "type": "FIRST"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/same_select_2_times/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}
