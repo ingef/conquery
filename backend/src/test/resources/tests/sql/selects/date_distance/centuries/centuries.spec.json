@@ -1,5 +1,5 @@
 {
-  "label": "DATE_DISTANCE select query with timeUnit CENTURIES",
+  "label": "DATE_DISTANCE select with timeUnit CENTURIES",
   "type": "SQL_TEST",
   "expectedCsv": "expected.csv",
   "query": {
