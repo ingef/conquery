@@ -3,15 +3,15 @@ package com.bakdata.conquery.sql.conversion.filter;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.bakdata.conquery.models.datasets.concepts.filters.specific.MultiSelectFilter;
+import com.bakdata.conquery.models.datasets.concepts.filters.specific.SingleSelectFilter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConceptFilter;
 
-public class MultiSelectFilterConverter implements FilterConverter<String[], MultiSelectFilter> {
+public class SingleSelectFilterConverter implements FilterConverter<String, SingleSelectFilter> {
 
 	@Override
-	public ConceptFilter convert(MultiSelectFilter multiSelectFilter, FilterContext<String[]> context) {
-		return SelectFilterUtil.convert(multiSelectFilter, context, String[].class);
+	public ConceptFilter convert(SingleSelectFilter singleSelect, FilterContext<String> context) {
+		return SelectFilterUtil.convert(singleSelect, context, String.class);
 	}
 
 	@Override
@@ -22,8 +22,8 @@ public class MultiSelectFilterConverter implements FilterConverter<String[], Mul
 	}
 
 	@Override
-	public Class<? extends MultiSelectFilter> getConversionClass() {
-		return MultiSelectFilter.class;
+	public Class<? extends SingleSelectFilter> getConversionClass() {
+		return SingleSelectFilter.class;
 	}
 
 }
