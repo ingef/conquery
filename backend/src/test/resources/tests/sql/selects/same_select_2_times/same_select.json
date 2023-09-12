@@ -18,16 +18,6 @@
           "tables": [
             {
               "id": "number.number_connector",
-              "filters": [
-                {
-                  "filter": "number.number_connector.value",
-                  "type": "REAL_RANGE",
-                  "value": {
-                    "min": 0.5,
-                    "max": 1
-                  }
-                }
-              ],
               "selects": "number.number_connector.value"
             }
           ]
@@ -42,16 +32,6 @@
           "tables": [
             {
               "id": "number.number_connector",
-              "filters": [
-                {
-                  "filter": "number.number_connector.value",
-                  "type": "REAL_RANGE",
-                  "value": {
-                    "min": 0.5,
-                    "max": 1
-                  }
-                }
-              ],
               "selects": "number.number_connector.value"
             }
           ]
@@ -70,12 +50,6 @@
           "validityDates": {
             "label": "datum",
             "column": "table1.datum"
-          },
-          "filters": {
-            "label": "value",
-            "description": "xy",
-            "column": "table1.value",
-            "type": "NUMBER"
           },
           "selects": {
             "name": "value",

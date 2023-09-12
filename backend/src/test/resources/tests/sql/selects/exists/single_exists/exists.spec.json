@@ -11,25 +11,7 @@
       "type": "CONCEPT",
       "tables": [
         {
-          "id": "concept.connector",
-          "filters": [
-            {
-              "filter": "concept.connector.filter",
-              "type": "REAL_RANGE",
-              "value": {
-                "min": 1,
-                "max": 1
-              }
-            },
-            {
-              "filter": "concept.connector.sum",
-              "type": "REAL_RANGE",
-              "value": {
-                "min": 0,
-                "max": 5
-              }
-            }
-          ]
+          "id": "concept.connector"
         }
       ],
       "selects": "concept.exists"
@@ -53,18 +35,6 @@
               "startColumn": "exists_table.datum_start",
               "endColumn": "exists_table.datum_end"
             }
-          ],
-          "filters": [
-            {
-              "label": "filter",
-              "column": "exists_table.value",
-              "type": "NUMBER"
-            },
-            {
-              "label": "sum",
-              "column": "exists_table.value",
-              "type": "SUM"
-            }
           ]
         }
       ]
@@ -80,10 +50,6 @@
           "type": "STRING"
         },
         "columns": [
-          {
-            "name": "value",
-            "type": "REAL"
-          },
           {
             "name": "datum_start",
             "type": "DATE"

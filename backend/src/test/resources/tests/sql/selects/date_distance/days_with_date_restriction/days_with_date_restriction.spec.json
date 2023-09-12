@@ -22,15 +22,6 @@
             "tables":[
               {
                 "id":"geschlecht_select.geschlecht_connector",
-                "filters":[
-                  {
-                    "filter":"geschlecht_select.geschlecht_connector.geschlecht",
-                    "type":"BIG_MULTI_SELECT",
-                    "value":[
-                      "f"
-                    ]
-                  }
-                ],
                 "selects": [
                   "geschlecht_select.geschlecht_connector.date_distance_days"
                 ]
@@ -52,12 +43,6 @@
           "validityDates": {
             "label": "datum",
             "column": "table1.datum"
-          },
-          "filters":{
-            "label":"geschlecht",
-            "description":"Geschlecht zur gegebenen Datumseinschränkung",
-            "column":"table1.geschlecht",
-            "type":"SELECT"
           },
           "selects": [
             {
@@ -86,10 +71,6 @@
           {
             "name":"datum",
             "type":"DATE"
-          },
-          {
-            "name":"geschlecht",
-            "type":"STRING"
           }
         ]
       }

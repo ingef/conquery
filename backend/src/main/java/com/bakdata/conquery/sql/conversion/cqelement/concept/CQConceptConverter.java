@@ -95,11 +95,18 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	}
 
 	private Set<CteStep> getRequiredSteps(CQTable table) {
+		if (table.getFilters().isEmpty()) {
+			return CteStep.mandatorySteps();
+		}
 		return table.getFilters().stream()
 					.flatMap(filterValue -> this.filterValueConversions.requiredSteps(filterValue).stream())
 					.collect(Collectors.toSet());
 	}
 
+	/**
+	 * Converts the concept-level selects before we convert the table-level selects,
+	 * because {@link CQConcept#getResultInfos()} will create the result infos in the same order.
+	 */
 	private List<SqlSelects> getConceptSelects(
 			CQConcept node,
 			ConversionContext context,
@@ -109,10 +116,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			Optional<ColumnDateRange> validityDateSelect
 	) {
 		SelectContext selectContext = new SelectContext(context, node, conceptLabel, validityDateSelect, conceptTables);
-		/**
-		 * we need to convert the concept-level selects before we convert the table-level selects,
-		 * because {@link CQConcept#getResultInfos()} will create the result infos in the same order.
-		 */
 		return Stream.concat(node.getSelects().stream(), table.getSelects().stream())
 					 .map(select -> this.selectConversions.convert(select, selectContext))
 					 .toList();

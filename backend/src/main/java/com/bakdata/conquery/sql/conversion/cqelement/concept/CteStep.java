@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -16,5 +18,11 @@ public enum CteStep {
 	String suffix() {
 		return this.suffix;
 	}
+
+	public static Set<CteStep> mandatorySteps() {
+		return Set.of(CteStep.PREPROCESSING, CteStep.AGGREGATION_SELECT, CteStep.FINAL);
+	}
+
+	;
 
 }
