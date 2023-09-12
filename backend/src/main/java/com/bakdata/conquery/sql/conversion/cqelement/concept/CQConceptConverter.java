@@ -109,7 +109,11 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			Optional<ColumnDateRange> validityDateSelect
 	) {
 		SelectContext selectContext = new SelectContext(context, node, conceptLabel, validityDateSelect, conceptTables);
-		return Stream.concat(table.getSelects().stream(), node.getSelects().stream())
+		/**
+		 * we need to convert the concept-level selects before we convert the table-level selects,
+		 * because {@link CQConcept#getResultInfos()} will create the result infos in the same order.
+		 */
+		return Stream.concat(node.getSelects().stream(), table.getSelects().stream())
 					 .map(select -> this.selectConversions.convert(select, selectContext))
 					 .toList();
 	}

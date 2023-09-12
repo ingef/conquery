@@ -1,6 +1,7 @@
 {
   "type": "SQL_TEST",
-  "label": "Single Concept EXISTS",
+  "label": "EXISTS select with other selects",
+  "description": "EXISTS as concept level select should be in before table-level selects like first in final result set",
   "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -14,7 +15,7 @@
           "id": "concept.connector",
           "filters": [
             {
-              "filter": "concept.connector.filter",
+              "filter": "concept.connector.number_filter",
               "type": "REAL_RANGE",
               "value": {
                 "min": 1,
@@ -22,14 +23,15 @@
               }
             },
             {
-              "filter": "concept.connector.sum",
+              "filter": "concept.connector.sum_filter",
               "type": "REAL_RANGE",
               "value": {
                 "min": 0,
                 "max": 5
               }
             }
-          ]
+          ],
+          "selects": "concept.connector.first_value"
         }
       ],
       "selects": "concept.exists"
@@ -56,14 +58,21 @@
           ],
           "filters": [
             {
-              "label": "filter",
+              "label": "number_filter",
               "column": "exists_table.value",
               "type": "NUMBER"
             },
             {
-              "label": "sum",
+              "label": "sum_filter",
               "column": "exists_table.value",
               "type": "SUM"
+            }
+          ],
+          "selects": [
+            {
+              "name": "first_value",
+              "column": "exists_table.value",
+              "type": "FIRST"
             }
           ]
         }
@@ -73,7 +82,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/selects/exists/content.csv",
+        "csv": "tests/sql/selects/exists/exists_with_other_selects/content.csv",
         "name": "exists_table",
         "primaryColumn": {
           "name": "pid",
