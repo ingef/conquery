@@ -47,7 +47,7 @@ class AggregationFilterCte extends ConceptCte {
 		return cteContext.getSelects().stream()
 						 .flatMap(sqlSelects -> sqlSelects.getForFinalStep().stream())
 						 // TODO: EXISTS edge case is only in a concepts final select statement and has no predecessor selects
-						 .filter(conquerySelect -> !conquerySelect.getClass().isInstance(ExistsSelect.class))
+						 .filter(conquerySelect -> !(conquerySelect instanceof ExistsSelect))
 						 .map(conquerySelect -> ExtractingSelect.fromConquerySelect(conquerySelect, aggregationFilterPredecessorCte))
 						 .distinct()
 						 .collect(Collectors.toList());
