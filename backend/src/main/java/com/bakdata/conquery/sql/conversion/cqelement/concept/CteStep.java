@@ -23,6 +23,4 @@ public enum CteStep {
 		return Set.of(CteStep.PREPROCESSING, CteStep.AGGREGATION_SELECT, CteStep.FINAL);
 	}
 
-	;
-
 }
