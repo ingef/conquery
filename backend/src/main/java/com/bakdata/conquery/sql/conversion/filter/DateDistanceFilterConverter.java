@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.Range;
@@ -31,13 +30,13 @@ public class DateDistanceFilterConverter implements FilterConverter<Range.LongRa
 				dateDistanceFilter.getTimeUnit(),
 				context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
 				dateDistanceFilter.getColumn(),
+				dateDistanceFilter.getName(),
 				context.getParentContext().getDateRestrictionRange(),
-				dateDistanceFilter.getLabel(),
 				context.getParentContext().getSqlDialect().getFunction()
 		);
 
 		FilterCondition dateDistanceCondition = new DateDistanceCondition(
-				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.EVENT_FILTER, dateDistanceSelect.alias()),
+				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.EVENT_FILTER, dateDistanceSelect.aliased()),
 				context.getValue()
 		);
 
@@ -53,10 +52,7 @@ public class DateDistanceFilterConverter implements FilterConverter<Range.LongRa
 
 	@Override
 	public Set<CteStep> requiredSteps() {
-		Set<CteStep> dateDistanceFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
-		dateDistanceFilterSteps.add(CteStep.EVENT_FILTER);
-		return dateDistanceFilterSteps;
-
+		return CteStep.withOptionalSteps(CteStep.EVENT_FILTER);
 	}
 
 	@Override

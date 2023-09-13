@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.IRange;
@@ -14,6 +13,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter.Number
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
 
 public class NumberFilterConverter implements FilterConverter<IRange<? extends Number, ?>, NumberFilter<IRange<? extends Number, ?>>> {
+
 	private static final Class<? extends NumberFilter> CLASS = NumberFilter.class;
 
 	@Override
@@ -28,7 +28,7 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 		);
 
 		NumberCondition condition = new NumberCondition(
-				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.EVENT_FILTER, rootSelect.alias()),
+				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.EVENT_FILTER, rootSelect.aliased()),
 				context.getValue()
 		);
 
@@ -44,9 +44,7 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 
 	@Override
 	public Set<CteStep> requiredSteps() {
-		Set<CteStep> numberFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
-		numberFilterSteps.add(CteStep.EVENT_FILTER);
-		return numberFilterSteps;
+		return CteStep.withOptionalSteps(CteStep.EVENT_FILTER);
 	}
 
 	@Override
@@ -54,4 +52,5 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 	public Class<? extends NumberFilter<IRange<? extends Number, ?>>> getConversionClass() {
 		return (Class<? extends NumberFilter<IRange<? extends Number, ?>>>) CLASS;
 	}
+
 }

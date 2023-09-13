@@ -15,11 +15,13 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQDateRestrictionConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
+import com.bakdata.conquery.sql.conversion.filter.BigMultiSelectFilterConverter;
 import com.bakdata.conquery.sql.conversion.filter.DateDistanceFilterConverter;
 import com.bakdata.conquery.sql.conversion.filter.FilterConversions;
 import com.bakdata.conquery.sql.conversion.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.filter.MultiSelectFilterConverter;
 import com.bakdata.conquery.sql.conversion.filter.NumberFilterConverter;
+import com.bakdata.conquery.sql.conversion.filter.SingleSelectFilterConverter;
 import com.bakdata.conquery.sql.conversion.filter.SumFilterConverter;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
 import com.bakdata.conquery.sql.conversion.select.DateDistanceSelectConverter;
@@ -78,7 +80,9 @@ public interface SqlDialect {
 	default List<FilterConverter<?, ?>> getDefaultFilterConverters() {
 		return List.of(
 				new DateDistanceFilterConverter(DEFAULT_DATE_NOW_SUPPLIER),
+				new BigMultiSelectFilterConverter(),
 				new MultiSelectFilterConverter(),
+				new SingleSelectFilterConverter(),
 				new NumberFilterConverter(),
 				new SumFilterConverter()
 		);

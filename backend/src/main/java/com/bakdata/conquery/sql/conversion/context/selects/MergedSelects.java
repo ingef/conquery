@@ -93,7 +93,12 @@ public class MergedSelects implements Selects {
 	private List<Field<Object>> mergeSelects(List<QueryStep> queriesToJoin) {
 		return queriesToJoin.stream()
 							.flatMap(queryStep -> queryStep.getQualifiedSelects().explicitSelects().stream())
+							.map(MergedSelects::ensureUniqueFieldName)
 							.toList();
+	}
+
+	private static Field<Object> ensureUniqueFieldName(Field<Object> field) {
+		return field.as("%s-%s".formatted(field.getName(), field.hashCode()));
 	}
 
 	private Stream<Field<?>> primaryColumnAndValidityDate() {

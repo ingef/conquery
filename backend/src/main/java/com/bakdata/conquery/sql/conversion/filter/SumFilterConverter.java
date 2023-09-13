@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.IRange;
@@ -30,10 +29,12 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 				numberClass
 		);
 
-		Field<? extends Number> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, rootSelect.alias());
-		SumGroupBy sumGroupBy = new SumGroupBy(qualifiedRootSelect);
+		Field<? extends Number> qualifiedRootSelect = context.getConceptTables()
+															 .qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		SumGroupBy sumGroupBy = new SumGroupBy(qualifiedRootSelect, sumFilter.getName());
 
-		Field<? extends Number> qualifiedSumGroupBy = context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_FILTER, sumGroupBy.alias());
+		Field<? extends Number> qualifiedSumGroupBy = context.getConceptTables()
+															 .qualifyOnPredecessorTableName(CteStep.AGGREGATION_FILTER, sumGroupBy.aliased());
 		SumCondition sumFilterCondition = new SumCondition(qualifiedSumGroupBy, context.getValue());
 
 		return new ConceptFilter(
@@ -49,10 +50,7 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 
 	@Override
 	public Set<CteStep> requiredSteps() {
-		Set<CteStep> sumFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
-		sumFilterSteps.add(CteStep.AGGREGATION_FILTER);
-		return sumFilterSteps;
-
+		return CteStep.withOptionalSteps(CteStep.AGGREGATION_FILTER);
 	}
 
 	@Override

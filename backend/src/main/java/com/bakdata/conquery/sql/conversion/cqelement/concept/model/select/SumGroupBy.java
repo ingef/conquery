@@ -13,16 +13,22 @@ import org.jooq.impl.DSL;
 public class SumGroupBy implements ConquerySelect {
 
 	private final Field<? extends Number> columnToSum;
+	private final String alias;
 
 	@Override
 	public Field<BigDecimal> select() {
 		return DSL.sum(columnToSum)
-				  .as(columnToSum.getName());
+				  .as(alias);
 	}
 
 	@Override
-	public Field<BigDecimal> alias() {
-		return DSL.field(columnToSum.getName(), BigDecimal.class);
+	public Field<BigDecimal> aliased() {
+		return DSL.field(alias, BigDecimal.class);
+	}
+
+	@Override
+	public String columnName() {
+		return columnToSum.getName();
 	}
 
 }

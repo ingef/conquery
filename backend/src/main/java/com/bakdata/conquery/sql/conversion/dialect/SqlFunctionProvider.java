@@ -39,11 +39,11 @@ public interface SqlFunctionProvider {
 
 	Field<Integer> dateDistance(ChronoUnit datePart, Name startDateColumn, Date endDateExpression);
 
+	Field<?> first(Field<?> field, List<Field<?>> orderByColumn);
+
 	default Condition in(Field<String> column, String[] values) {
 		return column.in(values);
 	}
-
-	Field<?> first(Field<?> field, List<Field<?>> orderByColumn);
 
 	default TableOnConditionStep<Record> innerJoin(
 			Table<Record> leftPartQueryBase,

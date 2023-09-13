@@ -16,15 +16,6 @@
           "tables": [
             {
               "id": "sum.sum_connector",
-              "filters": [
-                {
-                  "filter": "sum.sum_connector.sum_filter",
-                  "type": "REAL_RANGE",
-                  "value": {
-                    "min": 1.5
-                  }
-                }
-              ],
               "selects": [
                 "sum.sum_connector.sum_select"
               ]
@@ -46,11 +37,6 @@
             "type": "SUM",
             "name": "sum_select",
             "column": "table1.value"
-          },
-          "filters": {
-            "label": "sum_filter",
-            "column": "table1.value",
-            "type": "SUM"
           }
         }
       ]

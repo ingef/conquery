@@ -1,0 +1,74 @@
+{
+  "label": "FIRST select with validity date",
+  "type": "SQL_TEST",
+  "expectedCsv": "expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "number"
+          ],
+          "type": "CONCEPT",
+          "label": "vs",
+          "tables": [
+            {
+              "id": "number.number_connector",
+              "selects": "number.number_connector.first_value"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "number",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "number_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "startColumn": "table1.datum_start",
+            "endColumn": "table1.datum_end"
+          },
+          "selects": {
+            "label": "first_value",
+            "column": "table1.value",
+            "type": "FIRST"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/first/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

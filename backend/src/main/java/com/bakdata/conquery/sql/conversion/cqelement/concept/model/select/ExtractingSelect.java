@@ -23,11 +23,11 @@ public class ExtractingSelect<V> implements ConquerySelect {
 	Class<V> columnClass;
 
 	@SuppressWarnings("unchecked")
-	public static <V> ExtractingSelect<V> fromConquerySelect(String qualifier, ConquerySelect select) {
+	public static <V> ExtractingSelect<V> fromConquerySelect(ConquerySelect select, String qualifier) {
 		return (ExtractingSelect<V>) new ExtractingSelect<>(
 				qualifier,
-				select.alias().getName(),
-				select.alias().getType()
+				select.columnName(),
+				select.aliased().getType()
 		);
 	}
 
@@ -37,8 +37,13 @@ public class ExtractingSelect<V> implements ConquerySelect {
 	}
 
 	@Override
-	public Field<V> alias() {
+	public Field<V> aliased() {
 		return DSL.field(column, columnClass);
+	}
+
+	@Override
+	public String columnName() {
+		return column;
 	}
 
 }

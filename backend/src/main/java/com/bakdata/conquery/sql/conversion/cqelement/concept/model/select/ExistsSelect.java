@@ -8,19 +8,24 @@ import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public class Exists implements ConquerySelect {
+public class ExistsSelect implements ConquerySelect {
 
 	private final String label;
 
 	@Override
-	public Field<?> select() {
+	public Field<Integer> select() {
 		return DSL.field("1", Integer.class)
 				  .as(label + "_exists");
 	}
 
 	@Override
-	public Field<?> alias() {
-		return DSL.field(label + "_exists");
+	public Field<Integer> aliased() {
+		return DSL.field(label + "_exists", Integer.class);
+	}
+
+	@Override
+	public String columnName() {
+		return label;
 	}
 
 }
