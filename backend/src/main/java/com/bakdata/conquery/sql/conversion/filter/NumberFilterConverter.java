@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.IRange;
@@ -45,9 +44,7 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 
 	@Override
 	public Set<CteStep> requiredSteps() {
-		Set<CteStep> numberFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
-		numberFilterSteps.add(CteStep.EVENT_FILTER);
-		return numberFilterSteps;
+		return CteStep.withOptionalSteps(CteStep.EVENT_FILTER);
 	}
 
 	@Override

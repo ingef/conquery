@@ -14,17 +14,13 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.Extrac
 
 class SelectFilterUtil {
 
-	public static <T> ConceptFilter convert(SelectFilter<T> selectFilter, FilterContext<T> context, Class<T> selectValueType) {
+	public static <T> ConceptFilter convert(SelectFilter<T> selectFilter, FilterContext<T> context, String[] values) {
 
 		ConquerySelect rootSelect = new ExtractingSelect<>(
 				context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
 				selectFilter.getColumn().getName(),
 				String.class
 		);
-
-		String[] values = selectValueType.equals(String.class)
-						  ? new String[]{(String) context.getValue()}
-						  : (String[]) context.getValue();
 
 		FilterCondition condition = new MultiSelectCondition(
 				context.getConceptTables().qualifyOnPredecessorTableName(CteStep.EVENT_FILTER, rootSelect.aliased()),

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.IRange;
@@ -51,9 +50,7 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 
 	@Override
 	public Set<CteStep> requiredSteps() {
-		Set<CteStep> sumFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
-		sumFilterSteps.add(CteStep.AGGREGATION_FILTER);
-		return sumFilterSteps;
+		return CteStep.withOptionalSteps(CteStep.AGGREGATION_FILTER);
 	}
 
 	@Override

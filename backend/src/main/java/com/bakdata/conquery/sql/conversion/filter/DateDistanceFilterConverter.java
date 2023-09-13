@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.Range;
@@ -53,9 +52,7 @@ public class DateDistanceFilterConverter implements FilterConverter<Range.LongRa
 
 	@Override
 	public Set<CteStep> requiredSteps() {
-		Set<CteStep> dateDistanceFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
-		dateDistanceFilterSteps.add(CteStep.EVENT_FILTER);
-		return dateDistanceFilterSteps;
+		return CteStep.withOptionalSteps(CteStep.EVENT_FILTER);
 	}
 
 	@Override

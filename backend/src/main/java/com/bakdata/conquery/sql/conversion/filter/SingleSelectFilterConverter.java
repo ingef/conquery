@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SingleSelectFilter;
@@ -11,14 +10,12 @@ public class SingleSelectFilterConverter implements FilterConverter<String, Sing
 
 	@Override
 	public ConceptFilter convert(SingleSelectFilter singleSelect, FilterContext<String> context) {
-		return SelectFilterUtil.convert(singleSelect, context, String.class);
+		return SelectFilterUtil.convert(singleSelect, context, new String[]{context.getValue()});
 	}
 
 	@Override
 	public Set<CteStep> requiredSteps() {
-		Set<CteStep> multiSelectFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
-		multiSelectFilterSteps.add(CteStep.EVENT_FILTER);
-		return multiSelectFilterSteps;
+		return CteStep.withOptionalSteps(CteStep.EVENT_FILTER);
 	}
 
 	@Override

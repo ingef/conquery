@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.filter;
 
-import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.BigMultiSelectFilter;
@@ -11,14 +10,12 @@ public class BigMultiSelectFilterConverter implements FilterConverter<String[], 
 
 	@Override
 	public ConceptFilter convert(BigMultiSelectFilter bigMultiSelectFilter, FilterContext<String[]> context) {
-		return SelectFilterUtil.convert(bigMultiSelectFilter, context, String[].class);
+		return SelectFilterUtil.convert(bigMultiSelectFilter, context, context.getValue());
 	}
 
 	@Override
 	public Set<CteStep> requiredSteps() {
-		Set<CteStep> multiSelectFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
-		multiSelectFilterSteps.add(CteStep.EVENT_FILTER);
-		return multiSelectFilterSteps;
+		return CteStep.withOptionalSteps(CteStep.EVENT_FILTER);
 	}
 
 	@Override

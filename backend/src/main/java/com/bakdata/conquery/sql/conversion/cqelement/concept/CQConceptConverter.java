@@ -105,7 +105,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	/**
 	 * Converts the concept-level selects before we convert the table-level selects,
-	 * because {@link CQConcept#getResultInfos()} will create the result infos in the same order.
+	 * {@link CQConcept#getResultInfos()} will create the result infos in the same order.
 	 */
 	private List<SqlSelects> getConceptSelects(
 			CQConcept node,

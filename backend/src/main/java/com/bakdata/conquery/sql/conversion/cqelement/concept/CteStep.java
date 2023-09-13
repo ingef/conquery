@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,12 @@ public enum CteStep {
 
 	public static Set<CteStep> mandatorySteps() {
 		return Set.of(CteStep.PREPROCESSING, CteStep.AGGREGATION_SELECT, CteStep.FINAL);
+	}
+
+	public static Set<CteStep> withOptionalSteps(CteStep... cteStep) {
+		HashSet<CteStep> steps = new HashSet<>(mandatorySteps());
+		steps.addAll(Set.of(cteStep));
+		return steps;
 	}
 
 }
