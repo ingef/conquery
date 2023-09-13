@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept.model.select;
 
 import java.util.List;
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -13,7 +13,7 @@ import org.jooq.impl.DSL;
 @Value
 @Builder
 @EqualsAndHashCode
-public class FirstValueGroupBy implements ConquerySelect {
+public class FirstValueSqlSelect implements SqlSelect {
 
 	Field<?> firstColumn;
 	String alias;

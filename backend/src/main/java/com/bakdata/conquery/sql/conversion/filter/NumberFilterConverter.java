@@ -10,7 +10,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConceptFilter
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.Filters;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter.NumberCondition;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSqlSelect;
 
 public class NumberFilterConverter implements FilterConverter<IRange<? extends Number, ?>, NumberFilter<IRange<? extends Number, ?>>> {
 
@@ -21,7 +21,7 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(numberFilter.getColumn().getType());
 
-		ExtractingSelect<? extends Number> rootSelect = new ExtractingSelect<>(
+		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
 				context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
 				numberFilter.getColumn().getName(),
 				numberClass

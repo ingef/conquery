@@ -5,9 +5,9 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterCondition;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSqlSelect;
 import org.jooq.Condition;
 
 class EventFilterCte extends ConceptCte {
@@ -34,10 +34,10 @@ class EventFilterCte extends ConceptCte {
 						.conditions(eventFilterConditions);
 	}
 
-	private static List<ConquerySelect> getSelectsForAggregationSelectStep(CteContext cteContext, String preprocessingCteName) {
+	private static List<SqlSelect> getSelectsForAggregationSelectStep(CteContext cteContext, String preprocessingCteName) {
 		return cteContext.allConceptSelects()
 						 .flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
-						 .map(conquerySelect -> ExtractingSelect.fromConquerySelect(conquerySelect, preprocessingCteName))
+						 .map(conquerySelect -> ExtractingSqlSelect.fromConquerySelect(conquerySelect, preprocessingCteName))
 						 .distinct()
 						 .collect(Collectors.toList());
 	}

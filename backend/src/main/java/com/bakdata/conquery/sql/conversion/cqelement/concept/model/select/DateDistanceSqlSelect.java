@@ -8,7 +8,7 @@ import java.util.Objects;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.MajorTypeId;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import lombok.EqualsAndHashCode;
@@ -19,7 +19,7 @@ import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public class DateDistanceSelect implements ConquerySelect {
+public class DateDistanceSqlSelect implements SqlSelect {
 
 	private final DateNowSupplier dateNowSupplier;
 	private final ChronoUnit timeUnit;

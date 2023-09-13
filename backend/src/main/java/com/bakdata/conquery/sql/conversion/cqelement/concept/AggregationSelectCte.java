@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.models.ColumnDateRange;
 
@@ -17,10 +17,10 @@ class AggregationSelectCte extends ConceptCte {
 
 		// all selects that are required in the aggregation filter step
 		String previousCteName = cteContext.getPrevious().getCteName();
-		List<ConquerySelect> aggregationFilterSelects = cteContext.allConceptSelects()
-																  .flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
-																  .distinct()
-																  .collect(Collectors.toList());
+		List<SqlSelect> aggregationFilterSelects = cteContext.allConceptSelects()
+															 .flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
+															 .distinct()
+															 .collect(Collectors.toList());
 
 		SqlFunctionProvider functionProvider = cteContext.getContext().getSqlDialect().getFunction();
 		Optional<ColumnDateRange> aggregatedValidityDate = cteContext.getValidityDateRange()

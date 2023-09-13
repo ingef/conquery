@@ -1,6 +1,8 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.model.select;
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+import java.math.BigDecimal;
+
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -8,24 +10,25 @@ import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public class FieldSelect implements ConquerySelect {
+public class MinSqlSelect implements SqlSelect {
 
-	private final Field<?> field;
+	private final Field<?> minColumn;
+	private final String alias;
 
 	@Override
 	public Field<?> select() {
-		return field;
+		return DSL.min(minColumn)
+				  .as(alias);
 	}
 
 	@Override
 	public Field<?> aliased() {
-		return DSL.field(field.getName());
+		return DSL.field(alias, BigDecimal.class);
 	}
 
 	@Override
 	public String columnName() {
-		return field.getName();
+		return minColumn.getName();
 	}
-
 
 }

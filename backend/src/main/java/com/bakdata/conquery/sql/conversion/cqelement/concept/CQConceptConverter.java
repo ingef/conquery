@@ -16,12 +16,12 @@ import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConceptFilter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterType;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.Filters;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.filter.ConditionUtil;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.FieldSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.FieldSqlSelect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.filter.FilterConversions;
 import com.bakdata.conquery.sql.conversion.filter.FilterValueConversions;
@@ -96,7 +96,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	private Set<CteStep> getRequiredSteps(CQTable table) {
 		if (table.getFilters().isEmpty()) {
-			return CteStep.mandatorySteps();
+			return CteStep.MANDATORY_STEPS;
 		}
 		return table.getFilters().stream()
 					.flatMap(filterValue -> this.filterValueConversions.requiredSteps(filterValue).stream())
@@ -164,9 +164,9 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 												 .daterange(context.getDateRestrictionRange())
 												 .asDateRestrictionRange();
 
-		List<ConquerySelect> dateRestrictionSelects = dateRestriction.toFields().stream()
-																	 .map(FieldSelect::new)
-																	 .collect(Collectors.toList());
+		List<SqlSelect> dateRestrictionSelects = dateRestriction.toFields().stream()
+																.map(FieldSqlSelect::new)
+																.collect(Collectors.toList());
 
 		Condition dateRestrictionCondition = context.getSqlDialect().getFunction().dateRestriction(dateRestriction, validityDate.get());
 

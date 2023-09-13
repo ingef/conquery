@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.model.select;
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -8,7 +8,7 @@ import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public class ExistsSelect implements ConquerySelect {
+public class ExistsSqlSelect implements SqlSelect {
 
 	private final String label;
 

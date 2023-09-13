@@ -13,6 +13,7 @@ public enum CteStep {
 	AGGREGATION_SELECT("_aggregation_select"),
 	AGGREGATION_FILTER("_aggregation_filter"),
 	FINAL("");
+	public static final Set<CteStep> MANDATORY_STEPS = Set.of(CteStep.PREPROCESSING, CteStep.AGGREGATION_SELECT, CteStep.FINAL);
 
 	private final String suffix;
 
@@ -20,12 +21,8 @@ public enum CteStep {
 		return this.suffix;
 	}
 
-	public static Set<CteStep> mandatorySteps() {
-		return Set.of(CteStep.PREPROCESSING, CteStep.AGGREGATION_SELECT, CteStep.FINAL);
-	}
-
 	public static Set<CteStep> withOptionalSteps(CteStep... cteStep) {
-		HashSet<CteStep> steps = new HashSet<>(mandatorySteps());
+		HashSet<CteStep> steps = new HashSet<>(MANDATORY_STEPS);
 		steps.addAll(Set.of(cteStep));
 		return steps;
 	}

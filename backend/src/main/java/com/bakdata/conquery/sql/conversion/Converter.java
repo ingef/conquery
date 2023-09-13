@@ -27,7 +27,7 @@ public interface Converter<C, R, X extends Context> {
 	 * @return PREPROCESSING, AGGREGATION_SELECT and FINAL {@link CteStep} as defaults. Override if more steps are required.
 	 */
 	default Set<CteStep> requiredSteps() {
-		return CteStep.mandatorySteps();
+		return CteStep.MANDATORY_STEPS;
 	}
 
 	Class<? extends C> getConversionClass();

@@ -3,10 +3,10 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept.model;
 
 import org.jooq.Field;
 
-public interface ConquerySelect {
+public interface SqlSelect {
 
 	/**
-	 * @return The whole (aliased) SQL expression of this {@link ConquerySelect}.
+	 * @return The whole (aliased) SQL expression of this {@link SqlSelect}.
 	 * 	For example, {@code DSL.firstValue(DSL.field(DSL.name("foo", "bar"))).as("foobar")}.
 	 */
 	Field<?> select();
@@ -18,7 +18,7 @@ public interface ConquerySelect {
 	Field<?> aliased();
 
 	/**
-	 * @return Plain column name of this {@link ConquerySelect}.
+	 * @return Plain column name of this {@link SqlSelect}.
 	 * For example, {@code "bar"}.
 	 */
 	String columnName();

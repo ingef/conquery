@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept.model.select;
 
 import java.math.BigDecimal;
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -10,7 +10,7 @@ import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public class SumGroupBy implements ConquerySelect {
+public class SumSqlSelect implements SqlSelect {
 
 	private final Field<? extends Number> columnToSum;
 	private final String alias;

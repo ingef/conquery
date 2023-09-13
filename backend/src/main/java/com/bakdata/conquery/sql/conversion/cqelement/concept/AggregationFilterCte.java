@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterCondition;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExistsSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExistsSqlSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.models.ColumnDateRange;
 import org.jooq.Condition;
 
@@ -43,12 +43,12 @@ class AggregationFilterCte extends ConceptCte {
 						.conditions(aggregationFilterConditions);
 	}
 
-	private List<ConquerySelect> getAggregationFilterSelects(CteContext cteContext, String aggregationFilterPredecessorCte) {
+	private List<SqlSelect> getAggregationFilterSelects(CteContext cteContext, String aggregationFilterPredecessorCte) {
 		return cteContext.getSelects().stream()
 						 .flatMap(sqlSelects -> sqlSelects.getForFinalStep().stream())
 						 // TODO: EXISTS edge case is only in a concepts final select statement and has no predecessor selects
-						 .filter(conquerySelect -> !(conquerySelect instanceof ExistsSelect))
-						 .map(conquerySelect -> ExtractingSelect.fromConquerySelect(conquerySelect, aggregationFilterPredecessorCte))
+						 .filter(conquerySelect -> !(conquerySelect instanceof ExistsSqlSelect))
+						 .map(conquerySelect -> ExtractingSqlSelect.fromConquerySelect(conquerySelect, aggregationFilterPredecessorCte))
 						 .distinct()
 						 .collect(Collectors.toList());
 	}

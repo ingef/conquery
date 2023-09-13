@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.models.ColumnDateRange;
 import lombok.Value;
 import org.jooq.Field;
@@ -24,20 +24,20 @@ public class ConceptSelects implements Selects {
 
 	Optional<ColumnDateRange> validityDate;
 
-	List<ConquerySelect> conquerySelects;
+	List<SqlSelect> sqlSelects;
 
 	@Override
 	public Selects withValidityDate(ColumnDateRange validityDate) {
-		return new ConceptSelects(primaryColumn, Optional.ofNullable(validityDate), conquerySelects);
+		return new ConceptSelects(primaryColumn, Optional.ofNullable(validityDate), sqlSelects);
 	}
 
 	@Override
 	public Selects qualifiedWith(String qualifier) {
 		Field<Object> qualifiedPrimaryColumn = DSL.field(DSL.name(qualifier, this.primaryColumn.getName()));
 		Optional<ColumnDateRange> qualifiedValidityDate = validityDate.map(validityDate -> validityDate.qualify(qualifier));
-		List<ConquerySelect> qualifiedSelects = this.conquerySelects.stream()
-																	.map(select -> new ExtractingSelect<>(qualifier, select.select().getName(), Object.class))
-																	.collect(Collectors.toList());
+		List<SqlSelect> qualifiedSelects = this.sqlSelects.stream()
+														  .map(select -> new ExtractingSqlSelect<>(qualifier, select.select().getName(), Object.class))
+														  .collect(Collectors.toList());
 		return new ConceptSelects(qualifiedPrimaryColumn, qualifiedValidityDate, qualifiedSelects);
 	}
 
@@ -46,7 +46,7 @@ public class ConceptSelects implements Selects {
 		return Stream.of(
 							 Stream.of(this.primaryColumn),
 							 this.validityDate.stream().flatMap(range -> range.toFields().stream()),
-							 this.conquerySelects.stream().map(ConquerySelect::select)
+							 this.sqlSelects.stream().map(SqlSelect::select)
 					 )
 					 .flatMap(Function.identity())
 					 .map(select -> (Field<Object>) select)
@@ -55,10 +55,10 @@ public class ConceptSelects implements Selects {
 
 	@Override
 	public List<Field<Object>> explicitSelects() {
-		return this.conquerySelects.stream()
-								   .map(ConquerySelect::select)
-								   .map(select -> (Field<Object>) select)
-								   .collect(Collectors.toList());
+		return this.sqlSelects.stream()
+							  .map(SqlSelect::select)
+							  .map(select -> (Field<Object>) select)
+							  .collect(Collectors.toList());
 	}
 
 }

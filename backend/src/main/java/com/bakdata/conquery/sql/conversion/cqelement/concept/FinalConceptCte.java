@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
 import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
 import com.bakdata.conquery.sql.models.ColumnDateRange;
 
 class FinalConceptCte extends ConceptCte {
@@ -14,10 +14,10 @@ class FinalConceptCte extends ConceptCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(CteContext cteContext) {
 
-		List<ConquerySelect> finalSelects = cteContext.getSelects().stream()
-													  .flatMap(sqlSelects -> sqlSelects.getForFinalStep().stream())
-													  .distinct()
-													  .collect(Collectors.toList());
+		List<SqlSelect> finalSelects = cteContext.getSelects().stream()
+												 .flatMap(sqlSelects -> sqlSelects.getForFinalStep().stream())
+												 .distinct()
+												 .collect(Collectors.toList());
 
 		final Optional<ColumnDateRange> validityDate;
 		if (cteContext.isExcludedFromDateAggregation()) {

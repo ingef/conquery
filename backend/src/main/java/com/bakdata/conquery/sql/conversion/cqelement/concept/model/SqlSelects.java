@@ -10,11 +10,11 @@ import lombok.Value;
 @Value
 public class SqlSelects {
 	@Builder.Default
-	List<ConquerySelect> forPreprocessingStep = Collections.emptyList();
+	List<SqlSelect> forPreprocessingStep = Collections.emptyList();
 	// Empty if only used in event filter
 	@Builder.Default
-	List<ConquerySelect> forAggregationSelectStep = Collections.emptyList();
+	List<SqlSelect> forAggregationSelectStep = Collections.emptyList();
 	// Empty if only used in aggregation select
 	@Builder.Default
-	List<ConquerySelect> forFinalStep = Collections.emptyList();
+	List<SqlSelect> forFinalStep = Collections.emptyList();
 }

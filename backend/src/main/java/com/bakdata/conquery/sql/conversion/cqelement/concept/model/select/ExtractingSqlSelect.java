@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.model.select;
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.jooq.Field;
@@ -15,7 +15,7 @@ import org.jooq.impl.DSL;
  */
 @Value
 @EqualsAndHashCode
-public class ExtractingSelect<V> implements ConquerySelect {
+public class ExtractingSqlSelect<V> implements SqlSelect {
 
 	String table;
 	String column;
@@ -23,8 +23,8 @@ public class ExtractingSelect<V> implements ConquerySelect {
 	Class<V> columnClass;
 
 	@SuppressWarnings("unchecked")
-	public static <V> ExtractingSelect<V> fromConquerySelect(ConquerySelect select, String qualifier) {
-		return (ExtractingSelect<V>) new ExtractingSelect<>(
+	public static <V> ExtractingSqlSelect<V> fromConquerySelect(SqlSelect select, String qualifier) {
+		return (ExtractingSqlSelect<V>) new ExtractingSqlSelect<>(
 				qualifier,
 				select.columnName(),
 				select.aliased().getType()

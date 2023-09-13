@@ -4,10 +4,11 @@ import java.util.Collections;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.ConquerySelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.MinGroupBy;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.DateDistanceSqlSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.MinSqlSelect;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import org.jooq.Field;
 
@@ -22,7 +23,7 @@ public class DateDistanceSelectConverter implements SelectConverter<DateDistance
 	@Override
 	public SqlSelects convert(DateDistanceSelect dateDistanceSelect, SelectContext context) {
 
-		ConquerySelect rootSelect = new com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.DateDistanceSelect(
+		SqlSelect rootSelect = new DateDistanceSqlSelect(
 				dateNowSupplier,
 				dateDistanceSelect.getTimeUnit(), context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
 				dateDistanceSelect.getColumn(),
@@ -32,9 +33,9 @@ public class DateDistanceSelectConverter implements SelectConverter<DateDistance
 		);
 
 		Field<Object> qualifiedDateDistance = context.getConceptTables().qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, rootSelect.aliased());
-		MinGroupBy minDateDistance = new MinGroupBy(qualifiedDateDistance, dateDistanceSelect.getName());
+		MinSqlSelect minDateDistance = new MinSqlSelect(qualifiedDateDistance, dateDistanceSelect.getName());
 
-		ExtractingSelect<Object> firstValueReference = new ExtractingSelect<>(
+		ExtractingSqlSelect<Object> firstValueReference = new ExtractingSqlSelect<>(
 				context.getConceptTables().getPredecessorTableName(CteStep.FINAL),
 				minDateDistance.aliased().getName(),
 				Object.class
