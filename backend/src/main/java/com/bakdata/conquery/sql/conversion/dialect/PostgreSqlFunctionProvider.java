@@ -25,6 +25,16 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	private static final String MINUS_INFINITY_DATE_VALUE = "-infinity";
 
 	@Override
+	public String getMaxDateExpression() {
+		return INFINITY_DATE_VALUE;
+	}
+
+	@Override
+	public String getMinDateExpression() {
+		return MINUS_INFINITY_DATE_VALUE;
+	}
+
+	@Override
 	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange validityDate) {
 		if (!validityDate.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("The validity date range has to be converted to a daterange field in the preprocessing step.");
@@ -67,15 +77,15 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel) {
 
-		Field<Object> dateRange;
+		Field<?> dateRange;
 
 		if (validityDate.getEndColumn() != null) {
 
-			Field<Object> startColumn = DSL.coalesce(
+			Field<?> startColumn = DSL.coalesce(
 					DSL.field(DSL.name(qualifier, validityDate.getStartColumn().getName())),
 					toDateField(MINUS_INFINITY_DATE_VALUE)
 			);
-			Field<Object> endColumn = DSL.coalesce(
+			Field<?> endColumn = DSL.coalesce(
 					DSL.field(DSL.name(qualifier, validityDate.getEndColumn().getName())),
 					toDateField(INFINITY_DATE_VALUE)
 			);
@@ -89,9 +99,9 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 				case DATE_RANGE -> DSL.field(validityDateColumn.getName());
 				// if the validity date column is not of daterange type, we construct it manually
 				case DATE -> {
-					Field<Object> column = DSL.field(DSL.name(qualifier, validityDate.getColumn().getName()));
-					Field<Object> startColumn = DSL.coalesce(column, toDateField(MINUS_INFINITY_DATE_VALUE));
-					Field<Object> endColumn = DSL.coalesce(column, toDateField(INFINITY_DATE_VALUE));
+					Field<Date> column = DSL.field(DSL.name(qualifier, validityDate.getColumn().getName()), Date.class);
+					Field<Date> startColumn = DSL.coalesce(column, toDateField(MINUS_INFINITY_DATE_VALUE));
+					Field<Date> endColumn = DSL.coalesce(column, toDateField(INFINITY_DATE_VALUE));
 					yield daterange(startColumn, endColumn, "[]");
 				}
 				default -> throw new IllegalArgumentException(
@@ -114,11 +124,7 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		if (!columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("All column date ranges should have been converted to single column ranges.");
 		}
-		// TODO (remove): the coalesce() won't be necessary after we apply proper date aggregation
-		Field<String> aggregatedValidityDate = DSL.coalesce(
-				DSL.field("%s::varchar".formatted(columnDateRange.getRange().toString()), String.class),
-				DSL.val("{}")
-		);
+		Field<String> aggregatedValidityDate = DSL.field("%s::varchar".formatted(columnDateRange.getRange().toString()), String.class);
 		return replace(aggregatedValidityDate, INFINITY_DATE_VALUE, INFINITY_SIGN);
 	}
 
@@ -154,7 +160,7 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(column)));
 	}
 
-	private Field<Object> daterange(Field<Object> startColumn, Field<Object> endColumn, String bounds) {
+	private Field<?> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {
 		return DSL.function(
 				"daterange",
 				Object.class,

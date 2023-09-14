@@ -41,6 +41,8 @@ public interface SqlDialect {
 
 	IntervalPacker getIntervalPacker();
 
+	SqlDateAggregator getDateAggregator();
+
 	List<NodeConverter<? extends Visitable>> getNodeConverters();
 
 	List<SelectConverter<? extends Select>> getSelectConverters();
@@ -59,7 +61,7 @@ public interface SqlDialect {
 				new CQAndConverter(),
 				new CQOrConverter(),
 				new CQNegationConverter(),
-				new CQConceptConverter(new FilterConversions(getFilterConverters()), new SelectConversions(getSelectConverters())),
+				new CQConceptConverter(new FilterConversions(getFilterConverters()), new SelectConversions(getSelectConverters()), getFunctionProvider()),
 				new ConceptQueryConverter(new QueryStepTransformer(getDSLContext()))
 		);
 	}

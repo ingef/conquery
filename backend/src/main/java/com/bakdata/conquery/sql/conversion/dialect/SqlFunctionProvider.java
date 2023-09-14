@@ -25,6 +25,10 @@ public interface SqlFunctionProvider {
 	String INFINITY_SIGN = "∞";
 	String MINUS_INFINITY_SIGN = "-∞";
 
+	String getMinDateExpression();
+
+	String getMaxDateExpression();
+
 	/**
 	 * A date restriction condition is true if holds: dateRestrictionStart <= validityDateEnd and dateRestrictionEnd >= validityDateStart
 	 */
@@ -40,6 +44,10 @@ public interface SqlFunctionProvider {
 	 * Aggregates the start and end columns of the validity date of entries into one compound string expression.
 	 * <p>
 	 * Example: {[2013-11-10,2013-11-11),[2015-11-10,2015-11-11)}
+	 * <p>
+	 * Also, if the aggregated expression contains the dialect specific {@link SqlFunctionProvider#MAX_DATE} or {@link SqlFunctionProvider#MIN_DATE} expression,
+	 * it should be replaced with the {@link SqlFunctionProvider#INFINITY_SIGN} or {@link SqlFunctionProvider#MINUS_INFINITY_SIGN}.
+	 * Example: {[-∞,2013-11-11),[2015-11-10,∞)}
 	 */
 	Field<String> validityDateStringAggregation(ColumnDateRange columnDateRange);
 
@@ -48,6 +56,14 @@ public interface SqlFunctionProvider {
 	Field<Date> addDays(Field<Date> dateColumn, int amountOfDays);
 
 	Field<?> first(Field<?> field, List<Field<?>> orderByColumn);
+
+	default <T> Field<T> least(Field<T>[] fields) {
+		return DSL.function("least", fields[0].getType(), fields);
+	}
+
+	default <T> Field<T> greatest(Field<T>[] fields) {
+		return DSL.function("greatest", fields[0].getType(), fields);
+	}
 
 	default Condition in(Field<String> column, String[] values) {
 		return column.in(values);

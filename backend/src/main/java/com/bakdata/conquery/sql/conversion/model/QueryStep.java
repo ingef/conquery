@@ -23,8 +23,16 @@ public class QueryStep {
 	TableLike<Record> fromTable;
 	@Builder.Default
 	List<Condition> conditions = Collections.emptyList();
+	/**
+	 * All {@link Field}s that should be part of the SQL GROUPY BY clause.
+	 */
 	@Builder.Default
 	List<Field<?>> groupBy = Collections.emptyList();
+	/**
+	 * All {@link QueryStep}s that should be connected via a SQL UNION operator
+	 */
+	@Builder.Default
+	List<QueryStep> union = Collections.emptyList();
 	/**
 	 * All {@link QueryStep}'s that shall be converted before this {@link QueryStep}.
 	 */
@@ -44,6 +52,10 @@ public class QueryStep {
 
 	public boolean isGroupBy() {
 		return !this.groupBy.isEmpty();
+	}
+
+	public boolean isUnion() {
+		return !this.union.isEmpty();
 	}
 
 }

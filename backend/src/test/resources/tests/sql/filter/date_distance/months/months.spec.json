@@ -16,9 +16,13 @@
           "tables": [
             {
               "id": "geschlecht_select.geschlecht_connector",
-              "selects": [
-                "geschlecht_select.geschlecht_connector.date_distance_months"
-              ]
+              "filters": {
+                "filter": "geschlecht_select.geschlecht_connector.date_distance_months",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "max": 100
+                }
+              }
             }
           ]
         }
@@ -33,10 +37,9 @@
         {
           "label": "geschlecht_connector",
           "table": "table1",
-          "selects": [
+          "filters": [
             {
               "column": "table1.datum",
-              "default": true,
               "label": "date_distance_months",
               "name": "date_distance_months",
               "timeUnit": "MONTHS",

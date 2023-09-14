@@ -16,7 +16,9 @@ public class FilterValueConversions {
 	}
 
 	public ConceptFilter convert(FilterValue<?> filterValue, ConversionContext context, ConceptTables conceptTables) {
-		ConceptFilter convert = this.filterConversions.convert(filterValue.getFilter(), new FilterContext<>(filterValue.getValue(), context, conceptTables));
+		ConceptFilter
+				convert =
+				this.filterConversions.convert(filterValue.getFilter(), new FilterContext<>(filterValue.getValue(), context, conceptTables));
 		if (context.isNegation()) {
 			return new ConceptFilter(convert.getSelects(), convert.getFilters().negated());
 		}

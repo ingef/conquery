@@ -26,7 +26,7 @@ public class FieldWrapper implements SqlSelect {
 
 	@Override
 	public Field<?> aliased() {
-		return DSL.field(field.getName());
+		return DSL.field(DSL.name(field.getName()));
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.select;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect;
@@ -9,7 +10,6 @@ import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FirstValueSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import org.jooq.Field;
-import org.jooq.impl.DSL;
 
 public class FirstValueSelectConverter implements SelectConverter<FirstValueSelect> {
 
@@ -22,12 +22,11 @@ public class FirstValueSelectConverter implements SelectConverter<FirstValueSele
 				Object.class
 		);
 
-
 		List<Field<?>> validityDateFields = context.getValidityDate()
 												   .map(validityDate -> validityDate.qualify(context.getConceptTables()
 																									.getPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT)))
 												   .map(ColumnDateRange::toFields)
-												   .orElse(List.of(DSL.field(DSL.val(1))));
+												   .orElse(Collections.emptyList());
 
 		FirstValueSqlSelect firstValueSqlSelect =
 				FirstValueSqlSelect.builder()
