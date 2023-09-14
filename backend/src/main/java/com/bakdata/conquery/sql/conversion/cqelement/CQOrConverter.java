@@ -2,9 +2,8 @@ package com.bakdata.conquery.sql.conversion.cqelement;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.context.ConversionContext;
-import com.bakdata.conquery.sql.conversion.context.step.LogicalOperation;
-import com.bakdata.conquery.sql.conversion.context.step.StepJoiner;
+import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
+import com.bakdata.conquery.sql.conversion.model.StepJoiner;
 
 public class CQOrConverter implements NodeConverter<CQOr> {
 

@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
 
 abstract class ConceptCte {
 

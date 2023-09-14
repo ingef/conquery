@@ -1,19 +1,19 @@
 package com.bakdata.conquery.sql.conversion.query;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.context.ConversionContext;
-import com.bakdata.conquery.sql.conversion.context.selects.Selects;
-import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
-import com.bakdata.conquery.sql.conversion.context.step.QueryStepTransformer;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.models.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
+import com.bakdata.conquery.sql.conversion.model.Selects;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.Select;
-
-import java.util.Collections;
-import java.util.List;
 
 public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 

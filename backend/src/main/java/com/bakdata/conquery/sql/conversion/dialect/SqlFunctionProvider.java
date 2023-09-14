@@ -6,8 +6,8 @@ import java.util.List;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
-import com.bakdata.conquery.sql.models.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Name;

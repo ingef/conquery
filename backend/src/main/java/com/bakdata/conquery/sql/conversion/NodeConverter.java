@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion;
 
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.sql.conversion.context.ConversionContext;
+import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 
 /**
  * Interface for converters that implement the translation of a ConQuery query to an SQL query.

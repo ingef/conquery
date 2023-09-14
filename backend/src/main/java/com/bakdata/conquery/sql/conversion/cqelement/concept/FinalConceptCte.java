@@ -4,10 +4,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
-import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
-import com.bakdata.conquery.sql.models.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.ConceptSelects;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 
 class FinalConceptCte extends ConceptCte {
 

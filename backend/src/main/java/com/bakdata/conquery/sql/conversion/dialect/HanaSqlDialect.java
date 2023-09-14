@@ -5,8 +5,8 @@ import java.util.List;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.select.SelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import org.jooq.DSLContext;
 
 public class HanaSqlDialect implements SqlDialect {

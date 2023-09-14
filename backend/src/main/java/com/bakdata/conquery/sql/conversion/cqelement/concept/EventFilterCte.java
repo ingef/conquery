@@ -3,11 +3,11 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.sql.conversion.context.selects.ConceptSelects;
-import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.FilterCondition;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.conversion.model.ConceptSelects;
+import com.bakdata.conquery.sql.conversion.model.filter.FilterCondition;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import org.jooq.Condition;
 
 class EventFilterCte extends ConceptCte {

@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.conversion.cqelement;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQNegation;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 
 public class CQNegationConverter implements NodeConverter<CQNegation> {
 
