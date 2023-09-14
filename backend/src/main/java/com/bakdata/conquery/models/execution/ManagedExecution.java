@@ -51,6 +51,7 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.google.common.base.Preconditions;
@@ -94,6 +95,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
 
+	// Most queries contain dates, and this retroactively creates a saner default than false for old queries.
+	@JsonProperty(defaultValue = "true")
 	private boolean containsDates;
 
 	@JsonAlias("machineGenerated")
