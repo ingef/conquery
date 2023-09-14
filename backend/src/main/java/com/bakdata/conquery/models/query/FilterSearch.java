@@ -12,6 +12,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -19,6 +20,7 @@ import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Functions;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import it.unimi.dsi.fastutil.objects.Object2LongMaps;
 import it.unimi.dsi.fastutil.objects.Object2LongOpenHashMap;
@@ -91,10 +93,38 @@ public class FilterSearch {
 		jobManager.addSlowJob(new UpdateFilterSearchJob(storage, searchCache, indexConfig, totals));
 	}
 
-	public void registerValues(Searchable<?> column, Collection<String> values) {
+
+	public void registerValues(Column column, Collection<String> values) {
 		TrieSearch<FrontendValue> search = searchCache.computeIfAbsent(column, (ignored) -> column.createTrieSearch(indexConfig, storage));
 
-		values.forEach(search::addItem);
-		//TODO This requires re-counting values every time OR including state that tracks done-ness of UpdateFilterSearchJob
+		synchronized (search) {
+			values.stream()
+				  .map(value -> new FrontendValue(value, value))
+				  .forEach(value -> search.addItem(value, extractKeywords(value)));
+		}
+	}
+
+	public void calculateTotals() {
+		final Object2LongOpenHashMap<Searchable<?>> newTotals =
+				new Object2LongOpenHashMap<>(searchCache.keySet().stream()
+														.collect(Collectors.toMap(
+																Functions.identity(),
+																filter -> filter.getSearchReferences()
+																				.stream()
+																				.map(searchCache::get)
+																				.filter(Objects::nonNull) // Failed or disabled searches are null
+																				.flatMap(TrieSearch::stream)
+																				.mapToInt(FrontendValue::hashCode)
+																				.distinct()
+																				.count()
+														)));
+
+		setTotals(newTotals);
+	}
+
+	public void shrinkSearches() {
+		final Map<Searchable<?>, TrieSearch<FrontendValue>> searchCache = getSearchCache();
+
+		searchCache.values().forEach(TrieSearch::shrinkToFit);
 	}
 }

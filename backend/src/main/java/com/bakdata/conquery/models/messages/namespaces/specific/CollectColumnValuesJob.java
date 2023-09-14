@@ -4,11 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.datasets.concepts.Connector;
@@ -41,45 +38,24 @@ public class CollectColumnValuesJob extends WorkerMessage {
 		ListeningExecutorService jobsExecutorService = MoreExecutors.listeningDecorator(context.getJobsExecutorService());
 
 
-		Map<Column, ListenableFuture<Set<String>>> col2Values =
-				selectFilters.stream()
-							 .map(SelectFilter::getColumn)
-							 .collect(Collectors.toMap(
-									 Function.identity(),
-									 column -> {
-										 ListenableFuture<Set<String>> future = jobsExecutorService.submit(() -> {
-											 final List<Bucket> buckets = table2Buckets.get(column.getTable());
+		List<? extends ListenableFuture<?>> futures = selectFilters.stream()
+																			 .map(SelectFilter::getColumn)
+																			 .map(column ->
+																						  jobsExecutorService.submit(() -> {
+																							  final List<Bucket> buckets = table2Buckets.get(column.getTable());
 
-											 return buckets.stream()
-														   .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
-														   .collect(Collectors.toSet());
-										 });
-										 return future;
-									 }
-							 ));
-
-		col2Values.forEach((column, future) -> {
-			future.addListener(() -> {
-				try {
-					context.send(new RegisterColumnValues(column, future.get()));
-				}
-				catch (InterruptedException e) {
-					//TODO
-					throw new RuntimeException(e);
-				}
-				catch (ExecutionException e) {
-					throw new RuntimeException(e);
-				}
-			}, jobsExecutorService);
-		})
-		;
+																							  Set<String> values = buckets.stream()
+																														  .flatMap(bucket -> ((StringStore) bucket.getStore(column)).streamValues())
+																														  .collect(Collectors.toSet());
+																							  context.send(new RegisterColumnValues(column, values, context.getInfo()
+																																						   .getId()));
+																						  })
+																			 )
+																			 .collect(Collectors.toList());
 
 
+		ListenableFuture<List<Object>> all = Futures.allAsList(futures);
 
-		ListenableFuture<List<Set<String>>> all = Futures.allAsList(col2Values.values());
-
-
-
-
+		// TODO await then submit WorkerDone
 	}
 }

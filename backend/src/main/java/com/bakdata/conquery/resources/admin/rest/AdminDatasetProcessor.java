@@ -322,11 +322,14 @@ public class AdminDatasetProcessor {
 	public void updateMatchingStats(Dataset dataset) {
 		final Namespace ns = getDatasetRegistry().get(dataset.getId());
 
+		//TODO clear FilterSearch
+		//TODO initialise FilterSearch for every Searchable
+		//TODO setup state tracking every worker, then submit message for UpdateMatchingStats for every worker
+		//TODO => on RegisterColumnValues update state and initiate counting when everyone else is done
+
 		ns.getJobManager().addSlowJob(new SimpleJob(
 				"Initiate Update Matching Stats and FilterSearch",
 				() -> {
-
-
 					storageListener.onUpdateMatchingStats(dataset);
 					ns.getFilterSearch().updateSearch();
 					ns.updateInternToExternMappings();

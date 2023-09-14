@@ -51,14 +51,13 @@ public class TrieSearch<T extends Comparable<T>> {
 	private static final double ORIGINAL_WORD_WEIGHT_FACTOR = EXACT_MATCH_WEIGHT;
 	private static final String WHOLE_WORD_MARKER = "!";
 
-	private final int suffixCutoff;
+	private final int suffixCutoff; //TODO can you rework this with n-grams?
 
 	private final Pattern splitPattern;
 	/**
 	 * Maps from keywords to associated items.
 	 */
 	private final PatriciaTrie<List<T>> trie = new PatriciaTrie<>();
-	private boolean shrunk = false;
 	private long size = -1;
 
 	public TrieSearch(int suffixCutoff, String split) {
@@ -189,26 +188,8 @@ public class TrieSearch<T extends Comparable<T>> {
 	}
 
 	private void doPut(String kw, T item) {
-		ensureWriteable();
-
 		trie.computeIfAbsent(kw, (ignored) -> new ArrayList<>())
 			.add(item);
-	}
-
-	private void ensureWriteable() {
-		if (isWriteable()) {
-			return;
-		}
-		throw new IllegalStateException("Cannot alter a shrunk search.");
-	}
-
-	public Collection<T> listItems() {
-		//TODO this a pretty dangerous operation, I'd rather see a session based iterator instead
-		return trie.values().stream()
-				   .flatMap(Collection::stream)
-				   .distinct()
-				   .sorted()
-				   .collect(Collectors.toList());
 	}
 
 	/**
@@ -217,14 +198,9 @@ public class TrieSearch<T extends Comparable<T>> {
 	 * @implSpec the TrieSearch is still mutable after this.
 	 */
 	public void shrinkToFit() {
-		if (shrunk) {
-			return;
-		}
-
 		trie.replaceAll((key, values) -> values.stream().distinct().collect(Collectors.toList()));
 
 		size = calculateSize();
-		shrunk = true;
 	}
 
 	public long calculateSize() {
@@ -267,7 +243,4 @@ public class TrieSearch<T extends Comparable<T>> {
 		);
 	}
 
-	public boolean isWriteable() {
-		return !shrunk;
-	}
 }

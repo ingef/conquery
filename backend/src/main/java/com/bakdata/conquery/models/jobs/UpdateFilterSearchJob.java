@@ -5,22 +5,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.config.IndexConfig;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.search.TrieSearch;
-import com.google.common.base.Functions;
 import com.google.common.collect.Sets;
 import it.unimi.dsi.fastutil.objects.Object2LongMap;
 import lombok.NonNull;
@@ -31,6 +30,8 @@ import org.apache.commons.lang3.time.StopWatch;
 @Slf4j
 @RequiredArgsConstructor
 public class UpdateFilterSearchJob extends Job {
+
+	private final DistributedNamespace namespace;
 	@NonNull
 	private final NamespaceStorage storage;
 
@@ -77,6 +78,10 @@ public class UpdateFilterSearchJob extends Job {
 		log.debug("Found {} searchable Objects.", collectedSearchables.size());
 
 		for (Searchable<?> searchable : collectedSearchables) {
+			if (searchable instanceof Column){
+				// Handled on Shards
+				continue;
+			}
 
 			service.submit(() -> {
 
@@ -87,16 +92,14 @@ public class UpdateFilterSearchJob extends Job {
 				try {
 					final TrieSearch<FrontendValue> search = searchable.createTrieSearch(indexConfig, storage);
 
-					if(search.isWriteable() && search.findExact(List.of(""), 1).isEmpty()){
+					if(search.findExact(List.of(""), 1).isEmpty()){
 						search.addItem(new FrontendValue("", indexConfig.getEmptyLabel()), List.of(indexConfig.getEmptyLabel()));
-						search.shrinkToFit();
 					}
 
 					synchronizedResult.put(searchable, search);
 
 					log.debug(
-							"DONE collecting {} entries for `{}`, within {}",
-							search.calculateSize(),
+							"DONE collecting entries for `{}`, within {}",
 							searchable.getId(),
 							Duration.ofMillis(watch.getTime())
 					);
@@ -120,32 +123,8 @@ public class UpdateFilterSearchJob extends Job {
 			log.debug("Still waiting for {} to finish.", Sets.difference(collectedSearchables, synchronizedResult.keySet()));
 		}
 
-		log.debug("BEGIN counting Search totals.");
+		namespace.matchingStatsManagerFinished();
 
-
-		// Precompute totals as that can be slow when doing it on-demand.
-		totals.putAll(
-				Stream.concat(
-							  // SelectFilters without their own labels are not "real" Searchables and therefore not in collectedSearchables
-							  // We however want the real totals of ALL Searchables (and especially SelectFilters), which is why we include them here explicitly
-							  allSelectFilters.parallelStream(),
-							  collectedSearchables.parallelStream()
-					  )
-					  .distinct()
-					  .collect(Collectors.toMap(
-							  Functions.identity(),
-							  filter -> filter.getSearchReferences().stream()
-											  .map(searchCache::get)
-											  .filter(Objects::nonNull) // Failed or disabled searches are null
-											  .flatMap(TrieSearch::stream)
-											  .mapToInt(FrontendValue::hashCode)
-											  .distinct()
-											  .count()
-					  ))
-		);
-
-
-		log.debug("DONE loading SourceSearch");
 	}
 
 	@Override
