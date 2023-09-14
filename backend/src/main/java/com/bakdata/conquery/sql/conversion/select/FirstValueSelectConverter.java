@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.select;
 import java.util.Collections;
 import java.util.List;
 
+import com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.SqlSelects;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.model.select.ExtractingSqlSelect;
@@ -11,10 +12,10 @@ import com.bakdata.conquery.sql.models.ColumnDateRange;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
-public class FirstValueSelectConverter implements SelectConverter<com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect> {
+public class FirstValueSelectConverter implements SelectConverter<FirstValueSelect> {
 
 	@Override
-	public SqlSelects convert(com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect firstSelect, SelectContext context) {
+	public SqlSelects convert(FirstValueSelect firstSelect, SelectContext context) {
 
 		ExtractingSqlSelect<Object> rootSelect = new ExtractingSqlSelect<>(
 				context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
@@ -52,8 +53,8 @@ public class FirstValueSelectConverter implements SelectConverter<com.bakdata.co
 	}
 
 	@Override
-	public Class<com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect> getConversionClass() {
-		return com.bakdata.conquery.models.datasets.concepts.select.connector.FirstValueSelect.class;
+	public Class<FirstValueSelect> getConversionClass() {
+		return FirstValueSelect.class;
 	}
 
 }

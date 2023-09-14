@@ -23,6 +23,7 @@ public class DateDistanceSelectConverter implements SelectConverter<DateDistance
 	@Override
 	public SqlSelects convert(DateDistanceSelect dateDistanceSelect, SelectContext context) {
 
+
 		SqlSelect rootSelect = new DateDistanceSqlSelect(
 				dateNowSupplier,
 				dateDistanceSelect.getTimeUnit(), context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
