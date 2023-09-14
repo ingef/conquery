@@ -32,11 +32,11 @@ class OverlapCte extends DateAggregationCte {
 				context.getDateAggregationDates(),
 				context.getFunctionProvider()
 		);
-		Selects overlapSelects = new Selects(
-				context.getPrimaryColumn(),
-				Optional.of(overlapValidityDate),
-				context.getCarryThroughSelects()
-		);
+		Selects overlapSelects = Selects.builder()
+										.primaryColumn(context.getPrimaryColumn())
+										.validityDate(Optional.of(overlapValidityDate))
+										.sqlSelects(context.getCarryThroughSelects())
+										.build();
 
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));

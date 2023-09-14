@@ -15,7 +15,11 @@ class PreprocessingCte extends ConceptCte {
 															.distinct()
 															.toList();
 
-		Selects preprocessingSelects = new Selects(conceptCteContext.getPrimaryColumn(), conceptCteContext.getValidityDate(), forPreprocessing);
+		Selects preprocessingSelects = Selects.builder()
+											  .primaryColumn(conceptCteContext.getPrimaryColumn())
+											  .validityDate(conceptCteContext.getValidityDate())
+											  .sqlSelects(forPreprocessing)
+											  .build();
 
 		return QueryStep.builder()
 						.selects(preprocessingSelects)

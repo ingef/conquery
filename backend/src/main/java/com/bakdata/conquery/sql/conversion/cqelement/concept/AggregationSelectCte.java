@@ -17,7 +17,10 @@ class AggregationSelectCte extends ConceptCte {
 																		   .distinct()
 																		   .collect(Collectors.toList());
 
-		Selects aggregationSelectSelects = new Selects(conceptCteContext.getPrimaryColumn(), requiredInAggregationFilterStep);
+		Selects aggregationSelectSelects = Selects.builder()
+												  .primaryColumn(conceptCteContext.getPrimaryColumn())
+												  .sqlSelects(requiredInAggregationFilterStep)
+												  .build();
 
 		return QueryStep.builder()
 						.selects(aggregationSelectSelects)
