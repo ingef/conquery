@@ -7,14 +7,19 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.AnsiSqlIntervalPacker;
 import org.jooq.DSLContext;
 
 public class HanaSqlDialect implements SqlDialect {
 
+	private final SqlFunctionProvider hanaSqlFunctionProvider;
+	private final IntervalPacker hanaIntervalPacker;
 	private final DSLContext dslContext;
 
 	public HanaSqlDialect(DSLContext dslContext) {
 		this.dslContext = dslContext;
+		this.hanaSqlFunctionProvider = new HanaSqlFunctionProvider();
+		this.hanaIntervalPacker = new AnsiSqlIntervalPacker(this.hanaSqlFunctionProvider);
 	}
 
 	@Override
@@ -38,8 +43,13 @@ public class HanaSqlDialect implements SqlDialect {
 	}
 
 	@Override
-	public SqlFunctionProvider getFunction() {
-		return new HanaSqlFunctionProvider();
+	public SqlFunctionProvider getFunctionProvider() {
+		return hanaSqlFunctionProvider;
+	}
+
+	@Override
+	public IntervalPacker getIntervalPacker() {
+		return hanaIntervalPacker;
 	}
 
 }

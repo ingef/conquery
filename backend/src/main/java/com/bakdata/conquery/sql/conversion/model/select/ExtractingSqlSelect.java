@@ -22,7 +22,7 @@ public class ExtractingSqlSelect<V> implements SqlSelect {
 	Class<V> columnClass;
 
 	@SuppressWarnings("unchecked")
-	public static <V> ExtractingSqlSelect<V> fromConquerySelect(SqlSelect select, String qualifier) {
+	public static <V> ExtractingSqlSelect<V> fromSqlSelect(SqlSelect select, String qualifier) {
 		return (ExtractingSqlSelect<V>) new ExtractingSqlSelect<>(
 				qualifier,
 				select.columnName(),

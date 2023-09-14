@@ -3,8 +3,6 @@ package com.bakdata.conquery.sql.conversion.dialect;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -13,12 +11,14 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Name;
+import org.jooq.Param;
 import org.jooq.impl.DSL;
 
-public class HanaSqlFunctionProvider implements SqlFunctionProvider {
+class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
-	private static final String INFINITY_DATE_VALUE = "9999-12-31";
-	private static final String MINUS_INFINITY_DATE_VALUE = "0001-01-01";
+	public static final char DELIMITER = ',';
+	private static final String MAX_DATE_VALUE = "9999-12-31";
+	private static final String MIN_DATE_VALUE = "0001-01-01";
 
 	@Override
 	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange validityDate) {
@@ -36,8 +36,8 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange daterange(CDateRange dateRestriction) {
 
-		String startDateExpression = MINUS_INFINITY_DATE_VALUE;
-		String endDateExpression = INFINITY_DATE_VALUE;
+		String startDateExpression = MIN_DATE_VALUE;
+		String endDateExpression = MAX_DATE_VALUE;
 
 		if (dateRestriction.hasLowerBound()) {
 			startDateExpression = dateRestriction.getMin().toString();
@@ -65,10 +65,16 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 			endColumn = validityDate.getColumn();
 		}
 
+		Field<Date> rangeStart = DSL.coalesce(
+				DSL.field(DSL.name(qualifier, startColumn.getName()), Date.class),
+				toDateField(MIN_DATE_VALUE)
+		);
 		// when aggregating date ranges, we want to treat the last day of the range as excluded,
 		// so when using the date value of the end column, we add +1 day as end of the date range
-		Field<Date> rangeStart = DSL.field(DSL.name(qualifier, startColumn.getName()), Date.class);
-		Field<Date> rangeEnd = addDay(DSL.field(DSL.name(qualifier, endColumn.getName()), Date.class));
+		Field<Date> rangeEnd = DSL.coalesce(
+				addDays(DSL.field(DSL.name(qualifier, endColumn.getName()), Date.class), 1),
+				toDateField(MAX_DATE_VALUE)
+		);
 
 		return ColumnDateRange.of(rangeStart, rangeEnd)
 							  .asValidityDateRange(conceptLabel);
@@ -83,20 +89,41 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Object> validityDateStringAggregation(ColumnDateRange columnDateRange) {
+	public Field<String> validityDateStringAggregation(ColumnDateRange columnDateRange) {
 
 		if (columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("HANA does not support single-column date ranges.");
 		}
 
-		String rangeConcatenated = Stream.of(columnDateRange.getStart(), columnDateRange.getEnd())
-										 .map(" || %s || "::formatted)
-										 .collect(Collectors.joining(" ',' ", "'['", "')'"));
+		Field<Date> startDate = columnDateRange.getStart();
+		Field<Date> endDate = columnDateRange.getEnd();
 
-		// TODO (ja): STRING_AGG
+		// 0001-01-01 => 10 chars
+		Param<Integer> dateLength = DSL.val(10);
+		Field<String> startDateExpression = toVarcharField(startDate, dateLength);
+		Field<String> endDateExpression = toVarcharField(endDate, dateLength);
 
-		// encapsulate all ranges within curly braces
-		return DSL.field("'{' || %s || '}'".formatted(rangeConcatenated));
+		Field<String> withMinDateReplaced = replace(startDateExpression, MIN_DATE_VALUE, MINUS_INFINITY_SIGN);
+		Field<String> withMaxDateReplaced = replace(endDateExpression, MAX_DATE_VALUE, INFINITY_SIGN);
+
+		// add interval braces to ranges: start is allways included, end is allways excluded except if it's the maximum/infinity date
+		Field<String> enclosedMinDate = DSL.field("'[' || %s".formatted(withMinDateReplaced), String.class);
+		Field<String> enclosedMaxDate = DSL.when(withMaxDateReplaced.like(INFINITY_SIGN), DSL.field("%s || ']'".formatted(withMaxDateReplaced), String.class))
+										   .otherwise(DSL.field("%s || ')'".formatted(withMaxDateReplaced), String.class));
+
+		Field<String> rangeConcatenated = DSL.field("%s || ',' || %s".formatted(enclosedMinDate, enclosedMaxDate), String.class);
+
+		Field<String> stringAggregation = DSL.field(
+				"STRING_AGG({0}, {1} {2})",
+				String.class,
+				rangeConcatenated,
+				DSL.toChar(DELIMITER),
+				DSL.orderBy(startDate)
+		);
+
+		// encapsulate all ranges (including empty ranges) within curly braces
+		return DSL.when(stringAggregation.isNull(), DSL.field(DSL.val("{}")))
+				  .otherwise(DSL.field(("'{' || %s || '}'".formatted(stringAggregation)), String.class));
 	}
 
 	@Override
@@ -139,13 +166,18 @@ public class HanaSqlFunctionProvider implements SqlFunctionProvider {
 		return DSL.field(DSL.sql("FIRST_VALUE({0} {1})", column, DSL.orderBy(orderByColumns)));
 	}
 
-	private Field<Date> addDay(Field<Date> dateColumn) {
+	@Override
+	public Field<Date> addDays(Field<Date> dateColumn, int amountOfDays) {
 		return DSL.function(
 				"ADD_DAYS",
 				Date.class,
 				dateColumn,
-				DSL.val(1)
+				DSL.val(amountOfDays)
 		);
+	}
+
+	private Field<String> toVarcharField(Field<Date> startDate, Param<Integer> dateExpressionLength) {
+		return DSL.field("CAST({0} AS VARCHAR({1}))", String.class, startDate, dateExpressionLength);
 	}
 
 }

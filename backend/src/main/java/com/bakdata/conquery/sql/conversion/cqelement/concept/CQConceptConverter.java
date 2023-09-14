@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -20,14 +20,14 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectContex
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConversions;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
+import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterType;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
-import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
-import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
-import com.bakdata.conquery.sql.conversion.model.select.FieldSqlSelect;
 import org.jooq.Condition;
 import org.jooq.impl.DSL;
 
@@ -63,44 +63,58 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		}
 
 		CQTable table = node.getTables().get(0);
+		String tableName = table.getConnector().getTable().getName();
 		String conceptLabel = createConceptLabel(node, context);
+		Optional<ColumnDateRange> validityDateSelect = convertValidityDate(context.getSqlDialect().getFunctionProvider(), table, tableName, conceptLabel);
 
-		ConceptTables conceptTables = new ConceptTables(conceptLabel, getRequiredSteps(table), table.getConnector().getTable().getName());
-		Optional<ColumnDateRange> validityDateSelect = convertValidityDate(context.getSqlDialect().getFunction(), table, conceptLabel, conceptTables);
+		Set<ConceptCteStep> requiredSteps = getRequiredSteps(table, context.dateRestrictionActive(), validityDateSelect);
+		ConceptTables conceptTables = new ConceptTables(conceptLabel, requiredSteps, tableName);
+
 		List<ConceptFilter> conceptFilters = convertConceptFilters(context, table, conceptTables, validityDateSelect);
 		List<SqlSelects> conceptSelects = getConceptSelects(node, context, table, conceptLabel, conceptTables, validityDateSelect);
 
-		CteContext cteContext = CteContext.builder()
-										  .context(context)
-										  .filters(conceptFilters)
-										  .selects(conceptSelects)
-										  .primaryColumn(DSL.field(DSL.name(context.getConfig().getPrimaryColumn())))
-										  .validityDateRange(validityDateSelect)
-										  .isExcludedFromDateAggregation(node.isExcludeFromTimeAggregation())
-										  .conceptTables(conceptTables)
-										  .conceptLabel(conceptLabel)
-										  .build();
+		ConceptCteContext conceptCteContext = ConceptCteContext.builder()
+															   .conversionContext(context)
+															   .filters(conceptFilters)
+															   .selects(conceptSelects)
+															   .primaryColumn(DSL.field(DSL.name(context.getConfig().getPrimaryColumn())))
+															   .validityDate(validityDateSelect)
+															   .isExcludedFromDateAggregation(node.isExcludeFromTimeAggregation())
+															   .conceptTables(conceptTables)
+															   .conceptLabel(conceptLabel)
+															   .build();
 
 		Optional<QueryStep> lastQueryStep = Optional.empty();
 		for (ConceptCte queryStep : this.conceptCTEs) {
-			Optional<QueryStep> convertedStep = queryStep.convert(cteContext, lastQueryStep);
+			Optional<QueryStep> convertedStep = queryStep.convert(conceptCteContext, lastQueryStep);
 			if (convertedStep.isEmpty()) {
 				continue;
 			}
 			lastQueryStep = convertedStep;
-			cteContext = cteContext.withPrevious(lastQueryStep.get());
+			conceptCteContext = conceptCteContext.withPrevious(lastQueryStep.get());
 		}
 
 		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible. Required steps: %s".formatted(requiredSteps()))));
 	}
 
-	private Set<CteStep> getRequiredSteps(CQTable table) {
-		if (table.getFilters().isEmpty()) {
-			return CteStep.MANDATORY_STEPS;
+	/**
+	 * Determines if event/aggregation filter steps are required.
+	 *
+	 * <p>
+	 * {@link ConceptCteStep#MANDATORY_STEPS} are allways part of any concept conversion.
+	 */
+	private Set<ConceptCteStep> getRequiredSteps(CQTable table, boolean dateRestrictionRequired, Optional<ColumnDateRange> validityDateSelect) {
+		Set<ConceptCteStep> requiredSteps = new HashSet<>(ConceptCteStep.MANDATORY_STEPS);
+
+		if (dateRestrictionApplicable(dateRestrictionRequired, validityDateSelect)) {
+			requiredSteps.add(ConceptCteStep.EVENT_FILTER);
 		}
-		return table.getFilters().stream()
-					.flatMap(filterValue -> this.filterValueConversions.requiredSteps(filterValue).stream())
-					.collect(Collectors.toSet());
+
+		table.getFilters().stream()
+			 .flatMap(filterValue -> this.filterValueConversions.requiredSteps(filterValue).stream())
+			 .forEach(requiredSteps::add);
+
+		return requiredSteps;
 	}
 
 	/**
@@ -145,35 +159,40 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	private static Optional<ColumnDateRange> convertValidityDate(
 			SqlFunctionProvider functionProvider,
 			CQTable table,
-			String conceptLabel,
-			ConceptTables conceptTables
+			String tableName,
+			String conceptLabel
 	) {
 		if (Objects.isNull(table.findValidityDate())) {
 			return Optional.empty();
 		}
-		return Optional.of(functionProvider.daterange(table.findValidityDate(), conceptTables.getPredecessorTableName(CteStep.PREPROCESSING), conceptLabel));
+		ColumnDateRange validityDate = functionProvider.daterange(table.findValidityDate(), tableName, conceptLabel);
+		return Optional.of(validityDate);
 	}
 
 	private static Optional<ConceptFilter> getDateRestriction(ConversionContext context, Optional<ColumnDateRange> validityDate) {
 
-		if (!context.dateRestrictionActive() || validityDate.isEmpty()) {
+		if (!dateRestrictionApplicable(context.dateRestrictionActive(), validityDate)) {
 			return Optional.empty();
 		}
 
-		ColumnDateRange dateRestriction = context.getSqlDialect().getFunction()
+		ColumnDateRange dateRestriction = context.getSqlDialect().getFunctionProvider()
 												 .daterange(context.getDateRestrictionRange())
 												 .asDateRestrictionRange();
 
 		List<SqlSelect> dateRestrictionSelects = dateRestriction.toFields().stream()
-																.map(FieldSqlSelect::new)
+																.map(FieldWrapper::new)
 																.collect(Collectors.toList());
 
-		Condition dateRestrictionCondition = context.getSqlDialect().getFunction().dateRestriction(dateRestriction, validityDate.get());
+		Condition dateRestrictionCondition = context.getSqlDialect().getFunctionProvider().dateRestriction(dateRestriction, validityDate.get());
 
 		return Optional.of(new ConceptFilter(
 				SqlSelects.builder().forPreprocessingStep(dateRestrictionSelects).build(),
-				Filters.builder().event(Collections.singletonList(ConditionUtil.wrap(dateRestrictionCondition, FilterType.EVENT))).build()
+				Filters.builder().event(List.of(ConditionUtil.wrap(dateRestrictionCondition, FilterType.EVENT))).build()
 		));
+	}
+
+	private static boolean dateRestrictionApplicable(boolean dateRestrictionRequired, Optional<ColumnDateRange> validityDateSelect) {
+		return dateRestrictionRequired && validityDateSelect.isPresent();
 	}
 
 }

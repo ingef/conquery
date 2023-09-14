@@ -1,2 +1,2 @@
-pid,validity_date_1value,geschlecht,language
+pid,dates,value,geschlecht,language
 1,"{[2014-06-30,2015-07-01)}",1.00,f,de
