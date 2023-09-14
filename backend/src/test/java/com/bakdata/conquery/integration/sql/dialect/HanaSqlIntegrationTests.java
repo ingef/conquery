@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -18,9 +19,9 @@ import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.DslContextFactory;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistanceSelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.dialect.HanaSqlDialect;
-import com.bakdata.conquery.sql.conversion.select.DateDistanceConverter;
-import com.bakdata.conquery.sql.conversion.select.SelectConverter;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -91,7 +92,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 			return;
 		}
 		try (Stream<Path> walk = Files.walk(TMP_HANA_MOUNT_DIR)) {
-			walk.sorted((p1, p2) -> - p1.compareTo(p2))
+			walk.sorted(Comparator.naturalOrder())
 				.map(Path::toFile)
 				.forEach(File::delete);
 		}
@@ -106,7 +107,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		@Override
 		public List<SelectConverter<? extends Select>> getSelectConverters() {
 			return this.customizeSelectConverters(List.of(
-					new DateDistanceConverter(new MockDateNowSupplier())
+					new DateDistanceSelectConverter(new MockDateNowSupplier())
 			));
 		}
 

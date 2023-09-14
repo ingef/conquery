@@ -6,6 +6,7 @@ import org.jooq.DSLContext;
 public interface TestContextProvider {
 
 	SqlConnectorConfig getSqlConnectorConfig();
+
 	DSLContext getDslContext();
 
 }

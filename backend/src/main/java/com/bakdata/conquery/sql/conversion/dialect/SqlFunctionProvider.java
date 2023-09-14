@@ -2,11 +2,12 @@ package com.bakdata.conquery.sql.conversion.dialect;
 
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
-import com.bakdata.conquery.sql.conversion.context.step.QueryStep;
-import com.bakdata.conquery.sql.models.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.Name;
@@ -30,20 +31,18 @@ public interface SqlFunctionProvider {
 
 	ColumnDateRange daterange(CDateRange dateRestriction);
 
-	ColumnDateRange daterange(ValidityDate validityDate, String conceptLabel);
+	ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel);
 
-	Field<Object> daterangeString(ColumnDateRange columnDateRange);
+	ColumnDateRange aggregated(ColumnDateRange columnDateRange);
+
+	Field<Object> validityDateStringAggregation(ColumnDateRange columnDateRange);
 
 	Field<Integer> dateDistance(ChronoUnit datePart, Name startDateColumn, Date endDateExpression);
 
-	default Condition in(Name columnName, String[] values) {
-		return DSL.field(columnName)
-				  .in(values);
-	}
+	Field<?> first(Field<?> field, List<Field<?>> orderByColumn);
 
-	default Field<Object> first(Name columnName) {
-		// TODO: this is just a temporary placeholder
-		return DSL.field(columnName);
+	default Condition in(Field<String> column, String[] values) {
+		return column.in(values);
 	}
 
 	default TableOnConditionStep<Record> innerJoin(

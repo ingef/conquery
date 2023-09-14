@@ -14,9 +14,9 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.SqlQuery;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistanceSelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
-import com.bakdata.conquery.sql.conversion.select.DateDistanceConverter;
-import com.bakdata.conquery.sql.conversion.select.SelectConverter;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -99,7 +99,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		@Override
 		public List<SelectConverter<? extends Select>> getSelectConverters() {
 			return this.customizeSelectConverters(List.of(
-					new DateDistanceConverter(new MockDateNowSupplier())
+					new DateDistanceSelectConverter(new MockDateNowSupplier())
 			));
 		}
 

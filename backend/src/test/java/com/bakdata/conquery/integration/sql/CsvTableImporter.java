@@ -90,7 +90,7 @@ public class CsvTableImporter {
 			String insertRowStatement = dslContext.insertInto(table, columns)
 												  .values(rowN)
 												  .getSQL(ParamType.INLINED);
-			log.info("Inserting into table: {}", insertRowStatement);
+			log.debug("Inserting into table: {}", insertRowStatement);
 			statement.execute(insertRowStatement);
 		}
 	}
@@ -99,7 +99,7 @@ public class CsvTableImporter {
 		String createTableStatement = dslContext.createTable(table)
 												.columns(columns)
 												.getSQL(ParamType.INLINED);
-		log.info("Creating table: {}", createTableStatement);
+		log.debug("Creating table: {}", createTableStatement);
 		statement.execute(createTableStatement);
 	}
 
@@ -111,7 +111,7 @@ public class CsvTableImporter {
 			statement.execute(dropTableStatement);
 		}
 		catch (SQLException e) {
-			log.info("Dropping table {} failed.", table.getName(), e);
+			log.debug("Dropping table {} failed.", table.getName(), e);
 		}
 	}
 
@@ -134,7 +134,7 @@ public class CsvTableImporter {
 			case INTEGER -> SQLDataType.INTEGER;
 			case BOOLEAN -> SQLDataType.BOOLEAN;
 			// TODO: temporary workaround until we cast ResultSet elements back
-			case REAL -> SQLDataType.DECIMAL(10,2);
+			case REAL -> SQLDataType.DECIMAL(10, 2);
 			case DECIMAL, MONEY -> SQLDataType.DECIMAL;
 			case DATE -> SQLDataType.DATE;
 			case DATE_RANGE -> new BuiltInDataType<>(DateRange.class, "daterange");

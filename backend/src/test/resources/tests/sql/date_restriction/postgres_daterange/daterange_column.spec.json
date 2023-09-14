@@ -3,7 +3,7 @@
   "supportedDialects": [
     "POSTGRESQL"
   ],
-  "label": "Date restriction with a daterange column validity date (PostgreSQL only)",
+  "label": "Date restriction with a daterange column validity date (PostgreSQL only)    ",
   "expectedCsv": "expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
@@ -36,45 +36,45 @@
       }
     }
   },
-  "concepts":[
+  "concepts": [
     {
-      "label":"geschlecht_select",
-      "type":"TREE",
-      "connectors":[
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
         {
-          "label":"geschlecht_connector",
-          "table":"table1",
-          "validityDates":{
-            "label":"datum",
-            "column":"table1.datum"
+          "label": "geschlecht_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "column": "table1.datum"
           },
-          "filters":{
-            "label":"geschlecht",
-            "description":"Geschlecht zur gegebenen Datumseinschränkung",
-            "column":"table1.geschlecht",
-            "type":"SELECT"
+          "filters": {
+            "label": "geschlecht",
+            "description": "Geschlecht zur gegebenen Datumseinschränkung",
+            "column": "table1.geschlecht",
+            "type": "SELECT"
           }
         }
       ]
     }
   ],
-  "content":{
-    "tables":[
+  "content": {
+    "tables": [
       {
-        "csv":"tests/sql/date_restriction/postgres_daterange/content.csv",
-        "name":"table1",
-        "primaryColumn":{
-          "name":"pid",
-          "type":"STRING"
+        "csv": "tests/sql/date_restriction/postgres_daterange/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
         },
-        "columns":[
+        "columns": [
           {
-            "name":"datum",
-            "type":"DATE_RANGE"
+            "name": "datum",
+            "type": "DATE_RANGE"
           },
           {
-            "name":"geschlecht",
-            "type":"STRING"
+            "name": "geschlecht",
+            "type": "STRING"
           }
         ]
       }

@@ -81,11 +81,6 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 		return test;
 	}
 
-	private static SqlIntegrationTestSpec readSpecFromJson(Path path) throws IOException {
-		final ObjectReader objectReader = Jackson.MAPPER.readerFor(SqlIntegrationTestSpec.class);
-		return objectReader.readValue(Files.readString(path));
-	}
-
 	@Override
 	public void executeTest(SqlStandaloneSupport support) throws IOException {
 		for (RequiredTable table : content.getTables()) {
@@ -112,6 +107,11 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 		importConcepts(support);
 		Query parsedQuery = ConqueryTestSpec.parseSubTree(support, getRawQuery(), Query.class);
 		setQuery(parsedQuery);
+	}
+
+	private static SqlIntegrationTestSpec readSpecFromJson(Path path) throws IOException {
+		final ObjectReader objectReader = Jackson.MAPPER.readerFor(SqlIntegrationTestSpec.class);
+		return objectReader.readValue(Files.readString(path));
 	}
 
 	private void importTables(SqlStandaloneSupport support) {
