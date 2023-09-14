@@ -5,6 +5,7 @@ import java.util.List;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.aggregation.PostgreSqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.PostgreSqlIntervalPacker;
@@ -14,12 +15,14 @@ public class PostgreSqlDialect implements SqlDialect {
 
 	private final SqlFunctionProvider postgresqlFunctionProvider;
 	private final IntervalPacker postgresqlIntervalPacker;
+	private final SqlDateAggregator postgresqlDateAggregator;
 	private final DSLContext dslContext;
 
 	public PostgreSqlDialect(DSLContext dslContext) {
 		this.dslContext = dslContext;
 		this.postgresqlFunctionProvider = new PostgreSqlFunctionProvider();
 		this.postgresqlIntervalPacker = new PostgreSqlIntervalPacker(this.postgresqlFunctionProvider);
+		this.postgresqlDateAggregator = new PostgreSqlDateAggregator(this.postgresqlFunctionProvider);
 	}
 
 	@Override
@@ -49,12 +52,17 @@ public class PostgreSqlDialect implements SqlDialect {
 
 	@Override
 	public SqlFunctionProvider getFunctionProvider() {
-		return postgresqlFunctionProvider;
+		return this.postgresqlFunctionProvider;
 	}
 
 	@Override
 	public IntervalPacker getIntervalPacker() {
-		return postgresqlIntervalPacker;
+		return this.postgresqlIntervalPacker;
+	}
+
+	@Override
+	public SqlDateAggregator getDateAggregator() {
+		return this.postgresqlDateAggregator;
 	}
 
 }

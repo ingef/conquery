@@ -58,7 +58,6 @@ public class ColumnDateRange {
 			return List.of(this.range);
 		}
 		return Stream.of(this.start, this.end)
-					 .map(dateField -> dateField.coerce(Object.class))
 					 .collect(Collectors.toList());
 	}
 

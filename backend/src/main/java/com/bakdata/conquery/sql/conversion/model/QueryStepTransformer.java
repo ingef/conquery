@@ -6,10 +6,8 @@ import java.util.stream.Stream;
 import org.jooq.CommonTableExpression;
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.ResultQuery;
 import org.jooq.Select;
 import org.jooq.SelectConditionStep;
-import org.jooq.SelectGroupByStep;
 import org.jooq.impl.DSL;
 
 /**
@@ -59,19 +57,26 @@ public class QueryStepTransformer {
 
 	private CommonTableExpression<Record> toCte(QueryStep queryStep) {
 
-		SelectGroupByStep<Record> where = this.dslContext.select(queryStep.getSelects().all())
-														 .from(queryStep.getFromTable())
-														 .where(queryStep.getConditions());
+		Select<Record> selectStep = this.dslContext
+				.select(queryStep.getSelects().all())
+				.from(queryStep.getFromTable())
+				.where(queryStep.getConditions());
 
-		ResultQuery<Record> query;
 		if (queryStep.isGroupBy()) {
-			query = where.groupBy(queryStep.getGroupBy());
-		}
-		else {
-			query = where;
+			selectStep = ((SelectConditionStep<Record>) selectStep).groupBy(queryStep.getGroupBy());
 		}
 
-		return DSL.name(queryStep.getCteName()).as(query);
+		if (queryStep.isUnion()) {
+			for (QueryStep unionStep : queryStep.getUnion()) {
+				// we only use the union as part of the date aggregation process - the entries of the UNION tables are all unique
+				// thus we can use a UNION ALL because it's way faster than UNION
+				selectStep = selectStep.unionAll(
+						this.dslContext.select(unionStep.getSelects().all()).from(unionStep.getFromTable())
+				);
+			}
+		}
+
+		return DSL.name(queryStep.getCteName()).as(selectStep);
 	}
 
 }

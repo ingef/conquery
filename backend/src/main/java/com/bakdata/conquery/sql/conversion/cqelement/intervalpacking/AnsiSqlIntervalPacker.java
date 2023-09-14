@@ -2,17 +2,18 @@ package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
-import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -20,9 +21,6 @@ import org.jooq.impl.DSL;
 @RequiredArgsConstructor
 public class AnsiSqlIntervalPacker implements IntervalPacker {
 
-	private final SqlFunctionProvider functionProvider;
-
-	@Override
 	public QueryStep createIntervalPackingSteps(IntervalPackingContext context) {
 		QueryStep previousEndStep = createPreviousEndStep(context);
 		QueryStep rangeIndexStep = createRandeIndexStep(previousEndStep, context);
@@ -43,16 +41,20 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 											  .andPreceding(1))
 									 .as(IntervalPacker.PREVIOUS_END_FIELD_NAME);
 
+		ArrayList<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), sourceTableName));
+		qualifiedSelects.add(new FieldWrapper(previousEnd));
+
 		Selects previousEndSelects = new Selects(
 				primaryColumn,
 				Optional.of(validityDate),
-				List.of(new FieldWrapper(previousEnd))
+				qualifiedSelects
 		);
 
 		return QueryStep.builder()
 						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.PREVIOUS_END))
 						.selects(previousEndSelects)
 						.fromTable(QueryStep.toTableLike(sourceTableName))
+						.predecessors(context.getPredecessor() == null ? Collections.emptyList() : List.of(context.getPredecessor()))
 						.build();
 	}
 
@@ -73,10 +75,13 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 							.rowsUnboundedPreceding())
 				   .as(IntervalPacker.RANGE_INDEX_FIELD_NAME);
 
+		ArrayList<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), previousEndCteName));
+		qualifiedSelects.add(new FieldWrapper(rangeIndex));
+
 		Selects rangeIndexSelects = new Selects(
 				primaryColumn,
 				Optional.of(validityDate),
-				List.of(new FieldWrapper(rangeIndex))
+				qualifiedSelects
 		);
 
 		return QueryStep.builder()
@@ -98,19 +103,25 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		Field<Date> rangeEnd = DSL.max(validityDate.getEnd()).as(IntervalPacker.RANGE_END_MAX_FIELD_NAME);
 		Field<BigDecimal> rangeIndex = DSL.field(DSL.name(rangeIndexCteName, IntervalPacker.RANGE_INDEX_FIELD_NAME), BigDecimal.class);
 
-		// range_start and range_end grouped by range_index
+		List<SqlSelect> qualifiedSelects = QualifyingUtil.qualify(context.getCarryThroughSelects(), rangeIndexCteName);
 		Selects intervalCompleteSelects = new Selects(
 				primaryColumn,
 				Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)),
-				Collections.emptyList()
+				qualifiedSelects
 		);
+
+		// we group range start and end by range index
+		List<Field<?>> groupBySelects = new ArrayList<>();
+		groupBySelects.add(primaryColumn);
+		groupBySelects.add(rangeIndex);
+		qualifiedSelects.stream().map(SqlSelect::select).forEach(groupBySelects::add);
 
 		return QueryStep.builder()
 						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
 						.selects(intervalCompleteSelects)
 						.fromTable(QueryStep.toTableLike(rangeIndexCteName))
 						.predecessors(List.of(rangeIndexStep))
-						.groupBy(List.of(primaryColumn, rangeIndex))
+						.groupBy(groupBySelects)
 						.build();
 	}
 

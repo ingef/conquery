@@ -1,5 +1,6 @@
 package com.bakdata.conquery.sql.conversion.dialect;
 
+
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 

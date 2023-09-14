@@ -1,10 +1,8 @@
 package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 
 import com.bakdata.conquery.sql.conversion.model.CteStep;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@Getter
 @RequiredArgsConstructor
 enum IntervalPackingCteStep implements CteStep {
 
