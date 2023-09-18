@@ -231,7 +231,8 @@
     "shareError": "Could not share query",
     "deleteError": "Could not delete query",
     "editFolders": "Edit folders",
-    "deleteNow": "Delete query now"
+    "deleteNow": "Delete query now",
+    "hasNoDates": "No date values in the results."
   },
   "projectItemsFilter": {
     "all": "All",

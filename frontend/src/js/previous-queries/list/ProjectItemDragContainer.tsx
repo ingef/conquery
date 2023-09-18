@@ -1,4 +1,4 @@
-import { FC, useRef } from "react";
+import { useRef } from "react";
 import { useDrag } from "react-dnd";
 
 import { getWidthAndHeight } from "../../app/DndProvider";
@@ -10,19 +10,20 @@ import ProjectItem, { ProjectItemT } from "./ProjectItem";
 import { isFormConfig } from "./helpers";
 import { PreviousQueryT } from "./reducer";
 
-interface PropsT {
-  item: ProjectItemT;
-  onIndicateShare: () => void;
-  onIndicateEditFolders: () => void;
-}
-
 const getDragType = (item: PreviousQueryT) => {
   return item.queryType === "CONCEPT_QUERY"
     ? DNDType.PREVIOUS_QUERY
     : DNDType.PREVIOUS_SECONDARY_ID_QUERY;
 };
 
-const ProjectItemDragContainer: FC<PropsT> = ({ item, ...props }) => {
+const ProjectItemDragContainer = ({
+  item,
+  ...props
+}: {
+  item: ProjectItemT;
+  onIndicateShare: () => void;
+  onIndicateEditFolders: () => void;
+}) => {
   const ref = useRef<HTMLDivElement | null>(null);
 
   const dragItemBase = {
