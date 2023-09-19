@@ -255,7 +255,6 @@ const FormConceptGroup = (props: Props) => {
               } else {
                 if (exists(item.dragContext.deleteFromOtherField)) {
                   item.dragContext.deleteFromOtherField();
-
                 }
               }
             }
@@ -370,7 +369,7 @@ const FormConceptGroup = (props: Props) => {
                           : removeConcept(props.value, i, j),
                       );
                     }}
-                    // row_prefix is a special property that is only used in an edge case form. 
+                    // row_prefix is a special property that is only used in an edge case form.
                     // To support reordering of concepts this property needs
                     // to be passed to the concept node
                     rowPrefix={
