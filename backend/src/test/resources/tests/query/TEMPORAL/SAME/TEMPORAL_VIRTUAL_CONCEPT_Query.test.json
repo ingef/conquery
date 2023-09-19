@@ -13,7 +13,8 @@
           "max": 0
         }
       },
-      "selector": "ALL",
+      "beforeSelector": "ALL",
+      "afterSelector": "ANY",
       "index": {
         "ids": [
           "geschlecht_select"

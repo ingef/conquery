@@ -1,10 +1,13 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.ToIntFunction;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -24,7 +27,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalSub
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import it.unimi.dsi.fastutil.booleans.BooleanList;
+import com.google.common.primitives.Booleans;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -36,8 +39,11 @@ import lombok.RequiredArgsConstructor;
 public class CQTemporal extends CQElement {
 
 	private final CQElement index;
+
 	private final Mode mode;
-	private final Selector selector;
+	private final Selector beforeSelector;
+
+	private final Selector afterSelector;
 
 	private final CQElement preceding;
 
@@ -46,7 +52,7 @@ public class CQTemporal extends CQElement {
 		final QPNode indexPlan = index.createQueryPlan(context, plan);
 		final QPNode precedingPlan = preceding.createQueryPlan(context, plan);
 
-		final TemporalSubQueryPlan subQuery = new TemporalSubQueryPlan(getSelector(), getMode(), indexPlan, precedingPlan);
+		final TemporalSubQueryPlan subQuery = new TemporalSubQueryPlan(getBeforeSelector(), getMode(), getAfterSelector(), indexPlan, precedingPlan);
 
 		return new TimeBasedQueryNode(context.getStorage().getDataset().getAllIdsTable(), subQuery);
 	}
@@ -78,10 +84,73 @@ public class CQTemporal extends CQElement {
 	}
 
 
+	public enum Selector {
+		ANY {
+			@Override
+			public CDateRange[] sample(CDateSet result) {
+				return result.asRanges().toArray(CDateRange[]::new);
+			}
+			@Override
+			public boolean satisfies(boolean[] results) {
+				return Booleans.contains(results, true);
+			}
+		},
+		ALL {
+			@Override
+			public CDateRange[] sample(CDateSet result) {
+				return result.asRanges().toArray(CDateRange[]::new);
+			}
+
+			@Override
+			public boolean satisfies(boolean[] results) {
+				return !Booleans.contains(results, false);
+			}
+		},
+		EARLIEST {
+			@Override
+			public CDateRange[] sample(CDateSet result) {
+				return new CDateRange[]{result.asRanges().iterator().next()};
+			}
+
+			@Override
+			public boolean satisfies(boolean[] results) {
+				return results[0];
+			}
+		},
+		LATEST {
+			@Override
+			public CDateRange[] sample(CDateSet result) {
+				if (result.isEmpty()) {
+					return new CDateRange[0];
+				}
+
+				final Iterator<CDateRange> iterator = result.asRanges().iterator();
+				CDateRange last = iterator.next();
+
+				while (iterator.hasNext()) {
+					last = iterator.next();
+				}
+
+				return new CDateRange[]{last};
+			}
+
+			@Override
+			public boolean satisfies(boolean[] results) {
+				return results[0];
+			}
+		};
+
+		public abstract CDateRange[] sample(CDateSet result);
+
+		public abstract boolean satisfies(boolean[] results);
+	}
+
+
 	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "mode")
 	@CPSBase
 	public interface Mode {
-		CDateRange convert(CDateRange in);
+		CDateRange[] convert(CDateRange[] in, ToIntFunction<CDateRange> daySelector);
+
 		@CPSType(id = "BEFORE", base = Mode.class)
 		@Data
 		@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
@@ -89,30 +158,37 @@ public class CQTemporal extends CQElement {
 
 			private final Range.IntegerRange days;
 
-			public CDateRange convert(CDateRange in) {
-				if (!in.hasLowerBound()) {
-					return null;
+			public CDateRange[] convert(CDateRange[] parts, ToIntFunction<CDateRange> daySelector) {
+
+				final Optional<CDateRange> maybeFirst = Arrays.stream(parts)
+															  .filter(CDateRange::hasLowerBound)
+															  .min(Comparator.comparingInt(daySelector));
+
+				if (maybeFirst.isEmpty()) {
+					return new CDateRange[0];
 				}
 
-				if(days == null){
-					return in;
-				}
+				final CDateRange first = maybeFirst.get();
+				final int min = daySelector.applyAsInt(first);
 
-				final int min = in.getMinValue();
+				if (days == null) {
+					// return the first value
+					return new CDateRange[]{first};
+				}
 
 				if (!days.isOpen()) {
-					return CDateRange.of(min - days.getMax(), min - days.getMin());
+					return new CDateRange[]{CDateRange.of(min - days.getMax(), min - days.getMin())};
 				}
 
 				if (days.hasLowerBound()) {
-					return CDateRange.atMost(min - days.getMin());
+					return new CDateRange[]{CDateRange.atMost(min - days.getMin())};
 				}
 
 				if (days.hasUpperBound()) {
-					return CDateRange.atLeast(min - days.getMax());
+					return new CDateRange[]{CDateRange.atLeast(min - days.getMax())};
 				}
 
-				return in; // => days.isAll
+				return new CDateRange[0]; // all
 			}
 		}
 
@@ -123,104 +199,49 @@ public class CQTemporal extends CQElement {
 
 			private final Range.IntegerRange days;
 
-			public CDateRange convert(CDateRange in) {
-				if (!in.hasUpperBound()) {
-					return null;
+			public CDateRange[] convert(CDateRange[] parts, ToIntFunction<CDateRange> daySelector) {
+				Optional<CDateRange> maybeLast = Arrays.stream(parts)
+													  .filter(CDateRange::hasLowerBound)
+													  .max(Comparator.comparingInt(daySelector));
+
+				if (maybeLast.isEmpty()) {
+					return new CDateRange[0];
 				}
 
-				if(days == null){
-					return in;
+				CDateRange last = maybeLast.get();
+
+				if (days == null) {
+					// return the first value
+					return new CDateRange[]{last};
 				}
 
-				final int max = in.getMaxValue();
+				final int max = daySelector.applyAsInt(last);
 
 				if (!days.isOpen()) {
-					return CDateRange.of(max + days.getMin(), max + days.getMax());
+					return new CDateRange[]{CDateRange.of(max + days.getMin(), max + days.getMax())};
 				}
 
 				if (days.hasLowerBound()) {
-					return CDateRange.atLeast(max + days.getMin());
+					return new CDateRange[]{CDateRange.atLeast(max + days.getMin())};
 				}
 
 				if (days.hasUpperBound()) {
-					return CDateRange.atMost(max + days.getMax());
+					return new CDateRange[]{CDateRange.atMost(max + days.getMax())};
 				}
 
-				return in; // => days.isAll
+				return new CDateRange[0]; // all
 			}
 
 		}
+
 		@CPSType(id = "WHILE", base = Mode.class)
 		@Data
 		class While implements Mode {
 
-			public CDateRange convert(CDateRange in) {
+			public CDateRange[] convert(CDateRange[] in, ToIntFunction<CDateRange> ignored) {
 				return in;
 			}
 		}
 
-	}
-
-
-	public enum Selector {
-		ANY {
-			@Override
-			public List<CDateRange> sample(CDateSet result) {
-				return new ArrayList<>(result.asRanges());
-			}
-
-			@Override
-			public boolean satisfies(BooleanList results) {
-				return results.stream().anyMatch(b -> b);
-			}
-		},
-		ALL {
-			@Override
-			public List<CDateRange> sample(CDateSet result) {
-				return new ArrayList<>(result.asRanges());
-			}
-
-			@Override
-			public boolean satisfies(BooleanList results) {
-				return results.stream().allMatch(b -> b);
-			}
-		},
-		EARLIEST {
-			@Override
-			public List<CDateRange> sample(CDateSet result) {
-				return List.of(result.asRanges().iterator().next());
-			}
-
-			@Override
-			public boolean satisfies(BooleanList results) {
-				return results.getBoolean(0);
-			}
-		},
-		LATEST {
-			@Override
-			public List<CDateRange> sample(CDateSet result) {
-				if (result.isEmpty()) {
-					return Collections.emptyList();
-				}
-
-				final Iterator<CDateRange> iterator = result.asRanges().iterator();
-				CDateRange last = null;
-
-				while (iterator.hasNext()) {
-					last = iterator.next();
-				}
-
-				return List.of(last);
-			}
-
-			@Override
-			public boolean satisfies(BooleanList results) {
-				return results.getBoolean(0);
-			}
-		};
-
-		public abstract List<CDateRange> sample(CDateSet result);
-
-		public abstract boolean satisfies(BooleanList results);
 	}
 }

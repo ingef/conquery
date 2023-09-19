@@ -6,7 +6,8 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "TEMPORAL",
-      "selector": "ANY",
+      "beforeSelector": "ANY",
+      "afterSelector": "ANY",
       "mode": {
         "mode": "BEFORE",
         "days": {

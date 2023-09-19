@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
-import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.CQTemporal;
@@ -17,16 +16,16 @@ import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
-import it.unimi.dsi.fastutil.booleans.BooleanArrayList;
-import it.unimi.dsi.fastutil.booleans.BooleanList;
 import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 
 @Data
 public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
-	private final CQTemporal.Selector selector;
-	private final CQTemporal.Mode mode;
+	private final CQTemporal.Selector beforeSelector;
+	private final CQTemporal.Mode beforeMode;
+
+	private final CQTemporal.Selector afterSelector;
 
 	private final QPNode before;
 
@@ -55,46 +54,65 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 		final Optional<SinglelineEntityResult> subResult = beforePlan.execute(ctx, entity);
 
-		if (subResult.isEmpty()){
+		if (subResult.isEmpty()) {
 			return Optional.empty();
 		}
 
-		final List<CDateRange> partitions = selector.sample(beforePlan.getDateAggregator().createAggregationResult());
+		final CDateRange[] partitions = beforeSelector.sample(beforePlan.getDateAggregator().createAggregationResult());
+		final boolean[] results = new boolean[partitions.length];
+		final CDateRange[] convertedPartitions = beforeMode.convert(partitions, CDateRange::getMinValue);
 
-		final BooleanList results = new BooleanArrayList(partitions.size());
 
-		for (CDateRange partition : partitions) {
+		for (int index = 0; index < convertedPartitions.length; index++) {
+			final CDateRange subPeriod = convertedPartitions[index];
 
-			final ConceptQueryPlan cqp = new ConceptQueryPlan(true);
+			// First execute sub-query with before's sub-period to extract after's sub-periods which are then used to evaluate after.
+			final Optional<CDateSet> resultDate = evaluateAfterFor(ctx, entity, subPeriod);
 
-			final CDateRange converted = mode.convert(partition);
-
-			if (converted == null){
+			if (resultDate.isEmpty()) {
 				continue;
 			}
 
-			cqp.setChild(new DateRestrictingNode(CDateSet.create(converted), after));
+			final CDateRange[] afterSampled = afterSelector.sample(resultDate.get());
+			final boolean[] subResults = new boolean[afterSampled.length];
 
-			cqp.getDateAggregator().registerAll(after.getDateAggregators());
+			for (int innerIndex = 0; innerIndex < afterSampled.length; innerIndex++) {
+				final CDateRange dateRange = afterSampled[innerIndex];
+				// Execute after-query to get actual result
+				final Optional<CDateSet> afterResultDate = evaluateAfterFor(ctx, entity, dateRange);
 
-			cqp.init(ctx, entity);
+				subResults[innerIndex] = afterResultDate.isPresent();
+			}
 
-			final Optional<SinglelineEntityResult> entityResult = cqp.execute(ctx, entity);
 
-			results.add(entityResult.isPresent());
-
-			if (entityResult.isPresent()) {
-				result.add(partition);
+			if (afterSelector.satisfies(subResults)) {
+				results[index] = true;
+				result.add(subPeriod);
 			}
 		}
 
-		final boolean satisfies = selector.satisfies(results);
+		final boolean satisfies = beforeSelector.satisfies(results);
 
 		if (!satisfies) {
 			return Optional.empty();
 		}
 
 		return Optional.of(new SinglelineEntityResult(entity.getId(), null));
+	}
+
+	private Optional<CDateSet> evaluateAfterFor(QueryExecutionContext ctx, Entity entity, CDateRange partition) {
+
+		// Execute after-query to get result date only
+		final ConceptQueryPlan cqp = new ConceptQueryPlan(true);
+
+		cqp.setChild(new DateRestrictingNode(CDateSet.create(partition), after));
+		cqp.getDateAggregator().registerAll(after.getDateAggregators());
+
+		cqp.init(ctx, entity);
+
+		final Optional<SinglelineEntityResult> entityResult = cqp.execute(ctx, entity);
+
+		return entityResult.map(ignored -> cqp.getDateAggregator().createAggregationResult());
 	}
 
 	@Override
