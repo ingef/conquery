@@ -90,6 +90,10 @@ interface Props {
   }) => ReactNode;
 }
 
+interface FormGroupWithRowPrefix extends FormConceptGroupT {
+  row_prefix?: string;
+}
+
 const DropzoneListItem = styled("div")``;
 
 const Row = styled("div")`
@@ -238,7 +242,16 @@ const FormConceptGroup = (props: Props) => {
                         props.value,
                         movedFromAndIdx,
                         movedFromOrIdx,
-                      );
+                    );
+                // row_prefix is a special property that is only used in an edge case form. We only need to pass it 
+                // back into the value if the concept is moved to a different position in the same field
+                const value = addConcept(
+                  insertValue(newPropsValue, insertIndex, newValue),
+                  insertIndex,
+                  concept,
+                ) as FormGroupWithRowPrefix[];
+                value[insertIndex].row_prefix = item.dragContext.rowPrefix;
+                return props.onChange(value);
               } else {
                 if (exists(item.dragContext.deleteFromOtherField)) {
                   item.dragContext.deleteFromOtherField();
@@ -356,6 +369,8 @@ const FormConceptGroup = (props: Props) => {
                           : removeConcept(props.value, i, j),
                       );
                     }}
+                    // row_prefix is a special property that is only used in an edge case form. To support reordering of concepts this property needs to be passed to the concept node
+                    rowPrefix={props.renderRowPrefix ? (row as unknown as Record<string, string>).row_prefix : undefined }
                     expand={{
                       onClick: () =>
                         props.onChange(
