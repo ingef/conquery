@@ -97,7 +97,7 @@ const FormConceptNode: FC<PropsT> = ({
   expand,
   deleteFromOtherField,
   fieldName,
-  rowPrefix
+  rowPrefix,
 }) => {
   const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(conceptNode);
