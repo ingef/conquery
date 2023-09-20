@@ -507,7 +507,7 @@ public class SerializationTests extends AbstractSerializationTest {
 																				  .userName(user.getLabel())
 																				  .hideLogoutButton(false)
 																				  .groups(List.of(new IdLabel<>(new GroupId("test_group"), "test_group_label")))
-																				  .datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FrontendDatasetAbility(true)))
+																				  .datasetAbilities(Map.of(new DatasetId("testdataset"), new MeProcessor.FrontendDatasetAbility(true, true, true)))
 																				  .build();
 
 		SerializationTestUtil
