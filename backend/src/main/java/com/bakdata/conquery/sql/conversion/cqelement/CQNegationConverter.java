@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.conversion.cqelement;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQNegation;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
-import com.bakdata.conquery.sql.conversion.context.ConversionContext;
 
 public class CQNegationConverter implements NodeConverter<CQNegation> {
 
@@ -18,12 +17,9 @@ public class CQNegationConverter implements NodeConverter<CQNegation> {
     }
 
     private ConversionContext convertChildWithNegationActive(CQElement child, ConversionContext context) {
-		// TODO: handle negation properly after GroupSelect/GroupFilter has been implemented
-		// 	- anti-join vs. negating conditions
-		// 	- handle double negation
-        return context.getNodeConverterService()
-                .convert(child, context.withNegation(true))
-                .withNegation(false);
-    }
+		return context.getNodeConversions()
+					  .convert(child, context.withNegation(true))
+					  .withNegation(false);
+	}
 
 }

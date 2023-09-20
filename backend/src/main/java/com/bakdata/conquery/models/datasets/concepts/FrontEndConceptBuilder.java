@@ -23,6 +23,7 @@ import com.bakdata.conquery.apiv1.frontend.FrontendValue;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
@@ -35,17 +36,19 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
-import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class constructs the concept tree as it is presented to the front end.
  */
-@AllArgsConstructor
+@Data
 @Slf4j
 public class FrontEndConceptBuilder {
 
-	public static FrontendRoot createRoot(NamespaceStorage storage, Subject subject) {
+	private final ConqueryConfig conqueryConfig;
+
+	public FrontendRoot createRoot(NamespaceStorage storage, Subject subject) {
 
 		final FrontendRoot root = new FrontendRoot();
 		final Map<Id<?>, FrontendNode> roots = root.getConcepts();
@@ -95,7 +98,7 @@ public class FrontEndConceptBuilder {
 		return root;
 	}
 
-	private static FrontendNode createConceptRoot(Concept<?> concept, StructureNode[] structureNodes) {
+	private FrontendNode createConceptRoot(Concept<?> concept, StructureNode[] structureNodes) {
 
 		final MatchingStats matchingStats = concept.getMatchingStats();
 
@@ -121,8 +124,8 @@ public class FrontEndConceptBuilder {
 																												.flatMap(Collection::stream)
 																												.findAny()
 																												.isEmpty())
-							.selects(concept.getSelects().stream().map(FrontEndConceptBuilder::createSelect).collect(Collectors.toList()))
-							.tables(concept.getConnectors().stream().map(FrontEndConceptBuilder::createTable).collect(Collectors.toList()))
+							.selects(concept.getSelects().stream().map(this::createSelect).collect(Collectors.toList()))
+							.tables(concept.getConnectors().stream().map(this::createTable).collect(Collectors.toList()))
 							.build();
 
 		if (concept instanceof ConceptTreeNode<?> tree && tree.getChildren() != null) {
@@ -132,7 +135,7 @@ public class FrontEndConceptBuilder {
 	}
 
 	@Nullable
-	private static FrontendNode createStructureNode(StructureNode structureNode, Map<Id<?>, FrontendNode> roots) {
+	private FrontendNode createStructureNode(StructureNode structureNode, Map<Id<?>, FrontendNode> roots) {
 		final List<ConceptId> unstructured = new ArrayList<>();
 		for (ConceptId id : structureNode.getContainedRoots()) {
 			if (!roots.containsKey(id)) {
@@ -158,7 +161,7 @@ public class FrontEndConceptBuilder {
 						   .build();
 	}
 
-	public static FrontendSelect createSelect(Select select) {
+	public FrontendSelect createSelect(Select select) {
 		return FrontendSelect.builder()
 							 .id(select.getId())
 							 .label(select.getLabel())
@@ -168,7 +171,7 @@ public class FrontEndConceptBuilder {
 							 .build();
 	}
 
-	public static FrontendTable createTable(Connector con) {
+	public FrontendTable createTable(Connector con) {
 		final FrontendTable
 				result =
 				FrontendTable.builder()
@@ -176,8 +179,8 @@ public class FrontEndConceptBuilder {
 							 .connectorId(con.getId())
 							 .label(con.getLabel())
 							 .isDefault(con.isDefault())
-							 .filters(con.collectAllFilters().stream().map(FrontEndConceptBuilder::createFilter).collect(Collectors.toList()))
-							 .selects(con.getSelects().stream().map(FrontEndConceptBuilder::createSelect).collect(Collectors.toList()))
+							 .filters(con.collectAllFilters().stream().map(this::createFilter).collect(Collectors.toList()))
+							 .selects(con.getSelects().stream().map(this::createSelect).collect(Collectors.toList()))
 							 .supportedSecondaryIds(Arrays.stream(con.getTable().getColumns())
 														  .map(Column::getSecondaryId)
 														  .filter(Objects::nonNull)
@@ -199,16 +202,16 @@ public class FrontEndConceptBuilder {
 		return result;
 	}
 
-	public static FrontendFilterConfiguration.Top createFilter(Filter<?> filter) {
+	public FrontendFilterConfiguration.Top createFilter(Filter<?> filter) {
 		try {
-			return filter.createFrontendConfig();
+			return filter.createFrontendConfig(conqueryConfig);
 		}
 		catch (ConceptConfigurationException e) {
 			throw new IllegalStateException(e);
 		}
 	}
 
-	private static FrontendNode createCTNode(ConceptElement<?> ce) {
+	private FrontendNode createCTNode(ConceptElement<?> ce) {
 		final MatchingStats matchingStats = ce.getMatchingStats();
 		FrontendNode.FrontendNodeBuilder nodeBuilder = FrontendNode.builder()
 																   .active(null)
@@ -248,13 +251,13 @@ public class FrontEndConceptBuilder {
 		return n;
 	}
 
-	public static FrontendList createTreeMap(Concept<?> concept) {
+	public FrontendList createTreeMap(Concept<?> concept) {
 		final FrontendList map = new FrontendList();
 		fillTreeMap(concept, map);
 		return map;
 	}
 
-	private static void fillTreeMap(ConceptElement<?> ce, FrontendList map) {
+	private void fillTreeMap(ConceptElement<?> ce, FrontendList map) {
 		map.add(ce.getId(), createCTNode(ce));
 		if (ce instanceof ConceptTreeNode && ((ConceptTreeNode<?>) ce).getChildren() != null) {
 			for (ConceptTreeChild c : ((ConceptTreeNode<?>) ce).getChildren()) {

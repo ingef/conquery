@@ -102,7 +102,7 @@ const YearMonthSelect = ({
     value: i,
   }));
 
-  const [yearSelectOpen, setYearSelectOpen] = useState(false);
+  const [yearSelectOpen, setYearSelectOpen] = useState(true);
   const [monthSelectOpen, setMonthSelectOpen] = useState(false);
   const handleClick = () => {
     if (yearSelectOpen || monthSelectOpen) {

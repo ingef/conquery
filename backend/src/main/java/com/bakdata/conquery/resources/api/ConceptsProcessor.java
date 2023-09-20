@@ -65,11 +65,14 @@ public class ConceptsProcessor {
 
 	private final ConqueryConfig config;
 
+	@Getter(lazy = true)
+	private final FrontEndConceptBuilder frontEndConceptBuilder = new FrontEndConceptBuilder(getConfig());
+
 	private final LoadingCache<Concept<?>, FrontendList> nodeCache =
 			CacheBuilder.newBuilder().softValues().expireAfterWrite(10, TimeUnit.MINUTES).build(new CacheLoader<>() {
 				@Override
 				public FrontendList load(Concept<?> concept) {
-					return FrontEndConceptBuilder.createTreeMap(concept);
+					return getFrontEndConceptBuilder().createTreeMap(concept);
 				}
 			});
 
@@ -106,7 +109,7 @@ public class ConceptsProcessor {
 
 	public FrontendRoot getRoot(NamespaceStorage storage, Subject subject) {
 
-		final FrontendRoot root = FrontEndConceptBuilder.createRoot(storage, subject);
+		final FrontendRoot root = getFrontEndConceptBuilder().createRoot(storage, subject);
 
 		// Report Violation
 		ValidatorHelper.createViolationsString(validator.validate(root), log.isTraceEnabled()).ifPresent(log::warn);

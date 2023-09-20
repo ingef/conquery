@@ -1,5 +1,8 @@
 import styled from "@emotion/styled";
-import { faUser as faUserRegular } from "@fortawesome/free-regular-svg-icons";
+import {
+  faCalendar,
+  faUser as faUserRegular,
+} from "@fortawesome/free-regular-svg-icons";
 import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
 import {
   faFolder,
@@ -18,6 +21,7 @@ import IconButton from "../../button/IconButton";
 import { formatDate } from "../../common/helpers/dateHelper";
 import { exists } from "../../common/helpers/exists";
 import { useFormLabelByType } from "../../external-forms/stateSelectors";
+import FaIcon from "../../icon/FaIcon";
 import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
 import WithTooltip from "../../tooltip/WithTooltip";
@@ -129,6 +133,16 @@ const SxDownloadButton = styled(DownloadButton)`
   }
 `;
 
+const Row = styled("div")`
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+`;
+
+const SxFaIcon = styled(FaIcon)`
+  opacity: 0.7;
+`;
+
 const FoldersButton = styled(IconButton)`
   margin-right: 10px;
 `;
@@ -220,17 +234,24 @@ const ProjectItem = forwardRef<
               />
             </WithTooltip>
             {!isFormConfig(item) && item.resultUrls.length > 0 ? (
-              <WithTooltip text={t("previousQuery.downloadResults")}>
-                <SxDownloadButton
-                  tight
-                  small
-                  bare
-                  simpleIcon
-                  resultUrl={item.resultUrls[0]}
-                >
-                  {topLeftLabel}
-                </SxDownloadButton>
-              </WithTooltip>
+              <Row>
+                <WithTooltip text={t("previousQuery.downloadResults")}>
+                  <SxDownloadButton
+                    tight
+                    small
+                    bare
+                    simpleIcon
+                    resultUrl={item.resultUrls[0]}
+                  >
+                    {topLeftLabel}
+                  </SxDownloadButton>
+                </WithTooltip>
+                {!item.containsDates && (
+                  <WithTooltip text={t("previousQuery.hasNoDates")}>
+                    <SxFaIcon red icon={faCalendar} />
+                  </WithTooltip>
+                )}
+              </Row>
             ) : (
               <NonBreakingText>{topLeftLabel}</NonBreakingText>
             )}

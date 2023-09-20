@@ -52,7 +52,8 @@
           "validityDates": [
             {
               "label": "datum",
-              "column": "table1.datum"
+              "startColumn": "table1.datum_start",
+              "endColumn": "table1.datum_end"
             },
             {
               "label": "datum_alt",
@@ -80,8 +81,12 @@
         },
         "columns": [
           {
-            "name": "datum",
-            "type": "DATE_RANGE"
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
           },
           {
             "name": "datum_alt",

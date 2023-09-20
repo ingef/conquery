@@ -231,7 +231,8 @@
     "shareError": "Could not share query",
     "deleteError": "Could not delete query",
     "editFolders": "Edit folders",
-    "deleteNow": "Delete query now"
+    "deleteNow": "Delete query now",
+    "hasNoDates": "No date values in the results."
   },
   "projectItemsFilter": {
     "all": "All",
@@ -269,7 +270,8 @@
     "formValidation": {
       "mustBePositiveNumber": "Must be a positive number",
       "isRequired": "Required",
-      "invalidDateRange": "End date is smaller than start date"
+      "invalidDateRange": "End date is smaller than start date",
+      "validSelectRequired": "Valid select required"
     },
     "default": {
       "conceptDropzoneLabel": "Add a concept or a concept list",

@@ -231,7 +231,8 @@
     "shareError": "Konnte Anfrage nicht freigeben",
     "deleteError": "Konnte Anfrage nicht löschen",
     "editFolders": "Ordner bearbeiten",
-    "deleteNow": "Anfrage jetzt löschen"
+    "deleteNow": "Anfrage jetzt löschen",
+    "hasNoDates": "Keine Datumswerte in den Ergebnissen vorhanden."
   },
   "projectItemsFilter": {
     "all": "Alle",
@@ -269,7 +270,8 @@
     "formValidation": {
       "mustBePositiveNumber": "Muss positive Zahl sein",
       "isRequired": "Erforderlich",
-      "invalidDateRange": "Enddatum liegt vor Startdatum"
+      "invalidDateRange": "Enddatum liegt vor Startdatum",
+      "validSelectRequired": "Kompatibler Ausgabewert erforderlich"
     },
     "default": {
       "conceptDropzoneLabel": "Füge ein Konzept oder eine Konzeptliste hinzu",

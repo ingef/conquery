@@ -1,8 +1,16 @@
 import { TFunction } from "i18next";
 
 import { isEmpty } from "../common/helpers/commonHelper";
+import { exists } from "../common/helpers/exists";
+import { isValidSelect } from "../model/select";
 
-import { CheckboxField, Field, FormField } from "./config-types";
+import {
+  CheckboxField,
+  ConceptListField,
+  Field,
+  FormField,
+} from "./config-types";
+import { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
 export const validateRequired = (t: TFunction, value: any): string | null => {
   return isEmpty(value) ? t("externalForms.formValidation.isRequired") : null;
@@ -57,15 +65,48 @@ export const validateConceptGroupFilled = (
     : null;
 };
 
+const validateRestrictedSelects = (
+  t: TFunction,
+  value: FormConceptGroupT[],
+  field: ConceptListField,
+) => {
+  if (!value || value.length === 0) return null;
+
+  const { allowlistedSelects, blocklistedSelects } = field;
+
+  const hasAllowlistedSelects = (allowlistedSelects?.length || 0) > 0;
+  const hasBlocklistedSelects = (blocklistedSelects?.length || 0) > 0;
+
+  if (hasAllowlistedSelects || hasBlocklistedSelects) {
+    const validSelects = value
+      .flatMap((v) => v.concepts)
+      .filter(exists)
+      .flatMap((c) => {
+        const tableSelects = c.tables.flatMap((t) => t.selects);
+
+        return [...c.selects, ...tableSelects].filter(
+          isValidSelect({ allowlistedSelects, blocklistedSelects }),
+        );
+      });
+
+    if (validSelects.length === 0) {
+      return t("externalForms.formValidation.validSelectRequired");
+    }
+  }
+
+  return null;
+};
+
+// TODO: Refactor using generics to try and tie the `field` to its `value`
 const DEFAULT_VALIDATION_BY_TYPE: Record<
   FormField["type"],
-  null | ((t: TFunction, value: any) => string | null)
+  null | ((t: TFunction, value: any, field: any) => string | null)
 > = {
   STRING: null,
   TEXTAREA: null,
   NUMBER: null,
   CHECKBOX: null,
-  CONCEPT_LIST: null,
+  CONCEPT_LIST: validateRestrictedSelects,
   RESULT_GROUP: null,
   SELECT: null,
   TABS: null,
@@ -86,7 +127,7 @@ function getNotEmptyValidation(fieldType: string) {
   }
 }
 
-function getPossibleValidations(fieldType: string) {
+function getConfigurableValidations(fieldType: string) {
   return {
     NOT_EMPTY: getNotEmptyValidation(fieldType),
     GREATER_THAN_ZERO: validatePositive,
@@ -108,7 +149,7 @@ export function getErrorForField(
 ) {
   const defaultValidation = DEFAULT_VALIDATION_BY_TYPE[field.type];
 
-  let error = defaultValidation ? defaultValidation(t, value) : null;
+  let error = defaultValidation ? defaultValidation(t, value, field) : null;
 
   if (
     isFieldWithValidations(field) &&
@@ -116,7 +157,7 @@ export function getErrorForField(
     field.validations.length > 0
   ) {
     for (let validation of field.validations) {
-      const validateFn = getPossibleValidations(field.type)[validation];
+      const validateFn = getConfigurableValidations(field.type)[validation];
 
       if (validateFn) {
         error = error || validateFn(t, value);

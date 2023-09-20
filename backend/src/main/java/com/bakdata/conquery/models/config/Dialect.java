@@ -6,7 +6,8 @@ import org.jooq.SQLDialect;
 @Getter
 public enum Dialect {
 
-	POSTGRESQL(SQLDialect.POSTGRES);
+	POSTGRESQL(SQLDialect.POSTGRES),
+	HANA(SQLDialect.DEFAULT);
 
 	private final SQLDialect jooqDialect;
 

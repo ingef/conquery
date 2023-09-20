@@ -81,11 +81,6 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 		return test;
 	}
 
-	private static SqlIntegrationTestSpec readSpecFromJson(Path path) throws IOException {
-		final ObjectReader objectReader = Jackson.MAPPER.readerFor(SqlIntegrationTestSpec.class);
-		return objectReader.readValue(Files.readString(path));
-	}
-
 	@Override
 	public void executeTest(SqlStandaloneSupport support) throws IOException {
 		for (RequiredTable table : content.getTables()) {
@@ -94,13 +89,16 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 
 		SqlManagedQuery managedQuery = support.getExecutionManager()
 											  .runQuery(support.getNamespace(), getQuery(), support.getTestUser(), support.getDataset(), support.getConfig(), false);
-		log.info("Execute query: \n{}", managedQuery.getSqlQuery().getSqlString());
 
 		SqlExecutionResult result = managedQuery.getResult();
 		List<EntityResult> resultCsv = result.getTable();
+
 		Path expectedCsvFile = this.specDir.resolve(this.expectedCsv);
 		List<EntityResult> expectedCsv = support.getTableImporter().readExpectedEntities(expectedCsvFile);
-		Assertions.assertThat(resultCsv).usingRecursiveFieldByFieldElementComparator().containsExactlyElementsOf(expectedCsv);
+
+		Assertions.assertThat(resultCsv)
+				  .usingRecursiveFieldByFieldElementComparatorIgnoringFields("entityId")
+				  .containsExactlyInAnyOrderElementsOf(expectedCsv);
 	}
 
 	@Override
@@ -109,6 +107,11 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 		importConcepts(support);
 		Query parsedQuery = ConqueryTestSpec.parseSubTree(support, getRawQuery(), Query.class);
 		setQuery(parsedQuery);
+	}
+
+	private static SqlIntegrationTestSpec readSpecFromJson(Path path) throws IOException {
+		final ObjectReader objectReader = Jackson.MAPPER.readerFor(SqlIntegrationTestSpec.class);
+		return objectReader.readValue(Files.readString(path));
 	}
 
 	private void importTables(SqlStandaloneSupport support) {
@@ -127,6 +130,5 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 			support.getNamespaceStorage().updateConcept(concept);
 		}
 	}
-
 
 }

@@ -10,13 +10,16 @@ import java.io.PrintStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -47,7 +50,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.SneakyThrows;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -293,6 +295,7 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 
 		if (!dumpfile.getParentFile().exists() && !dumpfile.getParentFile().mkdirs()) {
+			//TODO this seems to occur sometimes, is it maybe just a race condition?
 			throw new IllegalStateException("Could not create `%s`.".formatted(dumpfile.getParentFile()));
 		}
 
@@ -353,7 +356,6 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	 *
 	 * @implNote This method is concurrent!
 	 */
-	@SneakyThrows
 	@Override
 	public IterationStatistic forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		final IterationStatistic result = new IterationStatistic();
@@ -368,11 +370,24 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		final ListenableFuture<List<ByteIterable>> allJobs = Futures.allAsList(jobs);
 
 
-		List<ByteIterable> maybeFailed;
+		List<ByteIterable> maybeFailed = Collections.emptyList();
 
-		while ((maybeFailed = allJobs.get(30, TimeUnit.SECONDS)) == null) {
-			log.debug("Still waiting for {} jobs.", jobs.stream().filter(Predicate.not(Future::isDone)).count());
-		}
+		do {
+			try {
+				maybeFailed = allJobs.get(30, TimeUnit.SECONDS);
+			}
+			catch (InterruptedException e) {
+				Thread.interrupted();
+				log.debug("Thread was interrupted.");
+			}
+			catch (ExecutionException e) {
+				throw new RuntimeException(e);
+			}
+			catch (TimeoutException e) {
+				log.debug("Still waiting for {} jobs.", jobs.stream().filter(Predicate.not(Future::isDone)).count());
+			}
+		} while (!allJobs.isDone());
+
 
 		final List<ByteIterable> unreadables = maybeFailed.stream().filter(Objects::nonNull).toList();
 
@@ -398,24 +413,28 @@ public class SerializingStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	private ByteIterable handle(StoreEntryConsumer<KEY, VALUE> consumer, IterationStatistic result, ByteIterable keyRaw, ByteIterable valueRaw) {
-		result.incrTotalProcessed();
+		final KEY key;
+		final VALUE value;
 
-		// Try to read the key first
-		final KEY
-				key =
-				getDeserializedAndDumpFailed(keyRaw, SerializingStore.this::readKey, () -> new String(keyRaw.getBytesUnsafe()), valueRaw, "Could not parse key [{}]");
-		if (key == null) {
-			result.incrFailedKeys();
-			return keyRaw;
-		}
+		try {
+			result.incrTotalProcessed();
 
-		// Try to read the value
-		final VALUE
-				value =
-				getDeserializedAndDumpFailed(valueRaw, SerializingStore.this::readValue, key::toString, valueRaw, "Could not parse value for key [{}]");
+			// Try to read the key first
+			key = getDeserializedAndDumpFailed(keyRaw, SerializingStore.this::readKey, () -> new String(keyRaw.getBytesUnsafe()), valueRaw, "Could not parse key [{}]");
+			if (key == null) {
+				result.incrFailedKeys();
+				return keyRaw;
+			}
 
-		if (value == null) {
-			result.incrFailedValues();
+			// Try to read the value
+			value = getDeserializedAndDumpFailed(valueRaw, SerializingStore.this::readValue, key::toString, valueRaw, "Could not parse value for key [{}]");
+
+			if (value == null) {
+				result.incrFailedValues();
+				return keyRaw;
+			}
+		}catch(Exception e){
+			log.error("Failed processing key/value", e);
 			return keyRaw;
 		}
 
