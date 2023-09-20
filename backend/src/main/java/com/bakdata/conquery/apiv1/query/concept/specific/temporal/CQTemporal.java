@@ -23,6 +23,7 @@ import com.bakdata.conquery.models.query.RequiredEntities;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalSubQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -50,9 +51,18 @@ public class CQTemporal extends CQElement {
 	@Override
 	public final QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		final QPNode indexPlan = index.createQueryPlan(context, plan);
-		final QPNode precedingPlan = preceding.createQueryPlan(context, plan);
 
-		final TemporalSubQueryPlan subQuery = new TemporalSubQueryPlan(getBeforeSelector(), getMode(), getAfterSelector(), indexPlan, precedingPlan);
+		final ConceptQueryPlan shimPlan = new ConceptQueryPlan(false); // We create this plan, only to collect all aggregators created in reference
+		preceding.createQueryPlan(context, shimPlan);
+
+		final int firstShimAggregator = plan.getAggregatorSize();
+
+		final List<ConstantValueAggregator> shimAggregators =
+				shimPlan.getAggregators().stream().map(realAgg -> new ConstantValueAggregator(null, realAgg.getResultType())).toList();
+
+		shimAggregators.forEach(plan::registerAggregator);
+
+		final TemporalSubQueryPlan subQuery = new TemporalSubQueryPlan(getBeforeSelector(), getMode(), getAfterSelector(), indexPlan, preceding, context, shimAggregators);
 
 		return new TimeBasedQueryNode(context.getStorage().getDataset().getAllIdsTable(), subQuery);
 	}

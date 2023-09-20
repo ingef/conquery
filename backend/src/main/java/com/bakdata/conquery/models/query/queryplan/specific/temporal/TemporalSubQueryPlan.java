@@ -1,22 +1,27 @@
 package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
+import java.util.List;
 import java.util.Optional;
 
+import com.bakdata.conquery.apiv1.query.CQElement;
+import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.apiv1.query.concept.specific.temporal.CQTemporal;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
-import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Data;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
 @Data
@@ -29,7 +34,11 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 	private final QPNode before;
 
-	private final QPNode after;
+	private final CQElement after;
+
+	private final QueryPlanContext queryPlanContext;
+
+	private final List<ConstantValueAggregator> aggregators;
 
 	private ConceptQueryPlan beforePlan;
 
@@ -49,7 +58,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 	}
 
 	@Override
-	public Optional execute(QueryExecutionContext ctx, Entity entity) {
+	public Optional<EntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
 
 		final Optional<SinglelineEntityResult> subResult = beforePlan.execute(ctx, entity);
@@ -67,7 +76,8 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 			final CDateRange subPeriod = convertedPartitions[index];
 
 			// First execute sub-query with before's sub-period to extract after's sub-periods which are then used to evaluate after.
-			final Optional<CDateSet> resultDate = evaluateAfterFor(ctx, entity, subPeriod);
+			final Optional<CDateSet> resultDate = evaluateReference(ctx, entity, subPeriod)
+					.map(cqp -> cqp.getDateAggregator().createAggregationResult());
 
 			if (resultDate.isEmpty()) {
 				continue;
@@ -75,20 +85,26 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 			final CDateRange[] afterSampled = afterSelector.sample(resultDate.get());
 			final boolean[] subResults = new boolean[afterSampled.length];
+			final ConceptQueryPlan[] subPlans = new ConceptQueryPlan[afterSampled.length];
 
 			for (int innerIndex = 0; innerIndex < afterSampled.length; innerIndex++) {
 				final CDateRange dateRange = afterSampled[innerIndex];
 				// Execute after-query to get actual result
-				final Optional<CDateSet> afterResultDate = evaluateAfterFor(ctx, entity, dateRange);
+				final Optional<ConceptQueryPlan> afterResultDate = evaluateReference(ctx, entity, dateRange);
+
+				subPlans[innerIndex] = afterResultDate.orElse(null);
 
 				subResults[innerIndex] = afterResultDate.isPresent();
 			}
 
-			//TODO somehow ensure that the last successful query is returned in the output.
 
 			if (afterSelector.satisfies(subResults)) {
 				results[index] = true;
 				result.add(subPeriod);
+
+				//TODO if we want to have first/last available, we have to collect all subplans or replace them smarter
+				//TODO how does this interact with negation?
+				replaceAggregatorResults(subResults, subPlans);
 			}
 		}
 
@@ -101,19 +117,28 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		return Optional.of(new SinglelineEntityResult(entity.getId(), null));
 	}
 
-	private Optional<CDateSet> evaluateAfterFor(QueryExecutionContext ctx, Entity entity, CDateRange partition) {
+	private void replaceAggregatorResults(boolean[] subResults, ConceptQueryPlan[] subPlans) {
+		// TODO this can theoretically also be parametrised to first/last etc
+		final int lastSuccess = ArrayUtils.lastIndexOf(subResults, true);
+		final List<Aggregator<?>> subAggs = subPlans[lastSuccess].getAggregators();
+
+		for (int aggIdx = 0; aggIdx < aggregators.size(); aggIdx++) {
+			aggregators.get(aggIdx).setValue(subAggs.get(aggIdx + 1).createAggregationResult());
+		}
+	}
+
+	private Optional<ConceptQueryPlan> evaluateReference(QueryExecutionContext ctx, Entity entity, CDateRange partition) {
+
+		final ConceptQuery query = new ConceptQuery(new CQDateRestriction(partition.toSimpleRange(), after));
 
 		// Execute after-query to get result date only
-		final ConceptQueryPlan cqp = new ConceptQueryPlan(true);
-
-		cqp.setChild(new DateRestrictingNode(CDateSet.create(partition), after));
-		cqp.getDateAggregator().registerAll(after.getDateAggregators());
+		final ConceptQueryPlan cqp = query.createQueryPlan(queryPlanContext);
 
 		cqp.init(ctx, entity);
 
 		final Optional<SinglelineEntityResult> entityResult = cqp.execute(ctx, entity);
 
-		return entityResult.map(ignored -> cqp.getDateAggregator().createAggregationResult());
+		return entityResult.map(ignored -> cqp);
 	}
 
 	@Override
