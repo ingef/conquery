@@ -55,7 +55,11 @@ public class MeProcessor {
 			// User can use the dataset and can possibly upload ids for resolving
 			datasetAblilites.put(
 					dataset.getId(),
-					new FrontendDatasetAbility(user.isPermitted(dataset, Ability.PRESERVE_ID))
+					new FrontendDatasetAbility(
+							user.isPermitted(dataset, Ability.PRESERVE_ID),
+							user.isPermitted(dataset, Ability.ENTITY_PREVIEW) && user.isPermitted(dataset, Ability.PRESERVE_ID),
+							user.isPermitted(dataset, Ability.QUERY_PREVIEW)
+					)
 			);
 		}
 
@@ -93,6 +97,8 @@ public class MeProcessor {
 	@NoArgsConstructor
 	public static class FrontendDatasetAbility {
 		private boolean canUpload;
+		private boolean canViewEntityPreview;
+		private boolean canViewQueryPreview;
 	}
 
 }

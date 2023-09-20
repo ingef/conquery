@@ -438,7 +438,9 @@ public class QueryProcessor {
 	 */
 	public FullExecutionStatus getSingleEntityExport(Subject subject, UriBuilder uriBuilder, String idKind, String entity, List<Connector> sources, Dataset dataset, Range<LocalDate> dateRange) {
 
-		final Namespace namespace = datasetRegistry.get(dataset.getId());
+		subject.authorize(dataset, Ability.ENTITY_PREVIEW);
+		subject.authorize(dataset, Ability.PRESERVE_ID);
+
 		final PreviewConfig previewConfig = datasetRegistry.get(dataset.getId()).getPreviewConfig();
 		final EntityPreviewForm form = EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimeStratifiedSelects(), datasetRegistry);
 
