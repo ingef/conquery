@@ -84,6 +84,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 				subResults[innerIndex] = afterResultDate.isPresent();
 			}
 
+			//TODO somehow ensure that the last successful query is returned in the output.
 
 			if (afterSelector.satisfies(subResults)) {
 				results[index] = true;
