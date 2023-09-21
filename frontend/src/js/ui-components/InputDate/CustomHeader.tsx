@@ -5,10 +5,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { ReactDatePickerCustomHeaderProps } from "react-datepicker";
-import { useSelector } from "react-redux";
 
 import { SelectOptionT } from "../../api/types";
-import { StateT } from "../../app/reducers";
 import IconButton from "../../button/IconButton";
 import { TransparentButton } from "../../button/TransparentButton";
 import { useMonthName, useMonthNames } from "../../common/helpers/dateHelper";
@@ -27,10 +25,18 @@ export const SelectMenuContainer = styled("div")`
   width: 100%;
 `;
 
-export const OptionList = styled(List)`
+export const MonthListContainer = styled(List)`
   display: grid;
   grid-template-columns: auto auto;
   gap: 5px;
+`;
+
+export const YearListContainer = styled(List)`
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 5px;
+  height: 200px;
+  overflow: auto;
 `;
 
 export const MonthYearLabel = styled("div")`
@@ -46,32 +52,37 @@ export const MonthYearLabel = styled("div")`
 
 const SelectMenu = ({
   date,
+  layout,
   options,
   onSelect,
 }: Pick<ReactDatePickerCustomHeaderProps, "date"> & {
   options: SelectOptionT[];
+  layout: "grid" | "flex";
   onSelect: (n: number) => void;
-}) => (
-  <SelectMenuContainer>
-    <Menu>
-      <OptionList>
-        {options.map((option) => (
-          <TransparentButton
-            small
-            key={option.value}
-            active={
-              option.value === date.getFullYear() ||
-              option.value === date.getMonth()
-            }
-            onClick={() => onSelect(option.value as number)}
-          >
-            {option.label}
-          </TransparentButton>
-        ))}
-      </OptionList>
-    </Menu>
-  </SelectMenuContainer>
-);
+}) => {
+  const OptionList = layout === "grid" ? MonthListContainer : YearListContainer;
+  return (
+    <SelectMenuContainer>
+      <Menu>
+        <OptionList>
+          {options.map((option) => (
+            <TransparentButton
+              small
+              key={option.value}
+              active={
+                option.value === date.getFullYear() ||
+                option.value === date.getMonth()
+              }
+              onClick={() => onSelect(option.value as number)}
+            >
+              {option.label}
+            </TransparentButton>
+          ))}
+        </OptionList>
+      </Menu>
+    </SelectMenuContainer>
+  );
+};
 
 const YearMonthSelect = ({
   date,
@@ -81,20 +92,9 @@ const YearMonthSelect = ({
   ReactDatePickerCustomHeaderProps,
   "date" | "changeYear" | "changeMonth"
 >) => {
-  const numLastYearsToShow = useSelector<StateT, number>((state) => {
-    if (state.startup.config.observationPeriodStart) {
-      return (
-        new Date().getFullYear() -
-        new Date(state.startup.config.observationPeriodStart).getFullYear()
-      );
-    } else {
-      return 10;
-    }
-  });
-  const yearOptions: SelectOptionT[] = [...Array(numLastYearsToShow).keys()]
+  const yearOptions: SelectOptionT[] = [...Array(100).keys()]
     .map((n) => new Date().getFullYear() - n)
-    .map((year) => ({ label: String(year), value: year }))
-    .reverse();
+    .map((year) => ({ label: String(year), value: year }));
 
   const monthNames = useMonthNames();
   const monthOptions: SelectOptionT[] = monthNames.map((month, i) => ({
@@ -121,6 +121,7 @@ const YearMonthSelect = ({
       {yearSelectOpen && (
         <SelectMenu
           date={date}
+          layout="flex"
           options={yearOptions}
           onSelect={(year) => {
             changeYear(year);
@@ -132,6 +133,7 @@ const YearMonthSelect = ({
       {monthSelectOpen && (
         <SelectMenu
           date={date}
+          layout="grid"
           options={monthOptions}
           onSelect={(month) => {
             changeMonth(month);
