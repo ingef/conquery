@@ -21,10 +21,12 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
 @Data
+@Slf4j
 public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 	private final CQTemporal.Selector beforeSelector;
@@ -71,6 +73,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		final boolean[] results = new boolean[partitions.length];
 		final CDateRange[] convertedPartitions = beforeMode.convert(partitions, CDateRange::getMinValue);
 
+		log.debug("Querying {} for [{}] => [{}]", entity, partitions, convertedPartitions);
 
 		for (int index = 0; index < convertedPartitions.length; index++) {
 			final CDateRange subPeriod = convertedPartitions[index];
@@ -102,7 +105,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 				results[index] = true;
 				result.add(subPeriod);
 
-				//TODO if we want to have first/last available, we have to collect all subplans or replace them smarter
+				//TODO make list
 				//TODO how does this interact with negation?
 				replaceAggregatorResults(subResults, subPlans);
 			}

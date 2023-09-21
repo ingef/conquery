@@ -28,7 +28,6 @@ import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalSub
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.google.common.primitives.Booleans;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -55,14 +54,14 @@ public class CQTemporal extends CQElement {
 		final ConceptQueryPlan shimPlan = new ConceptQueryPlan(false); // We create this plan, only to collect all aggregators created in reference
 		preceding.createQueryPlan(context, shimPlan);
 
-		final int firstShimAggregator = plan.getAggregatorSize();
-
 		final List<ConstantValueAggregator> shimAggregators =
 				shimPlan.getAggregators().stream().map(realAgg -> new ConstantValueAggregator(null, realAgg.getResultType())).toList();
 
 		shimAggregators.forEach(plan::registerAggregator);
 
-		final TemporalSubQueryPlan subQuery = new TemporalSubQueryPlan(getBeforeSelector(), getMode(), getAfterSelector(), indexPlan, preceding, context, shimAggregators);
+		final TemporalSubQueryPlan
+				subQuery =
+				new TemporalSubQueryPlan(getBeforeSelector(), getMode(), getAfterSelector(), indexPlan, preceding, context, shimAggregators);
 
 		return new TimeBasedQueryNode(context.getStorage().getDataset().getAllIdsTable(), subQuery);
 	}
@@ -100,9 +99,15 @@ public class CQTemporal extends CQElement {
 			public CDateRange[] sample(CDateSet result) {
 				return result.asRanges().toArray(CDateRange[]::new);
 			}
+
 			@Override
 			public boolean satisfies(boolean[] results) {
-				return Booleans.contains(results, true);
+				for (boolean value : results) {
+					if (value) {
+						return true;
+					}
+				}
+				return false;
 			}
 		},
 		ALL {
@@ -113,7 +118,12 @@ public class CQTemporal extends CQElement {
 
 			@Override
 			public boolean satisfies(boolean[] results) {
-				return !Booleans.contains(results, false);
+				for (boolean value : results) {
+					if (!value) {
+						return false;
+					}
+				}
+				return true;
 			}
 		},
 		EARLIEST {
@@ -211,8 +221,8 @@ public class CQTemporal extends CQElement {
 
 			public CDateRange[] convert(CDateRange[] parts, ToIntFunction<CDateRange> daySelector) {
 				Optional<CDateRange> maybeLast = Arrays.stream(parts)
-													  .filter(CDateRange::hasLowerBound)
-													  .max(Comparator.comparingInt(daySelector));
+													   .filter(CDateRange::hasLowerBound)
+													   .max(Comparator.comparingInt(daySelector));
 
 				if (maybeLast.isEmpty()) {
 					return new CDateRange[0];
