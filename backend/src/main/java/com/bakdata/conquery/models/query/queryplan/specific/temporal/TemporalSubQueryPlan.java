@@ -73,7 +73,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		final boolean[] results = new boolean[partitions.length];
 		final CDateRange[] convertedPartitions = beforeMode.convert(partitions, CDateRange::getMinValue, beforeSelector);
 
-		log.debug("Querying {} for [{}] => [{}]", entity, partitions, convertedPartitions);
+		log.trace("Querying {} for {} => {}", entity, partitions, convertedPartitions);
 
 		for (int index = 0; index < convertedPartitions.length; index++) {
 			final CDateRange subPeriod = convertedPartitions[index];
