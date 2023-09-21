@@ -71,7 +71,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 		final CDateRange[] partitions = beforeSelector.sample(beforePlan.getDateAggregator().createAggregationResult());
 		final boolean[] results = new boolean[partitions.length];
-		final CDateRange[] convertedPartitions = beforeMode.convert(partitions, CDateRange::getMinValue);
+		final CDateRange[] convertedPartitions = beforeMode.convert(partitions, CDateRange::getMinValue, beforeSelector);
 
 		log.debug("Querying {} for [{}] => [{}]", entity, partitions, convertedPartitions);
 

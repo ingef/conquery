@@ -169,7 +169,7 @@ public class CQTemporal extends CQElement {
 	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "mode")
 	@CPSBase
 	public interface Mode {
-		CDateRange[] convert(CDateRange[] in, ToIntFunction<CDateRange> daySelector);
+		CDateRange[] convert(CDateRange[] in, ToIntFunction<CDateRange> daySelector, Selector selector);
 
 		@CPSType(id = "BEFORE", base = Mode.class)
 		@Data
@@ -178,11 +178,19 @@ public class CQTemporal extends CQElement {
 
 			private final Range.IntegerRange days;
 
-			public CDateRange[] convert(CDateRange[] parts, ToIntFunction<CDateRange> daySelector) {
+			public CDateRange[] convert(CDateRange[] parts, ToIntFunction<CDateRange> daySelector, Selector selector) {
 
-				final Optional<CDateRange> maybeFirst = Arrays.stream(parts)
-															  .filter(CDateRange::hasLowerBound)
-															  .min(Comparator.comparingInt(daySelector));
+				final Optional<CDateRange> maybeFirst;
+				if (selector == Selector.ANY) {
+					// Before ANY is equal to before the latest
+					maybeFirst = Arrays.stream(parts).filter(CDateRange::hasLowerBound)
+									   .max(Comparator.comparingInt(daySelector));
+				}
+				else {
+					// The other cases are either strictly (ALL) or incidentally (EARLIEST, LATEST) the first value
+					maybeFirst = Arrays.stream(parts).filter(CDateRange::hasLowerBound)
+									   .min(Comparator.comparingInt(daySelector));
+				}
 
 				if (maybeFirst.isEmpty()) {
 					return new CDateRange[0];
@@ -219,10 +227,18 @@ public class CQTemporal extends CQElement {
 
 			private final Range.IntegerRange days;
 
-			public CDateRange[] convert(CDateRange[] parts, ToIntFunction<CDateRange> daySelector) {
-				Optional<CDateRange> maybeLast = Arrays.stream(parts)
-													   .filter(CDateRange::hasLowerBound)
-													   .max(Comparator.comparingInt(daySelector));
+			public CDateRange[] convert(CDateRange[] parts, ToIntFunction<CDateRange> daySelector, Selector selector) {
+				final Optional<CDateRange> maybeLast;
+				if (selector == Selector.ANY) {
+					// After ANY is equal to after the first
+					maybeLast = Arrays.stream(parts).filter(CDateRange::hasLowerBound)
+									   .min(Comparator.comparingInt(daySelector));
+				}
+				else {
+					// The other cases are either strictly (ALL) or incidentally (EARLIEST, LATEST) the last value
+					maybeLast = Arrays.stream(parts).filter(CDateRange::hasLowerBound)
+									   .max(Comparator.comparingInt(daySelector));
+				}
 
 				if (maybeLast.isEmpty()) {
 					return new CDateRange[0];
@@ -258,7 +274,7 @@ public class CQTemporal extends CQElement {
 		@Data
 		class While implements Mode {
 
-			public CDateRange[] convert(CDateRange[] in, ToIntFunction<CDateRange> ignored) {
+			public CDateRange[] convert(CDateRange[] in, ToIntFunction<CDateRange> ignored, Selector selector) {
 				return in;
 			}
 		}
