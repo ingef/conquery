@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,7 +23,6 @@ import com.bakdata.conquery.models.query.results.SinglelineEntityResult;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
 @Data
@@ -40,7 +40,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 	private final QueryPlanContext queryPlanContext;
 
-	private final List<ConstantValueAggregator> aggregators;
+	private final List<List> aggregationResults;
 
 	private ConceptQueryPlan beforePlan;
 
@@ -49,6 +49,8 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 	@Override
 	public void init(QueryExecutionContext ctx, Entity entity) {
+		aggregationResults.forEach(List::clear);
+
 		beforePlan = new ConceptQueryPlan(true);
 
 		beforePlan.setChild(before);
@@ -72,6 +74,8 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		final CDateRange[] partitions = beforeSelector.sample(beforePlan.getDateAggregator().createAggregationResult());
 		final boolean[] results = new boolean[partitions.length];
 		final CDateRange[] convertedPartitions = beforeMode.convert(partitions, CDateRange::getMinValue, beforeSelector);
+
+		final List<List<Aggregator<?>>> collectedResults = new ArrayList<>();
 
 		log.trace("Querying {} for {} => {}", entity, partitions, convertedPartitions);
 
@@ -105,9 +109,18 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 				results[index] = true;
 				result.add(subPeriod);
 
-				//TODO make list
-				//TODO how does this interact with negation?
-				replaceAggregatorResults(subResults, subPlans);
+				for (ConceptQueryPlan subPlan : subPlans) {
+					if (subPlan == null) {
+						continue;
+					}
+					collectedResults.add(subPlan.getAggregators());
+				}
+			}
+		}
+
+		for (List<Aggregator<?>> result : collectedResults) {
+			for (int aggIdx = 0; aggIdx + 1< result.size(); aggIdx++) {
+				aggregationResults.get(aggIdx).add(result.get(aggIdx + 1 /* skips dateAggregator */).createAggregationResult());
 			}
 		}
 
@@ -118,16 +131,6 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		}
 
 		return Optional.of(new SinglelineEntityResult(entity.getId(), null));
-	}
-
-	private void replaceAggregatorResults(boolean[] subResults, ConceptQueryPlan[] subPlans) {
-		// TODO this can theoretically also be parametrised to first/last etc
-		final int lastSuccess = ArrayUtils.lastIndexOf(subResults, true);
-		final List<Aggregator<?>> subAggs = subPlans[lastSuccess].getAggregators();
-
-		for (int aggIdx = 0; aggIdx < aggregators.size(); aggIdx++) {
-			aggregators.get(aggIdx).setValue(subAggs.get(aggIdx + 1).createAggregationResult());
-		}
 	}
 
 	private Optional<ConceptQueryPlan> evaluateReference(QueryExecutionContext ctx, Entity entity, CDateRange partition) {

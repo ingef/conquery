@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -26,6 +27,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalSubQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
@@ -54,14 +56,19 @@ public class CQTemporal extends CQElement {
 		final ConceptQueryPlan shimPlan = new ConceptQueryPlan(false); // We create this plan, only to collect all aggregators created in reference
 		preceding.createQueryPlan(context, shimPlan);
 
-		final List<ConstantValueAggregator> shimAggregators =
-				shimPlan.getAggregators().stream().map(realAgg -> new ConstantValueAggregator(null, realAgg.getResultType())).toList();
+		final List<ConstantValueAggregator<List>>
+				shimAggregators =
+				shimPlan.getAggregators()
+						.stream()
+						.map(realAgg -> new ConstantValueAggregator<List>(new ArrayList<>(), new ResultType.ListT(realAgg.getResultType())))
+						.toList();
 
 		shimAggregators.forEach(plan::registerAggregator);
 
-		final TemporalSubQueryPlan
-				subQuery =
-				new TemporalSubQueryPlan(getBeforeSelector(), getMode(), getAfterSelector(), indexPlan, preceding, context, shimAggregators);
+		final TemporalSubQueryPlan subQuery =
+				new TemporalSubQueryPlan(getBeforeSelector(), getMode(), getAfterSelector(), indexPlan, preceding, context, shimAggregators.stream()
+																																		   .map(ConstantValueAggregator::getValue)
+																																		   .collect(Collectors.toList()));
 
 		return new TimeBasedQueryNode(context.getStorage().getDataset().getAllIdsTable(), subQuery);
 	}
@@ -109,8 +116,7 @@ public class CQTemporal extends CQElement {
 				}
 				return false;
 			}
-		},
-		ALL {
+		}, ALL {
 			@Override
 			public CDateRange[] sample(CDateSet result) {
 				return result.asRanges().toArray(CDateRange[]::new);
@@ -125,8 +131,7 @@ public class CQTemporal extends CQElement {
 				}
 				return true;
 			}
-		},
-		EARLIEST {
+		}, EARLIEST {
 			@Override
 			public CDateRange[] sample(CDateSet result) {
 				return new CDateRange[]{result.asRanges().iterator().next()};
@@ -136,8 +141,7 @@ public class CQTemporal extends CQElement {
 			public boolean satisfies(boolean[] results) {
 				return results[0];
 			}
-		},
-		LATEST {
+		}, LATEST {
 			@Override
 			public CDateRange[] sample(CDateSet result) {
 				if (result.isEmpty()) {
@@ -183,13 +187,11 @@ public class CQTemporal extends CQElement {
 				final Optional<CDateRange> maybeFirst;
 				if (selector == Selector.ANY) {
 					// Before ANY is equal to before the latest
-					maybeFirst = Arrays.stream(parts).filter(CDateRange::hasLowerBound)
-									   .max(Comparator.comparingInt(daySelector));
+					maybeFirst = Arrays.stream(parts).filter(CDateRange::hasLowerBound).max(Comparator.comparingInt(daySelector));
 				}
 				else {
 					// The other cases are either strictly (ALL) or incidentally (EARLIEST, LATEST) the first value
-					maybeFirst = Arrays.stream(parts).filter(CDateRange::hasLowerBound)
-									   .min(Comparator.comparingInt(daySelector));
+					maybeFirst = Arrays.stream(parts).filter(CDateRange::hasLowerBound).min(Comparator.comparingInt(daySelector));
 				}
 
 				if (maybeFirst.isEmpty()) {
@@ -231,13 +233,11 @@ public class CQTemporal extends CQElement {
 				final Optional<CDateRange> maybeLast;
 				if (selector == Selector.ANY) {
 					// After ANY is equal to after the first
-					maybeLast = Arrays.stream(parts).filter(CDateRange::hasLowerBound)
-									   .min(Comparator.comparingInt(daySelector));
+					maybeLast = Arrays.stream(parts).filter(CDateRange::hasLowerBound).min(Comparator.comparingInt(daySelector));
 				}
 				else {
 					// The other cases are either strictly (ALL) or incidentally (EARLIEST, LATEST) the last value
-					maybeLast = Arrays.stream(parts).filter(CDateRange::hasLowerBound)
-									   .max(Comparator.comparingInt(daySelector));
+					maybeLast = Arrays.stream(parts).filter(CDateRange::hasLowerBound).max(Comparator.comparingInt(daySelector));
 				}
 
 				if (maybeLast.isEmpty()) {
