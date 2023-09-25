@@ -354,9 +354,9 @@
     "unresolvedId_other": "ID nicht auflösbar in den folgenden {{count}} Zeilen"
   },
   "uploadConceptListModal": {
-    "headline": "Konzepte aus Liste einfügen",
+    "headline": "Einträge aus Liste einfügen",
     "label": "Name der Liste",
-    "selectConceptRootNode": "Auflösen als Konzeptliste, oder als Filterliste in einem Konzept",
+    "selectConceptRootNode": "Welche Werte sind in der Liste enthalten?",
     "insertNode": "Jetzt einfügen",
     "result": "Ergebnis",
     "resolvedCodes_one": "1 Wert aufgelöst.",
@@ -364,7 +364,9 @@
     "unknownCodes_one": "1 Wert nicht aufgelöst",
     "unknownCodes_other": "{{count}} Werte nicht aufgelöst",
     "error": "Beim Auflösen der Werte ist ein Fehler aufgetreten.",
-    "nothingResolved": "Kein Konzept konnte aufgelöst werden."
+    "nothingResolved": "Kein Konzept konnte aufgelöst werden.",
+    "filterValuesFrom": "Filterwerte aus",
+    "conceptValuesFrom": "Konzepte aus"
   },
   "uploadFilterListModal": {
     "headline": "Filter-Werte aus Liste einfügen"
