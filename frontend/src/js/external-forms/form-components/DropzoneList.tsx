@@ -67,7 +67,7 @@ interface PropsT<DroppableObject> {
     monitor: DropTargetMonitor,
   ) => void;
   onDropFile: (file: File) => void;
-  onImportLines: (lines: string[]) => void;
+  onImportLines: (lines: string[], filename?: string) => void;
   dropBetween: (
     i: number,
   ) => (item: PossibleDroppableObject, monitor: DropTargetMonitor) => void;

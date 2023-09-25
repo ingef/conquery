@@ -70,7 +70,7 @@ interface PropsT<DroppableObject> {
 
   showImportButton?: boolean;
   importButtonOutside?: boolean;
-  onImportLines?: (lines: string[]) => void;
+  onImportLines?: (lines: string[], filename?: string) => void;
   importPlaceholder?: string;
   importDescription?: string;
 }
@@ -111,8 +111,8 @@ const DropzoneWithFileInput = <
 
   const [importModalOpen, setImportModalOpen] = useState(false);
 
-  function onSubmitImport(lines: string[]) {
-    onImportLines?.(lines);
+  function onSubmitImport(lines: string[], filename?: string) {
+    onImportLines?.(lines, filename);
   }
 
   function onOpenFileDialog() {

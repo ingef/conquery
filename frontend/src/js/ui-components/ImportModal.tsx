@@ -69,10 +69,11 @@ export const ImportModal = ({
   description?: string;
   placeholder?: string;
   onClose: () => void;
-  onSubmit: (lines: string[]) => void;
+  onSubmit: (lines: string[], filename?: string) => void;
 }) => {
   const { t } = useTranslation();
   const [textInput, setTextInput] = useState("");
+  const [droppedFilename, setDroppedFilename] = useState<string>();
   const canReadClipboard = useCanReadClipboard();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -84,7 +85,7 @@ export const ImportModal = ({
 
     const lines = textInput.split("\n").map((line) => line.trim());
 
-    onSubmit(lines);
+    onSubmit(lines, droppedFilename);
     onClose();
   };
 
@@ -114,6 +115,7 @@ export const ImportModal = ({
   const onSelectFile = async (file: File) => {
     const rows = await getUniqueFileRows(file);
 
+    setDroppedFilename(file.name);
     autoFormatAndSet(rows.join("\n"));
   };
 
