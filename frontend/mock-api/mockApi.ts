@@ -494,6 +494,8 @@ export default function mockApi(app: Application) {
       datasetAbilities: {
         imdb: {
           canUpload: true,
+          canViewEntityPreview: true,
+          canViewQueryPreview: true,
         },
       },
       groups: [],
