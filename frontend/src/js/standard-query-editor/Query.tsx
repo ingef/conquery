@@ -61,11 +61,11 @@ const useImport = () => {
   }, []);
 
   const onImportLines = useCallback(
-    (lines: string[], andIdx?: number) => {
+    (lines: string[], filename?: string, andIdx?: number) => {
       dispatch(
         initUploadConceptListModal({
           rows: lines,
-          filename: t("importModal.pasted"),
+          filename: filename || t("importModal.pasted"),
         }),
       );
 

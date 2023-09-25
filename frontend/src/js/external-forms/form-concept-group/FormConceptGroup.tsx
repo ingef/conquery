@@ -261,8 +261,8 @@ const FormConceptGroup = (props: Props) => {
         onDropFile={(file) =>
           onDropFile(file, { valueIdx: props.value.length })
         }
-        onImportLines={(lines) =>
-          onImportLines(lines, { valueIdx: props.value.length })
+        onImportLines={(lines, filename) =>
+          onImportLines({ lines, filename }, { valueIdx: props.value.length })
         }
         onDrop={(item: DragItemFile | DragItemConceptTreeNode) => {
           setScrollToDropzone(true);
@@ -376,8 +376,11 @@ const FormConceptGroup = (props: Props) => {
                 ) : (
                   <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <DragItemConceptTreeNode> */
                     acceptedDropTypes={DROP_TYPES}
-                    onImportLines={(lines) =>
-                      onImportLines(lines, { valueIdx: i, conceptIdx: j })
+                    onImportLines={(lines, filename) =>
+                      onImportLines(
+                        { lines, filename },
+                        { valueIdx: i, conceptIdx: j },
+                      )
                     }
                     onDrop={(item: DragItemConceptTreeNode | DragItemFile) => {
                       if (item.type === "__NATIVE_FILE__") {
