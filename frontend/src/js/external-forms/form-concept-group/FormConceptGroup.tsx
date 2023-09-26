@@ -239,9 +239,9 @@ const FormConceptGroup = (props: Props) => {
                         movedFromAndIdx,
                         movedFromOrIdx,
                       );
-                // row_prefix is a special property that is only used in an edge case form. We only need to pass it
+                // Having a row prefix is a special property that is only used in an edge case form. We only need to pass it
                 // back into the value if the concept is moved to a different position in the same field
-                let modifiedValue = newValue as unknown as {
+                const modifiedValue = newValue as unknown as {
                   [index: string]: string;
                 };
                 if (
