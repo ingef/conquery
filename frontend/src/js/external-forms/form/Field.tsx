@@ -547,6 +547,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                     }
                   : { concepts: [], connector: "OR" }
               }
+              rowPrefixFieldname={field.rowPrefixField?.name}
               renderRowPrefix={
                 exists(field.rowPrefixField)
                   ? ({ value: fieldValue, onChange, row, i }) => (
