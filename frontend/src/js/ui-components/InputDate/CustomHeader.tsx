@@ -57,10 +57,11 @@ const SelectMenu = ({
   onSelect,
 }: Pick<ReactDatePickerCustomHeaderProps, "date"> & {
   options: SelectOptionT[];
-  layout: "grid" | "flex";
+  layout: "oneColumn" | "twoColumns";
   onSelect: (n: number) => void;
 }) => {
-  const OptionList = layout === "grid" ? MonthListContainer : YearListContainer;
+  const OptionList =
+    layout === "twoColumns" ? MonthListContainer : YearListContainer;
   return (
     <SelectMenuContainer>
       <Menu>
@@ -121,7 +122,7 @@ const YearMonthSelect = ({
       {yearSelectOpen && (
         <SelectMenu
           date={date}
-          layout="flex"
+          layout="oneColumn"
           options={yearOptions}
           onSelect={(year) => {
             changeYear(year);
@@ -133,7 +134,7 @@ const YearMonthSelect = ({
       {monthSelectOpen && (
         <SelectMenu
           date={date}
-          layout="grid"
+          layout="twoColumns"
           options={monthOptions}
           onSelect={(month) => {
             changeMonth(month);
