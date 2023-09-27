@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import SplitPane from "react-split-pane";
 
 import { History } from "../entity-history/History";
-import Preview from "../preview/Preview";
+import PreviewV1 from "../preview/Preview";
 import ActivateTooltip from "../tooltip/ActivateTooltip";
 import Tooltip from "../tooltip/Tooltip";
 
@@ -12,6 +12,7 @@ import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 import type { StateT } from "./reducers";
+import Preview from "../preview-v2/Preview";
 
 // ADDING TO react-split-pane STYLES
 // Because otherwise, vertical panes don't expand properly in Safari
@@ -38,6 +39,10 @@ const Content = () => {
     (state) => state.preview.isOpen,
   );
 
+  const isPreviewV1Open = useSelector<StateT, boolean>(
+    (state) => state.previewV1.isOpen,
+  );
+
   const isHistoryOpen = useSelector<StateT, boolean>(
     (state) => state.entityHistory.isOpen,
   );
@@ -47,6 +52,7 @@ const Content = () => {
       <Root>
         {isHistoryOpen && <History />}
         {isPreviewOpen && <Preview />}
+        {isPreviewV1Open && <PreviewV1 />}
         {/*
           react-split-pane is not compatible with react 18 types,
           TODO: Move to https://github.com/johnwalley/allotment

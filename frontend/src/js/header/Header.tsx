@@ -1,11 +1,14 @@
 import styled from "@emotion/styled";
+import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
 import { HistoryButton } from "../button/HistoryButton";
+import IconButton from "../button/IconButton";
 import DatasetSelector from "../dataset/DatasetSelector";
+import { openPreview } from "../preview-v2/actions";
 import { canUploadResult, useHideLogoutButton } from "../user/selectors";
 
 import { HelpMenu } from "./HelpMenu";
@@ -77,6 +80,7 @@ const Header: FC = () => {
     StateT["startup"]["config"]
   >((state) => state.startup.config);
 
+  const dispatch = useDispatch();
   return (
     <Root>
       <OverflowHidden>
@@ -84,6 +88,9 @@ const Header: FC = () => {
         <Spacer />
         <Headline>{t("headline")}</Headline>
       </OverflowHidden>
+      <IconButton icon={faStar} onClick={() => {
+        dispatch(openPreview());
+      }} />
       <Right>
         <DatasetSelector />
         {canUpload && <HistoryButton />}
