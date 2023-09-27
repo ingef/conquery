@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1.query.concept.specific.temporal;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,7 +30,7 @@ public class TimeBasedQueryNode extends QPNode {
 
 		// Yes, the subQuery is executed completely within the init stage of the outer Query.
 		subQuery.init(context, entity);
-		Optional<?> execute = subQuery.execute(context, entity);
+		final Optional<?> execute = subQuery.execute(context, entity);
 
 		result = execute.isPresent();
 	}
@@ -57,6 +58,6 @@ public class TimeBasedQueryNode extends QPNode {
 
 	@Override
 	public Collection<Aggregator<CDateSet>> getDateAggregators() {
-		return subQuery.getBefore().getDateAggregators();
+		return List.of(subQuery.getIndexSubPlan().getDateAggregator());
 	}
 }

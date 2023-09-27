@@ -10,6 +10,9 @@ import java.util.function.Consumer;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -40,57 +43,67 @@ import lombok.RequiredArgsConstructor;
 @CPSType(id = "TEMPORAL", base = CQElement.class)
 public class CQTemporal extends CQElement {
 
+	@Valid
 	private final CQElement index;
 
+	@Valid
 	private final Mode mode;
-	private final Selector beforeSelector;
+	private final Selector indexSelector;
 
-	private final Selector afterSelector;
+	private final Selector compareSelector;
 
-	private final CQElement preceding;
+	private final CQElement compare;
 
 	@Override
 	public final QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		final QPNode indexPlan = index.createQueryPlan(context, plan);
 
-		final ConceptQueryPlan shimPlan = new ConceptQueryPlan(false); // We create this plan, only to collect all aggregators created in reference
-		preceding.createQueryPlan(context, shimPlan);
-
-		final List<ConstantValueAggregator<List>>
-				shimAggregators =
-				shimPlan.getAggregators()
-						.stream()
-						.map(realAgg -> new ConstantValueAggregator<List>(new ArrayList<>(), new ResultType.ListT(realAgg.getResultType())))
-						.toList();
+		final ConceptQueryPlan indexSubPlan = createIndexPlan(context, plan);
+		final List<ConstantValueAggregator<List>> shimAggregators = createShimAggregators();
 
 		shimAggregators.forEach(plan::registerAggregator);
 
 		final TemporalSubQueryPlan subQuery =
-				new TemporalSubQueryPlan(getBeforeSelector(), getMode(), getAfterSelector(), indexPlan, preceding, context, shimAggregators.stream()
-																																		   .map(ConstantValueAggregator::getValue)
-																																		   .collect(Collectors.toList()));
+				new TemporalSubQueryPlan(getIndexSelector(), getMode(), getCompareSelector(), compare, context, indexSubPlan,
+										 shimAggregators.stream().map(ConstantValueAggregator::getValue).collect(Collectors.toList())
+				);
 
 		return new TimeBasedQueryNode(context.getStorage().getDataset().getAllIdsTable(), subQuery);
+	}
+
+	private List<ConstantValueAggregator<List>> createShimAggregators() {
+		return compare.getResultInfos()
+					  .stream()
+					  .map(info -> new ConstantValueAggregator<List>(new ArrayList<>(), new ResultType.ListT(info.getType())))
+					  .toList();
+	}
+
+	private ConceptQueryPlan createIndexPlan(QueryPlanContext context, ConceptQueryPlan plan) {
+		final ConceptQueryPlan indexSubPlan = new ConceptQueryPlan(true);
+		final QPNode indexNode = index.createQueryPlan(context, plan);
+
+		indexSubPlan.getDateAggregator().registerAll(indexNode.getDateAggregators());
+		indexSubPlan.setChild(indexNode);
+		return indexSubPlan;
 	}
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		super.visit(visitor);
 		index.visit(visitor);
-		preceding.visit(visitor);
+		compare.visit(visitor);
 	}
 
 	@Override
 	public void resolve(QueryResolveContext context) {
 		index.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
-		preceding.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
+		compare.resolve(context.withDateAggregationMode(DateAggregationMode.MERGE));
 	}
 
 	@Override
 	public List<ResultInfo> getResultInfos() {
 		final List<ResultInfo> resultInfos = new ArrayList<>();
 		resultInfos.addAll(index.getResultInfos());
-		resultInfos.addAll(preceding.getResultInfos());
+		resultInfos.addAll(compare.getResultInfos());
 		return resultInfos;
 	}
 
@@ -170,7 +183,7 @@ public class CQTemporal extends CQElement {
 	}
 
 
-	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "mode")
+	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 	@CPSBase
 	public interface Mode {
 		CDateRange[] convert(CDateRange[] in, ToIntFunction<CDateRange> daySelector, Selector selector);
@@ -180,6 +193,7 @@ public class CQTemporal extends CQElement {
 		@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 		class Before implements Mode {
 
+			@NotNull
 			private final Range.IntegerRange days;
 
 			public CDateRange[] convert(CDateRange[] parts, ToIntFunction<CDateRange> daySelector, Selector selector) {
@@ -227,6 +241,7 @@ public class CQTemporal extends CQElement {
 		@RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 		class After implements Mode {
 
+			@NotNull
 			private final Range.IntegerRange days;
 
 			public CDateRange[] convert(CDateRange[] parts, ToIntFunction<CDateRange> daySelector, Selector selector) {

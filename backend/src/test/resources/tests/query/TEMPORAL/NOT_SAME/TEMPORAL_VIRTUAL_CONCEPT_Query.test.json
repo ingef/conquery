@@ -8,10 +8,10 @@
       "type": "NEGATION",
       "child": {
         "type": "TEMPORAL",
-        "beforeSelector": "EARLIEST",
-        "afterSelector": "EARLIEST",
+        "indexSelector": "EARLIEST",
+        "compareSelector": "EARLIEST",
         "mode": {
-          "mode": "BEFORE",
+          "type": "BEFORE",
           "days": {
             "min": 0,
             "max": 0
@@ -36,7 +36,7 @@
             }
           ]
         },
-        "preceding": {
+        "compare": {
           "ids": [
             "geschlecht_select"
           ],

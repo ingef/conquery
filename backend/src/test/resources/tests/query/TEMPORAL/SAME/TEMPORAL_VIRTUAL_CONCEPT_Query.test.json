@@ -7,14 +7,14 @@
     "root": {
       "type": "TEMPORAL",
       "mode": {
-        "mode": "AFTER",
+        "type": "AFTER",
         "days": {
           "min": 0,
           "max": 0
         }
       },
-      "beforeSelector": "ALL",
-      "afterSelector": "ANY",
+      "indexSelector": "ALL",
+      "compareSelector": "ANY",
       "index": {
         "ids": [
           "geschlecht_select"
@@ -34,7 +34,7 @@
           }
         ]
       },
-      "preceding": {
+      "compare": {
         "ids": [
           "geschlecht_select"
         ],

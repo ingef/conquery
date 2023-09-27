@@ -6,10 +6,10 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "TEMPORAL",
-      "beforeSelector": "ANY",
-      "afterSelector": "ANY",
+      "indexSelector": "ANY",
+      "compareSelector": "ANY",
       "mode": {
-        "mode": "BEFORE",
+        "type": "BEFORE",
         "days": {
           "min": 1
         }
@@ -33,7 +33,7 @@
           }
         ]
       },
-      "preceding": {
+      "compare": {
         "ids": [
           "concept"
         ],

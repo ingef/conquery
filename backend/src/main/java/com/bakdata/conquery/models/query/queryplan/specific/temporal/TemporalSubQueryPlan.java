@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
@@ -29,51 +28,46 @@ import org.jetbrains.annotations.NotNull;
 @Slf4j
 public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
-	private final CQTemporal.Selector beforeSelector;
-	private final CQTemporal.Mode beforeMode;
+	private final CQTemporal.Selector indexSelector;
+	private final CQTemporal.Mode indexMode;
 
-	private final CQTemporal.Selector afterSelector;
+	private final CQTemporal.Selector compareSelector;
 
-	private final QPNode before;
-
-	private final CQElement after;
+	private final CQElement compareQuery;
 
 	private final QueryPlanContext queryPlanContext;
 
+	private final ConceptQueryPlan indexSubPlan;
+
+
 	private final List<List> aggregationResults;
 
-	private ConceptQueryPlan beforePlan;
 
-	private CDateSet result;
+	private CDateSet dateResult;
 
 
 	@Override
 	public void init(QueryExecutionContext ctx, Entity entity) {
 		aggregationResults.forEach(List::clear);
 
-		beforePlan = new ConceptQueryPlan(true);
+		indexSubPlan.init(ctx, entity);
 
-		beforePlan.setChild(before);
-		beforePlan.getDateAggregator().registerAll(before.getDateAggregators());
-
-		beforePlan.init(ctx, entity);
-
-		result = CDateSet.createEmpty();
+		dateResult = CDateSet.createEmpty();
 	}
 
 	@Override
 	public Optional<EntityResult> execute(QueryExecutionContext ctx, Entity entity) {
 
 
-		final Optional<SinglelineEntityResult> subResult = beforePlan.execute(ctx, entity);
+		final Optional<SinglelineEntityResult> subResult = indexSubPlan.execute(ctx, entity);
 
 		if (subResult.isEmpty()) {
 			return Optional.empty();
 		}
 
-		final CDateRange[] partitions = beforeSelector.sample(beforePlan.getDateAggregator().createAggregationResult());
+		final CDateRange[] partitions = indexSelector.sample(indexSubPlan.getDateAggregator().createAggregationResult());
 		final boolean[] results = new boolean[partitions.length];
-		final CDateRange[] convertedPartitions = beforeMode.convert(partitions, CDateRange::getMinValue, beforeSelector);
+		final CDateRange[] convertedPartitions = indexMode.convert(partitions, CDateRange::getMinValue, indexSelector);
 
 		final List<List<Aggregator<?>>> collectedResults = new ArrayList<>();
 
@@ -90,7 +84,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 				continue;
 			}
 
-			final CDateRange[] afterSampled = afterSelector.sample(resultDate.get());
+			final CDateRange[] afterSampled = compareSelector.sample(resultDate.get());
 			final boolean[] subResults = new boolean[afterSampled.length];
 			final ConceptQueryPlan[] subPlans = new ConceptQueryPlan[afterSampled.length];
 
@@ -105,9 +99,9 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 			}
 
 
-			if (afterSelector.satisfies(subResults)) {
+			if (compareSelector.satisfies(subResults)) {
 				results[index] = true;
-				result.add(subPeriod);
+				dateResult.add(subPeriod);
 
 				for (ConceptQueryPlan subPlan : subPlans) {
 					if (subPlan == null) {
@@ -119,12 +113,12 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		}
 
 		for (List<Aggregator<?>> result : collectedResults) {
-			for (int aggIdx = 0; aggIdx + 1< result.size(); aggIdx++) {
+			for (int aggIdx = 0; aggIdx + 1 < result.size(); aggIdx++) {
 				aggregationResults.get(aggIdx).add(result.get(aggIdx + 1 /* skips dateAggregator */).createAggregationResult());
 			}
 		}
 
-		final boolean satisfies = beforeSelector.satisfies(results);
+		final boolean satisfies = indexSelector.satisfies(results);
 
 		if (!satisfies) {
 			return Optional.empty();
@@ -135,7 +129,7 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 	private Optional<ConceptQueryPlan> evaluateReference(QueryExecutionContext ctx, Entity entity, CDateRange partition) {
 
-		final ConceptQuery query = new ConceptQuery(new CQDateRestriction(partition.toSimpleRange(), after));
+		final ConceptQuery query = new ConceptQuery(new CQDateRestriction(partition.toSimpleRange(), compareQuery));
 
 		// Execute after-query to get result date only
 		final ConceptQueryPlan cqp = query.createQueryPlan(queryPlanContext);
@@ -149,12 +143,12 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return before.isOfInterest(entity);
+		return indexSubPlan.isOfInterest(entity);
 	}
 
 	@NotNull
 	@Override
 	public Optional<Aggregator<CDateSet>> getValidityDateAggregator() {
-		return Optional.of(new ConstantValueAggregator<>(result, new ResultType.ListT(ResultType.DateT.INSTANCE)));
+		return Optional.of(new ConstantValueAggregator<>(dateResult, new ResultType.ListT(ResultType.DateT.INSTANCE)));
 	}
 }
