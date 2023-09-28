@@ -4,5 +4,5 @@ export type PreviewActions = ActionType<
   typeof closePreview | typeof openPreview
 >;
 
-export const openPreview = createAction("preview/OPENk")();
+export const openPreview = createAction("preview/OPEN")();
 export const closePreview = createAction("preview/CLOSE")();
