@@ -373,7 +373,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		return Visitable.stream(query)
 						.anyMatch(visitable -> {
 							if (visitable instanceof CQConcept cqConcept) {
-								return cqConcept.isAggregateEventDates();
+								return !cqConcept.isExcludeFromTimeAggregation();
 							}
 
 							if (visitable instanceof CQExternal external) {
