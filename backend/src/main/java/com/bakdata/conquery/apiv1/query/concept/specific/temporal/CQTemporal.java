@@ -37,7 +37,35 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Abstract data class specifying the data needed for a TemporalQuery.
+ * Temporal queries allow users to query for temporal relationships:
+ *
+ * <pre>
+ * {
+ * 	"type" : "TEMPORAL",
+ * 	"reference" : {}, // Concept A
+ * 	"compare" : {}, // Concept B
+ * 	"mode" : {"type": "BEFORE", "days" : {"min" : 10}},
+ * 	"referenceSelector" : "EARLIEST",
+ * 	"compareSelector" : "EARLIEST",
+ * }
+ * </pre>
+ * => The earliest sub-period of Concept A is included, if the earliest sub-period of B is at least 10 days before it.
+ *
+ * <hr />
+ *
+ * <pre>
+ * {
+ * 	"type" : "TEMPORAL",
+ * 	"reference" : {}, // Concept A
+ * 	"compare" : {}, // Concept B
+ * 	"mode" : {"type": "BEFORE", "days" : {"min" : 10}},
+ * 	"referenceSelector" : "ANY",
+ * 	"compareSelector" : "EARLIEST",
+ * }
+ * </pre>
+ * => All sub-periods of Concept A are included, if the earliest sub-period of Concept B is 10 days before it.
+ *
+ * <hr />
  */
 @Data
 @CPSType(id = "TEMPORAL", base = CQElement.class)
@@ -58,6 +86,7 @@ public class CQTemporal extends CQElement {
 	public final QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 
 		final ConceptQueryPlan indexSubPlan = createIndexPlan(context, plan);
+		// These aggregators will be fed with the actual aggregation results of the sub results
 		final List<ConstantValueAggregator<List>> shimAggregators = createShimAggregators();
 
 		shimAggregators.forEach(plan::registerAggregator);

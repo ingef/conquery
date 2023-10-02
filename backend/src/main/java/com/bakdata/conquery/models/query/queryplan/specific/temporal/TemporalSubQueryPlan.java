@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,56 +64,54 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 			return Optional.empty();
 		}
 
-		final CDateRange[] partitions = indexSelector.sample(indexSubPlan.getDateAggregator().createAggregationResult());
-		final boolean[] results = new boolean[partitions.length];
-		final CDateRange[] convertedPartitions = indexMode.convert(partitions, CDateRange::getMinValue, indexSelector);
+		// I use arrays here as they are much easier to keep aligned and their size is known ahead of time
+		final CDateRange[] periods = indexSelector.sample(indexSubPlan.getDateAggregator().createAggregationResult());
+		final boolean[] results = new boolean[periods.length];
+		final CDateRange[] convertedPeriods = indexMode.convert(periods, CDateRange::getMinValue, indexSelector);
 
-		final List<List<Aggregator<?>>> collectedResults = new ArrayList<>();
+		assert periods.length == convertedPeriods.length;
 
-		log.trace("Querying {} for {} => {}", entity, partitions, convertedPartitions);
+		log.trace("Querying {} for {} => {}", entity, periods, convertedPeriods);
 
-		for (int index = 0; index < convertedPartitions.length; index++) {
-			final CDateRange subPeriod = convertedPartitions[index];
+		// First execute sub-query with index's sub-period
+		// to extract compares's sub-periods which are then used to evaluate compare for aggregation/inclusion.
+		for (int current = 0; current < convertedPeriods.length; current++) {
+			final CDateRange indexPeriod = convertedPeriods[current];
 
-			// First execute sub-query with before's sub-period to extract after's sub-periods which are then used to evaluate after.
-			final Optional<CDateSet> resultDate = evaluateReference(ctx, entity, subPeriod)
+			final Optional<CDateSet> resultDate = evaluateCompareQuery(ctx, entity, indexPeriod)
 					.map(cqp -> cqp.getDateAggregator().createAggregationResult());
 
 			if (resultDate.isEmpty()) {
 				continue;
 			}
 
-			final CDateRange[] afterSampled = compareSelector.sample(resultDate.get());
-			final boolean[] subResults = new boolean[afterSampled.length];
-			final ConceptQueryPlan[] subPlans = new ConceptQueryPlan[afterSampled.length];
+			final CDateRange[] compareSampled = compareSelector.sample(resultDate.get());
+			final boolean[] subResults = new boolean[compareSampled.length];
+			final ConceptQueryPlan[] subPlans = new ConceptQueryPlan[compareSampled.length];
 
-			for (int innerIndex = 0; innerIndex < afterSampled.length; innerIndex++) {
-				final CDateRange dateRange = afterSampled[innerIndex];
-				// Execute after-query to get actual result
-				final Optional<ConceptQueryPlan> afterResultDate = evaluateReference(ctx, entity, dateRange);
+			for (int inner = 0; inner < compareSampled.length; inner++) {
+				final CDateRange dateRange = compareSampled[inner];
+				// Execute compare-query to get actual result
+				final Optional<ConceptQueryPlan> afterResultDate = evaluateCompareQuery(ctx, entity, dateRange);
 
-				subPlans[innerIndex] = afterResultDate.orElse(null);
-
-				subResults[innerIndex] = afterResultDate.isPresent();
+				subPlans[inner] = afterResultDate.orElse(null);
+				subResults[inner] = afterResultDate.isPresent();
 			}
 
+			// If compare's selector is satisfied, we append current to the results and retrieve the aggregation results
+			if (!compareSelector.satisfies(subResults)) {
+				continue;
+			}
 
-			if (compareSelector.satisfies(subResults)) {
-				results[index] = true;
-				dateResult.add(subPeriod);
+			results[current] = true;
+			dateResult.add(indexPeriod);
 
-				for (ConceptQueryPlan subPlan : subPlans) {
-					if (subPlan == null) {
-						continue;
-					}
-					collectedResults.add(subPlan.getAggregators());
+			for (ConceptQueryPlan subPlan : subPlans) {
+				if (subPlan == null) {
+					continue;
 				}
-			}
-		}
 
-		for (List<Aggregator<?>> result : collectedResults) {
-			for (int aggIdx = 0; aggIdx + 1 < result.size(); aggIdx++) {
-				aggregationResults.get(aggIdx).add(result.get(aggIdx + 1 /* skips dateAggregator */).createAggregationResult());
+				addAggregationResults(subPlan);
 			}
 		}
 
@@ -127,7 +124,15 @@ public class TemporalSubQueryPlan implements QueryPlan<EntityResult> {
 		return Optional.of(new SinglelineEntityResult(entity.getId(), null));
 	}
 
-	private Optional<ConceptQueryPlan> evaluateReference(QueryExecutionContext ctx, Entity entity, CDateRange partition) {
+	private void addAggregationResults(ConceptQueryPlan subPlan) {
+		final List<Aggregator<?>> result = subPlan.getAggregators();
+
+		for (int aggIdx = 0; aggIdx + 1 < result.size(); aggIdx++) {
+			aggregationResults.get(aggIdx).add(result.get(aggIdx + 1 /* skips dateAggregator */).createAggregationResult());
+		}
+	}
+
+	private Optional<ConceptQueryPlan> evaluateCompareQuery(QueryExecutionContext ctx, Entity entity, CDateRange partition) {
 
 		final ConceptQuery query = new ConceptQuery(new CQDateRestriction(partition.toSimpleRange(), compareQuery));
 
