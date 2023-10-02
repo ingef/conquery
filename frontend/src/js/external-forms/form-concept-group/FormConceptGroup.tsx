@@ -239,7 +239,7 @@ const FormConceptGroup = (props: Props) => {
                         movedFromAndIdx,
                         movedFromOrIdx,
                       );
-                // Having a row prefix is a special property that is only used in an edge case form. We only need to pass it
+                // Having a row prefix is a special property that is only used in an edge case form, used for tagging concepts. We only need to pass it
                 // back into the value if the concept is moved to a different position in the same field
                 const modifiedValue = JSON.parse(
                   JSON.stringify(newValue),
