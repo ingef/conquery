@@ -79,6 +79,8 @@ public class ImportJob extends Job {
 	private final PreprocessedData container;
 	private final ConqueryConfig config;
 
+	private final IdMutex<DictionaryId> sharedDictionaryLocks;
+
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
 
@@ -149,7 +151,8 @@ public class ImportJob extends Job {
 					header,
 					dictionaries,
 					container,
-					config
+					config,
+					sharedDictionaryLocks
 			);
 		}
 	}
@@ -198,7 +201,7 @@ public class ImportJob extends Job {
 	 * Create mappings for shared dictionaries dict.
 	 * This is not synchronized because the methods is called within the job execution.
 	 */
-	private static Map<String, DictionaryMapping> importDictionaries(DistributedNamespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName, Table table) {
+	private static Map<String, DictionaryMapping> importDictionaries(DistributedNamespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName, Table table, IdMutex<DictionaryId> sharedDictionaryLocks) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
@@ -235,13 +238,19 @@ public class ImportJob extends Job {
 
 				  final String sharedDictionaryName = column.getSharedDictionary();
 				  log.debug("Column[{}.{}.{}] part of shared Dictionary[{}]", table.getId(), importName, column.getName(), sharedDictionaryName);
+
 				  final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
-				  final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
+				  final DictionaryMapping mapping;
 
-				  ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
-				  log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
+				  // We have to lock here, as sibling columns might both use the same shared-dictionary
+				  try (IdMutex.Locked lock = sharedDictionaryLocks.acquire(dictionaryId)) {
+					  final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
 
-				  final DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
+					  ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
+					  log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
+
+					  mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
+				  }
 
 				  if (mapping.getNumberOfNewIds() != 0) {
 					  distributeDictionary(namespace, mapping.getTargetDictionary());
@@ -282,7 +291,7 @@ public class ImportJob extends Job {
 		log.info("Importing Dictionaries");
 
 		Map<String, DictionaryMapping> sharedDictionaryMappings =
-				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName(), table);
+				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName(), table, sharedDictionaryLocks);
 
 		log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
 
