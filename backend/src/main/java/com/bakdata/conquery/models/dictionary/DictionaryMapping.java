@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.dictionary;
 
 
+import java.util.stream.IntStream;
+
 import com.bakdata.conquery.models.events.stores.root.IntegerStore;
 import com.bakdata.conquery.models.events.stores.root.StringStore;
 import it.unimi.dsi.fastutil.ints.Int2IntMap;
@@ -40,17 +42,17 @@ public class DictionaryMapping {
 
 		int newIds = 0;
 
-		Int2IntMap source2Target = new Int2IntOpenHashMap(from.size());
+		final Int2IntMap source2Target = new Int2IntOpenHashMap(from.size());
 
 		source2Target.defaultReturnValue(-1);
 
-		Int2IntMap target2Source = new Int2IntOpenHashMap(from.size());
+		final Int2IntMap target2Source = new Int2IntOpenHashMap(from.size());
 
 		target2Source.defaultReturnValue(-1);
 
 		for (int id = 0; id < from.size(); id++) {
 
-			byte[] value = from.getElement(id);
+			final byte[] value = from.getElement(id);
 			int targetId = into.getId(value);
 
 			//if id was unknown until now
@@ -92,22 +94,21 @@ public class DictionaryMapping {
 	 * Mutably applies mapping to store.
 	 */
 	public void applyToStore(StringStore from, IntegerStore to) {
-		for (int event = 0; event < from.getLines(); event++) {
-			if (!from.has(event)) {
-				to.setNull(event);
-				continue;
-			}
+		IntStream.range(0, from.getLines())
+				 .parallel()
+				 .forEach(event -> {
+					 if (!from.has(event)) {
+						 to.setNull(event);
+						 return;
+					 }
+					 final int string = from.getString(event);
+					 final int value = source2Target(string);
 
-			final int string = from.getString(event);
-
-			int value = source2Target(string);
-
-			if (value == -1) {
-				throw new IllegalStateException(String.format("Missing mapping for %s", string));
-			}
-
-			to.setInteger(event, value);
-		}
+					 if (value == -1) {
+						 throw new IllegalStateException(String.format("Missing mapping for %s", string));
+					 }
+					 to.setInteger(event, value);
+				 });
 	}
 
 }
