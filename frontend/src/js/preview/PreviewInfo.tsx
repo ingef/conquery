@@ -55,12 +55,18 @@ const SxIconButton = styled(IconButton)`
   background-color: white;
 `;
 
-const StatsContainer = styled("div")`
-  display: flex;
-  flex-wrap: wrap;
+const StatsCard = styled("div")`
   padding: 10px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
   background-color: white;
+`;
+const StatsContainer = styled("div")`
+  display: grid;
+  grid-template-columns: minmax(120px, 200px);
+  grid-template-rows: 1fr auto;
+  grid-auto-flow: column;
+  gap: 5px 20px;
+  overflow-x: auto;
 `;
 
 const COLUMN_TYPES_WITH_SUPPORTED_STATS = new Set<ColumnDescriptionType>([
@@ -147,16 +153,18 @@ const PreviewInfo: FC<PropsT> = ({
         <div>
           <StatsHeadline>{t("preview.statisticsHeadline")}</StatsHeadline>
           <StatsSubline>{t("preview.statisticsSubline")}</StatsSubline>
-          <StatsContainer>
-            {rawPreviewData[0].map((col, j) => (
-              <ColumnStats
-                key={j}
-                colName={col}
-                columnType={columns[j]}
-                rawColumnData={rawPreviewData.map((row) => row[j])}
-              />
-            ))}
-          </StatsContainer>
+          <StatsCard>
+            <StatsContainer>
+              {rawPreviewData[0].map((col, j) => (
+                <ColumnStats
+                  key={j}
+                  colName={col}
+                  columnType={columns[j]}
+                  rawColumnData={rawPreviewData.map((row) => row[j])}
+                />
+              ))}
+            </StatsContainer>
+          </StatsCard>
         </div>
       )}
     </div>
