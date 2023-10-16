@@ -164,6 +164,7 @@
     "min": "Min",
     "max": "Max",
     "std": "SD",
+    "sum": "Sum",
     "logout": "Logout",
     "dateInvalid": "Invalid date",
     "missingLabel": "Unknown",
