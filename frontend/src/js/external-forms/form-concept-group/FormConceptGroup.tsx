@@ -219,53 +219,38 @@ const FormConceptGroup = (props: Props) => {
             const concept = isMovedObject(item)
               ? copyConcept(item)
               : initializeConcept(item, defaults, tableConfig);
+
+            let insertIndex = i;
+            let newPropsValue = props.value;
+            let newValue = JSON.parse(JSON.stringify(props.newValue));
+
             if (isMovedObject(item)) {
               const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
                 item.dragContext;
-              let insertIndex = i;
 
               if (movedFromFieldName === props.fieldName) {
-                const willConceptMoveDown =
-                  i > movedFromAndIdx &&
+                const movedConceptWasLast =
                   props.value[movedFromAndIdx].concepts.length === 1;
+                const willConceptMoveDown =
+                  i > movedFromAndIdx && movedConceptWasLast;
+
                 if (willConceptMoveDown) {
                   insertIndex = i - 1;
                 }
-                let newPropsValue =
-                  props.value[movedFromAndIdx].concepts.length === 1
-                    ? removeValue(props.value, movedFromAndIdx)
-                    : removeConcept(
-                        props.value,
-                        movedFromAndIdx,
-                        movedFromOrIdx,
-                      );
-                // Having a row prefix is a special property that is only used in an edge case form, used for tagging concepts. We only need to pass it
-                // back into the value if the concept is moved to a different position in the same field
-                const modifiedValue = JSON.parse(
-                  JSON.stringify(newValue),
-                ) as unknown as {
-                  [index: string]: string;
-                };
-                if (
-                  movedFromFieldName === props.fieldName &&
-                  props.rowPrefixFieldname
-                ) {
-                  modifiedValue[props.rowPrefixFieldname] = (
-                    props.value[movedFromAndIdx] as any
-                  )[props.rowPrefixFieldname];
+                newPropsValue = movedConceptWasLast
+                  ? removeValue(props.value, movedFromAndIdx)
+                  : removeConcept(props.value, movedFromAndIdx, movedFromOrIdx);
+
+                // rowPrefixField is a special property that is only used in an edge case form,
+                // used for tagging concepts. We only need to pass it back into the value
+                // if the concept is moved to a different position in the same field.
+                if (props.rowPrefixFieldname) {
+                  newValue[props.rowPrefixFieldname] =
+                    // since rowPrefixFieldname is dynamic, and since it's an edge case,
+                    // we're not typing this
+                    // @ts-ignore
+                    props.value[movedFromAndIdx][props.rowPrefixFieldname];
                 }
-
-                const value = addConcept(
-                  insertValue(
-                    newPropsValue,
-                    insertIndex,
-                    modifiedValue as unknown as FormConceptGroupT,
-                  ),
-                  insertIndex,
-                  concept,
-                );
-
-                return props.onChange(value);
               } else {
                 if (exists(item.dragContext.deleteFromOtherField)) {
                   item.dragContext.deleteFromOtherField();
@@ -274,7 +259,11 @@ const FormConceptGroup = (props: Props) => {
             }
 
             return props.onChange(
-              addConcept(insertValue(props.value, i, newValue), i, concept),
+              addConcept(
+                insertValue(newPropsValue, insertIndex, newValue),
+                insertIndex,
+                concept,
+              ),
             );
           };
         }}
