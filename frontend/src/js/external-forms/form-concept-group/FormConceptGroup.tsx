@@ -88,6 +88,7 @@ interface Props {
     row: FormConceptGroupT;
     i: number;
   }) => ReactNode;
+  rowPrefixFieldname?: string;
 }
 
 const DropzoneListItem = styled("div")``;
@@ -218,27 +219,38 @@ const FormConceptGroup = (props: Props) => {
             const concept = isMovedObject(item)
               ? copyConcept(item)
               : initializeConcept(item, defaults, tableConfig);
-            let newPropsValue = props.value;
+
             let insertIndex = i;
+            let newPropsValue = props.value;
+            let newValue = JSON.parse(JSON.stringify(props.newValue));
+
             if (isMovedObject(item)) {
               const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
                 item.dragContext;
 
               if (movedFromFieldName === props.fieldName) {
-                const willConceptMoveDown =
-                  i > movedFromAndIdx &&
+                const movedConceptWasLast =
                   props.value[movedFromAndIdx].concepts.length === 1;
+                const willConceptMoveDown =
+                  i > movedFromAndIdx && movedConceptWasLast;
+
                 if (willConceptMoveDown) {
                   insertIndex = i - 1;
                 }
-                newPropsValue =
-                  props.value[movedFromAndIdx].concepts.length === 1
-                    ? removeValue(props.value, movedFromAndIdx)
-                    : removeConcept(
-                        props.value,
-                        movedFromAndIdx,
-                        movedFromOrIdx,
-                      );
+                newPropsValue = movedConceptWasLast
+                  ? removeValue(props.value, movedFromAndIdx)
+                  : removeConcept(props.value, movedFromAndIdx, movedFromOrIdx);
+
+                // rowPrefixField is a special property that is only used in an edge case form,
+                // used for tagging concepts. We only need to pass it back into the value
+                // if the concept is moved to a different position in the same field.
+                if (props.rowPrefixFieldname) {
+                  newValue[props.rowPrefixFieldname] =
+                    // since rowPrefixFieldname is dynamic, and since it's an edge case,
+                    // we're not typing this
+                    // @ts-ignore
+                    props.value[movedFromAndIdx][props.rowPrefixFieldname];
+                }
               } else {
                 if (exists(item.dragContext.deleteFromOtherField)) {
                   item.dragContext.deleteFromOtherField();
@@ -356,6 +368,10 @@ const FormConceptGroup = (props: Props) => {
                           : removeConcept(props.value, i, j),
                       );
                     }}
+                    // row_prefix is a special property that is only used in an edge case form.
+                    // To support reordering of concepts this property needs
+                    // to be passed to the concept node
+                    rowPrefixFieldname={props.rowPrefixFieldname}
                     expand={{
                       onClick: () =>
                         props.onChange(

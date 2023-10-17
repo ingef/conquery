@@ -83,6 +83,7 @@ interface PropsT {
   };
   deleteFromOtherField: () => void;
   fieldName: string;
+  rowPrefixFieldname?: string;
 }
 
 // generalized node to handle concepts queried in forms
@@ -96,6 +97,7 @@ const FormConceptNode: FC<PropsT> = ({
   expand,
   deleteFromOtherField,
   fieldName,
+  rowPrefixFieldname,
 }) => {
   const { t } = useTranslation();
   const rootNodeLabel = getRootNodeLabel(conceptNode);
@@ -108,6 +110,7 @@ const FormConceptNode: FC<PropsT> = ({
       movedFromOrIdx: conceptIdx,
       width: 0,
       height: 0,
+      rowPrefixFieldname: rowPrefixFieldname,
     },
   };
   const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
@@ -119,6 +122,7 @@ const FormConceptNode: FC<PropsT> = ({
         ...getWidthAndHeight(ref),
         deleteFromOtherField,
         movedFromFieldName: fieldName,
+        rowPrefixFieldname: rowPrefixFieldname,
       },
     }),
   });
