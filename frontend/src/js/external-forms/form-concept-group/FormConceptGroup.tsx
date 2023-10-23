@@ -286,6 +286,18 @@ const FormConceptGroup = (props: Props) => {
 
           if (props.isValidConcept && !props.isValidConcept(item)) return;
 
+          let newValue = JSON.parse(JSON.stringify(props.newValue));
+
+          // rowPrefixField is a special property that is only used in an edge case form,
+          // for a detailed explanation see the comment in the dropBetween function
+          if (isMovedObject(item) && props.rowPrefixFieldname) {
+            newValue[props.rowPrefixFieldname] =
+              // @ts-ignore
+              props.value[item.dragContext.movedFromAndIdx][
+                props.rowPrefixFieldname
+              ];
+          }
+
           const concept = isMovedObject(item)
             ? copyConcept(item)
             : initializeConcept(item, defaults, tableConfig);
