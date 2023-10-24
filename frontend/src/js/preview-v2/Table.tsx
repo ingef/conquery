@@ -1,10 +1,22 @@
-import styled from "@emotion/styled"
+import { Table as arrowTable } from 'apache-arrow';
+import { ColumnType } from "rc-table";
+import RcTable from "rc-table";
 
-const Root = styled("div")`
-`
+interface Props {
+  columns: ColumnType<any>[];
+  data: arrowTable;
+}
 
-export default function Table() {
+export default function Table({
+  data,
+  columns,
+}: Props) {
+  console.log(data.slice(0, data.numRows).toArray());
+
   return (
-    <Root>Table</Root>
+    <RcTable
+      columns={columns}
+      data={data.toArray()}
+    />
   )
 }
