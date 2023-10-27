@@ -583,3 +583,39 @@ export type GetEntityHistoryResponse = {
 export type PostResolveEntitiesResponse = {
   [idKind: string]: string; // idKind is the key, the value is the resolved ID
 }[];
+
+
+export type NumberStatistics = {
+  name: string;
+  label: string;
+  description?: string;
+  type: SelectorResultDataType;
+  count: number;
+  nullValues: number;
+  mean: number;
+  stddev: number;
+  median: number;
+  min: number;
+  max: number;
+}
+
+export type StringStatistics = {
+  name: string;
+  label: string;
+  description?: string;
+  type: "STRING";
+  count: number;
+  nullValues: number;
+  histogram: {
+    [value: string]: number;
+  }
+}
+
+export type PreviewStatistics = NumberStatistics | StringStatistics;
+
+export type PreviewStatisticsResponse = {
+  entities: number;
+  total: number; // Number of rows
+  statistics: PreviewStatistics[];
+}
+

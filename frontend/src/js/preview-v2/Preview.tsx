@@ -8,6 +8,11 @@ import { closePreview } from "./actions";
 import Charts from "./Charts";
 import HeadlineStats from "./HeadlineStats";
 import Table from "./Table";
+import { usePreviewStatistics } from "../api/api";
+import { setMessage } from "../snack-message/actions";
+import { SnackMessageType } from "../snack-message/reducer";
+import { useEffect, useMemo, useState } from "react";
+import { PreviewStatisticsResponse } from "../api/types";
 
 const FullScreen = styled("div")`
   height: 100%;
@@ -33,12 +38,29 @@ const Headline = styled("div")`
 export default function Preview() {
   const dispatch = useDispatch();
   const { t } = useTranslation();
-
+  const getStats = usePreviewStatistics();
+  const [query, _] = useState<number>(12);
+  const [statistics, setStatistics] = useState<PreviewStatisticsResponse | null>(null);
   const onClose = () => dispatch(closePreview());
 
   useHotkeys("esc", () => {
     onClose();
   });
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setStatistics(await getStats(query));
+      } catch (e) {
+        dispatch(setMessage({
+          message: "Fehler beim laden der Vorschau",
+          type: SnackMessageType.ERROR
+        })); // TODO translate
+        console.error(e);
+      }
+    }
+    fetchData();
+  }, [query])
 
   return (
     <FullScreen>
@@ -57,7 +79,9 @@ export default function Preview() {
         <HeadlineStats />
       </Headline>
       SelectBox (Konzept Liste)
-      <Charts />
+      {
+        statistics && <Charts statistics={statistics.statistics} />
+      }
       <Table />
     </FullScreen>
   );
