@@ -6,10 +6,23 @@ const Root = styled("div")`
 
 type ChartProps = {
   statistics: PreviewStatistics[];
+  className?: string;
 }
 
-export default function Charts({statistics}: ChartProps) {
+export default function Charts({ statistics, className }: ChartProps) {
+  
+
   return (
-    <Root>Charts</Root>
+    <Root className={className}>
+
+      {statistics.map((statistic, i) => {
+        return (
+          <div key={i}>
+            {statistic.name}
+          </div>
+        )
+      })}
+
+    </Root>
   )
 }

@@ -35,6 +35,15 @@ const Headline = styled("div")`
   gap: 30px;
 `;
 
+const SxCharts = styled(Charts)`
+  width: 100%;
+  background-color: white;
+  padding: 10px;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  overflow-y: scroll;
+  overflow-x: hidden;
+`;
+
 export default function Preview() {
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -80,7 +89,7 @@ export default function Preview() {
       </Headline>
       SelectBox (Konzept Liste)
       {
-        statistics && <Charts statistics={statistics.statistics} />
+        statistics && <SxCharts statistics={statistics.statistics} />
       }
       <Table />
     </FullScreen>
