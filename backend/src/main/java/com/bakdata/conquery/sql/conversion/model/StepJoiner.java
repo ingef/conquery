@@ -38,7 +38,6 @@ public class StepJoiner {
 										  .cteName(constructJoinedQueryStepLabel(queriesToJoin, logicalOperation))
 										  .selects(joinedSelects)
 										  .fromTable(constructJoinedTable(queriesToJoin, logicalOperation, context))
-										  .conditions(List.of())
 										  .predecessors(queriesToJoin)
 										  .build();
 
