@@ -90,7 +90,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		return super.sqlTests(new TestPostgreSqlDialect(dslContext), sqlConfig);
 	}
 
-	private static class TestPostgreSqlDialect extends PostgreSqlDialect {
+	private static class TestPostgreSqlDialect extends PostgreSqlDialect implements TestSqlDialect {
 
 		public TestPostgreSqlDialect(DSLContext dslContext) {
 			super(dslContext);
@@ -102,6 +102,13 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 					new DateDistanceSelectConverter(new MockDateNowSupplier())
 			));
 		}
+
+		public TestFunctionProvider getTestFunctionProvider() {
+			return new PostgreSqlTestFunctionProvider();
+		}
+	}
+
+	private static class PostgreSqlTestFunctionProvider implements TestFunctionProvider {
 
 	}
 

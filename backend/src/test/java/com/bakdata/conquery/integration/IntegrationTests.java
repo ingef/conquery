@@ -23,13 +23,13 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.sql.SqlIntegrationTest;
+import com.bakdata.conquery.integration.sql.dialect.TestSqlDialect;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.util.support.ConfigOverride;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.codahale.metrics.SharedMetricRegistries;
@@ -137,7 +137,7 @@ public class IntegrationTests {
 
 
 	@SneakyThrows
-	public Stream<DynamicTest> sqlTests(SqlDialect sqlDialect, SqlConnectorConfig sqlConfig) {
+	public Stream<DynamicTest> sqlTests(TestSqlDialect sqlDialect, SqlConnectorConfig sqlConfig) {
 		final Path testRootDir = Path.of(Objects.requireNonNullElse(
 				System.getenv(TestTags.SQL_BACKEND_TEST_DIRECTORY_ENVIRONMENT_VARIABLE),
 				SqlIntegrationTest.SQL_TEST_DIR

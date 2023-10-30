@@ -3,6 +3,7 @@ package com.bakdata.conquery.integration.sql;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.integration.IntegrationTests;
+import com.bakdata.conquery.integration.sql.dialect.TestSqlDialect;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
@@ -17,7 +18,6 @@ import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.SqlContext;
 import com.bakdata.conquery.sql.conquery.SqlExecutionManager;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import com.bakdata.conquery.util.support.TestSupport;
 import io.dropwizard.jersey.validation.Validators;
@@ -36,7 +36,7 @@ public class SqlStandaloneSupport implements TestSupport {
 	CsvTableImporter tableImporter;
 	SqlExecutionManager executionManager;
 
-	public SqlStandaloneSupport(final SqlDialect sqlDialect, final SqlConnectorConfig sqlConfig) {
+	public SqlStandaloneSupport(final TestSqlDialect sqlDialect, final SqlConnectorConfig sqlConfig) {
 		this.dataset = new Dataset("test");
 		NamespaceStorage storage = new NamespaceStorage(new NonPersistentStoreFactory(), "", VALIDATOR) {
 		};
@@ -57,7 +57,7 @@ public class SqlStandaloneSupport implements TestSupport {
 		testUser = getConfig().getAuthorizationRealms().getInitialUsers().get(0).createOrOverwriteUser(metaStorage);
 		metaStorage.updateUser(testUser);
 		namespace = registry.createNamespace(storage);
-		tableImporter = new CsvTableImporter(sqlDialect.getDSLContext());
+		tableImporter = new CsvTableImporter(sqlDialect.getDSLContext(), sqlDialect, sqlConfig);
 		executionManager = (SqlExecutionManager) namespace.getExecutionManager();
 	}
 

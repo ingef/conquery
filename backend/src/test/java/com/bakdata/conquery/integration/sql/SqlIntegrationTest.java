@@ -3,9 +3,9 @@ package com.bakdata.conquery.integration.sql;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import com.bakdata.conquery.integration.sql.dialect.TestSqlDialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.junit.jupiter.api.function.Executable;
@@ -24,7 +24,7 @@ public class SqlIntegrationTest implements Executable {
 		testSpec.executeTest(support);
 	}
 
-	public static SqlIntegrationTest fromPath(final Path path, final SqlDialect sqlDialect, final SqlConnectorConfig sqlConfig) {
+	public static SqlIntegrationTest fromPath(final Path path, final TestSqlDialect sqlDialect, final SqlConnectorConfig sqlConfig) {
 		return new SqlIntegrationTest(new SqlStandaloneSupport(sqlDialect, sqlConfig), SqlIntegrationTestSpec.fromJsonSpec(path));
 	}
 
