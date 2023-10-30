@@ -27,7 +27,7 @@ const ChartContainer = styled("div")`
   justify-content: flex-end;
 `;
 
-function hexToRgbA(hex: string) {
+export function hexToRgbA(hex: string) {
   let c: any;
   if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
     c = hex.substring(1).split("");
@@ -40,7 +40,7 @@ function hexToRgbA(hex: string) {
   throw new Error("Bad Hex");
 }
 
-function interpolateDecreasingOpacity(index: number) {
+export function interpolateDecreasingOpacity(index: number) {
   return Math.min(1, 1 / (index + 0.3));
 }
 

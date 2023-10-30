@@ -1,5 +1,6 @@
 import styled from "@emotion/styled"
 import { PreviewStatistics } from "../api/types";
+import Diagram from "./Diagram";
 
 const Root = styled("div")`
 `
@@ -10,7 +11,7 @@ type ChartProps = {
 }
 
 export default function Charts({ statistics, className }: ChartProps) {
-  
+  console.log(statistics);
 
   return (
     <Root className={className}>
@@ -18,7 +19,7 @@ export default function Charts({ statistics, className }: ChartProps) {
       {statistics.map((statistic, i) => {
         return (
           <div key={i}>
-            {statistic.name}
+            <Diagram stat={statistic} />
           </div>
         )
       })}

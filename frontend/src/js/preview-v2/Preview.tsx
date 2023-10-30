@@ -11,7 +11,7 @@ import Table from "./Table";
 import { usePreviewStatistics } from "../api/api";
 import { setMessage } from "../snack-message/actions";
 import { SnackMessageType } from "../snack-message/reducer";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { PreviewStatisticsResponse } from "../api/types";
 
 const FullScreen = styled("div")`
