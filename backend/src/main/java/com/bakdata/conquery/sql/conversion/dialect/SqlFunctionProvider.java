@@ -55,7 +55,11 @@ public interface SqlFunctionProvider {
 
 	Field<Date> addDays(Field<Date> dateColumn, int amountOfDays);
 
-	Field<?> first(Field<?> field, List<Field<?>> orderByColumn);
+	Field<?> first(Field<?> column, List<Field<?>> orderByColumns);
+
+	Field<?> last(Field<?> column, List<Field<?>> orderByColumns);
+
+	Field<?> random(Field<?> column);
 
 	default <T> Field<T> least(Field<T>[] fields) {
 		return DSL.function("least", fields[0].getType(), fields);

@@ -1,13 +1,11 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 import java.sql.Date;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +17,8 @@ class MergeAggregateAction implements SqlAggregationAction {
 	private final QueryStep joinedStep;
 
 	@Override
-	public DateAggregationTables tableNames() {
-		return MergeStep.tableNames(this.joinedStep);
+	public DateAggregationTables tableNames(NameGenerator nameGenerator) {
+		return MergeStep.tableNames(this.joinedStep, nameGenerator);
 	}
 
 	@Override
@@ -41,10 +39,8 @@ class MergeAggregateAction implements SqlAggregationAction {
 	}
 
 	@Override
-	public List<SqlSelect> getIntermediateTableSelects(DateAggregationDates dateAggregationDates, List<SqlSelect> carryThroughSelects) {
-		return Stream.of(dateAggregationDates.allStartsAndEnds(), carryThroughSelects)
-					 .flatMap(Collection::stream)
-					 .collect(Collectors.toList());
+	public List<SqlSelect> getIntermediateTableSelects(DateAggregationDates dateAggregationDates) {
+		return dateAggregationDates.allStartsAndEnds();
 	}
 
 	@Override

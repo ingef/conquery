@@ -1,5 +1,5 @@
 {
-  "label": "SUM filter",
+  "label": "LAST select with validity date",
   "type": "SQL_TEST",
   "expectedCsv": "expected.csv",
   "query": {
@@ -16,15 +16,7 @@
           "tables": [
             {
               "id": "number.number_connector",
-              "filters": [
-                {
-                  "filter": "number.number_connector.value",
-                  "type": "REAL_RANGE",
-                  "value": {
-                    "min": 1.5
-                  }
-                }
-              ]
+              "selects": "number.number_connector.last_value"
             }
           ]
         }
@@ -39,11 +31,15 @@
         {
           "label": "number_connector",
           "table": "table1",
-          "filters": {
-            "label": "value",
-            "description": "xy",
+          "validityDates": {
+            "label": "datum",
+            "startColumn": "table1.datum_start",
+            "endColumn": "table1.datum_end"
+          },
+          "selects": {
+            "label": "last_value",
             "column": "table1.value",
-            "type": "SUM"
+            "type": "LAST"
           }
         }
       ]
@@ -52,7 +48,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/filter/sum/content.csv",
+        "csv": "tests/sql/selects/last/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
@@ -62,6 +58,14 @@
           {
             "name": "value",
             "type": "REAL"
+          },
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
           }
         ]
       }

@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.config;
 
+import javax.validation.constraints.Min;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +21,12 @@ public class SqlConnectorConfig {
 	 * Determines if generated SQL should be formatted.
 	 */
 	private boolean withPrettyPrinting;
+
+	/**
+	 * Set's the max length of database identifiers (column names, qualifiers, etc.).
+	 */
+	@Min(63)
+	private int nameMaxLength;
 
 	private String databaseUsername;
 

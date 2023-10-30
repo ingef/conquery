@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,10 +13,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 enum MergeStep implements DateAggregationStep {
 
-	OVERLAP("_overlap", OverlapCte::new),
-	INTERMEDIATE_TABLE("_no_overlap", IntermediateTableCte::new),
-	NODE_NO_OVERLAP("_node_no_overlap", NodeNoOverlapCte::new),
-	MERGE("_merge", MergeCte::new);
+	OVERLAP("overlap", OverlapCte::new),
+	INTERMEDIATE_TABLE("no_overlap", IntermediateTableCte::new),
+	NODE_NO_OVERLAP("node_no_overlap", NodeNoOverlapCte::new),
+	MERGE("merge", MergeCte::new);
 
 	private final String suffix;
 	@Getter
@@ -31,8 +32,8 @@ enum MergeStep implements DateAggregationStep {
 					 .toList();
 	}
 
-	static DateAggregationTables tableNames(QueryStep joinedTable) {
-		Map<DateAggregationStep, String> cteNameMap = DateAggregationStep.createCteNameMap(joinedTable, values());
+	static DateAggregationTables tableNames(QueryStep joinedTable, NameGenerator nameGenerator) {
+		Map<DateAggregationStep, String> cteNameMap = DateAggregationStep.createCteNameMap(joinedTable, values(), nameGenerator);
 		Map<DateAggregationStep, String> predecessorMap = new HashMap<>();
 		predecessorMap.put(OVERLAP, joinedTable.getCteName());
 		predecessorMap.put(INTERMEDIATE_TABLE, joinedTable.getCteName());

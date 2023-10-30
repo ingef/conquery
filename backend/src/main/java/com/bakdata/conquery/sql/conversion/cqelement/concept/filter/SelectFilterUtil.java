@@ -23,7 +23,7 @@ class SelectFilterUtil {
 		);
 
 		FilterCondition condition = new MultiSelectCondition(
-				context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.EVENT_FILTER, rootSelect.aliased()),
+				context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.EVENT_FILTER, rootSelect.aliased()),
 				values,
 				context.getParentContext().getSqlDialect().getFunctionProvider()
 		);

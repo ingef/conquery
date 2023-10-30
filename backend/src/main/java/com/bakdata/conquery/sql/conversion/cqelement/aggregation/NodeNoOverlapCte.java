@@ -58,11 +58,11 @@ class NodeNoOverlapCte extends DateAggregationCte {
 		Field<Date> asRangeEnd = end.as(DateAggregationCte.RANGE_END);
 		Field<Date> asRangeStart = start.as(DateAggregationCte.RANGE_START);
 		String intermediateTableCteName = dateAggregationTables.getFromTableOf(getCteStep());
-		Selects nodeNoOverlapSelects = new Selects(
-				context.getPrimaryColumn(),
-				Optional.of(ColumnDateRange.of(asRangeStart, asRangeEnd)),
-				context.getCarryThroughSelects()
-		);
+		Selects nodeNoOverlapSelects = Selects.builder()
+											  .primaryColumn(context.getPrimaryColumn())
+											  .validityDate(Optional.of(ColumnDateRange.of(asRangeStart, asRangeEnd)))
+											  .explicitSelects(context.getCarryThroughSelects())
+											  .build();
 
 		Condition startNotNull = start.isNotNull();
 

@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -14,11 +15,11 @@ public class ConceptTables {
 	private final Map<ConceptCteStep, String> cteNames;
 	private final String rootTable;
 
-	public ConceptTables(String conceptLabel, Set<ConceptCteStep> requiredSteps, String rootTableName) {
+	public ConceptTables(String conceptLabel, Set<ConceptCteStep> requiredSteps, String rootTableName, NameGenerator nameGenerator) {
 		this.cteNames = requiredSteps.stream()
 									 .collect(Collectors.toMap(
 											 Function.identity(),
-											 step -> "concept_%s%s".formatted(conceptLabel, step.suffix())
+											 step -> nameGenerator.cteStepName(conceptLabel, step)
 									 ));
 		this.rootTable = rootTableName;
 	}
@@ -48,7 +49,7 @@ public class ConceptTables {
 	}
 
 	/**
-	 * Qualify a field for a {@link ConceptCteStep}.
+	 * Qualify a field for a {@link ConceptCteStep} on the predeceasing step.
 	 * <p>
 	 * For example, if you want to qualify a {@link Field} for the AGGREGATION_SELECT step,
 	 * it's qualified on the EVENT_FILTER or PREPROCESSING_STEP depending on the presence of the respective step.
@@ -58,7 +59,7 @@ public class ConceptTables {
 	 * @param field   The field you want to qualify.
 	 */
 	@SuppressWarnings("unchecked")
-	public <C> Field<C> qualifyOnPredecessorTableName(ConceptCteStep conceptCteStep, Field<?> field) {
+	public <C> Field<C> qualifyOnPredecessor(ConceptCteStep conceptCteStep, Field<?> field) {
 		return DSL.field(DSL.name(getPredecessorTableName(conceptCteStep), field.getName()), (DataType<C>) field.getDataType());
 	}
 

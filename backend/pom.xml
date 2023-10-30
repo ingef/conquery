@@ -13,7 +13,7 @@
     <properties>
         <mock-server.version>5.11.1</mock-server.version>
         <apache-poi.version>5.2.2</apache-poi.version>
-		<apache-arrow.version>10.0.1</apache-arrow.version>
+        <apache-arrow.version>10.0.1</apache-arrow.version>
         <apache-parquet.version>1.12.3</apache-parquet.version>
     </properties>
 
@@ -63,7 +63,7 @@
                             <archive>
                                 <manifestEntries>
                                     <Add-Opens>java.base/java.lang ALL-UNNAMED java.base/java.util ALL-UNNAMED java.base/java.nio ALL-UNNAMED java.base/sun.nio.ch ALL-UNNAMED
-</Add-Opens>
+                                    </Add-Opens>
                                 </manifestEntries>
                             </archive>
                         </configuration>
@@ -380,9 +380,26 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>clickhouse</artifactId>
+            <version>1.18.3</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.sap.cloud.db.jdbc</groupId>
             <artifactId>ngdbc</artifactId>
             <version>2.17.10</version>
+        </dependency>
+        <dependency>
+            <groupId>com.clickhouse</groupId>
+            <artifactId>clickhouse-jdbc</artifactId>
+            <version>0.4.6</version>
+        </dependency>
+        <!-- Required for LZ4 compression support in ClickHouse as it uses LZ4 by default -->
+        <dependency>
+            <groupId>org.lz4</groupId>
+            <artifactId>lz4-java</artifactId>
+            <version>1.8.0</version>
         </dependency>
     </dependencies>
 </project>

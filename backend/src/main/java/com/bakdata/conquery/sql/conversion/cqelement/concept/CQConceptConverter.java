@@ -2,11 +2,9 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +31,6 @@ import org.jooq.impl.DSL;
 
 public class CQConceptConverter implements NodeConverter<CQConcept> {
 
-	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 	private final List<ConceptCte> conceptCTEs;
 	private final FilterValueConversions filterValueConversions;
 	private final SelectConversions selectConversions;
@@ -76,18 +73,21 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 			conceptCteContext = conceptCteContext.withPrevious(lastQueryStep.get());
 		}
 
-		return context.withQueryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible. Required steps: %s".formatted(requiredSteps()))));
+		return context.toBuilder()
+					  .queryStep(lastQueryStep.orElseThrow(() -> new RuntimeException(
+							  "No conversion for concept possible. Required steps: %s".formatted(requiredSteps()))))
+					  .build();
 	}
 
 	private ConceptCteContext createConceptCteContext(CQConcept node, ConversionContext context) {
 
 		CQTable table = node.getTables().get(0);
 		String tableName = table.getConnector().getTable().getName();
-		String conceptLabel = createConceptLabel(node, context);
+		String conceptLabel = context.getNameGenerator().conceptName(node);
 		Optional<ColumnDateRange> validityDateSelect = convertValidityDate(table, tableName, conceptLabel);
 
 		Set<ConceptCteStep> requiredSteps = getRequiredSteps(table, context.dateRestrictionActive(), validityDateSelect);
-		ConceptTables conceptTables = new ConceptTables(conceptLabel, requiredSteps, tableName);
+		ConceptTables conceptTables = new ConceptTables(conceptLabel, requiredSteps, tableName, context.getNameGenerator());
 
 		// convert filters
 		Stream<ConceptFilter> conceptFilters = table.getFilters().stream()
@@ -133,15 +133,6 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return requiredSteps;
 	}
 
-	private static String createConceptLabel(CQConcept node, ConversionContext context) {
-		// only relevant for debugging purposes as it will be part of the generated SQL query
-		// we prefix each cte name of a concept with an incrementing counter to prevent naming collisions if the same concept is selected multiple times
-		return "%s_%s".formatted(
-				context.getQueryStepCounter(),
-				WHITESPACE.matcher(node.getUserOrDefaultLabel(Locale.ENGLISH).toLowerCase()).replaceAll("_")
-		);
-	}
-
 	private Optional<ColumnDateRange> convertValidityDate(
 			CQTable table,
 			String tableName,
@@ -150,7 +141,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		if (Objects.isNull(table.findValidityDate())) {
 			return Optional.empty();
 		}
-		ColumnDateRange validityDate = functionProvider.daterange(table.findValidityDate(), tableName, conceptLabel);
+		ColumnDateRange validityDate = this.functionProvider.daterange(table.findValidityDate(), tableName, conceptLabel);
 		return Optional.of(validityDate);
 	}
 

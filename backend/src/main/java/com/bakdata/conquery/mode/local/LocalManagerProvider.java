@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.SqlContext;
+import com.bakdata.conquery.sql.conversion.dialect.ClickHouseDialect;
 import com.bakdata.conquery.sql.conversion.dialect.HanaSqlDialect;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
@@ -35,6 +36,7 @@ public class LocalManagerProvider implements ManagerProvider {
 		SqlDialect sqlDialect = switch (sqlConnectorConfig.getDialect()) {
 			case POSTGRESQL -> new PostgreSqlDialect(dslContext);
 			case HANA -> new HanaSqlDialect(dslContext);
+			case CLICKHOUSE -> new ClickHouseDialect(dslContext);
 		};
 		SqlContext sqlContext = new SqlContext(sqlConnectorConfig, sqlDialect);
 

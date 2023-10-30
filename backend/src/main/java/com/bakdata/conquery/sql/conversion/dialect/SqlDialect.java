@@ -15,22 +15,31 @@ import com.bakdata.conquery.sql.conversion.cqelement.CQNegationConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.CQOrConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.CQConceptConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.BigMultiSelectFilterConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.CountFilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.DateDistanceFilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConversions;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FlagFilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.MultiSelectFilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.NumberFilterConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.PrefixTextFilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.SingleSelectFilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.SumFilterConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.CountSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistanceSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.ExistsSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.FirstValueSelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.PrefixSelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.FlagSelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.LastValueSelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.RandomValueSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConversions;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SumSelectConverter;
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
 import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
+import com.bakdata.conquery.sql.execution.CDateSetParser;
 import org.jooq.DSLContext;
 
 public interface SqlDialect {
@@ -50,6 +59,8 @@ public interface SqlDialect {
 	List<FilterConverter<?, ?>> getFilterConverters();
 
 	DSLContext getDSLContext();
+
+	CDateSetParser getCDateSetParser();
 
 	default boolean requiresAggregationInFinalStep() {
 		return true;
@@ -77,16 +88,24 @@ public interface SqlDialect {
 				new MultiSelectFilterConverter(),
 				new SingleSelectFilterConverter(),
 				new NumberFilterConverter(),
-				new SumFilterConverter()
+				new SumFilterConverter(),
+				new CountFilterConverter(),
+				new PrefixTextFilterConverter(),
+				new FlagFilterConverter()
 		);
 	}
 
 	default List<SelectConverter<? extends Select>> getDefaultSelectConverters() {
 		return List.of(
 				new FirstValueSelectConverter(),
+				new LastValueSelectConverter(),
+				new RandomValueSelectConverter(),
 				new DateDistanceSelectConverter(DEFAULT_DATE_NOW_SUPPLIER),
 				new ExistsSelectConverter(),
-				new SumSelectConverter()
+				new SumSelectConverter(),
+				new CountSelectConverter(),
+				new PrefixSelectConverter(),
+				new FlagSelectConverter()
 		);
 	}
 

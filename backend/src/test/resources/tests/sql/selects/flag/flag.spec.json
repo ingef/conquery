@@ -1,0 +1,71 @@
+{
+  "label": "FLAGS select",
+  "type": "SQL_TEST",
+  "expectedCsv": "expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "flags"
+          ],
+          "type": "CONCEPT",
+          "label": "flags",
+          "tables": [
+            {
+              "id": "flags.flags_connector",
+              "selects": "flags.flags_connector.flags_selects"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "flags",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "flags_connector",
+          "table": "table1",
+          "selects": {
+            "type": "FLAGS",
+            "name": "flags_selects",
+            "flags": {
+              "A": "table1.a",
+              "B": "table1.b",
+              "C": "table1.c"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": {
+      "csv": "tests/sql/selects/flag/content.csv",
+      "name": "table1",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "a",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "b",
+          "type": "BOOLEAN"
+        },
+        {
+          "name": "c",
+          "type": "BOOLEAN"
+        }
+      ]
+    }
+  }
+}

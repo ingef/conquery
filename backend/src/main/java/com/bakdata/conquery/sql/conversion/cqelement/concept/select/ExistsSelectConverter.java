@@ -9,9 +9,10 @@ import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 public class ExistsSelectConverter implements SelectConverter<ExistsSelect> {
 
 	@Override
-	public SqlSelects convert(ExistsSelect convert, SelectContext context) {
+	public SqlSelects convert(ExistsSelect existsSelect, SelectContext context) {
+		String existsSelectAlias = context.getNameGenerator().selectName(existsSelect);
 		return SqlSelects.builder()
-						 .forFinalStep(List.of(new ExistsSqlSelect(context.getLabel())))
+						 .forFinalStep(List.of(new ExistsSqlSelect(existsSelect, existsSelectAlias)))
 						 .build();
 	}
 

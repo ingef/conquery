@@ -9,10 +9,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ConceptCteStep implements CteStep {
 
-	PREPROCESSING("_preprocessing"),
-	EVENT_FILTER("_event_filter"),
-	AGGREGATION_SELECT("_group_select"),
-	AGGREGATION_FILTER("_group_filter"),
+	PREPROCESSING("preprocessing"),
+	EVENT_FILTER("event_filter"),
+	AGGREGATION_SELECT("group_select"),
+	AGGREGATION_FILTER("group_filter"),
 	FINAL("");
 
 	public static final Set<ConceptCteStep> MANDATORY_STEPS = Set.of(ConceptCteStep.PREPROCESSING, ConceptCteStep.AGGREGATION_SELECT, ConceptCteStep.FINAL);

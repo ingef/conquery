@@ -180,6 +180,19 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Field<?> last(Field<?> column, List<Field<?>> orderByColumns) {
+		if (orderByColumns.isEmpty()) {
+			orderByColumns = List.of(column);
+		}
+		return DSL.field(DSL.sql("LAST_VALUE({0} {1} DESC)", column, DSL.orderBy(orderByColumns)));
+	}
+
+	@Override
+	public Field<?> random(Field<?> column) {
+		return DSL.field(DSL.sql("LAST_VALUE({0} {1})", column, DSL.orderBy(DSL.function("RAND", Object.class))));
+	}
+
+	@Override
 	public Field<Date> addDays(Field<Date> dateColumn, int amountOfDays) {
 		return DSL.function(
 				"ADD_DAYS",

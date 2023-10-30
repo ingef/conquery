@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.sql.dialect;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -11,12 +12,14 @@ import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.SqlQuery;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistanceSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
+import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -39,6 +42,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	private static final String DATABASE_NAME = "test";
 	private static final String USERNAME = "user";
 	private static final String PASSWORD = "pass";
+	public static final int NAME_MAX_LENGTH = 127;
 	private static DSLContext dslContext;
 	private static SqlConnectorConfig sqlConfig;
 
@@ -58,10 +62,11 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		POSTGRESQL_CONTAINER.start();
 		sqlConfig = SqlConnectorConfig.builder()
 									  .dialect(Dialect.POSTGRESQL)
+									  .withPrettyPrinting(true)
+									  .nameMaxLength(NAME_MAX_LENGTH)
 									  .jdbcConnectionUrl(POSTGRESQL_CONTAINER.getJdbcUrl())
 									  .databaseUsername(USERNAME)
 									  .databasePassword(PASSWORD)
-									  .withPrettyPrinting(true)
 									  .primaryColumn("pid")
 									  .build();
 		dslContext = DslContextFactory.create(sqlConfig);
@@ -70,14 +75,15 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	@Test
 	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
 	public void shouldThrowException() {
+		TestPostgreSqlDialect sqlDialect = new TestPostgreSqlDialect(dslContext);
 		// This can be removed as soon as we switch to a full integration test including the REST API
 		I18n.init();
-		SqlExecutionService executionService = new SqlExecutionService(dslContext);
-		SqlManagedQuery validQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, new SqlQuery("SELECT 1"));
+		SqlExecutionService executionService = new SqlExecutionService(dslContext, ResultSetProcessorFactory.create(sqlDialect));
+		SqlManagedQuery validQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, toSqlQuery("SELECT 1, '{}'"));
 		Assertions.assertThatNoException().isThrownBy(() -> executionService.execute(validQuery));
 
 		// executing an empty query should throw an SQL error
-		SqlManagedQuery emptyQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, new SqlQuery(""));
+		SqlManagedQuery emptyQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, toSqlQuery(""));
 		Assertions.assertThatThrownBy(() -> executionService.execute(emptyQuery))
 				  .isInstanceOf(ConqueryError.SqlError.class)
 				  .hasMessageContaining("$org.postgresql.util.PSQLException");
@@ -110,6 +116,21 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 	private static class PostgreSqlTestFunctionProvider implements TestFunctionProvider {
 
+	}
+
+	private static SqlQuery toSqlQuery(String query) {
+		return new SqlQuery() {
+
+			@Override
+			public String toString() {
+				return query;
+			}
+
+			@Override
+			public List<ResultType> getResultTypes() {
+				return Collections.emptyList();
+			}
+		};
 	}
 
 }

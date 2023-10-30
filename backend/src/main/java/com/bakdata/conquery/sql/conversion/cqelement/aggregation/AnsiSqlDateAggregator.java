@@ -7,9 +7,10 @@ import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPac
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.ExplicitSelect;
 
 public class AnsiSqlDateAggregator implements SqlDateAggregator {
 
@@ -24,9 +25,10 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 	@Override
 	public QueryStep apply(
 			QueryStep joinedStep,
-			List<SqlSelect> carryThroughSelects,
+			List<ExplicitSelect> carryThroughSelects,
 			DateAggregationDates dateAggregationDates,
-			DateAggregationAction dateAggregationAction
+			DateAggregationAction dateAggregationAction,
+			NameGenerator nameGenerator
 	) {
 		SqlAggregationAction aggregationAction = switch (dateAggregationAction) {
 			case MERGE -> new MergeAggregateAction(joinedStep);
@@ -38,10 +40,11 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 															   .sqlAggregationAction(aggregationAction)
 															   .carryThroughSelects(carryThroughSelects)
 															   .dateAggregationDates(dateAggregationDates)
-															   .dateAggregationTables(aggregationAction.tableNames())
+															   .dateAggregationTables(aggregationAction.tableNames(nameGenerator))
 															   .primaryColumn(joinedStep.getQualifiedSelects().getPrimaryColumn())
 															   .functionProvider(this.functionProvider)
 															   .intervalPacker(this.intervalPacker)
+															   .nameGenerator(nameGenerator)
 															   .build();
 
 		QueryStep finalDateAggregationStep = convertSteps(joinedStep, aggregationAction.dateAggregationCtes(), context);
@@ -49,11 +52,18 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 		if (dateAggregationAction != DateAggregationAction.MERGE) {
 			return finalDateAggregationStep;
 		}
-		return withIntervalPackingApplied(joinedStep, carryThroughSelects, finalDateAggregationStep);
+
+		IntervalPackingContext intervalPackingContext = new IntervalPackingContext(
+				joinedStep.getCteName(),
+				finalDateAggregationStep,
+				carryThroughSelects,
+				nameGenerator
+		);
+		return this.intervalPacker.createIntervalPackingSteps(intervalPackingContext);
 	}
 
 	@Override
-	public QueryStep invertAggregatedIntervals(QueryStep baseStep) {
+	public QueryStep invertAggregatedIntervals(QueryStep baseStep, NameGenerator nameGenerator) {
 
 		DateAggregationDates dateAggregationDates = DateAggregationDates.forSingleStep(baseStep);
 		if (dateAggregationDates.dateAggregationImpossible()) {
@@ -61,16 +71,17 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 		}
 
 		Selects baseStepQualifiedSelects = baseStep.getQualifiedSelects();
-		DateAggregationTables dateAggregationTables = InvertStep.createTableNames(baseStep);
+		DateAggregationTables dateAggregationTables = InvertStep.createTableNames(baseStep, nameGenerator);
 
 		DateAggregationContext context = DateAggregationContext.builder()
 															   .sqlAggregationAction(null) // when inverting, an aggregation has already been applied
-															   .carryThroughSelects(baseStepQualifiedSelects.getSqlSelects())
+															   .carryThroughSelects(baseStepQualifiedSelects.getExplicitSelects())
 															   .dateAggregationDates(dateAggregationDates)
 															   .dateAggregationTables(dateAggregationTables)
 															   .primaryColumn(baseStepQualifiedSelects.getPrimaryColumn())
 															   .functionProvider(this.functionProvider)
 															   .intervalPacker(this.intervalPacker)
+															   .nameGenerator(nameGenerator)
 															   .build();
 
 		return convertSteps(baseStep, InvertStep.requiredSteps(), context);
@@ -83,15 +94,6 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 			context.withStep(step.getCteStep(), finalDateAggregationStep);
 		}
 		return finalDateAggregationStep;
-	}
-
-	private QueryStep withIntervalPackingApplied(QueryStep joinedStep, List<SqlSelect> carryThroughSelects, QueryStep finalDateAggregationStep) {
-		IntervalPackingContext intervalPackingContext = new IntervalPackingContext(
-				joinedStep.getCteName(),
-				finalDateAggregationStep,
-				carryThroughSelects
-		);
-		return this.intervalPacker.createIntervalPackingSteps(intervalPackingContext);
 	}
 
 }

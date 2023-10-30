@@ -47,6 +47,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 	private final static DockerImageName HANA_IMAGE = DockerImageName.parse("saplabs/hanaexpress:2.00.061.00.20220519.1");
 	private static final Path TMP_HANA_MOUNT_DIR = Paths.get("/tmp/data/hana");
+	public static final int NAME_MAX_LENGTH = 127;
 	private static boolean useLocalHanaDb = true;
 
 	static {
@@ -162,10 +163,11 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 			this.sqlConnectorConfig = SqlConnectorConfig.builder()
 														.dialect(Dialect.HANA)
+														.withPrettyPrinting(true)
+														.nameMaxLength(NAME_MAX_LENGTH)
 														.jdbcConnectionUrl(hanaContainer.getJdbcUrl())
 														.databaseUsername(hanaContainer.getUsername())
 														.databasePassword(hanaContainer.getPassword())
-														.withPrettyPrinting(true)
 														.primaryColumn("pid")
 														.build();
 			this.dslContext = DslContextFactory.create(sqlConnectorConfig);
@@ -189,6 +191,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 														.enabled(true)
 														.dialect(Dialect.HANA)
 														.withPrettyPrinting(true)
+														.nameMaxLength(NAME_MAX_LENGTH)
 														.jdbcConnectionUrl(CONNECTION_URL)
 														.databaseUsername(USERNAME)
 														.databasePassword(PASSWORD)

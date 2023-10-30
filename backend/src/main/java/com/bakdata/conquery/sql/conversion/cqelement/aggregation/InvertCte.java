@@ -59,7 +59,7 @@ class InvertCte extends DateAggregationCte {
 
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		ColumnDateRange validityDate = rowNumberStep.getSelects().getValidityDate().get();
-		
+
 		Field<Date> rangeStart = DSL.coalesce(
 				QualifyingUtil.qualify(validityDate.getEnd(), ROWS_LEFT_TABLE_NAME),
 				functionProvider.toDateField(functionProvider.getMinDateExpression())
@@ -70,11 +70,11 @@ class InvertCte extends DateAggregationCte {
 				functionProvider.toDateField(functionProvider.getMaxDateExpression())
 		).as(DateAggregationCte.RANGE_END);
 
-		return new Selects(
-				coalescedPrimaryColumn,
-				Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)),
-				context.getCarryThroughSelects()
-		);
+		return Selects.builder()
+					  .primaryColumn(coalescedPrimaryColumn)
+					  .validityDate(Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)))
+					  .explicitSelects(context.getCarryThroughSelects())
+					  .build();
 	}
 
 	private TableOnConditionStep<Record> selfJoinWithShiftedRows(Field<Object> leftPrimaryColumn, Field<Object> rightPrimaryColumn, QueryStep rowNumberStep) {

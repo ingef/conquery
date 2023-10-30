@@ -9,7 +9,6 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.SumSqlSelect;
 import org.jooq.Field;
@@ -21,26 +20,21 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 	@Override
 	public ConceptFilter convert(SumFilter<IRange<? extends Number, ?>> sumFilter, FilterContext<IRange<? extends Number, ?>> context) {
 
-		// TODO(tm): convert getSubtractColumn and getDistinctByColumn
-		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumFilter.getColumn().getType());
-		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING),
-				sumFilter.getColumn().getName(),
-				numberClass
+		// TODO(tm): convert getDistinctByColumn
+		SumSqlSelect sumGroupBy = SumSqlSelect.create(
+				sumFilter,
+				context.getNameGenerator().selectName(sumFilter),
+				context.getConceptTables()
 		);
 
-		Field<? extends Number> qualifiedRootSelect = context.getConceptTables()
-															 .qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
-		SumSqlSelect sumSqlSelect = new SumSqlSelect(qualifiedRootSelect, sumFilter.getName());
-
 		Field<? extends Number> qualifiedSumGroupBy = context.getConceptTables()
-															 .qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_FILTER, sumSqlSelect.aliased());
+															 .qualifyOnPredecessor(ConceptCteStep.AGGREGATION_FILTER, sumGroupBy.aliased());
 		SumCondition sumFilterCondition = new SumCondition(qualifiedSumGroupBy, context.getValue());
 
 		return new ConceptFilter(
 				SqlSelects.builder()
-						  .forPreprocessingStep(List.of(rootSelect))
-						  .forAggregationSelectStep(List.of(sumSqlSelect))
+						  .forPreprocessingStep(sumGroupBy.getPreprocessingSelects())
+						  .forAggregationSelectStep(List.of(sumGroupBy))
 						  .build(),
 				Filters.builder()
 					   .group(List.of(sumFilterCondition))

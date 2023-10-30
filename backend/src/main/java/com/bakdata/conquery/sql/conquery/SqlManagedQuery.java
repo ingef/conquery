@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.sql.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.util.QueryUtils;
@@ -77,8 +76,7 @@ public class SqlManagedQuery extends ManagedExecution implements SingleTableResu
 
 	@Override
 	public List<ColumnDescriptor> generateColumnDescriptions() {
-		// todo(tm): This is basically a duplicate from ManagedQuery, but sets the ResultType to String because the SQL connector doesn't convert types for now.
-		// 			 As soon as the connector properly handles types, we can extract this into a helper and use it for both this and ManagedQuery.
+		// todo: create class to extract common functionality
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
@@ -92,7 +90,7 @@ public class SqlManagedQuery extends ManagedExecution implements SingleTableResu
 		for (ResultInfo header : getConfig().getIdColumns().getIdResultInfos()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(uniqNamer.getUniqueName(header))
-												   .type(ResultType.StringT.getINSTANCE().typeInfo())
+												   .type(header.getType().typeInfo())
 												   .semantics(header.getSemantics())
 												   .build());
 		}

@@ -150,6 +150,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	/**
 	 * Generates a description of each column that will appear in the resulting csv.
 	 */
+	@Override
 	public List<ColumnDescriptor> generateColumnDescriptions() {
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
 		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();

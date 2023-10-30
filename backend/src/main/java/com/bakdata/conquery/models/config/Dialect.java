@@ -7,7 +7,8 @@ import org.jooq.SQLDialect;
 public enum Dialect {
 
 	POSTGRESQL(SQLDialect.POSTGRES),
-	HANA(SQLDialect.DEFAULT);
+	HANA(SQLDialect.DEFAULT),
+	CLICKHOUSE(SQLDialect.DEFAULT);
 
 	private final SQLDialect jooqDialect;
 

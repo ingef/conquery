@@ -1,33 +1,41 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+import java.util.List;
+
+import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @EqualsAndHashCode
-public class ExistsSqlSelect implements SqlSelect {
+public class ExistsSqlSelect implements ExplicitSelect {
 
 	private static final String EXISTS_SUFFIX = "_exists";
-	private final String label;
 
-	public ExistsSqlSelect(String label) {
-		this.label = label + EXISTS_SUFFIX;
+	@Getter
+	private final SqlSelectId sqlSelectId;
+	private final String alias;
+
+	public ExistsSqlSelect(ExistsSelect existsSelect, String alias) {
+		this.sqlSelectId = SqlSelectId.fromSelect(existsSelect);
+		this.alias = alias + EXISTS_SUFFIX;
 	}
 
 	@Override
 	public Field<Integer> select() {
 		return DSL.field("1", Integer.class)
-				  .as(label);
+				  .as(alias);
 	}
 
 	@Override
 	public Field<Integer> aliased() {
-		return DSL.field(label, Integer.class);
+		return DSL.field(alias, Integer.class);
 	}
 
 	@Override
-	public String columnName() {
-		return label;
+	public List<String> columnNames() {
+		return List.of(alias);
 	}
 
 }

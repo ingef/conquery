@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -31,6 +32,7 @@ import lombok.ToString;
  *
  * The selected flags are logically or-ed.
  */
+@Getter
 @CPSType(base = Filter.class, id = "FLAGS")
 @RequiredArgsConstructor(onConstructor_ = {@JsonCreator})
 @ToString

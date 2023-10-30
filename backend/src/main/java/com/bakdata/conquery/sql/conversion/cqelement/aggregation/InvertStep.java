@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +13,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 enum InvertStep implements DateAggregationStep {
 
-	ROW_NUMBER("_row_numbers", RowNumberCte::new),
-	INVERT("_inverted_dates", InvertCte::new);
+	ROW_NUMBER("row_numbers", RowNumberCte::new),
+	INVERT("inverted_dates", InvertCte::new);
 
 	private final String suffix;
 	@Getter
@@ -29,8 +30,8 @@ enum InvertStep implements DateAggregationStep {
 					 .toList();
 	}
 
-	static DateAggregationTables createTableNames(QueryStep joinedTable) {
-		Map<DateAggregationStep, String> cteNameMap = DateAggregationStep.createCteNameMap(joinedTable, values());
+	static DateAggregationTables createTableNames(QueryStep joinedTable, NameGenerator nameGenerator) {
+		Map<DateAggregationStep, String> cteNameMap = DateAggregationStep.createCteNameMap(joinedTable, values(), nameGenerator);
 		Map<DateAggregationStep, String> predecessorMap = new HashMap<>();
 		predecessorMap.put(ROW_NUMBER, joinedTable.getCteName());
 		predecessorMap.put(INVERT, cteNameMap.get(ROW_NUMBER));

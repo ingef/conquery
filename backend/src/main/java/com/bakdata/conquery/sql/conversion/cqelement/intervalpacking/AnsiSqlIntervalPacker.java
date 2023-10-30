@@ -12,6 +12,7 @@ import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
+import com.bakdata.conquery.sql.conversion.model.select.ExplicitSelect;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
@@ -34,21 +35,23 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		Field<Object> primaryColumn = QualifyingUtil.qualify(context.getPrimaryColumn(), sourceTableName);
 		ColumnDateRange validityDate = context.getValidityDate().qualify(sourceTableName);
 
-		Field<Date> previousEnd = DSL.max(validityDate.getEnd())
-									 .over(DSL.partitionBy(primaryColumn)
-											  .orderBy(validityDate.getStart(), validityDate.getEnd())
-											  .rowsBetweenUnboundedPreceding()
-											  .andPreceding(1))
-									 .as(IntervalPacker.PREVIOUS_END_FIELD_NAME);
-
-		ArrayList<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), sourceTableName));
-		qualifiedSelects.add(new FieldWrapper(previousEnd));
-
-		Selects previousEndSelects = new Selects(
-				primaryColumn,
-				Optional.of(validityDate),
-				qualifiedSelects
+		FieldWrapper previousEnd = new FieldWrapper(
+				DSL.max(validityDate.getEnd())
+				   .over(DSL.partitionBy(primaryColumn)
+							.orderBy(validityDate.getStart(), validityDate.getEnd())
+							.rowsBetweenUnboundedPreceding()
+							.andPreceding(1))
+				   .as(IntervalPacker.PREVIOUS_END_FIELD_NAME)
 		);
+
+		List<ExplicitSelect> qualifiedSelects = QualifyingUtil.qualify(context.getCarryThroughSelects(), sourceTableName, ExplicitSelect.class);
+
+		Selects previousEndSelects = Selects.builder()
+											.primaryColumn(primaryColumn)
+											.validityDate(Optional.of(validityDate))
+											.sqlSelects(List.of(previousEnd))
+											.explicitSelects(qualifiedSelects)
+											.build();
 
 		return QueryStep.builder()
 						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.PREVIOUS_END))
@@ -66,23 +69,24 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		ColumnDateRange validityDate = previousEndSelects.getValidityDate().get();
 		Field<Date> previousEnd = DSL.field(DSL.name(previousEndCteName, IntervalPacker.PREVIOUS_END_FIELD_NAME), Date.class);
 
-		Field<BigDecimal> rangeIndex =
+		FieldWrapper rangeIndex = new FieldWrapper(
 				DSL.sum(
 						   DSL.when(validityDate.getStart().greaterThan(previousEnd), DSL.val(1))
 							  .otherwise(DSL.inline(null, Integer.class)))
 				   .over(DSL.partitionBy(primaryColumn)
 							.orderBy(validityDate.getStart(), validityDate.getEnd())
 							.rowsUnboundedPreceding())
-				   .as(IntervalPacker.RANGE_INDEX_FIELD_NAME);
-
-		ArrayList<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), previousEndCteName));
-		qualifiedSelects.add(new FieldWrapper(rangeIndex));
-
-		Selects rangeIndexSelects = new Selects(
-				primaryColumn,
-				Optional.of(validityDate),
-				qualifiedSelects
+				   .as(IntervalPacker.RANGE_INDEX_FIELD_NAME)
 		);
+
+		List<ExplicitSelect> qualifiedSelects = QualifyingUtil.qualify(context.getCarryThroughSelects(), previousEndCteName, ExplicitSelect.class);
+
+		Selects rangeIndexSelects = Selects.builder()
+										   .primaryColumn(primaryColumn)
+										   .validityDate(Optional.of(validityDate))
+										   .sqlSelects(List.of(rangeIndex))
+										   .explicitSelects(qualifiedSelects)
+										   .build();
 
 		return QueryStep.builder()
 						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.RANGE_INDEX))
@@ -103,12 +107,13 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		Field<Date> rangeEnd = DSL.max(validityDate.getEnd()).as(IntervalPacker.RANGE_END_MAX_FIELD_NAME);
 		Field<BigDecimal> rangeIndex = DSL.field(DSL.name(rangeIndexCteName, IntervalPacker.RANGE_INDEX_FIELD_NAME), BigDecimal.class);
 
-		List<SqlSelect> qualifiedSelects = QualifyingUtil.qualify(context.getCarryThroughSelects(), rangeIndexCteName);
-		Selects intervalCompleteSelects = new Selects(
-				primaryColumn,
-				Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)),
-				qualifiedSelects
-		);
+		List<ExplicitSelect> qualifiedSelects = QualifyingUtil.qualify(context.getCarryThroughSelects(), rangeIndexCteName, ExplicitSelect.class);
+
+		Selects intervalCompleteSelects = Selects.builder()
+												 .primaryColumn(primaryColumn)
+												 .validityDate(Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)))
+												 .explicitSelects(qualifiedSelects)
+												 .build();
 
 		// we group range start and end by range index
 		List<Field<?>> groupBySelects = new ArrayList<>();

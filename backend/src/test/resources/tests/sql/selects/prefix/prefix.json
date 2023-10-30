@@ -1,5 +1,5 @@
 {
-  "label": "SUM select",
+  "label": "PREFIX select",
   "type": "SQL_TEST",
   "expectedCsv": "expected.csv",
   "query": {
@@ -9,15 +9,15 @@
       "children": [
         {
           "ids": [
-            "sum"
+            "prefix"
           ],
           "type": "CONCEPT",
-          "label": "sum",
+          "label": "prefix",
           "tables": [
             {
-              "id": "sum.sum_connector",
+              "id": "prefix.prefix_connector",
               "selects": [
-                "sum.sum_connector.sum_select"
+                "prefix.prefix_connector.prefix_select"
               ]
             }
           ]
@@ -27,16 +27,17 @@
   },
   "concepts": [
     {
-      "label": "sum",
+      "label": "prefix",
       "type": "TREE",
       "connectors": [
         {
-          "label": "sum_connector",
+          "label": "prefix_connector",
           "table": "table1",
           "selects": {
-            "type": "SUM",
-            "name": "sum_select",
-            "column": "table1.value"
+            "type": "PREFIX",
+            "name": "prefix_select",
+            "column": "table1.prefix",
+            "prefix": "f"
           }
         }
       ]
@@ -45,7 +46,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/selects/sum/content.csv",
+        "csv": "tests/sql/selects/prefix/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
@@ -53,8 +54,8 @@
         },
         "columns": [
           {
-            "name": "value",
-            "type": "REAL"
+            "name": "prefix",
+            "type": "STRING"
           }
         ]
       }

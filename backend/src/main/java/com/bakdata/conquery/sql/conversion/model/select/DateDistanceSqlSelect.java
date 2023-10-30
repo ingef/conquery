@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.model.select;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Objects;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -62,8 +63,8 @@ public class DateDistanceSqlSelect implements SqlSelect {
 	}
 
 	@Override
-	public String columnName() {
-		return column.getName();
+	public List<String> columnNames() {
+		return List.of(column.getName());
 	}
 
 }

@@ -8,17 +8,19 @@ import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.CteStep;
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.ExplicitSelect;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 public class PostgreSqlDateAggregator implements SqlDateAggregator {
 
-	private final static String DATE_AGGREGATION_CTE_NAME = "_dates_aggregated";
-	private final static String INVERTED_DATE_AGGREGATION_CTE_NAME = "_dates_inverted";
+	private final static CteStep DATE_AGGREGATION_CTE_STEP = () -> "dates_aggregated";
+	private final static CteStep INVERTED_DATE_AGGREGATION_CTE_STEP = () -> "dates_inverted";
 
 	private final SqlFunctionProvider functionProvider;
 
@@ -29,22 +31,22 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 	@Override
 	public QueryStep apply(
 			QueryStep joinedStep,
-			List<SqlSelect> carryThroughSelects,
+			List<ExplicitSelect> carryThroughSelects,
 			DateAggregationDates dateAggregationDates,
-			DateAggregationAction dateAggregationAction
+			DateAggregationAction dateAggregationAction,
+			NameGenerator nameGenerator
 	) {
 		String joinedStepCteName = joinedStep.getCteName();
-
 		ColumnDateRange aggregatedValidityDate = getAggregatedValidityDate(dateAggregationDates, dateAggregationAction, joinedStepCteName);
 
-		Selects dateAggregationSelects = new Selects(
-				joinedStep.getQualifiedSelects().getPrimaryColumn(),
-				Optional.ofNullable(aggregatedValidityDate),
-				QualifyingUtil.qualify(carryThroughSelects, joinedStepCteName)
-		);
+		Selects dateAggregationSelects = Selects.builder()
+												.primaryColumn(joinedStep.getQualifiedSelects().getPrimaryColumn())
+												.validityDate(Optional.ofNullable(aggregatedValidityDate))
+												.explicitSelects(QualifyingUtil.qualify(carryThroughSelects, joinedStepCteName, ExplicitSelect.class))
+												.build();
 
 		return QueryStep.builder()
-						.cteName(joinedStepCteName + DATE_AGGREGATION_CTE_NAME)
+						.cteName(nameGenerator.cteStepName(joinedStepCteName, DATE_AGGREGATION_CTE_STEP))
 						.selects(dateAggregationSelects)
 						.fromTable(QueryStep.toTableLike(joinedStepCteName))
 						.predecessors(List.of(joinedStep))
@@ -52,7 +54,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 	}
 
 	@Override
-	public QueryStep invertAggregatedIntervals(QueryStep baseStep) {
+	public QueryStep invertAggregatedIntervals(QueryStep baseStep, NameGenerator nameGenerator) {
 
 		Selects baseStepSelects = baseStep.getQualifiedSelects();
 		Optional<ColumnDateRange> validityDate = baseStepSelects.getValidityDate();
@@ -75,17 +77,21 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 				Object.class,
 				maxDateRange,
 				validityDate.get().getRange()
-		).as(DATE_AGGREGATION_CTE_NAME);
+		).as(INVERTED_DATE_AGGREGATION_CTE_STEP.suffix());
 
 		return QueryStep.builder()
-						.cteName(baseStep.getCteName() + INVERTED_DATE_AGGREGATION_CTE_NAME)
+						.cteName(nameGenerator.cteStepName(baseStep.getCteName(), INVERTED_DATE_AGGREGATION_CTE_STEP))
 						.selects(baseStepSelects.withValidityDate(ColumnDateRange.of(invertedValidityDate)))
 						.fromTable(QueryStep.toTableLike(baseStep.getCteName()))
 						.predecessors(List.of(baseStep))
 						.build();
 	}
 
-	private ColumnDateRange getAggregatedValidityDate(DateAggregationDates dateAggregationDates, DateAggregationAction dateAggregationAction, String joinedStepCteName) {
+	private ColumnDateRange getAggregatedValidityDate(
+			DateAggregationDates dateAggregationDates,
+			DateAggregationAction dateAggregationAction,
+			String joinedStepCteName
+	) {
 
 		// see https://www.postgresql.org/docs/current/functions-range.html
 		String aggregatingOperator = switch (dateAggregationAction) {

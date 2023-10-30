@@ -1,0 +1,67 @@
+{
+  "label": "PREFIX_TEXT filter",
+  "type": "SQL_TEST",
+  "expectedCsv": "expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "prefix"
+          ],
+          "type": "CONCEPT",
+          "label": "prefix",
+          "tables": [
+            {
+              "id": "prefix.prefix_connector",
+              "filters": [
+                {
+                  "filter": "prefix.prefix_connector.prefix_filter",
+                  "type": "SELECT",
+                  "value": "f"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "prefix",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "prefix_connector",
+          "table": "table1",
+          "filters": {
+            "label": "prefix_filter",
+            "column": "table1.value",
+            "type": "PREFIX_TEXT"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/filter/prefix_text/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}
