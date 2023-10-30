@@ -17,7 +17,8 @@ type DiagramProps = {
   className?: string;
 };
 
-const NORMAL_DISTRIBUTION_STEPS = 100;
+const NORMAL_DISTRIBUTION_STEPS = 40;
+const DIGITS_OF_PRECISION = 3;
 
 function previewStatsIsStringStats(
   stats: PreviewStatistics,
@@ -61,12 +62,15 @@ function interpolateNormalDistribution(
       (1 / (stddev * Math.sqrt(2 * Math.PI))) *
         Math.exp(-Math.pow(x - mean, 2) / (2 * Math.pow(stddev, 2))),
     );
-    labels.push(x.toPrecision(3));
+    labels.push(x.toPrecision(DIGITS_OF_PRECISION));
     x += stepSize;
   }
 
   return { labels, values };
 }
+// TODOS:
+// - some diagrams don't display data (nomal distribution)
+// - fix diagram layout
 
 function transformNumberStatsToData(
   stats: NumberStatistics,
@@ -89,7 +93,7 @@ function transformNumberStatsToData(
   };
 }
 
-export default function ({ stat, className }: DiagramProps) {
+export default function Diagram({ stat, className }: DiagramProps) {
   const options: ChartOptions<"bar"> | ChartOptions<"line"> = useMemo(() => {
     if (previewStatsIsNumberStats(stat)) {
       return {
@@ -99,7 +103,7 @@ export default function ({ stat, className }: DiagramProps) {
           mode: "index" as const,
           intersect: false,
         },
-        //maintainAspectRatio: false,
+//        maintainAspectRatio: false,
         layout: {
           padding: 0,
         },
@@ -132,12 +136,8 @@ export default function ({ stat, className }: DiagramProps) {
             padding: 10,
             callbacks: {
               label: (context: any) => {
-                console.log(context)
                 const label = context.dataset.label || context.label || "";
-                const value = stat.type === "MONEY"
-                  ? formatCurrency(context.parsed.y)
-                  : context.raw.precision(3);
-                return `${label}: ${value}`;
+                return `${label}: ${(context.raw as number).toFixed(DIGITS_OF_PRECISION) }`;
               },
             },
             caretSize: 0,
@@ -147,7 +147,6 @@ export default function ({ stat, className }: DiagramProps) {
       };
     }
     if (previewStatsIsStringStats(stat)) {
-      console.log("string_stats", stat);
       return {
         type: "bar",
         responsive: true,
@@ -155,7 +154,7 @@ export default function ({ stat, className }: DiagramProps) {
           mode: "index" as const,
           intersect: false,
         },
-        //maintainAspectRatio: false,
+ //       maintainAspectRatio: false,
         layout: {
           padding: 0,
         },
@@ -180,10 +179,7 @@ export default function ({ stat, className }: DiagramProps) {
             callbacks: {
               label: (context: any) => {
                 const label = context.dataset.label || context.label || "";
-                const value = exists(context.parsed.y)
-                  ? formatCurrency(context.parsed.y)
-                  : 0;
-                return `${label}: ${value}`;
+                return `${label}: ${(context.raw as number).toFixed(DIGITS_OF_PRECISION)}`;
               },
             },
             caretSize: 0,

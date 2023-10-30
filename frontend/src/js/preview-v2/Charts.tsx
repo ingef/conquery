@@ -8,6 +8,7 @@ const Root = styled("div")`
 const SxDiagram = styled(Diagram)`
   width: 300px;
   padding: 5px;
+  margin-right: 15px;
 `;
 
 type ChartProps = {
@@ -19,8 +20,7 @@ export default function Charts({ statistics, className }: ChartProps) {
 
   return (
     <Root className={className}>
-
-      {statistics.map((statistic, i) => {
+      {statistics.map((statistic) => {
         return (
           <SxDiagram stat={statistic} />
         )
