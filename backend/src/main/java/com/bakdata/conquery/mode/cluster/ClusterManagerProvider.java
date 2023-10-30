@@ -12,6 +12,7 @@ import com.bakdata.conquery.mode.NamespaceHandler;
 import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.worker.ClusterHealthCheck;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
@@ -22,32 +23,26 @@ import io.dropwizard.setup.Environment;
 public class ClusterManagerProvider implements ManagerProvider {
 
 	public ClusterManager provideManager(ConqueryConfig config, Environment environment) {
-		JobManager jobManager = ManagerProvider.newJobManager(config);
-		InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
-		ClusterState clusterState = new ClusterState();
-		NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(clusterState, config, creator);
-		DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
+		final JobManager jobManager = ManagerProvider.newJobManager(config);
+		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
+		final ClusterState clusterState = new ClusterState();
+		final NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(clusterState, config, creator);
+		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
 		creator.init(datasetRegistry);
 
-		ClusterConnectionManager connectionManager = new ClusterConnectionManager(
-				datasetRegistry, jobManager, environment.getValidator(), config, creator, clusterState
-		);
-		ImportHandler importHandler = new ClusterImportHandler(config, datasetRegistry);
-		StorageListener extension = new ClusterStorageListener(jobManager, datasetRegistry);
-		Supplier<Collection<ShardNodeInformation>> nodeProvider = () -> clusterState.getShardNodes().values();
-		List<Task> adminTasks = List.of(new ReportConsistencyTask(clusterState));
+		final ClusterConnectionManager connectionManager =
+				new ClusterConnectionManager(datasetRegistry, jobManager, environment.getValidator(), config, creator, clusterState);
 
-		DelegateManager<DistributedNamespace> delegate = new DelegateManager<>(
-				config,
-				environment,
-				datasetRegistry,
-				importHandler,
-				extension,
-				nodeProvider,
-				adminTasks,
-				creator,
-				jobManager
-		);
+		final ImportHandler importHandler = new ClusterImportHandler(config, datasetRegistry);
+		final StorageListener extension = new ClusterStorageListener(jobManager, datasetRegistry);
+		final Supplier<Collection<ShardNodeInformation>> nodeProvider = () -> clusterState.getShardNodes().values();
+		final List<Task> adminTasks = List.of(new ReportConsistencyTask(clusterState));
+
+		final DelegateManager<DistributedNamespace>
+				delegate =
+				new DelegateManager<>(config, environment, datasetRegistry, importHandler, extension, nodeProvider, adminTasks, creator, jobManager);
+
+		environment.healthChecks().register("cluster", new ClusterHealthCheck(clusterState));
 
 		return new ClusterManager(delegate, connectionManager);
 	}
