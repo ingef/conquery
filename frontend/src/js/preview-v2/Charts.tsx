@@ -5,22 +5,24 @@ import Diagram from "./Diagram";
 const Root = styled("div")`
 `
 
+const SxDiagram = styled(Diagram)`
+  width: 300px;
+  padding: 5px;
+`;
+
 type ChartProps = {
   statistics: PreviewStatistics[];
   className?: string;
 }
 
 export default function Charts({ statistics, className }: ChartProps) {
-  console.log(statistics);
 
   return (
     <Root className={className}>
 
       {statistics.map((statistic, i) => {
         return (
-          <div key={i}>
-            <Diagram stat={statistic} />
-          </div>
+          <SxDiagram stat={statistic} />
         )
       })}
 

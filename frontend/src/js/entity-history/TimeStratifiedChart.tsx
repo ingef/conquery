@@ -7,6 +7,9 @@ import {
   BarElement,
   Tooltip,
   ChartOptions,
+  PointElement,
+  Title,
+  LineElement,
 } from "chart.js";
 import { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
@@ -18,7 +21,17 @@ import { formatCurrency } from "./timeline/util";
 
 const TRUNCATE_X_AXIS_LABELS_LEN = 18;
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+);
 
 const ChartContainer = styled("div")`
   height: 190px;

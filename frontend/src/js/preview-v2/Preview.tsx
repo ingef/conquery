@@ -40,8 +40,10 @@ const SxCharts = styled(Charts)`
   background-color: white;
   padding: 10px;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-  overflow-y: scroll;
-  overflow-x: hidden;
+  overflow-y: hidden;
+  overflow-x: scroll;
+  display: inline-flex;
+  height: 40vh;
 `;
 
 export default function Preview() {
