@@ -8,9 +8,7 @@ import {
   PreviewStatistics,
   StringStatistics,
 } from "../api/types";
-import { exists } from "../common/helpers/exists";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
-import { formatCurrency } from "../entity-history/timeline/util";
 
 type DiagramProps = {
   stat: PreviewStatistics;

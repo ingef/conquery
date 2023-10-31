@@ -6,7 +6,7 @@ const Root = styled("div")`
 `
 
 const SxDiagram = styled(Diagram)`
-  width: 300px;
+  width: 100px;
   padding: 5px;
   margin-right: 15px;
 `;

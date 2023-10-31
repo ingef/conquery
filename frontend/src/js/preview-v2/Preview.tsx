@@ -43,7 +43,7 @@ const SxCharts = styled(Charts)`
   overflow-y: hidden;
   overflow-x: scroll;
   display: inline-flex;
-  height: 40vh;
+  height: 300px;
 `;
 
 export default function Preview() {
