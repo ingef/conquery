@@ -270,7 +270,7 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 
 		final PrintSettings printSettings = new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel);
 
-		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), printSettings));
+		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), printSettings.withPrettyPrint(true)));
 
 		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), printSettings));
 
