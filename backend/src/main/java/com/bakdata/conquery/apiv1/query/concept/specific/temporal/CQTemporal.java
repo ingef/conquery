@@ -50,7 +50,7 @@ import lombok.RequiredArgsConstructor;
  * }
  * </pre>
  * => The earliest sub-period of Concept A is included, if the earliest sub-period of B is at least 10 days before it.
- *
+ * <p>
  * <hr />
  *
  * <pre>
@@ -64,7 +64,7 @@ import lombok.RequiredArgsConstructor;
  * }
  * </pre>
  * => All sub-periods of Concept A are included, if the earliest sub-period of Concept B is 10 days before it.
- *
+ * <p>
  * <hr />
  */
 @Data
@@ -99,13 +99,6 @@ public class CQTemporal extends CQElement {
 		return new TimeBasedQueryNode(context.getStorage().getDataset().getAllIdsTable(), subQuery);
 	}
 
-	private List<ConstantValueAggregator<List>> createShimAggregators() {
-		return compare.getResultInfos()
-					  .stream()
-					  .map(info -> new ConstantValueAggregator<List>(new ArrayList<>(), new ResultType.ListT(info.getType())))
-					  .toList();
-	}
-
 	private ConceptQueryPlan createIndexPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		final ConceptQueryPlan indexSubPlan = new ConceptQueryPlan(true);
 		final QPNode indexNode = index.createQueryPlan(context, plan);
@@ -113,6 +106,13 @@ public class CQTemporal extends CQElement {
 		indexSubPlan.getDateAggregator().registerAll(indexNode.getDateAggregators());
 		indexSubPlan.setChild(indexNode);
 		return indexSubPlan;
+	}
+
+	private List<ConstantValueAggregator<List>> createShimAggregators() {
+		return compare.getResultInfos()
+					  .stream()
+					  .map(info -> new ConstantValueAggregator<List>(new ArrayList<>(), new ResultType.ListT(info.getType())))
+					  .toList();
 	}
 
 	@Override
@@ -158,7 +158,8 @@ public class CQTemporal extends CQElement {
 				}
 				return false;
 			}
-		}, ALL {
+		},
+		ALL {
 			@Override
 			public CDateRange[] sample(CDateSet result) {
 				return result.asRanges().toArray(CDateRange[]::new);
@@ -173,7 +174,8 @@ public class CQTemporal extends CQElement {
 				}
 				return true;
 			}
-		}, EARLIEST {
+		},
+		EARLIEST {
 			@Override
 			public CDateRange[] sample(CDateSet result) {
 				return new CDateRange[]{result.asRanges().iterator().next()};
@@ -183,7 +185,8 @@ public class CQTemporal extends CQElement {
 			public boolean satisfies(boolean[] results) {
 				return results[0];
 			}
-		}, LATEST {
+		},
+		LATEST {
 			@Override
 			public CDateRange[] sample(CDateSet result) {
 				if (result.isEmpty()) {
