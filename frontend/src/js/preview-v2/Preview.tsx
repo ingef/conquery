@@ -10,6 +10,10 @@ import Charts from "./Charts";
 import HeadlineStats from "./HeadlineStats";
 import { PreviewStateT } from "./reducer";
 import Table from "./Table";
+import { useEffect, useState } from "react";
+import { Icon } from "../icon/FaIcon";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { Table as arrowTable, tableFromArrays } from 'apache-arrow';
 
 const FullScreen = styled("div")`
   height: 100%;
@@ -32,6 +36,27 @@ const Headline = styled("div")`
   gap: 30px;
 `;
 
+async function load() {
+
+  const LENGTH = 500;
+
+  const rainAmounts = Float32Array.from(
+    { length: LENGTH },
+    () => Number((Math.random() * 20).toFixed(1)));
+
+  const rainDates = Array.from(
+    { length: LENGTH },
+    (_, i) => new Date(Date.now() - 1000 * 60 * 60 * 24 * i));
+  
+  console.log(rainAmounts);
+  console.log(rainDates);
+  const table = tableFromArrays({
+    precipitation: rainAmounts,
+    date: rainDates
+  });
+  return table;
+}
+
 export default function Preview() {
   const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
   const dispatch = useDispatch();
@@ -42,27 +67,45 @@ export default function Preview() {
   useHotkeys("esc", () => {
     onClose();
   });
+  let [loaded, setLoaded] = useState(false);
+  let [data, setData] = useState<arrowTable|null>(null);
+
+  useEffect(() => {
+    if (loaded) return;
+    load().then((data) => {
+      setLoaded(true);
+      setData(data);
+    });
+  }, [loaded])
 
   return (
     <FullScreen>
-      <PreviewInfo
-        rawPreviewData={[]}
-        columns={[]}
-        onClose={onClose}
-        minDate={new Date()}
-        maxDate={new Date()}
-      />
-      <Headline>
-        <TransparentButton small onClick={onClose}>
-          {t("common.back")}
-        </TransparentButton>
-        Ergebnisvorschau
-        <HeadlineStats />
-      </Headline>
-      SelectBox (Konzept Liste)
-      <Charts />
-      <Table />
-      Debug: arrowfile loaded status: {preview.arrowFile ? "true" : "false"}
+      {loaded && data ? (
+        <>
+          <PreviewInfo
+            rawPreviewData={[]}
+            columns={[]}
+            onClose={onClose}
+            minDate={new Date()}
+            maxDate={new Date()}
+          />
+          <Headline>
+            <TransparentButton small onClick={onClose}>
+              {t("common.back")}
+            </TransparentButton>
+            Ergebnisvorschau
+            <HeadlineStats />
+          </Headline>
+          SelectBox (Konzept Liste)
+          <Charts />
+          <Table
+            data={data}
+            columns={[]}
+          />
+        </>
+      ) : (
+          <><Icon icon={faSpinner}/></>
+      )}
     </FullScreen>
   );
 }
