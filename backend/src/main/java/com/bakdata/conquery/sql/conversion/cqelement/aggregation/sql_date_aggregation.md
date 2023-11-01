@@ -1,5 +1,3 @@
-# TODO FINISH EXPLANATION AFTER WE KNOW HOW TO HANDLE VALUES WITH EMPTY RANGES
-
 # SQL date aggregation
 
 When joining multiple nodes with their respective validity date ranges, we need to aggregate these dates.
