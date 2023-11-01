@@ -56,4 +56,10 @@ class MergeAggregateAction implements SqlAggregationAction {
 	public QueryStep getOverlapStep(DateAggregationContext dateAggregationContext) {
 		return dateAggregationContext.getStep(MergeStep.OVERLAP);
 	}
+
+	@Override
+	public boolean requiresIntervalPackingAfterwards() {
+		return true;
+	}
+
 }

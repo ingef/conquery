@@ -21,6 +21,7 @@ public class CQNegationConverter implements NodeConverter<CQNegation> {
 											 .withNegation(false);
 
 		// as we convert only 1 child CQElement, their will be only a single step
+		assert converted.getQuerySteps().size() == 1;
 		QueryStep queryStep = converted.getQuerySteps().get(0);
 
 		if (negationNode.getDateAction() != DateAggregationAction.NEGATE) {
@@ -29,12 +30,10 @@ public class CQNegationConverter implements NodeConverter<CQNegation> {
 														 .build();
 			return context.withQueryStep(withBlockedValidityDate);
 		}
-		else {
-			QueryStep withInvertedValidityDate = converted.getSqlDialect()
-														  .getDateAggregator()
-														  .invertAggregatedIntervals(queryStep);
-			return context.withQueryStep(withInvertedValidityDate);
-		}
+		QueryStep withInvertedValidityDate = converted.getSqlDialect()
+													  .getDateAggregator()
+													  .invertAggregatedIntervals(queryStep);
+		return context.withQueryStep(withInvertedValidityDate);
 	}
 
 }

@@ -2,7 +2,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 import java.sql.Date;
-import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
@@ -35,16 +34,16 @@ class IntermediateTableCte extends DateAggregationCte {
 		);
 
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
-		Field<Date>[] allStarts = dateAggregationDates.allStarts();
-		Field<Date>[] allEnds = dateAggregationDates.allEnds();
+		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
+		List<Field<Date>> allEnds = dateAggregationDates.allEnds();
 
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));
 
-		Condition startIsNull = Arrays.stream(allStarts)
-									  .map(Field::isNull)
-									  .reduce(Condition::or)
-									  .orElseThrow();
+		Condition startIsNull = allStarts.stream()
+										 .map(Field::isNull)
+										 .reduce(Condition::or)
+										 .orElseThrow();
 
 		Condition intermediateTableCondition = startIsNull.orNot(startBeforeEnd);
 

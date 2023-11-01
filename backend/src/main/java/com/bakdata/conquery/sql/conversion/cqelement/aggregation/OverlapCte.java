@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 import java.sql.Date;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,8 +25,8 @@ class OverlapCte extends DateAggregationCte {
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
 
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
-		Field<Date>[] allStarts = dateAggregationDates.allStarts();
-		Field<Date>[] allEnds = dateAggregationDates.allEnds();
+		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
+		List<Field<Date>> allEnds = dateAggregationDates.allEnds();
 
 		ColumnDateRange overlapValidityDate = context.getSqlAggregationAction().getOverlapValidityDate(
 				context.getDateAggregationDates(),
@@ -41,10 +40,10 @@ class OverlapCte extends DateAggregationCte {
 
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));
-		Condition allStartsNotNull = Arrays.stream(allStarts)
-										   .map(Field::isNotNull)
-										   .reduce(Condition::and)
-										   .orElseThrow();
+		Condition allStartsNotNull = allStarts.stream()
+											  .map(Field::isNotNull)
+											  .reduce(Condition::and)
+											  .orElseThrow();
 		Condition overlapConditions = allStartsNotNull.and(startBeforeEnd);
 
 		return QueryStep.builder()

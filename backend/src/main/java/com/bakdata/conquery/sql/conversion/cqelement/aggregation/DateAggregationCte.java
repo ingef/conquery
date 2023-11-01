@@ -25,9 +25,9 @@ abstract class DateAggregationCte {
 		if (cteStep != MergeStep.NODE_NO_OVERLAP) {
 			builder = builder.cteName(dateAggregationTables.cteName(cteStep))
 							 .predecessors(List.of(previous));
-			if (cteStep != InvertStep.INVERT) {
-				builder = builder.fromTable(QueryStep.toTableLike(dateAggregationTables.getFromTableOf(cteStep)));
-			}
+		}
+		if (cteStep != InvertStep.INVERT) {
+			builder = builder.fromTable(QueryStep.toTableLike(dateAggregationTables.getFromTableOf(cteStep)));
 		}
 
 		return builder.build();

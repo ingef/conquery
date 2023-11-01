@@ -45,11 +45,10 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 															   .build();
 
 		QueryStep finalDateAggregationStep = convertSteps(joinedStep, aggregationAction.dateAggregationCtes(), context);
-
-		if (dateAggregationAction != DateAggregationAction.MERGE) {
-			return finalDateAggregationStep;
+		if (aggregationAction.requiresIntervalPackingAfterwards()) {
+			return withIntervalPackingApplied(joinedStep, carryThroughSelects, finalDateAggregationStep);
 		}
-		return withIntervalPackingApplied(joinedStep, carryThroughSelects, finalDateAggregationStep);
+		return finalDateAggregationStep;
 	}
 
 	@Override

@@ -68,4 +68,9 @@ class IntersectAggregationAction implements SqlAggregationAction {
 		return dateAggregationContext.getStep(IntersectStep.OVERLAP);
 	}
 
+	@Override
+	public boolean requiresIntervalPackingAfterwards() {
+		return false;
+	}
+
 }

@@ -47,12 +47,12 @@ public class DateAggregationDates {
 		return this.validityDates.isEmpty();
 	}
 
-	public Field<Date>[] allStarts() {
-		return this.validityDates.stream().map(ColumnDateRange::getStart).toArray(Field[]::new);
+	public List<Field<Date>> allStarts() {
+		return this.validityDates.stream().map(ColumnDateRange::getStart).toList();
 	}
 
-	public Field<Date>[] allEnds() {
-		return this.validityDates.stream().map(ColumnDateRange::getEnd).toArray(Field[]::new);
+	public List<Field<Date>> allEnds() {
+		return this.validityDates.stream().map(ColumnDateRange::getEnd).toList();
 	}
 
 	public List<SqlSelect> allStartsAndEnds() {

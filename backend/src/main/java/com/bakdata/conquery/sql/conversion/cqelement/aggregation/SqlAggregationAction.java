@@ -25,4 +25,6 @@ interface SqlAggregationAction {
 
 	QueryStep getOverlapStep(DateAggregationContext dateAggregationContext);
 
+	boolean requiresIntervalPackingAfterwards();
+
 }

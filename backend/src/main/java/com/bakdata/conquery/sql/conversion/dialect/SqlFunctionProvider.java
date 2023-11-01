@@ -57,12 +57,22 @@ public interface SqlFunctionProvider {
 
 	Field<?> first(Field<?> field, List<Field<?>> orderByColumn);
 
-	default <T> Field<T> least(Field<T>[] fields) {
-		return DSL.function("least", fields[0].getType(), fields);
+	default <T> Field<T> least(List<Field<T>> fields) {
+		if (fields.isEmpty()) {
+			return null;
+		}
+		Field<T>[] fieldArray = fields.toArray(Field[]::new);
+		// signature only accepts arrays/varargs
+		return DSL.function("least", fieldArray[0].getType(), fieldArray);
 	}
 
-	default <T> Field<T> greatest(Field<T>[] fields) {
-		return DSL.function("greatest", fields[0].getType(), fields);
+	default <T> Field<T> greatest(List<Field<T>> fields) {
+		if (fields.isEmpty()) {
+			return null;
+		}
+		Field<T>[] fieldArray = fields.toArray(Field[]::new);
+		// signature only accepts arrays/varargs
+		return DSL.function("greatest", fieldArray[0].getType(), fieldArray);
 	}
 
 	default Condition in(Field<String> column, String[] values) {
