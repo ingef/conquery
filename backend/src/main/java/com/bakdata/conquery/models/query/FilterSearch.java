@@ -105,7 +105,7 @@ public class FilterSearch {
 	}
 
 	public void calculateTotals() {
-		final Object2LongOpenHashMap<Searchable<?>> newTotals =
+		final Object2LongMap<Searchable<?>> newTotals =
 				new Object2LongOpenHashMap<>(searchCache.keySet().stream()
 														.collect(Collectors.toMap(
 																Functions.identity(),

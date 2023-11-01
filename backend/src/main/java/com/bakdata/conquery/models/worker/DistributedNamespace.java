@@ -5,6 +5,7 @@ import java.util.List;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.storage.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.query.DistributedExecutionManager;
@@ -38,6 +39,10 @@ public class DistributedNamespace extends LocalNamespace {
 	}
 
 
+	public void matchingStatsWorkerFinished(WorkerId workerId) {
+	}
 
+	public void matchingStatsManagerFinished() {
 
+	}
 }
