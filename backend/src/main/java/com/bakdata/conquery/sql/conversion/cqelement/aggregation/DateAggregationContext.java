@@ -29,9 +29,10 @@ class DateAggregationContext implements Context {
 	SqlFunctionProvider functionProvider;
 	IntervalPacker intervalPacker;
 
-	public void withStep(DateAggregationStep dateAggregationStep, QueryStep queryStep) {
+	public DateAggregationContext withStep(DateAggregationStep dateAggregationStep, QueryStep queryStep) {
 		this.intervalMergeSteps.computeIfAbsent(dateAggregationStep, k -> new ArrayList<>())
 							   .add(queryStep);
+		return this;
 	}
 
 	public QueryStep getStep(DateAggregationStep dateAggregationStep) {

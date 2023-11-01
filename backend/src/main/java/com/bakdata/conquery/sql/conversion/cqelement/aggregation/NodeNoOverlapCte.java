@@ -37,7 +37,7 @@ class NodeNoOverlapCte extends DateAggregationCte {
 		while (validityDates.hasNext()) {
 			counter++;
 			QueryStep predeceasingNoOverlapStep = noOverlapStep.build();
-			context.withStep(getCteStep(), predeceasingNoOverlapStep);
+			context = context.withStep(getCteStep(), predeceasingNoOverlapStep);
 			noOverlapStep = createNoOverlapStep(validityDates.next(), context, predeceasingNoOverlapStep);
 		}
 

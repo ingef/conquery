@@ -79,7 +79,7 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 		QueryStep finalDateAggregationStep = baseStep;
 		for (DateAggregationCte step : dateAggregationCTEs) {
 			finalDateAggregationStep = step.convert(context, finalDateAggregationStep);
-			context.withStep(step.getCteStep(), finalDateAggregationStep);
+			context = context.withStep(step.getCteStep(), finalDateAggregationStep);
 		}
 		return finalDateAggregationStep;
 	}
