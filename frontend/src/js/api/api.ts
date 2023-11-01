@@ -33,6 +33,7 @@ import type {
   DatasetT,
   HistorySources,
   PostResolveEntitiesResponse,
+  GetResultResponse,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
@@ -398,6 +399,18 @@ export const usePostResolveEntities = () => {
         url: getProtectedUrl(`/datasets/${datasetId}/queries/resolve-entities`),
         method: "POST",
         data: filterValues,
+      }),
+    [api],
+  );
+};
+
+export const useGetResult = () => {
+  const api = useApi<GetResultResponse>();
+
+  return useCallback(
+    (queryId: number) =>
+      api({
+        url: getProtectedUrl(`/result/${queryId}.arrow`),
       }),
     [api],
   );

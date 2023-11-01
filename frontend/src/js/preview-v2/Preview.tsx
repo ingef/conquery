@@ -1,12 +1,14 @@
 import styled from "@emotion/styled";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { StateT } from "../app/reducers";
 import { TransparentButton } from "../button/TransparentButton";
 import PreviewInfo from "../preview/PreviewInfo";
 import { closePreview } from "./actions";
 import Charts from "./Charts";
 import HeadlineStats from "./HeadlineStats";
+import { PreviewStateT } from "./reducer";
 import Table from "./Table";
 
 const FullScreen = styled("div")`
@@ -31,6 +33,7 @@ const Headline = styled("div")`
 `;
 
 export default function Preview() {
+  const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
   const dispatch = useDispatch();
   const { t } = useTranslation();
 
@@ -59,6 +62,7 @@ export default function Preview() {
       SelectBox (Konzept Liste)
       <Charts />
       <Table />
+      Debug: arrowfile loaded status: {preview.arrowFile ? "true" : "false"}
     </FullScreen>
   );
 }
