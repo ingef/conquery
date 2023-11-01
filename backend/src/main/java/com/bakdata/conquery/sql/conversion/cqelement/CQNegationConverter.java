@@ -21,8 +21,10 @@ public class CQNegationConverter implements NodeConverter<CQNegation> {
 											 .convert(negationNode.getChild(), context.withNegation(true))
 											 .withNegation(false);
 
-		// as we convert only 1 child CQElement, their will be only a single step
-		Preconditions.checkArgument(converted.getQuerySteps().size() == 1);
+		Preconditions.checkArgument(
+				converted.getQuerySteps().size() == 1,
+				"As we convert only 1 child CQElement, their should be only a single query step."
+		);
 		QueryStep queryStep = converted.getQuerySteps().get(0);
 
 		if (negationNode.getDateAction() != DateAggregationAction.NEGATE) {
