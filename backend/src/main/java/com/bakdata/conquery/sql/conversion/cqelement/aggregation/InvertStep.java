@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,15 +11,22 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 enum InvertStep implements DateAggregationStep {
 
-	ROW_NUMBER("_row_numbers", RowNumberCte::new),
-	INVERT("_inverted_dates", InvertCte::new);
+	ROW_NUMBER("_row_numbers", RowNumberCte::new, null),
+	INVERT("_inverted_dates", InvertCte::new, InvertStep.ROW_NUMBER);
 
 	private final String suffix;
 	@Getter
 	private final DateAggregationCteConstructor stepConstructor;
+	private final InvertStep predecessor;
 
+	@Override
 	public String suffix() {
 		return this.suffix;
+	}
+
+	@Override
+	public DateAggregationStep predecessor() {
+		return this.predecessor;
 	}
 
 	static List<DateAggregationCte> requiredSteps() {
@@ -31,10 +37,7 @@ enum InvertStep implements DateAggregationStep {
 
 	static DateAggregationTables createTableNames(QueryStep joinedTable) {
 		Map<DateAggregationStep, String> cteNameMap = DateAggregationStep.createCteNameMap(joinedTable, values());
-		Map<DateAggregationStep, String> predecessorMap = new HashMap<>();
-		predecessorMap.put(ROW_NUMBER, joinedTable.getCteName());
-		predecessorMap.put(INVERT, cteNameMap.get(ROW_NUMBER));
-		return new DateAggregationTables(cteNameMap, predecessorMap);
+		return new DateAggregationTables(joinedTable.getCteName(), cteNameMap);
 	}
 
 }

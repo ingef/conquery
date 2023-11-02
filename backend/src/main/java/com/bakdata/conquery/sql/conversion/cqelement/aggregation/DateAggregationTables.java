@@ -7,15 +7,12 @@ import lombok.Value;
 @Value
 class DateAggregationTables {
 
+	String joinedTable;
 	Map<DateAggregationStep, String> cteNameMap;
-	Map<DateAggregationStep, String> predecessorMap;
 
-	public DateAggregationTables(
-			Map<DateAggregationStep, String> cteNameMap,
-			Map<DateAggregationStep, String> predecessorMap
-	) {
+	public DateAggregationTables(String joinedTable, Map<DateAggregationStep, String> cteNameMap) {
+		this.joinedTable = joinedTable;
 		this.cteNameMap = cteNameMap;
-		this.predecessorMap = predecessorMap;
 	}
 
 	public String cteName(DateAggregationStep dateAggregationStep) {
@@ -23,7 +20,11 @@ class DateAggregationTables {
 	}
 
 	public String getFromTableOf(DateAggregationStep dateAggregationStep) {
-		return this.predecessorMap.get(dateAggregationStep);
+		DateAggregationStep predecessor = dateAggregationStep.predecessor();
+		if (predecessor == null) {
+			return joinedTable;
+		}
+		return this.cteNameMap.get(predecessor);
 	}
 
 }

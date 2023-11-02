@@ -10,15 +10,21 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 
 interface DateAggregationStep extends CteStep {
 
-	static Map<DateAggregationStep, String> createCteNameMap(
-			QueryStep joinedTable,
-			DateAggregationStep[] dateAggregationSteps
-	) {
+	String suffix();
+
+	DateAggregationStep predecessor();
+
+	static Map<DateAggregationStep, String> createCteNameMap(QueryStep joinedTable, DateAggregationStep[] dateAggregationSteps) {
 		return Arrays.stream(dateAggregationSteps)
 					 .collect(Collectors.toMap(
 							 Function.identity(),
-							 dateAggregationStep -> "%s%s".formatted(joinedTable.getCteName(), dateAggregationStep.suffix())
+							 dateAggregationStep -> dateAggregationStep.cteName(joinedTable.getCteName())
 					 ));
 	}
+
+	@Override
+    default String cteName(String nodeLabel) {
+		return "%s%s".formatted(nodeLabel, suffix());
+	};
 
 }
