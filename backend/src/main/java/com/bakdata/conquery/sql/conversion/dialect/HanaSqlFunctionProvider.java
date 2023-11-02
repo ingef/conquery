@@ -97,9 +97,8 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 		Field<Date> startDate = columnDateRange.getStart();
 		Field<Date> endDate = columnDateRange.getEnd();
-
-		// 0001-01-01 => 10 chars
-		Param<Integer> dateLength = DSL.val(10);
+		
+		Param<Integer> dateLength = DSL.val(DEFAULT_DATE_FORMAT.length());
 		Field<String> startDateExpression = toVarcharField(startDate, dateLength);
 		Field<String> endDateExpression = toVarcharField(endDate, dateLength);
 

@@ -18,7 +18,7 @@ public class ConceptTables {
 		this.cteNames = requiredSteps.stream()
 									 .collect(Collectors.toMap(
 											 Function.identity(),
-											 step -> "concept_%s%s".formatted(conceptLabel, step.suffix())
+											 step -> step.cteName(conceptLabel)
 									 ));
 		this.rootTable = rootTableName;
 	}

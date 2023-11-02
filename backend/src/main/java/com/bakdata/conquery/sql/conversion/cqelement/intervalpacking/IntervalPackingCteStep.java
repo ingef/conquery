@@ -14,8 +14,8 @@ enum IntervalPackingCteStep implements CteStep {
 
 	private final String suffix;
 
-	public String suffix() {
-		return this.suffix;
+	public String cteName(String nodeLabel) {
+		return "%s%s".formatted(nodeLabel, this.suffix);
 	}
 
 }

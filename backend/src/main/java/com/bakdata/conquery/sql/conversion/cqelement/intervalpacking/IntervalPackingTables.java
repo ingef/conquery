@@ -22,7 +22,7 @@ class IntervalPackingTables {
 		Map<IntervalPackingCteStep, String> cteNames = Arrays.stream(IntervalPackingCteStep.values())
 															 .collect(Collectors.toMap(
 																	 Function.identity(),
-																	 step -> "%s%s".formatted(nodeLabel, step.suffix())
+																	 step -> step.cteName(nodeLabel)
 															 ));
 		String preprocessingCteName = conceptTables.cteName(ConceptCteStep.PREPROCESSING);
 		return new IntervalPackingTables(preprocessingCteName, cteNames);

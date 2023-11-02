@@ -25,7 +25,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 	@Override
 	public QueryStep createIntervalPackingSteps(IntervalPackingContext context) {
 		QueryStep previousEndStep = createPreviousEndStep(context);
-		QueryStep rangeIndexStep = createRandeIndexStep(previousEndStep, context);
+		QueryStep rangeIndexStep = createRangeIndexStep(previousEndStep, context);
 		QueryStep intervalCompleteStep = createIntervalCompleteStep(rangeIndexStep, context);
 		return intervalCompleteStep;
 	}
@@ -56,7 +56,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 						.build();
 	}
 
-	private QueryStep createRandeIndexStep(QueryStep previousEndStep, IntervalPackingContext context) {
+	private QueryStep createRangeIndexStep(QueryStep previousEndStep, IntervalPackingContext context) {
 
 		String previousEndCteName = previousEndStep.getCteName();
 		Selects previousEndSelects = previousEndStep.getQualifiedSelects();

@@ -19,14 +19,14 @@ public enum ConceptCteStep implements CteStep {
 
 	private final String suffix;
 
-	public String suffix() {
-		return this.suffix;
-	}
-
 	public static Set<ConceptCteStep> withOptionalSteps(ConceptCteStep... conceptCteStep) {
 		HashSet<ConceptCteStep> steps = new HashSet<>(MANDATORY_STEPS);
 		steps.addAll(Set.of(conceptCteStep));
 		return steps;
 	}
 
+	@Override
+	public String cteName(String conceptLabel) {
+		return "concept_%s%s".formatted(conceptLabel, this.suffix);
+	}
 }
