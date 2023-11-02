@@ -21,6 +21,16 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	private static final String MIN_DATE_VALUE = "0001-01-01";
 
 	@Override
+	public String getMinDateExpression() {
+		return MIN_DATE_VALUE;
+	}
+
+	@Override
+	public String getMaxDateExpression() {
+		return MAX_DATE_VALUE;
+	}
+
+	@Override
 	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange validityDate) {
 
 		if (dateRestriction.isSingleColumnRange() || validityDate.isSingleColumnRange()) {
@@ -162,6 +172,9 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 
 	@Override
 	public Field<?> first(Field<?> column, List<Field<?>> orderByColumns) {
+		if (orderByColumns.isEmpty()) {
+			orderByColumns = List.of(column);
+		}
 		return DSL.field(DSL.sql("FIRST_VALUE({0} {1})", column, DSL.orderBy(orderByColumns)));
 	}
 

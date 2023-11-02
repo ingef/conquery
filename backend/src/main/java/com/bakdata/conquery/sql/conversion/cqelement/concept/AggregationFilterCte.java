@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -36,7 +37,7 @@ class AggregationFilterCte extends ConceptCte {
 								// TODO: EXISTS edge case is only in a concepts final select statement and has no predecessor selects
 								.filter(conquerySelect -> !(conquerySelect instanceof ExistsSqlSelect))
 								.distinct()
-								.toList();
+								.collect(Collectors.toList());
 	}
 
 	@Override

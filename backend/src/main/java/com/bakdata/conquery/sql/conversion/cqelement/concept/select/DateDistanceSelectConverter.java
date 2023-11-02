@@ -33,7 +33,9 @@ public class DateDistanceSelectConverter implements SelectConverter<DateDistance
 				context.getParentContext().getSqlDialect().getFunctionProvider()
 		);
 
-		Field<Object> qualifiedDateDistance = context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		Field<Object>
+				qualifiedDateDistance =
+				context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
 		MinSqlSelect minDateDistance = new MinSqlSelect(qualifiedDateDistance, dateDistanceSelect.getName());
 
 		ExtractingSqlSelect<Object> firstValueReference = new ExtractingSqlSelect<>(

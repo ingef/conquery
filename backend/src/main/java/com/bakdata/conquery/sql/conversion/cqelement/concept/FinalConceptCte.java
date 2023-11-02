@@ -7,8 +7,8 @@ import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPac
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.StepJoiner;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -64,7 +64,7 @@ class FinalConceptCte extends ConceptCte {
 		Field<Object> primaryColumn = finalSelectsAndFilterStep.getQualifiedSelects().getPrimaryColumn();
 		Optional<ColumnDateRange> validityDate = Optional.of(finalIntervalPackingStep.getQualifiedSelects().getValidityDate().get());
 
-		TableLike<Record> joinedTable = StepJoiner.constructJoinedTable(
+		TableLike<Record> joinedTable = QueryStepJoiner.constructJoinedTable(
 				List.of(finalSelectsAndFilterStep, finalIntervalPackingStep),
 				LogicalOperation.AND,
 				conceptCteContext.getConversionContext()

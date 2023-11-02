@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -34,7 +35,7 @@ class EventFilterCte extends ConceptCte {
 		return conceptCteContext.allConceptSelects()
 								.flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
 								.distinct()
-								.toList();
+								.collect(Collectors.toList());
 	}
 
 	@Override

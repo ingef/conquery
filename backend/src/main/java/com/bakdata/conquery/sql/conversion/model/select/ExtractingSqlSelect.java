@@ -37,7 +37,7 @@ public class ExtractingSqlSelect<V> implements SqlSelect {
 
 	@Override
 	public Field<V> aliased() {
-		return DSL.field(column, columnClass);
+		return DSL.field(DSL.name(column), columnClass);
 	}
 
 	@Override

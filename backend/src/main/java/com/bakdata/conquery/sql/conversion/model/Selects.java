@@ -52,6 +52,10 @@ public class Selects {
 		return new Selects(this.primaryColumn, Optional.of(validityDate), this.sqlSelects);
 	}
 
+	public Selects blockValidityDate() {
+		return new Selects(this.primaryColumn, this.sqlSelects);
+	}
+
 	public Selects qualify(String qualifier) {
 		Field<Object> qualifiedPrimaryColumn = DSL.field(DSL.name(qualifier, this.primaryColumn.getName()));
 		List<SqlSelect> qualifiedSelects = this.sqlSelects.stream()
@@ -61,7 +65,9 @@ public class Selects {
 		if (this.validityDate.isEmpty()) {
 			return new Selects(qualifiedPrimaryColumn, qualifiedSelects);
 		}
-		return new Selects(qualifiedPrimaryColumn, this.validityDate.map(_validityDate -> _validityDate.qualify(qualifier)), qualifiedSelects);
+		else {
+			return new Selects(qualifiedPrimaryColumn, this.validityDate.map(_validityDate -> _validityDate.qualify(qualifier)), qualifiedSelects);
+		}
 	}
 
 	public List<Field<?>> all() {
