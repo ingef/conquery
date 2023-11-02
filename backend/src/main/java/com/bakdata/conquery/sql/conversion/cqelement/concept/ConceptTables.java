@@ -28,7 +28,7 @@ public class ConceptTables {
 	}
 
 	/**
-	 * @return The CTE name for this {@link ConceptCteStep}.
+	 * @return The CTE name for a {@link ConceptCteStep}.
 	 */
 	public String cteName(ConceptCteStep conceptCteStep) {
 		return this.cteNames.get(conceptCteStep);
@@ -38,13 +38,11 @@ public class ConceptTables {
 	 * @return The name of the table this {@link ConceptCteStep} will select from.
 	 */
 	public String getPredecessorTableName(ConceptCteStep conceptCteStep) {
-		return switch (conceptCteStep) {
-			case PREPROCESSING -> this.rootTable;
-			case EVENT_FILTER -> this.cteNames.get(ConceptCteStep.PREPROCESSING);
-			case AGGREGATION_SELECT -> this.cteNames.getOrDefault(ConceptCteStep.EVENT_FILTER, this.cteNames.get(ConceptCteStep.PREPROCESSING));
-			case AGGREGATION_FILTER -> this.cteNames.get(ConceptCteStep.AGGREGATION_SELECT);
-			case FINAL -> this.cteNames.getOrDefault(ConceptCteStep.AGGREGATION_FILTER, this.cteNames.get(ConceptCteStep.AGGREGATION_SELECT));
-		};
+		ConceptCteStep predecessor = conceptCteStep.predecessor();
+		if (predecessor == null) {
+			return rootTable;
+		}
+		return this.cteNames.get(predecessor);
 	}
 
 	/**
