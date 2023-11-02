@@ -45,6 +45,10 @@ public class SqlExecutionService {
 		catch (SQLException e) {
 			throw new ConqueryError.SqlError(e);
 		}
+		// not all DB vendors throw SQLExceptions
+		catch (RuntimeException e) {
+			throw new ConqueryError.SqlError(new SQLException(e));
+		}
 	}
 
 	private List<EntityResult> createResultTable(ResultSet resultSet, int columnCount) throws SQLException {

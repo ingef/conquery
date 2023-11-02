@@ -11,55 +11,53 @@ import org.jooq.impl.DSL;
 
 public class ConceptTables {
 
-	private final Map<CteStep, String> cteNames;
+	private final Map<ConceptCteStep, String> cteNames;
 	private final String rootTable;
 
-	public ConceptTables(String conceptLabel, Set<CteStep> requiredSteps, String rootTable) {
+	public ConceptTables(String conceptLabel, Set<ConceptCteStep> requiredSteps, String rootTableName) {
 		this.cteNames = requiredSteps.stream()
 									 .collect(Collectors.toMap(
 											 Function.identity(),
-											 step -> "concept_%s%s".formatted(conceptLabel, step.suffix())
+											 step -> step.cteName(conceptLabel)
 									 ));
-		this.rootTable = rootTable;
+		this.rootTable = rootTableName;
 	}
 
-	public boolean isRequiredStep(CteStep cteStep) {
-		return this.cteNames.containsKey(cteStep);
+	public boolean isRequiredStep(ConceptCteStep conceptCteStep) {
+		return this.cteNames.containsKey(conceptCteStep);
 	}
 
 	/**
-	 * @return The CTE name for this {@link CteStep}.
+	 * @return The CTE name for a {@link ConceptCteStep}.
 	 */
-	public String cteName(CteStep cteStep) {
-		return this.cteNames.get(cteStep);
+	public String cteName(ConceptCteStep conceptCteStep) {
+		return this.cteNames.get(conceptCteStep);
 	}
 
 	/**
-	 * @return The name of the table this {@link CteStep} will select from.
+	 * @return The name of the table this {@link ConceptCteStep} will select from.
 	 */
-	public String getPredecessorTableName(CteStep cteStep) {
-		return switch (cteStep) {
-			case PREPROCESSING -> this.rootTable;
-			case EVENT_FILTER -> this.cteNames.get(CteStep.PREPROCESSING);
-			case AGGREGATION_SELECT -> this.cteNames.getOrDefault(CteStep.EVENT_FILTER, this.cteNames.get(CteStep.PREPROCESSING));
-			case AGGREGATION_FILTER -> this.cteNames.get(CteStep.AGGREGATION_SELECT);
-			case FINAL -> this.cteNames.getOrDefault(CteStep.AGGREGATION_FILTER, this.cteNames.get(CteStep.AGGREGATION_SELECT));
-		};
+	public String getPredecessorTableName(ConceptCteStep conceptCteStep) {
+		ConceptCteStep predecessor = conceptCteStep.predecessor();
+		if (predecessor == null) {
+			return rootTable;
+		}
+		return this.cteNames.get(predecessor);
 	}
 
 	/**
-	 * Qualify a field for a {@link CteStep}.
+	 * Qualify a field for a {@link ConceptCteStep}.
 	 * <p>
 	 * For example, if you want to qualify a {@link Field} for the AGGREGATION_SELECT step,
 	 * it's qualified on the EVENT_FILTER or PREPROCESSING_STEP depending on the presence of the respective step.
-	 * See {@link ConceptTables#getPredecessorTableName(CteStep)}
+	 * See {@link ConceptTables#getPredecessorTableName(ConceptCteStep)}
 	 *
-	 * @param cteStep The {@link CteStep} you want to qualify the given field for.
+	 * @param conceptCteStep The {@link ConceptCteStep} you want to qualify the given field for.
 	 * @param field   The field you want to qualify.
 	 */
 	@SuppressWarnings("unchecked")
-	public <C> Field<C> qualifyOnPredecessorTableName(CteStep cteStep, Field<?> field) {
-		return DSL.field(DSL.name(getPredecessorTableName(cteStep), field.getName()), (DataType<C>) field.getDataType());
+	public <C> Field<C> qualifyOnPredecessorTableName(ConceptCteStep conceptCteStep, Field<?> field) {
+		return DSL.field(DSL.name(getPredecessorTableName(conceptCteStep), field.getName()), (DataType<C>) field.getDataType());
 	}
 
 }

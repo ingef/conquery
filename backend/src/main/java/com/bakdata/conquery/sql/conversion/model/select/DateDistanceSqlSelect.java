@@ -45,7 +45,8 @@ public class DateDistanceSqlSelect implements SqlSelect {
 	private Date getEndDate(CDateRange dateRange) {
 		LocalDate endDate;
 		// if a date restriction is set, the max of the date restriction equals the end date of the date distance
-		if (Objects.nonNull(dateRange)) {
+		// but there is also the possibility that the user set's an empty daterange which will be non-null but with null values
+		if (Objects.nonNull(dateRange) && dateRange.getMax() != null) {
 			endDate = dateRange.getMax();
 		}
 		else {

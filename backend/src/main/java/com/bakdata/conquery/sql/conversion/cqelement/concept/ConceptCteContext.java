@@ -9,8 +9,8 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
-import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Builder;
 import lombok.Value;
@@ -19,16 +19,16 @@ import org.jooq.Field;
 
 @Value
 @Builder(toBuilder = true)
-class CteContext implements Context {
+class ConceptCteContext implements Context {
 
-	ConversionContext context;
+	ConversionContext conversionContext;
+	String conceptLabel;
 	Field<Object> primaryColumn;
-	Optional<ColumnDateRange> validityDateRange;
+	Optional<ColumnDateRange> validityDate;
 	boolean isExcludedFromDateAggregation;
 	List<SqlSelects> selects;
 	List<ConceptFilter> filters;
 	ConceptTables conceptTables;
-	String conceptLabel;
 	@With
 	QueryStep previous;
 

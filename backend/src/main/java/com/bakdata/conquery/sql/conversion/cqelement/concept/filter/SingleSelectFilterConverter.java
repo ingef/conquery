@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept.filter;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SingleSelectFilter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 
 public class SingleSelectFilterConverter implements FilterConverter<String, SingleSelectFilter> {
@@ -14,8 +14,8 @@ public class SingleSelectFilterConverter implements FilterConverter<String, Sing
 	}
 
 	@Override
-	public Set<CteStep> requiredSteps() {
-		return CteStep.withOptionalSteps(CteStep.EVENT_FILTER);
+	public Set<ConceptCteStep> requiredSteps() {
+		return ConceptCteStep.withOptionalSteps(ConceptCteStep.EVENT_FILTER);
 	}
 
 	@Override

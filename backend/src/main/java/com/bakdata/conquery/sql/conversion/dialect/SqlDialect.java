@@ -37,27 +37,20 @@ public interface SqlDialect {
 
 	SystemDateNowSupplier DEFAULT_DATE_NOW_SUPPLIER = new SystemDateNowSupplier();
 
-	SqlFunctionProvider getFunction();
+	SqlFunctionProvider getFunctionProvider();
+
+	IntervalPacker getIntervalPacker();
 
 	List<NodeConverter<? extends Visitable>> getNodeConverters();
 
-	private static <R, C extends Converter<?, R, ?>> List<C> customize(List<C> defaults, List<C> substitutes) {
-		Map<Class<?>, C> substituteMap = getSubstituteMap(substitutes);
-		return defaults.stream()
-					   .map(converter -> substituteMap.getOrDefault(converter.getConversionClass(), converter))
-					   .collect(Collectors.toList());
-	}
-
 	List<SelectConverter<? extends Select>> getSelectConverters();
+
+	List<FilterConverter<?, ?>> getFilterConverters();
 
 	DSLContext getDSLContext();
 
-	private static <R, C extends Converter<?, R, ?>> Map<Class<?>, C> getSubstituteMap(List<C> substitutes) {
-		return substitutes.stream()
-						  .collect(Collectors.toMap(
-								  Converter::getConversionClass,
-								  Function.identity()
-						  ));
+	default boolean requiresAggregationInFinalStep() {
+		return true;
 	}
 
 	default List<NodeConverter<? extends Visitable>> getDefaultNodeConverters() {
@@ -74,8 +67,6 @@ public interface SqlDialect {
 	default List<SelectConverter<? extends Select>> customizeSelectConverters(List<SelectConverter<?>> substitutes) {
 		return customize(getDefaultSelectConverters(), substitutes);
 	}
-
-	List<FilterConverter<?, ?>> getFilterConverters();
 
 	default List<FilterConverter<?, ?>> getDefaultFilterConverters() {
 		return List.of(
@@ -96,4 +87,20 @@ public interface SqlDialect {
 				new SumSelectConverter()
 		);
 	}
+
+	private static <R, C extends Converter<?, R, ?>> List<C> customize(List<C> defaults, List<C> substitutes) {
+		Map<Class<?>, C> substituteMap = getSubstituteMap(substitutes);
+		return defaults.stream()
+					   .map(converter -> substituteMap.getOrDefault(converter.getConversionClass(), converter))
+					   .toList();
+	}
+
+	private static <R, C extends Converter<?, R, ?>> Map<Class<?>, C> getSubstituteMap(List<C> substitutes) {
+		return substitutes.stream()
+						  .collect(Collectors.toMap(
+								  Converter::getConversionClass,
+								  Function.identity()
+						  ));
+	}
+
 }

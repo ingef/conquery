@@ -7,19 +7,29 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.PostgreSqlIntervalPacker;
 import org.jooq.DSLContext;
 
 public class PostgreSqlDialect implements SqlDialect {
 
+	private final SqlFunctionProvider postgresqlFunctionProvider;
+	private final IntervalPacker postgresqlIntervalPacker;
 	private final DSLContext dslContext;
 
 	public PostgreSqlDialect(DSLContext dslContext) {
 		this.dslContext = dslContext;
+		this.postgresqlFunctionProvider = new PostgreSqlFunctionProvider();
+		this.postgresqlIntervalPacker = new PostgreSqlIntervalPacker(this.postgresqlFunctionProvider);
 	}
 
 	@Override
 	public DSLContext getDSLContext() {
 		return this.dslContext;
+	}
+
+	@Override
+	public boolean requiresAggregationInFinalStep() {
+		return false;
 	}
 
 	@Override
@@ -38,8 +48,13 @@ public class PostgreSqlDialect implements SqlDialect {
 	}
 
 	@Override
-	public SqlFunctionProvider getFunction() {
-		return new PostgreSqlFunctionProvider();
+	public SqlFunctionProvider getFunctionProvider() {
+		return postgresqlFunctionProvider;
+	}
+
+	@Override
+	public IntervalPacker getIntervalPacker() {
+		return postgresqlIntervalPacker;
 	}
 
 }

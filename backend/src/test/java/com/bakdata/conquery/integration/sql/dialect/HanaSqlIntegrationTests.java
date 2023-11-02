@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +29,11 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.RowN;
+import org.jooq.Table;
+import org.jooq.conf.ParamType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicTest;
@@ -98,7 +105,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		}
 	}
 
-	private static class TestHanaDialect extends HanaSqlDialect {
+	private static class TestHanaDialect extends HanaSqlDialect implements TestSqlDialect {
 
 		public TestHanaDialect(DSLContext dslContext) {
 			super(dslContext);
@@ -109,6 +116,32 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 			return this.customizeSelectConverters(List.of(
 					new DateDistanceSelectConverter(new MockDateNowSupplier())
 			));
+		}
+
+		public TestFunctionProvider getTestFunctionProvider() {
+			return new HanaTestFunctionProvider();
+		}
+
+	}
+
+	private static class HanaTestFunctionProvider implements TestFunctionProvider {
+
+		@Override
+		public void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement, DSLContext dslContext)
+				throws SQLException {
+			for (RowN rowN : content) {
+				String insertRowStatement = dslContext.insertInto(table, columns)
+													  .values(rowN)
+													  .getSQL(ParamType.INLINED);
+
+				statement.execute(insertRowStatement);
+			}
+		}
+
+		@Override
+		public String createDropTableStatement(Table<Record> table, DSLContext dslContext) {
+			return dslContext.dropTable(table)
+							 .getSQL(ParamType.INLINED);
 		}
 
 	}

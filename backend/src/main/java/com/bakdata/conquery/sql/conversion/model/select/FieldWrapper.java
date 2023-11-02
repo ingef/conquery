@@ -7,9 +7,17 @@ import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode
-public class FieldSqlSelect implements SqlSelect {
+public class FieldWrapper implements SqlSelect {
 
 	private final Field<?> field;
+
+	/**
+	 * @return Aliases an existing {@link SqlSelect} with a unique alias.
+	 */
+	public static FieldWrapper unique(SqlSelect sqlSelect) {
+		Field<?> field = sqlSelect.select();
+		return new FieldWrapper(field.as("%s-%8X".formatted(field.getName(), field.hashCode())));
+	}
 
 	@Override
 	public Field<?> select() {
@@ -25,6 +33,5 @@ public class FieldSqlSelect implements SqlSelect {
 	public String columnName() {
 		return field.getName();
 	}
-
 
 }

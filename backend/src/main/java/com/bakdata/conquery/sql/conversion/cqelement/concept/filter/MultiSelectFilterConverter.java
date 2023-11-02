@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept.filter;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.MultiSelectFilter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 
 public class MultiSelectFilterConverter implements FilterConverter<String[], MultiSelectFilter> {
@@ -14,8 +14,8 @@ public class MultiSelectFilterConverter implements FilterConverter<String[], Mul
 	}
 
 	@Override
-	public Set<CteStep> requiredSteps() {
-		return CteStep.withOptionalSteps(CteStep.EVENT_FILTER);
+	public Set<ConceptCteStep> requiredSteps() {
+		return ConceptCteStep.withOptionalSteps(ConceptCteStep.EVENT_FILTER);
 	}
 
 	@Override
