@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +27,8 @@ public class SumSqlSelect implements SqlSelect {
 	}
 
 	@Override
-	public String columnName() {
-		return columnToSum.getName();
+	public List<String> columnNames() {
+		return List.of(columnToSum.getName());
 	}
 
 }

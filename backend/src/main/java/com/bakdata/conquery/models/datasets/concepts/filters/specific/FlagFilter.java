@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -36,6 +37,7 @@ import lombok.ToString;
 @ToString
 public class FlagFilter extends Filter<String[]> {
 
+	@Getter
 	@NsIdRefCollection
 	private final Map<String, Column> flags;
 

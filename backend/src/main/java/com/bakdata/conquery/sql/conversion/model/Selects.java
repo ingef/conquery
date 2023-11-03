@@ -6,7 +6,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Value;
 import org.jooq.Field;
@@ -59,7 +58,7 @@ public class Selects {
 	public Selects qualify(String qualifier) {
 		Field<Object> qualifiedPrimaryColumn = DSL.field(DSL.name(qualifier, this.primaryColumn.getName()));
 		List<SqlSelect> qualifiedSelects = this.sqlSelects.stream()
-														  .map(select -> ExtractingSqlSelect.fromSqlSelect(select, qualifier))
+														  .flatMap(sqlSelect -> sqlSelect.createReferences(qualifier, SqlSelect.class).stream())
 														  .distinct()
 														  .collect(Collectors.toList());
 		if (this.validityDate.isEmpty()) {

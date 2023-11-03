@@ -55,7 +55,7 @@ class DateAggregationContext implements Context {
 	public DateAggregationContext qualify(String qualifier) {
 		return this.toBuilder()
 				   .primaryColumn(QualifyingUtil.qualify(this.primaryColumn, qualifier))
-				   .carryThroughSelects(QualifyingUtil.qualify(this.carryThroughSelects, qualifier))
+				   .carryThroughSelects(QualifyingUtil.qualify(this.carryThroughSelects, qualifier, SqlSelect.class))
 				   .dateAggregationDates(this.dateAggregationDates.qualify(qualifier))
 				   .build();
 	}

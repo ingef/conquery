@@ -41,7 +41,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 											  .andPreceding(1))
 									 .as(IntervalPacker.PREVIOUS_END_FIELD_NAME);
 
-		ArrayList<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), sourceTableName));
+		ArrayList<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), sourceTableName, SqlSelect.class));
 		qualifiedSelects.add(new FieldWrapper(previousEnd));
 
 		Selects previousEndSelects = new Selects(
@@ -75,7 +75,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 							.rowsUnboundedPreceding())
 				   .as(IntervalPacker.RANGE_INDEX_FIELD_NAME);
 
-		ArrayList<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), previousEndCteName));
+		ArrayList<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), previousEndCteName, SqlSelect.class));
 		qualifiedSelects.add(new FieldWrapper(rangeIndex));
 
 		Selects rangeIndexSelects = new Selects(
@@ -103,7 +103,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		Field<Date> rangeEnd = DSL.max(validityDate.getEnd()).as(IntervalPacker.RANGE_END_MAX_FIELD_NAME);
 		Field<BigDecimal> rangeIndex = DSL.field(DSL.name(rangeIndexCteName, IntervalPacker.RANGE_INDEX_FIELD_NAME), BigDecimal.class);
 
-		List<SqlSelect> qualifiedSelects = QualifyingUtil.qualify(context.getCarryThroughSelects(), rangeIndexCteName);
+		List<SqlSelect> qualifiedSelects = QualifyingUtil.qualify(context.getCarryThroughSelects(), rangeIndexCteName, SqlSelect.class);
 		Selects intervalCompleteSelects = new Selects(
 				primaryColumn,
 				Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)),

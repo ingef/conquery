@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+import java.util.List;
+
 import lombok.EqualsAndHashCode;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -26,8 +28,8 @@ public class ExistsSqlSelect implements SqlSelect {
 	}
 
 	@Override
-	public String columnName() {
-		return label;
+	public List<String> columnNames() {
+		return List.of(label);
 	}
 
 }

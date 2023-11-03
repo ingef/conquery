@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+import java.util.List;
+
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Field;
@@ -30,8 +32,8 @@ public class FieldWrapper implements SqlSelect {
 	}
 
 	@Override
-	public String columnName() {
-		return field.getName();
+	public List<String> columnNames() {
+		return List.of(field.getName());
 	}
 
 }

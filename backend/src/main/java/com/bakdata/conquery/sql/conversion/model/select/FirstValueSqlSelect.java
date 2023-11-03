@@ -32,8 +32,8 @@ public class FirstValueSqlSelect implements SqlSelect {
 	}
 
 	@Override
-	public String columnName() {
-		return firstColumn.getName();
+	public List<String> columnNames() {
+		return List.of(firstColumn.getName());
 	}
 
 }

@@ -40,7 +40,7 @@ public class PostgreSqlDateAggregator implements SqlDateAggregator {
 		Selects dateAggregationSelects = new Selects(
 				joinedStep.getQualifiedSelects().getPrimaryColumn(),
 				Optional.ofNullable(aggregatedValidityDate),
-				QualifyingUtil.qualify(carryThroughSelects, joinedStepCteName)
+				QualifyingUtil.qualify(carryThroughSelects, joinedStepCteName, SqlSelect.class)
 		);
 
 		return QueryStep.builder()
