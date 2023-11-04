@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.sql.SqlQuery;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
-import org.jooq.conf.ParamType;
 
 public class SqlConverter {
 
@@ -17,6 +16,7 @@ public class SqlConverter {
 
 	public SqlQuery convert(QueryDescription queryDescription) {
 		ConversionContext converted = nodeConversions.convert(queryDescription);
-		return new SqlQuery(converted.getFinalQuery().getSQL(ParamType.INLINED));
+		return converted.getFinalQuery();
 	}
+
 }

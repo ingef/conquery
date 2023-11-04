@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -14,12 +13,13 @@ class EventFilterCte extends ConceptCte {
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
 
-		Selects eventFilterSelects = Selects.qualified(
-				conceptCteContext.getConceptTables().getPredecessorTableName(ConceptCteStep.EVENT_FILTER),
-				conceptCteContext.getPrimaryColumn(),
-				conceptCteContext.getValidityDate(),
-				getForAggregationSelectStep(conceptCteContext)
-		);
+		String predecessorTableName = conceptCteContext.getConceptTables().getPredecessorTableName(cteStep());
+		Selects eventFilterSelects = Selects.builder()
+											.primaryColumn(conceptCteContext.getPrimaryColumn())
+											.validityDate(conceptCteContext.getValidityDate())
+											.sqlSelects(getForAggregationSelectStep(conceptCteContext))
+											.build()
+											.qualify(predecessorTableName);
 
 		List<Condition> eventFilterConditions = conceptCteContext.getFilters().stream()
 																 .flatMap(conceptFilter -> conceptFilter.getFilters().getEvent().stream())
@@ -34,8 +34,7 @@ class EventFilterCte extends ConceptCte {
 	private static List<SqlSelect> getForAggregationSelectStep(ConceptCteContext conceptCteContext) {
 		return conceptCteContext.allConceptSelects()
 								.flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
-								.distinct()
-								.collect(Collectors.toList());
+								.toList();
 	}
 
 	@Override

@@ -269,7 +269,6 @@ public class EntityPreviewExecution extends ManagedInternalForm<EntityPreviewFor
 		status.setQuery(getValuesQuery().getQuery());
 
 
-
 		status.setInfos(transformQueryResultToInfos(getInfoCardExecution(), new PrintSettings(true, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel)));
 
 		status.setTimeStratifiedInfos(toChronoInfos(previewConfig, getSubQueries(), new PrintSettings(false, I18n.LOCALE.get(), getNamespace(), getConfig(), null, previewConfig::resolveSelectLabel)));

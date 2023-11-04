@@ -9,6 +9,8 @@ import com.bakdata.conquery.sql.conversion.cqelement.aggregation.PostgreSqlDateA
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.PostgreSqlIntervalPacker;
+import com.bakdata.conquery.sql.execution.CDateSetParser;
+import com.bakdata.conquery.sql.execution.DefaultNotationParser;
 import org.jooq.DSLContext;
 
 public class PostgreSqlDialect implements SqlDialect {
@@ -16,6 +18,7 @@ public class PostgreSqlDialect implements SqlDialect {
 	private final SqlFunctionProvider postgresqlFunctionProvider;
 	private final IntervalPacker postgresqlIntervalPacker;
 	private final SqlDateAggregator postgresqlDateAggregator;
+	private final DefaultNotationParser defaultNotationParser;
 	private final DSLContext dslContext;
 
 	public PostgreSqlDialect(DSLContext dslContext) {
@@ -23,11 +26,17 @@ public class PostgreSqlDialect implements SqlDialect {
 		this.postgresqlFunctionProvider = new PostgreSqlFunctionProvider();
 		this.postgresqlIntervalPacker = new PostgreSqlIntervalPacker(this.postgresqlFunctionProvider);
 		this.postgresqlDateAggregator = new PostgreSqlDateAggregator(this.postgresqlFunctionProvider);
+		this.defaultNotationParser = new DefaultNotationParser();
 	}
 
 	@Override
 	public DSLContext getDSLContext() {
 		return this.dslContext;
+	}
+
+	@Override
+	public CDateSetParser getCDateSetParser() {
+		return this.defaultNotationParser;
 	}
 
 	@Override

@@ -10,7 +10,7 @@ import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.ExplicitSelect;
 import lombok.Builder;
 import lombok.Value;
 import org.jooq.Field;
@@ -20,7 +20,7 @@ import org.jooq.Field;
 class DateAggregationContext implements Context {
 
 	Field<Object> primaryColumn;
-	List<SqlSelect> carryThroughSelects;
+	List<ExplicitSelect> carryThroughSelects;
 	DateAggregationTables dateAggregationTables;
 	DateAggregationDates dateAggregationDates;
 	@Builder.Default
@@ -55,7 +55,7 @@ class DateAggregationContext implements Context {
 	public DateAggregationContext qualify(String qualifier) {
 		return this.toBuilder()
 				   .primaryColumn(QualifyingUtil.qualify(this.primaryColumn, qualifier))
-				   .carryThroughSelects(QualifyingUtil.qualify(this.carryThroughSelects, qualifier))
+				   .carryThroughSelects(QualifyingUtil.qualify(this.carryThroughSelects, qualifier, ExplicitSelect.class))
 				   .dateAggregationDates(this.dateAggregationDates.qualify(qualifier))
 				   .build();
 	}

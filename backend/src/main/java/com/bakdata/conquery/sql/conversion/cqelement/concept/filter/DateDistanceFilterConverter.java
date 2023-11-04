@@ -36,7 +36,7 @@ public class DateDistanceFilterConverter implements FilterConverter<Range.LongRa
 		);
 
 		FilterCondition dateDistanceCondition = new DateDistanceCondition(
-				context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.EVENT_FILTER, dateDistanceSqlSelect.aliased()),
+				context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.EVENT_FILTER, dateDistanceSqlSelect.aliased()),
 				context.getValue()
 		);
 

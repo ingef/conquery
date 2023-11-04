@@ -46,7 +46,7 @@ public class ConceptTables {
 	}
 
 	/**
-	 * Qualify a field for a {@link ConceptCteStep}.
+	 * Qualify a field for a {@link ConceptCteStep} on the predeceasing step.
 	 * <p>
 	 * For example, if you want to qualify a {@link Field} for the AGGREGATION_SELECT step,
 	 * it's qualified on the EVENT_FILTER or PREPROCESSING_STEP depending on the presence of the respective step.
@@ -56,7 +56,7 @@ public class ConceptTables {
 	 * @param field   The field you want to qualify.
 	 */
 	@SuppressWarnings("unchecked")
-	public <C> Field<C> qualifyOnPredecessorTableName(ConceptCteStep conceptCteStep, Field<?> field) {
+	public <C> Field<C> qualifyOnPredecessor(ConceptCteStep conceptCteStep, Field<?> field) {
 		return DSL.field(DSL.name(getPredecessorTableName(conceptCteStep), field.getName()), (DataType<C>) field.getDataType());
 	}
 

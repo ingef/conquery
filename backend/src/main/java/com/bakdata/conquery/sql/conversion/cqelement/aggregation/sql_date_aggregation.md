@@ -327,11 +327,11 @@ select coalesce("rows_left"."pid", "rows_right"."pid") as "primary_column",
        coalesce(
                "rows_left"."range_end",
                TO_DATE('0001-01-01', 'yyyy-mm-dd')
-       ) as "range_start",
+       )                                               as "range_start",
        coalesce(
                "rows_right"."range_start",
                TO_DATE('9999-12-31', 'yyyy-mm-dd')
-       ) as "range_end"
+       )                                               as "range_end"
 from "row_numbers" "rows_left"
          full outer join "row_numbers" "rows_right"
                          on (

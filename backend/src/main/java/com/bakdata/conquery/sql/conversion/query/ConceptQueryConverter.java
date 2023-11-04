@@ -40,17 +40,18 @@ public class ConceptQueryConverter implements NodeConverter<ConceptQuery> {
 
 		QueryStep preFinalStep = contextAfterConversion.getQuerySteps().iterator().next();
 		Selects preFinalSelects = preFinalStep.getQualifiedSelects();
+		Selects finalSelects = getFinalSelects(preFinalSelects, context.getSqlDialect().getFunctionProvider());
 
 		QueryStep finalStep = QueryStep.builder()
 									   .cteName(null)  // the final QueryStep won't be converted to a CTE
-									   .selects(getFinalSelects(preFinalSelects, context.getSqlDialect().getFunctionProvider()))
+									   .selects(finalSelects)
 									   .fromTable(QueryStep.toTableLike(preFinalStep.getCteName()))
 									   .groupBy(getFinalGroupBySelects(preFinalSelects, context.getSqlDialect()))
 									   .predecessors(List.of(preFinalStep))
 									   .build();
 
 		Select<Record> finalQuery = this.queryStepTransformer.toSelectQuery(finalStep);
-		return context.withFinalQuery(finalQuery);
+		return context.withFinalQuery(new ConceptSqlQuery(finalQuery, finalSelects));
 	}
 
 	private Selects getFinalSelects(Selects preFinalSelects, SqlFunctionProvider functionProvider) {

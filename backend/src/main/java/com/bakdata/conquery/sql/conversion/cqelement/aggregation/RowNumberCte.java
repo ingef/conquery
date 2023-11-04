@@ -1,13 +1,12 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.Getter;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -31,17 +30,17 @@ class RowNumberCte extends DateAggregationCte {
 		Field<Object> primaryColumn = context.getPrimaryColumn();
 
 		ColumnDateRange aggregatedValidityDate = context.getDateAggregationDates().getValidityDates().get(0);
-		Field<Integer> rowNumber = DSL.rowNumber().over(DSL.partitionBy(primaryColumn).orderBy(aggregatedValidityDate.getStart()))
-									  .as(ROW_NUMBER_FIELD_NAME);
-
-		ArrayList<SqlSelect> selects = new ArrayList<>(context.getCarryThroughSelects());
-		selects.add(new FieldWrapper(rowNumber));
-
-		Selects rowNumberSelects = new Selects(
-				primaryColumn,
-				Optional.of(aggregatedValidityDate),
-				selects
+		FieldWrapper rowNumber = new FieldWrapper(
+				DSL.rowNumber().over(DSL.partitionBy(primaryColumn).orderBy(aggregatedValidityDate.getStart()))
+				   .as(ROW_NUMBER_FIELD_NAME)
 		);
+
+		Selects rowNumberSelects = Selects.builder()
+										  .primaryColumn(primaryColumn)
+										  .validityDate(Optional.of(aggregatedValidityDate))
+										  .sqlSelects(List.of(rowNumber))
+										  .explicitSelects(context.getCarryThroughSelects())
+										  .build();
 
 		return QueryStep.builder()
 						.selects(rowNumberSelects);

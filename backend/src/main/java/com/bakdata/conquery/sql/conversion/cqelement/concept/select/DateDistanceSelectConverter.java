@@ -5,7 +5,8 @@ import java.util.List;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.select.DateDistanceSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.ExplicitExtractingSelect;
+import com.bakdata.conquery.sql.conversion.model.select.ExplicitSelect;
 import com.bakdata.conquery.sql.conversion.model.select.MinSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
@@ -23,7 +24,6 @@ public class DateDistanceSelectConverter implements SelectConverter<DateDistance
 	@Override
 	public SqlSelects convert(DateDistanceSelect dateDistanceSelect, SelectContext context) {
 
-
 		SqlSelect rootSelect = new DateDistanceSqlSelect(
 				dateNowSupplier,
 				dateDistanceSelect.getTimeUnit(), context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING),
@@ -33,12 +33,11 @@ public class DateDistanceSelectConverter implements SelectConverter<DateDistance
 				context.getParentContext().getSqlDialect().getFunctionProvider()
 		);
 
-		Field<Object>
-				qualifiedDateDistance =
-				context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		Field<Object> qualifiedDateDistance = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
 		MinSqlSelect minDateDistance = new MinSqlSelect(qualifiedDateDistance, dateDistanceSelect.getName());
 
-		ExtractingSqlSelect<Object> firstValueReference = new ExtractingSqlSelect<>(
+		ExplicitSelect firstValueReference = ExplicitExtractingSelect.fromSelect(
+				dateDistanceSelect,
 				context.getConceptTables().getPredecessorTableName(ConceptCteStep.FINAL),
 				minDateDistance.aliased().getName(),
 				Object.class

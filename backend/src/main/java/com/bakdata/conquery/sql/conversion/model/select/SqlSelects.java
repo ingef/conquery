@@ -16,5 +16,5 @@ public class SqlSelects {
 	List<SqlSelect> forAggregationSelectStep = Collections.emptyList();
 	// Empty if only used in aggregation select
 	@Builder.Default
-	List<SqlSelect> forFinalStep = Collections.emptyList();
+	List<ExplicitSelect> forFinalStep = Collections.emptyList();
 }

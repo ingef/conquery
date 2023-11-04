@@ -31,6 +31,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SumSelectCon
 import com.bakdata.conquery.sql.conversion.model.QueryStepTransformer;
 import com.bakdata.conquery.sql.conversion.query.ConceptQueryConverter;
 import com.bakdata.conquery.sql.conversion.supplier.SystemDateNowSupplier;
+import com.bakdata.conquery.sql.execution.CDateSetParser;
 import org.jooq.DSLContext;
 
 public interface SqlDialect {
@@ -50,6 +51,8 @@ public interface SqlDialect {
 	List<FilterConverter<?, ?>> getFilterConverters();
 
 	DSLContext getDSLContext();
+
+	CDateSetParser getCDateSetParser();
 
 	default boolean requiresAggregationInFinalStep() {
 		return true;

@@ -1,4 +1,3 @@
-
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 import java.sql.Date;
@@ -24,14 +23,12 @@ class IntermediateTableCte extends DateAggregationCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
 
-		List<SqlSelect> selects = context.getSqlAggregationAction().getIntermediateTableSelects(
-				context.getDateAggregationDates(),
-				context.getCarryThroughSelects()
-		);
-		Selects intermediateTableSelects = new Selects(
-				context.getPrimaryColumn(),
-				selects
-		);
+		List<SqlSelect> intermediateTableSelects = context.getSqlAggregationAction().getIntermediateTableSelects(context.getDateAggregationDates());
+		Selects selects = Selects.builder()
+								 .primaryColumn(context.getPrimaryColumn())
+								 .sqlSelects(intermediateTableSelects)
+								 .explicitSelects(context.getCarryThroughSelects())
+								 .build();
 
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
 		List<Field<Date>> allStarts = dateAggregationDates.allStarts();
@@ -48,7 +45,7 @@ class IntermediateTableCte extends DateAggregationCte {
 		Condition intermediateTableCondition = startIsNull.orNot(startBeforeEnd);
 
 		return QueryStep.builder()
-						.selects(intermediateTableSelects)
+						.selects(selects)
 						.conditions(List.of(intermediateTableCondition));
 	}
 

@@ -3,7 +3,9 @@ package com.bakdata.conquery.integration.sql;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -40,6 +42,11 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 
 	private static final String EXPECTED_SQL_FILENAME = "expected.sql";
 
+	public static final UnaryOperator<Object[]> TO_STRING_OPERATOR =
+			values -> Arrays.stream(values)
+							.map(object -> object != null ? object.toString() : null)
+							.toArray();
+
 	private List<Dialect> supportedDialects;
 
 	@NotNull
@@ -68,7 +75,7 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 
 	/**
 	 * @return True if the test specification contains the dialect, or if no allowed dialects are specified,
-	 * 	which considers the spec to be allowed for all dialects.
+	 * which considers the spec to be allowed for all dialects.
 	 */
 	public boolean supportsDialects(Dialect dialect) {
 		return getSupportedDialects() == null || getSupportedDialects().contains(dialect);
@@ -92,6 +99,8 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 
 		SqlExecutionResult result = managedQuery.getResult();
 		List<EntityResult> resultCsv = result.getTable();
+		// TODO (ask awildturtok) can we use printer here?
+		resultCsv.forEach(entityResult -> entityResult.modifyResultLinesInplace(TO_STRING_OPERATOR));
 
 		Path expectedCsvFile = this.specDir.resolve(this.expectedCsv);
 		List<EntityResult> expectedCsv = support.getTableImporter().readExpectedEntities(expectedCsvFile);

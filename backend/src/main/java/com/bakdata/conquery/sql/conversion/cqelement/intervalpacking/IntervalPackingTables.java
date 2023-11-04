@@ -20,11 +20,7 @@ class IntervalPackingTables {
 	private final Map<IntervalPackingCteStep, String> cteNames;
 
 	public static IntervalPackingTables forConcept(String nodeLabel, ConceptTables conceptTables) {
-		Map<IntervalPackingCteStep, String> cteNames = Arrays.stream(IntervalPackingCteStep.values())
-															 .collect(Collectors.toMap(
-																	 Function.identity(),
-																	 step -> step.cteName(nodeLabel)
-															 ));
+		Map<IntervalPackingCteStep, String> cteNames = createCteNameMap(nodeLabel);
 		String preprocessingCteName = conceptTables.cteName(ConceptCteStep.PREPROCESSING);
 		return new IntervalPackingTables(preprocessingCteName, cteNames);
 	}

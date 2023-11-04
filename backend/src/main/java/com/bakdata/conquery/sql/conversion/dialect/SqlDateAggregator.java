@@ -5,7 +5,7 @@ import java.util.List;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.DateAggregationDates;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.ExplicitSelect;
 
 public interface SqlDateAggregator {
 
@@ -16,7 +16,7 @@ public interface SqlDateAggregator {
 	 */
 	QueryStep apply(
 			QueryStep joinedStep,
-			List<SqlSelect> carryThroughSelects,
+			List<ExplicitSelect> carryThroughSelects,
 			DateAggregationDates dateAggregationDates,
 			DateAggregationAction dateAggregationAction
 	);
@@ -24,6 +24,6 @@ public interface SqlDateAggregator {
 	/**
 	 * Inverts the validity date of the given base step.
 	 */
-	public QueryStep invertAggregatedIntervals(QueryStep baseStep);
+	QueryStep invertAggregatedIntervals(QueryStep baseStep);
 
 }

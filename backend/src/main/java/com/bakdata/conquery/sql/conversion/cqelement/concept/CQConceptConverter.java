@@ -133,7 +133,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return requiredSteps;
 	}
 
-	private static String createConceptLabel(CQConcept node, ConversionContext context) {
+	private String createConceptLabel(CQConcept node, ConversionContext context) {
 		// only relevant for debugging purposes as it will be part of the generated SQL query
 		// we prefix each cte name of a concept with an incrementing counter to prevent naming collisions if the same concept is selected multiple times
 		return "%s_%s".formatted(

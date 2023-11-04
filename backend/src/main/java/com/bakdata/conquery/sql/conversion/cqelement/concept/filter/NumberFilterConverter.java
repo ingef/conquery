@@ -28,7 +28,7 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 		);
 
 		NumberCondition condition = new NumberCondition(
-				context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.EVENT_FILTER, rootSelect.aliased()),
+				context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.EVENT_FILTER, rootSelect.aliased()),
 				context.getValue()
 		);
 

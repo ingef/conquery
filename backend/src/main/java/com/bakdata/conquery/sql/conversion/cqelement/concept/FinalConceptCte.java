@@ -2,6 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
@@ -9,7 +10,7 @@ import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStepJoiner;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.ExplicitSelect;
 import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.TableLike;
@@ -19,15 +20,17 @@ class FinalConceptCte extends ConceptCte {
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
 
-		List<SqlSelect> forFinalStep = conceptCteContext.getSelects().stream()
-														.flatMap(sqlSelects -> sqlSelects.getForFinalStep().stream())
-														.distinct()
-														.toList();
+		List<ExplicitSelect> forFinalStep = conceptCteContext.getSelects().stream()
+															 .flatMap(sqlSelects -> sqlSelects.getForFinalStep().stream())
+															 .distinct()
+															 .collect(Collectors.toList());
 
 		if (conceptCteContext.getValidityDate().isEmpty() || conceptCteContext.isExcludedFromDateAggregation()) {
-			Selects finalConceptSelects = new Selects(conceptCteContext.getPrimaryColumn(), Optional.empty(), forFinalStep);
-			return QueryStep.builder()
-							.selects(finalConceptSelects);
+			Selects finalConceptSelects = Selects.builder()
+												 .primaryColumn(conceptCteContext.getPrimaryColumn())
+												 .explicitSelects(forFinalStep)
+												 .build();
+			return QueryStep.builder().selects(finalConceptSelects);
 		}
 
 		return applyIntervalPacking(forFinalStep, conceptCteContext);
@@ -38,7 +41,7 @@ class FinalConceptCte extends ConceptCte {
 		return ConceptCteStep.FINAL;
 	}
 
-	private QueryStep.QueryStepBuilder applyIntervalPacking(List<SqlSelect> forFinalStep, ConceptCteContext conceptCteContext) {
+	private QueryStep.QueryStepBuilder applyIntervalPacking(List<ExplicitSelect> forFinalStep, ConceptCteContext conceptCteContext) {
 
 		IntervalPackingContext intervalPackingContext = new IntervalPackingContext(
 				conceptCteContext.getConceptLabel(),
@@ -56,7 +59,7 @@ class FinalConceptCte extends ConceptCte {
 	}
 
 	private QueryStep.QueryStepBuilder joinSelectsAndFiltersWithIntervalPackingStep(
-			List<SqlSelect> forFinalStep,
+			List<ExplicitSelect> forFinalStep,
 			QueryStep finalIntervalPackingStep,
 			ConceptCteContext conceptCteContext
 	) {
@@ -70,7 +73,11 @@ class FinalConceptCte extends ConceptCte {
 				conceptCteContext.getConversionContext()
 		);
 
-		Selects finalConceptSelects = new Selects(primaryColumn, validityDate, forFinalStep);
+		Selects finalConceptSelects = Selects.builder()
+											 .primaryColumn(primaryColumn)
+											 .validityDate(validityDate)
+											 .explicitSelects(forFinalStep)
+											 .build();
 
 		return QueryStep.builder()
 						.selects(finalConceptSelects)

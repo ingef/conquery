@@ -9,7 +9,7 @@ import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptTables;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.ExplicitSelect;
 import lombok.Value;
 import org.jooq.Field;
 
@@ -21,7 +21,7 @@ public class IntervalPackingContext implements Context {
 	ColumnDateRange validityDate;
 	QueryStep predecessor;
 	IntervalPackingTables intervalPackingTables;
-	List<SqlSelect> carryThroughSelects;
+	List<ExplicitSelect> carryThroughSelects;
 
 	public IntervalPackingContext(
 			String conceptLabel,
@@ -45,7 +45,7 @@ public class IntervalPackingContext implements Context {
 	public IntervalPackingContext(
 			String nodeLabel,
 			QueryStep predeceasingStep,
-			List<SqlSelect> carryThroughSelects
+			List<ExplicitSelect> carryThroughSelects
 	) {
 		this.nodeLabel = nodeLabel;
 		this.primaryColumn = predeceasingStep.getSelects().getPrimaryColumn();

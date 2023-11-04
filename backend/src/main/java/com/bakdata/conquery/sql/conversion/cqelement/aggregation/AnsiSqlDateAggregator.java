@@ -9,7 +9,7 @@ import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.ExplicitSelect;
 
 public class AnsiSqlDateAggregator implements SqlDateAggregator {
 
@@ -24,7 +24,7 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 	@Override
 	public QueryStep apply(
 			QueryStep joinedStep,
-			List<SqlSelect> carryThroughSelects,
+			List<ExplicitSelect> carryThroughSelects,
 			DateAggregationDates dateAggregationDates,
 			DateAggregationAction dateAggregationAction
 	) {
@@ -64,7 +64,7 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 
 		DateAggregationContext context = DateAggregationContext.builder()
 															   .sqlAggregationAction(null) // when inverting, an aggregation has already been applied
-															   .carryThroughSelects(baseStepQualifiedSelects.getSqlSelects())
+															   .carryThroughSelects(baseStepQualifiedSelects.getExplicitSelects())
 															   .dateAggregationDates(dateAggregationDates)
 															   .dateAggregationTables(dateAggregationTables)
 															   .primaryColumn(baseStepQualifiedSelects.getPrimaryColumn())
@@ -84,7 +84,7 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 		return finalDateAggregationStep;
 	}
 
-	private QueryStep withIntervalPackingApplied(QueryStep joinedStep, List<SqlSelect> carryThroughSelects, QueryStep finalDateAggregationStep) {
+	private QueryStep withIntervalPackingApplied(QueryStep joinedStep, List<ExplicitSelect> carryThroughSelects, QueryStep finalDateAggregationStep) {
 		IntervalPackingContext intervalPackingContext = new IntervalPackingContext(
 				joinedStep.getCteName(),
 				finalDateAggregationStep,

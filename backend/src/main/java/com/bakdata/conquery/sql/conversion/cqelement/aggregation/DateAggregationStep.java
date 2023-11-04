@@ -23,8 +23,8 @@ interface DateAggregationStep extends CteStep {
 	}
 
 	@Override
-    default String cteName(String nodeLabel) {
+	default String cteName(String nodeLabel) {
 		return "%s%s".formatted(nodeLabel, suffix());
-	};
+	}
 
 }
