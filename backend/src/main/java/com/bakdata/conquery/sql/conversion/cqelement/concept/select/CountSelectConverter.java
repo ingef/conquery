@@ -24,10 +24,10 @@ public class CountSelectConverter implements SelectConverter<CountSelect> {
 		Field<Object> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
 		CountSqlSelect countSqlSelect = new CountSqlSelect(qualifiedRootSelect, countSelect.getName(), CountSqlSelect.CountType.fromBoolean(countSelect.isDistinct()));
 
-		ExtractingSqlSelect<Object> finalSelect = new ExtractingSqlSelect<>(
+		ExtractingSqlSelect<Integer> finalSelect = new ExtractingSqlSelect<>(
 				context.getConceptTables().getPredecessorTableName(ConceptCteStep.FINAL),
 				countSqlSelect.aliased().getName(),
-				Object.class
+				Integer.class
 		);
 
 		return SqlSelects.builder()
