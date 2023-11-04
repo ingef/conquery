@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.filter;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.Range;
@@ -46,9 +45,7 @@ public class CountFilterConverter implements FilterConverter<Range.LongRange, Co
 
 	@Override
 	public Set<ConceptCteStep> requiredSteps() {
-		Set<ConceptCteStep> countFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
-		countFilterSteps.add(ConceptCteStep.AGGREGATION_FILTER);
-		return countFilterSteps;
+		return ConceptCteStep.withOptionalSteps(ConceptCteStep.AGGREGATION_FILTER);
 	}
 
 	@Override
