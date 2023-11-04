@@ -72,19 +72,18 @@ public class UpdateMatchingStatsMessage extends WorkerMessage {
 			final Map<? extends Concept<?>, CompletableFuture<Void>>
 					subJobs =
 					concepts.stream()
-							.collect(Collectors.toMap(
-									Functions.identity(),
-									concept -> CompletableFuture.runAsync(() -> {
-										final Map<ConceptElement<?>, MatchingStats.Entry>
-												matchingStats =
-												new HashMap<>(concept.countElements());
+							.collect(Collectors.toMap(Functions.identity(),
+													  concept -> CompletableFuture.runAsync(() -> {
+														  final Map<ConceptElement<?>, MatchingStats.Entry>
+																  matchingStats =
+																  new HashMap<>(concept.countElements());
 
-										calculateConceptMatches(concept, matchingStats, worker);
+														  calculateConceptMatches(concept, matchingStats, worker);
 
-										worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
+														  worker.send(new UpdateElementMatchingStats(worker.getInfo().getId(), matchingStats));
 
-										progressReporter.report(1);
-									}, worker.getJobsExecutorService())
+														  progressReporter.report(1);
+													  }, worker.getJobsExecutorService())
 							));
 
 
