@@ -20,11 +20,13 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConver
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.MultiSelectFilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.NumberFilterConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.PrefixTextFilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.SingleSelectFilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.SumFilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistanceSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.ExistsSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.FirstValueSelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.PrefixSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConversions;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SumSelectConverter;
@@ -77,7 +79,8 @@ public interface SqlDialect {
 				new MultiSelectFilterConverter(),
 				new SingleSelectFilterConverter(),
 				new NumberFilterConverter(),
-				new SumFilterConverter()
+				new SumFilterConverter(),
+				new PrefixTextFilterConverter()
 		);
 	}
 
@@ -86,7 +89,8 @@ public interface SqlDialect {
 				new FirstValueSelectConverter(),
 				new DateDistanceSelectConverter(DEFAULT_DATE_NOW_SUPPLIER),
 				new ExistsSelectConverter(),
-				new SumSelectConverter()
+				new SumSelectConverter(),
+				new PrefixSelectConverter()
 		);
 	}
 
