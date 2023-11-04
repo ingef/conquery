@@ -12,6 +12,7 @@ import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
 import com.bakdata.conquery.sql.conversion.model.select.CountSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import org.jooq.Field;
 
@@ -20,18 +21,14 @@ public class CountFilterConverter implements FilterConverter<Range.LongRange, Co
 	@Override
 	public ConceptFilter convert(CountFilter countFilter, FilterContext<Range.LongRange> context) {
 
-		ExtractingSqlSelect<Object> rootSelect = new ExtractingSqlSelect<>(
+		SqlSelect rootSelect = new ExtractingSqlSelect<>(
 				context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING),
 				countFilter.getColumn().getName(),
 				Object.class
 		);
 
 		Field<Object> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
-		CountSqlSelect countSqlSelect = new CountSqlSelect(
-				qualifiedRootSelect,
-				countFilter.getName(),
-				CountSqlSelect.CountType.fromBoolean(countFilter.isDistinct())
-		);
+		CountSqlSelect countSqlSelect = new CountSqlSelect(qualifiedRootSelect, countFilter.getName(), CountSqlSelect.CountType.fromBoolean(countFilter.isDistinct()));
 
 		Field<Object> qualifiedCountGroupBy = context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_FILTER, countSqlSelect.aliased());
 		CountCondition countFilterCondition = new CountCondition(qualifiedCountGroupBy, context.getValue());
@@ -52,7 +49,6 @@ public class CountFilterConverter implements FilterConverter<Range.LongRange, Co
 		Set<ConceptCteStep> countFilterSteps = new HashSet<>(FilterConverter.super.requiredSteps());
 		countFilterSteps.add(ConceptCteStep.AGGREGATION_FILTER);
 		return countFilterSteps;
-
 	}
 
 	@Override
