@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.filter;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.Range;
@@ -34,11 +34,11 @@ public class CountFilterConverter implements FilterConverter<Range.LongRange, Co
 
 		return new ConceptFilter(
 				SqlSelects.builder()
-						  .forPreprocessingStep(Collections.singletonList(rootSelect))
-						  .forAggregationSelectStep(Collections.singletonList(countSqlSelect))
+						  .forPreprocessingStep(List.of(rootSelect))
+						  .forAggregationSelectStep(List.of(countSqlSelect))
 						  .build(),
 				Filters.builder()
-					   .group(Collections.singletonList(countFilterCondition))
+					   .group(List.of(countFilterCondition))
 					   .build()
 		);
 	}

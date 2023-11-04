@@ -1,6 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.select;
 
-import java.util.Collections;
+import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.CountSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
@@ -31,9 +31,9 @@ public class CountSelectConverter implements SelectConverter<CountSelect> {
 		);
 
 		return SqlSelects.builder()
-						 .forPreprocessingStep(Collections.singletonList(rootSelect))
-						 .forAggregationSelectStep(Collections.singletonList(countSqlSelect))
-						 .forFinalStep(Collections.singletonList(finalSelect))
+						 .forPreprocessingStep(List.of(rootSelect))
+						 .forAggregationSelectStep(List.of(countSqlSelect))
+						 .forFinalStep(List.of(finalSelect))
 						 .build();
 	}
 
