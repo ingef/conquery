@@ -24,7 +24,7 @@ class DateAggregationTables {
 		if (predecessor == null) {
 			return joinedTable;
 		}
-		return this.cteNameMap.get(predecessor);
+		return this.cteNameMap.getOrDefault(predecessor, this.cteNameMap.get(predecessor.predecessor()));
 	}
 
 }

@@ -42,7 +42,7 @@ public class ConceptTables {
 		if (predecessor == null) {
 			return rootTable;
 		}
-		return this.cteNames.get(predecessor);
+		return this.cteNames.getOrDefault(predecessor, this.cteNames.get(predecessor.predecessor()));
 	}
 
 	/**
