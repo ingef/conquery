@@ -139,9 +139,10 @@ const ConceptLabel = ({
   conceptIcon?: IconDefinition;
   tackIcon?: ReactNode;
 }) => {
-  const words = useSelector<StateT, string[]>(
-    (state) => state.conceptTrees.search.words || [],
+  const wordsRaw = useSelector<StateT, string[] | null>(
+    (state) => state.conceptTrees.search.words,
   );
+  const words = useMemo(() => wordsRaw || [], [wordsRaw]);
   const { t } = useTranslation();
 
   return (
@@ -165,9 +166,11 @@ const mark = (text: string, regex: RegExp | null): string => {
 };
 
 const Tooltip = () => {
-  const words = useSelector<StateT, string[]>(
-    (state) => state.conceptTrees.search.words || [],
+  const wordsRaw = useSelector<StateT, string[] | null>(
+    (state) => state.conceptTrees.search.words,
   );
+  const words = useMemo(() => wordsRaw || [], [wordsRaw]);
+
   const {
     label,
     description,

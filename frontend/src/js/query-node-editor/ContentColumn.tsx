@@ -12,6 +12,7 @@ import { Heading3 } from "../headings/Headings";
 import { nodeIsConceptQueryNode } from "../model/node";
 import {
   ConceptQueryNodeType,
+  FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import type { ModeT } from "../ui-components/InputRange";
@@ -55,7 +56,7 @@ interface PropsT {
   onSetFilterValue: (
     tableIdx: number,
     filterIdx: number,
-    value: unknown,
+    value: FilterWithValueType["value"],
   ) => void;
   onSwitchFilterMode: (
     tableIdx: number,

@@ -122,11 +122,13 @@ export const TimeStratifiedChart = ({
       scales: {
         x: {
           ticks: {
-            callback: (idx: number) => {
-              return labels[idx].length > TRUNCATE_X_AXIS_LABELS_LEN
-                ? labels[idx].substring(0, TRUNCATE_X_AXIS_LABELS_LEN - 3) +
-                    "..."
-                : labels[idx];
+            callback: (idx: string | number) => {
+              return labels[idx as number].length > TRUNCATE_X_AXIS_LABELS_LEN
+                ? labels[idx as number].substring(
+                    0,
+                    TRUNCATE_X_AXIS_LABELS_LEN - 3,
+                  ) + "..."
+                : labels[idx as number];
             },
           },
         },

@@ -314,7 +314,12 @@ const setNodeFilterValue = (
   state: StandardQueryStateT,
   payload: ActionType<typeof setFilterValue>["payload"],
 ) => {
-  return setNodeFilterProperties(state, payload, { value: payload.value });
+  return setNodeFilterProperties(
+    state,
+    payload,
+    // @ts-ignore TODO: maybe use generic types here
+    { value: payload.value },
+  );
 };
 
 const setNodeTableSelects = (

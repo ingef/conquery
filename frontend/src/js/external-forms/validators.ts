@@ -165,6 +165,7 @@ export function getErrorForField(
       const validateFn = getConfigurableValidations(field.type)[validation];
 
       if (validateFn) {
+        // @ts-ignore TODO: try and improve these types
         error = error || validateFn(t, value);
       } else {
         console.error(

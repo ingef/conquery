@@ -8,7 +8,10 @@ import type {
   SelectOptionT,
   SelectorResultType,
 } from "../api/types";
-import type { ConceptQueryNodeType } from "../standard-query-editor/types";
+import type {
+  ConceptQueryNodeType,
+  FilterWithValueType,
+} from "../standard-query-editor/types";
 import type { ModeT } from "../ui-components/InputRange";
 
 import ContentCell from "./ContentCell";
@@ -37,7 +40,7 @@ interface PropsT {
   onSetFilterValue: (
     tableIdx: number,
     filterIdx: number,
-    value: unknown,
+    value: FilterWithValueType["value"],
   ) => void;
   onSwitchFilterMode: (
     tableIdx: number,
@@ -75,7 +78,7 @@ const TableView: FC<PropsT> = ({
   const displayFilters = !!table.filters && table.filters.length > 0;
 
   const setFilterValue = useCallback(
-    (filterIdx: number, value: unknown) =>
+    (filterIdx: number, value: FilterWithValueType["value"]) =>
       onSetFilterValue(tableIdx, filterIdx, value),
     [tableIdx, onSetFilterValue],
   );

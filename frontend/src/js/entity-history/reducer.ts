@@ -24,6 +24,12 @@ export type EntityEvent = {
   [key: string]: unknown;
 };
 
+// Utility type, after transforming the date rows from a string into this format
+export interface DateRow {
+  from: string;
+  to: string;
+}
+
 export interface EntityId {
   id: string;
   kind: ColumnDescriptionSemanticId["kind"];

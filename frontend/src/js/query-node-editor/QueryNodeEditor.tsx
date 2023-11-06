@@ -17,6 +17,7 @@ import {
 } from "../model/node";
 import type {
   DragItemConceptTreeNode,
+  FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import type { ModeT } from "../ui-components/InputRange";
@@ -105,7 +106,7 @@ export interface QueryNodeEditorPropsT {
   onSetFilterValue: (
     tableIdx: number,
     filterIdx: number,
-    value: unknown,
+    value: FilterWithValueType["value"],
   ) => void;
   onSwitchFilterMode: (
     tableIdx: number,

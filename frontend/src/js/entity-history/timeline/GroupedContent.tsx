@@ -10,7 +10,7 @@ import {
 } from "../../api/types";
 import { ContentFilterValue, ContentType } from "../ContentControl";
 import { formatHistoryDayRange } from "../RowDates";
-import { EntityEvent } from "../reducer";
+import { DateRow, EntityEvent } from "../reducer";
 
 import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";
@@ -134,10 +134,6 @@ const SxNumericFormat = styled(NumericFormat)`
   ${({ theme }) => cellStyles(theme)};
 `;
 
-interface DateRow {
-  from: string;
-  to: string;
-}
 const Cell = memo(
   ({
     columnDescription,
