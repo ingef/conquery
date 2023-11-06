@@ -1,19 +1,12 @@
 package com.bakdata.conquery.sql.conversion.model.filter;
 
 import com.bakdata.conquery.models.common.IRange;
-import lombok.RequiredArgsConstructor;
-import org.jooq.Condition;
 import org.jooq.Field;
 
-@RequiredArgsConstructor
-public class CountCondition implements FilterCondition {
+public class CountCondition extends RangeCondition {
 
-	private final Field<Object> countColumn;
-	private final IRange<? extends Number, ?> range;
-
-	@Override
-	public Condition filterCondition() {
-		return ConditionUtil.rangeCondition(countColumn, range);
+	public CountCondition(Field<?> column, IRange<? extends Number, ?> range) {
+		super(column, range);
 	}
 
 	@Override
