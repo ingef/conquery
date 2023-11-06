@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -14,8 +14,7 @@ import org.jooq.impl.DSL;
  *
  * @param <V> type of column
  */
-@AllArgsConstructor
-@EqualsAndHashCode
+@Data
 public class ExtractingSqlSelect<V> implements SqlSelect {
 
 	private final String table;
