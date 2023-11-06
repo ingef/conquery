@@ -45,8 +45,10 @@ public interface SqlFunctionProvider {
 	 * <p>
 	 * Example: {[2013-11-10,2013-11-11),[2015-11-10,2015-11-11)}
 	 * <p>
-	 * Also, if the aggregated expression contains the dialect specific {@link SqlFunctionProvider#MAX_DATE} or {@link SqlFunctionProvider#MIN_DATE} expression,
-	 * it should be replaced with the {@link SqlFunctionProvider#INFINITY_SIGN} or {@link SqlFunctionProvider#MINUS_INFINITY_SIGN}.
+	 * Also, if the aggregated expression contains the dialect specific {@link SqlFunctionProvider#getMaxDateExpression()} or
+	 * {@link SqlFunctionProvider#getMaxDateExpression()} expression, it should be replaced with the {@link SqlFunctionProvider#INFINITY_SIGN} or
+	 * {@link SqlFunctionProvider#MINUS_INFINITY_SIGN}.
+	 * <p>
 	 * Example: {[-∞,2013-11-11),[2015-11-10,∞)}
 	 */
 	Field<String> validityDateStringAggregation(ColumnDateRange columnDateRange);
@@ -56,6 +58,10 @@ public interface SqlFunctionProvider {
 	Field<Date> addDays(Field<Date> dateColumn, int amountOfDays);
 
 	Field<?> first(Field<?> field, List<Field<?>> orderByColumn);
+
+	Field<?> last(Field<?> column, List<Field<?>> orderByColumns);
+
+	Field<?> random(Field<?> column);
 
 	default <T> Field<T> least(List<Field<T>> fields) {
 		if (fields.isEmpty()) {

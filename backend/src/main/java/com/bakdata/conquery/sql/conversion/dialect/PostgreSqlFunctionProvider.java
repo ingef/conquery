@@ -3,6 +3,7 @@ package com.bakdata.conquery.sql.conversion.dialect;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -12,6 +13,7 @@ import org.jooq.Condition;
 import org.jooq.DatePart;
 import org.jooq.Field;
 import org.jooq.Name;
+import org.jooq.WindowSpecificationRowsStep;
 import org.jooq.impl.DSL;
 
 /**
@@ -158,6 +160,20 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public Field<?> first(Field<?> column, List<Field<?>> orderByColumn) {
 		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(column)));
+	}
+
+	@Override
+	public Field<?> last(Field<?> column, List<Field<?>> orderByColumns) {
+		String orderByClause = orderByColumns.stream()
+											 .map(Field::toString)
+											 .collect(Collectors.joining(", ", "ORDER BY ", " DESC"));
+		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(DSL.field("%s %s".formatted(column, orderByClause)))));
+	}
+
+	@Override
+	public Field<?> random(Field<?> column) {
+		WindowSpecificationRowsStep orderByRandomClause = DSL.orderBy(DSL.function("random", Object.class));
+		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(DSL.field("%s %s".formatted(column, orderByRandomClause)))));
 	}
 
 	private Field<?> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {

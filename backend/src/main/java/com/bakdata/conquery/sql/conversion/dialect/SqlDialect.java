@@ -27,6 +27,8 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistance
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.ExistsSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.FirstValueSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.PrefixSelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.LastValueSelectConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.select.RandomValueSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConversions;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SumSelectConverter;
@@ -87,6 +89,8 @@ public interface SqlDialect {
 	default List<SelectConverter<? extends Select>> getDefaultSelectConverters() {
 		return List.of(
 				new FirstValueSelectConverter(),
+				new LastValueSelectConverter(),
+				new RandomValueSelectConverter(),
 				new DateDistanceSelectConverter(DEFAULT_DATE_NOW_SUPPLIER),
 				new ExistsSelectConverter(),
 				new SumSelectConverter(),
