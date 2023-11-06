@@ -131,7 +131,8 @@
     "vite-plugin-eslint": "^1.8.1"
   },
   "resolutions": {
-    "fsevents": "2.3.2"
+    "fsevents": "2.3.2",
+    "strip-ansi": "7.0.1"
   },
   "browserslist": [
     "> 0.5%",
