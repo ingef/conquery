@@ -364,7 +364,11 @@ const InputMultiSelect = ({
                     ...selectedItems,
                     ...optionsWithoutCreatable,
                   ]);
-                  setInputValue("");
+                  setTimeout(() => {
+                    // To let the above state change propagage
+                    // before triggering another "load more" request
+                    setInputValue("");
+                  }, 100);
                 }
               }}
             />
