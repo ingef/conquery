@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";
 import { exists } from "../../common/helpers/exists";
+import { getFileRows } from "../../common/helpers/fileHelper";
 import { useDebounce } from "../../common/helpers/useDebounce";
 import FaIcon from "../../icon/FaIcon";
 import InfoTooltip from "../../tooltip/InfoTooltip";
@@ -363,7 +364,11 @@ const InputMultiSelect = ({
                     ...selectedItems,
                     ...optionsWithoutCreatable,
                   ]);
-                  setInputValue("");
+                  setTimeout(() => {
+                    // To let the above state change propagage
+                    // before triggering another "load more" request
+                    setInputValue("");
+                  }, 100);
                 }
               }}
             />
@@ -410,7 +415,12 @@ const InputMultiSelect = ({
       {!hasTooManyValues && !onResolve && Select}
       {!hasTooManyValues && !!onResolve && (
         <DropzoneWithFileInput
-          onDrop={() => {}}
+          onDrop={async (item) => {
+            if (item.files) {
+              const rows = await getFileRows(item.files[0]);
+              onResolve(rows);
+            }
+          }}
           disableClick
           tight
           importButtonOutside
