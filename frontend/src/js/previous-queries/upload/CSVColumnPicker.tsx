@@ -1,15 +1,15 @@
 import styled from "@emotion/styled";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import {
   faCheckCircle,
   faDownload,
   faExclamationCircle,
   faSpinner,
+  faTrash,
   faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 import format from "date-fns/format";
 import { saveAs } from "file-saver";
-import { useState, useEffect, FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";

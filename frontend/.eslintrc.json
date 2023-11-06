@@ -10,10 +10,7 @@
     "plugin:react-hooks/recommended",
     "plugin:cypress/recommended"
   ],
-  "ignorePatterns": [
-    "dist",
-    ".eslintrc.json"
-  ],
+  "ignorePatterns": ["dist", ".eslintrc.json"],
   "parser": "@typescript-eslint/parser",
   "rules": {
     "jsx-a11y/accessible-emoji": "off",

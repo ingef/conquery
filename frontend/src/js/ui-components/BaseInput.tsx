@@ -4,7 +4,7 @@ import {
   faExclamationTriangle,
   faTimes,
 } from "@fortawesome/free-solid-svg-icons";
-import { FocusEvent, forwardRef, KeyboardEvent, useCallback } from "react";
+import { FocusEvent, KeyboardEvent, forwardRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { CurrencyConfigT } from "../api/types";

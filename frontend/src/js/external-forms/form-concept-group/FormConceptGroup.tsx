@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useEffect, useState, useRef, useMemo } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -38,10 +38,10 @@ import {
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import FormConceptNode from "./FormConceptNode";
 import {
+  FormConceptGroupT,
   addConcept,
   addValue,
   copyConcept,
-  FormConceptGroupT,
   initializeConcept,
   insertValue,
   onToggleIncludeSubnodes,

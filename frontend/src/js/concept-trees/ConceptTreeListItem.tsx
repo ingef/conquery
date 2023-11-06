@@ -5,7 +5,7 @@ import type { ConceptIdT } from "../api/types";
 import ConceptTree from "./ConceptTree";
 import ConceptTreeFolder from "./ConceptTreeFolder";
 import { getConceptById } from "./globalTreeStoreHelper";
-import type { TreesT, SearchT } from "./reducer";
+import type { SearchT, TreesT } from "./reducer";
 import { isNodeInSearchResult } from "./selectors";
 
 interface PropsT {

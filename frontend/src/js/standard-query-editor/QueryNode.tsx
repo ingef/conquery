@@ -8,8 +8,8 @@ import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import {
-  nodeIsConceptQueryNode,
   canNodeBeDropped,
+  nodeIsConceptQueryNode,
   useActiveState,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";

@@ -6,13 +6,13 @@ import Preview from "../preview/Preview";
 import ActivateTooltip from "../tooltip/ActivateTooltip";
 import Tooltip from "../tooltip/Tooltip";
 
+import { useMemo } from "react";
+import { Panel, PanelGroup } from "react-resizable-panels";
+import { ResizeHandle } from "../common/ResizeHandle";
 import DndProvider from "./DndProvider";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 import type { StateT } from "./reducers";
-import { Panel, PanelGroup } from "react-resizable-panels";
-import { ResizeHandle } from "../common/ResizeHandle";
-import { useMemo } from "react";
 
 const Root = styled("div")`
   width: 100%;

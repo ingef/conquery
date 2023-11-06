@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { FC } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { ColumnDescription, ColumnDescriptionKind } from "../api/types";
 import type { StateT } from "../app/reducers";

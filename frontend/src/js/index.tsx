@@ -1,4 +1,4 @@
-import { ThemeProvider, Theme } from "@emotion/react";
+import { Theme, ThemeProvider } from "@emotion/react";
 import { createRoot } from "react-dom/client";
 import { Store } from "redux";
 

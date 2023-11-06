@@ -18,6 +18,8 @@ import ProjectItemsTypeFilter from "../type-filter/ProjectItemsTypeFilter";
 import { ProjectItemsTypeFilterStateT } from "../type-filter/reducer";
 import UploadQueryResults from "../upload/UploadQueryResults";
 
+import { Panel, PanelGroup } from "react-resizable-panels";
+import { ResizeHandle } from "../../common/ResizeHandle";
 import Folders from "./Folders";
 import FoldersToggleButton from "./FoldersToggleButton";
 import { ProjectItemT } from "./ProjectItem";
@@ -25,8 +27,6 @@ import { ProjectItems } from "./ProjectItems";
 import { useLoadFormConfigs, useLoadQueries } from "./actions";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
-import { Panel, PanelGroup } from "react-resizable-panels";
-import { ResizeHandle } from "../../common/ResizeHandle";
 
 const ScrollContainer = styled("div")`
   overflow-y: auto;

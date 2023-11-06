@@ -11,14 +11,14 @@ import {
 import type {
   AndQueryT,
   ConceptIdT,
-  QueryT,
-  QueryNodeT,
   PostFilterSuggestionsResponseT,
+  QueryNodeT,
+  QueryT,
   SelectOptionT,
 } from "../api/types";
 import { successPayload } from "../common/actions/genericActions";
 import type { TreesT } from "../concept-trees/reducer";
-import { nodeIsConceptQueryNode, NodeResetConfig } from "../model/node";
+import { NodeResetConfig, nodeIsConceptQueryNode } from "../model/node";
 import { useLoadQuery } from "../previous-queries/list/actions";
 import type { ModeT } from "../ui-components/InputRange";
 

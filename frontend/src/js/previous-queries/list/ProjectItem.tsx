@@ -1,9 +1,9 @@
 import styled from "@emotion/styled";
 import {
   faCalendar,
+  faFolder as faFolderRegular,
   faUser as faUserRegular,
 } from "@fortawesome/free-regular-svg-icons";
-import { faFolder as faFolderRegular } from "@fortawesome/free-regular-svg-icons";
 import {
   faFolder,
   faMicroscope,
@@ -28,7 +28,7 @@ import WithTooltip from "../../tooltip/WithTooltip";
 
 import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import ProjectItemLabel from "./ProjectItemLabel";
-import { useUpdateQuery, useUpdateFormConfig } from "./actions";
+import { useUpdateFormConfig, useUpdateQuery } from "./actions";
 import { isFormConfig } from "./helpers";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 

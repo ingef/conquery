@@ -1,6 +1,6 @@
 import { faChevronDown, faTimes } from "@fortawesome/free-solid-svg-icons";
 import { useCombobox } from "downshift";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import type { SelectOptionT } from "../../api/types";

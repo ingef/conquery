@@ -15,7 +15,7 @@ import type { StateT } from "../app/reducers";
 import { ContentFilterValue } from "./ContentControl";
 import type { DetailLevel } from "./DetailControl";
 import { EntityCard } from "./EntityCard";
-import type { EntityHistoryStateT, EntityEvent, DateRow } from "./reducer";
+import type { DateRow, EntityEvent, EntityHistoryStateT } from "./reducer";
 import { TimelineEmptyPlaceholder } from "./timeline/TimelineEmptyPlaceholder";
 import Year from "./timeline/Year";
 import {

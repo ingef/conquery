@@ -16,6 +16,8 @@ import type { StateT } from "../app/reducers";
 import ErrorFallback from "../error-fallback/ErrorFallback";
 import DownloadResultsDropdownButton from "../query-runner/DownloadResultsDropdownButton";
 
+import { Panel, PanelGroup } from "react-resizable-panels";
+import { ResizeHandle } from "../common/ResizeHandle";
 import ContentControl, { useContentControl } from "./ContentControl";
 import { DetailControl, DetailLevel } from "./DetailControl";
 import { EntityHeader } from "./EntityHeader";
@@ -27,8 +29,6 @@ import Timeline from "./Timeline";
 import VisibilityControl from "./VisibilityControl";
 import { useUpdateHistorySession } from "./actions";
 import { EntityId } from "./reducer";
-import { Panel, PanelGroup } from "react-resizable-panels";
-import { ResizeHandle } from "../common/ResizeHandle";
 
 const FullScreen = styled("div")`
   position: fixed;

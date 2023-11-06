@@ -11,9 +11,9 @@ import type {
 } from "../api/types";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import {
+  NodeResetConfig,
   nodeHasEmptySettings,
   nodeIsConceptQueryNode,
-  NodeResetConfig,
 } from "../model/node";
 import type {
   DragItemConceptTreeNode,

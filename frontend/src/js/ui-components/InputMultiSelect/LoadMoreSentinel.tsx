@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useRef, useCallback } from "react";
+import { useCallback, useRef } from "react";
 
 import { useIntersectionObserver } from "../../common/useIntersectionObserver";
 

@@ -11,6 +11,10 @@ import { getRootNodeLabel } from "../standard-query-editor/helper";
 import WithTooltip from "../tooltip/WithTooltip";
 import Dropzone, { DropzoneProps } from "../ui-components/Dropzone";
 
+import {
+  DragItemConceptTreeNode,
+  DragItemQuery,
+} from "../standard-query-editor/types";
 import { Connector, Grid } from "./EditorLayout";
 import { TreeNodeConcept } from "./TreeNodeConcept";
 import { EDITOR_DROP_TYPES } from "./config";
@@ -18,10 +22,6 @@ import { DateRange } from "./date-restriction/DateRange";
 import { TimeConnection } from "./time-connection/TimeConnection";
 import { ConnectionKind, Tree } from "./types";
 import { useGetTranslatedConnection } from "./util";
-import {
-  DragItemConceptTreeNode,
-  DragItemQuery,
-} from "../standard-query-editor/types";
 
 const NodeContainer = styled("div")`
   display: grid;

@@ -1,12 +1,12 @@
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
-  Tooltip,
+  CategoryScale,
+  Chart as ChartJS,
   ChartOptions,
+  LinearScale,
+  Tooltip,
 } from "chart.js";
 import { useMemo } from "react";
 import { Bar } from "react-chartjs-2";

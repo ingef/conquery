@@ -12,11 +12,11 @@ import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
 
+import { toggleAdditionalInfos as toggleInfos } from "./actions";
 import ActivateTooltip from "./ActivateTooltip";
+import type { AdditionalInfosType } from "./reducer";
 import TooltipEntries from "./TooltipEntries";
 import { TooltipHeader } from "./TooltipHeader";
-import { toggleAdditionalInfos as toggleInfos } from "./actions";
-import type { AdditionalInfosType } from "./reducer";
 
 const Root = styled("div")`
   width: 100%;

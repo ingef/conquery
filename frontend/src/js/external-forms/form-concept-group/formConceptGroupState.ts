@@ -1,6 +1,6 @@
 import type {
-  SelectOptionT,
   PostFilterSuggestionsResponseT,
+  SelectOptionT,
 } from "../../api/types";
 import { DNDType } from "../../common/constants/dndTypes";
 import { compose } from "../../common/helpers/commonHelper";
@@ -17,9 +17,9 @@ import { resetTables, tableWithDefaults } from "../../model/table";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
   DragItemConceptTreeNode,
-  TableWithFilterValueT,
   FilterWithValueType,
   SelectedSelectorT,
+  TableWithFilterValueT,
 } from "../../standard-query-editor/types";
 import type { ModeT } from "../../ui-components/InputRange";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";

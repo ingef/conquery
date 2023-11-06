@@ -4,7 +4,7 @@ import type { DatasetT } from "../api/types";
 import type { Action } from "../app/actions";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 
-import { loadDatasets, selectDatasetInput, saveQuery } from "./actions";
+import { loadDatasets, saveQuery, selectDatasetInput } from "./actions";
 
 export type DatasetStateT = {
   pristine: boolean;

@@ -12,8 +12,8 @@ import type { Action } from "../app/actions";
 
 import {
   closeHistory,
-  loadHistoryData,
   loadDefaultHistoryParamsSuccess,
+  loadHistoryData,
   openHistory,
   resetCurrentEntity,
   resetHistory,

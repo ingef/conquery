@@ -9,8 +9,8 @@ import {
   CurrencyConfigT,
 } from "../../api/types";
 import { ContentFilterValue, ContentType } from "../ContentControl";
-import { formatHistoryDayRange } from "../RowDates";
 import { DateRow, EntityEvent } from "../reducer";
+import { formatHistoryDayRange } from "../RowDates";
 
 import ConceptName from "./ConceptName";
 import { TinyLabel } from "./TinyLabel";

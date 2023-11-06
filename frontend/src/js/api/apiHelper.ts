@@ -11,12 +11,12 @@ import { nodeIsConceptQueryNode } from "../model/node";
 import { isLabelPristine } from "../standard-query-editor/helper";
 import type { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import type {
-  TableWithFilterValueT,
-  SelectedSelectorT,
-  SelectedDateColumnT,
-  StandardQueryNodeT,
   DragItemConceptTreeNode,
   FilterWithValueType,
+  SelectedDateColumnT,
+  SelectedSelectorT,
+  StandardQueryNodeT,
+  TableWithFilterValueT,
 } from "../standard-query-editor/types";
 import type {
   ValidatedTimebasedConditionT,
