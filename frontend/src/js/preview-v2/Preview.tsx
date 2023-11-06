@@ -28,7 +28,7 @@ const FullScreen = styled("div")`
   z-index: 2;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 15px;
 `;
 
 const Headline = styled("div")`
@@ -81,6 +81,7 @@ export default function Preview() {
   }, [query]);
 
   return (
+    // TODO reload preview on window resize
     <FullScreen>
       <PreviewInfo
         rawPreviewData={[]}

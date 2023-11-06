@@ -11,9 +11,9 @@ import Diagram from "./Diagram";
 const Root = styled("div")``;
 
 const SxDiagram = styled(Diagram)`
-  width: 100px;
   padding: 5px;
   margin-right: 15px;
+  height: 30vh;
 `;
 
 const DirectionSelector = styled("div")`

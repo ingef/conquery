@@ -1,33 +1,67 @@
 import styled from "@emotion/styled";
+
 import { PreviewStatistics } from "../api/types";
 import Modal from "../modal/Modal";
-import Diagram from "./Diagram";
 
-interface DiagramModalProps { 
-    statistic: PreviewStatistics;
-    onClose: () => void;
+import Diagram, { previewStatsIsNumberStats } from "./Diagram";
+
+interface DiagramModalProps {
+  statistic: PreviewStatistics;
+  onClose: () => void;
 }
 
-const Grid = styled("div")`
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-gap: 5px;
+const Horizontal = styled("div")`
+  display: inline-flex;
 `;
 
 const SxDiagram = styled(Diagram)`
-    width: 80%;
+  width: 70vw;
+  height: 70vh;
+  margin-right: 15px;
 `;
 
+const SxTable = styled("table")`
+  border: 1px solid black;
+  align-self: center;
+  margin-left: 15px;
+`;
 
-export default function DiagramModal({statistic, onClose}: DiagramModalProps) {
-    return (
-        <Modal
-            closeIcon
-            onClose={() => onClose()}
-        >
-            <Grid>
-                <SxDiagram stat={statistic}/>
-            </Grid>
-        </Modal>
-    );
+export default function DiagramModal({
+  statistic,
+  onClose,
+}: DiagramModalProps) {
+  return (
+    <Modal closeIcon onClose={() => onClose()}>
+      <Horizontal>
+        <SxDiagram stat={statistic} />
+        {
+          previewStatsIsNumberStats(statistic) && (
+            <SxTable border={1}>
+              <tr>
+                <td>Mean</td>
+                <td>{statistic.mean.toPrecision(3)}</td>
+              </tr>
+              <tr>
+                <td>Median</td>
+                <td>{statistic.median.toPrecision(3)}</td>
+              </tr>
+
+              <tr>
+                <td>Standard Deviation</td>
+                <td>{statistic.stddev.toPrecision(3)}</td>
+              </tr>
+              <tr>
+                <td>Minimum</td>
+                <td>{statistic.min.toPrecision(3)}</td>
+              </tr>
+              <tr>
+                <td>Maximum</td>
+                <td>{statistic.max.toPrecision(3)}</td>
+              </tr>
+            </SxTable>
+          )
+        }
+      </Horizontal>
+    </Modal>
+  );
 }

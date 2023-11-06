@@ -1,5 +1,5 @@
 import { ChartData, ChartOptions } from "chart.js";
-import { useMemo } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { Bar, Line } from "react-chartjs-2";
 
 import { theme } from "../../app-theme";
@@ -14,9 +14,11 @@ type DiagramProps = {
   stat: PreviewStatistics;
   className?: string;
   onClick?: () => void;
+  height?: string|number;
+  width?: string | number;
 };
 
-const NORMAL_DISTRIBUTION_STEPS = 40;
+const NORMAL_DISTRIBUTION_STEPS = 80;
 const DIGITS_OF_PRECISION = 3;
 
 function previewStatsIsStringStats(
@@ -25,7 +27,7 @@ function previewStatsIsStringStats(
   return stats.type === "STRING";
 }
 
-function previewStatsIsNumberStats(
+export function previewStatsIsNumberStats(
   stats: PreviewStatistics,
 ): stats is NumberStatistics {
   return stats.type !== "STRING" && "stddev" in stats;
@@ -69,7 +71,6 @@ function interpolateNormalDistribution(
 }
 // TODOS:
 // - some diagrams don't display data (nomal distribution)
-// - fix diagram layout
 
 function transformNumberStatsToData(
   stats: NumberStatistics,
@@ -92,17 +93,23 @@ function transformNumberStatsToData(
   };
 }
 
-export default function Diagram({ stat, className, onClick }: DiagramProps) {
+export default function Diagram({
+  stat,
+  className,
+  onClick,
+  height,
+  width,
+}: DiagramProps) {
   const options: ChartOptions<"bar"> | ChartOptions<"line"> = useMemo(() => {
     if (previewStatsIsNumberStats(stat)) {
       return {
         type: "line",
         responsive: true,
+        maintainAspectRatio: false,
         interaction: {
           mode: "index" as const,
           intersect: false,
         },
-//        maintainAspectRatio: false,
         layout: {
           padding: 0,
         },
@@ -136,7 +143,9 @@ export default function Diagram({ stat, className, onClick }: DiagramProps) {
             callbacks: {
               label: (context: any) => {
                 const label = context.dataset.label || context.label || "";
-                return `${label}: ${(context.raw as number).toFixed(DIGITS_OF_PRECISION) }`;
+                return `${label}: ${(context.raw as number).toFixed(
+                  DIGITS_OF_PRECISION,
+                )}`;
               },
             },
             caretSize: 0,
@@ -153,7 +162,7 @@ export default function Diagram({ stat, className, onClick }: DiagramProps) {
           mode: "index" as const,
           intersect: false,
         },
- //       maintainAspectRatio: false,
+        maintainAspectRatio: false,
         layout: {
           padding: 0,
         },
@@ -178,7 +187,9 @@ export default function Diagram({ stat, className, onClick }: DiagramProps) {
             callbacks: {
               label: (context: any) => {
                 const label = context.dataset.label || context.label || "";
-                return `${label}: ${(context.raw as number).toFixed(DIGITS_OF_PRECISION)}`;
+                return `${label}: ${(context.raw as number).toFixed(
+                  DIGITS_OF_PRECISION,
+                )}`;
               },
             },
             caretSize: 0,
@@ -199,23 +210,27 @@ export default function Diagram({ stat, className, onClick }: DiagramProps) {
     }
   }, [stat]);
 
+  // TODO fall back if no data is present
   return (
-    <>
+    <div className={className}>
       {previewStatsIsStringStats(stat) ? (
         <Bar
-          className={className}
+          
           options={options as ChartOptions<"bar">}
           data={data as ChartData<"bar">}
           onClick={() => onClick && onClick()}
+          height={height}
+          width={width}
         />
       ) : (
         <Line
-          className={className}
           options={options as ChartOptions<"line">}
           data={data as ChartData<"line">}
           onClick={() => onClick && onClick()}
+          height={height}
+          width={width}
         />
       )}
-    </>
+    </div>
   );
 }
