@@ -1,5 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
+import java.util.List;
+
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -28,8 +30,8 @@ public class RandomValueSqlSelect implements SqlSelect {
 	}
 
 	@Override
-	public String columnName() {
-		return randomColumn.getName();
+	public List<String> columnNames() {
+		return List.of(randomColumn.getName());
 	}
 
 }

@@ -32,8 +32,8 @@ public class LastValueSqlSelect implements SqlSelect {
 	}
 
 	@Override
-	public String columnName() {
-		return lastColumn.getName();
+	public List<String> columnNames() {
+		return List.of(lastColumn.getName());
 	}
 
 }
