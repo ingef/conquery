@@ -3,7 +3,10 @@ import { useCallback } from "react";
 import { EditorV2Query } from "../editor-v2/types";
 import { EntityId } from "../entity-history/reducer";
 import { apiUrl } from "../environment";
-import type { FormConfigT } from "../previous-queries/list/reducer";
+import type {
+  FormConfigT,
+  PreviousQueryT,
+} from "../previous-queries/list/reducer";
 import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker";
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
@@ -113,7 +116,7 @@ export const usePostQueries = () => {
 
 export interface FormQueryPostPayload {
   type: string;
-  values: any;
+  values: unknown;
   [fieldName: string]: unknown;
 }
 // Same signature as postQueries, plus a form query transformator
@@ -211,7 +214,7 @@ export const usePatchQuery = () => {
   const api = useApi<null>();
 
   return useCallback(
-    (queryId: QueryIdT, attributes: Object) =>
+    (queryId: QueryIdT, attributes: Partial<PreviousQueryT>) =>
       api({
         url: getProtectedUrl(`/queries/${queryId}`),
         method: "PATCH",

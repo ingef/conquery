@@ -21,7 +21,7 @@ import {
 
 // TODO: This is quite inaccurate
 export type EntityEvent = {
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 export interface EntityId {

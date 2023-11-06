@@ -34,7 +34,11 @@ interface PropsT {
 
   onSelectTableSelects: (tableIdx: number, value: SelectOptionT[]) => void;
   onSetDateColumn: (tableIdx: number, dateColumnValue: string) => void;
-  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
+  onSetFilterValue: (
+    tableIdx: number,
+    filterIdx: number,
+    value: unknown,
+  ) => void;
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,

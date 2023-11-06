@@ -400,9 +400,10 @@ export const setFilterValue = (
   conceptIdx: number,
   tableIdx: number,
   filterIdx: number,
-  filterValue: any,
+  filterValue: unknown,
 ) => {
   return setFilterProperties(value, valueIdx, conceptIdx, tableIdx, filterIdx, {
+    // @ts-ignore TODO: maybe use generic types here
     value: filterValue,
   });
 };

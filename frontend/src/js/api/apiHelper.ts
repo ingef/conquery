@@ -27,7 +27,7 @@ import { ConceptIdT, DateRangeT } from "./types";
 
 export const transformFilterValueToApi = (
   filter: FilterWithValueType,
-): {} | null /* aka: "not undefined", to ensure a type error when a new filter.type is added */ => {
+): NonNullable<unknown> | null /* aka: "not undefined", to ensure a type error when a new filter.type is added */ => {
   switch (filter.type) {
     case "BIG_MULTI_SELECT":
     case "MULTI_SELECT":

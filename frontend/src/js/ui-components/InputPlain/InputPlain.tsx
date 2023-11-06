@@ -28,7 +28,7 @@ interface Props {
   onChange: (value: string | number | null) => void;
   onBlur?: () => void;
   defaultValue?: string | number | null;
-  inputProps?: Object;
+  inputProps?: object;
   currencyConfig?: CurrencyConfigT;
   fullWidth?: boolean;
   tooltip?: string;

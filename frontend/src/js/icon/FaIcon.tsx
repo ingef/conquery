@@ -39,8 +39,7 @@ const spin = keyframes`
 const shouldForwardProp = (prop: keyof FaIconPropsT) =>
   isPropValid(prop) || prop === "icon" || prop === "className";
 
-// TODO: Figure out how to avoid a type error with styled here
-// @ts-ignore
+// @ts-ignore TODO: Figure out how to avoid a type error with styled here
 export const Icon = styled(FontAwesomeIcon, {
   shouldForwardProp,
 })<IconStyleProps>`
@@ -77,8 +76,7 @@ const FaIcon = forwardRef<SVGSVGElement, FaIconPropsT>(
   ({ icon, className, ...restProps }, ref) => {
     return (
       <Icon
-        // TODO: ref is working, try fixing the type error
-        // @ts-ignore
+        // @ts-ignore TODO: ref is working, try fixing the type error
         ref={ref}
         className={`fa-fw ${className}`}
         icon={icon}

@@ -208,7 +208,7 @@ const CSVColumnPicker: FC<PropsT> = ({
 
           const firstRow = result.data[0];
 
-          let initialCSVHeader = new Array(firstRow.length).fill("IGNORE");
+          const initialCSVHeader = new Array(firstRow.length).fill("IGNORE");
 
           // NOTE: IT WAS A PREVIOUS REQUIREMENT TO INITIALIZE THE HEADER WITH CERTAIN
           //       DEFAULT VALUES DEPENDING ON THE NUMBER OF COLUMNS IN THE CSV.

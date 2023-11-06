@@ -113,7 +113,7 @@ const FormConceptNode: FC<PropsT> = ({
       rowPrefixFieldname: rowPrefixFieldname,
     },
   };
-  const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
+  const [, drag] = useDrag<DragItemConceptTreeNode, void>({
     type: item.type,
     item: () => ({
       ...item,

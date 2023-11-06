@@ -1,0 +1,18 @@
+{
+  "trailingComma": "all",
+  "semi": true,
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "proseWrap": "always",
+  "importOrder": ["^\\.\\./", "^\\./"],
+  "importOrderSeparation": true,
+  "overrides": [
+    {
+      "files": "*.(ts|tsx)",
+      "options": {
+        "parser": "typescript"
+      }
+    }
+  ]
+}

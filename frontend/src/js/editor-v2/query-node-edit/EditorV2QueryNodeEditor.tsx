@@ -91,7 +91,7 @@ export const EditorV2QueryNodeEditor = ({
   );
 
   const setFilterProperties = useCallback(
-    (tableIdx: number, filterIdx: number, properties: any) => {
+    (tableIdx: number, filterIdx: number, properties: object) => {
       const tables = [...node.tables];
       tables[tableIdx] = {
         ...tables[tableIdx],
@@ -105,7 +105,7 @@ export const EditorV2QueryNodeEditor = ({
   );
 
   const onSetFilterValue = useCallback(
-    (tableIdx: number, filterIdx: number, value: any) => {
+    (tableIdx: number, filterIdx: number, value: unknown) => {
       setFilterProperties(tableIdx, filterIdx, { value });
     },
     [setFilterProperties],

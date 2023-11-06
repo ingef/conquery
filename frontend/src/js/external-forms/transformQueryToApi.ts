@@ -32,7 +32,7 @@ function transformElementGroupsToApi(elementGroups: FormConceptGroupT[]) {
 function transformFieldToApiEntries(
   fieldConfig: GeneralField,
   formValues: DynamicFormValues,
-): [string, any][] {
+): [string, unknown][] {
   if (!isFormField(fieldConfig)) {
     return [];
   }

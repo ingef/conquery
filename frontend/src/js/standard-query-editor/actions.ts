@@ -24,7 +24,11 @@ import type { ModeT } from "../ui-components/InputRange";
 
 import { expandNode } from "./expandNode";
 import { StandardQueryStateT } from "./queryReducer";
-import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
+import type {
+  DragItemConceptTreeNode,
+  DragItemQuery,
+  FilterWithValueType,
+} from "./types";
 
 export type StandardQueryEditorActions = ActionType<
   | typeof resetTable
@@ -91,9 +95,7 @@ const findPreviousQueryIds = (node: QueryNodeT, queries = []): string[] => {
     case "OR":
       return [
         ...queries,
-        ...node.children.flatMap((child: any) =>
-          findPreviousQueryIds(child, []),
-        ),
+        ...node.children.flatMap((child) => findPreviousQueryIds(child, [])),
       ];
     default:
       return queries;
@@ -254,7 +256,7 @@ export const setFilterValue = createAction("query-editor/SET_FILTER_VALUE")<{
   orIdx: number;
   tableIdx: number;
   filterIdx: number;
-  value: any; // Actually: FilterWithValueType["value"] which is overloaded;
+  value: FilterWithValueType["value"]; // Actually: FilterWithValueType["value"] which is overloaded;
 }>();
 
 export const setTableSelects = createAction("query-editor/SET_TABLE_SELECTS")<{

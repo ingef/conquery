@@ -123,7 +123,7 @@ function getMinMaxDates(
 
   if (dateColumnIdx === -1) return { min: null, max: null, diff: 0 };
 
-  for (let row of rows) {
+  for (const row of rows) {
     // To cut off '{' and '}'
     const cell = row[dateColumnIdx];
     const { first, last } = getFirstAndLastDateOfRange(cell);

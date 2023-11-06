@@ -140,20 +140,21 @@ const Timeline = ({
 
 export default memo(Timeline);
 
-const diffObjects = (objects: Object[]): string[] => {
+const diffObjects = (objects: object[]): string[] => {
   if (objects.length < 2) return [];
 
   const keysWithDifferentValues = new Set<string>();
 
   for (let i = 0; i < objects.length - 1; i++) {
-    const o1 = objects[i] as any;
-    const o2 = objects[i + 1] as any;
+    const o1 = objects[i];
+    const o2 = objects[i + 1];
     const keys = Object.keys(o1); // Assumption: all objs have same keys
 
     for (const key of keys) {
       if (
-        o1.hasOwnProperty(key) &&
-        o2.hasOwnProperty(key) &&
+        Object.prototype.hasOwnProperty.call(o1, key) &&
+        Object.prototype.hasOwnProperty.call(o2, key) &&
+        // @ts-ignore should be fine
         JSON.stringify(o1[key]) !== JSON.stringify(o2[key])
       ) {
         keysWithDifferentValues.add(key);

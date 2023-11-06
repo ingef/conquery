@@ -15,10 +15,8 @@ import { makeStore } from "./store";
 
 let store: Store<StateT>;
 
-const initialState = {};
-
 const renderRoot = (theme: Theme) => {
-  store = store || makeStore(initialState);
+  store = store || makeStore();
 
   const root = createRoot(document.getElementById("root")!);
 

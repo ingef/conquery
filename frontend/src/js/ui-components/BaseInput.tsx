@@ -188,7 +188,9 @@ const BaseInput = forwardRef<HTMLInputElement, Props>(
             onClick={onClick}
             onWheel={
               (e) =>
-                (e.target as any).blur() /* to disable scrolling for number */
+                (
+                  e.target as HTMLElement
+                ).blur() /* to disable scrolling for number */
             }
             {...inputProps}
             {...patternMatchingProps}

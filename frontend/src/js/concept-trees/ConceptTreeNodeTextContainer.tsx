@@ -80,7 +80,7 @@ const ConceptTreeNodeTextContainer: FC<PropsT> = ({
           matchingEntries: 0,
         }),
   };
-  const [, drag] = useDrag<DragItemConceptTreeNode, void, {}>({
+  const [, drag] = useDrag<DragItemConceptTreeNode, void>({
     type: item.type,
     item: () => ({
       ...item,

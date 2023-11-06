@@ -102,7 +102,11 @@ export interface QueryNodeEditorPropsT {
   onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
   onToggleTimestamps?: () => void;
   onToggleSecondaryIdExclude?: () => void;
-  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
+  onSetFilterValue: (
+    tableIdx: number,
+    filterIdx: number,
+    value: unknown,
+  ) => void;
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,
