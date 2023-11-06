@@ -1,18 +1,21 @@
 import styled from "@emotion/styled";
+import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
+
+import { usePreviewStatistics } from "../api/api";
+import { PreviewStatistics, PreviewStatisticsResponse } from "../api/types";
 import { TransparentButton } from "../button/TransparentButton";
 import PreviewInfo from "../preview/PreviewInfo";
-import { closePreview } from "./actions";
+import { setMessage } from "../snack-message/actions";
+import { SnackMessageType } from "../snack-message/reducer";
+
 import Charts from "./Charts";
 import HeadlineStats from "./HeadlineStats";
 import Table from "./Table";
-import { usePreviewStatistics } from "../api/api";
-import { setMessage } from "../snack-message/actions";
-import { SnackMessageType } from "../snack-message/reducer";
-import { useEffect, useState } from "react";
-import { PreviewStatisticsResponse } from "../api/types";
+import { closePreview } from "./actions";
+import DiagramModal from "./DiagramModal";
 
 const FullScreen = styled("div")`
   height: 100%;
@@ -50,7 +53,10 @@ export default function Preview() {
   const { t } = useTranslation();
   const getStats = usePreviewStatistics();
   const [query, _] = useState<number>(12);
-  const [statistics, setStatistics] = useState<PreviewStatisticsResponse | null>(null);
+  const [statistics, setStatistics] =
+    useState<PreviewStatisticsResponse | null>(null);
+  
+  const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
 
   useHotkeys("esc", () => {
@@ -62,15 +68,17 @@ export default function Preview() {
       try {
         setStatistics(await getStats(query));
       } catch (e) {
-        dispatch(setMessage({
-          message: "Fehler beim laden der Vorschau",
-          type: SnackMessageType.ERROR
-        })); // TODO translate
+        dispatch(
+          setMessage({
+            message: "Fehler beim laden der Vorschau",
+            type: SnackMessageType.ERROR,
+          }),
+        ); // TODO translate
         console.error(e);
       }
     }
     fetchData();
-  }, [query])
+  }, [query]);
 
   return (
     <FullScreen>
@@ -89,9 +97,21 @@ export default function Preview() {
         <HeadlineStats />
       </Headline>
       SelectBox (Konzept Liste)
-      {
-        statistics && <SxCharts statistics={statistics.statistics} />
-      }
+      {statistics && (
+        <SxCharts
+          statistics={statistics.statistics}
+          showPopup={(statistic: PreviewStatistics) => {
+            console.log(statistic);
+            setPopOver(statistic);
+          }}
+        />
+      )}
+      {popOver && (
+        <DiagramModal
+          statistic={popOver}
+          onClose={() => setPopOver(null)}
+        />
+      )}
       <Table />
     </FullScreen>
   );

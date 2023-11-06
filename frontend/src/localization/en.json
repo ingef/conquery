@@ -388,6 +388,7 @@
   },
   "preview": {
     "preview": "Preview",
+    "page": "Page",
     "headline": "Results preview",
     "previewHeadline": "Result CSV",
     "previewSubline": "Preview of the first {{count}} lines",

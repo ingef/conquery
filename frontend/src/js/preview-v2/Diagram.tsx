@@ -13,6 +13,7 @@ import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
 type DiagramProps = {
   stat: PreviewStatistics;
   className?: string;
+  onClick?: () => void;
 };
 
 const NORMAL_DISTRIBUTION_STEPS = 40;
@@ -91,7 +92,7 @@ function transformNumberStatsToData(
   };
 }
 
-export default function Diagram({ stat, className }: DiagramProps) {
+export default function Diagram({ stat, className, onClick }: DiagramProps) {
   const options: ChartOptions<"bar"> | ChartOptions<"line"> = useMemo(() => {
     if (previewStatsIsNumberStats(stat)) {
       return {
@@ -205,12 +206,14 @@ export default function Diagram({ stat, className }: DiagramProps) {
           className={className}
           options={options as ChartOptions<"bar">}
           data={data as ChartData<"bar">}
+          onClick={() => onClick && onClick()}
         />
       ) : (
         <Line
           className={className}
           options={options as ChartOptions<"line">}
           data={data as ChartData<"line">}
+          onClick={() => onClick && onClick()}
         />
       )}
     </>
