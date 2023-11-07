@@ -2,7 +2,8 @@ package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import lombok.Getter;
@@ -16,6 +17,7 @@ enum IntersectStep implements DateAggregationStep {
 	INTERMEDIATE_TABLE("_no_overlap", IntermediateTableCte::new, null),
 	MERGE("_merge", MergeCte::new, OVERLAP);
 
+	private static final Set<IntersectStep> REQUIRED_STEPS = Arrays.stream(values()).collect(Collectors.toSet());
 	private final String suffix;
 	@Getter
 	private final DateAggregationCteConstructor stepConstructor;
@@ -37,9 +39,8 @@ enum IntersectStep implements DateAggregationStep {
 					 .toList();
 	}
 
-	static DateAggregationTables<IntersectStep> tableNames(QueryStep joinedTable) {
-		Map<IntersectStep, String> cteNameMap = DateAggregationStep.createCteNameMap(joinedTable, values());
-		return new DateAggregationTables<>(cteNameMap, joinedTable.getCteName());
+	static DateAggregationTables<IntersectStep> createTableNames(QueryStep joinedTable) {
+		return new DateAggregationTables<>(joinedTable.getCteName(), REQUIRED_STEPS, joinedTable.getCteName());
 	}
 
 }

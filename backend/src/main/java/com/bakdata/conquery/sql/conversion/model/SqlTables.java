@@ -27,11 +27,6 @@ public abstract class SqlTables<C extends CteStep> {
 		this.rootTable = rootTableName;
 	}
 
-	public SqlTables(String rootTable, Map<C, String> cteNames) {
-		this.rootTable = rootTable;
-		this.cteNames = cteNames;
-	}
-
 	/**
 	 * @return The CTE name for a {@link CteStep}.
 	 */
