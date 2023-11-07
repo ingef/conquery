@@ -21,10 +21,13 @@ class DateAggregationTables {
 
 	public String getFromTableOf(DateAggregationStep dateAggregationStep) {
 		DateAggregationStep predecessor = dateAggregationStep.predecessor();
-		if (predecessor == null) {
-			return joinedTable;
+		while (!this.cteNameMap.containsKey(predecessor)) {
+			if (predecessor == null) {
+				return this.joinedTable;
+			}
+			predecessor = predecessor.predecessor();
 		}
-		return this.cteNameMap.getOrDefault(predecessor, this.cteNameMap.get(predecessor.predecessor()));
+		return this.cteNameMap.get(predecessor);
 	}
 
 }
