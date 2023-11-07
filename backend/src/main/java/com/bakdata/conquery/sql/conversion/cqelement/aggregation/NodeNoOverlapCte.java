@@ -50,14 +50,14 @@ class NodeNoOverlapCte extends DateAggregationCte {
 			QueryStep predecessor
 	) {
 
-		DateAggregationTables dateAggregationTables = context.getDateAggregationTables();
+		DateAggregationTables<?> dateAggregationTables = context.getDateAggregationTables();
 
 		Field<Date> start = validityDate.getStart();
 		Field<Date> end = validityDate.getEnd();
 
 		Field<Date> asRangeEnd = end.as(DateAggregationCte.RANGE_END);
 		Field<Date> asRangeStart = start.as(DateAggregationCte.RANGE_START);
-		String intermediateTableCteName = dateAggregationTables.getFromTableOf(getCteStep());
+		String intermediateTableCteName = dateAggregationTables.getPredecessorTableName(getCteStep());
 		Selects nodeNoOverlapSelects = new Selects(
 				context.getPrimaryColumn(),
 				Optional.of(ColumnDateRange.of(asRangeStart, asRangeEnd)),

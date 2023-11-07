@@ -26,7 +26,7 @@ public class PostgreSqlIntervalPacker implements IntervalPacker {
 	@Override
 	public QueryStep createIntervalPackingSteps(IntervalPackingContext context) {
 
-		String sourceTableName = context.getIntervalPackingTables().getValidityDateSourceTableName();
+		String sourceTableName = context.getIntervalPackingTables().getRootTable();
 		Field<Object> primaryColumn = QualifyingUtil.qualify(context.getPrimaryColumn(), sourceTableName);
 		ColumnDateRange qualifiedValidityDate = context.getValidityDate().qualify(sourceTableName);
 		ColumnDateRange aggregatedValidityDate = this.functionProvider.aggregated(qualifiedValidityDate)

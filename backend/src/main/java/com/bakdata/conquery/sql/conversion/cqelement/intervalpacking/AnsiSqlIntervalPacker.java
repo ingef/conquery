@@ -30,7 +30,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 
 	private QueryStep createPreviousEndStep(IntervalPackingContext context) {
 
-		String sourceTableName = context.getIntervalPackingTables().getValidityDateSourceTableName();
+		String sourceTableName = context.getIntervalPackingTables().getRootTable();
 		Field<Object> primaryColumn = QualifyingUtil.qualify(context.getPrimaryColumn(), sourceTableName);
 		ColumnDateRange validityDate = context.getValidityDate().qualify(sourceTableName);
 

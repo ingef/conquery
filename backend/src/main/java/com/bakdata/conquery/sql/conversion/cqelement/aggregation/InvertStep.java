@@ -35,9 +35,9 @@ enum InvertStep implements DateAggregationStep {
 					 .toList();
 	}
 
-	static DateAggregationTables createTableNames(QueryStep joinedTable) {
-		Map<DateAggregationStep, String> cteNameMap = DateAggregationStep.createCteNameMap(joinedTable, values());
-		return new DateAggregationTables(joinedTable.getCteName(), cteNameMap);
+	static DateAggregationTables<InvertStep> createTableNames(QueryStep joinedTable) {
+		Map<InvertStep, String> cteNameMap = DateAggregationStep.createCteNameMap(joinedTable, values());
+		return new DateAggregationTables<>(cteNameMap, joinedTable.getCteName());
 	}
 
 }

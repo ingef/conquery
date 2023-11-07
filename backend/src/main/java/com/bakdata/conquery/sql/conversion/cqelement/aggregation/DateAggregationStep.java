@@ -14,7 +14,7 @@ interface DateAggregationStep extends CteStep {
 
 	DateAggregationStep predecessor();
 
-	static Map<DateAggregationStep, String> createCteNameMap(QueryStep joinedTable, DateAggregationStep[] dateAggregationSteps) {
+	static <C extends DateAggregationStep> Map<C, String> createCteNameMap(QueryStep joinedTable, C[] dateAggregationSteps) {
 		return Arrays.stream(dateAggregationSteps)
 					 .collect(Collectors.toMap(
 							 Function.identity(),
@@ -25,6 +25,6 @@ interface DateAggregationStep extends CteStep {
 	@Override
     default String cteName(String nodeLabel) {
 		return "%s%s".formatted(nodeLabel, suffix());
-	};
+	}
 
 }
