@@ -69,8 +69,6 @@ function interpolateNormalDistribution(
 
   return { labels, values };
 }
-// TODOS:
-// - some diagrams don't display data (nomal distribution)
 
 function transformNumberStatsToData(
   stats: NumberStatistics,

@@ -50,7 +50,7 @@ export default function Charts({ statistics, className, showPopup }: ChartProps)
         <DiagramContainer>
           {statistics.slice(index * 4, (index + 1) * 4).map((statistic) => {
             return (
-              <div>
+              <div key={statistic.name}>
                 <SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />
               </div>
             );

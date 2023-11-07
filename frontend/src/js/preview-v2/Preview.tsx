@@ -16,6 +16,8 @@ import HeadlineStats from "./HeadlineStats";
 import Table from "./Table";
 import { closePreview } from "./actions";
 import DiagramModal from "./DiagramModal";
+import FaIcon from "../icon/FaIcon";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 
 const FullScreen = styled("div")`
   height: 100%;
@@ -43,6 +45,23 @@ const SxCharts = styled(Charts)`
   background-color: white;
   padding: 10px;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+`;
+
+const SxChartLoadingBlocker = styled("div")`
+  width: 100%;
+  background-color: white;
+  padding: 10px;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  align-items: center;
+  height: 65vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+
+const SxFaIcon = styled(FaIcon)`
+  width: 30px;
+  height: 30px;
 `;
 
 export default function Preview() {
@@ -94,15 +113,20 @@ export default function Preview() {
         <HeadlineStats />
       </Headline>
       SelectBox (Konzept Liste)
-      {statistics && (
+      {statistics ? (
         <SxCharts
           statistics={statistics.statistics}
           showPopup={(statistic: PreviewStatistics) => {
             console.log(statistic);
             setPopOver(statistic);
           }}
-        />
-      )}
+        /> 
+      ) : (
+        <SxChartLoadingBlocker>
+            <SxFaIcon icon={faSpinner} />
+        </SxChartLoadingBlocker>
+      )
+      }
       {popOver && (
         <DiagramModal
           statistic={popOver}
