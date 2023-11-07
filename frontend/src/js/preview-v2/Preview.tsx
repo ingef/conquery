@@ -67,10 +67,10 @@ export default function Preview() {
       } catch (e) {
         dispatch(
           setMessage({
-            message: "Fehler beim laden der Vorschau",
+            message: t("preview.loadingError"),
             type: SnackMessageType.ERROR,
           }),
-        ); // TODO translate
+        );
         console.error(e);
       }
     }

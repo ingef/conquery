@@ -397,7 +397,8 @@
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",
-    "span": "Datumsbereich"
+    "span": "Datumsbereich",
+    "loadingError": "Fehler beim laden der Vorschau"
   },
   "login": {
     "headline": "Anfragen und Analyse",
