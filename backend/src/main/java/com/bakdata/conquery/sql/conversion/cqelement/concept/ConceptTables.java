@@ -39,10 +39,10 @@ public class ConceptTables {
 	 */
 	public String getPredecessorTableName(ConceptCteStep conceptCteStep) {
 		ConceptCteStep predecessor = conceptCteStep.predecessor();
-		if (predecessor == null) {
-			return rootTable;
-		}
 		while (!this.cteNames.containsKey(predecessor)) {
+			if (predecessor == null) {
+				return this.rootTable;
+			}
 			predecessor = predecessor.predecessor();
 		}
 		return this.cteNames.get(predecessor);
