@@ -4,7 +4,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 
-public class ConceptTables extends SqlTables<ConceptCteStep> {
+class ConceptTables extends SqlTables<ConceptCteStep> {
 
 	public ConceptTables(String conceptLabel, Set<ConceptCteStep> requiredSteps, String rootTableName) {
 		super(conceptLabel, requiredSteps, rootTableName);
