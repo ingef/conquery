@@ -28,6 +28,13 @@ const DirectionSelector = styled("div")`
   padding-right: 100px;
 `;
 
+const DiagramContainer = styled("div")`
+  overflow-x: hidden;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-gap: 5px;
+`;
+
 type ChartProps = {
   statistics: PreviewStatistics[];
   className?: string;
@@ -40,13 +47,15 @@ export default function Charts({ statistics, className, showPopup }: ChartProps)
   return (
     <>
       <Root className={className}>
-        {statistics.slice(index * 4, (index + 1) * 4).map((statistic) => {
-          return (
-            <div>
-              <SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />
-            </div>
-          );
-        })}
+        <DiagramContainer>
+          {statistics.slice(index * 4, (index + 1) * 4).map((statistic) => {
+            return (
+              <div>
+                <SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />
+              </div>
+            );
+          })}
+        </DiagramContainer>
         <DirectionSelector>
           <IconButton
             icon={faArrowLeft}

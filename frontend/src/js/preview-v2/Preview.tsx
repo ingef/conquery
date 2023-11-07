@@ -43,9 +43,6 @@ const SxCharts = styled(Charts)`
   background-color: white;
   padding: 10px;
   box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-gap: 5px;
 `;
 
 export default function Preview() {
@@ -81,7 +78,6 @@ export default function Preview() {
   }, [query]);
 
   return (
-    // TODO reload preview on window resize
     <FullScreen>
       <PreviewInfo
         rawPreviewData={[]}
