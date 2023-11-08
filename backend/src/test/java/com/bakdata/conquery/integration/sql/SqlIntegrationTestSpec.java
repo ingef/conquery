@@ -1,9 +1,11 @@
 package com.bakdata.conquery.integration.sql;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -14,13 +16,22 @@ import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.result.csv.CsvRenderer;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.datasets.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.i18n.I18n;
+import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
+import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -87,8 +98,19 @@ public class SqlIntegrationTestSpec extends ConqueryTestSpec<SqlStandaloneSuppor
 			support.getTableImporter().importTableIntoDatabase(table);
 		}
 
-		SqlManagedQuery managedQuery = support.getExecutionManager()
-											  .runQuery(support.getNamespace(), getQuery(), support.getTestUser(), support.getDataset(), support.getConfig(), false);
+		User user = support.getTestUser();
+		ConqueryConfig config = support.getConfig();
+		Namespace namespace = support.getNamespace();
+		SqlManagedQuery managedQuery = support.getExecutionManager().runQuery(namespace, getQuery(), user, support.getDataset(), config, false);
+
+		final IdPrinter idPrinter = IdColumnUtil.getIdPrinter(user, managedQuery, namespace, config.getIdColumns().getIds());
+		final Locale locale = I18n.LOCALE.get();
+		final PrintSettings settings = new PrintSettings(true, locale, namespace, config, idPrinter::createId);
+
+		StringWriter stringWriter = new StringWriter();
+		CsvRenderer csvRenderer = new CsvRenderer(new CSVConfig().createWriter(stringWriter), settings);
+		csvRenderer.toCSV(config.getIdColumns().getIdResultInfos(), managedQuery.getResultInfos(), managedQuery.streamResults());
+		log.debug("Actual CSV: {}", stringWriter);
 
 		SqlExecutionResult result = managedQuery.getResult();
 		List<EntityResult> resultCsv = result.getTable();

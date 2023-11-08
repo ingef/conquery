@@ -11,6 +11,7 @@ import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.local.LocalNamespaceHandler;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.IdColumnConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -44,6 +45,7 @@ public class SqlStandaloneSupport implements TestSupport {
 		storage.updateDataset(dataset);
 		config = IntegrationTests.DEFAULT_CONFIG;
 		config.setSqlConnectorConfig(sqlConfig);
+		config.setIdColumns(new IdColumnConfig());
 		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, getValidator());
 		SqlContext context = new SqlContext(sqlConfig, sqlDialect);
 		LocalNamespaceHandler localNamespaceHandler = new LocalNamespaceHandler(config, creator, context);
