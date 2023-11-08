@@ -39,7 +39,7 @@ public class PostgreSqlIntervalPacker implements IntervalPacker {
 		);
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
+						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingStep.INTERVAL_COMPLETE))
 						.selects(selectsWithAggregatedValidityDate)
 						.fromTable(QueryStep.toTableLike(sourceTableName))
 						.groupBy(List.of(primaryColumn))

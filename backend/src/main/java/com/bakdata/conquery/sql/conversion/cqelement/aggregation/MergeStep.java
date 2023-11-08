@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import lombok.Getter;
@@ -17,7 +16,7 @@ enum MergeStep implements DateAggregationStep {
 	NODE_NO_OVERLAP("_node_no_overlap", NodeNoOverlapCte::new, INTERMEDIATE_TABLE),
 	MERGE("_merge", MergeCte::new, OVERLAP);
 
-	private static final Set<MergeStep> REQUIRED_STEPS = Arrays.stream(values()).collect(Collectors.toSet());
+	private static final Set<MergeStep> REQUIRED_STEPS = Set.of(values());
 	private final String suffix;
 	@Getter
 	private final DateAggregationCteConstructor stepConstructor;

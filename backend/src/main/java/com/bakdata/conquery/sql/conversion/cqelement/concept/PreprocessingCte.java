@@ -19,12 +19,12 @@ class PreprocessingCte extends ConceptCte {
 
 		return QueryStep.builder()
 						.selects(preprocessingSelects)
-						.fromTable(QueryStep.toTableLike(conceptCteContext.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING)));
+						.fromTable(QueryStep.toTableLike(conceptCteContext.getConceptTables().getPredecessorTableName(ConceptStep.PREPROCESSING)));
 	}
 
 	@Override
-	public ConceptCteStep cteStep() {
-		return ConceptCteStep.PREPROCESSING;
+	public ConceptStep cteStep() {
+		return ConceptStep.PREPROCESSING;
 	}
 
 }

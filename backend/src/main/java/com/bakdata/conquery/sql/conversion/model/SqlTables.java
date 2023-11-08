@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptStep;
 import lombok.Getter;
 import org.jooq.DataType;
 import org.jooq.Field;
@@ -50,7 +50,7 @@ public abstract class SqlTables<C extends CteStep> {
 	/**
 	 * Qualify a field for a {@link CteStep}.
 	 * <p>
-	 * For example, if you want to qualify a {@link Field} for the AGGREGATION_SELECT step of {@link ConceptCteStep},
+	 * For example, if you want to qualify a {@link Field} for the AGGREGATION_SELECT step of {@link ConceptStep},
 	 * it's qualified on the EVENT_FILTER or PREPROCESSING_STEP depending on the presence of the respective step.
 	 * See {@link SqlTables#getPredecessorTableName(CteStep)}
 	 *

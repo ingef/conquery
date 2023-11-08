@@ -4,7 +4,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 
@@ -15,7 +15,7 @@ public class FilterValueConversions {
 		this.filterConversions = filterConversions;
 	}
 
-	public ConceptFilter convert(FilterValue<?> filterValue, ConversionContext context, SqlTables<ConceptCteStep> conceptTables) {
+	public ConceptFilter convert(FilterValue<?> filterValue, ConversionContext context, SqlTables<ConceptStep> conceptTables) {
 		ConceptFilter
 				convert =
 				this.filterConversions.convert(filterValue.getFilter(), new FilterContext<>(filterValue.getValue(), context, conceptTables));
@@ -25,7 +25,7 @@ public class FilterValueConversions {
 		return convert;
 	}
 
-	public Set<ConceptCteStep> requiredSteps(FilterValue<?> filterValue) {
+	public Set<ConceptStep> requiredSteps(FilterValue<?> filterValue) {
 		return this.filterConversions.getConverters().stream()
 									 .filter(converter -> converter.getConversionClass().isInstance(filterValue.getFilter()))
 									 .findFirst()

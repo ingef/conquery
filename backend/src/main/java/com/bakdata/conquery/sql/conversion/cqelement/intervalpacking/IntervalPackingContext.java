@@ -6,7 +6,7 @@ import java.util.List;
 import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.sql.conversion.Context;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptStep;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -28,7 +28,7 @@ public class IntervalPackingContext implements Context {
 			String conceptLabel,
 			Field<Object> primaryColumn,
 			ColumnDateRange validityDate,
-			SqlTables<ConceptCteStep> conceptTables
+			SqlTables<ConceptStep> conceptTables
 	) {
 		this.nodeLabel = conceptLabel;
 		this.primaryColumn = primaryColumn;

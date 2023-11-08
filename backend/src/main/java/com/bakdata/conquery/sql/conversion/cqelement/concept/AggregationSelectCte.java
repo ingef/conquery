@@ -25,8 +25,8 @@ class AggregationSelectCte extends ConceptCte {
 	}
 
 	@Override
-	public ConceptCteStep cteStep() {
-		return ConceptCteStep.AGGREGATION_SELECT;
+	public ConceptStep cteStep() {
+		return ConceptStep.AGGREGATION_SELECT;
 	}
 
 }
