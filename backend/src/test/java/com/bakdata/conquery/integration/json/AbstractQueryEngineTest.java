@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.validation.UnexpectedTypeException;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
@@ -27,6 +28,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
 import com.bakdata.conquery.resources.api.ResultCsvResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
+import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
@@ -75,10 +77,6 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 								 .acceptLanguage(Locale.ENGLISH)
 								 .get();
 
-		compareResults(csvResponse, executionResult, execution);
-	}
-
-	protected void compareResults(Response csvResponse, SingleTableResult executionResult, ManagedExecution execution) throws IOException {
 		List<String> actual = In.stream(((InputStream) csvResponse.getEntity())).readLines();
 
 		ResourceFile expectedCsv = getExpectedCsv();
@@ -89,8 +87,18 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 						  .containsExactlyInAnyOrderElementsOf(expected);
 
 		// check that getLastResultCount returns the correct size
-		if (executionResult.streamResults().noneMatch(MultilineEntityResult.class::isInstance) && execution instanceof ManagedQuery managedQuery) {
-			assertThat(managedQuery.getLastResultCount()).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
+		if (executionResult.streamResults().noneMatch(MultilineEntityResult.class::isInstance)) {
+			long lastResultCount;
+			if (executionResult instanceof ManagedQuery managedQuery) {
+				lastResultCount = managedQuery.getLastResultCount();
+			}
+			else if (executionResult instanceof SqlManagedQuery sqlManagedQuery) {
+				lastResultCount = sqlManagedQuery.getLastResultCount();
+			}
+			else {
+				throw new UnexpectedTypeException("Did not expect a ManagedExecution of type %s.".formatted(execution.getClass()));
+			}
+			assertThat(lastResultCount).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
 		}
 
 		log.info("INTEGRATION TEST SUCCESSFUL {} {} on {} rows", getClass().getSimpleName(), this, expected.size());

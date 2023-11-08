@@ -1,0 +1,70 @@
+{
+  "label": "Single Number-Real-Range Filter Query with INTEGER RANGE on column with MONEY type",
+  "type": "SQL_QUERY_TEST",
+  "expectedCsv": "tests/sql/filter/number_money/integer_range/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "number"
+          ],
+          "type": "CONCEPT",
+          "label": "vs",
+          "tables": [
+            {
+              "id": "number.number_connector",
+              "filters": [
+                {
+                  "filter": "number.number_connector.money_number_filter",
+                  "type": "INTEGER_RANGE",
+                  "value": {
+                    "min": 10000,
+                    "max": 20000
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "number",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "number_connector",
+          "table": "table1",
+          "filters": {
+            "name": "money_number_filter",
+            "column": "table1.money",
+            "type": "NUMBER"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/filter/number_money/integer_range/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "money",
+            "type": "MONEY"
+          }
+        ]
+      }
+    ]
+  }
+}

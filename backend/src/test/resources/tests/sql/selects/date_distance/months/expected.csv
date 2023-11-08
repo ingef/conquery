@@ -1,4 +1,4 @@
-pid,dates,date_distance_months
+result,dates,Geschlecht SELECT date_distance_months
 2,{},152
 4,{},112
 7,{},88
