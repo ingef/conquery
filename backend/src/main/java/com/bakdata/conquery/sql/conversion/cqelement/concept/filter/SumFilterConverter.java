@@ -24,17 +24,17 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 		// TODO(tm): convert getSubtractColumn and getDistinctByColumn
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumFilter.getColumn().getType());
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptStep.PREPROCESSING),
 				sumFilter.getColumn().getName(),
 				numberClass
 		);
 
 		Field<? extends Number> qualifiedRootSelect = context.getConceptTables()
-															 .qualifyOnPredecessorTableName(ConceptStep.AGGREGATION_SELECT, rootSelect.aliased());
+															 .qualifyOnPredecessor(ConceptStep.AGGREGATION_SELECT, rootSelect.aliased());
 		SumSqlSelect sumSqlSelect = new SumSqlSelect(qualifiedRootSelect, sumFilter.getName());
 
 		Field<? extends Number> qualifiedSumGroupBy = context.getConceptTables()
-															 .qualifyOnPredecessorTableName(ConceptStep.AGGREGATION_FILTER, sumSqlSelect.aliased());
+															 .qualifyOnPredecessor(ConceptStep.AGGREGATION_FILTER, sumSqlSelect.aliased());
 		SumCondition sumFilterCondition = new SumCondition(qualifiedSumGroupBy, context.getValue());
 
 		return new ConceptFilter(

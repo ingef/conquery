@@ -22,13 +22,13 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(numberFilter.getColumn().getType());
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptStep.PREPROCESSING),
 				numberFilter.getColumn().getName(),
 				numberClass
 		);
 
 		NumberCondition condition = new NumberCondition(
-				context.getConceptTables().qualifyOnPredecessorTableName(ConceptStep.EVENT_FILTER, rootSelect.aliased()),
+				context.getConceptTables().qualifyOnPredecessor(ConceptStep.EVENT_FILTER, rootSelect.aliased()),
 				context.getValue()
 		);
 

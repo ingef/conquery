@@ -20,7 +20,7 @@ class ConceptTablesTest {
 		ConceptTables conceptTables = new ConceptTables(CONCEPT_LABEL, requiredSteps, ROOT_TABLE);
 		Assertions.assertEquals(
 				expectedPredecessorTableName,
-				conceptTables.getPredecessorTableName(step)
+				conceptTables.getPredecessor(step)
 		);
 	}
 

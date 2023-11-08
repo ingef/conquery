@@ -36,7 +36,7 @@ public abstract class SqlTables<C extends CteStep> {
 	/**
 	 * @return The name of the table this {@link CteStep} will select from.
 	 */
-	public String getPredecessorTableName(CteStep cteStep) {
+	public String getPredecessor(CteStep cteStep) {
 		CteStep predecessor = cteStep.predecessor();
 		while (!this.cteNames.containsKey(predecessor)) {
 			if (predecessor == null) {
@@ -52,13 +52,13 @@ public abstract class SqlTables<C extends CteStep> {
 	 * <p>
 	 * For example, if you want to qualify a {@link Field} for the AGGREGATION_SELECT step of {@link ConceptStep},
 	 * it's qualified on the EVENT_FILTER or PREPROCESSING_STEP depending on the presence of the respective step.
-	 * See {@link SqlTables#getPredecessorTableName(CteStep)}
+	 * See {@link SqlTables#getPredecessor(CteStep)}
 	 *
 	 * @param cteStep The {@link CteStep} you want to qualify the given field for.
 	 * @param field   The field you want to qualify.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> Field<T> qualifyOnPredecessorTableName(CteStep cteStep, Field<?> field) {
-		return DSL.field(DSL.name(getPredecessorTableName(cteStep), field.getName()), (DataType<T>) field.getDataType());
+	public <T> Field<T> qualifyOnPredecessor(CteStep cteStep, Field<?> field) {
+		return DSL.field(DSL.name(getPredecessor(cteStep), field.getName()), (DataType<T>) field.getDataType());
 	}
 }

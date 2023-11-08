@@ -26,7 +26,7 @@ public class DateDistanceSelectConverter implements SelectConverter<DateDistance
 
 		SqlSelect rootSelect = new DateDistanceSqlSelect(
 				dateNowSupplier,
-				dateDistanceSelect.getTimeUnit(), context.getConceptTables().getPredecessorTableName(ConceptStep.PREPROCESSING),
+				dateDistanceSelect.getTimeUnit(), context.getConceptTables().getPredecessor(ConceptStep.PREPROCESSING),
 				dateDistanceSelect.getColumn(),
 				dateDistanceSelect.getName(),
 				context.getParentContext().getDateRestrictionRange(),
@@ -35,11 +35,11 @@ public class DateDistanceSelectConverter implements SelectConverter<DateDistance
 
 		Field<Object>
 				qualifiedDateDistance =
-				context.getConceptTables().qualifyOnPredecessorTableName(ConceptStep.AGGREGATION_SELECT, rootSelect.aliased());
+				context.getConceptTables().qualifyOnPredecessor(ConceptStep.AGGREGATION_SELECT, rootSelect.aliased());
 		MinSqlSelect minDateDistance = new MinSqlSelect(qualifiedDateDistance, dateDistanceSelect.getName());
 
 		ExtractingSqlSelect<Object> firstValueReference = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptStep.FINAL),
+				context.getConceptTables().getPredecessor(ConceptStep.FINAL),
 				minDateDistance.aliased().getName(),
 				Object.class
 		);
