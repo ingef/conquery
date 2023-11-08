@@ -14,16 +14,14 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
@@ -47,6 +45,8 @@ import com.bakdata.conquery.apiv1.query.concept.specific.CQAnd;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQOr;
 import com.bakdata.conquery.apiv1.query.concept.specific.external.CQExternal;
+import com.bakdata.conquery.apiv1.query.statistics.ColumnStatsCollector;
+import com.bakdata.conquery.apiv1.query.statistics.ResultStatistics;
 import com.bakdata.conquery.io.result.ResultRender.ResultRendererProvider;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.metrics.ExecutionMetrics;
@@ -72,7 +72,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.mapping.IdPrinter;
 import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
@@ -81,7 +80,6 @@ import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-import com.bakdata.conquery.models.types.ResultType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
@@ -89,13 +87,11 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdentifiableCollector;
 import com.bakdata.conquery.util.io.IdColumnUtil;
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
-import com.google.common.math.StatsAccumulator;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.math3.stat.Frequency;
 
 @Slf4j
 @NoArgsConstructor
@@ -559,27 +555,29 @@ public class QueryProcessor {
 	}
 
 	public ResultStatistics getResultStatistics(ManagedQuery managedQuery) {
-		List<ResultInfo> resultInfos = managedQuery.getQuery().getResultInfos();
-
-		// n / 100 * N;
+		final List<ResultInfo> resultInfos = managedQuery.getQuery().getResultInfos();
 
 		final Random random = new Random();
 		final int requiredSamples = 80; // TODO config
+		final BooleanSupplier samplePicker = () -> random.nextInt(managedQuery.getLastResultCount().intValue()) < requiredSamples;
 
+		List<ColumnStatsCollector> statsCollectors = resultInfos.stream()
+																.map(info -> ColumnStatsCollector.getStatsCollector(info, null, samplePicker))
+																.collect(Collectors.toList());
 
-		List<StatsCollector> statsCollectors = resultInfos.stream()
-														  .map(info -> getStatsCollector(info, null, () -> random.nextInt(managedQuery.getLastResultCount()
-																																	  .intValue())
-																										   < requiredSamples))
-														  .collect(Collectors.toList());
-
+		final IntSet entities = new IntOpenHashSet();
+		final AtomicInteger lines = new AtomicInteger();
 
 		managedQuery.streamResults()
+					.peek(result -> entities.add(result.getEntityId()))
 					.map(EntityResult::listResultLines)
 					.flatMap(List::stream)
 					.forEach(line -> {
+						//TODO if have dates, agg line[0] into CDateRange span
+						lines.incrementAndGet();
+
 						for (int col = 0; col < line.length; col++) {
-							StatsCollector collector = statsCollectors.get(col);
+							final ColumnStatsCollector collector = statsCollectors.get(col);
 							if (collector == null) {
 								continue;
 							}
@@ -590,158 +588,13 @@ public class QueryProcessor {
 
 		//TODO entities and Daterange
 		return new ResultStatistics(
-				managedQuery.getLastResultCount().intValue(),
-				managedQuery.getLastResultCount().intValue()
-				, statsCollectors.stream()
-								 .map(StatsCollector::describe)
-								 .toList(), CDateRange.all()
+				entities.size(),
+				lines.get(),
+				statsCollectors.stream()
+							   .map(ColumnStatsCollector::describe)
+							   .toList(),
+				CDateRange.all()
 		);
 	}
 
-	private static StatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, BooleanSupplier samplePicker) {
-		if (info.getType() instanceof ResultType.IntegerT) {
-			return new NumberStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), info.getType()
-																																				  .toString(), samplePicker);
-		}
-
-		if (info.getType() instanceof ResultType.NumericT) {
-			return new NumberStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), info.getType()
-																																				  .toString(), samplePicker);
-		}
-
-		if (info.getType() instanceof ResultType.MoneyT) {
-			return new NumberStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), info.getType()
-																																				  .toString(), samplePicker);
-		}
-
-
-		return null; //TODO implement others
-	}
-
-	@Data
-	private abstract static class StatsCollector<T> {
-		private final String name;
-		private final String label;
-		private final String description;
-		private final String type;
-
-
-		public abstract void consume(@Nullable T value);
-
-		public abstract ResultColumnStatistics describe();
-
-	}
-
-	@Getter
-	private static class StringStatsCollector extends StatsCollector<String> {
-
-		private final Frequency frequencies = new Frequency();
-		private final AtomicLong nulls = new AtomicLong(0);
-
-		public StringStatsCollector(String name, String label, String description, String type) {
-			super(name, label, description, type);
-		}
-
-		@Override
-		public void consume(String value) {
-			if(value == null){
-				nulls.incrementAndGet();
-				return;
-			}
-
-			frequencies.addValue(value);
-		}
-
-		@Override
-		public ResultColumnStatistics describe() {
-			final Map<String, Long> repr =
-					StreamSupport.stream(((Iterable<Map.Entry<Comparable<?>, Long>>) frequencies::entrySetIterator).spliterator(), false)
-								 .collect(Collectors.toMap(entry -> (String) entry.getKey(), Map.Entry::getValue));
-
-
-
-
-			return new StringResultColumnDescription(getName(), getLabel(), getDescription(), getType(), repr);
-		}
-	}
-
-	@Getter
-	private static class NumberStatsCollector extends StatsCollector<Number> {
-		private final StatsAccumulator statistics = new StatsAccumulator();
-		private final AtomicLong nulls = new AtomicLong(0);
-
-		private final List<Number> samples = new ArrayList<>();
-
-		private final BooleanSupplier samplePicker;
-
-		public NumberStatsCollector(String name, String label, String description, String type, BooleanSupplier samplePicker) {
-			super(name, label, description, type);
-			this.samplePicker = samplePicker;
-		}
-
-		@Override
-		public void consume(Number value) {
-			if (value == null) {
-				nulls.incrementAndGet();
-				return;
-			}
-
-			statistics.add((double) value);
-
-			if (samplePicker.getAsBoolean()) {
-				samples.add(value);
-			}
-		}
-
-		@Override
-		public ResultColumnStatistics describe() {
-			return new NumberResultColumnDescription(getName(), getLabel(), getDescription(), getType(),
-													 (int) (getStatistics().count() + getNulls().get()),
-													 getNulls().intValue(),
-													 getStatistics().mean(),
-													 getStatistics().sampleStandardDeviation(),
-													 (int) getStatistics().min(),
-													 (int) getStatistics().max()
-			);
-		}
-	}
-
-	@Getter
-	private static class StringResultColumnDescription extends ResultColumnStatistics {
-		private final Map<String, Long> histogram;
-
-		public StringResultColumnDescription(String name, String label, String description, String type, Map<String, Long> histogram) {
-			super(name, label, description, type);
-			this.histogram = histogram;
-		}
-	}
-
-	@Getter
-	private static class NumberResultColumnDescription extends ResultColumnStatistics {
-
-		private final int count;
-		private final int nullValues;
-		private final double mean;
-		private final double stdDev;
-		private final Number min;
-		private final Number max;
-
-		public NumberResultColumnDescription(String name, String label, String description, String type, int count, int nullValues, double mean, double stdDev, Number min, Number max) {
-			super(name, label, description, type);
-			this.count = count;
-			this.nullValues = nullValues;
-			this.mean = mean;
-			this.stdDev = stdDev;
-			this.min = min;
-			this.max = max;
-		}
-	}
-
-	@Data
-	public static class ResultStatistics {
-		private final int entities;
-		private final int total;
-		private final List<ResultColumnStatistics> statistics;
-		private final CDateRange dateRange;
-	}
 }
