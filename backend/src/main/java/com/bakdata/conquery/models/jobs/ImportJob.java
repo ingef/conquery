@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.BadRequestException;
@@ -77,6 +78,8 @@ public class ImportJob extends Job {
 	private final PreprocessedDictionaries dictionaries;
 	private final PreprocessedData container;
 	private final ConqueryConfig config;
+
+	private final IdMutex<DictionaryId> sharedDictionaryLocks;
 
 
 	private static final int NUMBER_OF_STEPS = /* directly in execute = */4;
@@ -148,7 +151,8 @@ public class ImportJob extends Job {
 					header,
 					dictionaries,
 					container,
-					config
+					config,
+					sharedDictionaryLocks
 			);
 		}
 	}
@@ -197,62 +201,64 @@ public class ImportJob extends Job {
 	 * Create mappings for shared dictionaries dict.
 	 * This is not synchronized because the methods is called within the job execution.
 	 */
-	private static Map<String, DictionaryMapping> importDictionaries(DistributedNamespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName, Table table) {
+	private static Map<String, DictionaryMapping> importDictionaries(DistributedNamespace namespace, Map<String, Dictionary> dicts, Column[] columns, String importName, Table table, IdMutex<DictionaryId> sharedDictionaryLocks) {
 
 		// Empty Maps are Coalesced to null by Jackson
 		if (dicts == null) {
 			return Collections.emptyMap();
 		}
 
-		final Map<String, DictionaryMapping> out = new HashMap<>();
+		final Map<String, DictionaryMapping> out = new ConcurrentHashMap<>();
 
 		log.debug("BEGIN importing {} Dictionaries", dicts.size());
 
-		for (Column column : columns) {
+		// Might not have an underlying Dictionary (eg Singleton, direct-Number)
+		// but could also be an error :/ Most likely the former
+		// It's a shared dictionary
+		// This should never fail, becaus the dictionary is pre-created in the replacement generation step
 
-			if (column.getType() != MajorTypeId.STRING) {
-				continue;
-			}
+		Arrays.stream(columns)
+			  .parallel()
+			  .filter(column -> column.getType() == MajorTypeId.STRING)
+			  .filter(col -> col.getSharedDictionary() == null)
+			  .map(col -> dicts.get(col.getName()))
+			  .filter(Objects::nonNull)
+			  .forEach(dictionary -> {
+				  // Normal Dictionary -> no merge necessary, just distribute
+				  distributeDictionary(namespace, dictionary);
+			  });
 
-			// Might not have an underlying Dictionary (eg Singleton, direct-Number)
-			// but could also be an error :/ Most likely the former
-			final Dictionary importDictionary = dicts.get(column.getName());
+		Arrays.stream(columns)
+			  .parallel()
+			  .filter(column -> column.getType() == MajorTypeId.STRING)
+			  .filter(col -> col.getSharedDictionary() != null)
+			  .filter(col -> dicts.containsKey(col.getName()))
+			  .forEach(column -> {
+				  final Dictionary importDictionary = dicts.get(column.getName());
 
-			if (importDictionary == null) {
-				log.trace("No Dictionary for {}", column);
-				continue;
-			}
+				  final String sharedDictionaryName = column.getSharedDictionary();
+				  log.debug("Column[{}.{}.{}] part of shared Dictionary[{}]", table.getId(), importName, column.getName(), sharedDictionaryName);
+
+				  final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
+				  final DictionaryMapping mapping;
+
+				  // We have to lock here, as sibling columns might both use the same shared-dictionary
+				  try (IdMutex.Locked lock = sharedDictionaryLocks.acquire(dictionaryId)) {
+					  final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
+
+					  ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
+					  log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
+
+					  mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
+				  }
+
+				  if (mapping.getNumberOfNewIds() != 0) {
+					  distributeDictionary(namespace, mapping.getTargetDictionary());
+				  }
+				  out.put(column.getName(), mapping);
+			  });
 
 
-			if (column.getSharedDictionary() == null) {
-				// Normal Dictionary -> no merge necessary, just distribute
-				distributeDictionary(namespace, importDictionary);
-			}
-			else {
-				// It's a shared dictionary
-
-				final String sharedDictionaryName = column.getSharedDictionary();
-
-				log.debug("Column[{}.{}.{}] part of shared Dictionary[{}]", table.getId(), importName, column.getName(), sharedDictionaryName);
-
-				final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
-				final Dictionary sharedDictionary = namespace.getStorage().getDictionary(dictionaryId);
-
-				// This should never fail, becaus the dictionary is pre-created in the replacement generation step
-				ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
-
-				log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
-
-
-				DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
-
-				if (mapping.getNumberOfNewIds() != 0) {
-					distributeDictionary(namespace, mapping.getTargetDictionary());
-				}
-
-				out.put(column.getName(), mapping);
-			}
-		}
 
 		return out;
 	}
@@ -285,7 +291,7 @@ public class ImportJob extends Job {
 		log.info("Importing Dictionaries");
 
 		Map<String, DictionaryMapping> sharedDictionaryMappings =
-				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName(), table);
+				importDictionaries(namespace, dictionaries.getDictionaries(), table.getColumns(), header.getName(), table, sharedDictionaryLocks);
 
 		log.info("Remapping Dictionaries {}", sharedDictionaryMappings.values());
 
@@ -482,33 +488,30 @@ public class ImportJob extends Job {
 
 		final ProgressReporter subJob = getProgressReporter().subJob(mappings.size());
 
-		for (Map.Entry<String, DictionaryMapping> entry : mappings.entrySet()) {
-			final String columnName = entry.getKey();
-			final DictionaryMapping mapping = entry.getValue();
+		// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
+		mappings.entrySet().parallelStream()
+				.forEach(entry -> {
+					final String columnName = entry.getKey();
+					final DictionaryMapping mapping = entry.getValue();
 
-			final StringStore stringStore = (StringStore) values.get(columnName);
+					final StringStore stringStore = (StringStore) values.get(columnName);
+					log.debug("Remapping Column[{}] = {} with {}", columnName, stringStore, mapping);
+					final IntegerParser indexParser = new IntegerParser(config);
+					final IntSummaryStatistics statistics = mapping.target().intStream().summaryStatistics();
 
-			log.debug("Remapping Column[{}] = {} with {}", columnName, stringStore, mapping);
+					indexParser.setLines(stringStore.getLines());
+					indexParser.setMinValue(statistics.getMin());
+					indexParser.setMaxValue(statistics.getMax());
 
-			// we need to find a new Type for the index-Column as it's going to be remapped and might change in size
-			final IntegerParser indexParser = new IntegerParser(config);
+					final IntegerStore newType = indexParser.findBestType();
 
-			final IntSummaryStatistics statistics = mapping.target().intStream().summaryStatistics();
+					log.trace("Decided for {}", newType);
 
-			indexParser.setLines(stringStore.getLines());
+					mapping.applyToStore(stringStore, newType);
+					stringStore.setIndexStore(newType);
 
-			indexParser.setMinValue(statistics.getMin());
-			indexParser.setMaxValue(statistics.getMax());
-
-			final IntegerStore newType = indexParser.findBestType();
-
-			log.trace("Decided for {}", newType);
-
-			mapping.applyToStore(stringStore, newType);
-
-			stringStore.setIndexStore(newType);
-			subJob.report(1);
-		}
+					subJob.report(1);
+				});
 	}
 
 	private Import createImport(PreprocessedHeader header, Map<String, ColumnStore> stores, Column[] columns, int size) {

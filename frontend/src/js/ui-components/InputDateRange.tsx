@@ -2,6 +2,7 @@ import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { faCalendar } from "@fortawesome/free-regular-svg-icons";
 import { FC, ReactNode, createRef, useMemo } from "react";
+import ReactDatePicker from "react-datepicker";
 import { useTranslation } from "react-i18next";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
@@ -19,7 +20,6 @@ import InfoTooltip from "../tooltip/InfoTooltip";
 import InputDate from "./InputDate/InputDate";
 import Label from "./Label";
 import Labeled from "./Labeled";
-import Optional from "./Optional";
 
 const Root = styled("div")<{ center?: boolean }>`
   text-align: ${({ center }) => (center ? "center" : "left")};
@@ -87,7 +87,6 @@ interface PropsT {
   center?: boolean;
   autoFocus?: boolean;
   tooltip?: string;
-  optional?: boolean;
   value: DateStringMinMax;
   onChange: (value: DateStringMinMax) => void;
 }
@@ -114,7 +113,6 @@ const InputDateRange: FC<PropsT> = ({
   labelSuffix,
   value,
   onChange,
-  optional,
   tooltip,
 }) => {
   const { t } = useTranslation();
@@ -166,7 +164,7 @@ const InputDateRange: FC<PropsT> = ({
   const min = getDisplayDate("min", value, displayDateFormat);
   const max = getDisplayDate("max", value, displayDateFormat);
 
-  const maxRef = createRef<HTMLInputElement>();
+  const maxRef = createRef<ReactDatePicker>();
 
   const isMinValid = exists(value.min && parseDate(min, displayDateFormat));
   const isMaxValid = exists(value.max && parseDate(max, displayDateFormat));
@@ -178,7 +176,6 @@ const InputDateRange: FC<PropsT> = ({
       <StyledLabel large={large}>
         <Icon icon={faCalendar} left gray />
         {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
-        {optional && <Optional />}
         {label}
         <InfoTooltip
           html={
@@ -196,7 +193,7 @@ const InputDateRange: FC<PropsT> = ({
         {labelSuffix && labelSuffix}
       </StyledLabel>
     );
-  }, [t, label, labelSuffix, large, optional, tooltip, indexPrefix]);
+  }, [t, label, labelSuffix, large, tooltip, indexPrefix]);
 
   return (
     <Root center={center}>
@@ -213,7 +210,7 @@ const InputDateRange: FC<PropsT> = ({
             onChange={(val) =>
               onChangeRaw("min", val as string, displayDateFormat)
             }
-            onCalendarSelect={() => maxRef.current?.focus()}
+            onCalendarSelect={() => maxRef.current?.setOpen(true)}
             onBlur={(e) => applyDate("min", e.target.value, displayDateFormat)}
             inputProps={{
               autoFocus,

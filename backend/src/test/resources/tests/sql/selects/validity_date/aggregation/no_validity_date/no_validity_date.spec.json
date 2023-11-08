@@ -1,0 +1,139 @@
+{
+  "label": "MERGE date aggregation of 2 concepts but no one has a validity date",
+  "expectedCsv": "expected.csv",
+  "type": "SQL_TEST",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "dateAggregationMode": "MERGE",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "type": "CONCEPT",
+          "label": "vs",
+          "ids": [
+            "number"
+          ],
+          "tables": [
+            {
+              "id": "number.number_connector",
+              "filters": [
+                {
+                  "filter": "number.number_connector.value",
+                  "type": "REAL_RANGE",
+                  "value": {
+                    "min": 0,
+                    "max": 1.0
+                  }
+                }
+              ],
+              "selects": "number.number_connector.first_value"
+            }
+          ]
+        },
+        {
+          "ids": [
+            "geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "Geschlecht SELECT",
+          "tables": [
+            {
+              "id": "geschlecht_select.geschlecht_connector",
+              "filters": [
+                {
+                  "filter": "geschlecht_select.geschlecht_connector.geschlecht",
+                  "type": "BIG_MULTI_SELECT",
+                  "value": [
+                    "f"
+                  ]
+                }
+              ],
+              "selects": "geschlecht_select.geschlecht_connector.first_geschlecht"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "number",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "number_connector",
+          "table": "table1",
+          "filters": {
+            "label": "value",
+            "description": "xy",
+            "column": "table1.value",
+            "type": "NUMBER"
+          },
+          "selects": [
+            {
+              "column": "table1.value",
+              "label": "first_value",
+              "type": "FIRST"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table2",
+          "filters": {
+            "label": "geschlecht",
+            "description": "Geschlecht zur gegebenen Datumseinschränkung",
+            "column": "table2.geschlecht",
+            "type": "SELECT"
+          },
+          "selects": [
+            {
+              "column": "table2.geschlecht",
+              "label": "first_geschlecht",
+              "type": "FIRST"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/validity_date/aggregation/no_validity_date/content_1.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "REAL"
+          }
+        ]
+      },
+      {
+        "csv": "tests/sql/selects/validity_date/aggregation/no_validity_date/content_2.csv",
+        "name": "table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "geschlecht",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

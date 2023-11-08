@@ -11,6 +11,7 @@ import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.View;
+import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
@@ -74,6 +75,11 @@ public class CQReusedQuery extends CQElement {
 	@Override
 	public void resolve(QueryResolveContext context) {
 		query = ((ManagedQuery) context.getStorage().getExecution(queryId));
+
+		if(query == null){
+			throw new ConqueryError.ExecutionCreationResolveError(queryId);
+		}
+
 		resolvedQuery = query.getQuery();
 
 		// Yey recursion, because the query might consist of another CQReusedQuery or CQExternal

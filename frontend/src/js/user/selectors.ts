@@ -58,6 +58,18 @@ function canDo(
 //   );
 // }
 
+export function canViewEntityPreview(state: StateT) {
+  return canDo(state, (permissions, datasetId) => {
+    return permissions[datasetId].canViewEntityPreview === true;
+  });
+}
+
+export function canViewQueryPreview(state: StateT) {
+  return canDo(state, (permissions, datasetId) => {
+    return permissions[datasetId].canViewQueryPreview === true;
+  });
+}
+
 export function canUploadResult(state: StateT) {
   return canDo(state, (permissions, datasetId) => {
     return permissions[datasetId].canUpload === true;

@@ -33,12 +33,7 @@ import FormConceptGroup from "../form-concept-group/FormConceptGroup";
 import type { FormConceptGroupT } from "../form-concept-group/formConceptGroupState";
 import FormQueryDropzone from "../form-query-dropzone/FormQueryDropzone";
 import FormTabNavigation from "../form-tab-navigation/FormTabNavigation";
-import {
-  getFieldKey,
-  getInitialValue,
-  isFormField,
-  isOptionalField,
-} from "../helper";
+import { getFieldKey, getInitialValue, isFormField } from "../helper";
 import { getErrorForField } from "../validators";
 
 import type { DynamicFormValues } from "./Form";
@@ -73,7 +68,11 @@ type Props<T> = T & {
   noContainer?: boolean;
   noLabel?: boolean;
 };
-const FieldContainer = styled("div")<{ noLabel?: boolean; hasError?: boolean }>`
+const FieldContainer = styled("div")<{
+  noLabel?: boolean;
+  hasError?: boolean;
+  red?: boolean;
+}>`
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -81,12 +80,16 @@ const FieldContainer = styled("div")<{ noLabel?: boolean; hasError?: boolean }>`
   background-color: white;
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid
-    ${({ theme, hasError }) =>
-      hasError ? theme.col.blueGrayDark : theme.col.grayLight};
+    ${({ theme, hasError, red }) =>
+      hasError
+        ? red
+          ? theme.col.red
+          : theme.col.blueGrayDark
+        : theme.col.grayLight};
 `;
 
-const ErrorContainer = styled("div")`
-  color: ${({ theme }) => theme.col.blueGrayDark};
+const ErrorContainer = styled("div")<{ red?: boolean }>`
+  color: ${({ theme, red }) => (red ? theme.col.red : theme.col.blueGrayDark)};
   font-weight: 700;
   font-size: ${({ theme }) => theme.font.sm};
 `;
@@ -114,12 +117,21 @@ const ConnectedField = <T extends Object>({
   // TODO: REFINE COLORS
   // const color = useColorByField(formField.type);
 
+  const requiredMsg = t("externalForms.formValidation.isRequired");
+  const isRedError = fieldState.error?.message !== requiredMsg;
+
   return noContainer ? (
     <div>{children({ ...field, ...props })}</div>
   ) : (
-    <FieldContainer noLabel={noLabel} hasError={exists(fieldState.error)}>
+    <FieldContainer
+      noLabel={noLabel}
+      hasError={exists(fieldState.error)}
+      red={isRedError}
+    >
       {children({ ...field, ...props })}
-      <ErrorContainer>{fieldState.error?.message}</ErrorContainer>
+      <ErrorContainer red={isRedError}>
+        {fieldState.error?.message}
+      </ErrorContainer>
     </FieldContainer>
   );
 };
@@ -148,35 +160,28 @@ const NestedFields = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-interface PropsT {
-  formType: string;
-  h1Index?: number;
-  field: GeneralField;
-  locale: Language;
-  availableDatasets: SelectOptionT[];
-  optional?: boolean;
-  register: UseFormRegister<DynamicFormValues>;
-  setValue: UseFormSetValue<DynamicFormValues>;
-  control: Control<DynamicFormValues>;
-}
-
 const setValueConfig = {
   shouldValidate: true,
   shouldDirty: true,
   shouldTouch: true,
 };
 
-const Field = ({ field, ...commonProps }: PropsT) => {
+const Field = ({
+  field,
+  ...commonProps
+}: {
+  formType: string;
+  h1Index?: number;
+  field: GeneralField;
+  locale: Language;
+  availableDatasets: SelectOptionT[];
+  register: UseFormRegister<DynamicFormValues>;
+  setValue: UseFormSetValue<DynamicFormValues>;
+  control: Control<DynamicFormValues>;
+}) => {
   const datasetId = useDatasetId();
-  const {
-    formType,
-    h1Index,
-    optional,
-    locale,
-    availableDatasets,
-    setValue,
-    control,
-  } = commonProps;
+  const { formType, h1Index, locale, availableDatasets, setValue, control } =
+    commonProps;
   const { t } = useTranslation();
 
   const defaultValue =
@@ -221,7 +226,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               value={fieldProps.value as string}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
             />
           )}
         </ConnectedField>
@@ -246,7 +250,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 setValue(field.name, value, setValueConfig);
               }}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
             />
           )}
         </ConnectedField>
@@ -275,7 +278,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 max: field.max,
               }}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
             />
           )}
         </ConnectedField>
@@ -293,7 +295,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 inline={true}
                 label={field.label[locale]}
                 tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-                optional={optional}
                 value={fieldProps.value as DateStringMinMax}
                 onChange={(value) =>
                   setValue(field.name, value, setValueConfig)
@@ -315,7 +316,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               label={field.label[locale] || ""}
               dropzoneText={field.dropzoneLabel[locale] || ""}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
               value={fieldProps.value as DragItemQuery}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
             />
@@ -357,7 +357,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               label={field.label[locale]}
               options={options}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-              optional={optional}
               value={fieldProps.value as SelectOptionT | null}
               onChange={(value) => setValue(field.name, value, setValueConfig)}
             />
@@ -383,7 +382,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                 label={field.label[locale]}
                 options={availableDatasets}
                 tooltip={field.tooltip ? field.tooltip[locale] : undefined}
-                optional={optional}
                 value={fieldProps.value as SelectOptionT | null}
                 onChange={(value) =>
                   setValue(field.name, value, setValueConfig)
@@ -411,16 +409,8 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           >
             {field.fields.map((f, i) => {
               const key = getFieldKey(formType, f, i);
-              const nestedFieldOptional = isOptionalField(f);
 
-              return (
-                <Field
-                  key={key}
-                  field={f}
-                  {...commonProps}
-                  optional={nestedFieldOptional}
-                />
-              );
+              return <Field key={key} field={f} {...commonProps} />;
             })}
           </Group>
         </>
@@ -455,16 +445,8 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                   <NestedFields>
                     {tabToShow.fields.map((f, i) => {
                       const key = getFieldKey(formType, f, i);
-                      const nestedFieldOptional = isOptionalField(f);
 
-                      return (
-                        <Field
-                          key={key}
-                          field={f}
-                          {...commonProps}
-                          optional={nestedFieldOptional}
-                        />
-                      );
+                      return <Field key={key} field={f} {...commonProps} />;
                     })}
                   </NestedFields>
                 ) : (
@@ -507,7 +489,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
               blocklistedSelects={field.blocklistedSelects}
               allowlistedSelects={field.allowlistedSelects}
               defaults={field.defaults}
-              optional={optional}
               isValidConcept={(item) =>
                 !nodeIsInvalid(
                   item,
@@ -530,6 +511,7 @@ const Field = ({ field, ...commonProps }: PropsT) => {
                     }
                   : { concepts: [], connector: "OR" }
               }
+              rowPrefixFieldname={field.rowPrefixField?.name}
               renderRowPrefix={
                 exists(field.rowPrefixField)
                   ? ({ value: fieldValue, onChange, row, i }) => (

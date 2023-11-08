@@ -16,9 +16,11 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
+import com.bakdata.conquery.integration.sql.dialect.TestSqlDialect;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.preproc.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -33,7 +35,6 @@ import org.jooq.Field;
 import org.jooq.Record;
 import org.jooq.RowN;
 import org.jooq.Table;
-import org.jooq.conf.ParamType;
 import org.jooq.impl.BuiltInDataType;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
@@ -46,11 +47,15 @@ public class CsvTableImporter {
 	private final DSLContext dslContext;
 	private final DateRangeParser dateRangeParser;
 	private final CsvParser csvReader;
+	private final TestSqlDialect testSqlDialect;
+	private final SqlConnectorConfig sqlConnectorConfig;
 
-	public CsvTableImporter(DSLContext dslContext) {
+	public CsvTableImporter(DSLContext dslContext, TestSqlDialect testSqlDialect, SqlConnectorConfig sqlConnectorConfig) {
 		this.dslContext = dslContext;
 		this.dateRangeParser = new DateRangeParser(new ConqueryConfig());
 		this.csvReader = new CSVConfig().withSkipHeader(true).createParser();
+		this.testSqlDialect = testSqlDialect;
+		this.sqlConnectorConfig = sqlConnectorConfig;
 	}
 
 	/**
@@ -85,33 +90,24 @@ public class CsvTableImporter {
 	}
 
 	private void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement) throws SQLException {
-		for (RowN rowN : content) {
-			// e.g. HANA does not support bulk insert, so we insert row by row
-			String insertRowStatement = dslContext.insertInto(table, columns)
-												  .values(rowN)
-												  .getSQL(ParamType.INLINED);
-			log.info("Inserting into table: {}", insertRowStatement);
-			statement.execute(insertRowStatement);
-		}
+		log.debug("Inserting into table: {}", content);
+		testSqlDialect.getTestFunctionProvider().insertValuesIntoTable(table, columns, content, statement, dslContext);
 	}
 
 	private void createTable(Table<Record> table, List<Field<?>> columns, Statement statement) throws SQLException {
-		String createTableStatement = dslContext.createTable(table)
-												.columns(columns)
-												.getSQL(ParamType.INLINED);
-		log.info("Creating table: {}", createTableStatement);
+		String createTableStatement = testSqlDialect.getTestFunctionProvider().createTableStatement(table, columns, dslContext);
+
+		log.debug("Creating table: {}", createTableStatement);
 		statement.execute(createTableStatement);
 	}
 
 	private void dropTable(Table<Record> table, Statement statement) {
 		try {
-			// DROP TABLE IF EXISTS is not supported in HANA, we just ignore possible errors if the table does not exist
-			String dropTableStatement = dslContext.dropTable(table)
-												  .getSQL(ParamType.INLINED);
+			String dropTableStatement = testSqlDialect.getTestFunctionProvider().createDropTableStatement(table, dslContext);
 			statement.execute(dropTableStatement);
 		}
 		catch (SQLException e) {
-			log.info("Dropping table {} failed.", table.getName(), e);
+			log.debug("Dropping table {} failed.", table.getName(), e);
 		}
 	}
 
@@ -134,11 +130,17 @@ public class CsvTableImporter {
 			case INTEGER -> SQLDataType.INTEGER;
 			case BOOLEAN -> SQLDataType.BOOLEAN;
 			// TODO: temporary workaround until we cast ResultSet elements back
-			case REAL -> SQLDataType.DECIMAL(10,2);
+			case REAL -> SQLDataType.DECIMAL(10, 2);
 			case DECIMAL, MONEY -> SQLDataType.DECIMAL;
 			case DATE -> SQLDataType.DATE;
 			case DATE_RANGE -> new BuiltInDataType<>(DateRange.class, "daterange");
 		};
+
+		// Set all columns except 'pid' to nullable, important for ClickHouse compatibility
+		if (!requiredColumn.getName().equals(sqlConnectorConfig.getPrimaryColumn())) {
+			dataType = dataType.nullable(true);
+		}
+
 		return DSL.field(DSL.name(requiredColumn.getName()), dataType);
 	}
 

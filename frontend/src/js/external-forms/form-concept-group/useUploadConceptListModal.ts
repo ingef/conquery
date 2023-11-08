@@ -75,14 +75,14 @@ export const useUploadConceptListModal = ({
   };
 
   const onImportLines = (
-    lines: string[],
+    { lines, filename }: { lines: string[]; filename?: string },
     { valueIdx, conceptIdx }: UploadConceptListModalContext,
   ) => {
     setModalContext({ valueIdx, conceptIdx });
     dispatch(
       initUploadConceptListModal({
         rows: lines,
-        filename: t("importModal.pasted"),
+        filename: filename || t("importModal.pasted"),
       }),
     );
 

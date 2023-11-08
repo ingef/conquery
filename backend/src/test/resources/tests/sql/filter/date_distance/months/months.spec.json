@@ -1,0 +1,71 @@
+{
+  "type": "SQL_TEST",
+  "label": "DATE_DISTANCE filter query with timeUnit MONTHS",
+  "expectedCsv": "expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "Geschlecht SELECT",
+          "tables": [
+            {
+              "id": "geschlecht_select.geschlecht_connector",
+              "filters": {
+                "filter": "geschlecht_select.geschlecht_connector.date_distance_months",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "max": 100
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table1",
+          "filters": [
+            {
+              "column": "table1.datum",
+              "label": "date_distance_months",
+              "name": "date_distance_months",
+              "timeUnit": "MONTHS",
+              "type": "DATE_DISTANCE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/filter/date_distance/months/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

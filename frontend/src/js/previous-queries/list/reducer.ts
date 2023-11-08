@@ -53,6 +53,7 @@ export interface PreviousQueryT {
   groups?: UserGroupIdT[];
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   secondaryId?: string | null;
+  containsDates: boolean;
 }
 
 export interface PreviousQueriesStateT {

@@ -61,11 +61,11 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	 */
 	private Long lastResultCount;
 
-	//TODO this can actually be known ahead and reduced to speedup queries.
 	@JsonIgnore
 	private transient Set<WorkerId> involvedWorkers;
 	@JsonIgnore
 	private transient List<ColumnDescriptor> columnDescriptions;
+
 
 	protected ManagedQuery(@JacksonInject(useInput = OptBoolean.FALSE) MetaStorage storage) {
 		super(storage);
@@ -78,9 +78,7 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 	@Override
 	protected void doInitExecutable() {
-
 		query.resolve(new QueryResolveContext(getNamespace(), getConfig(), getStorage(), null));
-
 	}
 
 	@Override
@@ -154,15 +152,15 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 	 */
 	public List<ColumnDescriptor> generateColumnDescriptions() {
 		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
-		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
+		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
 
 		final Locale locale = I18n.LOCALE.get();
 
-		PrintSettings settings = new PrintSettings(true, locale, getNamespace(), getConfig(), null);
+		final PrintSettings settings = new PrintSettings(true, locale, getNamespace(), getConfig(), null);
 
-		UniqueNamer uniqNamer = new UniqueNamer(settings);
+		final UniqueNamer uniqNamer = new UniqueNamer(settings);
 
-		// First add the id columns to the descriptor list. The are the first columns
+		// First add the id columns to the descriptor list. These are always the first columns
 		for (ResultInfo header : getConfig().getIdColumns().getIdResultInfos()) {
 			columnDescriptions.add(ColumnDescriptor.builder()
 												   .label(uniqNamer.getUniqueName(header))

@@ -1,0 +1,71 @@
+{
+  "type": "SQL_TEST",
+  "label": "DATE_DISTANCE filter query with timeUnit YEARS",
+  "expectedCsv": "expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "Geschlecht SELECT",
+          "tables": [
+            {
+              "id": "geschlecht_select.geschlecht_connector",
+              "filters": {
+                "filter": "geschlecht_select.geschlecht_connector.date_distance_years",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "min": 10
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "geschlecht_select",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table1",
+          "filters": [
+            {
+              "column": "table1.datum",
+              "label": "date_distance_years",
+              "name": "date_distance_years",
+              "timeUnit": "YEARS",
+              "type": "DATE_DISTANCE"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/filter/date_distance/years/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

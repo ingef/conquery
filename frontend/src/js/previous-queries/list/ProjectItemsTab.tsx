@@ -22,7 +22,7 @@ import UploadQueryResults from "../upload/UploadQueryResults";
 import Folders from "./Folders";
 import FoldersToggleButton from "./FoldersToggleButton";
 import { ProjectItemT } from "./ProjectItem";
-import PreviousQueries from "./ProjectItems";
+import { ProjectItems } from "./ProjectItems";
 import { useLoadFormConfigs, useLoadQueries } from "./actions";
 import type { FormConfigT, PreviousQueryT } from "./reducer";
 import { selectPreviousQueries } from "./selector";
@@ -148,7 +148,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
                 <EmptyList emptyMessage={t("previousQueries.noQueriesFound")} />
               )}
             </ScrollContainer>
-            <PreviousQueries items={items} datasetId={datasetId} />
+            <ProjectItems items={items} datasetId={datasetId} />
           </Expand>
         </SplitPane>
       </FoldersAndQueries>

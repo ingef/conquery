@@ -414,6 +414,7 @@ export interface GetQueryResponseDoneT {
   columnDescriptions: ColumnDescription[] | null;
   queryType: "CONCEPT_QUERY" | "SECONDARY_ID_QUERY";
   requiredTime: number; // In ms, unused at the moment
+  containsDates: boolean;
 }
 
 export interface GetQueryRunningResponseT {
