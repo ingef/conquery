@@ -19,7 +19,7 @@ class MergeAggregateAction implements SqlAggregationAction {
 	private final QueryStep joinedStep;
 
 	@Override
-	public DateAggregationTables tableNames() {
+	public DateAggregationTables<MergeStep> tableNames() {
 		return MergeStep.tableNames(this.joinedStep);
 	}
 

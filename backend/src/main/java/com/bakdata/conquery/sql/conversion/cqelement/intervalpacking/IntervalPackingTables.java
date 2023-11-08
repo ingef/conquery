@@ -1,49 +1,26 @@
 package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.Set;
 
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptTables;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-class IntervalPackingTables {
+class IntervalPackingTables extends SqlTables<IntervalPackingStep> {
 
-	@Getter
-	private final String validityDateSourceTableName;
-	private final Map<IntervalPackingCteStep, String> cteNames;
+	public static final Set<IntervalPackingStep> REQUIRED_STEPS = Set.of(IntervalPackingStep.values());
 
-	public static IntervalPackingTables forConcept(String nodeLabel, ConceptTables conceptTables) {
-		Map<IntervalPackingCteStep, String> cteNames = Arrays.stream(IntervalPackingCteStep.values())
-															 .collect(Collectors.toMap(
-																	 Function.identity(),
-																	 step -> step.cteName(nodeLabel)
-															 ));
-		String preprocessingCteName = conceptTables.cteName(ConceptCteStep.PREPROCESSING);
-		return new IntervalPackingTables(preprocessingCteName, cteNames);
+	public IntervalPackingTables(String nodeLabel, Set<IntervalPackingStep> requiredSteps, String rootTableName) {
+		super(nodeLabel, requiredSteps, rootTableName);
+	}
+
+	public static IntervalPackingTables forConcept(String nodeLabel, SqlTables<ConceptStep> conceptTables) {
+		String preprocessingCteName = conceptTables.cteName(ConceptStep.PREPROCESSING);
+		return new IntervalPackingTables(nodeLabel, REQUIRED_STEPS, preprocessingCteName);
 	}
 
 	public static IntervalPackingTables forGenericQueryStep(String nodeLabel, QueryStep predecessor) {
-		Map<IntervalPackingCteStep, String> cteNames = createCteNameMap(nodeLabel);
-		return new IntervalPackingTables(predecessor.getCteName(), cteNames);
-	}
-
-	public String cteName(IntervalPackingCteStep intervalPackingCteStep) {
-		return this.cteNames.get(intervalPackingCteStep);
-	}
-
-	private static Map<IntervalPackingCteStep, String> createCteNameMap(String nodeLabel) {
-		return Arrays.stream(IntervalPackingCteStep.values())
-					 .collect(Collectors.toMap(
-							 Function.identity(),
-							 step -> step.cteName(nodeLabel)
-					 ));
+		return new IntervalPackingTables(nodeLabel, REQUIRED_STEPS, predecessor.getCteName());
 	}
 
 }

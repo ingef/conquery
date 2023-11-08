@@ -15,10 +15,10 @@ abstract class DateAggregationCte {
 	public QueryStep convert(DateAggregationContext context, QueryStep previous) {
 
 		DateAggregationStep cteStep = getCteStep();
-		DateAggregationTables dateAggregationTables = context.getDateAggregationTables();
+		DateAggregationTables<?> dateAggregationTables = context.getDateAggregationTables();
 
 		// this way all selects are already qualified, and we don't need to care for that in the respective steps
-		context = context.qualify(dateAggregationTables.getFromTableOf(cteStep));
+		context = context.qualify(dateAggregationTables.getPredecessor(cteStep));
 
 		QueryStep.QueryStepBuilder builder = this.convertStep(context);
 
@@ -27,7 +27,7 @@ abstract class DateAggregationCte {
 							 .predecessors(List.of(previous));
 		}
 		if (cteStep != InvertStep.INVERT) {
-			builder = builder.fromTable(QueryStep.toTableLike(dateAggregationTables.getFromTableOf(cteStep)));
+			builder = builder.fromTable(QueryStep.toTableLike(dateAggregationTables.getPredecessor(cteStep)));
 		}
 
 		return builder.build();

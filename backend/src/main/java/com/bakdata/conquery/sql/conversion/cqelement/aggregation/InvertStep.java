@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import lombok.Getter;
@@ -14,6 +14,7 @@ enum InvertStep implements DateAggregationStep {
 	ROW_NUMBER("_row_numbers", RowNumberCte::new, null),
 	INVERT("_inverted_dates", InvertCte::new, InvertStep.ROW_NUMBER);
 
+	private static final Set<InvertStep> REQUIRED_STEPS = Set.of(values());
 	private final String suffix;
 	@Getter
 	private final DateAggregationCteConstructor stepConstructor;
@@ -35,9 +36,8 @@ enum InvertStep implements DateAggregationStep {
 					 .toList();
 	}
 
-	static DateAggregationTables createTableNames(QueryStep joinedTable) {
-		Map<DateAggregationStep, String> cteNameMap = DateAggregationStep.createCteNameMap(joinedTable, values());
-		return new DateAggregationTables(joinedTable.getCteName(), cteNameMap);
+	static DateAggregationTables<InvertStep> createTableNames(QueryStep joinedTable) {
+		return new DateAggregationTables<>(joinedTable.getCteName(), REQUIRED_STEPS, joinedTable.getCteName());
 	}
 
 }

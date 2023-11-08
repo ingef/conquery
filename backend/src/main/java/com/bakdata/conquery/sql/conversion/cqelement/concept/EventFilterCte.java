@@ -15,7 +15,7 @@ class EventFilterCte extends ConceptCte {
 	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
 
 		Selects eventFilterSelects = Selects.qualified(
-				conceptCteContext.getConceptTables().getPredecessorTableName(ConceptCteStep.EVENT_FILTER),
+				conceptCteContext.getConceptTables().getPredecessor(ConceptStep.EVENT_FILTER),
 				conceptCteContext.getPrimaryColumn(),
 				conceptCteContext.getValidityDate(),
 				getForAggregationSelectStep(conceptCteContext)
@@ -39,8 +39,8 @@ class EventFilterCte extends ConceptCte {
 	}
 
 	@Override
-	public ConceptCteStep cteStep() {
-		return ConceptCteStep.EVENT_FILTER;
+	public ConceptStep cteStep() {
+		return ConceptStep.EVENT_FILTER;
 	}
 
 }

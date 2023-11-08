@@ -34,8 +34,8 @@ class FinalConceptCte extends ConceptCte {
 	}
 
 	@Override
-	protected ConceptCteStep cteStep() {
-		return ConceptCteStep.FINAL;
+	protected ConceptStep cteStep() {
+		return ConceptStep.FINAL;
 	}
 
 	private QueryStep.QueryStepBuilder applyIntervalPacking(List<SqlSelect> forFinalStep, ConceptCteContext conceptCteContext) {

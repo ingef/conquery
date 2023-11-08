@@ -21,8 +21,8 @@ class IntersectAggregationAction implements SqlAggregationAction {
 	private final QueryStep joinedStep;
 
 	@Override
-	public DateAggregationTables tableNames() {
-		return IntersectStep.tableNames(this.joinedStep);
+	public DateAggregationTables<IntersectStep> tableNames() {
+		return IntersectStep.createTableNames(this.joinedStep);
 	}
 
 	@Override

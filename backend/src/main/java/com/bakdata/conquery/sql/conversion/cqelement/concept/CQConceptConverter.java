@@ -86,7 +86,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		String conceptLabel = createConceptLabel(node, context);
 		Optional<ColumnDateRange> validityDateSelect = convertValidityDate(table, tableName, conceptLabel);
 
-		Set<ConceptCteStep> requiredSteps = getRequiredSteps(table, context.dateRestrictionActive(), validityDateSelect);
+		Set<ConceptStep> requiredSteps = getRequiredSteps(table, context.dateRestrictionActive(), validityDateSelect);
 		ConceptTables conceptTables = new ConceptTables(conceptLabel, requiredSteps, tableName);
 
 		// convert filters
@@ -117,13 +117,13 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 	 * Determines if event/aggregation filter steps are required.
 	 *
 	 * <p>
-	 * {@link ConceptCteStep#MANDATORY_STEPS} are allways part of any concept conversion.
+	 * {@link ConceptStep#MANDATORY_STEPS} are allways part of any concept conversion.
 	 */
-	private Set<ConceptCteStep> getRequiredSteps(CQTable table, boolean dateRestrictionRequired, Optional<ColumnDateRange> validityDateSelect) {
-		Set<ConceptCteStep> requiredSteps = new HashSet<>(ConceptCteStep.MANDATORY_STEPS);
+	private Set<ConceptStep> getRequiredSteps(CQTable table, boolean dateRestrictionRequired, Optional<ColumnDateRange> validityDateSelect) {
+		Set<ConceptStep> requiredSteps = new HashSet<>(ConceptStep.MANDATORY_STEPS);
 
 		if (dateRestrictionApplicable(dateRestrictionRequired, validityDateSelect)) {
-			requiredSteps.add(ConceptCteStep.EVENT_FILTER);
+			requiredSteps.add(ConceptStep.EVENT_FILTER);
 		}
 
 		table.getFilters().stream()

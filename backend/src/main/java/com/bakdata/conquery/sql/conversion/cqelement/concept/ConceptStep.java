@@ -7,7 +7,7 @@ import com.bakdata.conquery.sql.conversion.model.CteStep;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum ConceptCteStep implements CteStep {
+public enum ConceptStep implements CteStep {
 
 	PREPROCESSING("_preprocessing", null),
 	EVENT_FILTER("_event_filter", PREPROCESSING),
@@ -15,14 +15,14 @@ public enum ConceptCteStep implements CteStep {
 	AGGREGATION_FILTER("_group_filter", AGGREGATION_SELECT),
 	FINAL("", AGGREGATION_FILTER);
 
-	public static final Set<ConceptCteStep> MANDATORY_STEPS = Set.of(ConceptCteStep.PREPROCESSING, ConceptCteStep.AGGREGATION_SELECT, ConceptCteStep.FINAL);
+	public static final Set<ConceptStep> MANDATORY_STEPS = Set.of(ConceptStep.PREPROCESSING, ConceptStep.AGGREGATION_SELECT, ConceptStep.FINAL);
 
 	private final String suffix;
-	private final ConceptCteStep predecessor;
+	private final ConceptStep predecessor;
 
-	public static Set<ConceptCteStep> withOptionalSteps(ConceptCteStep... conceptCteStep) {
-		HashSet<ConceptCteStep> steps = new HashSet<>(MANDATORY_STEPS);
-		steps.addAll(Set.of(conceptCteStep));
+	public static Set<ConceptStep> withOptionalSteps(ConceptStep... conceptStep) {
+		HashSet<ConceptStep> steps = new HashSet<>(MANDATORY_STEPS);
+		steps.addAll(Set.of(conceptStep));
 		return steps;
 	}
 
@@ -31,7 +31,7 @@ public enum ConceptCteStep implements CteStep {
 		return "concept_%s%s".formatted(conceptLabel, this.suffix);
 	}
 
-	public ConceptCteStep predecessor() {
+	public ConceptStep predecessor() {
 		return this.predecessor;
 	}
 

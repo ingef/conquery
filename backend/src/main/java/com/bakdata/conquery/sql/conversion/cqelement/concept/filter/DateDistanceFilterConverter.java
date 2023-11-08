@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.DateDistanceFilter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptStep;
 import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 import com.bakdata.conquery.sql.conversion.model.filter.DateDistanceCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterCondition;
@@ -28,7 +28,7 @@ public class DateDistanceFilterConverter implements FilterConverter<Range.LongRa
 		DateDistanceSqlSelect dateDistanceSqlSelect = new DateDistanceSqlSelect(
 				dateNowSupplier,
 				dateDistanceFilter.getTimeUnit(),
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptStep.PREPROCESSING),
 				dateDistanceFilter.getColumn(),
 				dateDistanceFilter.getName(),
 				context.getParentContext().getDateRestrictionRange(),
@@ -36,7 +36,7 @@ public class DateDistanceFilterConverter implements FilterConverter<Range.LongRa
 		);
 
 		FilterCondition dateDistanceCondition = new DateDistanceCondition(
-				context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.EVENT_FILTER, dateDistanceSqlSelect.aliased()),
+				context.getConceptTables().qualifyOnPredecessor(ConceptStep.EVENT_FILTER, dateDistanceSqlSelect.aliased()),
 				context.getValue()
 		);
 
@@ -51,8 +51,8 @@ public class DateDistanceFilterConverter implements FilterConverter<Range.LongRa
 	}
 
 	@Override
-	public Set<ConceptCteStep> requiredSteps() {
-		return ConceptCteStep.withOptionalSteps(ConceptCteStep.EVENT_FILTER);
+	public Set<ConceptStep> requiredSteps() {
+		return ConceptStep.withOptionalSteps(ConceptStep.EVENT_FILTER);
 	}
 
 	@Override

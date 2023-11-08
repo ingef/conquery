@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept.select;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.NumberMapUtil;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
@@ -18,17 +18,17 @@ public class SumSelectConverter implements SelectConverter<SumSelect> {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumSelect.getColumn().getType());
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptStep.PREPROCESSING),
 				sumSelect.getColumn().getName(),
 				numberClass
 		);
 
 		Field<? extends Number> qualifiedRootSelect = context.getConceptTables()
-															 .qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
+															 .qualifyOnPredecessor(ConceptStep.AGGREGATION_SELECT, rootSelect.aliased());
 		SumSqlSelect sumGroupBy = new SumSqlSelect(qualifiedRootSelect, sumSelect.getName());
 
 		ExtractingSqlSelect<? extends Number> finalSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.FINAL),
+				context.getConceptTables().getPredecessor(ConceptStep.FINAL),
 				sumGroupBy.aliased().getName(),
 				numberClass
 		);
