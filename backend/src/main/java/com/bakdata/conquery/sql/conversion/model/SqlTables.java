@@ -11,6 +11,9 @@ import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
+/**
+ * SqlTables provide a mapping from {@link CteStep}s to their respective table names/cte names in the generated SQL query.
+ */
 @Getter
 public abstract class SqlTables<C extends CteStep> {
 
@@ -34,7 +37,7 @@ public abstract class SqlTables<C extends CteStep> {
 	}
 
 	/**
-	 * @return The name of the table this {@link CteStep} will select from.
+	 * @return The name of the table the given {@link CteStep} will select from.
 	 */
 	public String getPredecessor(CteStep cteStep) {
 		CteStep predecessor = cteStep.predecessor();
