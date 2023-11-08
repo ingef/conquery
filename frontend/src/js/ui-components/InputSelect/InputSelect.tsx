@@ -51,7 +51,6 @@ const InputSelect = ({
   clearable,
   className,
   value,
-  optional,
   smallMenu,
   onChange,
   sortOptions,
@@ -67,7 +66,6 @@ const InputSelect = ({
   className?: string;
   dataTestId?: string;
   value: SelectOptionT | null;
-  optional?: boolean;
   onChange: (value: SelectOptionT | null) => void;
   sortOptions?: (a: SelectOptionT, b: SelectOptionT, query: string) => number;
 }) => {
@@ -347,7 +345,6 @@ const InputSelect = ({
       }
       indexPrefix={indexPrefix}
       className={className}
-      optional={optional}
     >
       {Select}
     </Labeled>

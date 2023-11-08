@@ -35,7 +35,6 @@ interface OtherProps {
   fullWidth?: boolean;
   indexPrefix?: number;
   tooltip?: string;
-  optional?: boolean;
   onChange: (value: string | null) => void;
 }
 
@@ -49,16 +48,7 @@ export const InputTextarea = forwardRef<
   InputTextareaProps & OtherProps
 >(
   (
-    {
-      label,
-      className,
-      fullWidth,
-      indexPrefix,
-      tooltip,
-      optional,
-      onChange,
-      ...props
-    },
+    { label, className, fullWidth, indexPrefix, tooltip, onChange, ...props },
     ref,
   ) => {
     const { t } = useTranslation();
@@ -70,7 +60,6 @@ export const InputTextarea = forwardRef<
         className={className}
         fullWidth
         tooltip={tooltip}
-        optional={optional}
       >
         <Root>
           <Textarea

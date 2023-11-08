@@ -17,7 +17,6 @@ const SxBaseInput = styled(BaseInput)<{ fullWidth?: boolean }>`
 interface Props {
   label: string;
   indexPrefix?: number;
-  optional?: boolean;
   inputType?: string;
   money?: boolean;
   className?: string;
@@ -44,7 +43,6 @@ const InputPlain = forwardRef<HTMLInputElement, Props>(
       large,
       indexPrefix,
       tooltip,
-      optional,
       inputType = "text",
       money,
       placeholder,
@@ -65,7 +63,6 @@ const InputPlain = forwardRef<HTMLInputElement, Props>(
         largeLabel={large}
         indexPrefix={indexPrefix}
         tooltip={tooltip}
-        optional={optional}
       >
         <SxBaseInput
           ref={ref}
