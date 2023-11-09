@@ -15,6 +15,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -80,6 +81,8 @@ import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
+import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.models.types.SemanticType;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.util.QueryUtils;
@@ -555,25 +558,37 @@ public class QueryProcessor {
 	}
 
 	public ResultStatistics getResultStatistics(ManagedQuery managedQuery) {
-		final List<ResultInfo> resultInfos = managedQuery.getQuery().getResultInfos();
+		final Query query = managedQuery.getQuery();
+		final List<ResultInfo> resultInfos = query.getResultInfos();
 
 		final Random random = new Random();
 		final int requiredSamples = 80; // TODO config
 		final BooleanSupplier samplePicker = () -> random.nextInt(managedQuery.getLastResultCount().intValue()) < requiredSamples;
 
-		List<ColumnStatsCollector> statsCollectors = resultInfos.stream()
-																.map(info -> ColumnStatsCollector.getStatsCollector(info, null, samplePicker))
-																.collect(Collectors.toList());
+		final boolean hasValidityDates = resultInfos.get(0).getSemantics().contains(new SemanticType.EventDateT());
+		final ResultType dateType = resultInfos.get(0).getType();
+
+		final List<ColumnStatsCollector> statsCollectors = resultInfos.stream()
+																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, null, samplePicker))
+																	  .collect(Collectors.toList());
 
 		final IntSet entities = new IntOpenHashSet();
 		final AtomicInteger lines = new AtomicInteger();
+
+		final AtomicReference<CDateRange> span = new AtomicReference<>(null);
+
 
 		managedQuery.streamResults()
 					.peek(result -> entities.add(result.getEntityId()))
 					.map(EntityResult::listResultLines)
 					.flatMap(List::stream)
 					.forEach(line -> {
-						//TODO if have dates, agg line[0] into CDateRange span
+						final CDateRange dateRange = extractValidityDate(dateType, line[0]);
+
+						if(hasValidityDates) {
+							span.getAndAccumulate(dateRange, (old, incoming) -> incoming.spanClosed(old));
+						}
+
 						lines.incrementAndGet();
 
 						for (int col = 0; col < line.length; col++) {
@@ -586,15 +601,34 @@ public class QueryProcessor {
 						}
 					});
 
-		//TODO entities and Daterange
 		return new ResultStatistics(
 				entities.size(),
 				lines.get(),
 				statsCollectors.stream()
 							   .map(ColumnStatsCollector::describe)
 							   .toList(),
-				CDateRange.all()
+				span.get()
 		);
+	}
+
+	private CDateRange extractValidityDate(ResultType dateType, Object dateValue) {
+		if (dateType instanceof ResultType.DateRangeT) {
+			return CDateRange.fromList((List<? extends Number>) dateValue);
+
+		}
+
+		if (dateType instanceof ResultType.DateT) {
+			return CDateRange.exactly((Integer) dateValue);
+		}
+
+		if (dateType instanceof ResultType.ListT listT) {
+			final List<CDateRange> ranges = ((List<?>) dateValue).stream().map(date -> extractValidityDate(listT.getElementType(), date)).toList();
+
+			// since they are ordered, we can be sure this is always the correct span
+			return ranges.get(0).spanClosed(ranges.get(ranges.size() - 1));
+		}
+
+		throw new IllegalStateException("Unexpected datetType %s".formatted(dateType));
 	}
 
 }
