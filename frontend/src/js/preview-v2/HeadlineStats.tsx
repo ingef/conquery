@@ -1,10 +1,10 @@
-import styled from "@emotion/styled"
+import styled from "@emotion/styled";
 
 const Root = styled("div")`
   display: flex;
   flex-direction: row;
   gap: 10px;
-`
+`;
 
 const Key = styled("span")`
   font-weight: bold;
@@ -13,7 +13,7 @@ const Key = styled("span")`
   &:first-of-type {
     margin-left: 0;
   }
-`
+`;
 
 export default function HeadlineStats() {
   return (
@@ -24,10 +24,10 @@ export default function HeadlineStats() {
       XX.XX.XXXX
       <Key>Max Datum:</Key>
       XX.XX.XXXX
-      <Key>Darumgsbereich:</Key>
+      <Key>Datumsbereich:</Key>
       XX.XX.XXXX - XX.XX.XXXX
       <Key>Fehlende Werte:</Key>
       xxx
     </Root>
-  )
+  );
 }

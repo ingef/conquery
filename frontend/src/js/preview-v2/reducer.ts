@@ -1,3 +1,4 @@
+import { Table } from "apache-arrow";
 import { getType } from "typesafe-actions";
 
 import { Action } from "../app/actions";
@@ -8,14 +9,14 @@ export type PreviewStateT = {
   isOpen: boolean;
   isLoading: boolean;
   dataLoadedForQueryId: number | null;
-  arrowFile: File | null;
+  tableData: Table | null;
 };
 
 const initialState: PreviewStateT = {
   isOpen: false,
   isLoading: false,
   dataLoadedForQueryId: null,
-  arrowFile: null,
+  tableData: null,
 };
 
 export default function reducer(
@@ -48,7 +49,7 @@ export default function reducer(
         ...state,
         isLoading: false,
         dataLoadedForQueryId: action.payload.queryId,
-        arrowFile: action.payload.arrowFile,
+        tableData: action.payload.tableData,
       };
     default:
       return state;

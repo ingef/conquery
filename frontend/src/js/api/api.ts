@@ -33,7 +33,6 @@ import type {
   DatasetT,
   HistorySources,
   PostResolveEntitiesResponse,
-  GetResultResponse,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
@@ -405,13 +404,8 @@ export const usePostResolveEntities = () => {
 };
 
 export const useGetResult = () => {
-  const api = useApi<GetResultResponse>();
-
   return useCallback(
-    (queryId: number) =>
-      api({
-        url: getProtectedUrl(`/result/${queryId}.arrow`),
-      }),
-    [api],
+    (queryId: number) => fetch(getProtectedUrl(`/result/${queryId}.arrow`)),
+    [],
   );
 };

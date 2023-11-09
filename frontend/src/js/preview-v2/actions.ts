@@ -1,3 +1,4 @@
+import { Table, tableFromIPC } from "apache-arrow";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 import { useGetResult } from "../api/api";
@@ -10,7 +11,7 @@ export type PreviewActions = ActionType<
 >;
 
 interface PreviewData {
-  arrowFile: File;
+  tableData: Table;
   queryId: number;
 }
 
@@ -27,15 +28,15 @@ export function useLoadPreviewData() {
   const dispatch = useDispatch();
   const getResult = useGetResult();
 
-  const { dataLoadedForQueryId, arrowFile } = useSelector<
+  const { dataLoadedForQueryId, tableData } = useSelector<
     StateT,
     PreviewStateT
   >((state) => state.preview);
   const currentPreviewData: PreviewData | null =
-    dataLoadedForQueryId && arrowFile
+    dataLoadedForQueryId && tableData
       ? {
           queryId: dataLoadedForQueryId,
-          arrowFile,
+          tableData,
         }
       : null;
 
@@ -51,9 +52,8 @@ export function useLoadPreviewData() {
       dispatch(loadPreview.request());
     }
 
-    const resultData = await getResult(queryId);
     const payload = {
-      arrowFile: resultData,
+      tableData: await tableFromIPC(getResult(queryId)),
       queryId,
     };
 

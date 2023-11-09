@@ -583,5 +583,3 @@ export type GetEntityHistoryResponse = {
 export type PostResolveEntitiesResponse = {
   [idKind: string]: string; // idKind is the key, the value is the resolved ID
 }[];
-
-export type GetResultResponse = File
