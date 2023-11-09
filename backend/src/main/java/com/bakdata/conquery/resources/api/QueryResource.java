@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -23,9 +24,11 @@ import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
+import com.bakdata.conquery.apiv1.query.statistics.ResultStatistics;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +55,22 @@ public class QueryResource {
 		query.awaitDone(1, TimeUnit.SECONDS);
 
 		return processor.getQueryFullStatus(query, subject, RequestAwareUriBuilder.fromRequest(servletRequest), allProviders);
+	}
+
+	@GET
+	@Path("{" + QUERY + "}/description")
+	public ResultStatistics getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
+
+		if (!(query instanceof ManagedQuery)){
+			throw new BadRequestException("Statistics is only available for %s".formatted(ManagedQuery.class.getSimpleName()));
+		}
+
+		subject.authorize(query.getDataset(), Ability.READ);
+		subject.authorize(query, Ability.READ);
+
+		query.awaitDone(1, TimeUnit.SECONDS);
+
+		return processor.getResultStatistics(((ManagedQuery) query));
 	}
 
 	@PATCH
