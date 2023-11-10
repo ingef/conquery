@@ -1,5 +1,5 @@
 import { ChartData, ChartOptions } from "chart.js";
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Bar, Line } from "react-chartjs-2";
 
 import { theme } from "../../app-theme";

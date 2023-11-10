@@ -617,5 +617,6 @@ export type PreviewStatisticsResponse = {
   entities: number;
   total: number; // Number of rows
   statistics: PreviewStatistics[];
+  dateRange: DateRangeT;
 }
 

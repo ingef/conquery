@@ -18,6 +18,7 @@ import { closePreview } from "./actions";
 import DiagramModal from "./DiagramModal";
 import FaIcon from "../icon/FaIcon";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { stat } from "fs";
 
 const FullScreen = styled("div")`
   height: 100%;
@@ -110,7 +111,22 @@ export default function Preview() {
           {t("common.back")}
         </TransparentButton>
         Ergebnisvorschau
-        <HeadlineStats />
+
+        {
+          statistics === null ? (
+            <HeadlineStats
+              loading={true}
+            />
+          ) : (
+              <HeadlineStats
+                numberOfRows={statistics.total}
+                dateRange={statistics.dateRange}
+                missingValues={statistics.statistics.reduce((acc, obj) => acc + (obj.nullValues ?? 0), 0)}
+                loading={false}
+              />
+          )
+        }
+       
       </Headline>
       SelectBox (Konzept Liste)
       {statistics ? (
