@@ -23,7 +23,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
-import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -39,7 +39,7 @@ public class StandaloneSupport implements TestSupport {
 
 	private final TestConquery testConquery;
 	@Getter
-	private final DistributedNamespace namespace;
+	private final Namespace namespace;
 	@Getter
 	private final Dataset dataset;
 	@Getter

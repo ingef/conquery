@@ -18,8 +18,10 @@ import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.SingleTableResult;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineEntityResult;
@@ -31,12 +33,10 @@ import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class AbstractQueryEngineTest extends ConqueryTestSpec<StandaloneSupport> {
-
+public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException {
-
 		Query query = getQuery();
 
 		assertThat(standaloneSupport.getValidator().validate(query))
@@ -50,15 +50,13 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec<Standalon
 
 		final ManagedExecutionId executionId = IntegrationUtils.assertQueryResult(standaloneSupport, query, -1, ExecutionState.DONE, testUser, 201);
 
-		final ManagedQuery execution = (ManagedQuery) standaloneSupport.getMetaStorage().getExecution(executionId);
+		final ManagedExecution execution = standaloneSupport.getMetaStorage().getExecution(executionId);
+		SingleTableResult executionResult = (SingleTableResult) execution;
 
 		//check result info size
-		List<ResultInfo> resultInfos = execution.getResultInfos();
+		List<ResultInfo> resultInfos = executionResult.getResultInfos();
 
-		assertThat(
-				execution.streamResults()
-						 .flatMap(EntityResult::streamValues)
-		)
+		assertThat(executionResult.streamResults().flatMap(EntityResult::streamValues))
 				.as("Should have same size as result infos")
 				.allSatisfy(v -> assertThat(v).hasSameSizeAs(resultInfos));
 
@@ -77,6 +75,10 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec<Standalon
 								 .acceptLanguage(Locale.ENGLISH)
 								 .get();
 
+		compareResults(csvResponse, executionResult, execution);
+	}
+
+	protected void compareResults(Response csvResponse, SingleTableResult executionResult, ManagedExecution execution) throws IOException {
 		List<String> actual = In.stream(((InputStream) csvResponse.getEntity())).readLines();
 
 		ResourceFile expectedCsv = getExpectedCsv();
@@ -87,8 +89,8 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec<Standalon
 						  .containsExactlyInAnyOrderElementsOf(expected);
 
 		// check that getLastResultCount returns the correct size
-		if (execution.streamResults().noneMatch(MultilineEntityResult.class::isInstance)) {
-			assertThat(execution.getLastResultCount()).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
+		if (executionResult.streamResults().noneMatch(MultilineEntityResult.class::isInstance) && execution instanceof ManagedQuery managedQuery) {
+			assertThat(managedQuery.getLastResultCount()).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
 		}
 
 		log.info("INTEGRATION TEST SUCCESSFUL {} {} on {} rows", getClass().getSimpleName(), this, expected.size());

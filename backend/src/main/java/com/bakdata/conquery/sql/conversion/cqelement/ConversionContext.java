@@ -8,12 +8,11 @@ import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.NodeConversions;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 import lombok.With;
-import org.jooq.Record;
-import org.jooq.Select;
 
 @Value
 @With
@@ -25,7 +24,7 @@ public class ConversionContext implements Context {
 	SqlDialect sqlDialect;
 	@Singular
 	List<QueryStep> querySteps;
-	Select<Record> finalQuery;
+	SqlQuery finalQuery;
 	CDateRange dateRestrictionRange;
 	int queryStepCounter;
 	boolean negation;

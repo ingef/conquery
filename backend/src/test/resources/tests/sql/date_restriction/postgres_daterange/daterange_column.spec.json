@@ -1,10 +1,10 @@
 {
-  "type": "SQL_TEST",
+  "type": "SQL_QUERY_TEST",
   "supportedDialects": [
     "POSTGRESQL"
   ],
   "label": "Date restriction with a daterange column validity date (PostgreSQL only)    ",
-  "expectedCsv": "expected.csv",
+  "expectedCsv": "tests/sql/date_restriction/postgres_daterange/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

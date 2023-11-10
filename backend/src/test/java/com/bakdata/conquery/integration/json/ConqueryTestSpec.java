@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @Slf4j @CPSBase
-public abstract class ConqueryTestSpec<S extends TestSupport> {
+public abstract class ConqueryTestSpec {
 
 	@Getter
 	@Setter
@@ -59,9 +59,9 @@ public abstract class ConqueryTestSpec<S extends TestSupport> {
 		return config.withStorage(new NonPersistentStoreFactory());
 	}
 
-	public abstract void executeTest(S support) throws Exception;
+	public abstract void executeTest(StandaloneSupport support) throws Exception;
 
-	public abstract void importRequiredData(S support) throws Exception;
+	public abstract void importRequiredData(StandaloneSupport support) throws Exception;
 
 
 	@Override

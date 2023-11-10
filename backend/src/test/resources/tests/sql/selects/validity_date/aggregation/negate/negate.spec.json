@@ -1,7 +1,7 @@
 {
   "label": "LOGICAL date aggregation of a NEGATION CONCEPT node",
-  "expectedCsv": "expected.csv",
-  "type": "SQL_TEST",
+  "expectedCsv": "tests/sql/selects/validity_date/aggregation/negate/expected.csv",
+  "type": "SQL_QUERY_TEST",
   "query": {
     "type": "CONCEPT_QUERY",
     "dateAggregationMode": "LOGICAL",
