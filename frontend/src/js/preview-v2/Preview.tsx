@@ -5,9 +5,6 @@ import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { StateT } from "../app/reducers";
-import { TransparentButton } from "../button/TransparentButton";
-import PreviewInfo from "../preview/PreviewInfo";
-import { useDispatch } from "react-redux";
 
 import { usePreviewStatistics } from "../api/api";
 import { PreviewStatistics, PreviewStatisticsResponse } from "../api/types";
@@ -24,7 +21,6 @@ import { PreviewStateT } from "./reducer";
 import DiagramModal from "./DiagramModal";
 import FaIcon from "../icon/FaIcon";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { stat } from "fs";
 
 const FullScreen = styled("div")`
   height: 100%;
@@ -52,6 +48,7 @@ const ScrollBox = styled("div")`
   display: flex;
   flex-direction: column;
   gap: 20px;
+`;
 const SxCharts = styled(Charts)`
   width: 100%;
   background-color: white;
@@ -146,7 +143,8 @@ export default function Preview() {
               />
           )
         }
-        SelectBox (Konzept Liste)
+      </Headline>
+      SelectBox (Konzept Liste)
       {statistics ? (
         <SxCharts
           statistics={statistics.statistics}
