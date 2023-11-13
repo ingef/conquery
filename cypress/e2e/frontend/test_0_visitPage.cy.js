@@ -6,7 +6,7 @@ const USER_TOKEN_WITH_PERMISSIONS = "user.user2";
 
 context("Visit conquery ", () => {
   describe("As authenticated user without permissions", () => {
-    before(() => {
+    beforeEach(() => {
       visitWithToken(USER_TOKEN_WITHOUT_PERMISSIONS);
     });
 
@@ -24,7 +24,7 @@ context("Visit conquery ", () => {
   });
 
   describe("As authenticated user with permissions", () => {
-    before(() => {
+    beforeEach(() => {
       visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
     });
 

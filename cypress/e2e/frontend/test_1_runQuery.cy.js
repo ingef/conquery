@@ -4,14 +4,12 @@ import { visitWithToken } from "../../integration-helpers/visitWithToken";
 const USER_TOKEN_WITH_PERMISSIONS = "user.user2";
 
 describe("Run query", () => {
-  before(() => {
+  beforeEach(() => {
     visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
   });
 
   it("Can execute query and see it in the queries tab", () => {
-    cy.get('[data-test-id="right-pane-container"] >div:visible').as(
-      "queryEditor",
-    );
+    cy.get('[data-test-id="right-pane-container"] >div:visible').as("queryEditor");
 
     cy.contains("Concept1").trigger("dragstart").trigger("dragleave");
     cy.get("@queryEditor")

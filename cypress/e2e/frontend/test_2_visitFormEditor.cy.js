@@ -4,7 +4,7 @@ import { visitWithToken } from "../../integration-helpers/visitWithToken";
 const USER_TOKEN_WITH_PERMISSIONS = "user.user2";
 
 describe("Visit Form Editor", () => {
-  before(() => {
+  beforeEach(() => {
     visitWithToken(USER_TOKEN_WITH_PERMISSIONS);
   });
 
