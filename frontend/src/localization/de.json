@@ -388,6 +388,7 @@
   },
   "preview": {
     "preview": "Vorschau",
+    "page": "Seite",
     "headline": "Ergebnisvorschau",
     "previewHeadline": "Ergebnis-CSV",
     "previewSubline": "Auszug der ersten {{count}} Zeilen",
@@ -396,7 +397,8 @@
     "total": "Zeilen",
     "min": "Min Datum",
     "max": "Max Datum",
-    "span": "Datumsbereich"
+    "span": "Datumsbereich",
+    "loadingError": "Fehler beim laden der Vorschau"
   },
   "login": {
     "headline": "Anfragen und Analyse",

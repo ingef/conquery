@@ -388,6 +388,7 @@
   },
   "preview": {
     "preview": "Preview",
+    "page": "Page",
     "headline": "Results preview",
     "previewHeadline": "Result CSV",
     "previewSubline": "Preview of the first {{count}} lines",
@@ -396,7 +397,8 @@
     "total": "Total rows",
     "min": "Min date",
     "max": "Max date",
-    "span": "Date span"
+    "span": "Date span",
+    "loadingError": "An error occurred while loading the preview."
   },
   "login": {
     "headline": "Queries and Analyses",

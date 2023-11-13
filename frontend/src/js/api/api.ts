@@ -9,30 +9,31 @@ import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
 import { transformQueryToApi } from "./apiHelper";
-import type {
-  QueryIdT,
-  ConceptIdT,
-  GetFrontendConfigResponseT,
-  GetConceptsResponseT,
-  GetConceptResponseT,
-  PostQueriesResponseT,
-  GetQueryResponseT,
-  GetQueriesResponseT,
-  PostConceptResolveResponseT,
-  PostFilterResolveResponseT,
-  PostFilterSuggestionsResponseT,
-  GetFormQueriesResponseT,
-  GetMeResponseT,
-  PostLoginResponseT,
-  GetFormConfigsResponseT,
-  GetFormConfigResponseT,
-  GetDatasetsResponseT,
-  UploadQueryResponseT,
-  GetEntityHistoryResponse,
-  GetEntityHistoryDefaultParamsResponse,
-  DatasetT,
-  HistorySources,
-  PostResolveEntitiesResponse,
+import {
+  type QueryIdT,
+  type ConceptIdT,
+  type GetFrontendConfigResponseT,
+  type GetConceptsResponseT,
+  type GetConceptResponseT,
+  type PostQueriesResponseT,
+  type GetQueryResponseT,
+  type GetQueriesResponseT,
+  type PostConceptResolveResponseT,
+  type PostFilterResolveResponseT,
+  type PostFilterSuggestionsResponseT,
+  type GetFormQueriesResponseT,
+  type GetMeResponseT,
+  type PostLoginResponseT,
+  type GetFormConfigsResponseT,
+  type GetFormConfigResponseT,
+  type GetDatasetsResponseT,
+  type UploadQueryResponseT,
+  type GetEntityHistoryResponse,
+  type GetEntityHistoryDefaultParamsResponse,
+  type DatasetT,
+  type HistorySources,
+  type PostResolveEntitiesResponse,
+  PreviewStatisticsResponse,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
 
@@ -408,4 +409,21 @@ export const useGetResult = () => {
     (queryId: number) => fetch(getProtectedUrl(`/result/${queryId}.arrow`)),
     [],
   );
+};
+
+export const usePreviewStatistics = () => {
+  const api = useApi<PreviewStatisticsResponse>();
+
+  return useCallback(
+    (
+      queryId: number
+    ) =>
+      api({
+        url: getProtectedUrl(`/result/${queryId}/stats`),
+        method: "GET",
+        data: queryId,
+      }),
+    [api],
+  );
+
 };
