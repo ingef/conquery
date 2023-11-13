@@ -367,7 +367,10 @@
     "error": "An error occurred when resolving the values.",
     "nothingResolved": "No concept resolved.",
     "filterValuesFrom": "Filter values from",
-    "conceptValuesFrom": "Concepts from"
+    "conceptValuesFrom": "Concepts from",
+    "includeUnresolved": "Include unresolved values",
+    "includeUnresolvedTooltipDisabled": "Couldn't resolve any value.",
+    "insertRegardless": "Insert regardless"
   },
   "uploadFilterListModal": {
     "headline": "Upload filter values"
