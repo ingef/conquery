@@ -53,6 +53,13 @@ export default function HeadlineStats(
     );
   }
 
+  const parseDateToLocaleString = (date: string | undefined) => {
+    if (date) {
+      return parseDate(date, "yyyy-MM-dd")?.toLocaleDateString("de-de") ?? t("preview.dateError");
+    }
+    return t("preview.dateError");
+  };
+
   const { numberOfRows, dateRange, missingValues } =
     props as HeadlineStatsLoaded;
 
@@ -64,11 +71,11 @@ export default function HeadlineStats(
       </MetaValue>
       <MetaValue>
       <Key>Min Datum:</Key>
-      {dateRange.min}
+        { parseDateToLocaleString(dateRange.min)}
       </MetaValue>
       <MetaValue>
       <Key>Max Datum:</Key>
-      {dateRange.max}
+        {parseDateToLocaleString(dateRange.max)}
       </MetaValue>
       <MetaValue>
       <Key>Darumgsbereich:</Key>
@@ -77,7 +84,7 @@ export default function HeadlineStats(
             parseDate(dateRange.max, "yyyy-MM-dd") ?? new Date(),
             parseDate(dateRange.min, "yyyy-MM-dd") ?? new Date(),
         )} ${t("common.timeUnitDays")}`
-        : "Datum unbekannt"}
+          : t("preview.dateError") }
       </MetaValue>
       <MetaValue>
       <Key>Fehlende Werte:</Key>
