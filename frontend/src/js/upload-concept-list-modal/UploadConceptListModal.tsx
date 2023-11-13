@@ -37,6 +37,7 @@ import ScrollableList from "../scrollable-list/ScrollableList";
 import InputPlain from "../ui-components/InputPlain/InputPlain";
 import InputSelect from "../ui-components/InputSelect/InputSelect";
 
+import InputCheckbox from "../ui-components/InputCheckbox";
 import { DropdownOption } from "./DropdownOption";
 import { UploadConceptListModalStateT } from "./reducer";
 
@@ -46,8 +47,6 @@ const Root = styled("div")`
 
 const Section = styled("div")`
   margin-top: 15px;
-  padding: 15px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
   display: grid;
   grid-gap: 20px;
 `;
@@ -56,12 +55,14 @@ const Row = styled("div")`
   align-items: center;
 `;
 
+const ResolvedItemsForm = styled("form")`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
 const Msg = styled("p")`
   margin: 0;
-`;
-const MsgRow = styled("div")`
-  display: flex;
-  align-items: flex-end;
 `;
 
 const BigIcon = styled(FaIcon)`
@@ -78,7 +79,6 @@ const CenteredIcon = styled(FaIcon)`
   text-align: center;
 `;
 const SxPrimaryButton = styled(PrimaryButton)`
-  margin-left: 15px;
   flex-shrink: 0;
 `;
 const SxInputSelect = styled(InputSelect)`
@@ -363,6 +363,8 @@ const UploadConceptListModal = ({
   const hasUnresolvedItems = unresolvedItemsCount > 0;
   const hasResolvedItems = resolvedItemsCount > 0;
 
+  const [includeUnresolved, setIncludeUnresolved] = useState(false);
+
   const [label, setLabel] = useState<string>(filename || "");
 
   useEffect(() => {
@@ -396,10 +398,20 @@ const UploadConceptListModal = ({
         resolvedFilters?.resolvedFilter &&
         optionDetails.type === "filter"
       ) {
+        const resolvedFilterValue = includeUnresolved
+          ? [
+              ...resolvedFilters.resolvedFilter.value,
+              ...resolvedFilters.unknownCodes.map((item) => ({
+                label: item,
+                value: item,
+              })),
+            ]
+          : resolvedFilters.resolvedFilter.value;
+
         onAcceptConceptsOrFilter(label, [optionDetails.conceptId], {
           tableId: optionDetails.tableId,
           filterId: optionDetails.id,
-          value: resolvedFilters.resolvedFilter.value,
+          value: resolvedFilterValue,
         });
         onClose();
       }
@@ -412,6 +424,7 @@ const UploadConceptListModal = ({
       resolvedFilters,
       onClose,
       onAcceptConceptsOrFilter,
+      includeUnresolved,
     ],
   );
 
@@ -527,30 +540,6 @@ const UploadConceptListModal = ({
             {loading && <CenteredIcon icon={faSpinner} />}
             {(!!resolvedConcepts || !!resolvedFilters) && (
               <>
-                {hasResolvedItems && (
-                  <form onSubmit={onSubmit}>
-                    <Msg>
-                      <SuccessIcon icon={faCheckCircle} />
-                      {t("uploadConceptListModal.resolvedCodes", {
-                        count: resolvedItemsCount,
-                      })}
-                    </Msg>
-                    <MsgRow>
-                      <InputPlain
-                        label={t("uploadConceptListModal.label")}
-                        fullWidth
-                        inputProps={{
-                          autoFocus: true,
-                        }}
-                        value={label}
-                        onChange={(value) => setLabel(value as string)}
-                      />
-                      <SxPrimaryButton type="submit">
-                        {t("uploadConceptListModal.insertNode")}
-                      </SxPrimaryButton>
-                    </MsgRow>
-                  </form>
-                )}
                 {hasUnresolvedItems && (
                   <div>
                     <Msg>
@@ -571,6 +560,35 @@ const UploadConceptListModal = ({
                       }
                     />
                   </div>
+                )}
+                {hasResolvedItems && (
+                  <ResolvedItemsForm onSubmit={onSubmit}>
+                    <div>
+                      <SuccessIcon icon={faCheckCircle} />
+                      {t("uploadConceptListModal.resolvedCodes", {
+                        count: resolvedItemsCount,
+                      })}
+                      <InputPlain
+                        label={t("uploadConceptListModal.label")}
+                        fullWidth
+                        inputProps={{
+                          autoFocus: true,
+                        }}
+                        value={label}
+                        onChange={(value) => setLabel(value as string)}
+                      />
+                    </div>
+                    {(resolvedFilters?.unknownCodes?.length || 0) > 0 && (
+                      <InputCheckbox
+                        value={includeUnresolved}
+                        onChange={setIncludeUnresolved}
+                        label={t("uploadConceptListModal.includeUnresolved")}
+                      />
+                    )}
+                    <SxPrimaryButton type="submit">
+                      {t("uploadConceptListModal.insertNode")}
+                    </SxPrimaryButton>
+                  </ResolvedItemsForm>
                 )}
               </>
             )}
