@@ -29,7 +29,7 @@ class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
 			return;
 		}
 
-		statistics.add((double) value);
+		statistics.add(value.doubleValue());
 
 		if (samplePicker.getAsBoolean()) {
 			samples.add(value);
