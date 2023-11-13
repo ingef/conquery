@@ -590,7 +590,7 @@ public class QueryProcessor {
 					.forEach(line -> {
 						final CDateRange dateRange = extractValidityDate(dateType, line[0]);
 
-						if(hasValidityDates) {
+						if (hasValidityDates) {
 							span.getAndAccumulate(dateRange, (old, incoming) -> incoming.spanClosed(old));
 						}
 
@@ -610,6 +610,7 @@ public class QueryProcessor {
 				entities.size(),
 				lines.get(),
 				statsCollectors.stream()
+							   .filter(Objects::nonNull) // Not all columns produces stats
 							   .map(ColumnStatsCollector::describe)
 							   .toList(),
 				span.get()
