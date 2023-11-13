@@ -14,17 +14,15 @@ context("Admin UI Datasets", () => {
     });
 
     describe("Create a new dataset", () => {
-        before(() => { visitAdminUI('datasets'); });
 
         it("Can create a new dataset", () => {
+            visitAdminUI('datasets');
             cy.get('[data-test-id="entity-name"]').type(testDSLabel);
             cy.get('[data-test-id="entity-id"]').type(testDSID);
             cy.get('[data-test-id="create-dataset-btn"]').click().as('createDataset');
-        });
-
-        it("Can see the new dataset", () => {
             cy.contains(testDSID);
         });
+
     });
 
     describe("Delete a dataset", () => {
