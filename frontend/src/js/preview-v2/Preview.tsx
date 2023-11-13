@@ -2,6 +2,11 @@ import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
+
+import { StateT } from "../app/reducers";
+import { TransparentButton } from "../button/TransparentButton";
+import PreviewInfo from "../preview/PreviewInfo";
 import { useDispatch } from "react-redux";
 
 import { usePreviewStatistics } from "../api/api";
@@ -15,6 +20,7 @@ import Charts from "./Charts";
 import HeadlineStats from "./HeadlineStats";
 import Table from "./Table";
 import { closePreview } from "./actions";
+import { PreviewStateT } from "./reducer";
 import DiagramModal from "./DiagramModal";
 import FaIcon from "../icon/FaIcon";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
@@ -27,7 +33,6 @@ const FullScreen = styled("div")`
   top: 0;
   left: 0;
   background-color: ${({ theme }) => theme.col.bgAlt};
-  padding: 60px 20px 20px;
   z-index: 2;
   display: flex;
   flex-direction: column;
@@ -41,6 +46,12 @@ const Headline = styled("div")`
   gap: 30px;
 `;
 
+const ScrollBox = styled("div")`
+  overflow: auto;
+  padding: 60px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 const SxCharts = styled(Charts)`
   width: 100%;
   background-color: white;
@@ -66,6 +77,7 @@ const SxFaIcon = styled(FaIcon)`
 `;
 
 export default function Preview() {
+  const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const getStats = usePreviewStatistics();
@@ -99,7 +111,15 @@ export default function Preview() {
 
   return (
     <FullScreen>
-      <PreviewInfo
+      <ScrollBox>
+        <PreviewInfo
+          rawPreviewData={[]}
+          columns={[]}
+          onClose={onClose}
+          minDate={new Date()}
+          maxDate={new Date()}
+        />
+         <PreviewInfo
         rawPreviewData={[]}
         columns={[]}
         onClose={onClose}
@@ -126,9 +146,7 @@ export default function Preview() {
               />
           )
         }
-       
-      </Headline>
-      SelectBox (Konzept Liste)
+        SelectBox (Konzept Liste)
       {statistics ? (
         <SxCharts
           statistics={statistics.statistics}
@@ -149,7 +167,8 @@ export default function Preview() {
           onClose={() => setPopOver(null)}
         />
       )}
-      <Table />
+        {preview.tableData && <Table data={preview.tableData} />}
+      </ScrollBox>
     </FullScreen>
   );
 }

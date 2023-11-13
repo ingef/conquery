@@ -404,6 +404,12 @@ export const usePostResolveEntities = () => {
   );
 };
 
+export const useGetResult = () => {
+  return useCallback(
+    (queryId: number) => fetch(getProtectedUrl(`/result/${queryId}.arrow`)),
+    [],
+  );
+};
 
 export const usePreviewStatistics = () => {
   const api = useApi<PreviewStatisticsResponse>();

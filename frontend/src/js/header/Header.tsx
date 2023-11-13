@@ -8,7 +8,7 @@ import type { StateT } from "../app/reducers";
 import { HistoryButton } from "../button/HistoryButton";
 import IconButton from "../button/IconButton";
 import DatasetSelector from "../dataset/DatasetSelector";
-import { openPreview } from "../preview-v2/actions";
+import { openPreview, useLoadPreviewData } from "../preview-v2/actions";
 import { canUploadResult, useHideLogoutButton } from "../user/selectors";
 
 import { HelpMenu } from "./HelpMenu";
@@ -81,6 +81,8 @@ const Header: FC = () => {
   >((state) => state.startup.config);
 
   const dispatch = useDispatch();
+  const loadPreviewData = useLoadPreviewData();
+
   return (
     <Root>
       <OverflowHidden>
@@ -88,9 +90,13 @@ const Header: FC = () => {
         <Spacer />
         <Headline>{t("headline")}</Headline>
       </OverflowHidden>
-      <IconButton icon={faStar} onClick={() => {
-        dispatch(openPreview());
-      }} />
+      <IconButton
+        icon={faStar}
+        onClick={async () => {
+          await loadPreviewData(1);
+          dispatch(openPreview());
+        }}
+      />
       <Right>
         <DatasetSelector />
         {canUpload && <HistoryButton />}
