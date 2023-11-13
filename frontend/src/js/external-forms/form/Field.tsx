@@ -69,7 +69,7 @@ type Props<T> = T & {
   children: (props: ControllerRenderProps<DynamicFormValues>) => ReactNode;
   control: Control<DynamicFormValues>;
   formField: FieldT | Tabs;
-  defaultValue?: any;
+  defaultValue?: unknown;
   noContainer?: boolean;
   noLabel?: boolean;
 };
@@ -99,7 +99,7 @@ const ErrorContainer = styled("div")<{ red?: boolean }>`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
-const ConnectedField = <T extends Object>({
+const ConnectedField = <T extends object>({
   children,
   control,
   formField,
@@ -358,11 +358,6 @@ const Field = ({ field, ...commonProps }: PropsT) => {
         </ConnectedField>
       );
     case "SELECT":
-      const options = field.options.map((option) => ({
-        label: option.label[locale] || "",
-        value: option.value,
-      }));
-
       return (
         <ConnectedField
           formField={field}
@@ -372,7 +367,10 @@ const Field = ({ field, ...commonProps }: PropsT) => {
           {({ ref, ...fieldProps }) => (
             <InputSelect
               label={field.label[locale]}
-              options={options}
+              options={field.options.map((option) => ({
+                label: option.label[locale] || "",
+                value: option.value,
+              }))}
               tooltip={field.tooltip ? field.tooltip[locale] : undefined}
               optional={optional}
               value={fieldProps.value as SelectOptionT | null}
@@ -382,17 +380,16 @@ const Field = ({ field, ...commonProps }: PropsT) => {
         </ConnectedField>
       );
     case "DATASET_SELECT":
-      const datasetDefaultValue =
-        availableDatasets.length > 0
-          ? availableDatasets.find((opt) => opt.value === datasetId) ||
-            availableDatasets[0]
-          : null;
-
       return (
         <ConnectedField
           formField={field}
           control={control}
-          defaultValue={datasetDefaultValue}
+          defaultValue={
+            availableDatasets.length > 0
+              ? availableDatasets.find((opt) => opt.value === datasetId) ||
+                availableDatasets[0]
+              : null
+          }
         >
           {({ ref, ...fieldProps }) => {
             return (

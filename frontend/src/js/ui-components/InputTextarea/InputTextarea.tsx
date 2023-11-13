@@ -49,16 +49,7 @@ export const InputTextarea = forwardRef<
   InputTextareaProps & OtherProps
 >(
   (
-    {
-      label,
-      className,
-      fullWidth,
-      indexPrefix,
-      tooltip,
-      optional,
-      onChange,
-      ...props
-    },
+    { label, className, indexPrefix, tooltip, optional, onChange, ...props },
     ref,
   ) => {
     const { t } = useTranslation();

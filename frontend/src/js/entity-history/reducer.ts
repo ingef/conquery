@@ -12,8 +12,8 @@ import type { Action } from "../app/actions";
 
 import {
   closeHistory,
-  loadHistoryData,
   loadDefaultHistoryParamsSuccess,
+  loadHistoryData,
   openHistory,
   resetCurrentEntity,
   resetHistory,
@@ -21,8 +21,14 @@ import {
 
 // TODO: This is quite inaccurate
 export type EntityEvent = {
-  [key: string]: any;
+  [key: string]: unknown;
 };
+
+// Utility type, after transforming the date rows from a string into this format
+export interface DateRow {
+  from: string;
+  to: string;
+}
 
 export interface EntityId {
   id: string;

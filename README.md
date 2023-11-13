@@ -16,7 +16,7 @@ Conquery supplies a powerful interface to group event types in a hierarchical *c
 ## Requirements
 - Maven 3 (optional for building)
 - Java JDK 11
-- Node.js 18 + Yarn
+- Node.js 18
 - curl (to import the test data)
 
 
@@ -42,8 +42,8 @@ Build the frontend by running:
 ```bash
 cd frontend
 cp .env.example .env
-yarn
-yarn build
+npm install
+npm run build
 ```
 
 You can then run `conquery/scripts/run_e2e_all.sh` to start frontend and backend, and also load the test data required
@@ -63,7 +63,7 @@ under [this package](https://github.com/ingef/conquery/tree/develop/backend/src/
 .
 Usually you provide configuration with in a JSON file that is referenced by the start command:
 
-```bash 
+```bash
 java -jar conquery.jar standalone config.json
 ```
 
@@ -87,8 +87,8 @@ To run the end-to-end test locally:
 1. Make sure you installed all [requirements](#requirements)
 2. From the repo root folder run  `conquery/scripts/run_e2e_all.sh`
 3. Wait until the output: `Node server listening on port: 8000` appears
-4. To install cypress and it's dependencies, run `yarn` from an other terminal in the `conquery/` folder
-5. Then run `yarn cypress open` to start cypress
+4. To install cypress and it's dependencies, run `npm install` from an other terminal in the `conquery/` folder
+5. Then run `npm run cypress open` to start cypress
 6. Then chose a test suite and start it.
 
 For further informations on this and other tests, please refer to the

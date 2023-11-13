@@ -48,7 +48,9 @@ export const MenuContainer = styled("div")`
 export const Menu = styled("div")`
   width: 100%;
   border-radius: 4px;
-  box-shadow: 0 0 0 1px hsl(0deg 0% 0% / 10%), 0 4px 11px hsl(0deg 0% 0% / 10%);
+  box-shadow:
+    0 0 0 1px hsl(0deg 0% 0% / 10%),
+    0 4px 11px hsl(0deg 0% 0% / 10%);
   background-color: ${({ theme }) => theme.col.bg};
 `;
 

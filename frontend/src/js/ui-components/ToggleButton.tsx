@@ -20,7 +20,8 @@ const Option = styled("span")<{
   display: inline-block;
   padding: 4px 8px;
   cursor: pointer;
-  transition: color ${({ theme }) => theme.transitionTime},
+  transition:
+    color ${({ theme }) => theme.transitionTime},
     background-color ${({ theme }) => theme.transitionTime};
   color: ${({ theme, active }) => (active ? theme.col.black : theme.col.gray)};
   border: 1px solid ${({ theme }) => theme.col.gray};

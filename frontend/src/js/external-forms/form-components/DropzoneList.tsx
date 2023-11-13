@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode, forwardRef, Ref, ReactElement, ForwardedRef } from "react";
+import { ForwardedRef, ReactElement, ReactNode, Ref, forwardRef } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";

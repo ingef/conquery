@@ -1,15 +1,15 @@
 import styled from "@emotion/styled";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import {
   faCheckCircle,
   faDownload,
   faExclamationCircle,
   faSpinner,
+  faTrash,
   faUpload,
 } from "@fortawesome/free-solid-svg-icons";
 import format from "date-fns/format";
 import { saveAs } from "file-saver";
-import { useState, useEffect, FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { QueryUploadConfigT, UploadQueryResponseT } from "../../api/types";
@@ -208,7 +208,7 @@ const CSVColumnPicker: FC<PropsT> = ({
 
           const firstRow = result.data[0];
 
-          let initialCSVHeader = new Array(firstRow.length).fill("IGNORE");
+          const initialCSVHeader = new Array(firstRow.length).fill("IGNORE");
 
           // NOTE: IT WAS A PREVIOUS REQUIREMENT TO INITIALIZE THE HEADER WITH CERTAIN
           //       DEFAULT VALUES DEPENDING ON THE NUMBER OF COLUMNS IN THE CSV.

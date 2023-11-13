@@ -12,11 +12,14 @@ import {
 } from "./config-types";
 import { FormConceptGroupT } from "./form-concept-group/formConceptGroupState";
 
-export const validateRequired = (t: TFunction, value: any): string | null => {
+export const validateRequired = (
+  t: TFunction,
+  value: unknown,
+): string | null => {
   return isEmpty(value) ? t("externalForms.formValidation.isRequired") : null;
 };
 
-export const validatePositive = (t: TFunction, value: any) => {
+export const validatePositive = (t: TFunction, value: number) => {
   return isEmpty(value) || value > 0
     ? null
     : t("externalForms.formValidation.mustBePositiveNumber");
@@ -100,12 +103,13 @@ const validateRestrictedSelects = (
 // TODO: Refactor using generics to try and tie the `field` to its `value`
 const DEFAULT_VALIDATION_BY_TYPE: Record<
   FormField["type"],
-  null | ((t: TFunction, value: any, field: any) => string | null)
+  null | ((t: TFunction, value: unknown, field: unknown) => string | null)
 > = {
   STRING: null,
   TEXTAREA: null,
   NUMBER: null,
   CHECKBOX: null,
+  // @ts-ignore TODO: Refactor using generics to try and tie the `field` to its `value`
   CONCEPT_LIST: validateRestrictedSelects,
   RESULT_GROUP: null,
   SELECT: null,
@@ -113,6 +117,7 @@ const DEFAULT_VALIDATION_BY_TYPE: Record<
   DATASET_SELECT: null,
   GROUP: null,
   // MULTI_SELECT: null,
+  // @ts-ignore TODO: Refactor using generics to try and tie the `field` to its `value`
   DATE_RANGE: validateDateRange,
 };
 
@@ -156,10 +161,11 @@ export function getErrorForField(
     !!field.validations &&
     field.validations.length > 0
   ) {
-    for (let validation of field.validations) {
+    for (const validation of field.validations) {
       const validateFn = getConfigurableValidations(field.type)[validation];
 
       if (validateFn) {
+        // @ts-ignore TODO: try and improve these types
         error = error || validateFn(t, value);
       } else {
         console.error(

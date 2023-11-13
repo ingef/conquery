@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useEffect, useState, useRef, useMemo } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -38,10 +38,10 @@ import {
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import FormConceptNode from "./FormConceptNode";
 import {
+  FormConceptGroupT,
   addConcept,
   addValue,
   copyConcept,
-  FormConceptGroupT,
   initializeConcept,
   insertValue,
   onToggleIncludeSubnodes,
@@ -222,7 +222,7 @@ const FormConceptGroup = (props: Props) => {
 
             let insertIndex = i;
             let newPropsValue = props.value;
-            let newValue = JSON.parse(JSON.stringify(props.newValue));
+            const newValue = JSON.parse(JSON.stringify(props.newValue));
 
             if (isMovedObject(item)) {
               const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
@@ -246,9 +246,7 @@ const FormConceptGroup = (props: Props) => {
                 // if the concept is moved to a different position in the same field.
                 if (props.rowPrefixFieldname) {
                   newValue[props.rowPrefixFieldname] =
-                    // since rowPrefixFieldname is dynamic, and since it's an edge case,
-                    // we're not typing this
-                    // @ts-ignore
+                    // @ts-ignore rowPrefixFieldname is dynamic, and since it's an edge case, we're not typing this
                     props.value[movedFromAndIdx][props.rowPrefixFieldname];
                 }
               } else {
@@ -286,7 +284,7 @@ const FormConceptGroup = (props: Props) => {
 
           if (props.isValidConcept && !props.isValidConcept(item)) return;
 
-          let newValue = JSON.parse(JSON.stringify(props.newValue));
+          const newValue = JSON.parse(JSON.stringify(props.newValue));
 
           // rowPrefixField is a special property that is only used in an edge case form,
           // for a detailed explanation see the comment in the dropBetween function
@@ -298,7 +296,7 @@ const FormConceptGroup = (props: Props) => {
               props.rowPrefixFieldname
             ) {
               newValue[props.rowPrefixFieldname] =
-                // @ts-ignore
+                // @ts-ignore rowPrefixFieldname is dynamic, and since it's an edge case, we're not typing this
                 props.value[movedFromAndIdx][props.rowPrefixFieldname];
             }
           }
@@ -489,7 +487,8 @@ const FormConceptGroup = (props: Props) => {
             );
           }}
           onDropConcept={(concept) => {
-            let { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            let { valueIdx } = editedFormQueryNodePosition;
+            const { conceptIdx } = editedFormQueryNodePosition;
             let updatedValue = props.value;
             if (isMovedObject(concept)) {
               const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
