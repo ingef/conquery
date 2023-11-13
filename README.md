@@ -88,7 +88,7 @@ To run the end-to-end test locally:
 2. From the repo root folder run  `conquery/scripts/run_e2e_all.sh`
 3. Wait until the output: `Node server listening on port: 8000` appears
 4. To install cypress and it's dependencies, run `npm install` from an other terminal in the `conquery/` folder
-5. Then run `npm run cypress open` to start cypress
+5. Then run `npx cypress open` to start cypress
 6. Then chose a test suite and start it.
 
 For further informations on this and other tests, please refer to the

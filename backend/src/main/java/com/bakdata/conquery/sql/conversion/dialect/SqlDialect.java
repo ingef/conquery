@@ -74,6 +74,11 @@ public interface SqlDialect {
 		return customize(getDefaultSelectConverters(), substitutes);
 	}
 
+	default List<FilterConverter<?, ?>> customizeFilterConverters(List<FilterConverter<?, ?>> substitutes) {
+		return customize(getDefaultFilterConverters(), substitutes);
+	}
+
+
 	default List<FilterConverter<?, ?>> getDefaultFilterConverters() {
 		return List.of(
 				new DateDistanceFilterConverter(DEFAULT_DATE_NOW_SUPPLIER),
