@@ -364,6 +364,9 @@ const UploadConceptListModal = ({
   const hasResolvedItems = resolvedItemsCount > 0;
 
   const [includeUnresolved, setIncludeUnresolved] = useState(false);
+  const mustIncludeUnresolved =
+    (resolvedFilters?.unknownCodes?.length || 0) > 0 &&
+    resolvedFilters?.resolvedFilter?.value?.length === 0;
 
   const [label, setLabel] = useState<string>(filename || "");
 
@@ -398,15 +401,16 @@ const UploadConceptListModal = ({
         resolvedFilters?.resolvedFilter &&
         optionDetails.type === "filter"
       ) {
-        const resolvedFilterValue = includeUnresolved
-          ? [
-              ...resolvedFilters.resolvedFilter.value,
-              ...resolvedFilters.unknownCodes.map((item) => ({
-                label: item,
-                value: item,
-              })),
-            ]
-          : resolvedFilters.resolvedFilter.value;
+        const resolvedFilterValue =
+          mustIncludeUnresolved || includeUnresolved
+            ? [
+                ...resolvedFilters.resolvedFilter.value,
+                ...resolvedFilters.unknownCodes.map((item) => ({
+                  label: item,
+                  value: item,
+                })),
+              ]
+            : resolvedFilters.resolvedFilter.value;
 
         onAcceptConceptsOrFilter(label, [optionDetails.conceptId], {
           tableId: optionDetails.tableId,
@@ -425,6 +429,7 @@ const UploadConceptListModal = ({
       onClose,
       onAcceptConceptsOrFilter,
       includeUnresolved,
+      mustIncludeUnresolved,
     ],
   );
 
@@ -519,81 +524,81 @@ const UploadConceptListModal = ({
           options={selectOptions}
           sortOptions={sortOptions}
         />
-        {(!!resolvedFilters || !!resolvedConcepts) &&
-          !hasResolvedItems &&
-          !hasUnresolvedItems && (
-            <Section>
-              <Msg>{t("uploadConceptListModal.nothingResolved")}</Msg>
-            </Section>
+        <Section>
+          {error && (
+            <Row>
+              <ErrorIcon icon={faExclamationCircle} />
+              {t("uploadConceptListModal.error")}
+            </Row>
           )}
-        {(!!error ||
-          !!loading ||
-          ((!!resolvedConcepts || !!resolvedFilters) &&
-            (hasResolvedItems || hasUnresolvedItems))) && (
-          <Section>
-            {error && (
-              <Row>
-                <ErrorIcon icon={faExclamationCircle} />
-                {t("uploadConceptListModal.error")}
-              </Row>
-            )}
-            {loading && <CenteredIcon icon={faSpinner} />}
-            {(!!resolvedConcepts || !!resolvedFilters) && (
-              <>
-                {hasUnresolvedItems && (
-                  <div>
-                    <Msg>
-                      <ErrorIcon icon={faExclamationCircle} />
-                      <span>
-                        {t("uploadConceptListModal.unknownCodes", {
-                          count: unresolvedItemsCount,
-                        })}
-                      </span>
-                    </Msg>
-                    <ScrollableList
-                      maxVisibleItems={3}
-                      fullWidth
-                      items={
-                        resolvedFilters?.unknownCodes ||
-                        resolvedConcepts?.unknownCodes ||
-                        []
-                      }
-                    />
-                  </div>
-                )}
-                {hasResolvedItems && (
-                  <ResolvedItemsForm onSubmit={onSubmit}>
-                    <div>
+          {loading && <CenteredIcon icon={faSpinner} />}
+          {(!!resolvedConcepts || !!resolvedFilters) && (
+            <>
+              {hasUnresolvedItems && (
+                <div>
+                  <Msg>
+                    <ErrorIcon icon={faExclamationCircle} />
+                    <span>
+                      {t("uploadConceptListModal.unknownCodes", {
+                        count: unresolvedItemsCount,
+                      })}
+                    </span>
+                  </Msg>
+                  <ScrollableList
+                    maxVisibleItems={3}
+                    fullWidth
+                    items={
+                      resolvedFilters?.unknownCodes ||
+                      resolvedConcepts?.unknownCodes ||
+                      []
+                    }
+                  />
+                </div>
+              )}
+              <ResolvedItemsForm onSubmit={onSubmit}>
+                <div>
+                  {hasResolvedItems && (
+                    <>
                       <SuccessIcon icon={faCheckCircle} />
                       {t("uploadConceptListModal.resolvedCodes", {
                         count: resolvedItemsCount,
                       })}
-                      <InputPlain
-                        label={t("uploadConceptListModal.label")}
-                        fullWidth
-                        inputProps={{
-                          autoFocus: true,
-                        }}
-                        value={label}
-                        onChange={(value) => setLabel(value as string)}
-                      />
-                    </div>
-                    {(resolvedFilters?.unknownCodes?.length || 0) > 0 && (
-                      <InputCheckbox
-                        value={includeUnresolved}
-                        onChange={setIncludeUnresolved}
-                        label={t("uploadConceptListModal.includeUnresolved")}
-                      />
-                    )}
-                    <SxPrimaryButton type="submit">
-                      {t("uploadConceptListModal.insertNode")}
-                    </SxPrimaryButton>
-                  </ResolvedItemsForm>
+                    </>
+                  )}
+                  <InputPlain
+                    label={t("uploadConceptListModal.label")}
+                    fullWidth
+                    inputProps={{
+                      autoFocus: true,
+                    }}
+                    value={label}
+                    onChange={(value) => setLabel(value as string)}
+                  />
+                </div>
+                {(resolvedFilters?.unknownCodes?.length || 0) > 0 && (
+                  <InputCheckbox
+                    tooltip={
+                      mustIncludeUnresolved
+                        ? t(
+                            "uploadConceptListModal.includeUnresolvedTooltipDisabled",
+                          )
+                        : undefined
+                    }
+                    disabled={mustIncludeUnresolved}
+                    value={mustIncludeUnresolved || includeUnresolved}
+                    onChange={setIncludeUnresolved}
+                    label={t("uploadConceptListModal.includeUnresolved")}
+                  />
                 )}
-              </>
-            )}
-          </Section>
-        )}
+                <SxPrimaryButton type="submit">
+                  {mustIncludeUnresolved
+                    ? t("uploadConceptListModal.insertRegardless")
+                    : t("uploadConceptListModal.insertNode")}
+                </SxPrimaryButton>
+              </ResolvedItemsForm>
+            </>
+          )}
+        </Section>
       </Root>
     </Modal>
   );

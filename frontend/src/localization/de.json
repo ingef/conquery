@@ -368,7 +368,9 @@
     "nothingResolved": "Kein Konzept konnte aufgelöst werden.",
     "filterValuesFrom": "Filterwerte aus",
     "conceptValuesFrom": "Konzepte aus",
-    "includeUnresolved": "Nicht aufgelöste Werte mit einfügen"
+    "includeUnresolved": "Nicht aufgelöste Werte mit einfügen",
+    "includeUnresolvedTooltipDisabled": "Kein Wert konnte aufgelöst werden.",
+    "insertRegardless": "Trotzdem Einfügen"
   },
   "uploadFilterListModal": {
     "headline": "Filter-Werte aus Liste einfügen"
