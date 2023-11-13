@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
@@ -7,18 +8,17 @@ import { useDispatch } from "react-redux";
 import { usePreviewStatistics } from "../api/api";
 import { PreviewStatistics, PreviewStatisticsResponse } from "../api/types";
 import { TransparentButton } from "../button/TransparentButton";
+import FaIcon from "../icon/FaIcon";
 import PreviewInfo from "../preview/PreviewInfo";
 import { setMessage } from "../snack-message/actions";
 import { SnackMessageType } from "../snack-message/reducer";
 
 import Charts from "./Charts";
+import DiagramModal from "./DiagramModal";
 import HeadlineStats from "./HeadlineStats";
+import SelectBox from "./SelectBox";
 import Table from "./Table";
 import { closePreview } from "./actions";
-import DiagramModal from "./DiagramModal";
-import FaIcon from "../icon/FaIcon";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { stat } from "fs";
 
 const FullScreen = styled("div")`
   height: 100%;
@@ -65,14 +65,24 @@ const SxFaIcon = styled(FaIcon)`
   height: 30px;
 `;
 
+const SxSelectBox = styled(SelectBox)`
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  background-color: white;
+  border-radius: ${({theme}) => theme.borderRadius};
+`;
+
 export default function Preview() {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const getStats = usePreviewStatistics();
-  const [query, _] = useState<number>(12);
+  const [query] = useState<number>(12);
   const [statistics, setStatistics] =
     useState<PreviewStatisticsResponse | null>(null);
-  
+
+  const [selectedStatistics, setSelectedStatistics] = useState<
+    PreviewStatistics[]
+  >([]);
+
   const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
 
@@ -95,7 +105,13 @@ export default function Preview() {
       }
     }
     fetchData();
-  }, [query]);
+  }, [query, dispatch, getStats, t]);
+
+  useEffect(() => {
+    if (statistics) {
+      setSelectedStatistics(statistics.statistics);
+    }
+  }, [statistics]);
 
   return (
     <FullScreen>
@@ -111,24 +127,25 @@ export default function Preview() {
           {t("common.back")}
         </TransparentButton>
         Ergebnisvorschau
-
-        {
-          statistics === null ? (
-            <HeadlineStats
-              loading={true}
-            />
-          ) : (
-              <HeadlineStats
-                numberOfRows={statistics.total}
-                dateRange={statistics.dateRange}
-                missingValues={statistics.statistics.reduce((acc, obj) => acc + (obj.nullValues ?? 0), 0)}
-                loading={false}
-              />
-          )
-        }
-       
+        <SxSelectBox
+          items={statistics?.statistics ?? ([] as PreviewStatistics[])}
+          selected={selectedStatistics}
+          onChange={() => console.log("changed")}
+        />
+        {statistics === null ? (
+          <HeadlineStats loading={true} />
+        ) : (
+          <HeadlineStats
+            numberOfRows={statistics.total}
+            dateRange={statistics.dateRange}
+            missingValues={statistics.statistics.reduce(
+              (acc, obj) => acc + (obj.nullValues ?? 0),
+              0,
+            )}
+            loading={false}
+          />
+        )}
       </Headline>
-      SelectBox (Konzept Liste)
       {statistics ? (
         <SxCharts
           statistics={statistics.statistics}
@@ -136,18 +153,14 @@ export default function Preview() {
             console.log(statistic);
             setPopOver(statistic);
           }}
-        /> 
+        />
       ) : (
         <SxChartLoadingBlocker>
-            <SxFaIcon icon={faSpinner} />
+          <SxFaIcon icon={faSpinner} />
         </SxChartLoadingBlocker>
-      )
-      }
+      )}
       {popOver && (
-        <DiagramModal
-          statistic={popOver}
-          onClose={() => setPopOver(null)}
-        />
+        <DiagramModal statistic={popOver} onClose={() => setPopOver(null)} />
       )}
       <Table />
     </FullScreen>

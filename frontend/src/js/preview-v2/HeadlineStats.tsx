@@ -7,7 +7,15 @@ import { t } from "i18next";
 const Root = styled("div")`
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  gap: 15px;
+  padding: 10px;
+  justify-content: right;
+`;
+
+const MetaValue = styled("div")`
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
 `;
 
 const Key = styled("span")`
@@ -50,12 +58,19 @@ export default function HeadlineStats(
 
   return (
     <Root>
+      <MetaValue>
       <Key>Zeilen:</Key>
       {numberOfRows}
+      </MetaValue>
+      <MetaValue>
       <Key>Min Datum:</Key>
       {dateRange.min}
+      </MetaValue>
+      <MetaValue>
       <Key>Max Datum:</Key>
       {dateRange.max}
+      </MetaValue>
+      <MetaValue>
       <Key>Darumgsbereich:</Key>
       {dateRange.min && dateRange.max
         ? `${getDiffInDays(
@@ -63,8 +78,11 @@ export default function HeadlineStats(
             parseDate(dateRange.min, "yyyy-MM-dd") ?? new Date(),
         )} ${t("common.timeUnitDays")}`
         : "Datum unbekannt"}
+      </MetaValue>
+      <MetaValue>
       <Key>Fehlende Werte:</Key>
       {missingValues}
+      </MetaValue>
     </Root>
   );
 }
