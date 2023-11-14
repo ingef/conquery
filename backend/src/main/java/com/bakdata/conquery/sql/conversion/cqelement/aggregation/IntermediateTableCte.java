@@ -15,9 +15,9 @@ import org.jooq.Field;
 @Getter
 class IntermediateTableCte extends DateAggregationCte {
 
-	private final DateAggregationStep cteStep;
+	private final DateAggregationCteStep cteStep;
 
-	public IntermediateTableCte(DateAggregationStep cteStep) {
+	public IntermediateTableCte(DateAggregationCteStep cteStep) {
 		this.cteStep = cteStep;
 	}
 

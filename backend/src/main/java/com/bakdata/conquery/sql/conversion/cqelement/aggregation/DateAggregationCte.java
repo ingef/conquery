@@ -14,7 +14,7 @@ abstract class DateAggregationCte {
 
 	public QueryStep convert(DateAggregationContext context, QueryStep previous) {
 
-		DateAggregationStep cteStep = getCteStep();
+		DateAggregationCteStep cteStep = getCteStep();
 		DateAggregationTables<?> dateAggregationTables = context.getDateAggregationTables();
 
 		// this way all selects are already qualified, and we don't need to care for that in the respective steps
@@ -22,11 +22,11 @@ abstract class DateAggregationCte {
 
 		QueryStep.QueryStepBuilder builder = this.convertStep(context);
 
-		if (cteStep != MergeStep.NODE_NO_OVERLAP) {
+		if (cteStep != MergeCteStep.NODE_NO_OVERLAP) {
 			builder = builder.cteName(dateAggregationTables.cteName(cteStep))
 							 .predecessors(List.of(previous));
 		}
-		if (cteStep != InvertStep.INVERT) {
+		if (cteStep != InvertCteStep.INVERT) {
 			builder = builder.fromTable(QueryStep.toTableLike(dateAggregationTables.getPredecessor(cteStep)));
 		}
 
@@ -35,6 +35,6 @@ abstract class DateAggregationCte {
 
 	protected abstract QueryStep.QueryStepBuilder convertStep(DateAggregationContext context);
 
-	public abstract DateAggregationStep getCteStep();
+	public abstract DateAggregationCteStep getCteStep();
 
 }

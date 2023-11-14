@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.NumberFilter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
 import com.bakdata.conquery.sql.conversion.model.filter.NumberCondition;
@@ -22,13 +22,13 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(numberFilter.getColumn().getType());
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessor(ConceptStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
 				numberFilter.getColumn().getName(),
 				numberClass
 		);
 
 		NumberCondition condition = new NumberCondition(
-				context.getConceptTables().qualifyOnPredecessor(ConceptStep.EVENT_FILTER, rootSelect.aliased()),
+				context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.EVENT_FILTER, rootSelect.aliased()),
 				context.getValue()
 		);
 
@@ -43,8 +43,8 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 	}
 
 	@Override
-	public Set<ConceptStep> requiredSteps() {
-		return ConceptStep.withOptionalSteps(ConceptStep.EVENT_FILTER);
+	public Set<ConceptCteStep> requiredSteps() {
+		return ConceptCteStep.withOptionalSteps(ConceptCteStep.EVENT_FILTER);
 	}
 
 	@Override

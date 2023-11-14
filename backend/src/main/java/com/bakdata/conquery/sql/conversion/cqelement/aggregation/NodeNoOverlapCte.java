@@ -15,10 +15,10 @@ import org.jooq.Field;
 class NodeNoOverlapCte extends DateAggregationCte {
 
 	@Getter
-	private final DateAggregationStep cteStep;
+	private final DateAggregationCteStep cteStep;
 	private int counter = 0; // used to make each no-overlap CTE name unique
 
-	public NodeNoOverlapCte(DateAggregationStep cteStep) {
+	public NodeNoOverlapCte(DateAggregationCteStep cteStep) {
 		this.cteStep = cteStep;
 	}
 
@@ -28,7 +28,7 @@ class NodeNoOverlapCte extends DateAggregationCte {
 		// we create a no-overlap node for each query step we need to aggregate
 		DateAggregationDates dateAggregationDates = context.getDateAggregationDates();
 		Iterator<ColumnDateRange> validityDates = dateAggregationDates.getValidityDates().iterator();
-		QueryStep intermediateTableStep = context.getStep(MergeStep.INTERMEDIATE_TABLE);
+		QueryStep intermediateTableStep = context.getStep(MergeCteStep.INTERMEDIATE_TABLE);
 
 		// first no-overlap step has intermediate table as predecessor
 		QueryStep.QueryStepBuilder noOverlapStep = createNoOverlapStep(validityDates.next(), context, intermediateTableStep);
@@ -67,7 +67,7 @@ class NodeNoOverlapCte extends DateAggregationCte {
 		Condition startNotNull = start.isNotNull();
 
 		return QueryStep.builder()
-						.cteName("%s_%s".formatted(dateAggregationTables.cteName(MergeStep.NODE_NO_OVERLAP), counter))
+						.cteName("%s_%s".formatted(dateAggregationTables.cteName(MergeCteStep.NODE_NO_OVERLAP), counter))
 						.selects(nodeNoOverlapSelects)
 						.fromTable(QueryStep.toTableLike(intermediateTableCteName))
 						.conditions(List.of(startNotNull))

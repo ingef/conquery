@@ -8,19 +8,19 @@ import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
-enum MergeStep implements DateAggregationStep {
+enum IntersectCteStep implements DateAggregationCteStep {
 
 	OVERLAP("_overlap", OverlapCte::new, null),
 	INTERMEDIATE_TABLE("_no_overlap", IntermediateTableCte::new, null),
-	NODE_NO_OVERLAP("_node_no_overlap", NodeNoOverlapCte::new, INTERMEDIATE_TABLE),
 	MERGE("_merge", MergeCte::new, OVERLAP);
 
-	private static final Set<MergeStep> REQUIRED_STEPS = Set.of(values());
+	private static final Set<IntersectCteStep> REQUIRED_STEPS = Set.of(values());
 	private final String suffix;
 	@Getter
 	private final DateAggregationCteConstructor stepConstructor;
-	private final MergeStep predecessor;
+	private final IntersectCteStep predecessor;
 
 	@Override
 	public String suffix() {
@@ -28,7 +28,7 @@ enum MergeStep implements DateAggregationStep {
 	}
 
 	@Override
-	public DateAggregationStep predecessor() {
+	public DateAggregationCteStep predecessor() {
 		return this.predecessor;
 	}
 
@@ -38,7 +38,7 @@ enum MergeStep implements DateAggregationStep {
 					 .toList();
 	}
 
-	static DateAggregationTables<MergeStep> tableNames(QueryStep joinedTable) {
+	static DateAggregationTables<IntersectCteStep> createTableNames(QueryStep joinedTable) {
 		return new DateAggregationTables<>(joinedTable.getCteName(), REQUIRED_STEPS, joinedTable.getCteName());
 	}
 

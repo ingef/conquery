@@ -60,7 +60,7 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 		}
 
 		Selects baseStepQualifiedSelects = baseStep.getQualifiedSelects();
-		DateAggregationTables dateAggregationTables = InvertStep.createTableNames(baseStep);
+		DateAggregationTables dateAggregationTables = InvertCteStep.createTableNames(baseStep);
 
 		DateAggregationContext context = DateAggregationContext.builder()
 															   .sqlAggregationAction(null) // when inverting, an aggregation has already been applied
@@ -72,7 +72,7 @@ public class AnsiSqlDateAggregator implements SqlDateAggregator {
 															   .intervalPacker(this.intervalPacker)
 															   .build();
 
-		return convertSteps(baseStep, InvertStep.requiredSteps(), context);
+		return convertSteps(baseStep, InvertCteStep.requiredSteps(), context);
 	}
 
 	private QueryStep convertSteps(QueryStep baseStep, List<DateAggregationCte> dateAggregationCTEs, DateAggregationContext context) {

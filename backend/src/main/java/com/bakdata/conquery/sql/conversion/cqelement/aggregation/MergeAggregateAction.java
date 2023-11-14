@@ -19,13 +19,13 @@ class MergeAggregateAction implements SqlAggregationAction {
 	private final QueryStep joinedStep;
 
 	@Override
-	public DateAggregationTables<MergeStep> tableNames() {
-		return MergeStep.tableNames(this.joinedStep);
+	public DateAggregationTables<MergeCteStep> tableNames() {
+		return MergeCteStep.tableNames(this.joinedStep);
 	}
 
 	@Override
 	public List<DateAggregationCte> dateAggregationCtes() {
-		return MergeStep.requiredSteps();
+		return MergeCteStep.requiredSteps();
 	}
 
 	@Override
@@ -49,12 +49,12 @@ class MergeAggregateAction implements SqlAggregationAction {
 
 	@Override
 	public List<QueryStep> getNoOverlapSelects(DateAggregationContext dateAggregationContext) {
-		return dateAggregationContext.getSteps(MergeStep.NODE_NO_OVERLAP);
+		return dateAggregationContext.getSteps(MergeCteStep.NODE_NO_OVERLAP);
 	}
 
 	@Override
 	public QueryStep getOverlapStep(DateAggregationContext dateAggregationContext) {
-		return dateAggregationContext.getStep(MergeStep.OVERLAP);
+		return dateAggregationContext.getStep(MergeCteStep.OVERLAP);
 	}
 
 	@Override
