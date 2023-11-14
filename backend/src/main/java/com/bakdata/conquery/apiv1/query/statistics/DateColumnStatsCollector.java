@@ -11,30 +11,30 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
 
 @Getter
-class DateColumnStatsCollector extends ColumnStatsCollector<Integer> {
+public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 
 	private final Map<String, Integer> quarterCounts = new HashMap<>();
 	private final Map<String, Integer> monthCounts = new HashMap<>();
 
 	private final AtomicInteger totalCount = new AtomicInteger();
 	private final AtomicLong nulls = new AtomicLong(0);
-
 	private final List<Number> samples = new ArrayList<>();
-
 	private final BooleanSupplier samplePicker;
+	private CDateRange span = null;
 
-	public DateColumnStatsCollector(String name, String label, String description, String type, BooleanSupplier samplePicker) {
+	public DateColumnStatsCollector(String name, String label, String description, ResultType type, BooleanSupplier samplePicker) {
 		super(name, label, description, type);
 		this.samplePicker = samplePicker;
 	}
 
 	@Override
-	public void consume(Integer value) {
-		//TODO this is actually a CDateSet, so List[List[int]]
+	public void consume(Object value) {
 		totalCount.incrementAndGet();
 
 		if (value == null) {
@@ -42,7 +42,36 @@ class DateColumnStatsCollector extends ColumnStatsCollector<Integer> {
 			return;
 		}
 
-		final LocalDate date = CDate.toLocalDate(value);
+
+		final CDateRange dateRange = extractDateRange(getType(), value);
+		span = dateRange.spanClosed(span);
+
+		if (dateRange.isOpen()) {
+			return;
+		}
+
+		for (int day = dateRange.getMinValue(); day <= dateRange.getMaxValue(); day++) {
+			handleDay(day);
+		}
+
+	}
+
+	private static CDateRange extractDateRange(ResultType dateType, Object dateValue) {
+		if (dateType instanceof ResultType.DateRangeT) {
+			return CDateRange.fromList((List<? extends Number>) dateValue);
+
+		}
+
+		if (dateType instanceof ResultType.DateT) {
+			return CDateRange.exactly((Integer) dateValue);
+		}
+
+
+		throw new IllegalStateException("Unexpected type %s".formatted(dateType));
+	}
+
+	private void handleDay(int day) {
+		final LocalDate date = CDate.toLocalDate(day);
 		final int year = date.getYear();
 		final int quarter = date.get(IsoFields.QUARTER_OF_YEAR);
 		final int month = date.getMonthValue();
@@ -53,18 +82,20 @@ class DateColumnStatsCollector extends ColumnStatsCollector<Integer> {
 		quarterCounts.compute(yearQuarter, (ignored, current) -> current == null ? 1 : current + 1);
 		monthCounts.compute(yearMonth, (ignored, current) -> current == null ? 1 : current + 1);
 
+
 		if (samplePicker.getAsBoolean()) {
-			samples.add(value);
+			samples.add(day);
 		}
 	}
 
 	@Override
 	public ResultColumnStatistics describe() {
-		return new ColumnDescription(getName(), getLabel(), getDescription(), getType(),
+		return new ColumnDescription(getName(), getLabel(), getDescription(), getType().toString(),
 									 totalCount.get(),
 									 getNulls().intValue(),
-									 quarterCounts, monthCounts,
-									 CDateRange.all() //TODO span
+									 quarterCounts,
+									 monthCounts,
+									 span.toSimpleRange()
 		);
 	}
 
@@ -76,9 +107,9 @@ class DateColumnStatsCollector extends ColumnStatsCollector<Integer> {
 		private final Map<String, Integer> quarterCounts;
 		private final Map<String, Integer> monthCounts;
 
-		private final CDateRange span;
+		private final Range<LocalDate> span;
 
-		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues,  Map<String, Integer> quarterCounts, Map<String, Integer> monthCounts, CDateRange span) {
+		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, Map<String, Integer> quarterCounts, Map<String, Integer> monthCounts, Range<LocalDate> span) {
 			super(name, label, description, type);
 			this.count = count;
 			this.nullValues = nullValues;

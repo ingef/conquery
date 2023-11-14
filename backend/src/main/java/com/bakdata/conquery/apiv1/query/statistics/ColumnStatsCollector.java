@@ -14,28 +14,41 @@ public abstract class ColumnStatsCollector<T> {
 	private final String name;
 	private final String label;
 	private final String description;
-	private final String type;
+	private final ResultType type;
 
-	public static ColumnStatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, BooleanSupplier samplePicker) {
-		if (info.getType() instanceof ResultType.IntegerT) {
-			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), info.getType()
-																																						.toString(), samplePicker);
+	public static ColumnStatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, BooleanSupplier samplePicker, ResultType type) {
+		if (type instanceof ResultType.IntegerT) {
+			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker);
 		}
 
-		if (info.getType() instanceof ResultType.NumericT) {
-			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), info.getType()
-																																						.toString(), samplePicker);
+		if (type instanceof ResultType.NumericT) {
+			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker);
 		}
 
-		if (info.getType() instanceof ResultType.MoneyT) {
-			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), info.getType()
-																																						.toString(), samplePicker);
+		if (type instanceof ResultType.MoneyT) {
+			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker);
 		}
 
+		if (type instanceof ResultType.StringT) {
+			return new StringColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type);
+		}
+
+		if (type instanceof ResultType.DateT) {
+			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker);
+		}
+
+		if (type instanceof ResultType.DateRangeT) {
+			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker);
+		}
+
+		if (type instanceof ResultType.ListT listT){
+			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, samplePicker, listT.getElementType());
+			// name label type are discarded when using ListColumnStatsCollector
+			return new ListColumnStatsCollector<>(null, null, null, type, columnStatsCollector);
+		}
 
 		return null; //TODO implement others
 	}
-
 
 	public abstract void consume(@Nullable T value);
 

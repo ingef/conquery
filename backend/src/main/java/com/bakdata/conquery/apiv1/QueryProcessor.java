@@ -57,6 +57,7 @@ import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ColumnConfig;
@@ -109,6 +110,30 @@ public class QueryProcessor {
 	private MetaStorage storage;
 	@Inject
 	private ConqueryConfig config;
+
+	private static CDateSet extractValidityDate(ResultType dateType, Object dateValue) {
+		if (dateType instanceof ResultType.DateRangeT) {
+			return CDateSet.create(CDateRange.fromList((List<? extends Number>) dateValue));
+
+		}
+
+		if (dateType instanceof ResultType.DateT) {
+			return CDateSet.create(CDateRange.exactly((Integer) dateValue));
+		}
+
+		if (dateType instanceof ResultType.ListT listT) {
+			final CDateSet out = CDateSet.createEmpty();
+
+			for (Object date : ((List<?>) dateValue)) {
+				out.addAll(extractValidityDate(listT.getElementType(), date));
+			}
+
+			// since they are ordered, we can be sure this is always the correct span
+			return out;
+		}
+
+		throw new IllegalStateException("Unexpected datetType %s".formatted(dateType));
+	}
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
 		final Collection<ManagedExecution> allQueries = storage.getAllExecutions();
@@ -574,7 +599,7 @@ public class QueryProcessor {
 		final PrintSettings printSettings = new PrintSettings(false, I18n.LOCALE.get(), managedQuery.getNamespace(), config, null);
 
 		final List<ColumnStatsCollector> statsCollectors = resultInfos.stream()
-																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, samplePicker))
+																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, samplePicker, info.getType()))
 																	  .collect(Collectors.toList());
 
 		final IntSet entities = new IntOpenHashSet();
@@ -588,10 +613,10 @@ public class QueryProcessor {
 					.map(EntityResult::listResultLines)
 					.flatMap(List::stream)
 					.forEach(line -> {
-						final CDateRange dateRange = extractValidityDate(dateType, line[0]);
 
 						if (hasValidityDates) {
-							span.getAndAccumulate(dateRange, (old, incoming) -> incoming.spanClosed(old));
+							final CDateSet dateSet = extractValidityDate(dateType, line[0]);
+							span.getAndAccumulate(dateSet.span(), (old, incoming) -> incoming.spanClosed(old));
 						}
 
 						lines.incrementAndGet();
@@ -613,28 +638,8 @@ public class QueryProcessor {
 							   .filter(Objects::nonNull) // Not all columns produces stats
 							   .map(ColumnStatsCollector::describe)
 							   .toList(),
-				span.get()
+				span.get().toSimpleRange()
 		);
-	}
-
-	private CDateRange extractValidityDate(ResultType dateType, Object dateValue) {
-		if (dateType instanceof ResultType.DateRangeT) {
-			return CDateRange.fromList((List<? extends Number>) dateValue);
-
-		}
-
-		if (dateType instanceof ResultType.DateT) {
-			return CDateRange.exactly((Integer) dateValue);
-		}
-
-		if (dateType instanceof ResultType.ListT listT) {
-			final List<CDateRange> ranges = ((List<?>) dateValue).stream().map(date -> extractValidityDate(listT.getElementType(), date)).toList();
-
-			// since they are ordered, we can be sure this is always the correct span
-			return ranges.get(0).spanClosed(ranges.get(ranges.size() - 1));
-		}
-
-		throw new IllegalStateException("Unexpected datetType %s".formatted(dateType));
 	}
 
 }

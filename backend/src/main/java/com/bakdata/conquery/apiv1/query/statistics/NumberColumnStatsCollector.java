@@ -1,10 +1,12 @@
 package com.bakdata.conquery.apiv1.query.statistics;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
 
+import com.bakdata.conquery.models.types.ResultType;
 import com.google.common.math.StatsAccumulator;
 import lombok.Getter;
 
@@ -15,9 +17,10 @@ class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
 
 	private final List<Number> samples = new ArrayList<>();
 
+
 	private final BooleanSupplier samplePicker;
 
-	public NumberColumnStatsCollector(String name, String label, String description, String type, BooleanSupplier samplePicker) {
+	public NumberColumnStatsCollector(String name, String label, String description, ResultType type, BooleanSupplier samplePicker) {
 		super(name, label, description, type);
 		this.samplePicker = samplePicker;
 	}
@@ -38,13 +41,14 @@ class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
 
 	@Override
 	public ResultColumnStatistics describe() {
-		return new ColumnDescription(getName(), getLabel(), getDescription(), getType(),
-												 (int) (getStatistics().count() + getNulls().get()),
-												 getNulls().intValue(),
-												 getStatistics().mean(),
-												 getStatistics().sampleStandardDeviation(),
-												 (int) getStatistics().min(),
-												 (int) getStatistics().max()
+		return new ColumnDescription(getName(), getLabel(), getDescription(), getType().toString(),
+									 (int) (getStatistics().count() + getNulls().get()),
+									 getNulls().intValue(),
+									 getStatistics().mean(),
+									 getStatistics().sampleStandardDeviation(),
+									 (int) getStatistics().min(),
+									 (int) getStatistics().max(),
+									 samples
 		);
 	}
 
@@ -58,7 +62,9 @@ class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
 		private final Number min;
 		private final Number max;
 
-		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, double mean, double stdDev, Number min, Number max) {
+		private final Collection<Number> samples;
+
+		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, double mean, double stdDev, Number min, Number max, Collection<Number> samples) {
 			super(name, label, description, type);
 			this.count = count;
 			this.nullValues = nullValues;
@@ -66,6 +72,7 @@ class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
 			this.stdDev = stdDev;
 			this.min = min;
 			this.max = max;
+			this.samples = samples;
 		}
 	}
 }

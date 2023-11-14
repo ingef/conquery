@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
 import org.apache.commons.math3.stat.Frequency;
 
@@ -14,7 +15,7 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 	private final Frequency frequencies = new Frequency();
 	private final AtomicLong nulls = new AtomicLong(0);
 
-	public StringColumnStatsCollector(String name, String label, String description, String type) {
+	public StringColumnStatsCollector(String name, String label, String description, ResultType type) {
 		super(name, label, description, type);
 	}
 
@@ -35,7 +36,7 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 							 .collect(Collectors.toMap(entry -> (String) entry.getKey(), Map.Entry::getValue));
 
 
-		return new ColumnDescription(getName(), getLabel(), getDescription(), getType(), repr);
+		return new ColumnDescription(getName(), getLabel(), getDescription(), getType().toString(), repr);
 	}
 
 	@Getter
