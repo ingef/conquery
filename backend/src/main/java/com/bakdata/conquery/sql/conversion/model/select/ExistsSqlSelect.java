@@ -8,26 +8,27 @@ import org.jooq.impl.DSL;
 public class ExistsSqlSelect implements SqlSelect {
 
 	private static final String EXISTS_SUFFIX = "_exists";
-	private final String label;
 
-	public ExistsSqlSelect(String label) {
-		this.label = label + EXISTS_SUFFIX;
+	private final String alias;
+
+	public ExistsSqlSelect(String alias) {
+		this.alias = alias + EXISTS_SUFFIX;
 	}
 
 	@Override
 	public Field<Integer> select() {
 		return DSL.field("1", Integer.class)
-				  .as(label);
+				  .as(alias);
 	}
 
 	@Override
 	public Field<Integer> aliased() {
-		return DSL.field(label, Integer.class);
+		return DSL.field(alias, Integer.class);
 	}
 
 	@Override
 	public String columnName() {
-		return label;
+		return alias;
 	}
 
 }

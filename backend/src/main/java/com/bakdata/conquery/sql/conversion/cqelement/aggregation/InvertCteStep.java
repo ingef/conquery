@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +37,8 @@ enum InvertCteStep implements DateAggregationCteStep {
 					 .toList();
 	}
 
-	static DateAggregationTables<InvertCteStep> createTableNames(QueryStep joinedTable) {
-		return new DateAggregationTables<>(joinedTable.getCteName(), REQUIRED_STEPS, joinedTable.getCteName());
+	static DateAggregationTables<InvertCteStep> createTableNames(QueryStep joinedTable, NameGenerator nameGenerator) {
+		return new DateAggregationTables<>(joinedTable.getCteName(), REQUIRED_STEPS, joinedTable.getCteName(), nameGenerator);
 	}
 
 }

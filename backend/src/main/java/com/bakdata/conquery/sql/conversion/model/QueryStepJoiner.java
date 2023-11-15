@@ -81,7 +81,8 @@ public class QueryStepJoiner {
 				andQueryStep.build(),
 				mergedSelects,
 				dateAggregationDates,
-				dateAggregationAction
+				dateAggregationAction,
+				context.getNameGenerator()
 		);
 
 		return context.withQuerySteps(List.of(mergeIntervalsStep));

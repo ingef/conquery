@@ -46,7 +46,7 @@ class FinalConceptCte extends ConceptCte {
 
 		String conceptLabel = conceptCteContext.getConceptLabel();
 		IntervalPackingTables intervalPackingTables =
-				IntervalPackingTables.forConcept(conceptLabel, conceptCteContext.getConceptTables());
+				IntervalPackingTables.forConcept(conceptLabel, conceptCteContext.getConceptTables(), conceptCteContext.getNameGenerator());
 
 		IntervalPackingContext intervalPackingContext =
 				IntervalPackingContext.builder()
