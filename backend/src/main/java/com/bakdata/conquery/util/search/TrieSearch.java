@@ -51,7 +51,7 @@ public class TrieSearch<T extends Comparable<T>> {
 	private static final double ORIGINAL_WORD_WEIGHT_FACTOR = EXACT_MATCH_WEIGHT;
 	private static final String WHOLE_WORD_MARKER = "!";
 
-	private final int suffixCutoff;
+	private final int ngramLength;
 
 	private final Pattern splitPattern;
 	/**
@@ -61,11 +61,11 @@ public class TrieSearch<T extends Comparable<T>> {
 	private boolean shrunk = false;
 	private long size = -1;
 
-	public TrieSearch(int suffixCutoff, String split) {
-		if (suffixCutoff < 0) {
+	public TrieSearch(int ngramLength, String split) {
+		if (ngramLength < 0) {
 			throw new IllegalArgumentException("Negative Suffix Length is not allowed.");
 		}
-		this.suffixCutoff = suffixCutoff;
+		this.ngramLength = ngramLength;
 
 		splitPattern = Pattern.compile(String.format("[\\s%s]+", Pattern.quote(Objects.requireNonNullElse(split, "") + WHOLE_WORD_MARKER)));
 	}
@@ -183,8 +183,8 @@ public class TrieSearch<T extends Comparable<T>> {
 		return Stream.concat(
 				// We append a special character here marking original words as we want to favor them in weighing.
 				Stream.of(word + WHOLE_WORD_MARKER),
-				IntStream.range(1, Math.max(1, word.length() - suffixCutoff))
-						 .mapToObj(word::substring)
+				IntStream.range(1, Math.max(1, word.length() - ngramLength))
+						 .mapToObj(start -> word.substring(start, start + ngramLength))
 		);
 	}
 

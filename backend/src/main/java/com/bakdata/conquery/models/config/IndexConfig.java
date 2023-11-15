@@ -8,6 +8,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.index.IndexKey;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Data;
@@ -26,8 +27,9 @@ public class IndexConfig {
 	 */
 	@Nullable
 	private URI baseUrl;
+	@JsonAlias("searchSuffixLength")
 	@Min(0)
-	private int searchSuffixLength = 2;
+	private int ngramLength = 3;
 	@Nullable
 	private String searchSplitChars = "(),;.:\"'/";
 

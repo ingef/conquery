@@ -152,7 +152,7 @@ public class Column extends Labeled<ColumnId> implements NamespacedIdentifiable<
 	@Override
 	public TrieSearch<FrontendValue> createTrieSearch(IndexConfig config, NamespaceStorage storage) {
 
-		final int suffixLength = isGenerateSuffixes() ? config.getSearchSuffixLength() : Integer.MAX_VALUE;
+		final int suffixLength = isGenerateSuffixes() ? config.getNgramLength() : Integer.MAX_VALUE;
 
 		final TrieSearch<FrontendValue> search = new TrieSearch<>(suffixLength, config.getSearchSplitChars());
 
