@@ -57,7 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AdminDatasetResource {
 
-	private final AdminDatasetProcessor processor;
+	private final AdmDatasetProcessor processor;
 
 	@PathParam(DATASET)
 	private Dataset dataset;

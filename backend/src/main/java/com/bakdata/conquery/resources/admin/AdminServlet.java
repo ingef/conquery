@@ -18,8 +18,8 @@ import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
+import com.bakdata.conquery.resources.admin.rest.AdmDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
-import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
@@ -62,7 +62,7 @@ public class AdminServlet {
 	public static final String ADMIN_UI = "admin-ui";
 	private final AdminProcessor adminProcessor;
 	private final DropwizardResourceConfig jerseyConfig;
-	private final AdminDatasetProcessor adminDatasetProcessor;
+	private final AdmDatasetProcessor adminDatasetProcessor;
 	private final DropwizardResourceConfig jerseyConfigUI;
 
 	public AdminServlet(ManagerNode manager) {
@@ -93,7 +93,7 @@ public class AdminServlet {
 				manager.getNodeProvider()
 		);
 
-		adminDatasetProcessor = new AdminDatasetProcessor(
+		adminDatasetProcessor = new AdmDatasetProcessor(
 				manager.getConfig(),
 				manager.getValidator(),
 				manager.getDatasetRegistry(),
@@ -113,7 +113,7 @@ public class AdminServlet {
 							bind(manager.getJobManager()).to(JobManager.class);
 							bind(manager.getConfig()).to(ConqueryConfig.class);
 							bind(adminProcessor).to(AdminProcessor.class);
-							bind(adminDatasetProcessor).to(AdminDatasetProcessor.class);
+							bind(adminDatasetProcessor).to(AdmDatasetProcessor.class);
 						}
 					})
 					.register(PathParamInjector.class)

@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.identifiable.ids.Id;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.resources.admin.rest.AdmDatasetProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
 import io.dropwizard.setup.Environment;
@@ -48,7 +49,7 @@ public class StandaloneSupport implements TestSupport {
 	@Getter
 	private final AdminProcessor metaProcessor;
 	@Getter
-	private final AdminDatasetProcessor datasetsProcessor;
+	private final AdmDatasetProcessor datasetsProcessor;
 	@Getter
 	private final User testUser;
 
