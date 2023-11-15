@@ -26,16 +26,16 @@ class InvertCte extends DateAggregationCte {
 	public static final String ROWS_RIGHT_TABLE_NAME = "rows_right";
 	public static final String PRIMARY_COLUMN_FIELD_NAME = "primary_column";
 
-	private final DateAggregationStep cteStep;
+	private final DateAggregationCteStep cteStep;
 
-	public InvertCte(DateAggregationStep cteStep) {
+	public InvertCte(DateAggregationCteStep cteStep) {
 		this.cteStep = cteStep;
 	}
 
 	@Override
 	protected QueryStep.QueryStepBuilder convertStep(DateAggregationContext context) {
 
-		QueryStep rowNumberStep = context.getStep(InvertStep.ROW_NUMBER);
+		QueryStep rowNumberStep = context.getStep(InvertCteStep.ROW_NUMBER);
 
 		Field<Object> primaryColumn = context.getPrimaryColumn();
 		Field<Object> leftPrimaryColumn = QualifyingUtil.qualify(primaryColumn, ROWS_LEFT_TABLE_NAME);

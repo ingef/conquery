@@ -30,9 +30,9 @@ abstract class ConceptCte {
 	}
 
 	/**
-	 * @return The {@link ConceptStep} this instance belongs to.
+	 * @return The {@link ConceptCteStep} this instance belongs to.
 	 */
-	protected abstract ConceptStep cteStep();
+	protected abstract ConceptCteStep cteStep();
 
 	protected abstract QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext);
 

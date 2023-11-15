@@ -15,9 +15,9 @@ import org.jooq.Field;
 @Getter
 class OverlapCte extends DateAggregationCte {
 
-	private final DateAggregationStep cteStep;
+	private final DateAggregationCteStep cteStep;
 
-	public OverlapCte(DateAggregationStep cteStep) {
+	public OverlapCte(DateAggregationCteStep cteStep) {
 		this.cteStep = cteStep;
 	}
 

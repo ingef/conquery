@@ -9,9 +9,9 @@ import lombok.Getter;
 @Getter
 class MergeCte extends DateAggregationCte {
 
-	private final DateAggregationStep cteStep;
+	private final DateAggregationCteStep cteStep;
 
-	public MergeCte(DateAggregationStep cteStep) {
+	public MergeCte(DateAggregationCteStep cteStep) {
 		this.cteStep = cteStep;
 	}
 

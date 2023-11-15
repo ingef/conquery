@@ -24,32 +24,32 @@ class DateAggregationContext implements Context {
 	DateAggregationTables dateAggregationTables;
 	DateAggregationDates dateAggregationDates;
 	@Builder.Default
-	Map<DateAggregationStep, List<QueryStep>> intervalMergeSteps = new HashMap<>();
+	Map<DateAggregationCteStep, List<QueryStep>> intervalMergeSteps = new HashMap<>();
 	SqlAggregationAction sqlAggregationAction;
 	SqlFunctionProvider functionProvider;
 	IntervalPacker intervalPacker;
 
-	public DateAggregationContext withStep(DateAggregationStep dateAggregationStep, QueryStep queryStep) {
-		this.intervalMergeSteps.computeIfAbsent(dateAggregationStep, k -> new ArrayList<>())
+	public DateAggregationContext withStep(DateAggregationCteStep dateAggregationCteStep, QueryStep queryStep) {
+		this.intervalMergeSteps.computeIfAbsent(dateAggregationCteStep, k -> new ArrayList<>())
 							   .add(queryStep);
 		return this;
 	}
 
-	public QueryStep getStep(DateAggregationStep dateAggregationStep) {
-		List<QueryStep> querySteps = intervalMergeSteps.get(dateAggregationStep);
+	public QueryStep getStep(DateAggregationCteStep dateAggregationCteStep) {
+		List<QueryStep> querySteps = intervalMergeSteps.get(dateAggregationCteStep);
 		if (querySteps != null && !querySteps.isEmpty()) {
 			return querySteps.get(0);
 		}
 		return null;
 	}
 
-	public List<QueryStep> getSteps(DateAggregationStep dateAggregationStep) {
-		if (dateAggregationStep != MergeStep.NODE_NO_OVERLAP) {
+	public List<QueryStep> getSteps(DateAggregationCteStep dateAggregationCteStep) {
+		if (dateAggregationCteStep != MergeCteStep.NODE_NO_OVERLAP) {
 			throw new UnsupportedOperationException(
-					"Only MergeStep.NODE_NO_OVERLAP has multiple steps. Use getStep() for all other DateAggregationSteps."
+					"Only MergeCteStep.NODE_NO_OVERLAP has multiple steps. Use getStep() for all other DateAggregationSteps."
 			);
 		}
-		return this.intervalMergeSteps.get(dateAggregationStep);
+		return this.intervalMergeSteps.get(dateAggregationCteStep);
 	}
 
 	public DateAggregationContext qualify(String qualifier) {

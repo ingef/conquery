@@ -9,16 +9,18 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-enum InvertStep implements DateAggregationStep {
+enum MergeCteStep implements DateAggregationCteStep {
 
-	ROW_NUMBER("_row_numbers", RowNumberCte::new, null),
-	INVERT("_inverted_dates", InvertCte::new, InvertStep.ROW_NUMBER);
+	OVERLAP("_overlap", OverlapCte::new, null),
+	INTERMEDIATE_TABLE("_no_overlap", IntermediateTableCte::new, null),
+	NODE_NO_OVERLAP("_node_no_overlap", NodeNoOverlapCte::new, INTERMEDIATE_TABLE),
+	MERGE("_merge", MergeCte::new, OVERLAP);
 
-	private static final Set<InvertStep> REQUIRED_STEPS = Set.of(values());
+	private static final Set<MergeCteStep> REQUIRED_STEPS = Set.of(values());
 	private final String suffix;
 	@Getter
 	private final DateAggregationCteConstructor stepConstructor;
-	private final InvertStep predecessor;
+	private final MergeCteStep predecessor;
 
 	@Override
 	public String suffix() {
@@ -26,7 +28,7 @@ enum InvertStep implements DateAggregationStep {
 	}
 
 	@Override
-	public DateAggregationStep predecessor() {
+	public DateAggregationCteStep predecessor() {
 		return this.predecessor;
 	}
 
@@ -36,7 +38,7 @@ enum InvertStep implements DateAggregationStep {
 					 .toList();
 	}
 
-	static DateAggregationTables<InvertStep> createTableNames(QueryStep joinedTable) {
+	static DateAggregationTables<MergeCteStep> tableNames(QueryStep joinedTable) {
 		return new DateAggregationTables<>(joinedTable.getCteName(), REQUIRED_STEPS, joinedTable.getCteName());
 	}
 

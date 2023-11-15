@@ -21,13 +21,13 @@ class IntersectAggregationAction implements SqlAggregationAction {
 	private final QueryStep joinedStep;
 
 	@Override
-	public DateAggregationTables<IntersectStep> tableNames() {
-		return IntersectStep.createTableNames(this.joinedStep);
+	public DateAggregationTables<IntersectCteStep> tableNames() {
+		return IntersectCteStep.createTableNames(this.joinedStep);
 	}
 
 	@Override
 	public List<DateAggregationCte> dateAggregationCtes() {
-		return IntersectStep.requiredSteps();
+		return IntersectCteStep.requiredSteps();
 	}
 
 	@Override
@@ -60,12 +60,12 @@ class IntersectAggregationAction implements SqlAggregationAction {
 
 	@Override
 	public List<QueryStep> getNoOverlapSelects(DateAggregationContext dateAggregationContext) {
-		return List.of(dateAggregationContext.getStep(IntersectStep.INTERMEDIATE_TABLE));
+		return List.of(dateAggregationContext.getStep(IntersectCteStep.INTERMEDIATE_TABLE));
 	}
 
 	@Override
 	public QueryStep getOverlapStep(DateAggregationContext dateAggregationContext) {
-		return dateAggregationContext.getStep(IntersectStep.OVERLAP);
+		return dateAggregationContext.getStep(IntersectCteStep.OVERLAP);
 	}
 
 	@Override

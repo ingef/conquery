@@ -3,7 +3,7 @@ package com.bakdata.conquery.sql.conversion.cqelement.concept.select;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.RandomValueSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.RandomValueSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
@@ -15,11 +15,11 @@ public class RandomValueSelectConverter implements SelectConverter<RandomValueSe
 	@Override
 	public SqlSelects convert(RandomValueSelect randomSelect, SelectContext context) {
 
-		String rootTableName = context.getConceptTables().getPredecessor(ConceptStep.PREPROCESSING);
+		String rootTableName = context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING);
 		String columnName = randomSelect.getColumn().getName();
 		SqlSelect rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
 
-		Field<Object> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessor(ConceptStep.AGGREGATION_SELECT, rootSelect.aliased());
+		Field<Object> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
 		String alias = randomSelect.getName();
 		SqlSelect randomValueSqlSelect = RandomValueSqlSelect.builder()
 															 .randomColumn(qualifiedRootSelect)
@@ -28,7 +28,7 @@ public class RandomValueSelectConverter implements SelectConverter<RandomValueSe
 															 .build();
 
 		ExtractingSqlSelect<Object> finalSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessor(ConceptStep.FINAL),
+				context.getConceptTables().getPredecessor(ConceptCteStep.FINAL),
 				randomValueSqlSelect.aliased().getName(),
 				Object.class
 		);

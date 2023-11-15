@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
@@ -24,17 +24,17 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 		// TODO(tm): convert getSubtractColumn and getDistinctByColumn
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumFilter.getColumn().getType());
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessor(ConceptStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
 				sumFilter.getColumn().getName(),
 				numberClass
 		);
 
 		Field<? extends Number> qualifiedRootSelect = context.getConceptTables()
-															 .qualifyOnPredecessor(ConceptStep.AGGREGATION_SELECT, rootSelect.aliased());
+															 .qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
 		SumSqlSelect sumSqlSelect = new SumSqlSelect(qualifiedRootSelect, sumFilter.getName());
 
 		Field<? extends Number> qualifiedSumGroupBy = context.getConceptTables()
-															 .qualifyOnPredecessor(ConceptStep.AGGREGATION_FILTER, sumSqlSelect.aliased());
+															 .qualifyOnPredecessor(ConceptCteStep.AGGREGATION_FILTER, sumSqlSelect.aliased());
 		SumCondition sumFilterCondition = new SumCondition(qualifiedSumGroupBy, context.getValue());
 
 		return new ConceptFilter(
@@ -49,8 +49,8 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 	}
 
 	@Override
-	public Set<ConceptStep> requiredSteps() {
-		return ConceptStep.withOptionalSteps(ConceptStep.AGGREGATION_FILTER);
+	public Set<ConceptCteStep> requiredSteps() {
+		return ConceptCteStep.withOptionalSteps(ConceptCteStep.AGGREGATION_FILTER);
 	}
 
 	@Override

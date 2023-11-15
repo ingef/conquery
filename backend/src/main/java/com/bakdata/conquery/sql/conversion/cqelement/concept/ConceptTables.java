@@ -4,14 +4,14 @@ import java.util.Set;
 
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 
-class ConceptTables extends SqlTables<ConceptStep> {
+class ConceptTables extends SqlTables<ConceptCteStep> {
 
-	public ConceptTables(String conceptLabel, Set<ConceptStep> requiredSteps, String rootTableName) {
+	public ConceptTables(String conceptLabel, Set<ConceptCteStep> requiredSteps, String rootTableName) {
 		super(conceptLabel, requiredSteps, rootTableName);
 	}
 
-	public boolean isRequiredStep(ConceptStep conceptStep) {
-		return this.cteNames.containsKey(conceptStep);
+	public boolean isRequiredStep(ConceptCteStep conceptCteStep) {
+		return getCteNames().containsKey(conceptCteStep);
 	}
 
 }
