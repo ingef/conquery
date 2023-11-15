@@ -66,9 +66,14 @@ public abstract class JsonIntegrationTest extends IntegrationTest.Simple {
 
 		private final ConqueryTestSpec testSpec;
 
-		public Distributed(InputStream in) throws IOException {
-			this.testSpec = TEST_SPEC_READER.readValue(in.readAllBytes());
+		private Distributed(ConqueryTestSpec testSpec) {
+			this.testSpec = testSpec;
+		}
+
+		public static Distributed create(InputStream in) throws IOException {
+			ConqueryTestSpec testSpec = TEST_SPEC_READER.readValue(in.readAllBytes());
 			in.close();
+			return new Distributed(testSpec);
 		}
 
 		@Override
@@ -92,10 +97,15 @@ public abstract class JsonIntegrationTest extends IntegrationTest.Simple {
 
 		private final SqlQueryTest testSpec;
 
-		public Sql(InputStream in, TestSqlDialect sqlDialect, SqlConnectorConfig sqlConnectorConfig) throws IOException {
-			this.testSpec = TEST_SPEC_READER.readValue(in.readAllBytes());
+		private Sql(SqlQueryTest testSpec, TestSqlDialect sqlDialect, SqlConnectorConfig sqlConnectorConfig) {
+			this.testSpec = testSpec;
 			this.testSpec.setTableImporter(new CsvTableImporter(sqlDialect.getDSLContext(), sqlDialect, sqlConnectorConfig));
+		}
+
+		public static Sql create(InputStream in, TestSqlDialect sqlDialect, SqlConnectorConfig sqlConnectorConfig) throws IOException {
+			SqlQueryTest testSpec = TEST_SPEC_READER.readValue(in.readAllBytes());
 			in.close();
+			return new Sql(testSpec, sqlDialect, sqlConnectorConfig);
 		}
 
 		@Override

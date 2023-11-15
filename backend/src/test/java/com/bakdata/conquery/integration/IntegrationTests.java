@@ -199,7 +199,7 @@ public class IntegrationTests {
 
 	private DynamicTest readTest(Resource resource, String name) {
 		try (InputStream in = resource.open()) {
-			JsonIntegrationTest test = new JsonIntegrationTest.Distributed(in);
+			JsonIntegrationTest test = JsonIntegrationTest.Distributed.create(in);
 			return wrapTest(resource, name, test);
 		}
 		catch (Exception e) {
@@ -212,7 +212,7 @@ public class IntegrationTests {
 
 	private Optional<DynamicNode> readSqlTest(Resource resource, String name, TestSqlDialect sqlDialect, SqlConnectorConfig sqlConnectorConfig) {
 		try (InputStream in = resource.open()) {
-			JsonIntegrationTest.Sql test = new JsonIntegrationTest.Sql(in, sqlDialect, sqlConnectorConfig);
+			JsonIntegrationTest.Sql test = JsonIntegrationTest.Sql.create(in, sqlDialect, sqlConnectorConfig);
 			if (!test.isAllowedTest(sqlConnectorConfig.getDialect())) {
 				return Optional.empty();
 			}
