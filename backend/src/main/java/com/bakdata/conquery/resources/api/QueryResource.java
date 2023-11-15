@@ -58,10 +58,10 @@ public class QueryResource {
 	}
 
 	@GET
-	@Path("{" + QUERY + "}/description")
+	@Path("{" + QUERY + "}/statistics")
 	public ResultStatistics getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
 
-		if (!(query instanceof ManagedQuery)){
+		if (!(query instanceof ManagedQuery)) {
 			throw new BadRequestException("Statistics is only available for %s".formatted(ManagedQuery.class.getSimpleName()));
 		}
 
