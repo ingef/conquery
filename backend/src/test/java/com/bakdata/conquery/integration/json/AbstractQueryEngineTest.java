@@ -89,6 +89,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		// check that getLastResultCount returns the correct size
 		if (executionResult.streamResults().noneMatch(MultilineEntityResult.class::isInstance)) {
 			long lastResultCount;
+			// TODO find common abstraction for Sql/ManagedQuery
 			if (executionResult instanceof ManagedQuery managedQuery) {
 				lastResultCount = managedQuery.getLastResultCount();
 			}
