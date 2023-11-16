@@ -92,8 +92,7 @@ public class IntegrationTests {
 
 		// collect tests from directory
 		if (tree.getChildren().isEmpty()) {
-			log.warn("Could not find tests in {}", testRoot);
-			return Collections.emptyList();
+			throw new RuntimeException("Could not find tests in " + testRoot);
 		}
 		final ResourceTree reduced = tree.reduce();
 
@@ -107,12 +106,13 @@ public class IntegrationTests {
 
 	@SneakyThrows
 	public Stream<DynamicNode> programmaticTests() {
+		String regexFilter = System.getenv(TestTags.TEST_PROGRAMMATIC_REGEX_FILTER);
 		List<Class<?>> programmatic =
 				CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 											 .filter(info -> info.getPackageName().startsWith(defaultTestRootPackage))
 											 .filter(classInfo -> {
 												 // e.g. For the RestartTest: CONQUERY_TEST_PROGRAMMATIC_REGEX_FILTER=Restart.*
-												 String regexFilter = System.getenv(TestTags.TEST_PROGRAMMATIC_REGEX_FILTER);
+
 												 if (Strings.isNullOrEmpty(regexFilter)) {
 													 // No filter set: allow all tests
 													 return true;
@@ -121,6 +121,10 @@ public class IntegrationTests {
 
 											 })
 											 .loadClasses();
+
+		if (programmatic.isEmpty() && !Strings.isNullOrEmpty(regexFilter)) {
+			throw new RuntimeException("No test cases where found using the filter: " + regexFilter);
+		}
 
 		return programmatic
 				.stream()
@@ -149,6 +153,11 @@ public class IntegrationTests {
 												   .filter(sqlIntegrationTest -> sqlIntegrationTest.getTestSpec()
 																								   .supportsDialects(sqlConfig.getDialect()))
 												   .map(test -> DynamicTest.dynamicTest(test.getTestSpec().getLabel(), test)).toList();
+
+		if (dynamicTestStream.isEmpty()) {
+			throw new RuntimeException("Could not find tests in " + testRootDir);
+		}
+
 		return dynamicTestStream.stream();
 	}
 
