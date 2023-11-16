@@ -1,7 +1,7 @@
 {
   "label": "Date restriction with multiple validity dates and dateColumn",
-  "type": "SQL_TEST",
-  "expectedCsv": "expected.csv",
+  "type": "SQL_QUERY_TEST",
+  "expectedCsv": "tests/sql/date_restriction/date_restriction_date_column/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

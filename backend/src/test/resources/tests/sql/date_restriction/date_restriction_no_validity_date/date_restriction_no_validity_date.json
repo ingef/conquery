@@ -1,8 +1,8 @@
 {
   "label": "Date restriction query without validity date",
   "description": "If a date restriction is active, but there is no validity date defined to apply the date restriction on, the date restriction filter should not be applied.",
-  "type": "SQL_TEST",
-  "expectedCsv": "expected.csv",
+  "type": "SQL_QUERY_TEST",
+  "expectedCsv": "tests/sql/date_restriction/date_restriction_no_validity_date/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

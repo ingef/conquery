@@ -1,7 +1,7 @@
 {
   "label": "SELECT filter",
-  "type": "SQL_TEST",
-  "expectedCsv": "expected.csv",
+  "type": "SQL_QUERY_TEST",
+  "expectedCsv": "tests/sql/filter/multi_select/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

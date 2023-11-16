@@ -1,7 +1,7 @@
 {
   "label": "RANDOM select with validity date",
-  "type": "SQL_TEST",
-  "expectedCsv": "expected.csv",
+  "type": "SQL_QUERY_TEST",
+  "expectedCsv": "tests/sql/selects/random/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

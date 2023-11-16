@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
+import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +33,8 @@ public class MetadataCollectionTest extends IntegrationTest.Simple implements Pr
 		test.importRequiredData(conquery);
 
 		//ensure the metadata is collected
-		conquery.getNamespace().getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(conquery.getNamespace().getStorage().getAllConcepts()));
+		DistributedNamespace namespace = (DistributedNamespace) conquery.getNamespace();
+		namespace.getWorkerHandler().sendToAll(new UpdateMatchingStatsMessage(conquery.getNamespace().getStorage().getAllConcepts()));
 
 		conquery.waitUntilWorkDone();
 

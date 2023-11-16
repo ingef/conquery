@@ -25,7 +25,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.types.ResultType;
-import com.bakdata.conquery.sql.SqlQuery;
+import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.util.QueryUtils;
 import com.google.common.base.Preconditions;

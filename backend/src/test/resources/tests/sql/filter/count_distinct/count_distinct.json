@@ -1,18 +1,18 @@
 {
-  "label": "Simple OR query for same concept",
-  "expectedCsv": "tests/sql/or/same_concept/expected.csv",
+  "label": "COUNT DISTINCT filter",
   "type": "SQL_QUERY_TEST",
+  "expectedCsv": "tests/sql/filter/count_distinct/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
-      "type": "OR",
+      "type": "AND",
       "children": [
         {
-          "type": "CONCEPT",
-          "label": "vs",
           "ids": [
             "number"
           ],
+          "type": "CONCEPT",
+          "label": "vs",
           "tables": [
             {
               "id": "number.number_connector",
@@ -21,30 +21,7 @@
                   "filter": "number.number_connector.value",
                   "type": "REAL_RANGE",
                   "value": {
-                    "min": -1,
-                    "max": 0
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "type": "CONCEPT",
-          "label": "vs",
-          "ids": [
-            "number"
-          ],
-          "tables": [
-            {
-              "id": "number.number_connector",
-              "filters": [
-                {
-                  "filter": "number.number_connector.value",
-                  "type": "REAL_RANGE",
-                  "value": {
-                    "min": 1.0001,
-                    "max": 1.5
+                    "min": 2
                   }
                 }
               ]
@@ -66,7 +43,8 @@
             "label": "value",
             "description": "xy",
             "column": "table1.value",
-            "type": "NUMBER"
+            "type": "COUNT",
+            "distinct": "true"
           }
         }
       ]
@@ -75,7 +53,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/or/same_concept/content_1.csv",
+        "csv": "tests/sql/filter/count_distinct/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
