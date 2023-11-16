@@ -7,12 +7,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
 
 import com.bakdata.conquery.models.types.ResultType;
-import com.google.common.math.StatsAccumulator;
 import lombok.Getter;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 @Getter
 class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
-	private final StatsAccumulator statistics = new StatsAccumulator();
+	private final DescriptiveStatistics statistics = new DescriptiveStatistics();
 	private final AtomicLong nulls = new AtomicLong(0);
 
 	private final List<Number> samples = new ArrayList<>();
@@ -32,7 +32,9 @@ class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
 			return;
 		}
 
-		statistics.add(value.doubleValue());
+
+
+		statistics.addValue(value.doubleValue());
 
 		if (samplePicker.getAsBoolean()) {
 			samples.add(value);
@@ -42,12 +44,13 @@ class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
 	@Override
 	public ResultColumnStatistics describe() {
 		return new ColumnDescription(getName(), getLabel(), getDescription(), getType().toString(),
-									 (int) (getStatistics().count() + getNulls().get()),
+									 (int) (getStatistics().getN() + getNulls().get()),
 									 getNulls().intValue(),
-									 getStatistics().mean(),
-									 getStatistics().sampleStandardDeviation(),
-									 (int) getStatistics().min(),
-									 (int) getStatistics().max(),
+									 getStatistics().getMean(),
+									 getStatistics().getPercentile(50d /*This is the median.*/),
+									 getStatistics().getStandardDeviation(),
+									 (int) getStatistics().getMin(),
+									 (int) getStatistics().getMax(),
 									 samples
 		);
 	}
@@ -58,17 +61,19 @@ class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
 		private final int count;
 		private final int nullValues;
 		private final double mean;
+		private final double median;
 		private final double stdDev;
 		private final Number min;
 		private final Number max;
 
 		private final Collection<Number> samples;
 
-		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, double mean, double stdDev, Number min, Number max, Collection<Number> samples) {
+		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, double mean, double median, double stdDev, Number min, Number max, Collection<Number> samples) {
 			super(name, label, description, type);
 			this.count = count;
 			this.nullValues = nullValues;
 			this.mean = mean;
+			this.median = median;
 			this.stdDev = stdDev;
 			this.min = min;
 			this.max = max;
