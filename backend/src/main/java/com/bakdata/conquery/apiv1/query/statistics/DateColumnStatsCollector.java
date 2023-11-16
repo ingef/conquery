@@ -3,9 +3,10 @@ package com.bakdata.conquery.apiv1.query.statistics;
 import java.time.LocalDate;
 import java.time.temporal.IsoFields;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
@@ -19,17 +20,17 @@ import lombok.Getter;
 @Getter
 public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 
-	private final Map<String, Integer> quarterCounts = new HashMap<>();
-	private final Map<String, Integer> monthCounts = new HashMap<>();
+	private final SortedMap<String, Integer> quarterCounts = new TreeMap<>();
+	private final SortedMap<String, Integer> monthCounts = new TreeMap<>();
 
 	private final AtomicInteger totalCount = new AtomicInteger();
 	private final AtomicLong nulls = new AtomicLong(0);
-	private final List<Number> samples = new ArrayList<>();
+	private final List<LocalDate> samples = new ArrayList<>();
 	private final BooleanSupplier samplePicker;
 	private CDateRange span = null;
 
-	public DateColumnStatsCollector(String name, String label, String description, ResultType type, BooleanSupplier samplePicker) {
-		super(name, label, description, type);
+	public DateColumnStatsCollector(String name, String label, String description, BooleanSupplier samplePicker) {
+		super(name, label, description, ResultType.DateT.INSTANCE);
 		this.samplePicker = samplePicker;
 	}
 
@@ -84,18 +85,19 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 
 
 		if (samplePicker.getAsBoolean()) {
-			samples.add(day);
+			samples.add(CDate.toLocalDate(day));
 		}
 	}
 
 	@Override
 	public ResultColumnStatistics describe() {
-		return new ColumnDescription(getName(), getLabel(), getDescription(), getType().toString(),
+		return new ColumnDescription(getName(), getLabel(), getDescription(),
 									 totalCount.get(),
 									 getNulls().intValue(),
 									 quarterCounts,
 									 monthCounts,
-									 span.toSimpleRange()
+									 span.toSimpleRange(),
+									 samples
 		);
 	}
 
@@ -104,18 +106,21 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 
 		private final int count;
 		private final int nullValues;
-		private final Map<String, Integer> quarterCounts;
-		private final Map<String, Integer> monthCounts;
+		private final SortedMap<String, Integer> quarterCounts;
+		private final SortedMap<String, Integer> monthCounts;
 
 		private final Range<LocalDate> span;
 
-		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, Map<String, Integer> quarterCounts, Map<String, Integer> monthCounts, Range<LocalDate> span) {
-			super(name, label, description, type);
+		private final Collection<LocalDate> samples;
+
+		public ColumnDescription(String name, String label, String description, int count, int nullValues, SortedMap<String, Integer> quarterCounts, SortedMap<String, Integer> monthCounts, Range<LocalDate> span, Collection<LocalDate> samples) {
+			super(name, label, description, "DATES");
 			this.count = count;
 			this.nullValues = nullValues;
 			this.quarterCounts = quarterCounts;
 			this.monthCounts = monthCounts;
 			this.span = span;
+			this.samples = samples;
 		}
 	}
 }

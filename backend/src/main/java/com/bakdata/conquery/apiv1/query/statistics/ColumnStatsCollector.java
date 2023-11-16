@@ -33,12 +33,16 @@ public abstract class ColumnStatsCollector<T> {
 			return new StringColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type);
 		}
 
+		if (type instanceof ResultType.BooleanT) {
+			return new BooleanColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type);
+		}
+
 		if (type instanceof ResultType.DateT) {
-			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker);
+			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), samplePicker);
 		}
 
 		if (type instanceof ResultType.DateRangeT) {
-			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker);
+			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), samplePicker);
 		}
 
 		if (type instanceof ResultType.ListT listT){
@@ -47,7 +51,7 @@ public abstract class ColumnStatsCollector<T> {
 			return new ListColumnStatsCollector<>(null, null, null, type, columnStatsCollector);
 		}
 
-		return null; //TODO implement others
+		throw new IllegalArgumentException("Don't know how to describe Column of typ %s".formatted(type));
 	}
 
 	public abstract void consume(@Nullable T value);
@@ -55,7 +59,7 @@ public abstract class ColumnStatsCollector<T> {
 	public abstract ResultColumnStatistics describe();
 
 	@Data
-	public static class ResultColumnStatistics {
+	public abstract static class ResultColumnStatistics {
 		private final String name;
 		private final String label;
 		private final String description;

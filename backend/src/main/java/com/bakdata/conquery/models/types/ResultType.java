@@ -235,14 +235,6 @@ public abstract class ResultType {
 			this.elementType = elementType;
 		}
 
-		public ResultType getRootType() {
-			if (elementType instanceof ListT){
-				return ((ListT) elementType).getRootType();
-			}
-
-			return elementType;
-		}
-
 		@Override
 		public String print(PrintSettings cfg, @NonNull Object f) {
 			// Jackson deserializes collections as lists instead of an array, if the type is not given
