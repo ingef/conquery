@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.execution;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,15 +42,15 @@ public interface ResultSetProcessor {
 	}
 
 	private static Map<ResultType, ResultSetMapper> createMappers() {
-		Map<ResultType, ResultSetMapper> mappers = new HashMap<>();
-		mappers.put(ResultType.StringT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getString(resultSet, columnIndex));
-		mappers.put(ResultType.IntegerT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getInteger(resultSet, columnIndex));
-		mappers.put(ResultType.NumericT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDouble(resultSet, columnIndex));
-		mappers.put(ResultType.MoneyT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getMoney(resultSet, columnIndex));
-		mappers.put(ResultType.BooleanT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getBoolean(resultSet, columnIndex));
-		mappers.put(ResultType.DateT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDate(resultSet, columnIndex));
-		mappers.put(ResultType.DateRangeT.INSTANCE, ((resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDateRangeList(resultSet, columnIndex)));
-		return mappers;
+		return Map.of(
+				ResultType.StringT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getString(resultSet, columnIndex),
+				ResultType.IntegerT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getInteger(resultSet, columnIndex),
+				ResultType.NumericT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDouble(resultSet, columnIndex),
+				ResultType.MoneyT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getMoney(resultSet, columnIndex),
+				ResultType.BooleanT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getBoolean(resultSet, columnIndex),
+				ResultType.DateT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDate(resultSet, columnIndex),
+				ResultType.DateRangeT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDateRangeList(resultSet, columnIndex)
+		);
 	}
 
 }
