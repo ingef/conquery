@@ -60,7 +60,7 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 	/**
 	 * If there is a long range filter on a column of type MONEY, the filter value will represent a decimal with the point moved right 2 places right.
 	 * <p>
-	 * For example, the filter value {@code {min: 1000€, max: 2000€}} will be converted to {@code {min: 10,00€, max: 20,00€}}
+	 * For example, the filter value {@code {min: 1000ct, max: 2000ct}} will be converted to {@code {min: 10,00€, max: 20,00€}}
 	 */
 	private static IRange<? extends Number, ?> prepareFilterValue(
 			NumberFilter<IRange<? extends Number, ?>> numberFilter,
