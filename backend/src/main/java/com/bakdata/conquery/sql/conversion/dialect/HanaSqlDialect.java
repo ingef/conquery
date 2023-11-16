@@ -18,6 +18,7 @@ public class HanaSqlDialect implements SqlDialect {
 	private final SqlFunctionProvider hanaSqlFunctionProvider;
 	private final IntervalPacker hanaIntervalPacker;
 	private final SqlDateAggregator hanaSqlDateAggregator;
+	private final DefaultSqlCDateSetParser defaultNotationParser;
 	private final DSLContext dslContext;
 
 	public HanaSqlDialect(DSLContext dslContext) {
@@ -25,6 +26,7 @@ public class HanaSqlDialect implements SqlDialect {
 		this.hanaSqlFunctionProvider = new HanaSqlFunctionProvider();
 		this.hanaIntervalPacker = new AnsiSqlIntervalPacker();
 		this.hanaSqlDateAggregator = new AnsiSqlDateAggregator(this.hanaSqlFunctionProvider, this.hanaIntervalPacker);
+		this.defaultNotationParser = new DefaultSqlCDateSetParser();
 	}
 
 	@Override
@@ -34,7 +36,7 @@ public class HanaSqlDialect implements SqlDialect {
 
 	@Override
 	public SqlCDateSetParser getCDateSetParser() {
-		return new DefaultSqlCDateSetParser();
+		return this.defaultNotationParser;
 	}
 
 	@Override
