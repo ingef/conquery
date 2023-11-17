@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { DateRangeT } from "../api/types";
+import { PreviewStatisticsResponse } from "../api/types";
 import { getDiffInDays, parseDate } from "../common/helpers/dateHelper";
 import { t } from "i18next";
 
@@ -18,49 +18,31 @@ const Key = styled("span")`
   }
 `;
 
-interface HeadlineStatsLoaded {
-  numberOfRows: number;
-  dateRange: DateRangeT;
-  missingValues: number;
-  loading: false;
-}
+export type HeadlineStatsProps = {
+  statistics: PreviewStatisticsResponse | null;
+};
 
-interface HeadlineStatsLoading {
-  loading: true;
-}
-
-export default function HeadlineStats(
-  props: HeadlineStatsLoaded | HeadlineStatsLoading,
-) {
-  if (props.loading) {
-    return (
-      <Root>
-        <Key>Zeilen:</Key>
-        <Key>Min Datum:</Key>
-        <Key>Max Datum:</Key>
-        <Key>Darumgsbereich:</Key>
-        <Key>Fehlende Werte:</Key>
-      </Root>
-    );
-  }
-
-  const { numberOfRows, dateRange, missingValues } =
-    props as HeadlineStatsLoaded;
+export default function HeadlineStats({ statistics }: HeadlineStatsProps) {
+  const { total, dateRange, statistics: statisticsList } = statistics || {};
+  const missingValues = statisticsList?.reduce(
+    (acc, obj) => acc + (obj?.nullValues ?? 0),
+    0,
+  );
 
   return (
     <Root>
       <Key>Zeilen:</Key>
-      {numberOfRows}
+      {total}
       <Key>Min Datum:</Key>
-      {dateRange.min}
+      {dateRange?.min}
       <Key>Max Datum:</Key>
-      {dateRange.max}
+      {dateRange?.max}
       <Key>Darumgsbereich:</Key>
-      {dateRange.min && dateRange.max
+      {dateRange?.min && dateRange?.max
         ? `${getDiffInDays(
-            parseDate(dateRange.max, "yyyy-MM-dd") ?? new Date(),
-            parseDate(dateRange.min, "yyyy-MM-dd") ?? new Date(),
-        )} ${t("common.timeUnitDays")}`
+            parseDate(dateRange?.max, "yyyy-MM-dd") ?? new Date(),
+            parseDate(dateRange?.min, "yyyy-MM-dd") ?? new Date(),
+          )} ${t("common.timeUnitDays")}`
         : "Datum unbekannt"}
       <Key>Fehlende Werte:</Key>
       {missingValues}

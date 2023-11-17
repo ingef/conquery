@@ -584,14 +584,16 @@ export type PostResolveEntitiesResponse = {
   [idKind: string]: string; // idKind is the key, the value is the resolved ID
 }[];
 
-
-export type NumberStatistics = {
+export type BaseStatistics = {
   name: string;
   label: string;
   description?: string;
-  type: SelectorResultDataType;
   count: number;
   nullValues: number;
+}
+
+export type NumberStatistics = BaseStatistics & {
+  type: SelectorResultDataType;
   mean: number;
   stddev: number;
   median: number;
@@ -599,13 +601,8 @@ export type NumberStatistics = {
   max: number;
 }
 
-export type StringStatistics = {
-  name: string;
-  label: string;
-  description?: string;
+export type StringStatistics = BaseStatistics & {
   type: "STRING";
-  count: number;
-  nullValues: number;
   histogram: {
     [value: string]: number;
   }

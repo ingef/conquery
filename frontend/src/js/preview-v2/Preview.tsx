@@ -78,7 +78,7 @@ export default function Preview() {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const getStats = usePreviewStatistics();
-  const [query, _] = useState<number>(12);
+  const [query] = useState<number>(12);
   const [statistics, setStatistics] =
     useState<PreviewStatisticsResponse | null>(null);
   
@@ -104,7 +104,7 @@ export default function Preview() {
       }
     }
     fetchData();
-  }, [query]);
+  }, [query, dispatch, getStats, t]);
 
   return (
     <FullScreen>
@@ -128,28 +128,13 @@ export default function Preview() {
           {t("common.back")}
         </TransparentButton>
         Ergebnisvorschau
-
-        {
-          statistics === null ? (
-            <HeadlineStats
-              loading={true}
-            />
-          ) : (
-              <HeadlineStats
-                numberOfRows={statistics.total}
-                dateRange={statistics.dateRange}
-                missingValues={statistics.statistics.reduce((acc, obj) => acc + (obj.nullValues ?? 0), 0)}
-                loading={false}
-              />
-          )
-        }
+        <HeadlineStats statistics={statistics} />
       </Headline>
       SelectBox (Konzept Liste)
-      {statistics ? (
+      {statistics && statistics.statistics ? (
         <SxCharts
           statistics={statistics.statistics}
           showPopup={(statistic: PreviewStatistics) => {
-            console.log(statistic);
             setPopOver(statistic);
           }}
         /> 
