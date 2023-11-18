@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 
 class NameGeneratorTest {
 
-	public static final String VERY_LONG_CTE_NAME = "concept-foobar-fizzbuzz-123_aggregation_select_filter_date_aggregation_cte";
 	private static final int NAME_MAX_LENGTH = 63;
 
 	@Test
@@ -21,7 +20,8 @@ class NameGeneratorTest {
 				nameGenerator.cteStepName(ConceptCteStep.AGGREGATION_FILTER, "foo")
 		);
 
-		String actual = nameGenerator.cteStepName(ConceptCteStep.AGGREGATION_FILTER, VERY_LONG_CTE_NAME);
+		String veryLongCteName = "concept-foobar-fizzbuzz-123_aggregation_select_filter_date_aggregation_cte";
+		String actual = nameGenerator.cteStepName(ConceptCteStep.AGGREGATION_FILTER, veryLongCteName);
 		Assertions.assertEquals(NAME_MAX_LENGTH, actual.length());
 		Assertions.assertEquals("123_aggregation_select_filter_date_aggregation_cte-group_filter", actual);
 	}
