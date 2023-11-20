@@ -20,6 +20,11 @@
     "clazz": "DatasetResource"
   },
   {
+    "method": "GET",
+    "path": "/queries/{query}/statistics",
+    "clazz": "QueryResource"
+  },
+  {
     "method": "POST",
     "path": "/datasets/{dataset}/queries/entity",
     "clazz": "DatasetQueryResource"
