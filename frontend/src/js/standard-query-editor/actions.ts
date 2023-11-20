@@ -161,7 +161,13 @@ const useLoadBigMultiSelectValues = () => {
                           );
                           return {
                             ...filter,
-                            value: result.resolvedFilter?.value || [],
+                            value: [
+                              ...(result.resolvedFilter?.value || []),
+                              ...(result.unknownCodes || []).map((code) => ({
+                                label: code,
+                                value: code,
+                              })),
+                            ],
                           };
                         } catch (e) {
                           console.error(e);
