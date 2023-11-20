@@ -91,6 +91,8 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 
 	@Override
 	public ResultColumnStatistics describe() {
+		samples.sort(LocalDate::compareTo);
+
 		return new ColumnDescription(getName(), getLabel(), getDescription(),
 									 totalCount.get(),
 									 getNulls().intValue(),

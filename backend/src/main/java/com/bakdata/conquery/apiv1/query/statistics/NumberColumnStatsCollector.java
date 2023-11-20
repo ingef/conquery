@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.query.statistics;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
@@ -11,18 +12,38 @@ import lombok.Getter;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 @Getter
-class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
+class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends ColumnStatsCollector<Number> {
 	private final DescriptiveStatistics statistics = new DescriptiveStatistics();
 	private final AtomicLong nulls = new AtomicLong(0);
 
-	private final List<Number> samples = new ArrayList<>();
+	private final List<TYPE> samples = new ArrayList<>();
 
 
 	private final BooleanSupplier samplePicker;
 
+	private final Comparator<TYPE> comparator;
+
 	public NumberColumnStatsCollector(String name, String label, String description, ResultType type, BooleanSupplier samplePicker) {
 		super(name, label, description, type);
 		this.samplePicker = samplePicker;
+		this.comparator = selectComparator(type);
+	}
+
+	private Comparator<TYPE> selectComparator(ResultType resultType) {
+		// The java type system was not made to handle the silliness, sorry.
+		if (resultType instanceof ResultType.IntegerT){
+			return Comparator.comparingInt(Number::intValue);
+		}
+
+		if (resultType instanceof ResultType.NumericT){
+			return Comparator.comparingDouble(Number::doubleValue);
+		}
+
+		if (resultType instanceof ResultType.MoneyT){
+			return Comparator.comparingDouble(Number::doubleValue);
+		}
+
+		throw new IllegalArgumentException("Cannot handle result type %s".formatted(resultType.toString()));
 	}
 
 	@Override
@@ -32,17 +53,16 @@ class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
 			return;
 		}
 
-
-
 		statistics.addValue(value.doubleValue());
 
 		if (samplePicker.getAsBoolean()) {
-			samples.add(value);
+			samples.add((TYPE) value);
 		}
 	}
 
 	@Override
 	public ResultColumnStatistics describe() {
+		samples.sort(comparator);
 		return new ColumnDescription(getName(), getLabel(), getDescription(), getType().toString(),
 									 (int) (getStatistics().getN() + getNulls().get()),
 									 getNulls().intValue(),
@@ -66,9 +86,9 @@ class NumberColumnStatsCollector extends ColumnStatsCollector<Number> {
 		private final Number min;
 		private final Number max;
 
-		private final Collection<Number> samples;
+		private final Collection<? extends Number> samples;
 
-		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, double mean, double median, double stdDev, Number min, Number max, Collection<Number> samples) {
+		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, double mean, double median, double stdDev, Number min, Number max, Collection<? extends Number> samples) {
 			super(name, label, description, type);
 			this.count = count;
 			this.nullValues = nullValues;
