@@ -21,6 +21,7 @@ import { PreviewStateT } from "./reducer";
 import DiagramModal from "./DiagramModal";
 import FaIcon from "../icon/FaIcon";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import ScrollBox from "./ScrollBox";
 
 const FullScreen = styled("div")`
   height: 100%;
@@ -42,13 +43,13 @@ const Headline = styled("div")`
   gap: 30px;
 `;
 
-const ScrollBox = styled("div")`
-  overflow: auto;
+const SxScrollBox = styled(ScrollBox)`
   padding: 60px 20px 20px 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 `;
+
 const SxCharts = styled(Charts)`
   width: 100%;
   background-color: white;
@@ -81,7 +82,7 @@ export default function Preview() {
   const [query] = useState<number>(12);
   const [statistics, setStatistics] =
     useState<PreviewStatisticsResponse | null>(null);
-  
+
   const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
 
@@ -108,7 +109,7 @@ export default function Preview() {
 
   return (
     <FullScreen>
-      <ScrollBox>
+      <SxScrollBox>
         <PreviewInfo
           rawPreviewData={[]}
           columns={[]}
@@ -116,42 +117,38 @@ export default function Preview() {
           minDate={new Date()}
           maxDate={new Date()}
         />
-         <PreviewInfo
-        rawPreviewData={[]}
-        columns={[]}
-        onClose={onClose}
-        minDate={new Date()}
-        maxDate={new Date()}
-      />
-      <Headline>
-        <TransparentButton small onClick={onClose}>
-          {t("common.back")}
-        </TransparentButton>
-        Ergebnisvorschau
-        <HeadlineStats statistics={statistics} />
-      </Headline>
-      SelectBox (Konzept Liste)
-      {statistics && statistics.statistics ? (
-        <SxCharts
-          statistics={statistics.statistics}
-          showPopup={(statistic: PreviewStatistics) => {
-            setPopOver(statistic);
-          }}
-        /> 
-      ) : (
-        <SxChartLoadingBlocker>
-            <SxFaIcon icon={faSpinner} />
-        </SxChartLoadingBlocker>
-      )
-      }
-      {popOver && (
-        <DiagramModal
-          statistic={popOver}
-          onClose={() => setPopOver(null)}
+        <PreviewInfo
+          rawPreviewData={[]}
+          columns={[]}
+          onClose={onClose}
+          minDate={new Date()}
+          maxDate={new Date()}
         />
-      )}
+        <Headline>
+          <TransparentButton small onClick={onClose}>
+            {t("common.back")}
+          </TransparentButton>
+          Ergebnisvorschau
+          <HeadlineStats statistics={statistics} />
+        </Headline>
+        SelectBox (Konzept Liste)
+        {statistics && statistics.statistics ? (
+          <SxCharts
+            statistics={statistics.statistics}
+            showPopup={(statistic: PreviewStatistics) => {
+              setPopOver(statistic);
+            }}
+          />
+        ) : (
+          <SxChartLoadingBlocker>
+            <SxFaIcon icon={faSpinner} />
+          </SxChartLoadingBlocker>
+        )}
+        {popOver && (
+          <DiagramModal statistic={popOver} onClose={() => setPopOver(null)} />
+        )}
         {preview.tableData && <Table data={preview.tableData} />}
-      </ScrollBox>
+      </SxScrollBox>
     </FullScreen>
   );
 }

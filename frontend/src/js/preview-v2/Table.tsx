@@ -8,20 +8,12 @@ interface Props {
 
 const Root = styled("div")`
   flex-grow: 1;
-  min-height: 500px;
-  position: relative;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
-  overflow: auto;
 `;
 
 const StyledTable = styled("table")`
   width: 100%;
   border-spacing: 0;
-
-  thead {
-    position: sticky;
-    top: 0;
-  }
 
   th {
     padding: 10px;
