@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
@@ -16,9 +16,10 @@ import { SnackMessageType } from "../snack-message/reducer";
 import Charts from "./Charts";
 import DiagramModal from "./DiagramModal";
 import HeadlineStats from "./HeadlineStats";
-import SelectBox from "./SelectBox";
+import SelectBox, { SelectItem } from "./SelectBox";
 import Table from "./Table";
 import { closePreview } from "./actions";
+import { set } from "date-fns";
 
 const FullScreen = styled("div")`
   height: 100%;
@@ -80,15 +81,24 @@ export default function Preview() {
     useState<PreviewStatisticsResponse | null>(null);
 
   const [selectedStatistics, setSelectedStatistics] = useState<
-    PreviewStatistics[]
-  >([]);
+    SelectItem[]
+    >([]);
+  
+  const [selectBoxOpen, setSelectBoxOpen] = useState<boolean>(false);
 
   const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
-
+  
   useHotkeys("esc", () => {
     onClose();
   });
+
+  const shownStatistics = useMemo(() => {
+    if (statistics?.statistics === undefined) return [];
+    return statistics.statistics.filter((stat) =>
+      selectedStatistics.some((selected) => selected.name === stat.name),
+    );
+  }, [selectedStatistics, statistics]);
 
   useEffect(() => {
     async function fetchData() {
@@ -130,7 +140,11 @@ export default function Preview() {
         <SxSelectBox
           items={statistics?.statistics ?? ([] as PreviewStatistics[])}
           selected={selectedStatistics}
-          onChange={() => console.log("changed")}
+          onChange={(res) => setSelectedStatistics(res)}
+          isOpen={selectBoxOpen}
+          setIsOpen={(val) => {
+            setSelectBoxOpen(val);
+          }}
         />
         {statistics === null ? (
           <HeadlineStats loading={true} />
@@ -148,7 +162,7 @@ export default function Preview() {
       </Headline>
       {statistics ? (
         <SxCharts
-          statistics={statistics.statistics}
+          statistics={shownStatistics}
           showPopup={(statistic: PreviewStatistics) => {
             console.log(statistic);
             setPopOver(statistic);

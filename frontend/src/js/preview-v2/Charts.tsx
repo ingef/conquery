@@ -13,7 +13,7 @@ const Root = styled("div")``;
 const SxDiagram = styled(Diagram)`
   padding: 5px;
   margin-right: 15px;
-  height: 30vh;
+  height: 27vh;
 `;
 
 const DirectionSelector = styled("div")`
@@ -61,6 +61,7 @@ export default function Charts({ statistics, className, showPopup }: ChartProps)
             icon={faArrowLeft}
             onClick={() => setIndex(index - 1)}
             disabled={index === 0}
+            large
           />
           <span>
             {t("preview.page")} {index + 1}/{Math.ceil(statistics.length / 4)}
@@ -69,6 +70,7 @@ export default function Charts({ statistics, className, showPopup }: ChartProps)
             icon={faArrowRight}
             onClick={() => setIndex(index + 1)}
             disabled={(index + 1) * 4 >= statistics.length}
+            large
           />
         </DirectionSelector>
       </Root>

@@ -3,10 +3,10 @@ import { SetStateAction, useMemo, useRef, useState } from "react";
 
 import { Input } from "../ui-components/InputSelect/InputSelectComponents";
 import FaIcon from "../icon/FaIcon";
-import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
+import { faCaretDown, faCaretUp, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 
-interface SelectItem {
+export interface SelectItem {
   label: string;
   name: string; // Used as key
 }
@@ -14,14 +14,17 @@ interface SelectItem {
 interface SelectBoxProps<T extends SelectItem> {
   items: T[];
   selected: T[];
-  onChange: (item: T) => void;
+  onChange: (item: T[]) => void;
   className?: string;
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
 }
 
 const Root = styled("div")`
   display: flex;
   min-height: 30px;
   flex-direction: column;
+  width: 20vw;
 `;
 
 const InputContainer = styled("div")`
@@ -30,20 +33,20 @@ const InputContainer = styled("div")`
 `;
 
 // TODO combine Margin
-const DropDownContainer = styled("div")`
+const List = styled("div")`
   position: absolute;
   z-index: 1;
-  margin: 5px;
-  margin-top: 30px;
+  margin-top: 35px;
   background-color: white;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  border-radius: ${({ theme }) => theme.borderRadius};
   clip-path: inset(0px -8px -8px -8px);
   display: flex;
   flex-direction: column;
   gap: 5px;
   max-height: 40vh;
   overflow-y: auto;
-  width: 200px;
+  width: 20vw;
 `;
 
 const SxInput = styled(Input)`
@@ -60,23 +63,30 @@ const SxArrow = styled(FaIcon)`
   cursor: pointer;
 `;
 
+const SxCheckmark = styled(FaIcon)<{showCheckmark?: boolean}>`
+  color: ${({ theme }) => theme.col.gray};
+  visibility: ${({ showCheckmark }) => showCheckmark ? "visible" : "hidden"};
+  margin: 0 5px;
+`;
+
 export default function SelectBox<T extends SelectItem>({
   items,
   selected,
   onChange,
   className,
+  isOpen,
+  setIsOpen,
 }: SelectBoxProps<T>) {
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [isOpen, setIsOpen] = useState<boolean>(false);
   const clickOutsideRef = useRef(null);
   useClickOutside(clickOutsideRef, () => setIsOpen(false));
 
   const displayedItems = useMemo(() => {
-    return items.filter((item) => item.name.includes(searchTerm));
+    return items.filter((item) => item.label.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [items, searchTerm]);
 
   return (
-    <Root className={className} onClick={() => setIsOpen(!isOpen)} ref={clickOutsideRef}>
+    <Root className={className} onClick={() => setIsOpen(true)} >
       <InputContainer>
         <SxInput
           type="text"
@@ -91,15 +101,27 @@ export default function SelectBox<T extends SelectItem>({
           <SxArrow icon={isOpen ? faCaretUp : faCaretDown}/>
         </ArrowContainer>
       </InputContainer>
-      {/*  use Menu container?! */}
-      <DropDownContainer>
+      <List ref={clickOutsideRef}>
         {isOpen && (
             displayedItems.map((item) => {
-              return (<div key={item.name}>{item.label}</div>)
+              return (<div key={item.name}
+                onClick={() => {
+                  let newSelected = [...selected];
+                  if(selected.includes(item)) {
+                    newSelected = newSelected.filter((i) => i !== item);
+                  } else {
+                    newSelected.push(item);
+                  }
+                  onChange(newSelected);
+                }}
+              >
+                <SxCheckmark icon={faCheck} showCheckmark={ selected.some((selected) => selected.name === item.name) } />
+                {item.label}
+              </div>)
             })    
           )  
         }
-      </DropDownContainer>
+      </List>
     </Root>
   );
 }
