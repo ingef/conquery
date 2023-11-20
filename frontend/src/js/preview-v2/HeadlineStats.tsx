@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
+import { t } from "i18next";
 
 import { DateRangeT } from "../api/types";
 import { getDiffInDays, parseDate } from "../common/helpers/dateHelper";
-import { t } from "i18next";
 
 const Root = styled("div")`
   display: flex;
@@ -47,7 +47,7 @@ export default function HeadlineStats(
         <Key>Zeilen:</Key>
         <Key>Min Datum:</Key>
         <Key>Max Datum:</Key>
-        <Key>Darumgsbereich:</Key>
+        <Key>Datumsbereich:</Key>
         <Key>Fehlende Werte:</Key>
       </Root>
     );
@@ -55,7 +55,10 @@ export default function HeadlineStats(
 
   const parseDateToLocaleString = (date: string | undefined) => {
     if (date) {
-      return parseDate(date, "yyyy-MM-dd")?.toLocaleDateString("de-de") ?? t("preview.dateError");
+      return (
+        parseDate(date, "yyyy-MM-dd")?.toLocaleDateString("de-de") ??
+        t("preview.dateError")
+      );
     }
     return t("preview.dateError");
   };
@@ -66,29 +69,29 @@ export default function HeadlineStats(
   return (
     <Root>
       <MetaValue>
-      <Key>Zeilen:</Key>
-      {numberOfRows}
+        <Key>Zeilen:</Key>
+        {numberOfRows}
       </MetaValue>
       <MetaValue>
-      <Key>Min Datum:</Key>
-        { parseDateToLocaleString(dateRange.min)}
+        <Key>Min Datum:</Key>
+        {parseDateToLocaleString(dateRange.min)}
       </MetaValue>
       <MetaValue>
-      <Key>Max Datum:</Key>
+        <Key>Max Datum:</Key>
         {parseDateToLocaleString(dateRange.max)}
       </MetaValue>
       <MetaValue>
-      <Key>Darumgsbereich:</Key>
-      {dateRange.min && dateRange.max
-        ? `${getDiffInDays(
-            parseDate(dateRange.max, "yyyy-MM-dd") ?? new Date(),
-            parseDate(dateRange.min, "yyyy-MM-dd") ?? new Date(),
-        )} ${t("common.timeUnitDays")}`
-          : t("preview.dateError") }
+        <Key>Datumsbereich:</Key>
+        {dateRange.min && dateRange.max
+          ? `${getDiffInDays(
+              parseDate(dateRange.max, "yyyy-MM-dd") ?? new Date(),
+              parseDate(dateRange.min, "yyyy-MM-dd") ?? new Date(),
+            )} ${t("common.timeUnitDays")}`
+          : t("preview.dateError")}
       </MetaValue>
       <MetaValue>
-      <Key>Fehlende Werte:</Key>
-      {missingValues}
+        <Key>Fehlende Werte:</Key>
+        {missingValues}
       </MetaValue>
     </Root>
   );

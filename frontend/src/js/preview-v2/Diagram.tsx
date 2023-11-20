@@ -10,6 +10,7 @@ import {
 } from "../api/types";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
 import pdfast, { createPdfastOptions } from "pdfast";
+import { formatNumber } from "./util";
 
 type DiagramProps = {
   stat: PreviewStatistics;
@@ -57,7 +58,6 @@ function transformNumberStatsToData(
     width: 2 // TODO calculate this?!?!
   };
   const pdf: {x: number, y: number}[] = pdfast.create(stats.samples.sort((a,b) => a-b), options);
-  console.log(pdf);
   const labels = pdf.map((p) => p.x.toPrecision(DIGITS_OF_PRECISION));
   const values = pdf.map((p) => p.y);
   return {
@@ -122,10 +122,10 @@ export default function Diagram({
             padding: 10,
             callbacks: {
               label: (context: any) => {
-                const label = context.dataset.label || context.label || "";
-                return `${label}: ${(context.raw as number).toFixed(
-                  DIGITS_OF_PRECISION,
-                )}`;
+                console.log(context);
+                console.log(typeof context.dataset.label)
+                const label = formatNumber(context.parsed.x) || context.dataset.label || context.label || "";
+                return `${label}: ${formatNumber(context.raw as number)}`;
               },
             },
             caretSize: 0,
@@ -167,9 +167,7 @@ export default function Diagram({
             callbacks: {
               label: (context: any) => {
                 const label = context.dataset.label || context.label || "";
-                return `${label}: ${(context.raw as number).toFixed(
-                  DIGITS_OF_PRECISION,
-                )}`;
+                return `${label}: ${formatNumber(context.raw as number)}`;
               },
             },
             caretSize: 0,

@@ -28,6 +28,10 @@ const DirectionSelector = styled("div")`
   padding-right: 100px;
 `;
 
+const SxIconButton = styled(IconButton)`
+  font-size: 24px;
+`;
+
 const DiagramContainer = styled("div")`
   overflow-x: hidden;
   display: grid;
@@ -57,20 +61,18 @@ export default function Charts({ statistics, className, showPopup }: ChartProps)
           })}
         </DiagramContainer>
         <DirectionSelector>
-          <IconButton
+          <SxIconButton
             icon={faArrowLeft}
             onClick={() => setIndex(index - 1)}
             disabled={index === 0}
-            large
           />
           <span>
             {t("preview.page")} {index + 1}/{Math.ceil(statistics.length / 4)}
           </span>
-          <IconButton
+          <SxIconButton
             icon={faArrowRight}
             onClick={() => setIndex(index + 1)}
             disabled={(index + 1) * 4 >= statistics.length}
-            large
           />
         </DirectionSelector>
       </Root>
