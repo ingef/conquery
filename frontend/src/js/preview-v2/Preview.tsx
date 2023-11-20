@@ -19,7 +19,6 @@ import HeadlineStats from "./HeadlineStats";
 import SelectBox, { SelectItem } from "./SelectBox";
 import Table from "./Table";
 import { closePreview } from "./actions";
-import { set } from "date-fns";
 
 const FullScreen = styled("div")`
   height: 100%;

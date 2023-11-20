@@ -9,6 +9,7 @@ import {
   StringStatistics,
 } from "../api/types";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
+import pdfast, { createPdfastOptions } from "pdfast";
 
 type DiagramProps = {
   stat: PreviewStatistics;
@@ -18,7 +19,7 @@ type DiagramProps = {
   width?: string | number;
 };
 
-const NORMAL_DISTRIBUTION_STEPS = 80;
+const PDF_POINTS = 40;
 const DIGITS_OF_PRECISION = 3;
 
 function previewStatsIsStringStats(
@@ -46,38 +47,19 @@ function transformStringStatsToData(stats: StringStatistics): ChartData<"bar"> {
   };
 }
 
-function interpolateNormalDistribution(
-  mean: number,
-  stddev: number,
-  steps: number,
-): { labels: string[]; values: number[] } {
-  // each value is given by the function f(x) = 1/(σ * sqrt(2π)) * e^(-(x-μ)^2/(2σ^2))
-  // with μ = mean and σ = stddev
-  // we calculate the value for each step between mean - 3σ and mean + 3σ
-  const values = [];
-  const labels = [];
-  const stepSize = (6 * stddev) / steps;
-  let x = mean - 3 * stddev;
-  for (let i = 0; i < steps; i++) {
-    values.push(
-      (1 / (stddev * Math.sqrt(2 * Math.PI))) *
-        Math.exp(-Math.pow(x - mean, 2) / (2 * Math.pow(stddev, 2))),
-    );
-    labels.push(x.toPrecision(DIGITS_OF_PRECISION));
-    x += stepSize;
-  }
-
-  return { labels, values };
-}
-
 function transformNumberStatsToData(
   stats: NumberStatistics,
 ): ChartData<"line"> {
-  const { labels, values } = interpolateNormalDistribution(
-    stats.mean,
-    stats.stddev,
-    NORMAL_DISTRIBUTION_STEPS,
-  );
+  const options: createPdfastOptions = {
+    min: stats.min,
+    max: stats.max,
+    size: PDF_POINTS,
+    width: 2 // TODO calculate this?!?!
+  };
+  const pdf: {x: number, y: number}[] = pdfast.create(stats.samples.sort((a,b) => a-b), options);
+  console.log(pdf);
+  const labels = pdf.map((p) => p.x.toPrecision(DIGITS_OF_PRECISION));
+  const values = pdf.map((p) => p.y);
   return {
     labels,
     datasets: [

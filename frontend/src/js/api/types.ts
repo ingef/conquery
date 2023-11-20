@@ -597,6 +597,7 @@ export type NumberStatistics = {
   median: number;
   min: number;
   max: number;
+  samples: number[];
 }
 
 export type StringStatistics = {
