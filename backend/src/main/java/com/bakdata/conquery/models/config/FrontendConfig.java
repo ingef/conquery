@@ -33,6 +33,9 @@ public class FrontendConfig {
 	@Min(0)
 	private int observationPeriodYears = 6;
 
+	@Min(0)
+	private int visualisationSamples = 1000;
+
 	/**
 	 * The url that points a manual. This is also used by the {@link FormScanner}
 	 * as the base url for forms that specify a relative url. Internally {@link URI#resolve(URI)}

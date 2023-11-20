@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -588,9 +589,22 @@ public class QueryProcessor {
 		final Query query = managedQuery.getQuery();
 		final List<ResultInfo> resultInfos = query.getResultInfos();
 
-		final Random random = new Random();
-		final int requiredSamples = 80; // TODO config
-		final BooleanSupplier samplePicker = () -> random.nextInt(managedQuery.getLastResultCount().intValue()) < requiredSamples;
+		final RandomGenerator random = new Random();
+		final int requiredSamples = config.getFrontend().getVisualisationSamples();
+
+
+		final int totalSamples = managedQuery.getLastResultCount().intValue();
+
+		//We collect about $requiredSamples values as samples for visualisation, while streaming the values.
+		// Note that nextInt produces values > 0 and < totalSamples. This is equivalent to `P(k) = $requiredSamples/$totalSamples` but terser.
+		final BooleanSupplier samplePicker;
+
+		if (totalSamples <= requiredSamples) {
+			samplePicker = () -> true;
+		}
+		else {
+			samplePicker = () -> random.nextInt(totalSamples) < requiredSamples;
+		}
 
 		final boolean hasValidityDates = resultInfos.get(0).getSemantics().contains(new SemanticType.EventDateT());
 		final ResultType dateType = resultInfos.get(0).getType();
