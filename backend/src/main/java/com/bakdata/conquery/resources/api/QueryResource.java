@@ -18,15 +18,16 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.MetaDataPatch;
 import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
 import com.bakdata.conquery.apiv1.execution.FullExecutionStatus;
-import com.bakdata.conquery.apiv1.query.statistics.ResultStatistics;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import io.dropwizard.auth.Auth;
@@ -59,7 +60,7 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}/statistics")
-	public ResultStatistics getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
+	public Response getDescription(@Auth Subject subject, @PathParam(QUERY) ManagedExecution query) {
 
 		if (!(query instanceof ManagedQuery)) {
 			throw new BadRequestException("Statistics is only available for %s".formatted(ManagedQuery.class.getSimpleName()));
@@ -68,9 +69,11 @@ public class QueryResource {
 		subject.authorize(query.getDataset(), Ability.READ);
 		subject.authorize(query, Ability.READ);
 
-		query.awaitDone(1, TimeUnit.SECONDS);
+		if(query.awaitDone(1, TimeUnit.SECONDS) != ExecutionState.DONE){
+			return Response.status(Response.Status.CONFLICT).build(); // Request was submitted too early.
+		}
 
-		return processor.getResultStatistics(((ManagedQuery) query));
+		return Response.ok((processor.getResultStatistics(((ManagedQuery) query)))).build();
 	}
 
 	@PATCH
