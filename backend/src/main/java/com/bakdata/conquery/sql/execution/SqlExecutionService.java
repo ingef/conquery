@@ -87,7 +87,7 @@ public class SqlExecutionService {
 	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultType> resultTypes, int columnCount) throws SQLException {
 
 		int rowNumber = resultSet.getRow();
-		String id = resultSet.getObject(PID_COLUMN_INDEX).toString();
+		String id = resultSet.getString(PID_COLUMN_INDEX);
 		Object[] resultRow = new Object[columnCount - 1];
 
 		for (int resultSetIndex = VALUES_OFFSET_INDEX; resultSetIndex <= columnCount; resultSetIndex++) {
