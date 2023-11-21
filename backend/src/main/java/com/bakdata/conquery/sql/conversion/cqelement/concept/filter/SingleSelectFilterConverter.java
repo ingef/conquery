@@ -4,12 +4,12 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SingleSelectFilter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 
 public class SingleSelectFilterConverter implements FilterConverter<String, SingleSelectFilter> {
 
 	@Override
-	public ConceptFilter convert(SingleSelectFilter singleSelect, FilterContext<String> context) {
+	public SqlFilters convert(SingleSelectFilter singleSelect, FilterContext<String> context) {
 		return SelectFilterUtil.convert(singleSelect, context, new String[]{context.getValue()});
 	}
 
