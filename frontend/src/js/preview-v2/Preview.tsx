@@ -79,25 +79,15 @@ export default function Preview() {
   const [statistics, setStatistics] =
     useState<PreviewStatisticsResponse | null>(null);
 
-  const [selectedStatistics, setSelectedStatistics] = useState<
-    SelectItem[]
-    >([]);
   
   const [selectBoxOpen, setSelectBoxOpen] = useState<boolean>(false);
-
+  const [page, setPage] = useState<number>(0);
   const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
   
   useHotkeys("esc", () => {
     onClose();
   });
-
-  const shownStatistics = useMemo(() => {
-    if (statistics?.statistics === undefined) return [];
-    return statistics.statistics.filter((stat) =>
-      selectedStatistics.some((selected) => selected.name === stat.name),
-    );
-  }, [selectedStatistics, statistics]);
 
   useEffect(() => {
     async function fetchData() {
@@ -117,9 +107,7 @@ export default function Preview() {
   }, [query, dispatch, getStats, t]);
 
   useEffect(() => {
-    if (statistics) {
-      setSelectedStatistics(statistics.statistics);
-    }
+    setPage(0);
   }, [statistics]);
 
   return (
@@ -138,12 +126,17 @@ export default function Preview() {
         Ergebnisvorschau
         <SxSelectBox
           items={statistics?.statistics ?? ([] as PreviewStatistics[])}
-          selected={selectedStatistics}
-          onChange={(res) => setSelectedStatistics(res)}
-          isOpen={selectBoxOpen}
-          setIsOpen={(val) => {
-            setSelectBoxOpen(val);
+          onChange={(res) => {
+            const index = statistics?.statistics.findIndex(
+              (stat) => stat.name === res.name,
+            );
+            if (index !== undefined && index !== null) {
+              setPage(Math.floor(index / 4));
+              setSelectBoxOpen(false);
+            }
           }}
+          isOpen={selectBoxOpen}
+          setIsOpen={setSelectBoxOpen}
         />
         {statistics === null ? (
           <HeadlineStats loading={true} />
@@ -161,11 +154,12 @@ export default function Preview() {
       </Headline>
       {statistics ? (
         <SxCharts
-          statistics={shownStatistics}
+          statistics={statistics.statistics}
           showPopup={(statistic: PreviewStatistics) => {
-            console.log(statistic);
             setPopOver(statistic);
           }}
+          page={page}
+          setPage={setPage}
         />
       ) : (
         <SxChartLoadingBlocker>

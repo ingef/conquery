@@ -43,16 +43,16 @@ type ChartProps = {
   statistics: PreviewStatistics[];
   className?: string;
   showPopup: (statistic: PreviewStatistics) => void;
+  page: number;
+  setPage: (page: number) => void;
 };
 
-export default function Charts({ statistics, className, showPopup }: ChartProps) {
-  const [index, setIndex] = useState<number>(0);
-
+export default function Charts({ statistics, className, showPopup, page, setPage }: ChartProps) {
   return (
     <>
       <Root className={className}>
         <DiagramContainer>
-          {statistics.slice(index * 4, (index + 1) * 4).map((statistic) => {
+          {statistics.slice(page * 4, (page + 1) * 4).map((statistic) => {
             return (
               <div key={statistic.name}>
                 <SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />
@@ -63,16 +63,16 @@ export default function Charts({ statistics, className, showPopup }: ChartProps)
         <DirectionSelector>
           <SxIconButton
             icon={faArrowLeft}
-            onClick={() => setIndex(index - 1)}
-            disabled={index === 0}
+            onClick={() => setPage(page - 1)}
+            disabled={page === 0}
           />
           <span>
-            {t("preview.page")} {index + 1}/{Math.ceil(statistics.length / 4)}
+            {t("preview.page")} {page + 1}/{Math.ceil(statistics.length / 4)}
           </span>
           <SxIconButton
             icon={faArrowRight}
-            onClick={() => setIndex(index + 1)}
-            disabled={(index + 1) * 4 >= statistics.length}
+            onClick={() => setPage(page + 1)}
+            disabled={(page + 1) * 4 >= statistics.length}
           />
         </DirectionSelector>
       </Root>

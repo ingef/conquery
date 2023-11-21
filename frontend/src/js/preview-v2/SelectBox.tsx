@@ -13,8 +13,7 @@ export interface SelectItem {
 
 interface SelectBoxProps<T extends SelectItem> {
   items: T[];
-  selected: T[];
-  onChange: (item: T[]) => void;
+  onChange: (item: T) => void;
   className?: string;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
@@ -49,6 +48,10 @@ const List = styled("div")`
   width: 20vw;
 `;
 
+const ListItem = styled("div")`
+  margin-left: 5px;
+`;
+
 const SxInput = styled(Input)`
   margin-top: 5px;
   width: 190px;
@@ -63,15 +66,9 @@ const SxArrow = styled(FaIcon)`
   cursor: pointer;
 `;
 
-const SxCheckmark = styled(FaIcon)<{showCheckmark?: boolean}>`
-  color: ${({ theme }) => theme.col.gray};
-  visibility: ${({ showCheckmark }) => showCheckmark ? "visible" : "hidden"};
-  margin: 0 5px;
-`;
 
 export default function SelectBox<T extends SelectItem>({
   items,
-  selected,
   onChange,
   className,
   isOpen,
@@ -86,7 +83,7 @@ export default function SelectBox<T extends SelectItem>({
   }, [items, searchTerm]);
 
   return (
-    <Root className={className} onClick={() => setIsOpen(true)} >
+    <Root className={className} onClick={() => setIsOpen(!isOpen)} >
       <InputContainer>
         <SxInput
           type="text"
@@ -104,20 +101,11 @@ export default function SelectBox<T extends SelectItem>({
       <List ref={clickOutsideRef}>
         {isOpen && (
             displayedItems.map((item) => {
-              return (<div key={item.name}
-                onClick={() => {
-                  let newSelected = [...selected];
-                  if(selected.includes(item)) {
-                    newSelected = newSelected.filter((i) => i !== item);
-                  } else {
-                    newSelected.push(item);
-                  }
-                  onChange(newSelected);
-                }}
+              return (<ListItem key={item.name}
+                onClick={() => onChange(item)}
               >
-                <SxCheckmark icon={faCheck} showCheckmark={ selected.some((selected) => selected.name === item.name) } />
                 {item.label}
-              </div>)
+              </ListItem>)
             })    
           )  
         }
