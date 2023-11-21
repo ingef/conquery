@@ -11,7 +11,6 @@ import com.bakdata.conquery.mode.ManagerProvider;
 import com.bakdata.conquery.mode.NamespaceHandler;
 import com.bakdata.conquery.mode.StorageListener;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.ClusterHealthCheck;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -27,8 +26,7 @@ public class ClusterManagerProvider implements ManagerProvider {
 		final JobManager jobManager = ManagerProvider.newJobManager(config);
 		final InternalObjectMapperCreator creator = ManagerProvider.newInternalObjectMapperCreator(config, environment.getValidator());
 		final ClusterState clusterState = new ClusterState();
-		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
-		final NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(clusterState, config, creator, indexService);
+		final NamespaceHandler<DistributedNamespace> namespaceHandler = new ClusterNamespaceHandler(clusterState, config, creator);
 		final DatasetRegistry<DistributedNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
 		creator.init(datasetRegistry);
 

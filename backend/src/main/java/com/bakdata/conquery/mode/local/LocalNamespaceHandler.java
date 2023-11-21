@@ -21,10 +21,8 @@ public class LocalNamespaceHandler implements NamespaceHandler<LocalNamespace> {
 	private final InternalObjectMapperCreator mapperCreator;
 	private final SqlContext sqlContext;
 
-	private final IndexService indexService;
-
 	@Override
-	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage) {
+	public LocalNamespace createNamespace(NamespaceStorage namespaceStorage, MetaStorage metaStorage, IndexService indexService) {
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(namespaceStorage, config, mapperCreator, indexService);
 		ExecutionManager executionManager = new SqlExecutionManager(sqlContext, metaStorage);
 		return new LocalNamespace(

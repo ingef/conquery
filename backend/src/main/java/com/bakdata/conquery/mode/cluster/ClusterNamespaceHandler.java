@@ -22,10 +22,8 @@ public class ClusterNamespaceHandler implements NamespaceHandler<DistributedName
 	private final ConqueryConfig config;
 	private final InternalObjectMapperCreator mapperCreator;
 
-	private final IndexService indexService;
-
 	@Override
-	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage) {
+	public DistributedNamespace createNamespace(NamespaceStorage storage, final MetaStorage metaStorage, IndexService indexService) {
 		NamespaceSetupData namespaceData = NamespaceHandler.createNamespaceSetup(storage, config, mapperCreator, indexService);
 		DistributedExecutionManager executionManager = new DistributedExecutionManager(metaStorage, clusterState);
 		WorkerHandler workerHandler = new WorkerHandler(namespaceData.getCommunicationMapper(), storage);

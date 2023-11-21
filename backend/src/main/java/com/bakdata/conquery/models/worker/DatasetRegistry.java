@@ -23,8 +23,10 @@ import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.IndexService;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.CacheStats;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -49,6 +51,8 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 	private MetaStorage metaStorage;
 	private final NamespaceHandler<N> namespaceHandler;
 
+	private final IndexService indexService;
+
 
 	public N createNamespace(Dataset dataset, Validator validator) throws IOException {
 		// Prepare empty storage
@@ -66,7 +70,7 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 	}
 
 	public N createNamespace(NamespaceStorage datasetStorage) {
-		final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage);
+		final N namespace = namespaceHandler.createNamespace(datasetStorage, metaStorage, indexService);
 		add(namespace);
 		return namespace;
 	}
@@ -112,6 +116,10 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 		return datasets.values();
 	}
 
+	public CacheStats getIndexServiceStatistics() {
+		return indexService.getStatistics();
+	}
+
 	@Override
 	public void close() {
 		for (Namespace namespace : datasets.values()) {
@@ -130,4 +138,7 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 		return super.inject(values).add(DatasetRegistry.class, this);
 	}
 
+	public void resetIndexService() {
+		indexService.evictCache();
+	}
 }

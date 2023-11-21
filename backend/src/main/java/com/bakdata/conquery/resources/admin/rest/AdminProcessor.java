@@ -32,6 +32,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.cache.CacheStats;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvWriter;
 import groovy.lang.GroovyShell;
@@ -302,5 +303,14 @@ public class AdminProcessor {
 		catch (Exception e) {
 			return ExceptionUtils.getStackTrace(e);
 		}
+	}
+
+	public CacheStats getIndexServiceStatistics() {
+		return datasetRegistry.getIndexServiceStatistics();
+	}
+
+	public void resetIndexService() {
+		log.info("Resetting index service");
+		datasetRegistry.resetIndexService();
 	}
 }

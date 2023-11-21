@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public interface NamespaceHandler<N extends Namespace> {
 
-	N createNamespace(NamespaceStorage storage, MetaStorage metaStorage);
+	N createNamespace(NamespaceStorage storage, MetaStorage metaStorage, IndexService indexService);
 
 	void removeNamespace(DatasetId id, N namespace);
 

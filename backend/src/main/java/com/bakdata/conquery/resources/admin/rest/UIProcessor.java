@@ -42,6 +42,7 @@ import com.bakdata.conquery.resources.admin.ui.model.FrontendUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
+import com.google.common.cache.CacheStats;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +69,10 @@ public class UIProcessor {
 
 	public UIContext getUIContext() {
 		return new UIContext(adminProcessor.getNodeProvider());
+	}
+
+	public CacheStats getIndexServiceStatistics() {
+		return adminProcessor.getIndexServiceStatistics();
 	}
 
 	public FrontendAuthOverview getAuthOverview() {
