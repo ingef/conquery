@@ -36,6 +36,9 @@ public interface ResultSetProcessor {
 	static ResultSetMapper getMapper(ResultType resultType) {
 		if (resultType instanceof ResultType.ListT list) {
 			ResultType elementType = list.getElementType();
+			if (elementType instanceof ResultType.DateRangeT) {
+				return (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDateRangeList(resultSet, columnIndex);
+			}
 			return MAPPERS.get(elementType);
 		}
 		return MAPPERS.get(resultType);
@@ -49,7 +52,7 @@ public interface ResultSetProcessor {
 				ResultType.MoneyT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getMoney(resultSet, columnIndex),
 				ResultType.BooleanT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getBoolean(resultSet, columnIndex),
 				ResultType.DateT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDate(resultSet, columnIndex),
-				ResultType.DateRangeT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDateRangeList(resultSet, columnIndex)
+				ResultType.DateRangeT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDateRange(resultSet, columnIndex)
 		);
 	}
 
