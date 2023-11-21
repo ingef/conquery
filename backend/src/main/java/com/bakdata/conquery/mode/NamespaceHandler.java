@@ -29,9 +29,8 @@ public interface NamespaceHandler<N extends Namespace> {
 	/**
 	 * Creates the {@link NamespaceSetupData} that is shared by all {@link Namespace} types.
 	 */
-	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalObjectMapperCreator mapperCreator) {
+	static NamespaceSetupData createNamespaceSetup(NamespaceStorage storage, final ConqueryConfig config, final InternalObjectMapperCreator mapperCreator, IndexService indexService) {
 		List<Injectable> injectables = new ArrayList<>();
-		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
 		injectables.add(indexService);
 		ObjectMapper persistenceMapper = mapperCreator.createInternalObjectMapper(View.Persistence.Manager.class);
 		ObjectMapper communicationMapper = mapperCreator.createInternalObjectMapper(View.InternalCommunication.class);

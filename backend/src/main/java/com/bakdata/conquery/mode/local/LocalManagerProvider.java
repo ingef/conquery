@@ -11,6 +11,7 @@ import com.bakdata.conquery.mode.ManagerProvider;
 import com.bakdata.conquery.mode.NamespaceHandler;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
+import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.LocalNamespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
@@ -34,8 +35,8 @@ public class LocalManagerProvider implements ManagerProvider {
 		DSLContext dslContext = DslContextFactory.create(sqlConnectorConfig);
 		SqlDialect sqlDialect = createSqlDialect(sqlConnectorConfig, dslContext);
 		SqlContext sqlContext = new SqlContext(sqlConnectorConfig, sqlDialect);
-
-		NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, sqlContext);
+		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
+		NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, sqlContext, indexService);
 		DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
 		creator.init(datasetRegistry);
 
