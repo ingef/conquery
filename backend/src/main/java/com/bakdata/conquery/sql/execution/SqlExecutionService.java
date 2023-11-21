@@ -41,7 +41,7 @@ public class SqlExecutionService {
 		String sqlString = sqlQuery.getSqlQuery().getSql();
 		List<ResultType> resultTypes = sqlQuery.getSqlQuery().getResultInfos().stream().map(ResultInfo::getType).toList();
 
-		log.info("Executing query: \n{}", sqlString);
+		log.debug("Executing query: \n{}", sqlString);
 		try (Statement statement = connection.createStatement();
 			 ResultSet resultSet = statement.executeQuery(sqlString)) {
 			int columnCount = resultSet.getMetaData().getColumnCount();
@@ -92,7 +92,8 @@ public class SqlExecutionService {
 
 		for (int resultSetIndex = VALUES_OFFSET_INDEX; resultSetIndex <= columnCount; resultSetIndex++) {
 			int resultTypeIndex = resultSetIndex - VALUES_OFFSET_INDEX;
-			resultRow[resultTypeIndex] = resultTypes.get(resultTypeIndex).getFromResultSet(resultSet, resultSetIndex, this.resultSetProcessor);
+			resultRow[resultTypeIndex] = ResultSetProcessor.getMapper(resultTypes.get(resultTypeIndex))
+														   .getFromResultSet(resultSet, resultSetIndex, this.resultSetProcessor);
 		}
 
 		return new SqlEntityResult(rowNumber, id, resultRow);
