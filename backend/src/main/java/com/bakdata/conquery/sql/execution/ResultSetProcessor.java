@@ -33,7 +33,13 @@ public interface ResultSetProcessor {
 		Object getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException;
 	}
 
-	static ResultSetMapper getMapper(ResultType resultType) {
+	static ResultSetMapper[] getMappers(List<ResultType> resultTypes) {
+		return resultTypes.stream()
+						  .map(ResultSetProcessor::getMappers)
+						  .toArray(ResultSetProcessor.ResultSetMapper[]::new);
+	}
+
+	private static ResultSetMapper getMappers(ResultType resultType) {
 		if (resultType instanceof ResultType.ListT list) {
 			ResultType elementType = list.getElementType();
 			if (elementType instanceof ResultType.DateRangeT) {

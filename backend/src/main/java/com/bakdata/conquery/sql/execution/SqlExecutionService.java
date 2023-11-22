@@ -61,8 +61,9 @@ public class SqlExecutionService {
 
 	private List<EntityResult> createResultTable(ResultSet resultSet, List<ResultType> resultTypes, int columnCount) throws SQLException {
 		List<EntityResult> resultTable = new ArrayList<>(resultSet.getFetchSize());
+		ResultSetProcessor.ResultSetMapper[] mappers = ResultSetProcessor.getMappers(resultTypes);
 		while (resultSet.next()) {
-			SqlEntityResult resultRow = getResultRow(resultSet, resultTypes, columnCount);
+			SqlEntityResult resultRow = getResultRow(resultSet, mappers, columnCount);
 			resultTable.add(resultRow);
 		}
 		return resultTable;
@@ -84,7 +85,7 @@ public class SqlExecutionService {
 		}
 	}
 
-	private SqlEntityResult getResultRow(ResultSet resultSet, List<ResultType> resultTypes, int columnCount) throws SQLException {
+	private SqlEntityResult getResultRow(ResultSet resultSet, ResultSetProcessor.ResultSetMapper[] mappers, int columnCount) throws SQLException {
 
 		int rowNumber = resultSet.getRow();
 		String id = resultSet.getString(PID_COLUMN_INDEX);
@@ -92,8 +93,7 @@ public class SqlExecutionService {
 
 		for (int resultSetIndex = VALUES_OFFSET_INDEX; resultSetIndex <= columnCount; resultSetIndex++) {
 			int resultTypeIndex = resultSetIndex - VALUES_OFFSET_INDEX;
-			resultRow[resultTypeIndex] = ResultSetProcessor.getMapper(resultTypes.get(resultTypeIndex))
-														   .getFromResultSet(resultSet, resultSetIndex, this.resultSetProcessor);
+			resultRow[resultTypeIndex] = mappers[resultTypeIndex].getFromResultSet(resultSet, resultSetIndex, this.resultSetProcessor);
 		}
 
 		return new SqlEntityResult(rowNumber, id, resultRow);
