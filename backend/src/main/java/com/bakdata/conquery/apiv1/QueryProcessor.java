@@ -366,8 +366,7 @@ public class QueryProcessor {
 		subject.authorize(dataset, Ability.PRESERVE_ID);
 
 		final PreviewConfig previewConfig = datasetRegistry.get(dataset.getId()).getPreviewConfig();
-		final EntityPreviewForm
-				form =
+		final EntityPreviewForm form =
 				EntityPreviewForm.create(entity, idKind, dateRange, sources, previewConfig.getSelects(), previewConfig.getTimeStratifiedSelects(), datasetRegistry);
 
 		// TODO make sure that subqueries are also system
