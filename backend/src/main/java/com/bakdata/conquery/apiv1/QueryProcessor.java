@@ -133,7 +133,7 @@ public class QueryProcessor {
 			return out;
 		}
 
-		throw new IllegalStateException("Unexpected datetType %s".formatted(dateType));
+		throw new IllegalStateException("Unexpected date Type %s".formatted(dateType));
 	}
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, Subject subject, boolean allProviders) {
