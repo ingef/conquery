@@ -2,8 +2,11 @@ package com.bakdata.conquery.apiv1.query.statistics;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 public class BooleanColumnStatsCollector extends ColumnStatsCollector<Boolean> {
@@ -12,8 +15,8 @@ public class BooleanColumnStatsCollector extends ColumnStatsCollector<Boolean> {
 	private final AtomicLong falses = new AtomicLong();
 	private final AtomicLong nulls = new AtomicLong(0);
 
-	public BooleanColumnStatsCollector(String name, String label, String description, ResultType type) {
-		super(name, label, description, type);
+	public BooleanColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings) {
+		super(name, label, description, type, printSettings);
 	}
 
 	@Override
@@ -38,7 +41,9 @@ public class BooleanColumnStatsCollector extends ColumnStatsCollector<Boolean> {
 	}
 
 	@Getter
-	static class ColumnDescription extends ResultColumnStatistics {
+	@CPSType(id = "BOOLEAN", base = ResultColumnStatistics.class)
+	@ToString(callSuper = true)
+	public static class ColumnDescription extends ResultColumnStatistics {
 		private final long trues;
 		private final long falses;
 		private final long nulls;

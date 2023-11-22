@@ -4,9 +4,12 @@ import java.util.function.BooleanSupplier;
 
 import javax.annotation.Nullable;
 
+import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
 
 @Data
@@ -15,40 +18,42 @@ public abstract class ColumnStatsCollector<T> {
 	private final String label;
 	private final String description;
 	private final ResultType type;
+	@JsonIgnore
+	private final PrintSettings printSettings;
 
 	public static ColumnStatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, BooleanSupplier samplePicker, ResultType type) {
 		if (type instanceof ResultType.IntegerT) {
-			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker);
+			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker, printSettings);
 		}
 
 		if (type instanceof ResultType.NumericT) {
-			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker);
+			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker, printSettings);
 		}
 
 		if (type instanceof ResultType.MoneyT) {
-			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker);
+			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker, printSettings);
 		}
 
 		if (type instanceof ResultType.StringT) {
-			return new StringColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type);
+			return new StringColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, printSettings);
 		}
 
 		if (type instanceof ResultType.BooleanT) {
-			return new BooleanColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type);
+			return new BooleanColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, printSettings);
 		}
 
 		if (type instanceof ResultType.DateT) {
-			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), samplePicker);
+			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), samplePicker, type, printSettings);
 		}
 
 		if (type instanceof ResultType.DateRangeT) {
-			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), samplePicker);
+			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), samplePicker, type, printSettings);
 		}
 
 		if (type instanceof ResultType.ListT listT){
 			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, samplePicker, listT.getElementType());
 			// name label type are discarded when using ListColumnStatsCollector
-			return new ListColumnStatsCollector<>(null, null, null, type, columnStatsCollector);
+			return new ListColumnStatsCollector<>(null, null, null, type, columnStatsCollector, printSettings);
 		}
 
 		throw new IllegalArgumentException("Don't know how to describe Column of typ %s".formatted(type));
@@ -59,6 +64,8 @@ public abstract class ColumnStatsCollector<T> {
 	public abstract ResultColumnStatistics describe();
 
 	@Data
+	@CPSBase
+	@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "chart")
 	public abstract static class ResultColumnStatistics {
 		private final String name;
 		private final String label;

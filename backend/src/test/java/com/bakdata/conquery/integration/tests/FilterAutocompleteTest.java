@@ -62,9 +62,10 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
 		test.importRequiredData(conquery);
-		final CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		conquery.waitUntilWorkDone();
+
+		final CSVConfig csvConf = conquery.getConfig().getCsv();
 
 		final Concept<?> concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 		final Connector connector = concept.getConnectors().iterator().next();

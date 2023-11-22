@@ -7,12 +7,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
 
+import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
+import lombok.ToString;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 @Getter
-class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends ColumnStatsCollector<Number> {
+public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends ColumnStatsCollector<Number> {
 	private final DescriptiveStatistics statistics = new DescriptiveStatistics();
 	private final AtomicLong nulls = new AtomicLong(0);
 
@@ -23,8 +26,8 @@ class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends
 
 	private final Comparator<TYPE> comparator;
 
-	public NumberColumnStatsCollector(String name, String label, String description, ResultType type, BooleanSupplier samplePicker) {
-		super(name, label, description, type);
+	public NumberColumnStatsCollector(String name, String label, String description, ResultType type, BooleanSupplier samplePicker, PrintSettings printSettings) {
+		super(name, label, description, type, printSettings);
 		this.samplePicker = samplePicker;
 		this.comparator = selectComparator(type);
 	}
@@ -53,6 +56,11 @@ class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends
 			return;
 		}
 
+		// TODO this feels like a pretty borked abstraction
+		if(getType() instanceof ResultType.MoneyT moneyT){
+			value = moneyT.readIntermediateValue(getPrintSettings(), value);
+		}
+
 		statistics.addValue(value.doubleValue());
 
 		if (samplePicker.getAsBoolean()) {
@@ -76,7 +84,9 @@ class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends
 	}
 
 	@Getter
-	static class ColumnDescription extends ColumnStatsCollector.ResultColumnStatistics {
+	@CPSType(id = "DESCRIPTIVE", base = ResultColumnStatistics.class)
+	@ToString(callSuper = true)
+	public static class ColumnDescription extends ColumnStatsCollector.ResultColumnStatistics {
 
 		private final int count;
 		private final int nullValues;

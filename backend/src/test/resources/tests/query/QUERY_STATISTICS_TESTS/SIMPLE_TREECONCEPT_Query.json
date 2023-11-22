@@ -1,0 +1,138 @@
+{
+  "type": "QUERY_TEST",
+  "label": "QUERY_STATISTICS_TESTS Test",
+  "expectedCsv": "tests/query/QUERY_STATISTICS_TESTS/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "concept"
+      ],
+      "tables": [
+        {
+          "id": "concept.connector",
+          "filters": [],
+          "selects" : [
+            "concept.connector.date",
+            "concept.connector.string",
+            "concept.connector.mapped",
+            "concept.connector.int",
+            "concept.connector.real",
+            "concept.connector.decimal",
+            "concept.connector.money"
+          ]
+        }
+      ]
+    }
+  },
+  "internToExternMappings": [
+    {
+      "name": "mapping",
+      "type": "CSV_MAP",
+      "internalColumn": "code",
+      "externalTemplate": "{{external}}",
+      "csv": "classpath:/tests/query/QUERY_STATISTICS_TESTS/mapping.csv"
+    }
+  ],
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "children": [
+      ],
+      "connectors": [
+        {
+          "name": "connector",
+          "table": "table",
+          "selects": [
+            {
+              "name": "date",
+              "column": "table.date",
+              "type": "DISTINCT"
+            },
+            {
+              "name": "string",
+              "column": "table.string",
+              "type": "FIRST"
+            },
+            {
+              "name": "mapped",
+              "column": "table.string",
+              "type": "DISTINCT",
+              "mapping" : "mapping"
+            },
+            {
+              "name": "int",
+              "column": "table.int",
+              "type": "SUM"
+            },
+            {
+              "name": "real",
+              "column": "table.real",
+              "type": "SUM"
+            },
+            {
+              "name": "decimal",
+              "column": "table.decimal",
+              "type": "SUM"
+            },
+            {
+              "name": "money",
+              "column": "table.money",
+              "type": "SUM"
+            }
+          ],
+          "filters": [
+          ],
+          "validityDates": {
+            "name": "datum",
+            "column": "table.date"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/QUERY_STATISTICS_TESTS/content.csv",
+        "name": "table",
+        "primaryColumn": {
+          "name": "id",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "date",
+            "type": "DATE"
+          },
+          {
+            "name": "string",
+            "type": "STRING"
+          },
+          {
+            "name": "mapped",
+            "type": "STRING"
+          },
+          {
+            "name": "int",
+            "type": "INTEGER"
+          },
+          {
+            "name": "real",
+            "type": "REAL"
+          },
+          {
+            "name": "decimal",
+            "type": "DECIMAL"
+          },
+          {
+            "name": "money",
+            "type": "MONEY"
+          }
+        ]
+      }
+    ]
+  }
+}

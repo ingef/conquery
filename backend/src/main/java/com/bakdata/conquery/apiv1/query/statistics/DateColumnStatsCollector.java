@@ -11,11 +11,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
 
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
+import lombok.ToString;
 
 @Getter
 public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
@@ -29,8 +32,8 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 	private final BooleanSupplier samplePicker;
 	private CDateRange span = null;
 
-	public DateColumnStatsCollector(String name, String label, String description, BooleanSupplier samplePicker) {
-		super(name, label, description, ResultType.DateT.INSTANCE);
+	public DateColumnStatsCollector(String name, String label, String description, BooleanSupplier samplePicker, ResultType type, PrintSettings printSettings) {
+		super(name, label, description, type, printSettings);
 		this.samplePicker = samplePicker;
 	}
 
@@ -78,7 +81,9 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 		final int month = date.getMonthValue();
 
 		final String yearQuarter = year + "-" + quarter;
-		final String yearMonth = year + "-" + month;
+		// This code is pretty hot, therefore I want to avoid String.format
+		final String yearMonth = year + "-" + (month < 10 ? "0" : "") + month;
+
 
 		quarterCounts.compute(yearQuarter, (ignored, current) -> current == null ? 1 : current + 1);
 		monthCounts.compute(yearMonth, (ignored, current) -> current == null ? 1 : current + 1);
@@ -104,7 +109,9 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 	}
 
 	@Getter
-	static class ColumnDescription extends ResultColumnStatistics {
+	@CPSType(id = "DATES", base = ResultColumnStatistics.class)
+	@ToString(callSuper = true)
+	public static class ColumnDescription extends ResultColumnStatistics {
 
 		private final int count;
 		private final int nullValues;

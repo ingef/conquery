@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1.query.statistics;
 
 import java.util.Collection;
 
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
 import lombok.ToString;
@@ -14,8 +15,8 @@ public class ListColumnStatsCollector<T> extends ColumnStatsCollector<Collection
 
 	private final ColumnStatsCollector<T> underlying;
 
-	public ListColumnStatsCollector(String name, String label, String description, ResultType type, ColumnStatsCollector<T> underlying) {
-		super(name, label, description, type);
+	public ListColumnStatsCollector(String name, String label, String description, ResultType type, ColumnStatsCollector<T> underlying, PrintSettings printSettings) {
+		super(name, label, description, type, printSettings);
 		this.underlying = underlying;
 	}
 
