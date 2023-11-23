@@ -9,13 +9,20 @@
 				<h3>Statistics</h3>
 				<#assign columns=["name", "value" ]>
 					<#assign items=[
-						{"name":"Hit count", "value":c.hitCount()}
-						{"name":"Miss count", "value":c.missCount()},
-						{"name":"Eviction count", "value":c.evictionCount()},
-						{"name":"Load success count", "value":c.loadSuccessCount()},
-						{"name":"Load exception count", "value":c.loadExceptionCount()},
-						{"name":"Total load time", "value":c.totalLoadTime()}
+						{"name":"Hit count", "value":c.getStats().hitCount()}
+						{"name":"Miss count", "value":c.getStats().missCount()},
+						{"name":"Eviction count", "value":c.getStats().evictionCount()},
+						{"name":"Load success count", "value":c.getStats().loadSuccessCount()},
+						{"name":"Load exception count", "value":c.getStats().loadExceptionCount()},
+						{"name":"Total load time", "value":c.getStats().totalLoadTime()}
 						]>
+						<@table.table columns=columns items=items />
+			</div>
+
+			<div id="index-service-indexes" class="mt-1">
+				<h3>Indexes</h3>
+				<#assign columns=["csv", "internalColumn", "externalTemplate" ]>
+					<#assign items=c.getIndexes() >
 						<@table.table columns=columns items=items />
 			</div>
 		</div>

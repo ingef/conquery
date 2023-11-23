@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -23,6 +24,7 @@ import com.bakdata.conquery.models.datasets.PreviewConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
+import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.index.IndexService;
 import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -114,6 +116,10 @@ public class DatasetRegistry<N extends Namespace> extends IdResolveContext imple
 
 	public Collection<N> getDatasets() {
 		return datasets.values();
+	}
+
+	public Set<IndexKey<?>> getLoadedIndexes() {
+		return indexService.getLoadedIndexes();
 	}
 
 	public CacheStats getIndexServiceStatistics() {

@@ -4,6 +4,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,6 +26,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -303,6 +305,10 @@ public class AdminProcessor {
 		catch (Exception e) {
 			return ExceptionUtils.getStackTrace(e);
 		}
+	}
+
+	public Set<IndexKey<?>> getLoadedIndexes() {
+		return datasetRegistry.getLoadedIndexes();
 	}
 
 	public CacheStats getIndexServiceStatistics() {

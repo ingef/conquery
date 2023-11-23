@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -154,6 +155,10 @@ public class IndexService implements Injectable {
 
 	public CacheStats getStatistics() {
 		return mappings.stats();
+	}
+
+	public Set<IndexKey<?>> getLoadedIndexes() {
+		return mappings.asMap().keySet();
 	}
 
 	@Override
