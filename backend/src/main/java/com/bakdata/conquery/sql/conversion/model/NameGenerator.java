@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -21,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
  * </ul>
  */
 @Slf4j
+@Data
 public class NameGenerator {
 
 	private static final Pattern WHITESPACE = Pattern.compile("\\s+");
