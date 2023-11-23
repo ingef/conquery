@@ -123,12 +123,12 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								"concept string",
 								null,
 								null,
-								new TreeMap<>(Map.of(
+								Map.of(
 										"a", 1L,
 										"b", 1L,
 										"c", 2L,
 										"d", 1L
-								))
+								)
 						),
 						new StringColumnStatsCollector.ColumnDescription(
 								"concept mapped",
@@ -174,11 +174,11 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								1,
 								4,
 								List.of(
-										1d,
-										2d,
-										3d,
-										3d,
-										4d
+										new BigDecimal("1.0"),
+										new BigDecimal("2.0"),
+										new BigDecimal("3.0"),
+										new BigDecimal("3.0"),
+										new BigDecimal("4.0")
 								)
 						),
 						new NumberColumnStatsCollector.ColumnDescription(
@@ -194,11 +194,11 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								1,
 								4,
 								List.of(
-										new BigDecimal("1"),
-										new BigDecimal("2"),
-										new BigDecimal("3"),
-										new BigDecimal("3"),
-										new BigDecimal("4")
+										1,
+										2,
+										3,
+										3,
+										4
 								)
 						),
 						new NumberColumnStatsCollector.ColumnDescription(
@@ -225,7 +225,9 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 				Range.of(LocalDate.of(2021, 1, 1), LocalDate.of(2021, 10, 1))
 		);
 
-		assertThat(results).isEqualTo(expected);
+		assertThat(results)
+				.usingRecursiveComparison()
+				.isEqualTo(expected);
 
 	}
 
