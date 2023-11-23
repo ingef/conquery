@@ -12,7 +12,6 @@ import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.cqelement.aggregation.DateAggregationDates;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDateAggregator;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
-import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -81,7 +80,8 @@ public class QueryStepJoiner {
 				andQueryStep.build(),
 				mergedSelects,
 				dateAggregationDates,
-				dateAggregationAction
+				dateAggregationAction,
+				context.getNameGenerator()
 		);
 
 		return context.withQuerySteps(List.of(mergeIntervalsStep));
@@ -122,7 +122,6 @@ public class QueryStepJoiner {
 	private static List<SqlSelect> mergeSelects(List<QueryStep> querySteps) {
 		return querySteps.stream()
 						 .flatMap(queryStep -> queryStep.getQualifiedSelects().getSqlSelects().stream())
-						 .map(FieldWrapper::unique)
 						 .collect(Collectors.toList());
 	}
 

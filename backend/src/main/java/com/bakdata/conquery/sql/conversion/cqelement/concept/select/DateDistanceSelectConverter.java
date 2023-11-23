@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.DateDistanceSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.select.DateDistanceSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.MinSqlSelect;
@@ -23,20 +24,20 @@ public class DateDistanceSelectConverter implements SelectConverter<DateDistance
 	@Override
 	public SqlSelects convert(DateDistanceSelect dateDistanceSelect, SelectContext context) {
 
+		NameGenerator nameGenerator = context.getNameGenerator();
 
 		SqlSelect rootSelect = new DateDistanceSqlSelect(
 				dateNowSupplier,
-				dateDistanceSelect.getTimeUnit(), context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
+				dateDistanceSelect.getTimeUnit(),
+				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
 				dateDistanceSelect.getColumn(),
-				dateDistanceSelect.getName(),
+				nameGenerator.selectName(dateDistanceSelect),
 				context.getParentContext().getDateRestrictionRange(),
 				context.getParentContext().getSqlDialect().getFunctionProvider()
 		);
 
-		Field<Object>
-				qualifiedDateDistance =
-				context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
-		MinSqlSelect minDateDistance = new MinSqlSelect(qualifiedDateDistance, dateDistanceSelect.getName());
+		Field<Object> qualifiedDateDistance = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		MinSqlSelect minDateDistance = new MinSqlSelect(qualifiedDateDistance, nameGenerator.selectName(dateDistanceSelect));
 
 		ExtractingSqlSelect<Object> firstValueReference = new ExtractingSqlSelect<>(
 				context.getConceptTables().getPredecessor(ConceptCteStep.FINAL),

@@ -29,12 +29,13 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 				numberClass
 		);
 
-		Field<? extends Number> qualifiedRootSelect = context.getConceptTables()
-															 .qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
-		SumSqlSelect sumSqlSelect = new SumSqlSelect(qualifiedRootSelect, sumFilter.getName());
+		Field<? extends Number> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		String alias = context.getNameGenerator().selectName(sumFilter);
+		SumSqlSelect sumSqlSelect = new SumSqlSelect(qualifiedRootSelect, alias);
 
-		Field<? extends Number> qualifiedSumGroupBy = context.getConceptTables()
-															 .qualifyOnPredecessor(ConceptCteStep.AGGREGATION_FILTER, sumSqlSelect.aliased());
+		Field<? extends Number>
+				qualifiedSumGroupBy =
+				context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_FILTER, sumSqlSelect.aliased());
 		SumCondition sumFilterCondition = new SumCondition(qualifiedSumGroupBy, context.getValue());
 
 		return new ConceptFilter(
