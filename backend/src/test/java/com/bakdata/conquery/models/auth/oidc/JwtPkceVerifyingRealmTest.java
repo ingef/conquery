@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.BearerToken;
+import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -254,6 +255,6 @@ class JwtPkceVerifyingRealmTest {
 						  .sign(Algorithm.RSA256(PUBLIC_KEY, PRIVATE_KEY));
 		BearerToken accessToken = new BearerToken(token);
 
-		assertThat(REALM.doGetAuthenticationInfo(accessToken).getPrincipals().getPrimaryPrincipal()).isEqualTo(expected);
+		assertThatCode(() -> REALM.doGetAuthenticationInfo(accessToken)).isInstanceOf(UnsupportedTokenException.class);
 	}
 }
