@@ -129,9 +129,8 @@ public class CsvTableImporter {
 			case STRING -> SQLDataType.VARCHAR(DEFAULT_VARCHAR_LENGTH);
 			case INTEGER -> SQLDataType.INTEGER;
 			case BOOLEAN -> SQLDataType.BOOLEAN;
-			// TODO: temporary workaround until we cast ResultSet elements back
-			case REAL -> SQLDataType.DECIMAL(10, 2);
-			case DECIMAL, MONEY -> SQLDataType.DECIMAL;
+			// TODO (ja) how do we handle REAL and DECIMAL properly?
+			case REAL, DECIMAL, MONEY -> SQLDataType.DECIMAL(10, 2);
 			case DATE -> SQLDataType.DATE;
 			case DATE_RANGE -> new BuiltInDataType<>(DateRange.class, "daterange");
 		};

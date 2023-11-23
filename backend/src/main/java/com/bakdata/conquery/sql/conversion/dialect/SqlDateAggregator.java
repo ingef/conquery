@@ -24,6 +24,6 @@ public interface SqlDateAggregator {
 	/**
 	 * Inverts the validity date of the given base step.
 	 */
-	public QueryStep invertAggregatedIntervals(QueryStep baseStep);
+	QueryStep invertAggregatedIntervals(QueryStep baseStep);
 
 }
