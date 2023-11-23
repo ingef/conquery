@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.auth.oidc;
 
+import java.lang.reflect.Array;
+import java.security.PublicKey;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
@@ -9,20 +15,18 @@ import com.bakdata.conquery.models.config.auth.JwtPkceVerifyingRealmFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authc.*;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.BearerToken;
+import org.apache.shiro.authc.IncorrectCredentialsException;
+import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.pam.UnsupportedTokenException;
 import org.apache.shiro.realm.AuthenticatingRealm;
 import org.keycloak.TokenVerifier;
 import org.keycloak.common.VerificationException;
-import org.keycloak.exceptions.TokenNotActiveException;
+import org.keycloak.jose.JOSEParser;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.JsonWebToken;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 /**
  * This realm uses the configured public key to verify the signature of a provided JWT and extracts informations about
@@ -65,17 +69,27 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 			return null;
 		}
 		JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
+		final BearerToken bearerToken = (BearerToken) token;
+
+		log.trace("Parsing token ({}) to extract kid from header", bearerToken.getToken());
+		final String keyId = JOSEParser.parse(bearerToken.getToken()).getHeader().getKeyId();
+		log.trace("Key id of token signer: {}", keyId);
+		final PublicKey publicKey = idpConfiguration.signingKeys().get(keyId);
+
+		if (publicKey == null) {
+			throw new UnsupportedTokenException("Token was signed by a key with an unknown Id: " + keyId);
+		}
 
 		log.trace("Creating token verifier");
-		TokenVerifier<AccessToken> verifier = TokenVerifier.create(((BearerToken) token).getToken(), AccessToken.class)
-														   .withChecks(new TokenVerifier.RealmUrlCheck(idpConfiguration.getIssuer()), TokenVerifier.SUBJECT_EXISTS_CHECK, activeVerifier)
+		TokenVerifier<AccessToken> verifier = TokenVerifier.create(bearerToken.getToken(), AccessToken.class)
+														   .withChecks(new TokenVerifier.RealmUrlCheck(idpConfiguration.issuer()), TokenVerifier.SUBJECT_EXISTS_CHECK, activeVerifier)
 														   .withChecks(tokenChecks)
-														   .publicKey(idpConfiguration.getPublicKey())
+														   .publicKey(publicKey)
 														   .audience(allowedAudience);
 
 		String subject;
 		log.trace("Verifying token");
-		AccessToken accessToken = null;
+		AccessToken accessToken;
 		try {
 			verifier.verify();
 			accessToken = verifier.getToken();
@@ -91,7 +105,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 			throw new UnsupportedTokenException("Unable to extract a subject from the provided token.");
 		}
 
-		log.trace("Authentication successfull for subject {}", subject);
+		log.trace("Authentication was successful for subject: {}", subject);
 
 
 		UserId userId = new UserId(subject);
@@ -102,7 +116,6 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 		}
 
 		// Try alternative ids
-		List<UserId> alternativeIds = new ArrayList<>();
 		for (String alternativeIdClaim : alternativeIdClaims) {
 			Object altId = accessToken.getOtherClaims().get(alternativeIdClaim);
 			if (!(altId instanceof String)) {
@@ -119,16 +132,5 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 
 		throw new UnknownAccountException("The user id was unknown: " + subject);
 	}
-
-	public static final TokenVerifier.Predicate<JsonWebToken> IS_ACTIVE = new TokenVerifier.Predicate<JsonWebToken>() {
-		@Override
-		public boolean test(JsonWebToken t) throws VerificationException {
-			if (!t.isActive()) {
-				throw new TokenNotActiveException(t, "Token is not active");
-			}
-
-			return true;
-		}
-	};
 
 }
