@@ -1,6 +1,6 @@
 #!/bin/bash
 
 pushd ./frontend
-yarn --ignore-platform --no-progress --frozen-lockfile
-yarn build
+npm ci
+npm run build
 popd

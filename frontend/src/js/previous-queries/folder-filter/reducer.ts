@@ -1,4 +1,4 @@
-import { getType } from "typesafe-actions";
+import { ActionType, getType } from "typesafe-actions";
 
 import type { Action } from "../../app/actions";
 import { getUserSettings, storeUserSettings } from "../../user/userSettings";
@@ -23,6 +23,22 @@ const initialState: PreviousQueriesFolderFilterStateT = {
   areFoldersOpen: getUserSettings().arePreviousQueriesFoldersOpen,
 };
 
+function onRemoveFolderFromFilter(
+  state: PreviousQueriesFolderFilterStateT,
+  payload: ActionType<typeof removeFolderFromFilter>["payload"],
+): PreviousQueriesFolderFilterStateT {
+  const { folders } = state;
+  const idx = folders.indexOf(payload);
+
+  if (idx === -1) return state;
+
+  return {
+    ...state,
+    noFoldersActive: false,
+    folders: [...folders.slice(0, idx), ...folders.slice(idx + 1)],
+  };
+}
+
 const reducer = (
   state: PreviousQueriesFolderFilterStateT = initialState,
   action: Action,
@@ -37,16 +53,7 @@ const reducer = (
         folders: [...state.folders, action.payload],
       };
     case getType(removeFolderFromFilter):
-      const { folders } = state;
-      const idx = folders.indexOf(action.payload);
-
-      if (idx === -1) return state;
-
-      return {
-        ...state,
-        noFoldersActive: false,
-        folders: [...folders.slice(0, idx), ...folders.slice(idx + 1)],
-      };
+      return onRemoveFolderFromFilter(state, action.payload);
     case getType(toggleNoFoldersFilter):
       return { ...state, noFoldersActive: !state.noFoldersActive, folders: [] };
     case getType(toggleFoldersOpen):

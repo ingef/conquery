@@ -32,6 +32,7 @@ import com.bakdata.conquery.models.datasets.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.ui.model.FrontendAuthOverview;
@@ -42,6 +43,7 @@ import com.bakdata.conquery.resources.admin.ui.model.FrontendUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.ImportStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
+import com.google.common.cache.CacheStats;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +70,14 @@ public class UIProcessor {
 
 	public UIContext getUIContext() {
 		return new UIContext(adminProcessor.getNodeProvider());
+	}
+
+	public Set<IndexKey<?>> getLoadedIndexes() {
+		return getAdminProcessor().getLoadedIndexes();
+	}
+
+	public CacheStats getIndexServiceStatistics() {
+		return adminProcessor.getIndexServiceStatistics();
 	}
 
 	public FrontendAuthOverview getAuthOverview() {

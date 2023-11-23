@@ -1,7 +1,7 @@
 {
-  "type": "SQL_TEST",
+  "type": "SQL_QUERY_TEST",
   "label": "DATE_DISTANCE select with timeUnit DAYS and date restriction set",
-  "expectedCsv": "expected.csv",
+  "expectedCsv": "tests/sql/selects/date_distance/days_with_date_restriction/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

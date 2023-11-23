@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { ReactNode, forwardRef, Ref, ReactElement, ForwardedRef } from "react";
+import { ForwardedRef, ReactElement, ReactNode, Ref, forwardRef } from "react";
 import { DropTargetMonitor } from "react-dnd";
 
 import IconButton from "../../button/IconButton";
@@ -13,7 +13,6 @@ import DropzoneWithFileInput, {
   DragItemFile,
 } from "../../ui-components/DropzoneWithFileInput";
 import Label from "../../ui-components/Label";
-import Optional from "../../ui-components/Optional";
 
 import DropzoneBetweenElements from "./DropzoneBetweenElements";
 
@@ -56,7 +55,6 @@ interface PropsT<DroppableObject> {
   className?: string;
   label?: ReactNode;
   tooltip?: string;
-  optional?: boolean;
   dropzoneChildren: (args: ChildArgs<DroppableObject>) => ReactNode;
   items: ReactNode[];
   acceptedDropTypes: string[];
@@ -78,7 +76,6 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
     className,
     label,
     tooltip,
-    optional,
     dropzoneChildren,
     items,
     acceptedDropTypes,
@@ -97,12 +94,7 @@ const DropzoneList = <DroppableObject extends PossibleDroppableObject>(
   return (
     <div className={className}>
       <Row>
-        {label && (
-          <Label>
-            {optional && <Optional />}
-            {label}
-          </Label>
-        )}
+        {label && <Label>{label}</Label>}
         {tooltip && <InfoTooltip text={tooltip} />}
       </Row>
       {items && items.length > 0 && (

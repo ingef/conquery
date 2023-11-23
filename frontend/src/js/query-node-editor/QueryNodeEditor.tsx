@@ -11,12 +11,13 @@ import type {
 } from "../api/types";
 import { useResizeObserver } from "../common/helpers/useResizeObserver";
 import {
+  NodeResetConfig,
   nodeHasEmptySettings,
   nodeIsConceptQueryNode,
-  NodeResetConfig,
 } from "../model/node";
 import type {
   DragItemConceptTreeNode,
+  FilterWithValueType,
   StandardQueryNodeT,
 } from "../standard-query-editor/types";
 import type { ModeT } from "../ui-components/InputRange";
@@ -102,7 +103,11 @@ export interface QueryNodeEditorPropsT {
   onResetTable: (tableIdx: number, config: NodeResetConfig) => void;
   onToggleTimestamps?: () => void;
   onToggleSecondaryIdExclude?: () => void;
-  onSetFilterValue: (tableIdx: number, filterIdx: number, value: any) => void;
+  onSetFilterValue: (
+    tableIdx: number,
+    filterIdx: number,
+    value: FilterWithValueType["value"],
+  ) => void;
   onSwitchFilterMode: (
     tableIdx: number,
     filterIdx: number,

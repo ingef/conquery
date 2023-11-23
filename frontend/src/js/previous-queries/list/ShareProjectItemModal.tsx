@@ -13,10 +13,10 @@ import InputMultiSelect from "../../ui-components/InputMultiSelect/InputMultiSel
 
 import type { ProjectItemT } from "./ProjectItem";
 import {
-  useLoadQuery,
   useLoadFormConfig,
-  useUpdateQuery,
+  useLoadQuery,
   useUpdateFormConfig,
+  useUpdateQuery,
 } from "./actions";
 import { isFormConfig } from "./helpers";
 

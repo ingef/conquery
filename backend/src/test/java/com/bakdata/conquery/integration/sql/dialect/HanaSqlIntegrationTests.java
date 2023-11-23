@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermission;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -13,12 +15,15 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
+import com.bakdata.conquery.integration.ConqueryIntegrationTests;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.sql.testcontainer.hana.HanaContainer;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.DslContextFactory;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.DateDistanceFilterConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistanceSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.dialect.HanaSqlDialect;
@@ -27,9 +32,14 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.RowN;
+import org.jooq.Table;
+import org.jooq.conf.ParamType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 import org.testcontainers.junit.jupiter.Container;
@@ -50,12 +60,12 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 	}
 
 	public HanaSqlIntegrationTests() {
-		super("tests/", "com.bakdata.conquery.integration");
+		super(ConqueryIntegrationTests.DEFAULT_SQL_TEST_ROOT, "com.bakdata.conquery.integration");
 	}
 
 	@TestFactory
 	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
-	public Stream<DynamicTest> sqlBackendTests() {
+	public List<DynamicNode> sqlBackendTests() {
 
 		TestContextProvider provider = useLocalHanaDb
 									   ? new HanaTestcontainerContextProvider()
@@ -98,7 +108,9 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		}
 	}
 
-	private static class TestHanaDialect extends HanaSqlDialect {
+	public static class TestHanaDialect extends HanaSqlDialect implements TestSqlDialect {
+
+		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
 
 		public TestHanaDialect(DSLContext dslContext) {
 			super(dslContext);
@@ -107,8 +119,41 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		@Override
 		public List<SelectConverter<? extends Select>> getSelectConverters() {
 			return this.customizeSelectConverters(List.of(
-					new DateDistanceSelectConverter(new MockDateNowSupplier())
+					new DateDistanceSelectConverter(DATE_NOW_SUPPLIER)
 			));
+		}
+
+		@Override
+		public List<FilterConverter<?, ?>> getFilterConverters() {
+			return this.customizeFilterConverters(List.of(
+					new DateDistanceFilterConverter(DATE_NOW_SUPPLIER)
+			));
+		}
+
+		public TestFunctionProvider getTestFunctionProvider() {
+			return new HanaTestFunctionProvider();
+		}
+
+	}
+
+	private static class HanaTestFunctionProvider implements TestFunctionProvider {
+
+		@Override
+		public void insertValuesIntoTable(Table<Record> table, List<Field<?>> columns, List<RowN> content, Statement statement, DSLContext dslContext)
+				throws SQLException {
+			for (RowN rowN : content) {
+				String insertRowStatement = dslContext.insertInto(table, columns)
+													  .values(rowN)
+													  .getSQL(ParamType.INLINED);
+
+				statement.execute(insertRowStatement);
+			}
+		}
+
+		@Override
+		public String createDropTableStatement(Table<Record> table, DSLContext dslContext) {
+			return dslContext.dropTable(table)
+							 .getSQL(ParamType.INLINED);
 		}
 
 	}
@@ -128,6 +173,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 			this.hanaContainer.start();
 
 			this.sqlConnectorConfig = SqlConnectorConfig.builder()
+														.enabled(true)
 														.dialect(Dialect.HANA)
 														.jdbcConnectionUrl(hanaContainer.getJdbcUrl())
 														.databaseUsername(hanaContainer.getUsername())

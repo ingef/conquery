@@ -1,14 +1,14 @@
 FROM node:18-alpine AS builder
 
 WORKDIR /app
-COPY ./package.json ./yarn.lock ./
+COPY ./package.json ./package-lock.json ./
 
-RUN yarn --ignore-platform --no-progress --frozen-lockfile
+RUN npm ci
 
 COPY . .
 
 # Uses env variables from .env file (BUILD TIME)
-RUN PUBLIC_URL=/ yarn build
+RUN PUBLIC_URL=/ npm run build
 
 # The final image is just an nginx with a webroot
 FROM nginx:stable-alpine

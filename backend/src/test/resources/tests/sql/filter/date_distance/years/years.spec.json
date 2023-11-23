@@ -1,7 +1,7 @@
 {
-  "type": "SQL_TEST",
+  "type": "SQL_QUERY_TEST",
   "label": "DATE_DISTANCE filter query with timeUnit YEARS",
-  "expectedCsv": "expected.csv",
+  "expectedCsv": "tests/sql/filter/date_distance/years/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -16,9 +16,13 @@
           "tables": [
             {
               "id": "geschlecht_select.geschlecht_connector",
-              "selects": [
-                "geschlecht_select.geschlecht_connector.date_distance_years"
-              ]
+              "filters": {
+                "filter": "geschlecht_select.geschlecht_connector.date_distance_years",
+                "type": "INTEGER_RANGE",
+                "value": {
+                  "min": 10
+                }
+              }
             }
           ]
         }
@@ -33,10 +37,9 @@
         {
           "label": "geschlecht_connector",
           "table": "table1",
-          "selects": [
+          "filters": [
             {
               "column": "table1.datum",
-              "default": true,
               "label": "date_distance_years",
               "name": "date_distance_years",
               "timeUnit": "YEARS",

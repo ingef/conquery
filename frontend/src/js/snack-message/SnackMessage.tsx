@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { useRef, memo, FC } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { FC, memo, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
 import { useClickOutside } from "../common/helpers/useClickOutside";

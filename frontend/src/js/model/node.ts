@@ -1,6 +1,6 @@
 import {
-  faFolder as faFolderRegular,
   faFolderOpen as faFolderOpenRegular,
+  faFolder as faFolderRegular,
 } from "@fortawesome/free-regular-svg-icons";
 import {
   faFolder,
@@ -21,9 +21,9 @@ import { PossibleDroppableObject } from "../ui-components/Dropzone";
 
 import { objectHasNonDefaultSelects } from "./select";
 import {
-  tablesHaveNonDefaultSettings,
   tablesHaveEmptySettings,
   tablesHaveFilterValues,
+  tablesHaveNonDefaultSettings,
 } from "./table";
 
 export interface NodeResetConfig {

@@ -60,7 +60,6 @@ public interface IntegrationTest {
 	final class Wrapper implements Executable {
 
 		private final String name;
-
 		private final IntegrationTests integrationTests;
 		private final IntegrationTest test;
 
@@ -73,7 +72,7 @@ public interface IntegrationTest {
 			// we clone the default config to ensure that nothing mangles the config of others.
 			// However, override config _should_ not mutate the incoming config.
 
-			final ConqueryConfig clonedConfig = Cloner.clone(IntegrationTests.DEFAULT_CONFIG, Map.of(), IntegrationTests.MAPPER);
+			final ConqueryConfig clonedConfig = Cloner.clone(integrationTests.getConfig(), Map.of(), IntegrationTests.MAPPER);
 			final ConqueryConfig overridenConfig = test.overrideConfig(clonedConfig, integrationTests.getWorkDir());
 
 			final TestConquery testConquery = integrationTests.getCachedConqueryInstance(integrationTests.getWorkDir(), overridenConfig);

@@ -8,8 +8,8 @@ import { getWidthAndHeight } from "../app/DndProvider";
 import type { StateT } from "../app/reducers";
 import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import {
-  nodeIsConceptQueryNode,
   canNodeBeDropped,
+  nodeIsConceptQueryNode,
   useActiveState,
 } from "../model/node";
 import { isQueryExpandable } from "../model/query";
@@ -145,7 +145,7 @@ const QueryNode = ({
           tags: node.tags,
         }),
   };
-  const [, drag] = useDrag<StandardQueryNodeT, void, {}>({
+  const [, drag] = useDrag<StandardQueryNodeT, void>({
     type: item.type,
     item: () =>
       ({
@@ -154,7 +154,7 @@ const QueryNode = ({
           ...item.dragContext,
           ...getWidthAndHeight(ref),
         },
-      } as StandardQueryNodeT),
+      }) as StandardQueryNodeT,
   });
 
   const expandClick = useCallback(() => {
@@ -163,7 +163,7 @@ const QueryNode = ({
     onExpandClick(node.query);
   }, [onExpandClick, node]);
 
-  const onClick = !!node.error ? () => {} : () => onEditClick(andIdx, orIdx);
+  const onClick = node.error ? () => {} : () => onEditClick(andIdx, orIdx);
 
   const label = nodeIsConceptQueryNode(node)
     ? node.label

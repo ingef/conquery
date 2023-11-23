@@ -3,24 +3,13 @@ export const concat = (arr: []) => arr.reduce((a, b) => a.concat(b), []);
 export const compose = <R>(fn1: (a: R) => R, ...fns: Array<(a: R) => R>) =>
   fns.reduce((prevFn, nextFn) => (value) => prevFn(nextFn(value)), fn1);
 
-export const isEmpty = (variable: any) => {
+export const isEmpty = (variable: unknown) => {
   return (
     typeof variable === "undefined" ||
     variable === null ||
     variable === "" ||
     (variable instanceof Array && variable.length === 0) ||
     (variable.constructor === Object && Object.keys(variable).length === 0)
-  );
-};
-
-export const isEmptyObject = (variable: any) => {
-  if (!variable) return false;
-
-  return (
-    variable.constructor === Object &&
-    (Object.keys(variable).length === 0 ||
-      (Object.keys(variable).length > 0 &&
-        Object.keys(variable).every((k) => typeof variable[k] === "undefined")))
   );
 };
 

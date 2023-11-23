@@ -1,16 +1,16 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept.filter;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.CteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.bakdata.conquery.sql.conversion.model.select.SumSqlSelect;
 import org.jooq.Field;
 
@@ -24,33 +24,33 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 		// TODO(tm): convert getSubtractColumn and getDistinctByColumn
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumFilter.getColumn().getType());
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(CteStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
 				sumFilter.getColumn().getName(),
 				numberClass
 		);
 
 		Field<? extends Number> qualifiedRootSelect = context.getConceptTables()
-															 .qualifyOnPredecessorTableName(CteStep.AGGREGATION_SELECT, rootSelect.aliased());
+															 .qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
 		SumSqlSelect sumSqlSelect = new SumSqlSelect(qualifiedRootSelect, sumFilter.getName());
 
 		Field<? extends Number> qualifiedSumGroupBy = context.getConceptTables()
-															 .qualifyOnPredecessorTableName(CteStep.AGGREGATION_FILTER, sumSqlSelect.aliased());
+															 .qualifyOnPredecessor(ConceptCteStep.AGGREGATION_FILTER, sumSqlSelect.aliased());
 		SumCondition sumFilterCondition = new SumCondition(qualifiedSumGroupBy, context.getValue());
 
 		return new ConceptFilter(
 				SqlSelects.builder()
-						  .forPreprocessingStep(Collections.singletonList(rootSelect))
-						  .forAggregationSelectStep(Collections.singletonList(sumSqlSelect))
+						  .forPreprocessingStep(List.of(rootSelect))
+						  .forAggregationSelectStep(List.of(sumSqlSelect))
 						  .build(),
 				Filters.builder()
-					   .group(Collections.singletonList(sumFilterCondition))
+					   .group(List.of(sumFilterCondition))
 					   .build()
 		);
 	}
 
 	@Override
-	public Set<CteStep> requiredSteps() {
-		return CteStep.withOptionalSteps(CteStep.AGGREGATION_FILTER);
+	public Set<ConceptCteStep> requiredSteps() {
+		return ConceptCteStep.withOptionalSteps(ConceptCteStep.AGGREGATION_FILTER);
 	}
 
 	@Override
