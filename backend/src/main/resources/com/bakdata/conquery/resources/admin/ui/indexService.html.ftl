@@ -16,14 +16,14 @@
 						{"name":"Load exception count", "value":c.getStats().loadExceptionCount()},
 						{"name":"Total load time", "value":c.getStats().totalLoadTime()}
 						]>
-						<@table.table columns=columns items=items />
+						<@table.table columns=columns items=items cypressId="statistics"/>
 			</div>
 
 			<div id="index-service-indexes" class="mt-1">
 				<h3>Indexes</h3>
-				<#assign columns=["csv", "internalColumn", "externalTemplate" ]>
-					<#assign items=c.getIndexes() >
-						<@table.table columns=columns items=items />
+				<#assign columns=["csv", "internalColumn", "externalTemplates" ]>
+					<#assign items=c.getIndexes()?sort_by('csv') >
+						<@table.table columns=columns items=items cypressId="indexes" />
 			</div>
 		</div>
 	</div>

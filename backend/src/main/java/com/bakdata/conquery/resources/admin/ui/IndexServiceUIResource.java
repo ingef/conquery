@@ -40,6 +40,4 @@ public class IndexServiceUIResource {
 		private final CacheStats stats;
 		private final Set<IndexKey<?>> indexes;
 	}
-
-	;
 }
