@@ -56,7 +56,7 @@ public abstract class ColumnStatsCollector<T> {
 			return new ListColumnStatsCollector<>(null, null, null, type, columnStatsCollector, printSettings);
 		}
 
-		throw new IllegalArgumentException("Don't know how to describe Column of typ %s".formatted(type));
+		throw new IllegalArgumentException("Don't know how to describe column of type %s".formatted(type));
 	}
 
 	public abstract void consume(@Nullable T value);
