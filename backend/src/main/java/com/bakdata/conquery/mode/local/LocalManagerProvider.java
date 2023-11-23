@@ -34,7 +34,6 @@ public class LocalManagerProvider implements ManagerProvider {
 		DSLContext dslContext = DslContextFactory.create(sqlConnectorConfig);
 		SqlDialect sqlDialect = createSqlDialect(sqlConnectorConfig, dslContext);
 		SqlContext sqlContext = new SqlContext(sqlConnectorConfig, sqlDialect);
-
 		NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, sqlContext);
 		DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
 		creator.init(datasetRegistry);

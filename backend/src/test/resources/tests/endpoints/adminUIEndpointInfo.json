@@ -88,5 +88,10 @@
     "method": "GET",
     "path": "/auth-overview",
     "clazz": "AuthOverviewUIResource"
+  },
+  {
+    "method": "GET",
+    "path": "/index-service",
+    "clazz": "IndexServiceUIResource"
   }
 ]
