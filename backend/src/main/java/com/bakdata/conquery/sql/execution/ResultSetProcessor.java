@@ -39,27 +39,47 @@ public interface ResultSetProcessor {
 						  .toArray(ResultSetProcessor.ResultSetMapper[]::new);
 	}
 
-	private static ResultSetMapper getMappers(ResultType resultType) {
+private static ResultSetMapper getMappers(ResultType resultType) {
 		if (resultType instanceof ResultType.ListT list) {
 			ResultType elementType = list.getElementType();
 			if (elementType instanceof ResultType.DateRangeT) {
 				return (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDateRangeList(resultSet, columnIndex);
 			}
-			return MAPPERS.get(elementType);
+			return getMappers(elementType);
 		}
-		return MAPPERS.get(resultType);
-	}
 
-	private static Map<ResultType, ResultSetMapper> createMappers() {
-		return Map.of(
-				ResultType.StringT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getString(resultSet, columnIndex),
-				ResultType.IntegerT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getInteger(resultSet, columnIndex),
-				ResultType.NumericT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDouble(resultSet, columnIndex),
-				ResultType.MoneyT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getMoney(resultSet, columnIndex),
-				ResultType.BooleanT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getBoolean(resultSet, columnIndex),
-				ResultType.DateT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDate(resultSet, columnIndex),
-				ResultType.DateRangeT.INSTANCE, (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDateRange(resultSet, columnIndex)
-		);
+		if (resultType instanceof StringT){
+			// TODO mapping should probably be applied in query when using SQL-backend
+			return (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getString(resultSet, columnIndex);
+		}
+
+		if (resultType instanceof IntegerT){
+			return (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getInteger(resultSet, columnIndex);
+		}
+
+		if (resultType instanceof NumericT){
+			return (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDoble(resultSet, columnIndex);
+		}
+
+		if (resultType instanceof MoneyT){
+			//TODO money needs formatting according to pretty printer?
+			return (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getMoney(resultSet, columnIndex);
+		}
+
+		if (resultType instanceof BooleanT){
+			return (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getBoolean(resultSet, columnIndex);
+		}
+
+		if (resultType instanceof DateT){
+			return (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDate(resultSet, columnIndex);
+		}
+
+		if (resultType instanceof DateRangeT){
+			return (resultSet, columnIndex, resultSetProcessor) -> resultSetProcessor.getDateRange(resultSet, columnIndex);
+		}
+		
+		
+		throw new IllegalArgumentException("Don't know how to handle result Type %s".formatted(resultType));
 	}
 
 }
