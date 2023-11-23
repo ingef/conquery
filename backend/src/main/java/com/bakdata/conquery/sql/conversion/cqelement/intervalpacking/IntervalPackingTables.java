@@ -6,11 +6,11 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 
-class IntervalPackingTables extends SqlTables<IntervalPackingStep> {
+public class IntervalPackingTables extends SqlTables<IntervalPackingCteStep> {
 
-	public static final Set<IntervalPackingStep> REQUIRED_STEPS = Set.of(IntervalPackingStep.values());
+	public static final Set<IntervalPackingCteStep> REQUIRED_STEPS = Set.of(IntervalPackingCteStep.values());
 
-	private IntervalPackingTables(String nodeLabel, Set<IntervalPackingStep> requiredSteps, String rootTableName) {
+	private IntervalPackingTables(String nodeLabel, Set<IntervalPackingCteStep> requiredSteps, String rootTableName) {
 		super(nodeLabel, requiredSteps, rootTableName);
 	}
 

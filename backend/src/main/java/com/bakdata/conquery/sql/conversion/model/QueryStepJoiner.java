@@ -49,19 +49,32 @@ public class QueryStepJoiner {
 
 		DateAggregationDates dateAggregationDates = DateAggregationDates.forSteps(queriesToJoin);
 		if (dateAggregationAction == DateAggregationAction.BLOCK || dateAggregationDates.dateAggregationImpossible()) {
-			andQueryStep = andQueryStep.selects(new Selects(primaryColumn, mergedSelects));
+			Selects selects = Selects.builder()
+									 .primaryColumn(primaryColumn)
+									 .sqlSelects(mergedSelects)
+									 .build();
+			andQueryStep = andQueryStep.selects(selects);
 			return context.withQuerySteps(List.of(andQueryStep.build()));
 		}
 		// if there is only 1 child node containing a validity date, we just keep it as overall validity date for the joined node
 		else if (dateAggregationDates.getValidityDates().size() == 1) {
 			ColumnDateRange validityDate = dateAggregationDates.getValidityDates().get(0);
-			andQueryStep = andQueryStep.selects(new Selects(primaryColumn, Optional.ofNullable(validityDate), mergedSelects));
+			Selects selects = Selects.builder()
+									 .primaryColumn(primaryColumn)
+									 .validityDate(Optional.ofNullable(validityDate))
+									 .sqlSelects(mergedSelects)
+									 .build();
+			andQueryStep = andQueryStep.selects(selects);
 			return context.withQuerySteps(List.of(andQueryStep.build()));
 		}
 
 		List<SqlSelect> mergedSelectsWithAllValidityDates = new ArrayList<>(mergedSelects);
 		mergedSelectsWithAllValidityDates.addAll(dateAggregationDates.allStartsAndEnds());
-		andQueryStep = andQueryStep.selects(new Selects(primaryColumn, mergedSelectsWithAllValidityDates));
+		Selects selects = Selects.builder()
+								 .primaryColumn(primaryColumn)
+								 .sqlSelects(mergedSelectsWithAllValidityDates)
+								 .build();
+		andQueryStep = andQueryStep.selects(selects);
 
 		SqlDateAggregator sqlDateAggregator = context.getSqlDialect().getDateAggregator();
 		QueryStep mergeIntervalsStep = sqlDateAggregator.apply(
