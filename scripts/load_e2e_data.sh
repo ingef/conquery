@@ -22,9 +22,14 @@ curl --fail -X POST  "$admin_api/permissions/user.user2" -H "$h_ct" -H "$h_auth"
 curl --fail -X POST  "$admin_api/permissions/user.user2" -H "$h_ct" -H "$h_auth" -d 'concepts:read:*'
 
 echo "Creating dataset"
-#create dataset
+# Create dataset
 curl --fail -X POST  "$admin_api/datasets/" -H "$h_ct" -H "$h_auth" -d '{"name": "dataset1", "label": "Dataset1"}'
 sleep 3
+
+echo "Creating mappings"
+curl --fail -X POST  "$admin_api/datasets/dataset1/internToExtern" -H "$h_ct" -H "$h_auth" -d "@./cypress/support/test_data/mapping.mapping.json"
+sleep 3
+
  # TODO secondary ID
 echo "Creating tables"
 curl --fail -X POST  "$admin_api/datasets/dataset1/tables" -H "$h_ct" -H "$h_auth" -d "@./cypress/support/test_data/all_types.table.json"
