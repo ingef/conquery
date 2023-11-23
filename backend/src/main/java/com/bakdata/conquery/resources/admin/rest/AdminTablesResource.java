@@ -39,7 +39,7 @@ import lombok.Setter;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AdminTablesResource {
 
-	private final AdmDatasetProcessor processor;
+	private final AdminDatasetProcessor processor;
 
 	@PathParam(DATASET)
 	protected Dataset dataset;

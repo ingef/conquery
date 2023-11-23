@@ -25,7 +25,7 @@ import lombok.SneakyThrows;
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 public class AdminDatasetsResource {
 
-	private final AdmDatasetProcessor processor;
+	private final AdminDatasetProcessor processor;
 
 	@SneakyThrows
 	@POST

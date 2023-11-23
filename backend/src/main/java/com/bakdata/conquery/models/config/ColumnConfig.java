@@ -8,7 +8,7 @@ import javax.validation.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.View;
 import com.bakdata.conquery.models.identifiable.mapping.EntityIdMap;
-import com.bakdata.conquery.resources.admin.rest.AdmDatasetProcessor;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetProcessor;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.base.Strings;
 import lombok.AllArgsConstructor;
@@ -22,7 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * Configuration class for QueryUpload and IdMapping.
  *
- * Describes how rows are mapped for {@link EntityIdMap}/{@link AdmDatasetProcessor#setIdMapping(java.io.InputStream, com.bakdata.conquery.models.worker.Namespace)}.
+ * Describes how rows are mapped for {@link EntityIdMap}/{@link AdminDatasetProcessor#setIdMapping(java.io.InputStream, com.bakdata.conquery.models.worker.Namespace)}.
  */
 @Builder
 @AllArgsConstructor
@@ -71,7 +71,7 @@ public class ColumnConfig {
 	private Map<Locale, String> description = Collections.emptyMap();
 
 	/**
-	 * Name of column in csv for {@link AdmDatasetProcessor#setIdMapping(java.io.InputStream, com.bakdata.conquery.models.worker.Namespace)}.
+	 * Name of column in csv for {@link AdminDatasetProcessor#setIdMapping(java.io.InputStream, com.bakdata.conquery.models.worker.Namespace)}.
 	 * <p>
 	 * Also Name of output column for {@link IdColumnConfig#getIdResultInfos()}, ergo output csv-Columns.
 	 */

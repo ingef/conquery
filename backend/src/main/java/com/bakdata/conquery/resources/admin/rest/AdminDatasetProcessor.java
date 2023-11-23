@@ -53,8 +53,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
 @Data
-// TODO this is absurd, but something breaks when i name this class AdminDatasetProcessor
-public class AdmDatasetProcessor {
+public class AdminDatasetProcessor {
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
 	private static final String ABBREVIATION_MARKER = "\u2026";
