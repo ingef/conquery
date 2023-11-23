@@ -64,7 +64,7 @@ public class NameGenerator {
 
 	private String ensureValidLength(String input) {
 		if (input.length() > nameMaxLength) {
-			log.debug("CTE or select name too long: {}", input);
+			log.trace("CTE or select name too long: {}", input);
 			int removeIndex = input.length() - nameMaxLength;
 			return input.substring(removeIndex);
 		}
