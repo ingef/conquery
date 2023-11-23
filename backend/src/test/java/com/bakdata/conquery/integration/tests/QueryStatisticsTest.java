@@ -10,10 +10,6 @@ import java.util.TreeMap;
 
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.apiv1.query.statistics.DateColumnStatsCollector;
-import com.bakdata.conquery.apiv1.query.statistics.NumberColumnStatsCollector;
-import com.bakdata.conquery.apiv1.query.statistics.ResultStatistics;
-import com.bakdata.conquery.apiv1.query.statistics.StringColumnStatsCollector;
 import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -22,6 +18,10 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.statistics.DateColumnStatsCollector;
+import com.bakdata.conquery.models.query.statistics.NumberColumnStatsCollector;
+import com.bakdata.conquery.models.query.statistics.ResultStatistics;
+import com.bakdata.conquery.models.query.statistics.StringColumnStatsCollector;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.api.QueryResource;
 import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.apiv1.query.statistics;
+package com.bakdata.conquery.models.query.statistics;
 
 import java.util.ArrayList;
 import java.util.Collection;

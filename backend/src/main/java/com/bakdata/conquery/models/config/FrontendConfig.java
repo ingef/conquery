@@ -33,6 +33,11 @@ public class FrontendConfig {
 	@Min(0)
 	private int observationPeriodYears = 6;
 
+	/**
+	 * Query preview uses real samples for display, this parameter controls how many we try to sample.
+	 *
+	 * Note, that we use stochastic sampling, to avoid keeping the entire rendered query in memory, so this number is not exact.
+	 */
 	@Min(0)
 	private int visualisationSamples = 1000;
 

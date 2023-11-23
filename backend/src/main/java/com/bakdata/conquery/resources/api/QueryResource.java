@@ -70,7 +70,7 @@ public class QueryResource {
 		subject.authorize(query, Ability.READ);
 
 		if(query.awaitDone(1, TimeUnit.SECONDS) != ExecutionState.DONE){
-			return Response.status(Response.Status.CONFLICT).build(); // Request was submitted too early.
+			return Response.status(Response.Status.CONFLICT.getStatusCode(), "Query is still running.").build(); // Request was submitted too early.
 		}
 
 		return Response.ok((processor.getResultStatistics(((ManagedQuery) query)))).build();
