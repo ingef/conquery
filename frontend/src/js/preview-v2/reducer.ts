@@ -1,5 +1,6 @@
 import { Table } from "apache-arrow";
 import { getType } from "typesafe-actions";
+import { PreviewStatisticsResponse } from "../api/types";
 
 import { Action } from "../app/actions";
 
@@ -9,6 +10,7 @@ export type PreviewStateT = {
   isOpen: boolean;
   isLoading: boolean;
   dataLoadedForQueryId: number | null;
+  statisticsData: PreviewStatisticsResponse | null;
   tableData: Table | null;
 };
 
@@ -16,6 +18,7 @@ const initialState: PreviewStateT = {
   isOpen: false,
   isLoading: false,
   dataLoadedForQueryId: null,
+  statisticsData: null,
   tableData: null,
 };
 

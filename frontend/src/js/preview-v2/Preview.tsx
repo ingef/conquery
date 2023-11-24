@@ -1,17 +1,14 @@
 import styled from "@emotion/styled";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
 import { StateT } from "../app/reducers";
 
-import { usePreviewStatistics } from "../api/api";
-import { PreviewStatistics, PreviewStatisticsResponse } from "../api/types";
+import { PreviewStatistics } from "../api/types";
 import { TransparentButton } from "../button/TransparentButton";
 import PreviewInfo from "../preview/PreviewInfo";
-import { setMessage } from "../snack-message/actions";
-import { SnackMessageType } from "../snack-message/reducer";
 
 import Charts from "./Charts";
 import HeadlineStats from "./HeadlineStats";
@@ -78,10 +75,6 @@ export default function Preview() {
   const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const getStats = usePreviewStatistics();
-  const [query] = useState<number>(12);
-  const [statistics, setStatistics] =
-    useState<PreviewStatisticsResponse | null>(null);
 
   const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
@@ -89,23 +82,6 @@ export default function Preview() {
   useHotkeys("esc", () => {
     onClose();
   });
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setStatistics(await getStats(query));
-      } catch (e) {
-        dispatch(
-          setMessage({
-            message: t("preview.loadingError"),
-            type: SnackMessageType.ERROR,
-          }),
-        );
-        console.error(e);
-      }
-    }
-    fetchData();
-  }, [query, dispatch, getStats, t]);
 
   return (
     <FullScreen>
@@ -129,12 +105,12 @@ export default function Preview() {
             {t("common.back")}
           </TransparentButton>
           Ergebnisvorschau
-          <HeadlineStats statistics={statistics} />
+          <HeadlineStats statistics={preview.statisticsData} />
         </Headline>
         SelectBox (Konzept Liste)
-        {statistics && statistics.statistics ? (
+        {preview.statisticsData && preview.statisticsData.statistics ? (
           <SxCharts
-            statistics={statistics.statistics}
+            statistics={preview.statisticsData.statistics}
             showPopup={(statistic: PreviewStatistics) => {
               setPopOver(statistic);
             }}
