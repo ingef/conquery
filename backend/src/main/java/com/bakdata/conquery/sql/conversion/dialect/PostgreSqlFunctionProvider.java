@@ -181,6 +181,16 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return field.similarTo(pattern);
 	}
 
+	@Override
+	public Field<String> quartersPerYear(Field<Date> dateField) {
+		return DSL.field(
+				"{0}::varchar || '-Q' || {1}::varchar",
+				String.class,
+				DSL.extract(dateField, DatePart.YEAR),
+				DSL.extract(dateField, DatePart.QUARTER)
+		);
+	}
+
 	private Field<?> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {
 		return DSL.function(
 				"daterange",

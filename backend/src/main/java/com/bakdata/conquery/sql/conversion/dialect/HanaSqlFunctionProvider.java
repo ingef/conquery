@@ -197,6 +197,11 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Field<String> quartersPerYear(Field<Date> dateField) {
+		return DSL.function("QUARTER", String.class, dateField);
+	}
+
+	@Override
 	public Field<Date> addDays(Field<Date> dateColumn, int amountOfDays) {
 		return DSL.function(
 				"ADD_DAYS",

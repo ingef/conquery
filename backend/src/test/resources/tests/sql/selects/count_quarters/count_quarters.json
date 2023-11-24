@@ -1,0 +1,63 @@
+{
+  "label": "COUNT_QUARTERS on single date column",
+  "type": "SQL_QUERY_TEST",
+  "expectedCsv": "tests/sql/selects/count_quarters/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "ids": [
+            "count"
+          ],
+          "type": "CONCEPT",
+          "label": "count",
+          "tables": [
+            {
+              "id": "count.count_connector",
+              "selects": [
+                "count.count_connector.count_quarters_select"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "count",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "count_connector",
+          "table": "table1",
+          "selects": {
+            "name": "count_quarters_select",
+            "type": "COUNT_QUARTERS",
+            "column": "table1.behandlungsdatum"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/selects/count_quarters/content.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "behandlungsdatum",
+            "type": "DATE"
+          }
+        ]
+      }
+    ]
+  }
+}

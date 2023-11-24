@@ -41,7 +41,7 @@ public class SqlExecutionService {
 		String sqlString = sqlQuery.getSqlQuery().getSql();
 		List<ResultType> resultTypes = sqlQuery.getSqlQuery().getResultInfos().stream().map(ResultInfo::getType).toList();
 
-		log.info("Executing query: \n{}", sqlString);
+		log.debug("Executing query: \n{}", sqlString);
 		try (Statement statement = connection.createStatement();
 			 ResultSet resultSet = statement.executeQuery(sqlString)) {
 			int columnCount = resultSet.getMetaData().getColumnCount();
