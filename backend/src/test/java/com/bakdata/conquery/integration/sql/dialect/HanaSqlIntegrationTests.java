@@ -112,7 +112,6 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
 
-		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
 
 		public TestHanaDialect(DSLContext dslContext) {
 			super(dslContext);
