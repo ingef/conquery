@@ -32,7 +32,7 @@ function previewStatsIsStringStats(
 export function previewStatsIsNumberStats(
   stats: PreviewStatistics,
 ): stats is NumberStatistics {
-  return stats.type !== "STRING" && "stddev" in stats;
+  return stats.type !== "STRING"// && "stddev" in stats;
 }
 
 function transformStringStatsToData(stats: StringStatistics): ChartData<"bar"> {
@@ -187,13 +187,12 @@ export default function Diagram({
       return transformNumberStatsToData(stat);
     }
   }, [stat]);
-
+  console.log(stat.type, data)
   // TODO fall back if no data is present
   return (
     <div className={className}>
       {previewStatsIsStringStats(stat) ? (
         <Bar
-          
           options={options as ChartOptions<"bar">}
           data={data as ChartData<"bar">}
           onClick={() => onClick && onClick()}

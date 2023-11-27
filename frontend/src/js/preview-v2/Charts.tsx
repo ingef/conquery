@@ -55,7 +55,10 @@ export default function Charts({ statistics, className, showPopup, page, setPage
           {statistics.slice(page * 4, (page + 1) * 4).map((statistic) => {
             return (
               <div key={statistic.name}>
-                <SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />
+                {
+                    statistic.type !== "DATE_RANGE" &&
+                   (<SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />)
+                }
               </div>
             );
           })}

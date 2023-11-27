@@ -32,6 +32,7 @@ import type { StandardQueryStateT } from "../standard-query-editor/queryReducer"
 import type { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
 import { QUERY_AGAIN_TIMEOUT } from "./constants";
+import { updateQueryId } from "../preview-v2/actions";
 
 export type QueryRunnerActions = ActionType<
   | typeof startQuery
@@ -116,7 +117,7 @@ export const useStartQuery = (queryType: QueryTypeT) => {
         dispatch(startQuery.success(successPayload(r, { queryType })));
 
         const queryId = r.id;
-
+        dispatch(updateQueryId({queryId}));
         return queryResult(datasetId, queryId);
       },
       (e) => dispatch(startQuery.failure(errorPayload(e, { queryType }))),

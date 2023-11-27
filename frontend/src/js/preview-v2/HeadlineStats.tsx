@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { t } from "i18next";
-
 import { DateRangeT } from "../api/types";
+import { PreviewStatisticsResponse } from "../api/types";
 import { getDiffInDays, parseDate } from "../common/helpers/dateHelper";
 
 const Root = styled("div")`
@@ -27,16 +27,9 @@ const Key = styled("span")`
   }
 `;
 
-interface HeadlineStatsLoaded {
-  numberOfRows: number;
-  dateRange: DateRangeT;
-  missingValues: number;
-  loading: false;
-}
-
-interface HeadlineStatsLoading {
-  loading: true;
-}
+export type HeadlineStatsProps = {
+  statistics: PreviewStatisticsResponse | null;
+};
 
 export default function HeadlineStats(
   props: HeadlineStatsLoaded | HeadlineStatsLoading,
