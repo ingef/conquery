@@ -18,17 +18,16 @@ public class SumSelectConverter implements SelectConverter<SumSelect> {
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumSelect.getColumn().getType());
 
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
 				sumSelect.getColumn().getName(),
 				numberClass
 		);
 
-		Field<? extends Number> qualifiedRootSelect = context.getConceptTables()
-															 .qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
-		SumSqlSelect sumGroupBy = new SumSqlSelect(qualifiedRootSelect, sumSelect.getName());
+		Field<? extends Number> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		SumSqlSelect sumGroupBy = new SumSqlSelect(qualifiedRootSelect, context.getNameGenerator().selectName(sumSelect));
 
 		ExtractingSqlSelect<? extends Number> finalSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.FINAL),
+				context.getConceptTables().getPredecessor(ConceptCteStep.FINAL),
 				sumGroupBy.aliased().getName(),
 				numberClass
 		);

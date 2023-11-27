@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
 import IconButton from "../button/IconButton";

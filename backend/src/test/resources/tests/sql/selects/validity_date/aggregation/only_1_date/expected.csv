@@ -1,2 +1,2 @@
-pid,dates
-1,"{[2014-06-30,2015-07-01)}",1.00,f
+result,dates,vs first_value,Geschlecht SELECT first_geschlecht
+1,{2014-06-30/2015-06-30},1.0,f

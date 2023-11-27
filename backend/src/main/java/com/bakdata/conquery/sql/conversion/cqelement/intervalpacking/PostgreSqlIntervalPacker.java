@@ -1,6 +1,5 @@
 package com.bakdata.conquery.sql.conversion.cqelement.intervalpacking;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,17 +25,17 @@ public class PostgreSqlIntervalPacker implements IntervalPacker {
 	@Override
 	public QueryStep createIntervalPackingSteps(IntervalPackingContext context) {
 
-		String sourceTableName = context.getIntervalPackingTables().getValidityDateSourceTableName();
+		String sourceTableName = context.getIntervalPackingTables().getRootTable();
 		Field<Object> primaryColumn = QualifyingUtil.qualify(context.getPrimaryColumn(), sourceTableName);
 		ColumnDateRange qualifiedValidityDate = context.getValidityDate().qualify(sourceTableName);
 		ColumnDateRange aggregatedValidityDate = this.functionProvider.aggregated(qualifiedValidityDate)
 																	  .asValidityDateRange(context.getNodeLabel());
 
-		Selects selectsWithAggregatedValidityDate = new Selects(
-				primaryColumn,
-				Optional.of(aggregatedValidityDate),
-				Collections.emptyList()
-		);
+		Selects selectsWithAggregatedValidityDate = Selects.builder()
+														   .primaryColumn(primaryColumn)
+														   .validityDate(Optional.of(aggregatedValidityDate))
+														   .sqlSelects(context.getCarryThroughSelects())
+														   .build();
 
 		return QueryStep.builder()
 						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))

@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { IconProp } from "@fortawesome/fontawesome-svg-core";
 import { forwardRef, memo, useMemo } from "react";
 
-import FaIcon, { IconStyleProps, FaIconPropsT } from "../icon/FaIcon";
+import FaIcon, { FaIconPropsT, IconStyleProps } from "../icon/FaIcon";
 
 import BasicButton, { BasicButtonProps } from "./BasicButton";
 
@@ -57,7 +57,8 @@ const SxBasicButton = styled(BasicButton)<{
       ? theme.col.orange
       : theme.col.black};
   opacity: ${({ frame }) => (frame ? 1 : 0.75)};
-  transition: opacity ${({ theme }) => theme.transitionTime},
+  transition:
+    opacity ${({ theme }) => theme.transitionTime},
     background-color ${({ theme }) => theme.transitionTime};
 
   border-radius: ${({ theme }) => theme.borderRadius};

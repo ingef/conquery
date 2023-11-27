@@ -19,9 +19,9 @@ import org.jooq.impl.DSL;
 class RowNumberCte extends DateAggregationCte {
 
 	public static final String ROW_NUMBER_FIELD_NAME = "row_number";
-	private final DateAggregationStep cteStep;
+	private final DateAggregationCteStep cteStep;
 
-	public RowNumberCte(DateAggregationStep cteStep) {
+	public RowNumberCte(DateAggregationCteStep cteStep) {
 		this.cteStep = cteStep;
 	}
 
@@ -37,11 +37,11 @@ class RowNumberCte extends DateAggregationCte {
 		ArrayList<SqlSelect> selects = new ArrayList<>(context.getCarryThroughSelects());
 		selects.add(new FieldWrapper(rowNumber));
 
-		Selects rowNumberSelects = new Selects(
-				primaryColumn,
-				Optional.of(aggregatedValidityDate),
-				selects
-		);
+		Selects rowNumberSelects = Selects.builder()
+										  .primaryColumn(primaryColumn)
+										  .validityDate(Optional.of(aggregatedValidityDate))
+										  .sqlSelects(selects)
+										  .build();
 
 		return QueryStep.builder()
 						.selects(rowNumberSelects);

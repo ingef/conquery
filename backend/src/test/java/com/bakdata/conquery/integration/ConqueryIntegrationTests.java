@@ -10,6 +10,7 @@ import org.junit.jupiter.api.TestFactory;
 
 public class ConqueryIntegrationTests extends IntegrationTests {
 
+	public static final String DEFAULT_SQL_TEST_ROOT = "tests/sql/";
 
 	public ConqueryIntegrationTests() {
 		super("tests/", "com.bakdata.conquery.integration");

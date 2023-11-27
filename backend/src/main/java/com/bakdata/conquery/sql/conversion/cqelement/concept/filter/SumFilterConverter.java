@@ -24,17 +24,18 @@ public class SumFilterConverter implements FilterConverter<IRange<? extends Numb
 		// TODO(tm): convert getSubtractColumn and getDistinctByColumn
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(sumFilter.getColumn().getType());
 		ExtractingSqlSelect<? extends Number> rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
 				sumFilter.getColumn().getName(),
 				numberClass
 		);
 
-		Field<? extends Number> qualifiedRootSelect = context.getConceptTables()
-															 .qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
-		SumSqlSelect sumSqlSelect = new SumSqlSelect(qualifiedRootSelect, sumFilter.getName());
+		Field<? extends Number> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		String alias = context.getNameGenerator().selectName(sumFilter);
+		SumSqlSelect sumSqlSelect = new SumSqlSelect(qualifiedRootSelect, alias);
 
-		Field<? extends Number> qualifiedSumGroupBy = context.getConceptTables()
-															 .qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_FILTER, sumSqlSelect.aliased());
+		Field<? extends Number>
+				qualifiedSumGroupBy =
+				context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_FILTER, sumSqlSelect.aliased());
 		SumCondition sumFilterCondition = new SumCondition(qualifiedSumGroupBy, context.getValue());
 
 		return new ConceptFilter(

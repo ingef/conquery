@@ -21,15 +21,19 @@ public class CountFilterConverter implements FilterConverter<Range.LongRange, Co
 	public ConceptFilter convert(CountFilter countFilter, FilterContext<Range.LongRange> context) {
 
 		SqlSelect rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
 				countFilter.getColumn().getName(),
 				Object.class
 		);
 
-		Field<Object> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
-		CountSqlSelect countSqlSelect = new CountSqlSelect(qualifiedRootSelect, countFilter.getName(), CountSqlSelect.CountType.fromBoolean(countFilter.isDistinct()));
+		Field<Object> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		CountSqlSelect countSqlSelect = new CountSqlSelect(
+				qualifiedRootSelect,
+				context.getNameGenerator().selectName(countFilter),
+				CountSqlSelect.CountType.fromBoolean(countFilter.isDistinct())
+		);
 
-		Field<Object> qualifiedCountGroupBy = context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_FILTER, countSqlSelect.aliased());
+		Field<Object> qualifiedCountGroupBy = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_FILTER, countSqlSelect.aliased());
 		CountCondition countFilterCondition = new CountCondition(qualifiedCountGroupBy, context.getValue());
 
 		return new ConceptFilter(

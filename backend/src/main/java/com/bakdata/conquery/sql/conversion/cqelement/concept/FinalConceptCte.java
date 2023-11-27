@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingContext;
+import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.IntervalPackingTables;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.LogicalOperation;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
@@ -25,7 +26,10 @@ class FinalConceptCte extends ConceptCte {
 														.toList();
 
 		if (conceptCteContext.getValidityDate().isEmpty() || conceptCteContext.isExcludedFromDateAggregation()) {
-			Selects finalConceptSelects = new Selects(conceptCteContext.getPrimaryColumn(), Optional.empty(), forFinalStep);
+			Selects finalConceptSelects = Selects.builder()
+												 .primaryColumn(conceptCteContext.getPrimaryColumn())
+												 .sqlSelects(forFinalStep)
+												 .build();
 			return QueryStep.builder()
 							.selects(finalConceptSelects);
 		}
@@ -40,12 +44,17 @@ class FinalConceptCte extends ConceptCte {
 
 	private QueryStep.QueryStepBuilder applyIntervalPacking(List<SqlSelect> forFinalStep, ConceptCteContext conceptCteContext) {
 
-		IntervalPackingContext intervalPackingContext = new IntervalPackingContext(
-				conceptCteContext.getConceptLabel(),
-				conceptCteContext.getPrimaryColumn(),
-				conceptCteContext.getValidityDate().get(),
-				conceptCteContext.getConceptTables()
-		);
+		String conceptLabel = conceptCteContext.getConceptLabel();
+		IntervalPackingTables intervalPackingTables =
+				IntervalPackingTables.forConcept(conceptLabel, conceptCteContext.getConceptTables(), conceptCteContext.getNameGenerator());
+
+		IntervalPackingContext intervalPackingContext =
+				IntervalPackingContext.builder()
+									  .nodeLabel(conceptLabel)
+									  .primaryColumn(conceptCteContext.getPrimaryColumn())
+									  .validityDate(conceptCteContext.getValidityDate().get())
+									  .intervalPackingTables(intervalPackingTables)
+									  .build();
 
 		QueryStep finalIntervalPackingStep = conceptCteContext.getConversionContext()
 															  .getSqlDialect()
@@ -70,7 +79,11 @@ class FinalConceptCte extends ConceptCte {
 				conceptCteContext.getConversionContext()
 		);
 
-		Selects finalConceptSelects = new Selects(primaryColumn, validityDate, forFinalStep);
+		Selects finalConceptSelects = Selects.builder()
+											 .primaryColumn(primaryColumn)
+											 .validityDate(validityDate)
+											 .sqlSelects(forFinalStep)
+											 .build();
 
 		return QueryStep.builder()
 						.selects(finalConceptSelects)

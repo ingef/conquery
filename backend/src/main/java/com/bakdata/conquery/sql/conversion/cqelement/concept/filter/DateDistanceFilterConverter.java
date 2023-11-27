@@ -28,7 +28,7 @@ public class DateDistanceFilterConverter implements FilterConverter<Range.LongRa
 		DateDistanceSqlSelect dateDistanceSqlSelect = new DateDistanceSqlSelect(
 				dateNowSupplier,
 				dateDistanceFilter.getTimeUnit(),
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
 				dateDistanceFilter.getColumn(),
 				dateDistanceFilter.getName(),
 				context.getParentContext().getDateRestrictionRange(),
@@ -36,7 +36,7 @@ public class DateDistanceFilterConverter implements FilterConverter<Range.LongRa
 		);
 
 		FilterCondition dateDistanceCondition = new DateDistanceCondition(
-				context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.EVENT_FILTER, dateDistanceSqlSelect.aliased()),
+				context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.EVENT_FILTER, dateDistanceSqlSelect.aliased()),
 				context.getValue()
 		);
 

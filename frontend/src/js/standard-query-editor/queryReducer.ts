@@ -23,35 +23,35 @@ import { acceptUploadedConceptsOrFilter } from "../query-upload-concept-list-mod
 import { isMovedObject } from "../ui-components/Dropzone";
 
 import {
-  dropAndNode,
-  dropOrNode,
-  resetTable,
+  addConceptToNode,
   clearQuery,
   deleteGroup,
   deleteNode,
-  toggleTable,
-  updateNodeLabel,
-  setFilterValue,
-  toggleExcludeGroup,
-  loadSavedQuery,
-  toggleTimestamps,
-  toggleSecondaryIdExclude,
-  resetAllSettings,
-  addConceptToNode,
-  removeConceptFromNode,
-  switchFilterMode,
-  setDateColumn,
-  setSelects,
-  setTableSelects,
+  dropAndNode,
+  dropOrNode,
   expandPreviousQuery,
   loadFilterSuggestionsSuccess,
+  loadSavedQuery,
+  removeConceptFromNode,
+  resetAllSettings,
+  resetTable,
+  setDateColumn,
+  setFilterValue,
+  setSelects,
+  setTableSelects,
+  switchFilterMode,
+  toggleExcludeGroup,
+  toggleSecondaryIdExclude,
+  toggleTable,
+  toggleTimestamps,
+  updateNodeLabel,
 } from "./actions";
 import type {
-  StandardQueryNodeT,
-  QueryGroupType,
   DragItemConceptTreeNode,
-  FilterWithValueType,
   DragItemQuery,
+  FilterWithValueType,
+  QueryGroupType,
+  StandardQueryNodeT,
   TableWithFilterValueT,
 } from "./types";
 
@@ -314,7 +314,12 @@ const setNodeFilterValue = (
   state: StandardQueryStateT,
   payload: ActionType<typeof setFilterValue>["payload"],
 ) => {
-  return setNodeFilterProperties(state, payload, { value: payload.value });
+  return setNodeFilterProperties(
+    state,
+    payload,
+    // @ts-ignore TODO: maybe use generic types here
+    { value: payload.value },
+  );
 };
 
 const setNodeTableSelects = (

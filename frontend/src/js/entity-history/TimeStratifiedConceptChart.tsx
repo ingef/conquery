@@ -81,7 +81,7 @@ export const TimeStratifiedConceptChart = ({
           const nA = Number(a?.label);
           const nB = Number(b?.label);
           if (!isNaN(nA) && !isNaN(nB)) return nA - nB;
-          return a?.label.localeCompare(b?.label!);
+          return a?.label.localeCompare(b?.label);
         }),
     ),
   ];
