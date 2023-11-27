@@ -590,7 +590,7 @@ export type BaseStatistics = {
   description?: string;
   count: number;
   nullValues: number;
-}
+};
 
 export type NumberStatistics = BaseStatistics & {
   type: SelectorResultDataType;
@@ -599,21 +599,33 @@ export type NumberStatistics = BaseStatistics & {
   min: number;
   max: number;
   samples: number[];
-}
+};
 
 export type StringStatistics = BaseStatistics & {
   type: "STRING";
   histogram: {
     [value: string]: number;
-  }
-}
+  };
+};
 
-export type PreviewStatistics = NumberStatistics | StringStatistics;
+export type DateStatistics = BaseStatistics & {
+  type: "DATE_RANGE" | "DATE";
+  quarterCounts: Record<string, number>;
+  monthCounts: Record<string, number>;
+  span: {
+    min: string; // format "yyyy-MM-dd"
+    max: string;
+  };
+};
+
+export type PreviewStatistics =
+  | NumberStatistics
+  | StringStatistics
+  | DateStatistics;
 
 export type PreviewStatisticsResponse = {
   entities: number;
   total: number; // Number of rows
   statistics: PreviewStatistics[];
   dateRange: DateRangeT;
-}
-
+};
