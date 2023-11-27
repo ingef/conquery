@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.types.ResultType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -21,40 +22,47 @@ public abstract class ColumnStatsCollector<T> {
 	@JsonIgnore
 	private final PrintSettings printSettings;
 
-	public static ColumnStatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, BooleanSupplier samplePicker, ResultType type) {
-		if (type instanceof ResultType.IntegerT) {
-			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker, printSettings);
-		}
+	public static ColumnStatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, BooleanSupplier samplePicker, ResultType type, UniqueNamer uniqueNamer) {
 
-		if (type instanceof ResultType.NumericT) {
-			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker, printSettings);
-		}
-
-		if (type instanceof ResultType.MoneyT) {
-			return new NumberColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, samplePicker, printSettings);
-		}
-
-		if (type instanceof ResultType.StringT) {
-			return new StringColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, printSettings);
-		}
-
-		if (type instanceof ResultType.BooleanT) {
-			return new BooleanColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), type, printSettings);
-		}
-
-		if (type instanceof ResultType.DateT) {
-			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), samplePicker, type, printSettings);
-		}
-
-		if (type instanceof ResultType.DateRangeT) {
-			return new DateColumnStatsCollector(info.defaultColumnName(printSettings), info.userColumnName(printSettings), info.getDescription(), samplePicker, type, printSettings);
-		}
-
+		// List recursion must be done before assigning uniqueNames
 		if (type instanceof ResultType.ListT listT){
-			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, samplePicker, listT.getElementType());
+			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, samplePicker, listT.getElementType(), uniqueNamer);
 			// name label type are discarded when using ListColumnStatsCollector
 			return new ListColumnStatsCollector<>(null, null, null, type, columnStatsCollector, printSettings);
 		}
+
+
+		final String name = uniqueNamer.getUniqueName(info);
+		final String label = info.defaultColumnName(printSettings);
+
+		if (type instanceof ResultType.IntegerT) {
+			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, samplePicker, printSettings);
+		}
+
+		if (type instanceof ResultType.NumericT) {
+			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, samplePicker, printSettings);
+		}
+
+		if (type instanceof ResultType.MoneyT) {
+			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, samplePicker, printSettings);
+		}
+
+		if (type instanceof ResultType.StringT) {
+			return new StringColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
+		}
+
+		if (type instanceof ResultType.BooleanT) {
+			return new BooleanColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
+		}
+
+		if (type instanceof ResultType.DateT) {
+			return new DateColumnStatsCollector(name, label, info.getDescription(), samplePicker, type, printSettings);
+		}
+
+		if (type instanceof ResultType.DateRangeT) {
+			return new DateColumnStatsCollector(name, label, info.getDescription(), samplePicker, type, printSettings);
+		}
+
 
 		throw new IllegalArgumentException("Don't know how to describe column of type %s".formatted(type));
 	}

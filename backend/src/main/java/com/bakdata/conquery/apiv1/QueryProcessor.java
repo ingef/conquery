@@ -81,6 +81,7 @@ import com.bakdata.conquery.models.query.preview.EntityPreviewExecution;
 import com.bakdata.conquery.models.query.preview.EntityPreviewForm;
 import com.bakdata.conquery.models.query.queryplan.DateAggregationAction;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.statistics.ColumnStatsCollector;
 import com.bakdata.conquery.models.query.statistics.ResultStatistics;
@@ -608,11 +609,12 @@ public class QueryProcessor {
 		final boolean hasValidityDates = resultInfos.get(0).getSemantics().contains(new SemanticType.EventDateT());
 		final ResultType dateType = resultInfos.get(0).getType();
 
-		//TODO is this sufficient?
 		final PrintSettings printSettings = new PrintSettings(false, I18n.LOCALE.get(), managedQuery.getNamespace(), config, null);
+		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
+
 
 		final List<ColumnStatsCollector> statsCollectors = resultInfos.stream()
-																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, samplePicker, info.getType()))
+																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, samplePicker, info.getType(), uniqueNamer))
 																	  .collect(Collectors.toList());
 
 		final IntSet entities = new IntOpenHashSet();

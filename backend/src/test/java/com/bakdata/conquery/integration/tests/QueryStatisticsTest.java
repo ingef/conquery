@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -57,7 +58,9 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 
 		final ResultStatistics results = conquery.getClient().target(
 														 uriBuilder.buildFromMap(Map.of(ResourceConstants.QUERY, executionId.toString())))
-												 .request().get(ResultStatistics.class);
+												 .request()
+												 .acceptLanguage(Locale.ENGLISH)
+												 .get(ResultStatistics.class);
 
 
 		// We are using TreeMaps for Maps that have a defined order.
@@ -66,10 +69,9 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 				6,
 				List.of(
 						new DateColumnStatsCollector.ColumnDescription(
-								"Datumswerte",
-								"Datumswerte",
+								"dates",
+								"dates",
 								"",
-
 								6,
 								0,
 								new TreeMap<>(Map.of(
@@ -94,8 +96,8 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 						),
 						new DateColumnStatsCollector.ColumnDescription(
 								"concept date",
-								null,
-								null,
+								"concept date",
+								"This is a Description!",
 
 								6,
 								0,
@@ -121,7 +123,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 						),
 						new StringColumnStatsCollector.ColumnDescription(
 								"concept string",
-								null,
+								"concept string",
 								null,
 								Map.of(
 										"a", 1L,
@@ -132,7 +134,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 						),
 						new StringColumnStatsCollector.ColumnDescription(
 								"concept mapped",
-								null,
+								"concept mapped",
 								null,
 								Map.of(
 										"BEH", 1L,
@@ -143,7 +145,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 						),
 						new NumberColumnStatsCollector.ColumnDescription(
 								"concept int",
-								null,
+								"concept int",
 								null,
 								"INTEGER",
 								6,
@@ -163,7 +165,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 						),
 						new NumberColumnStatsCollector.ColumnDescription(
 								"concept real",
-								null,
+								"concept real",
 								null,
 								"NUMERIC",
 								6,
@@ -183,7 +185,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 						),
 						new NumberColumnStatsCollector.ColumnDescription(
 								"concept decimal",
-								null,
+								"concept decimal",
 								null,
 								"NUMERIC",
 								6,
@@ -203,7 +205,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 						),
 						new NumberColumnStatsCollector.ColumnDescription(
 								"concept money",
-								null,
+								"concept money",
 								null,
 								"MONEY",
 								6,
