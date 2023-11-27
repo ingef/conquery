@@ -102,6 +102,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
 
+
 		public TestPostgreSqlDialect(DSLContext dslContext) {
 			super(dslContext);
 		}
