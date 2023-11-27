@@ -55,10 +55,11 @@ function transformNumberStatsToData(
     min: stats.min,
     max: stats.max,
     size: PDF_POINTS,
-    width: 2 // TODO calculate this?!?!
+    width: 5 // TODO calculate this?!?!
   };
+  console.log(stats);
   const pdf: {x: number, y: number}[] = pdfast.create(stats.samples.sort((a,b) => a-b), options);
-  const labels = pdf.map((p) => p.x.toPrecision(DIGITS_OF_PRECISION));
+  const labels = pdf.map((p) => p.x);
   const values = pdf.map((p) => p.y);
   return {
     labels,

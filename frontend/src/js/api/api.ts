@@ -407,7 +407,6 @@ export const usePostResolveEntities = () => {
 export const useGetResult = () => {
   return useCallback(
     (queryId: string) => fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`)),
-    //(_: string) => fetch(`http://localhost:8088/api/result/test.arrow`),
     [],
   );
 };

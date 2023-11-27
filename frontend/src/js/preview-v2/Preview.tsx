@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,12 +14,10 @@ import PreviewInfo from "../preview/PreviewInfo";
 import Charts from "./Charts";
 import DiagramModal from "./DiagramModal";
 import HeadlineStats from "./HeadlineStats";
-import SelectBox, { SelectItem } from "./SelectBox";
+import SelectBox from "./SelectBox";
 import Table from "./Table";
 import { closePreview } from "./actions";
 import { PreviewStateT } from "./reducer";
-import DiagramModal from "./DiagramModal";
-import FaIcon from "../icon/FaIcon";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import ScrollBox from "./ScrollBox";
 
@@ -85,41 +82,19 @@ export default function Preview() {
   const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
   const dispatch = useDispatch();
   const { t } = useTranslation();
-  const getStats = usePreviewStatistics();
-  const [query] = useState<number>(12);
-  const [statistics, setStatistics] =
-    useState<PreviewStatisticsResponse | null>(null);
-
-  
   const [selectBoxOpen, setSelectBoxOpen] = useState<boolean>(false);
   const [page, setPage] = useState<number>(0);
   const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
-  
+  const statistics = preview.statisticsData;
+
   useHotkeys("esc", () => {
     onClose();
   });
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setStatistics(await getStats(query));
-      } catch (e) {
-        dispatch(
-          setMessage({
-            message: t("preview.loadingError"),
-            type: SnackMessageType.ERROR,
-          }),
-        );
-        console.error(e);
-      }
-    }
-    fetchData();
-  }, [query, dispatch, getStats, t]);
-
+  
   useEffect(() => {
     setPage(0);
-  }, [statistics]);
+  }, [preview.statisticsData]);
 
   return (
     <FullScreen>
@@ -140,7 +115,7 @@ export default function Preview() {
           items={statistics?.statistics ?? ([] as PreviewStatistics[])}
           onChange={(res) => {
             const index = statistics?.statistics.findIndex(
-              (stat) => stat.name === res.name,
+              (stat:any) => stat.name === res.name,
             );
             if (index !== undefined && index !== null) {
               setPage(Math.floor(index / 4));
@@ -150,19 +125,7 @@ export default function Preview() {
           isOpen={selectBoxOpen}
           setIsOpen={setSelectBoxOpen}
         />
-        {statistics === null ? (
-          <HeadlineStats loading={true} />
-        ) : (
-          <HeadlineStats
-            numberOfRows={statistics.total}
-            dateRange={statistics.dateRange}
-            missingValues={statistics.statistics.reduce(
-              (acc, obj) => acc + (obj.nullValues ?? 0),
-              0,
-            )}
-            loading={false}
-          />
-        )}
+        <HeadlineStats statistics={statistics} />
       </Headline>
       {statistics ? (
         <SxCharts

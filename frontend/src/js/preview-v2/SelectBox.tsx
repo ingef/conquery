@@ -3,7 +3,7 @@ import { SetStateAction, useMemo, useRef, useState } from "react";
 
 import { Input } from "../ui-components/InputSelect/InputSelectComponents";
 import FaIcon from "../icon/FaIcon";
-import { faCaretDown, faCaretUp, faCheck } from "@fortawesome/free-solid-svg-icons";
+import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useClickOutside } from "../common/helpers/useClickOutside";
 
 export interface SelectItem {
@@ -79,7 +79,15 @@ export default function SelectBox<T extends SelectItem>({
   useClickOutside(clickOutsideRef, () => setIsOpen(false));
 
   const displayedItems = useMemo(() => {
-    return items.filter((item) => item.label.toLowerCase().includes(searchTerm.toLowerCase()));
+    return items.filter((item) => {
+      if (searchTerm === "") {
+        return true;
+      }
+      if (item.label === null) {
+        return false;
+      }
+      return item.label.toLowerCase().includes(searchTerm.toLowerCase())
+    });
   }, [items, searchTerm]);
 
   return (

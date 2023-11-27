@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
 import { t } from "i18next";
-import { DateRangeT } from "../api/types";
 import { PreviewStatisticsResponse } from "../api/types";
 import { getDiffInDays, parseDate } from "../common/helpers/dateHelper";
 
@@ -32,9 +31,9 @@ export type HeadlineStatsProps = {
 };
 
 export default function HeadlineStats(
-  props: HeadlineStatsLoaded | HeadlineStatsLoading,
+  {statistics}: HeadlineStatsProps,
 ) {
-  if (props.loading) {
+  if (statistics === null) {
     return (
       <Root>
         <Key>Zeilen:</Key>
@@ -56,14 +55,13 @@ export default function HeadlineStats(
     return t("preview.dateError");
   };
 
-  const { numberOfRows, dateRange, missingValues } =
-    props as HeadlineStatsLoaded;
+  const { total, dateRange } = statistics;
 
   return (
     <Root>
       <MetaValue>
         <Key>Zeilen:</Key>
-        {numberOfRows}
+        {total}
       </MetaValue>
       <MetaValue>
         <Key>Min Datum:</Key>
@@ -81,10 +79,6 @@ export default function HeadlineStats(
               parseDate(dateRange.min, "yyyy-MM-dd") ?? new Date(),
             )} ${t("common.timeUnitDays")}`
           : t("preview.dateError")}
-      </MetaValue>
-      <MetaValue>
-        <Key>Fehlende Werte:</Key>
-        {missingValues}
       </MetaValue>
     </Root>
   );

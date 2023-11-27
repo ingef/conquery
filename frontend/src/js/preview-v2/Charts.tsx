@@ -1,7 +1,6 @@
 import styled from "@emotion/styled";
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { t } from "i18next";
-import { useState } from "react";
 
 import { PreviewStatistics } from "../api/types";
 import IconButton from "../button/IconButton";
