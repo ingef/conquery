@@ -14,6 +14,8 @@ import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.SqlQuery;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.DateDistanceFilterConverter;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistanceSelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
@@ -92,6 +94,8 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 
 	private static class TestPostgreSqlDialect extends PostgreSqlDialect implements TestSqlDialect {
 
+		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
+
 		public TestPostgreSqlDialect(DSLContext dslContext) {
 			super(dslContext);
 		}
@@ -99,7 +103,14 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		@Override
 		public List<SelectConverter<? extends Select>> getSelectConverters() {
 			return this.customizeSelectConverters(List.of(
-					new DateDistanceSelectConverter(new MockDateNowSupplier())
+					new DateDistanceSelectConverter(DATE_NOW_SUPPLIER)
+			));
+		}
+
+		@Override
+		public List<FilterConverter<?, ?>> getFilterConverters() {
+			return this.customizeFilterConverters(List.of(
+					new DateDistanceFilterConverter(DATE_NOW_SUPPLIER)
 			));
 		}
 
