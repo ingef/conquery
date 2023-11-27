@@ -71,7 +71,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 		JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
 		final BearerToken bearerToken = (BearerToken) token;
 
-		log.trace("Parsing token ({}) to extract kid from header", bearerToken.getToken());
+		log.trace("Parsing token ({}) to extract key id from header", bearerToken.getToken());
 		final String keyId = JOSEParser.parse(bearerToken.getToken()).getHeader().getKeyId();
 		log.trace("Key id of token signer: {}", keyId);
 		final PublicKey publicKey = idpConfiguration.signingKeys().get(keyId);
@@ -87,9 +87,8 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 														   .publicKey(publicKey)
 														   .audience(allowedAudience);
 
-		String subject;
 		log.trace("Verifying token");
-		AccessToken accessToken;
+		final AccessToken accessToken;
 		try {
 			verifier.verify();
 			accessToken = verifier.getToken();
@@ -98,7 +97,7 @@ public class JwtPkceVerifyingRealm extends AuthenticatingRealm implements Conque
 			log.trace("Verification failed", e);
 			throw new IncorrectCredentialsException(e);
 		}
-		subject = accessToken.getSubject();
+		final String subject = accessToken.getSubject();
 
 		if (subject == null) {
 			// Should not happen, as sub is mandatory in an access_token

@@ -104,7 +104,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	/**
 	 * See wellKnownEndpoint.
 	 */
-	private IdpConfiguration idpConfiguration;
+	private volatile IdpConfiguration idpConfiguration;
 
 	/**
 	 * A leeway for token's expiration in seconds, this should be a short time.
@@ -241,7 +241,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 
 		// Filter for keys that are used for signing (discard encryption keys)
 		final Map<String, PublicKey> signingKeys = jwks.getKeys().stream()
-													   .filter(jwk -> jwk.getPublicKeyUse().equals(JWK.Use.SIG.name()))
+													   .filter(jwk -> JWK.Use.SIG.name().equals(jwk.getPublicKeyUse()))
 													   .collect(Collectors.toMap(JWK::getKeyId, JwtPkceVerifyingRealmFactory::getPublicKey));
 
 
