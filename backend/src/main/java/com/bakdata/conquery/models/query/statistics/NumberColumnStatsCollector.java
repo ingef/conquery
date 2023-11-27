@@ -70,7 +70,12 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 	@Override
 	public ResultColumnStatistics describe() {
-		samples.sort(comparator);
+		final double p99 = getStatistics().getPercentile(99d);
+		final double maybeP01 = getStatistics().getPercentile(1d);
+
+		// If min is basically 0, we don't prune for it, as those are usually relevant values.
+		final double p01 = (Math.abs(maybeP01) < 2 * Double.MIN_VALUE) ?  Double.MIN_VALUE : maybeP01;
+
 		return new ColumnDescription(getName(), getLabel(), getDescription(), getType().toString(),
 									 (int) (getStatistics().getN() + getNulls().get()),
 									 getNulls().intValue(),
@@ -79,7 +84,8 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 									 getStatistics().getStandardDeviation(),
 									 (int) getStatistics().getMin(),
 									 (int) getStatistics().getMax(),
-									 samples
+									 // We cull extremes, as that can cause distortions when displayed.
+									 samples.stream().filter(val -> val.doubleValue() >= p01 && val.doubleValue() <= p99).sorted(comparator).toList()
 		);
 	}
 
