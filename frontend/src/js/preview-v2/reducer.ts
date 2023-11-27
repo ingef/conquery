@@ -4,14 +4,15 @@ import { PreviewStatisticsResponse } from "../api/types";
 
 import { Action } from "../app/actions";
 
-import { openPreview, closePreview, loadPreview } from "./actions";
+import { openPreview, closePreview, loadPreview, updateQueryId } from "./actions";
 
 export type PreviewStateT = {
   isOpen: boolean;
   isLoading: boolean;
-  dataLoadedForQueryId: number | null;
+  dataLoadedForQueryId: string | null;
   statisticsData: PreviewStatisticsResponse | null;
   tableData: Table | null;
+  lastQuery: string | null;
 };
 
 const initialState: PreviewStateT = {
@@ -20,6 +21,7 @@ const initialState: PreviewStateT = {
   dataLoadedForQueryId: null,
   statisticsData: null,
   tableData: null,
+  lastQuery: null,
 };
 
 export default function reducer(
@@ -53,6 +55,12 @@ export default function reducer(
         isLoading: false,
         dataLoadedForQueryId: action.payload.queryId,
         tableData: action.payload.tableData,
+        statisticsData: action.payload.statisticsData,
+      };
+    case getType(updateQueryId):
+      return {
+        ...state,
+        lastQuery: action.payload.queryId,
       };
     default:
       return state;

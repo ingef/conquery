@@ -30,7 +30,7 @@ function previewStatsIsStringStats(
 export function previewStatsIsNumberStats(
   stats: PreviewStatistics,
 ): stats is NumberStatistics {
-  return stats.type !== "STRING" && "stddev" in stats;
+  return stats.type !== "STRING"// && "stddev" in stats;
 }
 
 function transformStringStatsToData(stats: StringStatistics): ChartData<"bar"> {
@@ -75,7 +75,7 @@ function transformNumberStatsToData(
 ): ChartData<"line"> {
   const { labels, values } = interpolateNormalDistribution(
     stats.mean,
-    stats.stddev,
+    stats.stdDev,
     NORMAL_DISTRIBUTION_STEPS,
   );
   return {

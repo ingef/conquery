@@ -51,7 +51,10 @@ export default function Charts({ statistics, className, showPopup }: ChartProps)
           {statistics.slice(index * 4, (index + 1) * 4).map((statistic) => {
             return (
               <div key={statistic.name}>
-                <SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />
+                {
+                    statistic.type === "STRING" || statistic.type === "INTEGER" &&
+                   ( <SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />)
+                }
               </div>
             );
           })}

@@ -42,13 +42,8 @@ export default function DiagramModal({
                 <td>{statistic.mean.toPrecision(3)}</td>
               </tr>
               <tr>
-                <td>Median</td>
-                <td>{statistic.median.toPrecision(3)}</td>
-              </tr>
-
-              <tr>
                 <td>Standard Deviation</td>
-                <td>{statistic.stddev.toPrecision(3)}</td>
+                <td>{statistic.stdDev.toPrecision(3)}</td>
               </tr>
               <tr>
                 <td>Minimum</td>

@@ -82,6 +82,7 @@ const Header: FC = () => {
 
   const dispatch = useDispatch();
   const loadPreviewData = useLoadPreviewData();
+  const queryId = useSelector<StateT, string | null>(state => state.preview.lastQuery);
 
   return (
     <Root>
@@ -90,13 +91,17 @@ const Header: FC = () => {
         <Spacer />
         <Headline>{t("headline")}</Headline>
       </OverflowHidden>
-      <IconButton
-        icon={faStar}
-        onClick={async () => {
-          await loadPreviewData(1);
-          dispatch(openPreview());
-        }}
-      />
+      {
+        queryId && (
+            <IconButton
+              icon={faStar}
+              onClick={async () => {
+                await loadPreviewData(queryId);
+                dispatch(openPreview());
+              }}
+            />
+        )
+      }
       <Right>
         <DatasetSelector />
         {canUpload && <HistoryButton />}

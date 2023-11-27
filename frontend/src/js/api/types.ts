@@ -595,8 +595,7 @@ export type BaseStatistics = {
 export type NumberStatistics = BaseStatistics & {
   type: SelectorResultDataType;
   mean: number;
-  stddev: number;
-  median: number;
+  stdDev: number;
   min: number;
   max: number;
 }

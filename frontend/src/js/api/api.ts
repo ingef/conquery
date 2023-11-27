@@ -406,7 +406,8 @@ export const usePostResolveEntities = () => {
 
 export const useGetResult = () => {
   return useCallback(
-    (queryId: number) => fetch(getProtectedUrl(`/result/${queryId}.arrow`)),
+    //(queryId: string) => fetch(getProtectedUrl(`/result/${queryId}.arrow`)),
+    (queryId: string) => fetch(`http://localhost:8088/api/result/test.arrow`),
     [],
   );
 };
@@ -416,10 +417,10 @@ export const usePreviewStatistics = () => {
 
   return useCallback(
     (
-      queryId: number
+      queryId: string
     ) =>
       api({
-        url: getProtectedUrl(`/result/${queryId}/stats`),
+        url: getProtectedUrl(`/queries/${queryId}/statistics`),
         method: "GET",
         data: queryId,
       }),
