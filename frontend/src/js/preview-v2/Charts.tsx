@@ -52,8 +52,8 @@ export default function Charts({ statistics, className, showPopup }: ChartProps)
             return (
               <div key={statistic.name}>
                 {
-                    statistic.type === "STRING" || statistic.type === "INTEGER" &&
-                   ( <SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />)
+                    statistic.type !== "DATE_RANGE" &&
+                   (<SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />)
                 }
               </div>
             );

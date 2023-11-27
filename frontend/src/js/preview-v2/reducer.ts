@@ -47,6 +47,9 @@ export default function reducer(
     case getType(loadPreview.failure):
       return {
         ...state,
+        dataLoadedForQueryId: null,
+        statisticsData: null,
+        tableData: null,
         isLoading: false,
       };
     case getType(loadPreview.success):

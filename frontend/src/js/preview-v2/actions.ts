@@ -9,7 +9,6 @@ import { PreviewStatisticsResponse } from "../api/types";
 import { SnackMessageType } from "../snack-message/reducer";
 import { t } from "i18next";
 import { setMessage } from "../snack-message/actions";
-import { stat } from "fs";
 
 export type PreviewActions = ActionType<
   typeof loadPreview | typeof closePreview | typeof openPreview | typeof updateQueryId
@@ -78,6 +77,7 @@ export function useLoadPreviewData() {
           type: SnackMessageType.ERROR,
         }),
       );
+      dispatch(loadPreview.failure({  }));
       console.error(err);
     }
     return null;
