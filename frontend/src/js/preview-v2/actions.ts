@@ -64,11 +64,9 @@ export function useLoadPreviewData() {
     }
 
     try {
-      const stats = await getStatistics(queryId);
-      const table = await tableFromIPC(getResult(queryId));
       const payload = {
-        statisticsData: stats,
-        tableData: table,
+        statisticsData: await getStatistics(queryId),
+        tableData: await tableFromIPC(getResult(queryId)),
         queryId,
       };
       dispatch(loadPreview.success(payload));
