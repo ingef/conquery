@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -31,7 +32,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
 	private final boolean empty;
 
-	private int[] selectedValues;
+	private IntSet selectedValues;
 	private QueryExecutionContext context;
 
 	public MultiSelectFilterNode(Column column, String[] filterValue) {
