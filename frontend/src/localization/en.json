@@ -398,7 +398,8 @@
     "min": "Min date",
     "max": "Max date",
     "span": "Date span",
-    "loadingError": "An error occurred while loading the preview."
+    "loadingError": "An error occurred while loading the preview.",
+    "dateError": "Date unknown"
   },
   "login": {
     "headline": "Queries and Analyses",

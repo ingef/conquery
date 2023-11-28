@@ -598,6 +598,7 @@ export type NumberStatistics = BaseStatistics & {
   stdDev: number;
   min: number;
   max: number;
+  samples: number[];
 }
 
 export type StringStatistics = BaseStatistics & {

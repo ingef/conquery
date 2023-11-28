@@ -1,12 +1,20 @@
 import styled from "@emotion/styled";
+import { t } from "i18next";
 import { PreviewStatisticsResponse } from "../api/types";
 import { getDiffInDays, parseDate } from "../common/helpers/dateHelper";
-import { t } from "i18next";
 
 const Root = styled("div")`
   display: flex;
   flex-direction: row;
-  gap: 10px;
+  gap: 15px;
+  padding: 10px;
+  justify-content: right;
+`;
+
+const MetaValue = styled("div")`
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
 `;
 
 const Key = styled("span")`
@@ -22,30 +30,56 @@ export type HeadlineStatsProps = {
   statistics: PreviewStatisticsResponse | null;
 };
 
-export default function HeadlineStats({ statistics }: HeadlineStatsProps) {
-  const { total, dateRange, statistics: statisticsList } = statistics || {};
-  const missingValues = statisticsList?.reduce(
-    (acc, obj) => acc + (obj?.nullValues ?? 0),
-    0,
-  );
+export default function HeadlineStats(
+  {statistics}: HeadlineStatsProps,
+) {
+  if (statistics === null) {
+    return (
+      <Root>
+        <Key>Zeilen:</Key>
+        <Key>Min Datum:</Key>
+        <Key>Max Datum:</Key>
+        <Key>Datumsbereich:</Key>
+        <Key>Fehlende Werte:</Key>
+      </Root>
+    );
+  }
+
+  const parseDateToLocaleString = (date: string | undefined) => {
+    if (date) {
+      return (
+        parseDate(date, "yyyy-MM-dd")?.toLocaleDateString("de-de") ??
+        t("preview.dateError")
+      );
+    }
+    return t("preview.dateError");
+  };
+
+  const { total, dateRange } = statistics;
 
   return (
     <Root>
-      <Key>Zeilen:</Key>
-      {total}
-      <Key>Min Datum:</Key>
-      {dateRange?.min}
-      <Key>Max Datum:</Key>
-      {dateRange?.max}
-      <Key>Darumgsbereich:</Key>
-      {dateRange?.min && dateRange?.max
-        ? `${getDiffInDays(
-            parseDate(dateRange?.max, "yyyy-MM-dd") ?? new Date(),
-            parseDate(dateRange?.min, "yyyy-MM-dd") ?? new Date(),
-          )} ${t("common.timeUnitDays")}`
-        : "Datum unbekannt"}
-      <Key>Fehlende Werte:</Key>
-      {missingValues}
+      <MetaValue>
+        <Key>Zeilen:</Key>
+        {total}
+      </MetaValue>
+      <MetaValue>
+        <Key>Min Datum:</Key>
+        {parseDateToLocaleString(dateRange.min)}
+      </MetaValue>
+      <MetaValue>
+        <Key>Max Datum:</Key>
+        {parseDateToLocaleString(dateRange.max)}
+      </MetaValue>
+      <MetaValue>
+        <Key>Datumsbereich:</Key>
+        {dateRange.min && dateRange.max
+          ? `${getDiffInDays(
+              parseDate(dateRange.max, "yyyy-MM-dd") ?? new Date(),
+              parseDate(dateRange.min, "yyyy-MM-dd") ?? new Date(),
+            )} ${t("common.timeUnitDays")}`
+          : t("preview.dateError")}
+      </MetaValue>
     </Root>
   );
 }

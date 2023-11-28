@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
@@ -8,15 +8,16 @@ import { StateT } from "../app/reducers";
 
 import { PreviewStatistics } from "../api/types";
 import { TransparentButton } from "../button/TransparentButton";
+import FaIcon from "../icon/FaIcon";
 import PreviewInfo from "../preview/PreviewInfo";
 
 import Charts from "./Charts";
+import DiagramModal from "./DiagramModal";
 import HeadlineStats from "./HeadlineStats";
+import SelectBox from "./SelectBox";
 import Table from "./Table";
 import { closePreview } from "./actions";
 import { PreviewStateT } from "./reducer";
-import DiagramModal from "./DiagramModal";
-import FaIcon from "../icon/FaIcon";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import ScrollBox from "./ScrollBox";
 
@@ -71,58 +72,78 @@ const SxFaIcon = styled(FaIcon)`
   height: 30px;
 `;
 
+const SxSelectBox = styled(SelectBox)`
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.2);
+  background-color: white;
+  border-radius: ${({theme}) => theme.borderRadius};
+`;
+
 export default function Preview() {
   const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
   const dispatch = useDispatch();
   const { t } = useTranslation();
-
+  const [selectBoxOpen, setSelectBoxOpen] = useState<boolean>(false);
+  const [page, setPage] = useState<number>(0);
   const [popOver, setPopOver] = useState<PreviewStatistics | null>(null);
   const onClose = () => dispatch(closePreview());
+  const statistics = preview.statisticsData;
 
   useHotkeys("esc", () => {
     onClose();
   });
+  
+  useEffect(() => {
+    setPage(0);
+  }, [preview.statisticsData]);
 
   return (
     <FullScreen>
       <SxScrollBox>
-        <PreviewInfo
-          rawPreviewData={[]}
-          columns={[]}
-          onClose={onClose}
-          minDate={new Date()}
-          maxDate={new Date()}
+      <PreviewInfo
+        rawPreviewData={[]}
+        columns={[]}
+        onClose={onClose}
+        minDate={new Date()}
+        maxDate={new Date()}
+      />
+      <Headline>
+        <TransparentButton small onClick={onClose}>
+          {t("common.back")}
+        </TransparentButton>
+        Ergebnisvorschau
+        <SxSelectBox
+          items={statistics?.statistics ?? ([] as PreviewStatistics[])}
+          onChange={(res) => {
+            const index = statistics?.statistics.findIndex(
+              (stat:any) => stat.name === res.name,
+            );
+            if (index !== undefined && index !== null) {
+              setPage(Math.floor(index / 4));
+              setSelectBoxOpen(false);
+            }
+          }}
+          isOpen={selectBoxOpen}
+          setIsOpen={setSelectBoxOpen}
         />
-        <PreviewInfo
-          rawPreviewData={[]}
-          columns={[]}
-          onClose={onClose}
-          minDate={new Date()}
-          maxDate={new Date()}
+        <HeadlineStats statistics={statistics} />
+      </Headline>
+      {statistics ? (
+        <SxCharts
+          statistics={statistics.statistics}
+          showPopup={(statistic: PreviewStatistics) => {
+            setPopOver(statistic);
+          }}
+          page={page}
+          setPage={setPage}
         />
-        <Headline>
-          <TransparentButton small onClick={onClose}>
-            {t("common.back")}
-          </TransparentButton>
-          Ergebnisvorschau
-          <HeadlineStats statistics={preview.statisticsData} />
-        </Headline>
-        SelectBox (Konzept Liste)
-        {preview.statisticsData && preview.statisticsData.statistics ? (
-          <SxCharts
-            statistics={preview.statisticsData.statistics}
-            showPopup={(statistic: PreviewStatistics) => {
-              setPopOver(statistic);
-            }}
-          />
-        ) : (
-          <SxChartLoadingBlocker>
-            <SxFaIcon icon={faSpinner} />
-          </SxChartLoadingBlocker>
-        )}
-        {popOver && (
-          <DiagramModal statistic={popOver} onClose={() => setPopOver(null)} />
-        )}
+      ) : (
+        <SxChartLoadingBlocker>
+          <SxFaIcon icon={faSpinner} />
+        </SxChartLoadingBlocker>
+      )}
+      {popOver && (
+        <DiagramModal statistic={popOver} onClose={() => setPopOver(null)} />
+      )}
         {preview.tableData && <Table data={preview.tableData} />}
       </SxScrollBox>
     </FullScreen>

@@ -398,7 +398,8 @@
     "min": "Min Datum",
     "max": "Max Datum",
     "span": "Datumsbereich",
-    "loadingError": "Fehler beim laden der Vorschau"
+    "loadingError": "Fehler beim laden der Vorschau",
+    "dateError": "Datum unbekannt"
   },
   "login": {
     "headline": "Anfragen und Analyse",
