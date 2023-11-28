@@ -53,7 +53,7 @@ interface PropsT {
   andIdx: number;
   onDropOrNode: (node: StandardQueryNodeT, andIdx: number) => void;
   onDropFile: (file: File, andIdx: number) => void;
-  onImportLines: (lines: string[], andIdx?: number) => void;
+  onImportLines: (lines: string[], filename?: string, andIdx?: number) => void;
   onDeleteNode: (andIdx: number, orIdx: number) => void;
   onEditClick: (andIdx: number, orIdx: number) => void;
   onExpandClick: (q: QueryT) => void;
@@ -106,7 +106,8 @@ const QueryGroup = ({
     [andIdx, onDropFile],
   );
   const importLines = useCallback(
-    (lines: string[]) => onImportLines(lines, andIdx),
+    (lines: string[], filename?: string) =>
+      onImportLines(lines, filename, andIdx),
     [andIdx, onImportLines],
   );
 

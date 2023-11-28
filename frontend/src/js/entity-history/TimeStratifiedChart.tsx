@@ -1,15 +1,15 @@
 import { useTheme } from "@emotion/react";
 import styled from "@emotion/styled";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
   BarElement,
-  Tooltip,
+  CategoryScale,
+  Chart as ChartJS,
   ChartOptions,
   PointElement,
   Title,
   LineElement,
+  LinearScale,
+  Tooltip,
 } from "chart.js";
 import { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
@@ -41,13 +41,14 @@ const ChartContainer = styled("div")`
 `;
 
 export function hexToRgbA(hex: string) {
-  let c: any;
+  let c: string | string[];
   if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
     c = hex.substring(1).split("");
     if (c.length === 3) {
       c = [c[0], c[0], c[1], c[1], c[2], c[2]];
     }
     c = "0x" + c.join("");
+    // @ts-ignore TODO: clarify why this works / use a different / typed algorithm
     return [(c >> 16) & 255, (c >> 8) & 255, c & 255].join(",");
   }
   throw new Error("Bad Hex");
@@ -134,11 +135,13 @@ export const TimeStratifiedChart = ({
       scales: {
         x: {
           ticks: {
-            callback: (idx: any) => {
-              return labels[idx].length > TRUNCATE_X_AXIS_LABELS_LEN
-                ? labels[idx].substring(0, TRUNCATE_X_AXIS_LABELS_LEN - 3) +
-                    "..."
-                : labels[idx];
+            callback: (idx: string | number) => {
+              return labels[idx as number].length > TRUNCATE_X_AXIS_LABELS_LEN
+                ? labels[idx as number].substring(
+                    0,
+                    TRUNCATE_X_AXIS_LABELS_LEN - 3,
+                  ) + "..."
+                : labels[idx as number];
             },
           },
         },

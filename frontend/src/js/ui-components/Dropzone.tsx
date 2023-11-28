@@ -114,7 +114,11 @@ const Dropzone = <DroppableObject extends PossibleDroppableObject>(
   const [{ canDrop: canDropResult, isOver, item }, dropRef] = useDrop<
     DroppableObject,
     void,
-    any
+    {
+      canDrop: boolean;
+      isOver: boolean;
+      item: unknown;
+    }
   >({
     accept: acceptedDropTypes,
     drop: onDrop,

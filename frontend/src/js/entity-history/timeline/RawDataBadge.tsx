@@ -28,7 +28,7 @@ export const RawDataBadge = ({ className, event, sourceColumn }: Props) => {
         }
       }}
     >
-      {event[sourceColumn.label]}
+      {event[sourceColumn.label] as string}
     </Badge>
   );
 };

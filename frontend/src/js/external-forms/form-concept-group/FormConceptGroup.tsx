@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ReactNode, useEffect, useState, useRef, useMemo } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { usePostPrefixForSuggestions } from "../../api/api";
@@ -38,10 +38,10 @@ import {
 import FormConceptCopyModal from "./FormConceptCopyModal";
 import FormConceptNode from "./FormConceptNode";
 import {
+  FormConceptGroupT,
   addConcept,
   addValue,
   copyConcept,
-  FormConceptGroupT,
   initializeConcept,
   insertValue,
   onToggleIncludeSubnodes,
@@ -70,7 +70,6 @@ interface Props {
   tooltip?: string;
   newValue: FormConceptGroupT;
   isSingle?: boolean;
-  optional?: boolean;
   disallowMultipleColumns?: boolean;
   blocklistedTables?: string[];
   allowlistedTables?: string[];
@@ -88,6 +87,7 @@ interface Props {
     row: FormConceptGroupT;
     i: number;
   }) => ReactNode;
+  rowPrefixFieldname?: string;
 }
 
 const DropzoneListItem = styled("div")``;
@@ -189,7 +189,6 @@ const FormConceptGroup = (props: Props) => {
       <DropzoneList /* TODO: ADD GENERIC TYPE <ConceptQueryNodeType> */
         ref={dropzoneRef}
         tooltip={props.tooltip}
-        optional={props.optional}
         label={
           <>
             {props.label}
@@ -218,27 +217,36 @@ const FormConceptGroup = (props: Props) => {
             const concept = isMovedObject(item)
               ? copyConcept(item)
               : initializeConcept(item, defaults, tableConfig);
-            let newPropsValue = props.value;
+
             let insertIndex = i;
+            let newPropsValue = props.value;
+            const newValue = JSON.parse(JSON.stringify(props.newValue));
+
             if (isMovedObject(item)) {
               const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =
                 item.dragContext;
 
               if (movedFromFieldName === props.fieldName) {
-                const willConceptMoveDown =
-                  i > movedFromAndIdx &&
+                const movedConceptWasLast =
                   props.value[movedFromAndIdx].concepts.length === 1;
+                const willConceptMoveDown =
+                  i > movedFromAndIdx && movedConceptWasLast;
+
                 if (willConceptMoveDown) {
                   insertIndex = i - 1;
                 }
-                newPropsValue =
-                  props.value[movedFromAndIdx].concepts.length === 1
-                    ? removeValue(props.value, movedFromAndIdx)
-                    : removeConcept(
-                        props.value,
-                        movedFromAndIdx,
-                        movedFromOrIdx,
-                      );
+                newPropsValue = movedConceptWasLast
+                  ? removeValue(props.value, movedFromAndIdx)
+                  : removeConcept(props.value, movedFromAndIdx, movedFromOrIdx);
+
+                // rowPrefixField is a special property that is only used in an edge case form,
+                // used for tagging concepts. We only need to pass it back into the value
+                // if the concept is moved to a different position in the same field.
+                if (props.rowPrefixFieldname) {
+                  newValue[props.rowPrefixFieldname] =
+                    // @ts-ignore rowPrefixFieldname is dynamic, and since it's an edge case, we're not typing this
+                    props.value[movedFromAndIdx][props.rowPrefixFieldname];
+                }
               } else {
                 if (exists(item.dragContext.deleteFromOtherField)) {
                   item.dragContext.deleteFromOtherField();
@@ -261,8 +269,8 @@ const FormConceptGroup = (props: Props) => {
         onDropFile={(file) =>
           onDropFile(file, { valueIdx: props.value.length })
         }
-        onImportLines={(lines) =>
-          onImportLines(lines, { valueIdx: props.value.length })
+        onImportLines={(lines, filename) =>
+          onImportLines({ lines, filename }, { valueIdx: props.value.length })
         }
         onDrop={(item: DragItemFile | DragItemConceptTreeNode) => {
           setScrollToDropzone(true);
@@ -273,6 +281,23 @@ const FormConceptGroup = (props: Props) => {
           }
 
           if (props.isValidConcept && !props.isValidConcept(item)) return;
+
+          const newValue = JSON.parse(JSON.stringify(props.newValue));
+
+          // rowPrefixField is a special property that is only used in an edge case form,
+          // for a detailed explanation see the comment in the dropBetween function
+          if (isMovedObject(item)) {
+            const { movedFromFieldName, movedFromAndIdx } = item.dragContext;
+
+            if (
+              movedFromFieldName === props.fieldName &&
+              props.rowPrefixFieldname
+            ) {
+              newValue[props.rowPrefixFieldname] =
+                // @ts-ignore rowPrefixFieldname is dynamic, and since it's an edge case, we're not typing this
+                props.value[movedFromAndIdx][props.rowPrefixFieldname];
+            }
+          }
 
           const concept = isMovedObject(item)
             ? copyConcept(item)
@@ -356,6 +381,10 @@ const FormConceptGroup = (props: Props) => {
                           : removeConcept(props.value, i, j),
                       );
                     }}
+                    // row_prefix is a special property that is only used in an edge case form.
+                    // To support reordering of concepts this property needs
+                    // to be passed to the concept node
+                    rowPrefixFieldname={props.rowPrefixFieldname}
                     expand={{
                       onClick: () =>
                         props.onChange(
@@ -376,8 +405,11 @@ const FormConceptGroup = (props: Props) => {
                 ) : (
                   <DropzoneWithFileInput /* TODO: ADD GENERIC TYPE <DragItemConceptTreeNode> */
                     acceptedDropTypes={DROP_TYPES}
-                    onImportLines={(lines) =>
-                      onImportLines(lines, { valueIdx: i, conceptIdx: j })
+                    onImportLines={(lines, filename) =>
+                      onImportLines(
+                        { lines, filename },
+                        { valueIdx: i, conceptIdx: j },
+                      )
                     }
                     onDrop={(item: DragItemConceptTreeNode | DragItemFile) => {
                       if (item.type === "__NATIVE_FILE__") {
@@ -453,7 +485,8 @@ const FormConceptGroup = (props: Props) => {
             );
           }}
           onDropConcept={(concept) => {
-            let { valueIdx, conceptIdx } = editedFormQueryNodePosition;
+            let { valueIdx } = editedFormQueryNodePosition;
+            const { conceptIdx } = editedFormQueryNodePosition;
             let updatedValue = props.value;
             if (isMovedObject(concept)) {
               const { movedFromFieldName, movedFromAndIdx, movedFromOrIdx } =

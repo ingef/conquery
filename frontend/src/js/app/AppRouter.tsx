@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import {
   AuthTokenContextProvider,

@@ -79,7 +79,7 @@ export const useApi = <T>() => {
 
 async function getCacheHeaders(
   cacheConfig: CustomCacheConfig,
-): Promise<{ "If-None-Match": string } | {}> {
+): Promise<{ "If-None-Match": string } | object> {
   if (!cacheConfig.etagCacheKey) return {};
 
   const item = await getCachedEtagResource(cacheConfig.etagCacheKey);
@@ -88,7 +88,7 @@ async function getCacheHeaders(
 }
 
 function maybeCacheResponse(
-  response: AxiosResponse<Object>,
+  response: AxiosResponse<object>,
   cacheConfig: CustomCacheConfig,
 ) {
   const { etagCacheKey } = cacheConfig;

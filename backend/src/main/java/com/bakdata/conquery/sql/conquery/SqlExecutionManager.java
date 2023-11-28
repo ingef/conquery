@@ -11,11 +11,14 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.ExecutionManager;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.sql.SqlContext;
-import com.bakdata.conquery.sql.SqlQuery;
 import com.bakdata.conquery.sql.conversion.SqlConverter;
+import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
+import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.extern.slf4j.Slf4j;
@@ -27,13 +30,19 @@ public class SqlExecutionManager implements ExecutionManager {
 	private final SqlConverter converter;
 
 	public SqlExecutionManager(final SqlContext context, MetaStorage metaStorage) {
+		SqlDialect sqlDialect = context.getSqlDialect();
 		this.metaStorage = metaStorage;
-		this.executionService = new SqlExecutionService(context.getSqlDialect().getDSLContext());
-		this.converter = new SqlConverter(context.getSqlDialect(), context.getConfig());
+		this.executionService = new SqlExecutionService(
+				sqlDialect.getDSLContext(),
+				ResultSetProcessorFactory.create(sqlDialect)
+		);
+		this.converter = new SqlConverter(sqlDialect, context.getConfig());
 	}
 
 	@Override
 	public SqlManagedQuery runQuery(Namespace namespace, QueryDescription query, User user, Dataset submittedDataset, ConqueryConfig config, boolean system) {
+		// required for properly setting date aggregation action in all nodes of the query graph
+		query.resolve(new QueryResolveContext(namespace, config, metaStorage, null));
 		SqlManagedQuery execution = createExecution(query, user, submittedDataset, system);
 		execution.initExecutable(namespace, config);
 		execution.start();

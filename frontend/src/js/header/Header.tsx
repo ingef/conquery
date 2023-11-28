@@ -9,7 +9,7 @@ import { HistoryButton } from "../button/HistoryButton";
 import IconButton from "../button/IconButton";
 import DatasetSelector from "../dataset/DatasetSelector";
 import { openPreview, useLoadPreviewData } from "../preview-v2/actions";
-import { canUploadResult, useHideLogoutButton } from "../user/selectors";
+import { canViewEntityPreview, useHideLogoutButton } from "../user/selectors";
 
 import { HelpMenu } from "./HelpMenu";
 import LogoutButton from "./LogoutButton";
@@ -73,7 +73,7 @@ const Headline = styled("h1")`
 
 const Header: FC = () => {
   const { t } = useTranslation();
-  const canUpload = useSelector<StateT, boolean>(canUploadResult);
+  const canViewHistory = useSelector<StateT, boolean>(canViewEntityPreview);
   const hideLogoutButton = useHideLogoutButton();
   const { manualUrl, contactEmail } = useSelector<
     StateT,
@@ -104,7 +104,7 @@ const Header: FC = () => {
       }
       <Right>
         <DatasetSelector />
-        {canUpload && <HistoryButton />}
+        {canViewHistory && <HistoryButton />}
         {(manualUrl || contactEmail) && (
           <HelpMenu manualUrl={manualUrl} contactEmail={contactEmail} />
         )}

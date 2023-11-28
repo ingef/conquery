@@ -4,6 +4,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
@@ -25,6 +26,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.index.IndexKey;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
@@ -32,6 +34,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.ShardNodeInformation;
 import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.cache.CacheStats;
 import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvWriter;
 import groovy.lang.GroovyShell;
@@ -302,5 +305,18 @@ public class AdminProcessor {
 		catch (Exception e) {
 			return ExceptionUtils.getStackTrace(e);
 		}
+	}
+
+	public Set<IndexKey<?>> getLoadedIndexes() {
+		return datasetRegistry.getLoadedIndexes();
+	}
+
+	public CacheStats getIndexServiceStatistics() {
+		return datasetRegistry.getIndexServiceStatistics();
+	}
+
+	public void resetIndexService() {
+		log.info("Resetting index service");
+		datasetRegistry.resetIndexService();
 	}
 }

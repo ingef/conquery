@@ -32,12 +32,8 @@ public class LocalManagerProvider implements ManagerProvider {
 
 		SqlConnectorConfig sqlConnectorConfig = config.getSqlConnectorConfig();
 		DSLContext dslContext = DslContextFactory.create(sqlConnectorConfig);
-		SqlDialect sqlDialect = switch (sqlConnectorConfig.getDialect()) {
-			case POSTGRESQL -> new PostgreSqlDialect(dslContext);
-			case HANA -> new HanaSqlDialect(dslContext);
-		};
+		SqlDialect sqlDialect = createSqlDialect(sqlConnectorConfig, dslContext);
 		SqlContext sqlContext = new SqlContext(sqlConnectorConfig, sqlDialect);
-
 		NamespaceHandler<LocalNamespace> namespaceHandler = new LocalNamespaceHandler(config, creator, sqlContext);
 		DatasetRegistry<LocalNamespace> datasetRegistry = ManagerProvider.createDatasetRegistry(namespaceHandler, config, creator);
 		creator.init(datasetRegistry);
@@ -53,5 +49,12 @@ public class LocalManagerProvider implements ManagerProvider {
 				creator,
 				ManagerProvider.newJobManager(config)
 		);
+	}
+
+	protected SqlDialect createSqlDialect(SqlConnectorConfig sqlConnectorConfig, DSLContext dslContext) {
+		return switch (sqlConnectorConfig.getDialect()) {
+			case POSTGRESQL -> new PostgreSqlDialect(dslContext);
+			case HANA -> new HanaSqlDialect(dslContext);
+		};
 	}
 }

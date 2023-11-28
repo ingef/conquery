@@ -1,18 +1,18 @@
 import type {
+  BigMultiSelectFilterT,
   ConceptIdT,
-  QueryIdT,
-  RangeFilterT,
+  DateColumnT,
+  DateRangeT,
+  InfoT,
   MultiSelectFilterT,
   MultiSelectFilterValueT,
+  QueryIdT,
+  QueryT,
+  RangeFilterT,
   SelectFilterT,
   SelectFilterValueT,
   SelectorT,
   TableT,
-  DateRangeT,
-  DateColumnT,
-  QueryT,
-  BigMultiSelectFilterT,
-  InfoT,
 } from "../api/types";
 import { DNDType } from "../common/constants/dndTypes";
 
@@ -58,6 +58,7 @@ export interface DragContext {
   movedFromOrIdx?: number;
   deleteFromOtherField?: () => void;
   movedFromFieldName?: string;
+  rowPrefixFieldname?: string;
 }
 
 export interface DragItemQuery extends PreviousQueryQueryNodeType {

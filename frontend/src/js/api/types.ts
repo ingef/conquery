@@ -21,7 +21,7 @@ export interface SelectOptionT {
   displayLabel?: ReactNode;
 }
 
-// Example: { min: "2019-01-01", max: "2019-12-31" }
+// Example: { min: "2019-01-01", max: "2019-12-31" }
 export interface DateRangeT {
   min?: string;
   max?: string;

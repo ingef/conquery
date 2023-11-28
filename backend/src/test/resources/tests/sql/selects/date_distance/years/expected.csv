@@ -1,9 +1,9 @@
-pid,date_distance_years
-2,12
-4,9
-7,7
-3,12
-6,8
-5,15
-1,11
-8,11
+result,dates,Geschlecht SELECT date_distance_years
+2,{},12
+4,{},9
+7,{},7
+3,{},12
+6,{},8
+5,{},15
+1,{},11
+8,{},11

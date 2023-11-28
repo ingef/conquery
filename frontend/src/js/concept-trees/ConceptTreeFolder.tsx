@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { FC } from "react";
 
-import type { ConceptT, ConceptIdT } from "../api/types";
+import type { ConceptIdT, ConceptT } from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 
 import ConceptTree from "./ConceptTree";

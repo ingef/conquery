@@ -34,6 +34,9 @@
 						<a class="nav-link" href="/admin-ui/datasets">Datasets</a>
 					</li>
 					<li class="nav-item">
+						<a class="nav-link" href="/${ctx.staticUriElem.ADMIN_UI_SERVLET_PATH}/${ctx.staticUriElem.INDEX_SERVICE_PATH_ELEMENT}">Index Service</a>
+					</li>
+					<li class="nav-item">
 						<a class="nav-link" href="/admin-ui/jobs">Jobs</a>
 					</li>
 					<li class="nav-item">

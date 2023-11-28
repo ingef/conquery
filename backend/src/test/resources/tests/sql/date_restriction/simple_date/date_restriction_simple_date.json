@@ -1,7 +1,7 @@
 {
   "label": "Date restriction query with simple date validity date",
-  "type": "SQL_TEST",
-  "expectedCsv": "expected.csv",
+  "type": "SQL_QUERY_TEST",
+  "expectedCsv": "tests/sql/date_restriction/simple_date/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -21,16 +21,7 @@
             "label": "Geschlecht SELECT",
             "tables": [
               {
-                "id": "geschlecht_select.geschlecht_connector",
-                "filters": [
-                  {
-                    "filter": "geschlecht_select.geschlecht_connector.geschlecht",
-                    "type": "BIG_MULTI_SELECT",
-                    "value": [
-                      "f"
-                    ]
-                  }
-                ]
+                "id": "geschlecht_select.geschlecht_connector"
               }
             ]
           }
@@ -49,12 +40,6 @@
           "validityDates": {
             "label": "datum",
             "column": "table1.datum"
-          },
-          "filters": {
-            "label": "geschlecht",
-            "description": "Geschlecht zur gegebenen Datumseinschränkung",
-            "column": "table1.geschlecht",
-            "type": "SELECT"
           }
         }
       ]
@@ -73,10 +58,6 @@
           {
             "name": "datum",
             "type": "DATE"
-          },
-          {
-            "name": "geschlecht",
-            "type": "STRING"
           }
         ]
       }

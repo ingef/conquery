@@ -3,14 +3,17 @@ package com.bakdata.conquery.sql.conversion.dialect;
 import java.sql.Date;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import org.jooq.Condition;
 import org.jooq.DatePart;
 import org.jooq.Field;
 import org.jooq.Name;
+import org.jooq.WindowSpecificationRowsStep;
 import org.jooq.impl.DSL;
 
 /**
@@ -18,10 +21,20 @@ import org.jooq.impl.DSL;
  *
  * @see <a href="https://www.postgresql.org/docs/15/functions.html">PostgreSQL Documentation</a>
  */
-public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
+class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 
 	private static final String INFINITY_DATE_VALUE = "infinity";
 	private static final String MINUS_INFINITY_DATE_VALUE = "-infinity";
+
+	@Override
+	public String getMaxDateExpression() {
+		return INFINITY_DATE_VALUE;
+	}
+
+	@Override
+	public String getMinDateExpression() {
+		return MINUS_INFINITY_DATE_VALUE;
+	}
 
 	@Override
 	public Condition dateRestriction(ColumnDateRange dateRestriction, ColumnDateRange validityDate) {
@@ -51,10 +64,12 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 			endDateExpression = dateRestriction.getMax().toString();
 		}
 
-		Field<Object> dateRestrictionRange = DSL.field(
-				"daterange({0}::date, {1}::date, '[]')",
-				DSL.val(startDateExpression),
-				DSL.val(endDateExpression)
+		Field<Object> dateRestrictionRange = DSL.function(
+				"daterange",
+				Object.class,
+				toDateField(startDateExpression),
+				toDateField(endDateExpression),
+				DSL.val("[]")
 		);
 
 		return ColumnDateRange.of(dateRestrictionRange)
@@ -64,24 +79,35 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public ColumnDateRange daterange(ValidityDate validityDate, String qualifier, String conceptLabel) {
 
-		Field<Object> dateRange;
+		Field<?> dateRange;
 
 		if (validityDate.getEndColumn() != null) {
 
-			Field<Object> startColumn = DSL.field(DSL.name(qualifier, validityDate.getStartColumn().getName()));
-			Field<Object> endColumn = DSL.field(DSL.name(qualifier, validityDate.getEndColumn().getName()));
+			Field<?> startColumn = DSL.coalesce(
+					DSL.field(DSL.name(qualifier, validityDate.getStartColumn().getName())),
+					toDateField(MINUS_INFINITY_DATE_VALUE)
+			);
+			Field<?> endColumn = DSL.coalesce(
+					DSL.field(DSL.name(qualifier, validityDate.getEndColumn().getName())),
+					toDateField(INFINITY_DATE_VALUE)
+			);
 
 			dateRange = daterange(startColumn, endColumn, "[]");
 		}
 		else {
-			Field<Object> column = DSL.field(DSL.name(qualifier, validityDate.getColumn().getName()));
-			dateRange = switch (validityDate.getColumn().getType()) {
+			Column validityDateColumn = validityDate.getColumn();
+			dateRange = switch (validityDateColumn.getType()) {
 				// if validityDateColumn is a DATE_RANGE we can make use of Postgres' integrated daterange type.
-				case DATE_RANGE -> column;
+				case DATE_RANGE -> DSL.field(validityDateColumn.getName());
 				// if the validity date column is not of daterange type, we construct it manually
-				case DATE -> daterange(column, column, "[]");
+				case DATE -> {
+					Field<Date> column = DSL.field(DSL.name(qualifier, validityDate.getColumn().getName()), Date.class);
+					Field<Date> startColumn = DSL.coalesce(column, toDateField(MINUS_INFINITY_DATE_VALUE));
+					Field<Date> endColumn = DSL.coalesce(column, toDateField(INFINITY_DATE_VALUE));
+					yield daterange(startColumn, endColumn, "[]");
+				}
 				default -> throw new IllegalArgumentException(
-						"Given column type '%s' can't be converted to a proper date restriction.".formatted(column.getType())
+						"Given column type '%s' can't be converted to a proper date restriction.".formatted(validityDateColumn.getType())
 				);
 			};
 		}
@@ -96,12 +122,12 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
-	public Field<Object> validityDateStringAggregation(ColumnDateRange columnDateRange) {
+	public Field<String> validityDateStringAggregation(ColumnDateRange columnDateRange) {
 		if (!columnDateRange.isSingleColumnRange()) {
 			throw new UnsupportedOperationException("All column date ranges should have been converted to single column ranges.");
 		}
-		// Postgres already displays ranges aggregated via range_agg function in the desired format, so there is no additional processing necessary
-		return columnDateRange.getRange();
+		Field<String> aggregatedValidityDate = DSL.field("%s::varchar".formatted(columnDateRange.getRange().toString()), String.class);
+		return replace(aggregatedValidityDate, INFINITY_DATE_VALUE, INFINITY_SIGN);
 	}
 
 	@Override
@@ -114,7 +140,7 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 			return endDate.minus(startDate).coerce(Integer.class);
 		}
 
-		Field<Object> age = DSL.function("AGE", Object.class, endDate, startDate);
+		Field<Integer> age = DSL.function("AGE", Integer.class, endDate, startDate);
 
 		return switch (timeUnit) {
 			case MONTHS -> extract(DatePart.YEAR, age).multiply(12)
@@ -126,13 +152,31 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		};
 	}
 
+	@Override
+	public Field<Date> addDays(Field<Date> dateColumn, int amountOfDays) {
+		return dateColumn.plus(amountOfDays);
+	}
 
 	@Override
 	public Field<?> first(Field<?> column, List<Field<?>> orderByColumn) {
 		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(column)));
 	}
 
-	private Field<Object> daterange(Field<Object> startColumn, Field<Object> endColumn, String bounds) {
+	@Override
+	public Field<?> last(Field<?> column, List<Field<?>> orderByColumns) {
+		String orderByClause = orderByColumns.stream()
+											 .map(Field::toString)
+											 .collect(Collectors.joining(", ", "ORDER BY ", " DESC"));
+		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(DSL.field("%s %s".formatted(column, orderByClause)))));
+	}
+
+	@Override
+	public Field<?> random(Field<?> column) {
+		WindowSpecificationRowsStep orderByRandomClause = DSL.orderBy(DSL.function("random", Object.class));
+		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(DSL.field("%s %s".formatted(column, orderByRandomClause)))));
+	}
+
+	private Field<?> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {
 		return DSL.function(
 				"daterange",
 				Object.class,
@@ -142,12 +186,17 @@ public class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		);
 	}
 
-	private Field<Integer> extract(DatePart datePart, Field<Object> timeInterval) {
+	private Field<Integer> extract(DatePart datePart, Field<Integer> timeInterval) {
 		return DSL.function(
 				"EXTRACT",
 				Integer.class,
 				DSL.inlined(DSL.field("%s FROM %s".formatted(datePart, timeInterval)))
 		);
+	}
+
+	@Override
+	public Field<Date> toDateField(String dateValue) {
+		return DSL.field("%s::date".formatted(DSL.val(dateValue)), Date.class);
 	}
 
 }

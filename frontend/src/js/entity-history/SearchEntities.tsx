@@ -70,9 +70,13 @@ const useFilterState = (table: TableT) => {
     ) as MultiSelectFilter[],
   );
 
-  const setFilterValue = useCallback((filterIdx: number, value: any) => {
+  const setFilterValue = useCallback((filterIdx: number, value: unknown) => {
     setSearchFilters((filters) =>
-      filters.map((f, i) => (i === filterIdx ? { ...f, value } : f)),
+      filters.map((f, i) =>
+        i === filterIdx
+          ? { ...f, value: value as MultiSelectFilterWithValueType["value"] }
+          : f,
+      ),
     );
   }, []);
 

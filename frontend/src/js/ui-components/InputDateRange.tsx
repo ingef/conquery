@@ -7,11 +7,11 @@ import { useTranslation } from "react-i18next";
 
 import { IndexPrefix } from "../common/components/IndexPrefix";
 import {
+  DateStringMinMax,
   formatDateFromState,
+  getDateStringFromShortcut,
   parseDate,
   parseDateToState,
-  getDateStringFromShortcut,
-  DateStringMinMax,
 } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import { Icon } from "../icon/FaIcon";
@@ -20,7 +20,6 @@ import InfoTooltip from "../tooltip/InfoTooltip";
 import InputDate from "./InputDate/InputDate";
 import Label from "./Label";
 import Labeled from "./Labeled";
-import Optional from "./Optional";
 
 const Root = styled("div")<{ center?: boolean }>`
   text-align: ${({ center }) => (center ? "center" : "left")};
@@ -88,7 +87,6 @@ interface PropsT {
   center?: boolean;
   autoFocus?: boolean;
   tooltip?: string;
-  optional?: boolean;
   value: DateStringMinMax;
   onChange: (value: DateStringMinMax) => void;
 }
@@ -115,7 +113,6 @@ const InputDateRange: FC<PropsT> = ({
   labelSuffix,
   value,
   onChange,
-  optional,
   tooltip,
 }) => {
   const { t } = useTranslation();
@@ -179,7 +176,6 @@ const InputDateRange: FC<PropsT> = ({
       <StyledLabel large={large}>
         <Icon icon={faCalendar} left gray />
         {exists(indexPrefix) && <IndexPrefix># {indexPrefix}</IndexPrefix>}
-        {optional && <Optional />}
         {label}
         <InfoTooltip
           html={
@@ -197,7 +193,7 @@ const InputDateRange: FC<PropsT> = ({
         {labelSuffix && labelSuffix}
       </StyledLabel>
     );
-  }, [t, label, labelSuffix, large, optional, tooltip, indexPrefix]);
+  }, [t, label, labelSuffix, large, tooltip, indexPrefix]);
 
   return (
     <Root center={center}>

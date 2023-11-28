@@ -4,11 +4,11 @@ import { exists } from "../common/helpers/exists";
 import InfoTooltip from "../tooltip/InfoTooltip";
 import WithTooltip from "../tooltip/WithTooltip";
 
-const Row = styled("div")`
+const Row = styled("div")<{ $disabled?: boolean }>`
   display: flex;
   flex-direction: row;
   align-items: center;
-  cursor: pointer;
+  cursor: ${({ $disabled }) => ($disabled ? "not-allowed" : "pointer")};
 `;
 
 const Label = styled("span")`
@@ -17,7 +17,7 @@ const Label = styled("span")`
   line-height: 1;
 `;
 
-const Container = styled("div")`
+const Container = styled("div")<{ $disabled?: boolean }>`
   flex-shrink: 0;
   position: relative;
   font-size: 22px;
@@ -26,6 +26,7 @@ const Container = styled("div")`
   border: 2px solid ${({ theme }) => theme.col.blueGrayDark};
   border-radius: ${({ theme }) => theme.borderRadius};
   box-sizing: content-box;
+  opacity: ${({ $disabled }) => ($disabled ? 0.5 : 1)};
 `;
 
 const Checkmark = styled("div")`
@@ -49,16 +50,6 @@ const Checkmark = styled("div")`
   }
 `;
 
-interface PropsType {
-  label: string;
-  className?: string;
-  tooltip?: string;
-  tooltipLazy?: boolean;
-  infoTooltip?: string;
-  value?: boolean;
-  onChange: (checked: boolean) => void;
-}
-
 const InputCheckbox = ({
   label,
   className,
@@ -67,10 +58,26 @@ const InputCheckbox = ({
   infoTooltip,
   value,
   onChange,
-}: PropsType) => (
-  <Row className={className} onClick={() => onChange(!value)}>
+  disabled,
+}: {
+  label: string;
+  className?: string;
+  tooltip?: string;
+  tooltipLazy?: boolean;
+  infoTooltip?: string;
+  value?: boolean;
+  onChange: (checked: boolean) => void;
+  disabled?: boolean;
+}) => (
+  <Row
+    className={className}
+    onClick={() => {
+      if (!disabled) onChange(!value);
+    }}
+    $disabled={disabled}
+  >
     <WithTooltip text={tooltip} lazy={tooltipLazy}>
-      <Container>{!!value && <Checkmark />}</Container>
+      <Container $disabled={disabled}>{!!value && <Checkmark />}</Container>
     </WithTooltip>
     <Label>{label}</Label>
     {exists(infoTooltip) && <InfoTooltip text={infoTooltip} />}

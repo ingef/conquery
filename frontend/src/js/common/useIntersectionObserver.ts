@@ -1,9 +1,9 @@
 import {
+  RefObject,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useRef,
-  RefObject,
-  useEffect,
 } from "react";
 
 const INTERSECTION_THRESHOLD = 0.5;
