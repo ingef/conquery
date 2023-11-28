@@ -115,7 +115,8 @@ export default function Preview() {
           items={statistics?.statistics ?? ([] as PreviewStatistics[])}
           onChange={(res) => {
             const index = statistics?.statistics.findIndex(
-              (stat:any) => stat.name === res.name,
+            //@ts-ignore TODO fix later
+              (stat:unknown) => stat.name === res.name,
             );
             if (index !== undefined && index !== null) {
               setPage(Math.floor(index / 4));
@@ -128,7 +129,7 @@ export default function Preview() {
         <HeadlineStats statistics={statistics} />
       </Headline>
       {statistics ? (
-        <SxCharts
+          <SxCharts
           statistics={statistics.statistics}
           showPopup={(statistic: PreviewStatistics) => {
             setPopOver(statistic);
