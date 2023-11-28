@@ -184,10 +184,14 @@ export default function Diagram({
               // @ts-ignore TODO later
               label: (context: unknown) => {
                 const label =
+                  // @ts-ignore TODO later
                   formatNumber(context.parsed.x) ||
+                  // @ts-ignore TODO later
                   context.dataset.label ||
+                  // @ts-ignore TODO later
                   context.label ||
                   "";
+                // @ts-ignore TODO later
                 return `${label}: ${formatNumber(context.raw as number)}`;
               },
             },
@@ -230,7 +234,9 @@ export default function Diagram({
             callbacks: {
               // @ts-ignore TODO later
               label: (context: unknown) => {
+                // @ts-ignore TODO later
                 const label = context.dataset.label || context.label || "";
+                // @ts-ignore TODO later
                 return `${label}: ${formatNumber(context.raw as number)}`;
               },
             },
