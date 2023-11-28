@@ -40,7 +40,7 @@ const ChartContainer = styled("div")`
   justify-content: flex-end;
 `;
 
-function hexToRgbA(hex: string) {
+export function hexToRgbA(hex: string) {
   let c: string | string[];
   if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
     c = hex.substring(1).split("");

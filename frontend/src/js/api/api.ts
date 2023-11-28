@@ -34,6 +34,7 @@ import type {
   PostLoginResponseT,
   PostQueriesResponseT,
   PostResolveEntitiesResponse,
+  PreviewStatisticsResponse,
   QueryIdT,
   UploadQueryResponseT,
 } from "./types";
