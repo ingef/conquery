@@ -1,9 +1,8 @@
 import styled from "@emotion/styled";
-
 import { PreviewStatistics } from "../api/types";
 import Modal from "../modal/Modal";
-
-import Diagram, { previewStatsIsNumberStats } from "./Diagram";
+import Diagram from "./Diagram";
+import { previewStatsIsNumberStats } from "./util";
 
 interface DiagramModalProps {
   statistic: PreviewStatistics;
