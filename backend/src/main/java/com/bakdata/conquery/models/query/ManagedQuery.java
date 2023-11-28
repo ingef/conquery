@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -25,13 +23,11 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CancelQuery;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
-import com.bakdata.conquery.models.query.resultinfo.UniqueNamer;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
@@ -40,7 +36,6 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
-import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -142,36 +137,9 @@ public class ManagedQuery extends ManagedExecution implements SingleTableResult,
 
 	protected void setAdditionalFieldsForStatusWithColumnDescription(Subject subject, FullExecutionStatus status) {
 		if (columnDescriptions == null) {
-			columnDescriptions = generateColumnDescriptions();
+			columnDescriptions = generateColumnDescriptions(isInitialized(), getNamespace(), getConfig());
 		}
 		status.setColumnDescriptions(columnDescriptions);
-	}
-
-	/**
-	 * Generates a description of each column that will appear in the resulting csv.
-	 */
-	public List<ColumnDescriptor> generateColumnDescriptions() {
-		Preconditions.checkArgument(isInitialized(), "The execution must have been initialized first");
-		final List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
-
-		final Locale locale = I18n.LOCALE.get();
-
-		final PrintSettings settings = new PrintSettings(true, locale, getNamespace(), getConfig(), null);
-
-		final UniqueNamer uniqNamer = new UniqueNamer(settings);
-
-		// First add the id columns to the descriptor list. These are always the first columns
-		for (ResultInfo header : getConfig().getIdColumns().getIdResultInfos()) {
-			columnDescriptions.add(ColumnDescriptor.builder()
-												   .label(uniqNamer.getUniqueName(header))
-												   .type(header.getType().typeInfo())
-												   .semantics(header.getSemantics())
-												   .build());
-		}
-
-		final UniqueNamer collector = new UniqueNamer(settings);
-		getResultInfos().forEach(info -> columnDescriptions.add(info.asColumnDescriptor(settings, collector)));
-		return columnDescriptions;
 	}
 
 	@JsonIgnore

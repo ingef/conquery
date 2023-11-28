@@ -1,7 +1,7 @@
 {
   "label": "DATE_DISTANCE select with timeUnit CENTURIES",
-  "type": "SQL_TEST",
-  "expectedCsv": "expected.csv",
+  "type": "SQL_QUERY_TEST",
+  "expectedCsv": "tests/sql/selects/date_distance/centuries/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

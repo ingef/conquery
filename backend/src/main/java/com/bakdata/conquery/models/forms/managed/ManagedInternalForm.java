@@ -12,6 +12,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.InternalExecution;
@@ -29,6 +30,7 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FormShardResult;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JacksonInject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.OptBoolean;
@@ -102,8 +104,8 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 	}
 
 	@Override
-	public List<ColumnDescriptor> generateColumnDescriptions() {
-		return subQueries.values().iterator().next().generateColumnDescriptions();
+	public List<ColumnDescriptor> generateColumnDescriptions(boolean isInitialized, Namespace namespace, ConqueryConfig config) {
+		return subQueries.values().iterator().next().generateColumnDescriptions(isInitialized, namespace, config);
 	}
 
 
@@ -122,7 +124,7 @@ public class ManagedInternalForm<F extends Form & InternalForm> extends ManagedF
 			return;
 		}
 		ManagedQuery subQuery = subQueries.entrySet().iterator().next().getValue();
-		status.setColumnDescriptions(subQuery.generateColumnDescriptions());
+		status.setColumnDescriptions(subQuery.generateColumnDescriptions(isInitialized(), getNamespace(), getConfig()));
 	}
 
 	@Override

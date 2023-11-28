@@ -5,7 +5,7 @@ import {
   faCircle,
   faCircleDot,
 } from "@fortawesome/free-solid-svg-icons";
-import { Dispatch, memo, SetStateAction, useMemo } from "react";
+import { Dispatch, SetStateAction, memo, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 
 import IconButton from "../button/IconButton";

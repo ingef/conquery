@@ -1,7 +1,7 @@
 {
   "label": "Simple AND query for 3 different concepts",
-  "expectedCsv": "expected.csv",
-  "type": "SQL_TEST",
+  "expectedCsv": "tests/sql/and/different_concept/expected.csv",
+  "type": "SQL_QUERY_TEST",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -27,7 +27,7 @@
                 }
               ],
               "selects": [
-                "number.number_connector.value"
+                "number.number_connector.first_value"
               ]
             }
           ]
@@ -51,7 +51,7 @@
                 }
               ],
               "selects": [
-                "geschlecht_select.geschlecht_connector.geschlecht"
+                "geschlecht_select.geschlecht_connector.first_geschlecht"
               ]
             }
           ]
@@ -75,7 +75,7 @@
                 }
               ],
               "selects": [
-                "language_select.language_connector.language"
+                "language_select.language_connector.first_language"
               ]
             }
           ]
@@ -103,7 +103,7 @@
             "type": "NUMBER"
           },
           "selects": {
-            "name": "value",
+            "name": "first_value",
             "column": "table1.value",
             "type": "FIRST"
           }
@@ -128,7 +128,7 @@
             "type": "SELECT"
           },
           "selects": {
-            "name": "geschlecht",
+            "name": "first_geschlecht",
             "column": "table2.geschlecht",
             "type": "FIRST"
           }
@@ -153,7 +153,7 @@
             "type": "SELECT"
           },
           "selects": {
-            "name": "language",
+            "name": "first_language",
             "column": "table2.language",
             "type": "FIRST"
           }

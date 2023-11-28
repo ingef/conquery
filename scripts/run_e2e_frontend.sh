@@ -23,6 +23,6 @@ echo "Using frontend env variables from .env.e2e"
 
 echo
 echo "Starting frontend server"
-yarn serve
+npm run serve
 
 popd

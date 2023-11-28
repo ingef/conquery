@@ -3,7 +3,6 @@ import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
-import SplitPane from "react-split-pane";
 
 import type { DatasetT } from "../../api/types";
 import type { StateT } from "../../app/reducers";
@@ -19,6 +18,8 @@ import ProjectItemsTypeFilter from "../type-filter/ProjectItemsTypeFilter";
 import { ProjectItemsTypeFilterStateT } from "../type-filter/reducer";
 import UploadQueryResults from "../upload/UploadQueryResults";
 
+import { Panel, PanelGroup } from "react-resizable-panels";
+import { ResizeHandle } from "../../common/ResizeHandle";
 import Folders from "./Folders";
 import FoldersToggleButton from "./FoldersToggleButton";
 import { ProjectItemT } from "./ProjectItem";
@@ -99,7 +100,7 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
     (state) => state.previousQueriesFolderFilter.areFoldersOpen,
   );
 
-  const { leftPaneSize, setLeftPaneSize } = useLeftPaneSize({ areFoldersOpen });
+  useLeftPaneSize({ areFoldersOpen });
 
   const dispatch = useDispatch();
   const onToggleFoldersOpen = () => dispatch(toggleFoldersOpen());
@@ -119,38 +120,37 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
         )}
       </Row>
       <FoldersAndQueries>
-        {/*
-          react-split-pane is not compatible with react 18 types,
-          TODO: Move to https://github.com/johnwalley/allotment
-          @ts-ignore */}
-        <SplitPane
-          split="vertical"
-          allowResize={true}
-          minSize={100}
-          size={leftPaneSize}
-          maxSize={600}
-          defaultSize={"25%"}
-          onDragFinished={(newSize) => setLeftPaneSize(newSize)}
-          resizerStyle={{
-            zIndex: 0, // To set below overlaying dropdowns
-            marginTop: "46px",
-            display: areFoldersOpen ? "inherit" : "none",
-          }}
+        <PanelGroup
+          direction="horizontal"
+          // size={leftPaneSize}
+          // onDragFinished={(newSize) => setLeftPaneSize(newSize)}
+          // resizerStyle={{
+          //   zIndex: 0, // To set below overlaying dropdowns
+          //   marginTop: "46px",
+          //   display: areFoldersOpen ? "inherit" : "none",
+          // }}
         >
-          <SxFolders />
-          <Expand areFoldersOpen={areFoldersOpen}>
-            <Filters>
-              <SxProjectItemsTypeFilter />
-              <SxProjectItemsFilter />
-            </Filters>
-            <ScrollContainer>
-              {items.length === 0 && !loading && (
-                <EmptyList emptyMessage={t("previousQueries.noQueriesFound")} />
-              )}
-            </ScrollContainer>
-            <ProjectItems items={items} datasetId={datasetId} />
-          </Expand>
-        </SplitPane>
+          <Panel minSize={10} maxSize={75} defaultSize={25}>
+            <SxFolders />
+          </Panel>
+          <ResizeHandle />
+          <Panel>
+            <Expand areFoldersOpen={areFoldersOpen}>
+              <Filters>
+                <SxProjectItemsTypeFilter />
+                <SxProjectItemsFilter />
+              </Filters>
+              <ScrollContainer>
+                {items.length === 0 && !loading && (
+                  <EmptyList
+                    emptyMessage={t("previousQueries.noQueriesFound")}
+                  />
+                )}
+              </ScrollContainer>
+              <ProjectItems items={items} datasetId={datasetId} />
+            </Expand>
+          </Panel>
+        </PanelGroup>
       </FoldersAndQueries>
     </>
   );

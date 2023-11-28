@@ -258,7 +258,7 @@ export function useUpdateHistorySession() {
           ...new Set(
             currentEntityDataProcessed.map((row) => row[sourceColumn.label]),
           ),
-        ];
+        ] as string[];
 
         const csvHeader = csv.data[0];
         const columns: Record<string, ColumnDescription> = Object.fromEntries(
@@ -319,8 +319,12 @@ export function useUpdateHistorySession() {
   };
 }
 
+interface DateRow {
+  from: Date;
+  to: Date;
+}
 const transformEntityData = (
-  data: { [key: string]: any }[],
+  data: { [key: string]: unknown }[],
   {
     dateColumn,
   }: {
@@ -331,7 +335,9 @@ const transformEntityData = (
 
   return data
     .map((row) => {
-      const { first, last } = getFirstAndLastDateOfRange(row[dateKey]);
+      const { first, last } = getFirstAndLastDateOfRange(
+        row[dateKey] as string,
+      );
 
       return first && last
         ? {
@@ -344,14 +350,18 @@ const transformEntityData = (
         : row;
     })
     .sort((a, b) => {
-      return a[dateKey].from - b[dateKey].from > 0 ? -1 : 1;
+      return (a[dateKey] as DateRow).from.getTime() -
+        (b[dateKey] as DateRow).from.getTime() >
+        0
+        ? -1
+        : 1;
     })
     .map((row) => {
       return {
         ...row,
         [dateKey]: {
-          from: formatStdDate(row[dateKey]?.from),
-          to: formatStdDate(row[dateKey]?.to),
+          from: formatStdDate((row[dateKey] as DateRow)?.from),
+          to: formatStdDate((row[dateKey] as DateRow)?.to),
         },
       };
     });

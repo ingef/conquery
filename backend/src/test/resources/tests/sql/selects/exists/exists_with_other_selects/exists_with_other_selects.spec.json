@@ -1,8 +1,8 @@
 {
-  "type": "SQL_TEST",
+  "type": "SQL_QUERY_TEST",
   "label": "EXISTS select with other selects",
   "description": "EXISTS as concept level select should be in before table-level selects like first in final result set",
-  "expectedCsv": "expected.csv",
+  "expectedCsv": "tests/sql/selects/exists/exists_with_other_selects/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

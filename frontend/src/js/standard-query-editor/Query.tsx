@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useCallback, useMemo, useState, Fragment } from "react";
+import { Fragment, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -22,14 +22,14 @@ import QueryGroup from "./QueryGroup";
 import QueryHeader from "./QueryHeader";
 import SecondaryIdSelector from "./SecondaryIdSelector";
 import {
+  deleteGroup,
+  deleteNode,
   dropAndNode,
   dropOrNode,
-  deleteNode,
-  deleteGroup,
   toggleExcludeGroup,
-  useExpandPreviousQuery,
-  toggleTimestamps,
   toggleSecondaryIdExclude,
+  toggleTimestamps,
+  useExpandPreviousQuery,
 } from "./actions";
 import type { StandardQueryStateT } from "./queryReducer";
 import type { DragItemConceptTreeNode, DragItemQuery } from "./types";
@@ -61,11 +61,11 @@ const useImport = () => {
   }, []);
 
   const onImportLines = useCallback(
-    (lines: string[], andIdx?: number) => {
+    (lines: string[], filename?: string, andIdx?: number) => {
       dispatch(
         initUploadConceptListModal({
           rows: lines,
-          filename: t("importModal.pasted"),
+          filename: filename || t("importModal.pasted"),
         }),
       );
 

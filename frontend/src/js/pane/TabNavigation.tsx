@@ -24,7 +24,8 @@ const Headline = styled("h2")<{ active: boolean }>`
   text-transform: uppercase;
   flex-shrink: 0;
 
-  transition: color ${({ theme }) => theme.transitionTime},
+  transition:
+    color ${({ theme }) => theme.transitionTime},
     border-bottom ${({ theme }) => theme.transitionTime};
   cursor: pointer;
   margin-right: 5px;

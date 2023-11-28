@@ -14,8 +14,8 @@ import { QueryGroupType } from "../standard-query-editor/types";
 import InputDateRange from "../ui-components/InputDateRange";
 
 import {
-  queryGroupModalSetDate,
   queryGroupModalResetAllDates,
+  queryGroupModalSetDate,
 } from "./actions";
 
 const HeadlinePart = styled("span")`

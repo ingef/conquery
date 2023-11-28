@@ -21,15 +21,6 @@ public class ExtractingSqlSelect<V> implements SqlSelect {
 	@EqualsAndHashCode.Exclude
 	Class<V> columnClass;
 
-	@SuppressWarnings("unchecked")
-	public static <V> ExtractingSqlSelect<V> fromConquerySelect(SqlSelect select, String qualifier) {
-		return (ExtractingSqlSelect<V>) new ExtractingSqlSelect<>(
-				qualifier,
-				select.columnName(),
-				select.aliased().getType()
-		);
-	}
-
 	@Override
 	public Field<V> select() {
 		return DSL.field(DSL.name(table, column), columnClass);
@@ -37,7 +28,7 @@ public class ExtractingSqlSelect<V> implements SqlSelect {
 
 	@Override
 	public Field<V> aliased() {
-		return DSL.field(column, columnClass);
+		return DSL.field(DSL.name(column), columnClass);
 	}
 
 	@Override

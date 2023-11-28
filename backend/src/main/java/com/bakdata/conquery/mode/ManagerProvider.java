@@ -4,6 +4,7 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.storage.MetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -28,11 +29,14 @@ public interface ManagerProvider {
 
 	static <N extends Namespace> DatasetRegistry<N> createDatasetRegistry(NamespaceHandler<N> namespaceHandler, ConqueryConfig config,
 																		  InternalObjectMapperCreator creator) {
+
+		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
 		DatasetRegistry<N> datasetRegistry = new DatasetRegistry<>(
 				config.getCluster().getEntityBucketSize(),
 				config,
 				creator,
-				namespaceHandler
+				namespaceHandler,
+				indexService
 		);
 		MetaStorage storage = new MetaStorage(config.getStorage(), datasetRegistry);
 		datasetRegistry.setMetaStorage(storage);

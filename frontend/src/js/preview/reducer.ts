@@ -3,7 +3,7 @@ import { getType } from "typesafe-actions";
 import type { ColumnDescription } from "../api/types";
 import { Action } from "../app/actions";
 
-import { openPreview, closePreview, loadCSVForPreview } from "./actions";
+import { closePreview, loadCSVForPreview, openPreview } from "./actions";
 
 export type PreviewStateT = {
   isOpen: boolean;

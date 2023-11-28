@@ -3,7 +3,7 @@ import type { ConceptIdT } from "../api/types";
 // TODO Merge this with actual API type
 export type UploadConceptListModalResultType = {
   label: string;
-  rootConcepts: any;
+  rootConcepts: unknown;
   resolutionResult: {
     conceptList?: string[];
     filter?: {

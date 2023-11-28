@@ -9,18 +9,18 @@ To make it work in the browser, 'events' has been installed.
 */
 
 class EventEmitter {
-  callbacks: Record<string, Function[]>;
+  callbacks: Record<string, ((arg?: string) => void)[]>;
   constructor() {
     this.callbacks = {};
   }
 
-  on(event: string, cb: Function) {
+  on(event: string, cb: (arg?: string) => void) {
     if (!this.callbacks[event]) this.callbacks[event] = [];
     this.callbacks[event].push(cb);
   }
 
-  emit(event: string, data: any) {
-    let cbs = this.callbacks[event];
+  emit(event: string, data?: string) {
+    const cbs = this.callbacks[event];
     if (cbs) {
       cbs.forEach((cb) => cb(data));
     }
@@ -28,9 +28,9 @@ class EventEmitter {
 }
 
 function arrayMove(
-  src: any[],
+  src: unknown[],
   srcIndex: number,
-  dst: any[],
+  dst: unknown[],
   dstIndex: number,
   len: number,
 ) {
@@ -61,7 +61,7 @@ class Deque {
   _capacity: number;
   _length: number;
   _front: number;
-  arr: Array<any>;
+  arr: Array<unknown>;
 
   constructor(capacity: number) {
     this._capacity = getCapacity(capacity);
@@ -70,7 +70,7 @@ class Deque {
     this.arr = [];
   }
 
-  push(item: any): number {
+  push(item: unknown): number {
     const length = this._length;
 
     this.checkCapacity(length + 1);
@@ -132,7 +132,7 @@ class Deque {
 
 class ReleaseEmitter extends EventEmitter {}
 
-function isFn(x: any) {
+function isFn(x: unknown) {
   return typeof x === "function";
 }
 
@@ -158,7 +158,7 @@ export class Sema {
       resumeFn,
       capacity = 10,
     }: {
-      initFn?: () => any;
+      initFn?: () => unknown;
       pauseFn?: () => void;
       resumeFn?: () => void;
       capacity?: number;
@@ -177,9 +177,10 @@ export class Sema {
     this.resumeFn = resumeFn;
     this.paused = false;
 
-    this.releaseEmitter.on("release", (token: string) => {
+    this.releaseEmitter.on("release", (token?: string) => {
       const p = this.waiting.shift();
       if (p) {
+        // @ts-ignore // TODO: either type or fully ignore this file
         p.resolve(token);
       } else {
         if (this.resumeFn && this.paused) {
@@ -196,8 +197,8 @@ export class Sema {
     }
   }
 
-  async acquire(): Promise<any> {
-    let token = this.free.pop();
+  async acquire(): Promise<unknown> {
+    const token = this.free.pop();
 
     if (token !== void 0) {
       return token;
@@ -213,11 +214,11 @@ export class Sema {
     });
   }
 
-  release(token?: any): void {
+  release(token?: string): void {
     this.releaseEmitter.emit("release", this.noTokens ? "1" : token);
   }
 
-  drain(): Promise<any[]> {
+  drain(): Promise<unknown[]> {
     const a = new Array(this.nrTokens);
     for (let i = 0; i < this.nrTokens; i++) {
       a[i] = this.acquire();

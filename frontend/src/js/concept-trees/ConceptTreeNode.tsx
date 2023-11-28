@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 
-import type { ConceptIdT, ConceptT, ConceptElementT } from "../api/types";
+import type { ConceptElementT, ConceptIdT, ConceptT } from "../api/types";
 import { useOpenableConcept } from "../concept-trees-open/useOpenableConcept";
 import { resetSelects } from "../model/select";
 import { resetTables } from "../model/table";

@@ -18,18 +18,18 @@ public class ColumnDateRange {
 	private static final String END_SUFFIX = "_end";
 
 	private final boolean isEmpty;
-	private final Field<Object> range;
+	private final Field<?> range;
 	private final Field<Date> start;
 	private final Field<Date> end;
 
-	private ColumnDateRange(boolean isEmpty, Field<Object> range, Field<Date> startColumn, Field<Date> endColumn) {
+	private ColumnDateRange(boolean isEmpty, Field<?> range, Field<Date> startColumn, Field<Date> endColumn) {
 		this.isEmpty = isEmpty;
 		this.range = range;
 		this.start = startColumn;
 		this.end = endColumn;
 	}
 
-	public static ColumnDateRange of(Field<Object> rangeColumn) {
+	public static ColumnDateRange of(Field<?> rangeColumn) {
 		return new ColumnDateRange(false, rangeColumn, null, null);
 	}
 
@@ -58,7 +58,6 @@ public class ColumnDateRange {
 			return List.of(this.range);
 		}
 		return Stream.of(this.start, this.end)
-					 .map(dateField -> dateField.coerce(Object.class))
 					 .collect(Collectors.toList());
 	}
 

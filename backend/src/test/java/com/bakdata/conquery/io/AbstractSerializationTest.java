@@ -14,6 +14,7 @@ import com.bakdata.conquery.mode.InternalObjectMapperCreator;
 import com.bakdata.conquery.mode.cluster.ClusterNamespaceHandler;
 import com.bakdata.conquery.mode.cluster.ClusterState;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.index.IndexService;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.DistributedNamespace;
 import com.bakdata.conquery.util.NonPersistentStoreFactory;
@@ -38,7 +39,9 @@ public abstract class AbstractSerializationTest {
 	@BeforeEach
 	public void before() {
 		InternalObjectMapperCreator creator = new InternalObjectMapperCreator(config, validator);
-		datasetRegistry = new DatasetRegistry<>(0, config, null, new ClusterNamespaceHandler(new ClusterState(), config, creator));
+		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
+		final ClusterNamespaceHandler clusterNamespaceHandler = new ClusterNamespaceHandler(new ClusterState(), config, creator);
+		datasetRegistry = new DatasetRegistry<>(0, config, null, clusterNamespaceHandler, indexService);
 		metaStorage = new MetaStorage(new NonPersistentStoreFactory(), datasetRegistry);
 		datasetRegistry.setMetaStorage(metaStorage);
 		creator.init(datasetRegistry);
