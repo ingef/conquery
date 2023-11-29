@@ -1,20 +1,51 @@
 package com.bakdata.conquery.models.config.auth;
 
-import com.bakdata.conquery.apiv1.RequestAwareUriBuilder;
+import java.io.IOException;
+import java.net.URI;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.function.BiFunction;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+
 import com.bakdata.conquery.apiv1.RequestHelper;
 import com.bakdata.conquery.commands.ManagerNode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.oidc.JwtPkceVerifyingRealm;
-import com.bakdata.conquery.models.auth.web.AuthCookieFilter;
 import com.bakdata.conquery.models.auth.web.RedirectingAuthFilter;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.nimbusds.jwt.JWTParser;
-import com.nimbusds.oauth2.sdk.*;
+import com.nimbusds.oauth2.sdk.AccessTokenResponse;
+import com.nimbusds.oauth2.sdk.AuthorizationCode;
+import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
+import com.nimbusds.oauth2.sdk.AuthorizationGrant;
+import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.RefreshTokenGrant;
+import com.nimbusds.oauth2.sdk.TokenRequest;
+import com.nimbusds.oauth2.sdk.TokenResponse;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
@@ -22,7 +53,10 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import io.dropwizard.validation.ValidationMethod;
-import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -32,21 +66,6 @@ import org.keycloak.common.VerificationException;
 import org.keycloak.jose.jwk.JWK;
 import org.keycloak.jose.jwk.JWKParser;
 import org.keycloak.representations.AccessToken;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.*;
-import javax.ws.rs.core.Response;
-
-import java.io.IOException;
-import java.net.URI;
-import java.security.PublicKey;
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
 /**
  * A realm that verifies oauth tokens using PKCE.
@@ -85,7 +104,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 	/**
 	 * See wellKnownEndpoint.
 	 */
-	private IdpConfiguration idpConfiguration;
+	private volatile IdpConfiguration idpConfiguration;
 
 	/**
 	 * A leeway for token's expiration in seconds, this should be a short time.
@@ -119,25 +138,15 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		return wellKnownEndpoint != null || idpConfiguration != null;
 	}
 
-	@AllArgsConstructor
-	@Getter
-	public static class IdpConfiguration {
-
-		/**
-		 * The public key information that is used to validate signed JWT.
-		 * It can be retrieved from the IDP.
-		 */
-		@NonNull
-		private final PublicKey publicKey;
-
-		@NonNull
-		private final URI authorizationEndpoint;
-
-		@NonNull
-		private final URI tokenEndpoint;
-
-		@NotEmpty
-		private final String issuer;
+	/**
+	 * @param signingKeys The public key information that is used to validate signed JWT.
+	 *                    It can be retrieved from the IDP.
+	 */
+	public record IdpConfiguration(
+			@NonNull Map<String, PublicKey> signingKeys,
+			@NonNull URI authorizationEndpoint,
+			@NonNull URI tokenEndpoint,
+			@NotEmpty String issuer) {
 	}
 
 	public ConqueryAuthenticationRealm createRealm(ManagerNode manager) {
@@ -230,14 +239,19 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 		}
 
 
-		final List<JWK> keys = jwks.getKeys();
-		if (keys.size() != 1) {
-			throw new IllegalStateException("Expected exactly 1 jwk for realm but found: " + keys.size());
+		// Filter for keys that are used for signing (discard encryption keys)
+		final Map<String, PublicKey> signingKeys = jwks.getKeys().stream()
+													   .filter(jwk -> JWK.Use.SIG.name().equals(jwk.getPublicKeyUse()))
+													   .collect(Collectors.toMap(JWK::getKeyId, JwtPkceVerifyingRealmFactory::getPublicKey));
+
+
+		if (signingKeys.isEmpty()) {
+			throw new IllegalStateException("No signing keys could be retrieved from IDP. Received these JWKs (Key Ids):" + jwks.getKeys()
+																																.stream()
+																																.map(JWK::getKeyId));
 		}
 
-		JWK jwk = keys.get(0);
-
-		return new IdpConfiguration(getPublicKey(jwk), authorizationEndpoint, tokenEndpoint, issuer);
+		return new IdpConfiguration(signingKeys, authorizationEndpoint, tokenEndpoint, issuer);
 	}
 
 
@@ -290,7 +304,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 			return null;
 		}
 		JwtPkceVerifyingRealmFactory.IdpConfiguration idpConfiguration = idpConfigurationOpt.get();
-		return UriBuilder.fromUri(idpConfiguration.getAuthorizationEndpoint())
+		return UriBuilder.fromUri(idpConfiguration.authorizationEndpoint())
 						 .queryParam("response_type", "code")
 						 .queryParam("client_id", client)
 						 .queryParam("redirect_uri", UriBuilder.fromUri(RequestHelper.getRequestURL(request)).path(AdminServlet.ADMIN_UI).build())
@@ -419,7 +433,7 @@ public class JwtPkceVerifyingRealmFactory implements AuthenticationRealmFactory 
 
 		// Send the auth code/refresh token to the IDP to redeem them for a new access and refresh token
 		final TokenRequest tokenRequest = new TokenRequest(
-				UriBuilder.fromUri(idpConfiguration.getTokenEndpoint()).build(),
+				UriBuilder.fromUri(idpConfiguration.tokenEndpoint()).build(),
 				new ClientID(client),
 				authzGrant
 		);

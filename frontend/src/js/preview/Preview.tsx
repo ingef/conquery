@@ -144,7 +144,7 @@ function getMinMaxDates(
 }
 
 const Preview: FC = () => {
-  const preview = useSelector<StateT, PreviewStateT>((state) => state.preview);
+  const preview = useSelector<StateT, PreviewStateT>((state) => state.previewV1);
   const dispatch = useDispatch();
   const { t } = useTranslation();
 

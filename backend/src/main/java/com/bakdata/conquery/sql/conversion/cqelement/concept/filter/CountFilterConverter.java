@@ -27,9 +27,11 @@ public class CountFilterConverter implements FilterConverter<Range.LongRange, Co
 		);
 
 		Field<Object> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
-		CountSqlSelect
-				countSqlSelect =
-				new CountSqlSelect(qualifiedRootSelect, countFilter.getName(), CountSqlSelect.CountType.fromBoolean(countFilter.isDistinct()));
+		CountSqlSelect countSqlSelect = new CountSqlSelect(
+				qualifiedRootSelect,
+				context.getNameGenerator().selectName(countFilter),
+				CountSqlSelect.CountType.fromBoolean(countFilter.isDistinct())
+		);
 
 		Field<Object> qualifiedCountGroupBy = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_FILTER, countSqlSelect.aliased());
 		CountCondition countFilterCondition = new CountCondition(qualifiedCountGroupBy, context.getValue());

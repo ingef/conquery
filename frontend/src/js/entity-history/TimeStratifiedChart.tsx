@@ -5,6 +5,9 @@ import {
   CategoryScale,
   Chart as ChartJS,
   ChartOptions,
+  PointElement,
+  Title,
+  LineElement,
   LinearScale,
   Tooltip,
 } from "chart.js";
@@ -18,7 +21,17 @@ import { formatCurrency } from "./timeline/util";
 
 const TRUNCATE_X_AXIS_LABELS_LEN = 18;
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+);
 
 const ChartContainer = styled("div")`
   height: 190px;
@@ -27,7 +40,7 @@ const ChartContainer = styled("div")`
   justify-content: flex-end;
 `;
 
-function hexToRgbA(hex: string) {
+export function hexToRgbA(hex: string) {
   let c: string | string[];
   if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
     c = hex.substring(1).split("");
@@ -41,7 +54,7 @@ function hexToRgbA(hex: string) {
   throw new Error("Bad Hex");
 }
 
-function interpolateDecreasingOpacity(index: number) {
+export function interpolateDecreasingOpacity(index: number) {
   return Math.min(1, 1 / (index + 0.3));
 }
 

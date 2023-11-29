@@ -12,8 +12,8 @@ export type PreviewActions = ActionType<
   typeof loadCSVForPreview | typeof closePreview | typeof openPreview
 >;
 
-export const openPreview = createAction("preview/OPENk")();
-export const closePreview = createAction("preview/CLOSE")();
+export const openPreview = createAction("previewV1/OPENk")();
+export const closePreview = createAction("previewV1/CLOSE")();
 
 interface PreviewData {
   csv: string[][];
@@ -30,7 +30,7 @@ export const loadCSVForPreview = createAsyncAction(
 export function useLoadPreviewData() {
   const dispatch = useDispatch();
   const { dataLoadedForResultUrl, data } = useSelector<StateT, PreviewStateT>(
-    (state) => state.preview,
+    (state) => state.previewV1,
   );
   const currentPreviewData: PreviewData | null =
     data.csv && data.resultColumns && dataLoadedForResultUrl

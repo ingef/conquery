@@ -34,6 +34,7 @@ import type {
   PostLoginResponseT,
   PostQueriesResponseT,
   PostResolveEntitiesResponse,
+  PreviewStatisticsResponse,
   QueryIdT,
   UploadQueryResponseT,
 } from "./types";
@@ -404,4 +405,28 @@ export const usePostResolveEntities = () => {
       }),
     [api],
   );
+};
+
+export const useGetResult = () => {
+  return useCallback(
+    (queryId: string) => fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`)),
+    [],
+  );
+};
+
+export const usePreviewStatistics = () => {
+  const api = useApi<PreviewStatisticsResponse>();
+
+  return useCallback(
+    (
+      queryId: string
+    ) =>
+      api({
+        url: getProtectedUrl(`/queries/${queryId}/statistics`),
+        method: "GET",
+        data: queryId,
+      }),
+    [api],
+  );
+
 };
