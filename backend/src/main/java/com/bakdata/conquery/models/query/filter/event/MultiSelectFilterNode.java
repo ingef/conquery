@@ -73,15 +73,9 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 			return empty;
 		}
 
-		final int stringToken = bucket.getString(event, getColumn());
+		final int stringId = bucket.getString(event, getColumn());
 
-		for (int selectedValue : selectedValues) {
-			if (selectedValue == stringToken) {
-				return true;
-			}
-		}
-
-		return false;
+		return selectedValues.contains(stringId);
 	}
 
 	@Override
