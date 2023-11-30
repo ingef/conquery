@@ -140,7 +140,7 @@ export default function Diagram({
   height,
   width,
 }: DiagramProps) {
-  const options: ChartOptions<"bar"> | ChartOptions<"line"> = useMemo(() => {
+  const options = useMemo(() => {
     if (previewStatsIsNumberStats(stat)) {
       return {
         type: "line",
@@ -181,17 +181,12 @@ export default function Diagram({
             borderWidth: 0.5,
             padding: 10,
             callbacks: {
-              // @ts-ignore TODO later
-              label: (context: unknown) => {
+              label: (context) => {
                 const label =
-                  // @ts-ignore TODO later
                   formatNumber(context.parsed.x) ||
-                  // @ts-ignore TODO later
                   context.dataset.label ||
-                  // @ts-ignore TODO later
                   context.label ||
                   "";
-                // @ts-ignore TODO later
                 return `${label}: ${formatNumber(context.raw as number)}`;
               },
             },
@@ -199,7 +194,7 @@ export default function Diagram({
             caretPadding: 0,
           },
         },
-      };
+      } as ChartOptions<"line">;
     }
     if (previewStatsIsStringStats(stat)) {
       return {
@@ -232,11 +227,8 @@ export default function Diagram({
             borderWidth: 0.5,
             padding: 10,
             callbacks: {
-              // @ts-ignore TODO later
-              label: (context: unknown) => {
-                // @ts-ignore TODO later
+              label: (context) => {
                 const label = context.dataset.label || context.label || "";
-                // @ts-ignore TODO later
                 return `${label}: ${formatNumber(context.raw as number)}`;
               },
             },
@@ -244,7 +236,7 @@ export default function Diagram({
             caretPadding: 0,
           },
         },
-      };
+      } as ChartOptions<"bar">;
     }
 
     if (previewStatsIsDateStats(stat)) {
@@ -288,16 +280,12 @@ export default function Diagram({
             borderWidth: 0.5,
             padding: 10,
             callbacks: {
-              label: (context: unknown) => {
+              label: (context) => {
                 const label =
-                // @ts-ignore TODO later
                 formatNumber(context.parsed.x) ||
-                // @ts-ignore TODO later
                 context.dataset.label ||
-                // @ts-ignore TODO later
                 context.label ||
                 "";
-                // @ts-ignore TODO later
                 return `${label}: ${formatNumber(context.raw as number)}`;
               },
             },
@@ -305,7 +293,7 @@ export default function Diagram({
             caretPadding: 0,
           },
         },
-      };
+      } as ChartOptions<"line">;
     }
 
     throw new Error("Unknown stats type");
