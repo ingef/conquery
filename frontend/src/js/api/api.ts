@@ -11,6 +11,7 @@ import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker"
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
+import { Table } from "apache-arrow";
 import { transformQueryToApi } from "./apiHelper";
 import type {
   ConceptIdT,
@@ -408,19 +409,17 @@ export const usePostResolveEntities = () => {
 };
 
 export const useGetResult = () => {
-  return useCallback(
-    (queryId: string) => fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`)),
-    [],
-  );
+  return useCallback((queryId: string) => {
+    const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`));
+    return res as unknown as Promise<Table>;
+  }, []);
 };
 
 export const usePreviewStatistics = () => {
   const api = useApi<PreviewStatisticsResponse>();
 
   return useCallback(
-    (
-      queryId: string
-    ) =>
+    (queryId: string) =>
       api({
         url: getProtectedUrl(`/queries/${queryId}/statistics`),
         method: "GET",
@@ -428,5 +427,4 @@ export const usePreviewStatistics = () => {
       }),
     [api],
   );
-
 };
