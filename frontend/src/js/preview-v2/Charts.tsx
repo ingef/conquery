@@ -46,7 +46,13 @@ type ChartProps = {
   setPage: (page: number) => void;
 };
 
-export default function Charts({ statistics, className, showPopup, page, setPage }: ChartProps) {
+export default function Charts({
+  statistics,
+  className,
+  showPopup,
+  page,
+  setPage,
+}: ChartProps) {
   return (
     <>
       <Root className={className}>
@@ -54,7 +60,10 @@ export default function Charts({ statistics, className, showPopup, page, setPage
           {statistics.slice(page * 4, (page + 1) * 4).map((statistic) => {
             return (
               <div key={statistic.name}>
-                <SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />
+                <SxDiagram
+                  stat={statistic}
+                  onClick={() => showPopup(statistic)}
+                />
               </div>
             );
           })}
