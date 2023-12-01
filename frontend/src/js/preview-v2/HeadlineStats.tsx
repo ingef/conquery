@@ -30,9 +30,7 @@ export type HeadlineStatsProps = {
   statistics: PreviewStatisticsResponse | null;
 };
 
-export default function HeadlineStats(
-  {statistics}: HeadlineStatsProps,
-) {
+export default function HeadlineStats({ statistics }: HeadlineStatsProps) {
   if (statistics === null) {
     return (
       <Root>

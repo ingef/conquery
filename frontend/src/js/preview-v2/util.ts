@@ -1,8 +1,8 @@
 import {
+  DateStatistics,
   NumberStatistics,
   PreviewStatistics,
   StringStatistics,
-  DateStatistics,
 } from "../api/types";
 
 const NUMBER_STATISTICS_TYPES = [
@@ -30,7 +30,7 @@ export function previewStatsIsStringStats(
 export function previewStatsIsNumberStats(
   stats: PreviewStatistics,
 ): stats is NumberStatistics {
-  return NUMBER_STATISTICS_TYPES.indexOf(stats.type) !== -1 // && "stddev" in stats;
+  return NUMBER_STATISTICS_TYPES.indexOf(stats.type) !== -1; // && "stddev" in stats;
 }
 
 export function previewStatsIsDateStats(

@@ -282,10 +282,10 @@ export default function Diagram({
             callbacks: {
               label: (context) => {
                 const label =
-                formatNumber(context.parsed.x) ||
-                context.dataset.label ||
-                context.label ||
-                "";
+                  formatNumber(context.parsed.x) ||
+                  context.dataset.label ||
+                  context.label ||
+                  "";
                 return `${label}: ${formatNumber(context.raw as number)}`;
               },
             },

@@ -1,10 +1,10 @@
 import styled from "@emotion/styled";
 import { SetStateAction, useMemo, useRef, useState } from "react";
 
-import { Input } from "../ui-components/InputSelect/InputSelectComponents";
-import FaIcon from "../icon/FaIcon";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import { useClickOutside } from "../common/helpers/useClickOutside";
+import FaIcon from "../icon/FaIcon";
+import { Input } from "../ui-components/InputSelect/InputSelectComponents";
 
 export interface SelectItem {
   label: string;
@@ -66,7 +66,6 @@ const SxArrow = styled(FaIcon)`
   cursor: pointer;
 `;
 
-
 export default function SelectBox<T extends SelectItem>({
   items,
   onChange,
@@ -86,12 +85,12 @@ export default function SelectBox<T extends SelectItem>({
       if (item.label === null) {
         return false;
       }
-      return item.label.toLowerCase().includes(searchTerm.toLowerCase())
+      return item.label.toLowerCase().includes(searchTerm.toLowerCase());
     });
   }, [items, searchTerm]);
 
   return (
-    <Root className={className} onClick={() => setIsOpen(!isOpen)} >
+    <Root className={className} onClick={() => setIsOpen(!isOpen)}>
       <InputContainer>
         <SxInput
           type="text"
@@ -103,20 +102,18 @@ export default function SelectBox<T extends SelectItem>({
           spellCheck={false}
         />
         <ArrowContainer>
-          <SxArrow icon={isOpen ? faCaretUp : faCaretDown}/>
+          <SxArrow icon={isOpen ? faCaretUp : faCaretDown} />
         </ArrowContainer>
       </InputContainer>
       <List ref={clickOutsideRef}>
-        {isOpen && (
-            displayedItems.map((item) => {
-              return (<ListItem key={item.name}
-                onClick={() => onChange(item)}
-              >
+        {isOpen &&
+          displayedItems.map((item) => {
+            return (
+              <ListItem key={item.name} onClick={() => onChange(item)}>
                 {item.label}
-              </ListItem>)
-            })    
-          )  
-        }
+              </ListItem>
+            );
+          })}
       </List>
     </Root>
   );
