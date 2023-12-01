@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { Table as ArrowTable } from "apache-arrow";
 import RcTable from "rc-table";
+import { useEffect, useRef, useState } from "react";
 
 interface Props {
   data: ArrowTable;
@@ -44,11 +45,37 @@ export default function Table({ data }: Props) {
     key: field.name,
   }));
 
+  const rootRef = useRef<HTMLDivElement>(null);
+  const tableData = data.toArray();
+  const stepCount = 50;
+  const [loadingAmount, setLoadingAmount] = useState(stepCount);
+
+  useEffect(() => {
+    const eventFunction = () => {
+      const div = rootRef.current;
+      if (!div) {
+        return;
+      }
+
+      const scrollAmount = (div.getBoundingClientRect().y - div.offsetTop) * -1;
+      const maxScroll = div.getBoundingClientRect().height - div.offsetTop;
+      const thresholdTriggered = scrollAmount / maxScroll > 0.9;
+      if (thresholdTriggered) {
+        setLoadingAmount((amount) =>
+          Math.min(amount + stepCount, tableData.length),
+        );
+      }
+    };
+
+    window.addEventListener("scroll", eventFunction, true);
+    return () => window.removeEventListener("scroll", eventFunction, true);
+  }, [tableData.length]);
+
   return (
-    <Root>
+    <Root ref={rootRef}>
       <RcTable
         columns={columns}
-        data={data.toArray()}
+        data={tableData.slice(0, loadingAmount)}
         rowKey={(_, index) => `row_${index}`}
         components={components}
       />

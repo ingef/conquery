@@ -1,17 +1,20 @@
 import { Table, tableFromIPC } from "apache-arrow";
+import { t } from "i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
 import { useGetResult, usePreviewStatistics } from "../api/api";
+import { PreviewStatisticsResponse } from "../api/types";
 import { StateT } from "../app/reducers";
 import { ErrorObject } from "../common/actions/genericActions";
-import { PreviewStateT } from "./reducer";
-import { PreviewStatisticsResponse } from "../api/types";
-import { SnackMessageType } from "../snack-message/reducer";
-import { t } from "i18next";
 import { setMessage } from "../snack-message/actions";
+import { SnackMessageType } from "../snack-message/reducer";
+import { PreviewStateT } from "./reducer";
 
 export type PreviewActions = ActionType<
-  typeof loadPreview | typeof closePreview | typeof openPreview | typeof updateQueryId
+  | typeof loadPreview
+  | typeof closePreview
+  | typeof openPreview
+  | typeof updateQueryId
 >;
 
 interface PreviewData {
@@ -30,7 +33,9 @@ export const openPreview = createAction("preview/OPEN")();
 export const closePreview = createAction("preview/CLOSE")();
 
 // TODO: is there a better way?!?
-export const updateQueryId = createAction("preview/UPDATE_LAST_QUERY_ID")<{queryId: string}>();
+export const updateQueryId = createAction("preview/UPDATE_LAST_QUERY_ID")<{
+  queryId: string;
+}>();
 
 export function useLoadPreviewData() {
   const dispatch = useDispatch();
@@ -63,9 +68,14 @@ export function useLoadPreviewData() {
     }
 
     try {
+      // load data simultaneously
+      const awaitedData = await Promise.all([
+        getStatistics(queryId),
+        tableFromIPC(getResult(queryId)),
+      ]);
       const payload = {
-        statisticsData: await getStatistics(queryId),
-        tableData: await tableFromIPC(getResult(queryId)),
+        statisticsData: awaitedData[0],
+        tableData: awaitedData[1],
         queryId,
       };
       dispatch(loadPreview.success(payload));
@@ -77,7 +87,7 @@ export function useLoadPreviewData() {
           type: SnackMessageType.ERROR,
         }),
       );
-      dispatch(loadPreview.failure({  }));
+      dispatch(loadPreview.failure({}));
       console.error(err);
     }
     return null;
