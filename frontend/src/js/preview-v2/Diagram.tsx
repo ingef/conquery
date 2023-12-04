@@ -99,7 +99,6 @@ function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
   let pointer = start;
   while (pointer <= end) {
     // check month exists
-    console.log("date stats", labels, values);
     const month = format(pointer, "yyyy-MM");
     if (month in monthCounts) {
       labels.push(month);
@@ -119,7 +118,6 @@ function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
 
     pointer = addMonths(pointer, 1);
   }
-  console.log("date stats", labels, values);
   return {
     labels,
     datasets: [
