@@ -49,7 +49,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ToString(onlyExplicitlyIncluded = true)
 public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIdentifiable<CBlockId> {
-
+	//TODO Index per StringStore for isOfInterest
 	@ToString.Include
 	@NsIdRef
 	private final Bucket bucket;
