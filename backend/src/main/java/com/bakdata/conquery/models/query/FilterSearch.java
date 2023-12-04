@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.datasets.concepts.Searchable;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.jobs.UpdateFilterSearchJob;
 import com.bakdata.conquery.util.search.TrieSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Functions;
@@ -90,7 +89,7 @@ public class FilterSearch {
 
 		totals = new Object2LongOpenHashMap<>();
 
-		jobManager.addSlowJob(new UpdateFilterSearchJob(storage, searchCache, indexConfig, totals));
+		// TODO jobManager.addSlowJob(new UpdateFilterSearchJob(storage, searchCache, indexConfig, totals));
 	}
 
 

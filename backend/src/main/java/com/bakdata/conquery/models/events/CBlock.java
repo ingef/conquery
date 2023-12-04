@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.events;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.validation.constraints.NotNull;
@@ -204,7 +204,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> implements NamespacedIden
 	 * Calculate for every event a 64 bit long bloom filter, that masks the concept element path within
 	 * the first 64 {@link com.bakdata.conquery.models.datasets.concepts.ConceptElement}s of the {@link TreeConcept}.
 	 * This is used in the evaluation of a query to quickly decide if an event is of interest by logically ANDing
-	 * the bitmask of the event with the bitmask calculated by {@link ConceptNode.calculateBitMask(List)}
+	 * the bitmask of the event with the bitmask calculated by {@link ConceptNode#calculateBitMask(Collection)}
 	 */
 	private static Map<String, Long> calculateConceptElementPathBloomFilter(int bucketSize, Bucket bucket, int[][] mostSpecificChildren) {
 		final Map<String, Long> includedConcepts = new HashMap<>(bucketSize);

@@ -87,7 +87,6 @@ public class SqlExecutionService {
 
 	private SqlEntityResult getResultRow(ResultSet resultSet, ResultSetProcessor.ResultSetMapper[] mappers, int columnCount) throws SQLException {
 
-		int rowNumber = resultSet.getRow();
 		String id = resultSet.getString(PID_COLUMN_INDEX);
 		Object[] resultRow = new Object[columnCount - 1];
 
@@ -96,7 +95,7 @@ public class SqlExecutionService {
 			resultRow[resultTypeIndex] = mappers[resultTypeIndex].getFromResultSet(resultSet, resultSetIndex, this.resultSetProcessor);
 		}
 
-		return new SqlEntityResult(rowNumber, id, resultRow);
+		return new SqlEntityResult(id, resultRow);
 	}
 
 }

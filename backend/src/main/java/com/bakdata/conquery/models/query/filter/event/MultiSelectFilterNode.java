@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.validation.constraints.NotNull;
@@ -10,7 +8,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.events.stores.root.StringStore;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.filter.EventFilterNode;
@@ -33,7 +30,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
 	private boolean empty;
 	
-	private final Set<String> selectedValues;
+	private Set<String> selectedValues;
 
 	public MultiSelectFilterNode(Column column, String[] filterValue) {
 		super(filterValue);
@@ -45,14 +42,12 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 	@Override
 	public void init(Entity entity, QueryExecutionContext context) {
 		super.init(entity, context);
-		this.context = context;
-		selectedValues = null;
 	}
 
 	@Override
 	public void setFilterValue(String[] strings) {
 		super.setFilterValue(strings);
-		selectedValues = new HashSet<>(filterValue);
+		selectedValues = Set.of(strings);
 		empty = Arrays.stream(filterValue).anyMatch(Strings::isEmpty);
 	}
 
@@ -72,13 +67,7 @@ public class MultiSelectFilterNode extends EventFilterNode<String[]> {
 
 		final String stringToken = bucket.getString(event, getColumn());
 
-		for (String selectedValue : filterValue) {
-			if (Objects.equals(selectedValue, stringToken)) {
-				return true;
-			}
-		}
-
-		return false;
+		return selectedValues.contains(stringToken);
 	}
 
 	@Override
