@@ -60,7 +60,7 @@ The final step is to configure Conquery to use Keycloak for authentication. To d
             "wellKnownEndpoint" : "<realm-well-known-url>",
             "client" : "<client-name>"
         }
-    ]
+    ],
     "authorizationRealms": {
         "type":"DEFAULT",
         "overviewScope": [
@@ -74,11 +74,12 @@ The final step is to configure Conquery to use Keycloak for authentication. To d
             "label":"Initial User",
             "permissions": [
                 "*"
-            ]
+            ],
+			      "credentials": []
         }
     }
   ```
-  Replace the `<realm-well-known-url>` and `<client-name>` with the names you used in Steps 1 and 2.
+  Replace the `<realm-well-known-url>` and `<client-name>` (e.g. `conquery`) with the names you used in Steps 1 and 2.
   Replace `<id>` with the user id of the user in Keycloak.
   The value of `client` is expected to appear in the `aud`-Claim of an access token. 
 
@@ -87,9 +88,9 @@ The final step is to configure Conquery to use Keycloak for authentication. To d
   variables, when running the container:
   ```bash
   docker run \
-    --env REACT_APP_API_URL=<conquery-backend-url> \
+    --env REACT_APP_API_URL="http://localhost:8080" \
     --env REACT_APP_IDP_REALM=<realm-name> \
-    --env REACT_APP_IDP_CLIENT_ID=<client-name> \
+    --env REACT_APP_IDP_CLIENT_ID="conquery" \
     --env REACT_APP_DISABLE_LOGIN=true \
     --env REACT_APP_IDP_URL=<keycloak-server-url> \
     --env REACT_APP_IDP_ENABLE=true \
