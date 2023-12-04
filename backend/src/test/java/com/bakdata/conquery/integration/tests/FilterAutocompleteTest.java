@@ -138,7 +138,7 @@ public class FilterAutocompleteTest extends IntegrationTest.Simple implements Pr
 
 			//check the resolved values
 			assertThat(resolvedFromValues.values().stream().map(FrontendValue::getValue))
-					.containsExactly("f", "fm");
+					.containsExactly("", "f", "fm");
 		}
 
 
