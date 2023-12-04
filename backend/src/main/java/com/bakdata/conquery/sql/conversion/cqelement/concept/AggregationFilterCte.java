@@ -15,11 +15,12 @@ class AggregationFilterCte extends ConceptCte {
 	@Override
 	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
 
-		Selects aggregationFilterSelects = Selects.qualified(
-				conceptCteContext.getConceptTables().getPredecessorTableName(ConceptCteStep.AGGREGATION_FILTER),
-				conceptCteContext.getPrimaryColumn(),
-				getForAggregationFilterSelects(conceptCteContext)
-		);
+		String predecessorTableName = conceptCteContext.getConceptTables().getPredecessor(cteStep());
+		Selects aggregationFilterSelects = Selects.builder()
+												  .primaryColumn(conceptCteContext.getPrimaryColumn())
+												  .sqlSelects(getForAggregationFilterSelects(conceptCteContext))
+												  .build()
+												  .qualify(predecessorTableName);
 
 		List<Condition> aggregationFilterConditions = conceptCteContext.getFilters().stream()
 																	   .flatMap(conceptFilter -> conceptFilter.getFilters().getGroup().stream())

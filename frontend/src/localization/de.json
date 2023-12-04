@@ -366,7 +366,10 @@
     "error": "Beim Auflösen der Werte ist ein Fehler aufgetreten.",
     "nothingResolved": "Kein Konzept konnte aufgelöst werden.",
     "filterValuesFrom": "Filterwerte aus",
-    "conceptValuesFrom": "Konzepte aus"
+    "conceptValuesFrom": "Konzepte aus",
+    "includeUnresolved": "Nicht aufgelöste Werte mit einfügen",
+    "includeUnresolvedTooltipDisabled": "Kein Wert konnte aufgelöst werden.",
+    "insertRegardless": "Trotzdem Einfügen"
   },
   "uploadFilterListModal": {
     "headline": "Filter-Werte aus Liste einfügen"

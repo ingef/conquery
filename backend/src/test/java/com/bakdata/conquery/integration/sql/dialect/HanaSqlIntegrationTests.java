@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.TestTags;
+import com.bakdata.conquery.integration.ConqueryIntegrationTests;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.sql.testcontainer.hana.HanaContainer;
 import com.bakdata.conquery.models.config.Dialect;
@@ -38,7 +39,7 @@ import org.jooq.Table;
 import org.jooq.conf.ParamType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 import org.testcontainers.junit.jupiter.Container;
@@ -59,12 +60,12 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 	}
 
 	public HanaSqlIntegrationTests() {
-		super("tests/", "com.bakdata.conquery.integration");
+		super(ConqueryIntegrationTests.DEFAULT_SQL_TEST_ROOT, "com.bakdata.conquery.integration");
 	}
 
 	@TestFactory
 	@Tag(TestTags.INTEGRATION_SQL_BACKEND)
-	public Stream<DynamicTest> sqlBackendTests() {
+	public List<DynamicNode> sqlBackendTests() {
 
 		TestContextProvider provider = useLocalHanaDb
 									   ? new HanaTestcontainerContextProvider()
@@ -107,9 +108,10 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		}
 	}
 
-	private static class TestHanaDialect extends HanaSqlDialect implements TestSqlDialect {
+	public static class TestHanaDialect extends HanaSqlDialect implements TestSqlDialect {
 
 		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
+
 
 		public TestHanaDialect(DSLContext dslContext) {
 			super(dslContext);
@@ -172,11 +174,12 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 			this.hanaContainer.start();
 
 			this.sqlConnectorConfig = SqlConnectorConfig.builder()
+														.enabled(true)
 														.dialect(Dialect.HANA)
+														.withPrettyPrinting(true)
 														.jdbcConnectionUrl(hanaContainer.getJdbcUrl())
 														.databaseUsername(hanaContainer.getUsername())
 														.databasePassword(hanaContainer.getPassword())
-														.withPrettyPrinting(true)
 														.primaryColumn("pid")
 														.build();
 			this.dslContext = DslContextFactory.create(sqlConnectorConfig);

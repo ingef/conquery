@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import lombok.RequiredArgsConstructor;
@@ -19,13 +20,13 @@ class MergeAggregateAction implements SqlAggregationAction {
 	private final QueryStep joinedStep;
 
 	@Override
-	public DateAggregationTables tableNames() {
-		return MergeStep.tableNames(this.joinedStep);
+	public DateAggregationTables<MergeCteStep> tableNames(NameGenerator nameGenerator) {
+		return MergeCteStep.tableNames(this.joinedStep, nameGenerator);
 	}
 
 	@Override
 	public List<DateAggregationCte> dateAggregationCtes() {
-		return MergeStep.requiredSteps();
+		return MergeCteStep.requiredSteps();
 	}
 
 	@Override
@@ -49,12 +50,12 @@ class MergeAggregateAction implements SqlAggregationAction {
 
 	@Override
 	public List<QueryStep> getNoOverlapSelects(DateAggregationContext dateAggregationContext) {
-		return dateAggregationContext.getSteps(MergeStep.NODE_NO_OVERLAP);
+		return dateAggregationContext.getSteps(MergeCteStep.NODE_NO_OVERLAP);
 	}
 
 	@Override
 	public QueryStep getOverlapStep(DateAggregationContext dateAggregationContext) {
-		return dateAggregationContext.getStep(MergeStep.OVERLAP);
+		return dateAggregationContext.getStep(MergeCteStep.OVERLAP);
 	}
 
 	@Override

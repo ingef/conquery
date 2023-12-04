@@ -10,7 +10,7 @@ import ConceptTreesLoading from "./ConceptTreesLoading";
 import ConceptsProgressBar from "./ConceptsProgressBar";
 import EmptyConceptTreeList from "./EmptyConceptTreeList";
 import { useLoadTree } from "./actions";
-import type { TreesT, SearchT } from "./reducer";
+import type { SearchT, TreesT } from "./reducer";
 import { useAreTreesAvailable } from "./selectors";
 import { useRootConceptIds } from "./useRootConceptIds";
 

@@ -48,7 +48,7 @@ const ProjectItemDragContainer = ({
         canExpand: item.canExpand,
       };
 
-  const [, drag] = useDrag<DragItemQuery | DragItemFormConfig, void, {}>({
+  const [, drag] = useDrag<DragItemQuery | DragItemFormConfig, void>({
     type: dragItem.type,
     item: () => ({
       ...dragItem,

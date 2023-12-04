@@ -1,8 +1,8 @@
 {
-  "type": "SQL_TEST",
+  "type": "SQL_QUERY_TEST",
   "label": "Validity date with multiple ranges for subjects",
   "description": "If multiple ranges of a concepts' validity date exist, that they are aggregated properly.",
-  "expectedCsv": "expected.csv",
+  "expectedCsv": "tests/sql/selects/validity_date/multirange/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {

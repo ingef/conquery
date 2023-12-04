@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -13,6 +14,7 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Functions;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
+import com.google.common.cache.CacheStats;
 import com.google.common.cache.LoadingCache;
 import com.univocity.parsers.common.IterableResult;
 import com.univocity.parsers.common.ParsingContext;
@@ -35,7 +37,7 @@ public class IndexService implements Injectable {
 
 	private final CsvParserSettings csvParserSettings;
 
-	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().build(new CacheLoader<>() {
+	private final LoadingCache<IndexKey<?>, Index<?>> mappings = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<>() {
 		@Override
 		public Index<?> load(@NotNull IndexKey<?> key) throws Exception {
 			log.info("Started to parse mapping {}", key);
@@ -73,7 +75,7 @@ public class IndexService implements Injectable {
 					catch (IllegalArgumentException e) {
 						log.warn("Skipping mapping '{}'->'{}' in row {}, because there was already a mapping",
 								 internalValue, externalValue, csvParser.getContext().currentLine(),
-								 (Exception) (log.isTraceEnabled() ? e : null)
+								 (Exception) (log.isTraceEnabled() ? e : null) // Cast to Exception to satisfy format-string check
 						);
 					}
 				}
@@ -149,6 +151,14 @@ public class IndexService implements Injectable {
 		catch (ExecutionException e) {
 			throw new IllegalStateException(String.format("Unable to build index from index configuration: %s)", key), e);
 		}
+	}
+
+	public CacheStats getStatistics() {
+		return mappings.stats();
+	}
+
+	public Set<IndexKey<?>> getLoadedIndexes() {
+		return mappings.asMap().keySet();
 	}
 
 	@Override

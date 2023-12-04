@@ -31,12 +31,12 @@ public class CQNegationConverter implements NodeConverter<CQNegation> {
 			QueryStep withBlockedValidityDate = queryStep.toBuilder()
 														 .selects(queryStep.getSelects().blockValidityDate())
 														 .build();
-			return context.withQueryStep(withBlockedValidityDate);
+			return context.toBuilder().queryStep(withBlockedValidityDate).build();
 		}
 		QueryStep withInvertedValidityDate = converted.getSqlDialect()
 													  .getDateAggregator()
-													  .invertAggregatedIntervals(queryStep);
-		return context.withQueryStep(withInvertedValidityDate);
+													  .invertAggregatedIntervals(queryStep, context.getNameGenerator());
+		return context.toBuilder().queryStep(withInvertedValidityDate).build();
 	}
 
 }

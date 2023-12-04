@@ -15,9 +15,9 @@ import org.jooq.Field;
 @Getter
 class OverlapCte extends DateAggregationCte {
 
-	private final DateAggregationStep cteStep;
+	private final DateAggregationCteStep cteStep;
 
-	public OverlapCte(DateAggregationStep cteStep) {
+	public OverlapCte(DateAggregationCteStep cteStep) {
 		this.cteStep = cteStep;
 	}
 
@@ -32,11 +32,11 @@ class OverlapCte extends DateAggregationCte {
 				context.getDateAggregationDates(),
 				context.getFunctionProvider()
 		);
-		Selects overlapSelects = new Selects(
-				context.getPrimaryColumn(),
-				Optional.of(overlapValidityDate),
-				context.getCarryThroughSelects()
-		);
+		Selects overlapSelects = Selects.builder()
+										.primaryColumn(context.getPrimaryColumn())
+										.validityDate(Optional.of(overlapValidityDate))
+										.sqlSelects(context.getCarryThroughSelects())
+										.build();
 
 		SqlFunctionProvider functionProvider = context.getFunctionProvider();
 		Condition startBeforeEnd = functionProvider.greatest(allStarts).lessThan(functionProvider.least(allEnds));

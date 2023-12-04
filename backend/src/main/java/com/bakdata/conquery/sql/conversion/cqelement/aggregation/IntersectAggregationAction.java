@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
@@ -21,13 +22,13 @@ class IntersectAggregationAction implements SqlAggregationAction {
 	private final QueryStep joinedStep;
 
 	@Override
-	public DateAggregationTables tableNames() {
-		return IntersectStep.tableNames(this.joinedStep);
+	public DateAggregationTables<IntersectCteStep> tableNames(NameGenerator nameGenerator) {
+		return IntersectCteStep.createTableNames(this.joinedStep, nameGenerator);
 	}
 
 	@Override
 	public List<DateAggregationCte> dateAggregationCtes() {
-		return IntersectStep.requiredSteps();
+		return IntersectCteStep.requiredSteps();
 	}
 
 	@Override
@@ -60,12 +61,12 @@ class IntersectAggregationAction implements SqlAggregationAction {
 
 	@Override
 	public List<QueryStep> getNoOverlapSelects(DateAggregationContext dateAggregationContext) {
-		return List.of(dateAggregationContext.getStep(IntersectStep.INTERMEDIATE_TABLE));
+		return List.of(dateAggregationContext.getStep(IntersectCteStep.INTERMEDIATE_TABLE));
 	}
 
 	@Override
 	public QueryStep getOverlapStep(DateAggregationContext dateAggregationContext) {
-		return dateAggregationContext.getStep(IntersectStep.OVERLAP);
+		return dateAggregationContext.getStep(IntersectCteStep.OVERLAP);
 	}
 
 	@Override

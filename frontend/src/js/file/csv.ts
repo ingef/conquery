@@ -28,8 +28,8 @@ export function toCSV(data: string[][], delimiter: string = ";") {
 }
 
 export function parseCSVWithHeaderToObj(csv: string, delimiter?: string) {
-  return new Promise<{ [key: string]: any }[]>((resolve) => {
-    Papa.parse<{ [key: string]: any }[]>(csv, {
+  return new Promise<{ [key: string]: unknown }[]>((resolve) => {
+    Papa.parse<{ [key: string]: unknown }[]>(csv, {
       header: true,
       download: false,
       delimiter: delimiter || ";",
@@ -38,7 +38,7 @@ export function parseCSVWithHeaderToObj(csv: string, delimiter?: string) {
         resolve(
           results.data.map((row) =>
             Object.fromEntries(
-              Object.entries(row).filter(([_, value]) => !!value),
+              Object.entries(row).filter(([, value]) => !!value),
             ),
           ),
         ),

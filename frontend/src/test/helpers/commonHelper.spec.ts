@@ -1,4 +1,4 @@
-import { isEmpty, isEmptyObject } from "../../js/common/helpers/commonHelper";
+import { isEmpty } from "../../js/common/helpers/commonHelper";
 
 describe("helpers", () => {
   describe("commonHelper", () => {
@@ -30,20 +30,6 @@ describe("helpers", () => {
         expect(isEmpty({})).toBe(true);
         expect(isEmpty({ a: "abc" })).toBe(false);
         expect(isEmpty({ yellow: "black", black: "yellow" })).toBe(false);
-      });
-    });
-
-    describe("isEmptyObject", () => {
-      it("works with unempty objects", () => {
-        expect(isEmptyObject(null)).toBe(false);
-        expect(isEmptyObject({ foo: undefined, bar: false })).toBe(false);
-        expect(isEmptyObject({ foo: "yo" })).toBe(false);
-      });
-
-      it("works with empty objects", () => {
-        expect(isEmptyObject({})).toBe(true);
-        expect(isEmptyObject({ a: undefined })).toBe(true);
-        expect(isEmptyObject({ foo: undefined, bar: undefined })).toBe(true);
       });
     });
   });

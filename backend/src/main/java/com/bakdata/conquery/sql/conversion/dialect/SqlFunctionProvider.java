@@ -46,8 +46,8 @@ public interface SqlFunctionProvider {
 	 * Example: {[2013-11-10,2013-11-11),[2015-11-10,2015-11-11)}
 	 * <p>
 	 * Also, if the aggregated expression contains the dialect specific {@link SqlFunctionProvider#getMaxDateExpression()} or
-	 * {@link SqlFunctionProvider#getMaxDateExpression()} expression, it should be replaced with the {@link SqlFunctionProvider#INFINITY_SIGN} or
-	 * {@link SqlFunctionProvider#MINUS_INFINITY_SIGN}.
+	 * {@link SqlFunctionProvider#getMinDateExpression()} expression, it should be replaced with the {@link SqlFunctionProvider#INFINITY_SIGN}
+	 * or {@link SqlFunctionProvider#MINUS_INFINITY_SIGN}.
 	 * <p>
 	 * Example: {[-∞,2013-11-11),[2015-11-10,∞)}
 	 */

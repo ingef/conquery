@@ -16,16 +16,18 @@ public class CountSelectConverter implements SelectConverter<CountSelect> {
 	public SqlSelects convert(CountSelect countSelect, SelectContext context) {
 
 		SqlSelect rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
 				countSelect.getColumn().getName(),
 				Object.class
 		);
 
-		Field<Object> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
-		CountSqlSelect countSqlSelect = new CountSqlSelect(qualifiedRootSelect, countSelect.getName(), CountSqlSelect.CountType.fromBoolean(countSelect.isDistinct()));
+		Field<Object> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		String alias = context.getNameGenerator().selectName(countSelect);
+		CountSqlSelect.CountType countType = CountSqlSelect.CountType.fromBoolean(countSelect.isDistinct());
+		CountSqlSelect countSqlSelect = new CountSqlSelect(qualifiedRootSelect, alias, countType);
 
 		ExtractingSqlSelect<Integer> finalSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.FINAL),
+				context.getConceptTables().getPredecessor(ConceptCteStep.FINAL),
 				countSqlSelect.aliased().getName(),
 				Integer.class
 		);

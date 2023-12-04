@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 
 import { TimeStratifiedInfo } from "../api/types";
 import SmallTabNavigation from "../small-tab-navigation/SmallTabNavigation";
@@ -39,8 +39,8 @@ export const TabbableTimeStratifiedInfos = ({
       infoData = {
         ...infoData,
         totals: Object.fromEntries(
-          Object.entries(infoData?.totals).filter(([k]) =>
-            columns?.map((c) => c.label).includes(k),
+          Object.entries(infoData?.totals).filter(
+            ([k]) => columns?.map((c) => c.label).includes(k),
           ),
         ),
         columns: columns ?? [],

@@ -17,13 +17,13 @@ class SelectFilterUtil {
 	public static <T> ConceptFilter convert(SelectFilter<T> selectFilter, FilterContext<T> context, String[] values) {
 
 		SqlSelect rootSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING),
+				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
 				selectFilter.getColumn().getName(),
 				String.class
 		);
 
 		FilterCondition condition = new MultiSelectCondition(
-				context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.EVENT_FILTER, rootSelect.aliased()),
+				context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.EVENT_FILTER, rootSelect.aliased()),
 				values,
 				context.getParentContext().getSqlDialect().getFunctionProvider()
 		);

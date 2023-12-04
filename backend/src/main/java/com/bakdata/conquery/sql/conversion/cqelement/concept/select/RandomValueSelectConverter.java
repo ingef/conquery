@@ -15,11 +15,11 @@ public class RandomValueSelectConverter implements SelectConverter<RandomValueSe
 	@Override
 	public SqlSelects convert(RandomValueSelect randomSelect, SelectContext context) {
 
-		String rootTableName = context.getConceptTables().getPredecessorTableName(ConceptCteStep.PREPROCESSING);
+		String rootTableName = context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING);
 		String columnName = randomSelect.getColumn().getName();
 		SqlSelect rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
 
-		Field<Object> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessorTableName(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
+		Field<Object> qualifiedRootSelect = context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased());
 		String alias = randomSelect.getName();
 		SqlSelect randomValueSqlSelect = RandomValueSqlSelect.builder()
 															 .randomColumn(qualifiedRootSelect)
@@ -28,7 +28,7 @@ public class RandomValueSelectConverter implements SelectConverter<RandomValueSe
 															 .build();
 
 		ExtractingSqlSelect<Object> finalSelect = new ExtractingSqlSelect<>(
-				context.getConceptTables().getPredecessorTableName(ConceptCteStep.FINAL),
+				context.getConceptTables().getPredecessor(ConceptCteStep.FINAL),
 				randomValueSqlSelect.aliased().getName(),
 				Object.class
 		);

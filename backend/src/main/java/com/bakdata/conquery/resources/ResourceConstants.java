@@ -23,6 +23,7 @@ public class ResourceConstants {
 	public static final String GROUPS_PATH_ELEMENT = "groups";
 	public static final String USERS_PATH_ELEMENT = "users";
 	public static final String ROLES_PATH_ELEMENT = "roles";
+	public static final String INDEX_SERVICE_PATH_ELEMENT = "index-service";
 	public static final String AUTH_OVERVIEW_PATH_ELEMENT = "auth-overview";
 	public static final String USER_ID = "userId";
 	public static final String ROLE_ID = "roleId";

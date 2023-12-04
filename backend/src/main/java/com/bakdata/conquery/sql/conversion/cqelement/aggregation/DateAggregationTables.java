@@ -1,30 +1,14 @@
 package com.bakdata.conquery.sql.conversion.cqelement.aggregation;
 
-import java.util.Map;
+import java.util.Set;
 
-import lombok.Value;
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
 
-@Value
-class DateAggregationTables {
+class DateAggregationTables<C extends DateAggregationCteStep> extends SqlTables<C> {
 
-	String joinedTable;
-	Map<DateAggregationStep, String> cteNameMap;
-
-	public DateAggregationTables(String joinedTable, Map<DateAggregationStep, String> cteNameMap) {
-		this.joinedTable = joinedTable;
-		this.cteNameMap = cteNameMap;
-	}
-
-	public String cteName(DateAggregationStep dateAggregationStep) {
-		return this.cteNameMap.get(dateAggregationStep);
-	}
-
-	public String getFromTableOf(DateAggregationStep dateAggregationStep) {
-		DateAggregationStep predecessor = dateAggregationStep.predecessor();
-		if (predecessor == null) {
-			return joinedTable;
-		}
-		return this.cteNameMap.get(predecessor);
+	public DateAggregationTables(String nodeLabel, Set<C> requiredSteps, String rootTableName, NameGenerator nameGenerator) {
+		super(nodeLabel, requiredSteps, rootTableName, nameGenerator);
 	}
 
 }

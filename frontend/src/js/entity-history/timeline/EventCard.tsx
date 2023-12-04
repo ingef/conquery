@@ -18,7 +18,7 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import type { ContentFilterValue } from "../ContentControl";
 import { RowDates } from "../RowDates";
 import { ColumnBuckets } from "../Timeline";
-import type { EntityEvent } from "../reducer";
+import type { DateRow, EntityEvent } from "../reducer";
 
 import GroupedContent from "./GroupedContent";
 import { RawDataBadge } from "./RawDataBadge";
@@ -139,7 +139,7 @@ const EventCard = ({
   return (
     <Card>
       <Bullet />
-      <RowDates dates={row[dateColumn.label]} />
+      <RowDates dates={row[dateColumn.label] as DateRow} />
       <SxRawDataBadge event={row} sourceColumn={sourceColumn} />
       <EventItemContent>
         {contentFilter.money && applicableMoney.length > 0 && (
@@ -158,7 +158,7 @@ const EventCard = ({
                       {...currencyConfig}
                       suffix={" " + currencyConfig.unit}
                       displayType="text"
-                      value={parseInt(row[column.label]) / 100}
+                      value={parseInt(row[column.label] as string) / 100}
                     />
                   </code>
                 </div>
@@ -189,7 +189,7 @@ const EventCard = ({
               {applicableRest.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  <span>{row[column.label]}</span>
+                  <span>{row[column.label] as string}</span>
                 </div>
               ))}
             </ColBucket>
@@ -206,7 +206,7 @@ const EventCard = ({
               {applicableGroupableIds.map((column) => (
                 <div key={column.label}>
                   <TinyLabel>{column.defaultLabel}</TinyLabel>
-                  {row[column.label]}
+                  {row[column.label] as string}
                 </div>
               ))}
             </ColBucket>
