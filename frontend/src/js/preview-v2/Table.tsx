@@ -56,10 +56,9 @@ export default function Table({ data }: Props) {
       if (!div) {
         return;
       }
-
-      const scrollAmount = (div.getBoundingClientRect().y - div.offsetTop) * -1;
-      const maxScroll = div.getBoundingClientRect().height - div.offsetTop;
-      const thresholdTriggered = scrollAmount / maxScroll > 0.9;
+      const maxScroll = (div.parentElement?.scrollHeight || div.scrollHeight)-window.innerHeight;
+      const thresholdTriggered = (div.parentElement?.scrollTop || div.scrollTop) / maxScroll > 0.9;
+      console.log(thresholdTriggered);
       if (thresholdTriggered) {
         setLoadingAmount((amount) =>
           Math.min(amount + stepCount, tableData.length),
