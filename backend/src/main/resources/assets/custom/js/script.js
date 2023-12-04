@@ -118,9 +118,9 @@ async function rest(url, options) {
 				})
 				.then( (json) => {
 					var searchParams = new URLSearchParams(window.location.search);
-                    searchParams.set("access_token", json.access_token);
-                    // This triggers a page reload
-                    window.location.search = searchParams.toString();
+					searchParams.set("access_token", json.access_token);
+					// This triggers a page reload
+					window.location.search = searchParams.toString();
 				}
 				)
 				.catch(function(error) {
