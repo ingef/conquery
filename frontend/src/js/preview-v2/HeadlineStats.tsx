@@ -31,18 +31,6 @@ export type HeadlineStatsProps = {
 };
 
 export default function HeadlineStats({ statistics }: HeadlineStatsProps) {
-  if (statistics === null) {
-    return (
-      <Root>
-        <Key>Zeilen:</Key>
-        <Key>Min Datum:</Key>
-        <Key>Max Datum:</Key>
-        <Key>Datumsbereich:</Key>
-        <Key>Fehlende Werte:</Key>
-      </Root>
-    );
-  }
-
   const parseDateToLocaleString = (date: string | undefined) => {
     if (date) {
       return (
@@ -52,26 +40,25 @@ export default function HeadlineStats({ statistics }: HeadlineStatsProps) {
     }
     return t("preview.dateError");
   };
-
-  const { total, dateRange } = statistics;
-
+  const dateRange = statistics?.dateRange;
+  
   return (
     <Root>
       <MetaValue>
         <Key>Zeilen:</Key>
-        {total}
+        {statistics?.total || "Noch nicht geladen"}
       </MetaValue>
       <MetaValue>
         <Key>Min Datum:</Key>
-        {parseDateToLocaleString(dateRange.min)}
+        {parseDateToLocaleString(statistics?.dateRange.min)}
       </MetaValue>
       <MetaValue>
         <Key>Max Datum:</Key>
-        {parseDateToLocaleString(dateRange.max)}
+        {parseDateToLocaleString(dateRange?.max)}
       </MetaValue>
       <MetaValue>
         <Key>Datumsbereich:</Key>
-        {dateRange.min && dateRange.max
+        {dateRange?.min && dateRange?.max
           ? `${getDiffInDays(
               parseDate(dateRange.max, "yyyy-MM-dd") ?? new Date(),
               parseDate(dateRange.min, "yyyy-MM-dd") ?? new Date(),
