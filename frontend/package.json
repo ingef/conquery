@@ -84,7 +84,7 @@
     "remark-gfm": "^3.0.1",
     "resize-observer-polyfill": "^1.5.1",
     "typesafe-actions": "^5.1.0",
-    "vite": "^4.5.0"
+    "vite": "^4.5.1"
   },
   "devDependencies": {
     "@babel/core": "^7.23.2",
