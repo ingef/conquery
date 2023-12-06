@@ -8,9 +8,9 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SumFilter;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.specific.SumSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.NumberMapUtil;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectContext;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.NumberMapUtil;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
@@ -67,7 +67,10 @@ public class SumSqlAggregator implements SqlAggregator {
 		return new SumSqlAggregator(sumColumn, alias, selectContext.getConceptTables(), null);
 	}
 
-	public static SumSqlAggregator create(SumFilter<IRange<? extends Number, ?>> sumFilter, FilterContext<IRange<? extends Number, ?>> filterContext) {
+	public static SumSqlAggregator create(
+			SumFilter<? extends IRange<? extends Number, ?>> sumFilter,
+			FilterContext<? extends IRange<? extends Number, ?>> filterContext
+	) {
 		Column sumColumn = sumFilter.getColumn();
 		String alias = filterContext.getNameGenerator().selectName(sumFilter);
 		return new SumSqlAggregator(sumColumn, alias, filterContext.getConceptTables(), filterContext.getValue());

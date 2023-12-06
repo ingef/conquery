@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectContext;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
 import lombok.Value;
 import org.jooq.impl.DSL;

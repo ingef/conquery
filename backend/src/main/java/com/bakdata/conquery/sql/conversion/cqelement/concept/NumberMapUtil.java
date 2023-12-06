@@ -1,4 +1,4 @@
-package com.bakdata.conquery.sql.conversion.cqelement.concept.filter;
+package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.math.BigDecimal;
 import java.util.Map;

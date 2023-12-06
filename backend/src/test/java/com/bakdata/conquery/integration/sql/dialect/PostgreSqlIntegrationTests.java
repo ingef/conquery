@@ -9,18 +9,14 @@ import com.bakdata.conquery.integration.ConqueryIntegrationTests;
 import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.error.ConqueryError;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.sql.DslContextFactory;
 import com.bakdata.conquery.sql.conquery.SqlManagedQuery;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.DateDistanceFilterConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistanceSelectConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.extern.slf4j.Slf4j;
@@ -108,17 +104,8 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 		}
 
 		@Override
-		public List<SelectConverter<? extends Select>> getSelectConverters() {
-			return this.customizeSelectConverters(List.of(
-					new DateDistanceSelectConverter(DATE_NOW_SUPPLIER)
-			));
-		}
-
-		@Override
-		public List<FilterConverter<?, ?>> getFilterConverters() {
-			return this.customizeFilterConverters(List.of(
-					new DateDistanceFilterConverter(DATE_NOW_SUPPLIER)
-			));
+		public DateNowSupplier getDateNowSupplier() {
+			return DATE_NOW_SUPPLIER;
 		}
 
 		public TestFunctionProvider getTestFunctionProvider() {
