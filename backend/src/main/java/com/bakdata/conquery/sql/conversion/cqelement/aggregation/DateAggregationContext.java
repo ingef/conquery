@@ -8,6 +8,7 @@ import java.util.Map;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.dialect.IntervalPacker;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
@@ -28,6 +29,7 @@ class DateAggregationContext implements Context {
 	SqlAggregationAction sqlAggregationAction;
 	SqlFunctionProvider functionProvider;
 	IntervalPacker intervalPacker;
+	NameGenerator nameGenerator;
 
 	public DateAggregationContext withStep(DateAggregationCteStep dateAggregationCteStep, QueryStep queryStep) {
 		this.intervalMergeSteps.computeIfAbsent(dateAggregationCteStep, k -> new ArrayList<>())

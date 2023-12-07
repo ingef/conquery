@@ -112,6 +112,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 
 		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
 
+
 		public TestHanaDialect(DSLContext dslContext) {
 			super(dslContext);
 		}
@@ -175,10 +176,10 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 			this.sqlConnectorConfig = SqlConnectorConfig.builder()
 														.enabled(true)
 														.dialect(Dialect.HANA)
+														.withPrettyPrinting(true)
 														.jdbcConnectionUrl(hanaContainer.getJdbcUrl())
 														.databaseUsername(hanaContainer.getUsername())
 														.databasePassword(hanaContainer.getPassword())
-														.withPrettyPrinting(true)
 														.primaryColumn("pid")
 														.build();
 			this.dslContext = DslContextFactory.create(sqlConnectorConfig);

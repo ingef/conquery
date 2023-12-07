@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.config.SqlConnectorConfig;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlDialect;
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 
 /**
  * Entry point for converting {@link QueryDescription} to an SQL query.
@@ -23,6 +24,7 @@ public class NodeConversions extends Conversions<Visitable, ConversionContext, C
 	public ConversionContext convert(QueryDescription queryDescription) {
 		ConversionContext initialCtx = ConversionContext.builder()
 														.config(config)
+														.nameGenerator(new NameGenerator(config.getDialect().getNameMaxLength()))
 														.nodeConversions(this)
 														.sqlDialect(this.dialect)
 														.build();

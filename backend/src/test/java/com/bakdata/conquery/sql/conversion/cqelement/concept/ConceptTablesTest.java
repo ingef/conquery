@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -13,11 +14,13 @@ class ConceptTablesTest {
 
 	private static final String CONCEPT_LABEL = "foo";
 	private static final String ROOT_TABLE = "root";
+	public static final int NAME_MAX_LENGTH = 127;
+	private static final NameGenerator NAME_GENERATOR = new NameGenerator(NAME_MAX_LENGTH);
 
 	@ParameterizedTest
 	@MethodSource("requiredStepsProvider")
 	public void getPredecessorTableName(Set<ConceptCteStep> requiredSteps, ConceptCteStep step, String expectedPredecessorTableName) {
-		ConceptTables conceptTables = new ConceptTables(CONCEPT_LABEL, requiredSteps, ROOT_TABLE);
+		ConceptTables conceptTables = new ConceptTables(CONCEPT_LABEL, requiredSteps, ROOT_TABLE, NAME_GENERATOR);
 		Assertions.assertEquals(
 				expectedPredecessorTableName,
 				conceptTables.getPredecessor(step)

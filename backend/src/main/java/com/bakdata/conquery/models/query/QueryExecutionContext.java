@@ -23,6 +23,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SecondaryIdDescript
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import groovy.lang.Tuple3;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -51,25 +53,24 @@ public class QueryExecutionContext {
 	private Optional<Aggregator<CDateSet>> queryDateAggregator = Optional.empty();
 
 	@Getter(AccessLevel.NONE)
-	private final Map<Tuple3<Column, Import, String[]>, int[]> multiSelectValuesCache = new ConcurrentHashMap<>();
+	private final Map<Tuple3<Column, Import, String[]>, IntSet> multiSelectValuesCache = new ConcurrentHashMap<>();
 
 
-	private static int[] findIds(Column column, Bucket bucket, String[] values) {
-		final int[] selectedValues = new int[values.length];
+	private static IntSet findIds(Column column, Bucket bucket, String[] values) {
+		final IntSet selectedValues = new IntOpenHashSet();
 
 		final StringStore type = (StringStore) bucket.getStore(column);
 
-		for (int index = 0; index < values.length; index++) {
-			final String select = values[index];
+		for (final String select : values) {
 			final int parsed = type.getId(select);
 
-			selectedValues[index] = parsed;
+			selectedValues.add(parsed);
 		}
 
 		return selectedValues;
 	}
 
-	public int[] getIdsFor(Column column, Bucket bucket, String[] values) {
+	public IntSet getIdsFor(Column column, Bucket bucket, String[] values) {
 		return multiSelectValuesCache.computeIfAbsent(new Tuple3<>(column, bucket.getImp(), values), (ignored) -> findIds(column, bucket, values));
 	}
 

@@ -7,6 +7,7 @@ import javax.annotation.CheckForNull;
 
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
@@ -39,6 +40,8 @@ public class IntervalPackingContext implements Context {
 	 */
 	@Builder.Default
 	List<SqlSelect> carryThroughSelects = Collections.emptyList();
+
+	NameGenerator nameGenerator;
 
 	@CheckForNull
 	public QueryStep getPredecessor() {

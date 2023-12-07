@@ -225,7 +225,7 @@ public class ImportJob extends Job {
 			  .filter(Objects::nonNull)
 			  .forEach(dictionary -> {
 				  // Normal Dictionary -> no merge necessary, just distribute
-				  distributeDictionary(namespace, dictionary);
+				  storeAndDistributeDictionary(namespace, dictionary);
 			  });
 
 		Arrays.stream(columns)
@@ -240,7 +240,6 @@ public class ImportJob extends Job {
 				  log.debug("Column[{}.{}.{}] part of shared Dictionary[{}]", table.getId(), importName, column.getName(), sharedDictionaryName);
 
 				  final DictionaryId dictionaryId = new DictionaryId(namespace.getDataset().getId(), sharedDictionaryName);
-				  final DictionaryMapping mapping;
 
 				  // We have to lock here, as sibling columns might both use the same shared-dictionary
 				  try (IdMutex.Locked lock = sharedDictionaryLocks.acquire(dictionaryId)) {
@@ -249,21 +248,19 @@ public class ImportJob extends Job {
 					  ResourceUtil.throwNotFoundIfNull(dictionaryId, sharedDictionary);
 					  log.trace("Merging into shared Dictionary[{}]", sharedDictionary);
 
-					  mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
-				  }
+					  final DictionaryMapping mapping = DictionaryMapping.createAndImport(importDictionary, sharedDictionary);
 
-				  if (mapping.getNumberOfNewIds() != 0) {
-					  distributeDictionary(namespace, mapping.getTargetDictionary());
+					  if (mapping.getNumberOfNewIds() != 0) {
+						  storeAndDistributeDictionary(namespace, mapping.getTargetDictionary());
+					  }
+
+					  out.put(column.getName(), mapping);
 				  }
-				  out.put(column.getName(), mapping);
 			  });
-
-
-
 		return out;
 	}
 
-	private static void distributeDictionary(DistributedNamespace namespace, Dictionary dictionary) {
+	private static void storeAndDistributeDictionary(DistributedNamespace namespace, Dictionary dictionary) {
 		log.trace("Sending {} to all Workers", dictionary);
 		namespace.getStorage().updateDictionary(dictionary);
 		namespace.getWorkerHandler().sendToAll(new UpdateDictionary(dictionary));

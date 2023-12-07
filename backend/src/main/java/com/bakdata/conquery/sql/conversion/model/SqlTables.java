@@ -20,11 +20,11 @@ public abstract class SqlTables<C extends CteStep> {
 	private final Map<C, String> cteNames;
 	private final String rootTable;
 
-	public SqlTables(String nodeLabel, Set<C> requiredSteps, String rootTableName) {
+	public SqlTables(String nodeLabel, Set<C> requiredSteps, String rootTableName, NameGenerator nameGenerator) {
 		this.cteNames = requiredSteps.stream()
 									 .collect(Collectors.toMap(
 											 Function.identity(),
-											 step -> step.cteName(nodeLabel)
+											 step -> nameGenerator.cteStepName(step, nodeLabel)
 									 ));
 		this.rootTable = rootTableName;
 	}
