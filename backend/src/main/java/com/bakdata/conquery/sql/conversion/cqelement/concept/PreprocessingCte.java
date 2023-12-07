@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -14,7 +13,7 @@ class PreprocessingCte extends ConceptCte {
 		List<SqlSelect> forPreprocessing = conceptCteContext.allConceptSelects()
 															.flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
 															.distinct()
-															.collect(Collectors.toList());
+															.toList();
 
 		Selects preprocessingSelects = Selects.builder()
 											  .primaryColumn(conceptCteContext.getPrimaryColumn())
