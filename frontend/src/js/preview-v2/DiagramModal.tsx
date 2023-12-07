@@ -2,7 +2,10 @@ import styled from "@emotion/styled";
 import { PreviewStatistics } from "../api/types";
 import Modal from "../modal/Modal";
 import Diagram from "./Diagram";
-import { previewStatsIsNumberStats } from "./util";
+import { formatNumber, previewStatsIsNumberStats } from "./util";
+import { StyledTable } from "./Table";
+import RcTable from "rc-table";
+import { t } from "i18next";
 
 interface DiagramModalProps {
   statistic: PreviewStatistics;
@@ -19,39 +22,55 @@ const SxDiagram = styled(Diagram)`
   margin-right: 15px;
 `;
 
-const SxTable = styled("table")`
-  border: 1px solid black;
-  align-self: center;
-  margin-left: 15px;
-`;
-
 export default function DiagramModal({
   statistic,
   onClose,
 }: DiagramModalProps) {
+  const components = {
+    table: StyledTable,
+  };
   return (
     <Modal closeIcon onClose={() => onClose()}>
       <Horizontal>
         <SxDiagram stat={statistic} />
         {previewStatsIsNumberStats(statistic) && (
-          <SxTable border={1}>
-            <tr>
-              <td>Mean</td>
-              <td>{statistic.mean.toPrecision(3)}</td>
-            </tr>
-            <tr>
-              <td>Standard Deviation</td>
-              <td>{statistic.stdDev.toPrecision(3)}</td>
-            </tr>
-            <tr>
-              <td>Minimum</td>
-              <td>{statistic.min.toPrecision(3)}</td>
-            </tr>
-            <tr>
-              <td>Maximum</td>
-              <td>{statistic.max.toPrecision(3)}</td>
-            </tr>
-          </SxTable>
+          <RcTable columns={
+            [
+              {
+                title: t("preview.name"),
+                dataIndex: "name",
+                key: "name",
+              },
+              {
+                title: t("preview.value"),
+                dataIndex: "value",
+                key: "value",
+              },
+            ]
+          }
+            data={
+              [
+                {
+                  "name": t("common.min"),
+                  "value": formatNumber(statistic.min)
+                },
+                {
+                  "name": t("common.max"),
+                  "value": formatNumber(statistic.max)
+                },
+                {
+                  "name": t("common.average"),
+                  "value": formatNumber(statistic.mean)
+                },
+                {
+                  "name": t("common.std"),
+                  "value": formatNumber(statistic.stdDev)
+                },
+              ]
+            }
+            rowKey={(_, index) => `row_${index}`}
+            components={components}
+          />
         )}
       </Horizontal>
     </Modal>

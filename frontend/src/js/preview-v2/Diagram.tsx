@@ -163,6 +163,11 @@ export default function Diagram({
           x: {
             suggestedMin: stat.min,
             suggestedMax: stat.max,
+            ticks: {
+              callback: (value: number) => {
+                return formatNumber(value);
+              },
+            }
           },
         },
         plugins: {

@@ -28,7 +28,7 @@ const DirectionSelector = styled("div")`
 `;
 
 const SxIconButton = styled(IconButton)`
-  font-size: 2Diagrams_PER_PAGEpx;
+  font-size: 24;
 `;
 
 const DiagramContainer = styled("div")`
