@@ -122,10 +122,12 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 		return valid;
 	}
 
+	@JsonIgnore
 	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
 		throw new UnsupportedOperationException("SQL conversion of select %s not implemented yet.".formatted(getClass()));
 	}
 
+	@JsonIgnore
 	public Set<ConceptCteStep> getRequiredSqlSteps() {
 		return ConceptCteStep.MANDATORY_STEPS;
 	}

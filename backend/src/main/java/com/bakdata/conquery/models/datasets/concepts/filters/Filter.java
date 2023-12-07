@@ -101,10 +101,12 @@ public abstract class Filter<FILTER_VALUE> extends Labeled<FilterId> implements 
 		return valid;
 	}
 
+	@JsonIgnore
 	public SqlFilters convertToSqlFilter(FilterContext<FILTER_VALUE> filterContext) {
 		throw new UnsupportedOperationException("SQL conversion of filter %s not implemented yet.".formatted(getClass()));
 	}
 
+	@JsonIgnore
 	public Set<ConceptCteStep> getRequiredSqlSteps() {
 		return ConceptCteStep.MANDATORY_STEPS;
 	}
