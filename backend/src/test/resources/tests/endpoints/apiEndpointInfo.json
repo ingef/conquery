@@ -50,30 +50,35 @@
     "clazz": "QueryResource"
   },
   {
-	  "method": "GET",
-	  "path": "/result/csv/{query}.csv",
-	  "clazz": "ResultCsvResource"
+    "method": "GET",
+    "path": "/queries/{query}/statistics",
+    "clazz": "QueryResource"
   },
-	{
-		"method": "GET",
-		"path": "/result/xlsx/{query}.xlsx",
-		"clazz": "ResultExcelResource"
-	},
-	{
-		"method": "GET",
-		"path": "/result/arrow/{query}.arrs",
-		"clazz": "ResultArrowResource"
-	},
-	{
-		"method": "GET",
-		"path": "/result/arrow/{query}.arrf",
-		"clazz": "ResultArrowResource"
-	},
-	{
-		"method": "GET",
-		"path": "/result/parquet/{query}.parquet",
-		"clazz": "ResultParquetResource"
-	},
+  {
+    "method": "GET",
+    "path": "/result/csv/{query}.csv",
+    "clazz": "ResultCsvResource"
+  },
+  {
+    "method": "GET",
+    "path": "/result/xlsx/{query}.xlsx",
+    "clazz": "ResultExcelResource"
+  },
+  {
+    "method": "GET",
+    "path": "/result/arrow/{query}.arrs",
+    "clazz": "ResultArrowResource"
+  },
+  {
+    "method": "GET",
+    "path": "/result/arrow/{query}.arrf",
+    "clazz": "ResultArrowResource"
+  },
+  {
+    "method": "GET",
+    "path": "/result/parquet/{query}.parquet",
+    "clazz": "ResultParquetResource"
+  },
   {
     "method": "GET",
     "path": "/result/external/{query}/{filename}",

@@ -43,7 +43,7 @@ import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.worker.DatasetRegistry;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvParser;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -51,8 +51,8 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-@Getter
 @RequiredArgsConstructor(onConstructor_ = {@Inject})
+@Data
 public class AdminDatasetProcessor {
 
 	public static final int MAX_IMPORTS_TEXT_LENGTH = 100;
@@ -69,8 +69,7 @@ public class AdminDatasetProcessor {
 	/**
 	 * Creates and initializes a new dataset if it does not already exist.
 	 */
-	@SneakyThrows(IOException.class)
-	public synchronized Dataset addDataset(Dataset dataset) {
+	public synchronized Dataset addDataset(Dataset dataset) throws IOException {
 
 		final String name = dataset.getName();
 		if (datasetRegistry.get(new DatasetId(name)) != null) {
