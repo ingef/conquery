@@ -404,7 +404,9 @@
     "max": "Max Datum",
     "span": "Datumsbereich",
     "loadingError": "Fehler beim laden der Vorschau",
-    "dateError": "Datum unbekannt"
+    "dateError": "Datum unbekannt",
+    "name": "Name",
+    "value": "Wert"
   },
   "login": {
     "headline": "Anfragen und Analyse",

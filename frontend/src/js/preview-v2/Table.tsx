@@ -12,7 +12,7 @@ const Root = styled("div")`
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
 `;
 
-const StyledTable = styled("table")`
+export const StyledTable = styled("table")`
   width: 100%;
   border-spacing: 0;
 
