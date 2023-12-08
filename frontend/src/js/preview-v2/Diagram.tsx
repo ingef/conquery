@@ -99,7 +99,7 @@ function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
   let pointer = start;
   while (pointer <= end) {
     // check month exists
-    const month = format(pointer, "yyyy-MM");
+    const month = format(pointer, "yyyy-M");
     if (month in monthCounts) {
       labels.push(month);
       values.push(monthCounts[month]);
@@ -138,6 +138,14 @@ export default function Diagram({
   height,
   width,
 }: DiagramProps) {
+  const getValueForIndex = (index: number) => {
+    const labels = data?.labels;
+    if(!labels) {
+      return undefined;
+    }
+    return labels[index];
+ }
+
   const options = useMemo(() => {
     if (previewStatsIsNumberStats(stat)) {
       return {
@@ -266,7 +274,11 @@ export default function Diagram({
           x: {
             suggestedMin: stat.span.min,
             suggestedMax: stat.span.max,
-            //type: "time",
+            ticks: {
+              callback: (valueIndex: number, index: number) => {
+                return index % 2 === 0 ? getValueForIndex(valueIndex) : "";
+              },
+            }
           },
         },
         plugins: {
