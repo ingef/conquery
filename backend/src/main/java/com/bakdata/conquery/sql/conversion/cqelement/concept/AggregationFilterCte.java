@@ -22,7 +22,7 @@ class AggregationFilterCte extends ConceptCte {
 
 		List<Condition> aggregationFilterConditions = conceptCteContext.getFilters().stream()
 																	   .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getGroupFilters().stream())
-																	   .map(WhereCondition::filterCondition)
+																	   .map(WhereCondition::condition)
 																	   .toList();
 
 		return QueryStep.builder()

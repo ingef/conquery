@@ -1,0 +1,110 @@
+{
+  "type": "SQL_QUERY_TEST",
+  "label": "Simple TREE concept with 1 child with EQUAL CTCondition selected",
+  "expectedCsv": "tests/sql/tree/complex/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "CONCEPT",
+      "ids": [
+        "test_tree.test_child1"
+      ],
+      "tables": [
+        {
+          "id": "test_tree.test_column",
+          "filters": []
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "test_tree",
+      "type": "TREE",
+      "connectors": {
+        "label": "tree_label",
+        "name": "test_column",
+        "column": "test_table.test_column",
+        "condition": {
+          "type": "COLUMN_EQUAL",
+          "column": "test_column3",
+          "values": [
+            "B1"
+          ]
+        },
+        "validityDates": {
+          "label": "datum",
+          "column": "test_table.datum"
+        }
+      },
+      "children": [
+        {
+          "label": "test_child1",
+          "description": " ",
+          "condition": {
+            "type": "OR",
+            "conditions": [
+              {
+                "type": "PREFIX_LIST",
+                "prefixes": "C1"
+              },
+              {
+                "type": "AND",
+                "conditions": [
+                  {
+                    "type": "EQUAL",
+                    "values": [
+                      "A1"
+                    ]
+                  },
+                  {
+                    "type": "NOT",
+                    "condition": {
+                      "type": "PRESENT",
+                      "column": "test_column2"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "children": []
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/tree/complex/content.csv",
+        "name": "test_table",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "test_column",
+            "type": "STRING"
+          },
+          {
+            "name": "test_column2",
+            "type": "STRING"
+          },
+          {
+            "name": "test_column3",
+            "type": "STRING"
+          },
+          {
+            "name": "test_column4",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

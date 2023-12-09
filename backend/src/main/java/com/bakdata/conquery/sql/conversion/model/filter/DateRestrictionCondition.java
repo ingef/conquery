@@ -13,7 +13,7 @@ public class DateRestrictionCondition implements WhereCondition {
 	private final ColumnDateRange validityDate;
 
 	@Override
-	public Condition filterCondition() {
+	public Condition condition() {
 		return this.functionProvider.dateRestriction(dateRestriction, validityDate);
 	}
 

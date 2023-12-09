@@ -4,7 +4,7 @@ import org.jooq.Condition;
 
 public interface WhereCondition {
 
-	Condition filterCondition();
+	Condition condition();
 
 	ConditionType type();
 

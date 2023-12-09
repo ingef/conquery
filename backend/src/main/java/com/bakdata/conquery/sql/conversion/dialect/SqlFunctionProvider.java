@@ -63,6 +63,8 @@ public interface SqlFunctionProvider {
 
 	Field<?> random(Field<?> column);
 
+	Condition likeRegex(Field<String> field, String pattern);
+
 	default <T> Field<T> least(List<Field<T>> fields) {
 		if (fields.isEmpty()) {
 			return null;

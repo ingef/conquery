@@ -10,8 +10,8 @@ public class InvertedCondition implements WhereCondition {
 	private final WhereCondition filterCondition;
 
 	@Override
-	public Condition filterCondition() {
-		return DSL.not(filterCondition.filterCondition());
+	public Condition condition() {
+		return DSL.not(filterCondition.condition());
 	}
 
 	@Override

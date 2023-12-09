@@ -71,13 +71,13 @@ public abstract class FilterValue<VALUE> {
 		return getFilter().createFilterNode(getValue());
 	}
 
-	public SqlFilters convertToSqlFilters(ConversionContext context, SqlTables<ConceptCteStep> conceptTables) {
+	public SqlFilters convertToSqlFilter(ConversionContext context, SqlTables<ConceptCteStep> conceptTables) {
 		FilterContext<VALUE> filterContext = new FilterContext<>(value, context, conceptTables);
-		SqlFilters SqlFilters = filter.convertToSqlFilter(filterContext);
+		SqlFilters sqlFilters = filter.convertToSqlFilter(filterContext);
 		if (context.isNegation()) {
-			return new SqlFilters(SqlFilters.getSelects(), SqlFilters.getWhereClauses().negated());
+			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());
 		}
-		return SqlFilters;
+		return sqlFilters;
 	}
 
 	@NoArgsConstructor

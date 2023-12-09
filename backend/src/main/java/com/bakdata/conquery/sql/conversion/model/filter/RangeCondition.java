@@ -12,7 +12,7 @@ abstract class RangeCondition implements WhereCondition {
 	private final IRange<?,?> range;
 
 	@Override
-	public Condition filterCondition() {
+	public Condition condition() {
 		return ConditionUtil.rangeCondition(column, range);
 	}
 

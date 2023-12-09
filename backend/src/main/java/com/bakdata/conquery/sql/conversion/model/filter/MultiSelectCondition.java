@@ -21,12 +21,12 @@ public class MultiSelectCondition implements WhereCondition {
 		// we want all entries that don't satisfy a condition - because in SQL a comparison with NULL equals UNKNOWN and not FALSE,
 		// we need to check if the entry is NULL or does not fulfil the condition
 		Condition valueIsNull = column.isNull();
-		Condition notOrNull = DSL.not(filterCondition()).or(valueIsNull);
+		Condition notOrNull = DSL.not(condition()).or(valueIsNull);
 		return ConditionUtil.wrap(notOrNull, this.type());
 	}
 
 	@Override
-	public Condition filterCondition() {
+	public Condition condition() {
 
 		// values can contain empty or null Strings
 		String[] valuesWithoutNull = Arrays.stream(values)

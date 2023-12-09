@@ -17,7 +17,7 @@ class EventFilterCte extends ConceptCte {
 		Selects eventFilterSelects = getEventFilterSelects(conceptCteContext);
 		List<Condition> eventFilterConditions = conceptCteContext.getFilters().stream()
 																 .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getEventFilters().stream())
-																 .map(WhereCondition::filterCondition)
+																 .map(WhereCondition::condition)
 																 .toList();
 		return QueryStep.builder()
 						.selects(eventFilterSelects)

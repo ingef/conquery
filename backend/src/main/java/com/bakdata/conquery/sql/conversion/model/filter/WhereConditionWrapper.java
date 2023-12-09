@@ -10,7 +10,7 @@ public class WhereConditionWrapper implements WhereCondition {
 	ConditionType type;
 
 	@Override
-	public Condition filterCondition() {
+	public Condition condition() {
 		return condition;
 	}
 
