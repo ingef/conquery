@@ -11,7 +11,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.filter.Filters;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import lombok.Value;
 import org.jooq.Field;
 
@@ -19,7 +19,7 @@ import org.jooq.Field;
 public class FirstValueSqlAggregator implements SqlAggregator {
 
 	SqlSelects sqlSelects;
-	Filters filters;
+	WhereClauses whereClauses;
 
 	private FirstValueSqlAggregator(
 			Column column,
@@ -47,7 +47,7 @@ public class FirstValueSqlAggregator implements SqlAggregator {
 									.finalSelect(finalSelect)
 									.build();
 
-		this.filters = Filters.builder().build();
+		this.whereClauses = WhereClauses.builder().build();
 	}
 
 	public static FirstValueSqlAggregator create(FirstValueSelect firstValueSelect, SelectContext selectContext) {

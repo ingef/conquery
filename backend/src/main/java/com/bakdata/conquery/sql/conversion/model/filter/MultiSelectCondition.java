@@ -10,14 +10,14 @@ import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @RequiredArgsConstructor
-public class MultiSelectCondition implements FilterCondition {
+public class MultiSelectCondition implements WhereCondition {
 
 	private final Field<String> column;
 	private final String[] values;
 	private final SqlFunctionProvider functionProvider;
 
 	@Override
-	public FilterCondition negate() {
+	public WhereCondition negate() {
 		// we want all entries that don't satisfy a condition - because in SQL a comparison with NULL equals UNKNOWN and not FALSE,
 		// we need to check if the entry is NULL or does not fulfil the condition
 		Condition valueIsNull = column.isNull();
@@ -41,8 +41,8 @@ public class MultiSelectCondition implements FilterCondition {
 	}
 
 	@Override
-	public FilterType type() {
-		return FilterType.EVENT;
+	public ConditionType type() {
+		return ConditionType.EVENT;
 	}
 
 }

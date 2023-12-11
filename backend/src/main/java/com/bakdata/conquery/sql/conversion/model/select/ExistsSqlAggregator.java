@@ -2,7 +2,7 @@ package com.bakdata.conquery.sql.conversion.model.select;
 
 import com.bakdata.conquery.models.datasets.concepts.select.concept.specific.ExistsSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
-import com.bakdata.conquery.sql.conversion.model.filter.Filters;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import lombok.Value;
 import org.jooq.impl.DSL;
 
@@ -10,14 +10,14 @@ import org.jooq.impl.DSL;
 public class ExistsSqlAggregator implements SqlAggregator {
 
 	SqlSelects sqlSelects;
-	Filters filters;
+	WhereClauses whereClauses;
 
 	private ExistsSqlAggregator(String alias) {
 		FieldWrapper<Integer> existsSelect = new UniversalSqlSelect<>(DSL.field("1", Integer.class).as(alias));
 		this.sqlSelects = SqlSelects.builder()
 									.finalSelect(existsSelect)
 									.build();
-		this.filters = Filters.builder().build();
+		this.whereClauses = WhereClauses.builder().build();
 	}
 
 	public static ExistsSqlAggregator create(ExistsSelect existsSelect, SelectContext selectContext) {

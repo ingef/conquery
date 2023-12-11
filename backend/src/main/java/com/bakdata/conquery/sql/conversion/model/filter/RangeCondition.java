@@ -6,7 +6,7 @@ import org.jooq.Condition;
 import org.jooq.Field;
 
 @RequiredArgsConstructor
-abstract class RangeCondition implements FilterCondition {
+abstract class RangeCondition implements WhereCondition {
 
 	private final Field<?> column;
 	private final IRange<?,?> range;

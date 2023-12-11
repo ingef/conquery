@@ -1,16 +1,16 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import com.bakdata.conquery.sql.conversion.model.filter.Filters;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 
 public interface SqlAggregator {
 
 	SqlSelects getSqlSelects();
 
-	Filters getFilters();
+	WhereClauses getWhereClauses();
 
 	default SqlFilters getSqlFilters() {
-		return new SqlFilters(getSqlSelects(), getFilters());
+		return new SqlFilters(getSqlSelects(), getWhereClauses());
 	}
 
 }

@@ -4,10 +4,10 @@ import lombok.Value;
 import org.jooq.Condition;
 
 @Value
-public class FilterConditionWrapper implements FilterCondition {
+public class WhereConditionWrapper implements WhereCondition {
 
 	Condition condition;
-	FilterType type;
+	ConditionType type;
 
 	@Override
 	public Condition filterCondition() {
@@ -15,7 +15,7 @@ public class FilterConditionWrapper implements FilterCondition {
 	}
 
 	@Override
-	public FilterType type() {
+	public ConditionType type() {
 		return type;
 	}
 

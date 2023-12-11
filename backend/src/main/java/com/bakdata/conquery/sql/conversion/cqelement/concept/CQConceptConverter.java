@@ -15,10 +15,10 @@ import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
+import com.bakdata.conquery.sql.conversion.model.filter.ConditionType;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterType;
-import com.bakdata.conquery.sql.conversion.model.filter.Filters;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
@@ -82,7 +82,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		// convert filters
 		Stream<SqlFilters> conceptFilters = table.getFilters().stream()
-												 .map(filterValue -> filterValue.convertToSqlFilter(context, conceptTables));
+												 .map(filterValue -> filterValue.convertToSqlFilters(context, conceptTables));
 		Stream<SqlFilters> dateRestrictionFilter = getDateRestriction(context, validityDateSelect).stream();
 		List<SqlFilters> allFilters = Stream.concat(conceptFilters, dateRestrictionFilter).toList();
 
@@ -154,7 +154,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		return Optional.of(new SqlFilters(
 				SqlSelects.builder().preprocessingSelects(dateRestrictionSelects).build(),
-				Filters.builder().event(List.of(ConditionUtil.wrap(dateRestrictionCondition, FilterType.EVENT))).build()
+				WhereClauses.builder().eventFilter(ConditionUtil.wrap(dateRestrictionCondition, ConditionType.EVENT)).build()
 		));
 	}
 

@@ -12,7 +12,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.NumberMapUtil;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.filter.Filters;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.NumberCondition;
 import lombok.Value;
 import org.jooq.Field;
@@ -21,7 +21,7 @@ import org.jooq.Field;
 public class NumberSqlAggregator implements SqlAggregator {
 
 	SqlSelects sqlSelects;
-	Filters filters;
+	WhereClauses whereClauses;
 
 	public NumberSqlAggregator(
 			Column column,
@@ -42,9 +42,9 @@ public class NumberSqlAggregator implements SqlAggregator {
 		this.sqlSelects = SqlSelects.builder()
 									.preprocessingSelects(List.of(rootSelect))
 									.build();
-		this.filters = Filters.builder()
-							  .event(List.of(condition))
-							  .build();
+		this.whereClauses = WhereClauses.builder()
+										.eventFilter(condition)
+										.build();
 	}
 
 	public static NumberSqlAggregator create(

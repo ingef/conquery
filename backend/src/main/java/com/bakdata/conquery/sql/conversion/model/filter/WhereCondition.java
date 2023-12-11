@@ -2,13 +2,13 @@ package com.bakdata.conquery.sql.conversion.model.filter;
 
 import org.jooq.Condition;
 
-public interface FilterCondition {
+public interface WhereCondition {
 
 	Condition filterCondition();
 
-	FilterType type();
+	ConditionType type();
 
-	default FilterCondition negate() {
+	default WhereCondition negate() {
 		return new InvertedCondition(this);
 	}
 

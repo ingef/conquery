@@ -6,7 +6,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.filter.Filters;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import lombok.Value;
 import org.jooq.Field;
 
@@ -14,7 +14,7 @@ import org.jooq.Field;
 public class RandomValueSqlAggregator implements SqlAggregator {
 
 	SqlSelects sqlSelects;
-	Filters filters;
+	WhereClauses whereClauses;
 
 	private RandomValueSqlAggregator(
 			Column column,
@@ -37,7 +37,7 @@ public class RandomValueSqlAggregator implements SqlAggregator {
 									.finalSelect(finalSelect)
 									.build();
 
-		this.filters = Filters.builder().build();
+		this.whereClauses = WhereClauses.builder().build();
 	}
 
 	public static RandomValueSqlAggregator create(RandomValueSelect randomValueSelect, SelectContext selectContext) {
