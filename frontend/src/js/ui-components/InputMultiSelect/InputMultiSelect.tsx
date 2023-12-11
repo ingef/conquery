@@ -129,7 +129,7 @@ const InputMultiSelect = ({
         onLoadMore(inputValue, { shouldReset: true });
       }
     },
-    200,
+    350,
     [inputValue],
   );
 
