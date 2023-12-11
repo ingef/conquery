@@ -5,14 +5,6 @@ import {
   StringStatistics,
 } from "../api/types";
 
-const NUMBER_STATISTICS_TYPES = [
-  "NUMBER",
-  "INTEGER",
-  "REAL",
-  "DECIMAL",
-  "MONEY",
-];
-
 const DIGITS_OF_PRECISION = 3;
 export function formatNumber(num: number): string {
   return num
@@ -30,7 +22,7 @@ export function previewStatsIsStringStats(
 export function previewStatsIsNumberStats(
   stats: PreviewStatistics,
 ): stats is NumberStatistics {
-  return NUMBER_STATISTICS_TYPES.indexOf(stats.type) !== -1; // && "stddev" in stats;
+  return "mean" in stats;
 }
 
 export function previewStatsIsDateStats(
