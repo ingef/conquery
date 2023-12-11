@@ -4,7 +4,12 @@ import { PreviewStatisticsResponse } from "../api/types";
 
 import { Action } from "../app/actions";
 
-import { openPreview, closePreview, loadPreview, updateQueryId } from "./actions";
+import {
+  closePreview,
+  loadPreview,
+  openPreview,
+  updateQueryId,
+} from "./actions";
 
 export type PreviewStateT = {
   isOpen: boolean;

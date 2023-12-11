@@ -28,7 +28,7 @@ const DirectionSelector = styled("div")`
 `;
 
 const SxIconButton = styled(IconButton)`
-  font-size: 24px;
+  font-size: 24;
 `;
 
 const DiagramContainer = styled("div")`
@@ -46,15 +46,27 @@ type ChartProps = {
   setPage: (page: number) => void;
 };
 
-export default function Charts({ statistics, className, showPopup, page, setPage }: ChartProps) {
+const DIAGRAMS_PER_PAGE = 4;
+
+export default function Charts({
+  statistics,
+  className,
+  showPopup,
+  page,
+  setPage,
+}: ChartProps) {
+  const diagramsOnPage = statistics.slice(page * DIAGRAMS_PER_PAGE, (page + 1) * DIAGRAMS_PER_PAGE);
   return (
     <>
       <Root className={className}>
         <DiagramContainer>
-          {statistics.slice(page * 4, (page + 1) * 4).map((statistic) => {
+          {diagramsOnPage.map((statistic) => {
             return (
               <div key={statistic.name}>
-                <SxDiagram stat={statistic} onClick={() => showPopup(statistic)} />
+                <SxDiagram
+                  stat={statistic}
+                  onClick={() => showPopup(statistic)}
+                />
               </div>
             );
           })}
@@ -66,12 +78,12 @@ export default function Charts({ statistics, className, showPopup, page, setPage
             disabled={page === 0}
           />
           <span>
-            {t("preview.page")} {page + 1}/{Math.ceil(statistics.length / 4)}
+            {t("preview.page")} {page + 1}/{Math.ceil(statistics.length / DIAGRAMS_PER_PAGE)}
           </span>
           <SxIconButton
             icon={faArrowRight}
             onClick={() => setPage(page + 1)}
-            disabled={(page + 1) * 4 >= statistics.length}
+            disabled={(page + 1) * DIAGRAMS_PER_PAGE >= statistics.length}
           />
         </DirectionSelector>
       </Root>

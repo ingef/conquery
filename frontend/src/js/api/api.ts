@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useContext, useRef } from "react";
 
 import { EditorV2Query } from "../editor-v2/types";
 import { EntityId } from "../entity-history/reducer";
@@ -11,6 +11,7 @@ import type { QueryToUploadT } from "../previous-queries/upload/CSVColumnPicker"
 import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
+import { Table } from "apache-arrow";
 import { transformQueryToApi } from "./apiHelper";
 import type {
   ConceptIdT,
@@ -39,6 +40,7 @@ import type {
   UploadQueryResponseT,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 
 const PROTECTED_PREFIX = "/api";
 
@@ -408,19 +410,23 @@ export const usePostResolveEntities = () => {
 };
 
 export const useGetResult = () => {
-  return useCallback(
-    (queryId: string) => fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`)),
-    [],
-  );
+  const { authToken } = useContext(AuthTokenContext);
+  const authTokenRef = useRef<string>(authToken);
+  return useCallback((queryId: string) => {
+    const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`), {
+      headers: {
+        Authorization: `Bearer ${authTokenRef.current}`,
+      }
+    });
+    return res as unknown as Promise<Table>;
+  }, []);
 };
 
 export const usePreviewStatistics = () => {
   const api = useApi<PreviewStatisticsResponse>();
 
   return useCallback(
-    (
-      queryId: string
-    ) =>
+    (queryId: string) =>
       api({
         url: getProtectedUrl(`/queries/${queryId}/statistics`),
         method: "GET",
@@ -428,5 +434,4 @@ export const usePreviewStatistics = () => {
       }),
     [api],
   );
-
 };

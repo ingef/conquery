@@ -404,7 +404,9 @@
     "max": "Max date",
     "span": "Date span",
     "loadingError": "An error occurred while loading the preview.",
-    "dateError": "Date unknown"
+    "dateError": "Date unknown",
+    "name": "Name",
+    "value": "Value"
   },
   "login": {
     "headline": "Queries and Analyses",
