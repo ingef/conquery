@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useContext, useRef } from "react";
 
 import { EditorV2Query } from "../editor-v2/types";
 import { EntityId } from "../entity-history/reducer";
@@ -37,6 +37,7 @@ import {
   PreviewStatisticsResponse,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 
 const PROTECTED_PREFIX = "/api";
 
@@ -406,8 +407,14 @@ export const usePostResolveEntities = () => {
 };
 
 export const useGetResult = () => {
+  const { authToken } = useContext(AuthTokenContext);
+  const authTokenRef = useRef<string>(authToken);
   return useCallback((queryId: string) => {
-    const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`));
+    const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`), {
+      headers: {
+        Authorization: `Bearer ${authTokenRef.current}`,
+      }
+    });
     return res as unknown as Promise<Table>;
   }, []);
 };
