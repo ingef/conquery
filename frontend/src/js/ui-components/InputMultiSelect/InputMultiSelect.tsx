@@ -126,10 +126,11 @@ const InputMultiSelect = ({
   useDebounce(
     () => {
       if (onLoadMore && !loading) {
-        onLoadMore(inputValue, { shouldReset: true });
+        const prefix = inputValue.length < 2 ? "" : inputValue;
+        onLoadMore(prefix, { shouldReset: true });
       }
     },
-    200,
+    350,
     [inputValue],
   );
 
@@ -391,7 +392,9 @@ const InputMultiSelect = ({
                       <LoadMoreSentinel
                         onLoadMore={() => {
                           if (!loading) {
-                            onLoadMore(inputValue);
+                            const prefix =
+                              inputValue.length < 2 ? "" : inputValue;
+                            onLoadMore(prefix);
                           }
                         }}
                       />
