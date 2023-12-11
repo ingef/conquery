@@ -13,8 +13,12 @@ const NUMBER_STATISTICS_TYPES = [
   "MONEY",
 ];
 
-const DIGITS_OF_PRECISION = 3;
+const DIGITS_OF_PRECISION = 2;
 export function formatNumber(num: number): string {
+  if (num > 100) {
+    return num.toFixed(0).replace(".", ",");
+  }
+
   return num
     .toPrecision(DIGITS_OF_PRECISION)
     .toLocaleString()
