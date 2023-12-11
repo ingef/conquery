@@ -4,6 +4,7 @@ import {
   PreviewStatistics,
   StringStatistics,
 } from "../api/types";
+import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 
 const NUMBER_STATISTICS_TYPES = [
   "NUMBER",
@@ -15,8 +16,10 @@ const NUMBER_STATISTICS_TYPES = [
 
 const DIGITS_OF_PRECISION = 2;
 export function formatNumber(num: number): string {
+  return num.toLocaleString();
+  // TODO verify localeString implementation
   if (num > 100) {
-    return num.toFixed(0).replace(".", ",");
+    return numberToThreeDigitArray(Math.floor(num)).join(".")
   }
 
   return num

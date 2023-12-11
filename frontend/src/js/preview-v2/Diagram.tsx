@@ -192,6 +192,10 @@ export default function Diagram({
             borderWidth: 0.5,
             padding: 10,
             callbacks: {
+              // To remove the title from the tooltip a null is needed. 
+              // This does not work with the typescript definition of chart.js
+              // -> cast to unknown and then to undefined
+              title: () => null as unknown as undefined,
               label: (context) => {
                 const label =
                   formatNumber(context.parsed.x) ||
@@ -238,6 +242,7 @@ export default function Diagram({
             borderWidth: 0.5,
             padding: 10,
             callbacks: {
+              title: () => null as unknown as undefined,
               label: (context) => {
                 const label = context.dataset.label || context.label || "";
                 return `${label}: ${formatNumber(context.raw as number)}`;
@@ -294,19 +299,14 @@ export default function Diagram({
           tooltip: {
             usePointStyle: true,
             backgroundColor: "rgba(255, 255, 255, 0.9)",
-            titleColor: "rgba(0, 0, 0, 1)",
             bodyColor: "rgba(0, 0, 0, 1)",
             borderColor: "rgba(0, 0, 0, 0.2)",
             borderWidth: 0.5,
             padding: 10,
             callbacks: {
+              title: () => null as unknown as undefined,
               label: (context) => {
-                const label =
-                  formatNumber(context.parsed.x) ||
-                  context.dataset.label ||
-                  context.label ||
-                  "";
-                return `${label}: ${formatNumber(context.raw as number)}`;
+                return `${context.label}: ${formatNumber(context.raw as number)}`;
               },
             },
             caretSize: 0,
