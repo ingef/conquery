@@ -1,7 +1,6 @@
 import type {
   PostFilterSuggestionsResponseT,
   SelectOptionT,
-  SelectorResultType,
 } from "../../api/types";
 import { DNDType } from "../../common/constants/dndTypes";
 import { compose } from "../../common/helpers/commonHelper";
@@ -13,7 +12,7 @@ import {
 import { TreesT } from "../../concept-trees/reducer";
 import { mergeFilterOptions } from "../../model/filter";
 import { NodeResetConfig } from "../../model/node";
-import { resetSelects } from "../../model/select";
+import { SelectConfig, resetSelects } from "../../model/select";
 import { resetTables, tableWithDefaults } from "../../model/table";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
@@ -41,11 +40,6 @@ export interface FormConceptGroupT {
 export interface TableConfig {
   allowlistedTables?: string[];
   blocklistedTables?: string[];
-}
-
-export interface SelectConfig {
-  allowlistedSelects?: SelectorResultType[];
-  blocklistedSelects?: SelectorResultType[];
 }
 
 export const addValue = (
