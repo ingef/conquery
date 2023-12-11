@@ -44,7 +44,7 @@ public class FrontendValueIndexKey extends AbstractIndexKey<FrontendValueIndex> 
 	}
 
 	@Override
-	public FrontendValueIndex createIndex() {
-		return new FrontendValueIndex(suffixCutoff, splitPattern, valueTemplate, optionValueTemplate);
+	public FrontendValueIndex createIndex(String defaultEmptyLabel) {
+		return new FrontendValueIndex(suffixCutoff, splitPattern, valueTemplate, optionValueTemplate, defaultEmptyLabel);
 	}
 }

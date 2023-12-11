@@ -24,6 +24,6 @@ public interface IndexKey<I extends Index<? extends IndexKey<I>>> {
 
 	List<String> getExternalTemplates();
 
-	I createIndex();
+	I createIndex(String defaultEmptyLabel);
 
 }
