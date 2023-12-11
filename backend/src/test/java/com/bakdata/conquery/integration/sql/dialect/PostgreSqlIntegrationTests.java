@@ -21,6 +21,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistance
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.dialect.PostgreSqlDialect;
 import com.bakdata.conquery.sql.conversion.model.SqlQuery;
+import com.bakdata.conquery.sql.execution.ResultSetProcessorFactory;
 import com.bakdata.conquery.sql.execution.SqlExecutionService;
 import lombok.extern.slf4j.Slf4j;
 import org.assertj.core.api.Assertions;
@@ -79,7 +80,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	public void shouldThrowException() {
 		// This can be removed as soon as we switch to a full integration test including the REST API
 		I18n.init();
-		SqlExecutionService executionService = new SqlExecutionService(dslContext);
+		SqlExecutionService executionService = new SqlExecutionService(dslContext, ResultSetProcessorFactory.create(testSqlDialect));
 		SqlManagedQuery validQuery = new SqlManagedQuery(new ConceptQuery(), null, null, null, toSqlQuery("SELECT 1"));
 		Assertions.assertThatNoException().isThrownBy(() -> executionService.execute(validQuery));
 
@@ -100,6 +101,7 @@ public class PostgreSqlIntegrationTests extends IntegrationTests {
 	public static class TestPostgreSqlDialect extends PostgreSqlDialect implements TestSqlDialect {
 
 		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
+
 
 		public TestPostgreSqlDialect(DSLContext dslContext) {
 			super(dslContext);

@@ -7,13 +7,13 @@ public interface SqlSelect {
 
 	/**
 	 * @return The whole (aliased) SQL expression of this {@link SqlSelect}.
-	 * 	For example, {@code DSL.firstValue(DSL.field(DSL.name("foo", "bar"))).as("foobar")}.
+	 * For example, {@code DSL.firstValue(DSL.field(DSL.name("foo", "bar"))).as("foobar")}.
 	 */
 	Field<?> select();
 
 	/**
 	 * @return Aliased column name that can be used to reference the created select.
-	 *  For example, {@code DSL.field("foobar")}.
+	 * For example, {@code DSL.field("foobar")}.
 	 */
 	Field<?> aliased();
 
@@ -22,5 +22,16 @@ public interface SqlSelect {
 	 * For example, {@code "bar"}.
 	 */
 	String columnName();
+
+	/**
+	 * @return A reference to this {@link SqlSelect} qualified on the given qualifier.
+	 */
+	default ExtractingSqlSelect<?> createReference(String qualifier) {
+		return new ExtractingSqlSelect<>(
+				qualifier,
+				columnName(),
+				aliased().getType()
+		);
+	}
 
 }

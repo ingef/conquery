@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
+import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
@@ -19,7 +20,7 @@ import org.jooq.Field;
 
 @Value
 @Builder(toBuilder = true)
-public class ConceptCteContext implements Context {
+class ConceptCteContext implements Context {
 
 	ConversionContext conversionContext;
 	String conceptLabel;
@@ -40,6 +41,11 @@ public class ConceptCteContext implements Context {
 				getFilters().stream().map(ConceptFilter::getSelects),
 				getSelects().stream()
 		);
+	}
+
+	@Override
+	public NameGenerator getNameGenerator() {
+		return conversionContext.getNameGenerator();
 	}
 
 }

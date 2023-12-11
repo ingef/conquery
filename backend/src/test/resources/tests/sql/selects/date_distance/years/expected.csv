@@ -1,4 +1,4 @@
-pid,dates,date_distance_years
+result,dates,Geschlecht SELECT date_distance_years
 2,{},12
 4,{},9
 7,{},7

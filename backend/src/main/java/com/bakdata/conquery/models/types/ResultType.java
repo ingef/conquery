@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.types;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -15,6 +17,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.sql.execution.ResultSetProcessor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Preconditions;
@@ -24,11 +27,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 @Slf4j
-public abstract class ResultType {
+public abstract class ResultType<T> {
 
 	public String printNullable(PrintSettings cfg, Object f) {
 		if (f == null) {
@@ -43,7 +47,13 @@ public abstract class ResultType {
 
 	public abstract String typeInfo();
 
-	public static ResultType resolveResultType(MajorTypeId majorTypeId) {
+	public abstract T getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException;
+
+	protected List<T> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+		throw new UnsupportedOperationException("ResultType list of type %s not supported for now.".formatted(getClass().getSimpleName()));
+	}
+
+	public static ResultType<?> resolveResultType(MajorTypeId majorTypeId) {
 		return switch (majorTypeId) {
 			case STRING -> StringT.INSTANCE;
 			case BOOLEAN -> BooleanT.INSTANCE;
@@ -55,7 +65,7 @@ public abstract class ResultType {
 		};
 	}
 
-	abstract static class PrimitiveResultType extends ResultType {
+	abstract static class PrimitiveResultType<T> extends ResultType<T> {
 		@Override
 		public String typeInfo() {
 			return this.getClass().getAnnotation(CPSType.class).id();
@@ -69,7 +79,7 @@ public abstract class ResultType {
 
 	@CPSType(id = "BOOLEAN", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class BooleanT extends PrimitiveResultType {
+	public static class BooleanT extends PrimitiveResultType<Boolean> {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final BooleanT INSTANCE = new BooleanT();
 
@@ -84,12 +94,17 @@ public abstract class ResultType {
 
 			return (Boolean) f ? "1" : "0";
 		}
+
+		@Override
+		public Boolean getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getBoolean(resultSet, columnIndex);
+		}
 	}
 
 
 	@CPSType(id = "INTEGER", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class IntegerT extends PrimitiveResultType {
+	public static class IntegerT extends PrimitiveResultType<Integer> {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final IntegerT INSTANCE = new IntegerT();
 
@@ -100,11 +115,16 @@ public abstract class ResultType {
 			}
 			return f.toString();
 		}
+
+		@Override
+		public Integer getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getInteger(resultSet, columnIndex);
+		}
 	}
 
 	@CPSType(id = "NUMERIC", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class NumericT extends PrimitiveResultType {
+	public static class NumericT extends PrimitiveResultType<Double> {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final NumericT INSTANCE = new NumericT();
 
@@ -115,13 +135,16 @@ public abstract class ResultType {
 			}
 			return f.toString();
 		}
+
+		@Override
+		public Double getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getDouble(resultSet, columnIndex);
+		}
 	}
-
-
 
 	@CPSType(id = "DATE", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class DateT extends PrimitiveResultType {
+	public static class DateT extends PrimitiveResultType<Number> {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final DateT INSTANCE = new DateT();
 
@@ -134,11 +157,14 @@ public abstract class ResultType {
 			return print(number, cfg.getDateFormatter());
 		}
 
+		@Override
+		public Number getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getDate(resultSet, columnIndex);
+		}
+
 		public static String print(Number num, DateTimeFormatter formatter) {
 			return formatter.format(LocalDate.ofEpochDay(num.intValue()));
 		}
-
-
 	}
 
 	/**
@@ -147,7 +173,7 @@ public abstract class ResultType {
 	 */
 	@CPSType(id = "DATE_RANGE", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class DateRangeT extends PrimitiveResultType {
+	public static class DateRangeT extends PrimitiveResultType<List<Integer>> {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final DateRangeT INSTANCE = new DateRangeT();
 
@@ -177,11 +203,21 @@ public abstract class ResultType {
 
 			return minString + cfg.getDateRangeSeparator() + maxString;
 		}
+
+		@Override
+		public List<Integer> getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getDateRange(resultSet, columnIndex);
+		}
+
+		@Override
+		public List<List<Integer>> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getDateRangeList(resultSet, columnIndex);
+		}
 	}
 
 	@CPSType(id = "STRING", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class StringT extends PrimitiveResultType {
+	public static class StringT extends PrimitiveResultType<String> {
 		@Getter(onMethod_ = @JsonCreator)
 		public static final StringT INSTANCE = new StringT();
 
@@ -203,13 +239,16 @@ public abstract class ResultType {
 			}
 			return super.print(cfg, valueMapper.apply(f, cfg));
 		}
+
+		@Override
+		public String getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getString(resultSet, columnIndex);
+		}
 	}
-
-
 
 	@CPSType(id = "MONEY", base = ResultType.class)
 	@NoArgsConstructor(access = AccessLevel.PRIVATE)
-	public static class MoneyT extends PrimitiveResultType {
+	public static class MoneyT extends PrimitiveResultType<BigDecimal> {
 
 		@Getter(onMethod_ = @JsonCreator)
 		public static final MoneyT INSTANCE = new MoneyT();
@@ -217,21 +256,32 @@ public abstract class ResultType {
 		@Override
 		public String print(PrintSettings cfg, Object f) {
 			if (cfg.isPrettyPrint()) {
-				return cfg.getDecimalFormat().format(new BigDecimal(((Number) f).longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits()));
+				return cfg.getDecimalFormat().format(readIntermediateValue(cfg, (Number) f));
 			}
 			return IntegerT.INSTANCE.print(cfg, f);
+		}
+
+		@Override
+		public BigDecimal getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getMoney(resultSet, columnIndex);
+		}
+
+
+		@NotNull
+		public BigDecimal readIntermediateValue(PrintSettings cfg, Number f) {
+			return new BigDecimal(f.longValue()).movePointLeft(cfg.getCurrency().getDefaultFractionDigits());
 		}
 	}
 
 	@CPSType(id = "LIST", base = ResultType.class)
 	@Getter
 	@EqualsAndHashCode(callSuper = false)
-	public static class ListT extends ResultType {
+	public static class ListT<T> extends ResultType<List<T>> {
 		@NonNull
-		private final ResultType elementType;
+		private final ResultType<T> elementType;
 
 		@JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-		public ListT(@NonNull ResultType elementType) {
+		public ListT(@NonNull ResultType<T> elementType) {
 			this.elementType = elementType;
 		}
 
@@ -253,6 +303,15 @@ public abstract class ResultType {
 		@Override
 		public String typeInfo() {
 			return this.getClass().getAnnotation(CPSType.class).id() + "[" + elementType.typeInfo() + "]";
+		}
+
+		@Override
+		public List<T> getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			if (elementType instanceof DateRangeT) {
+				return elementType.getFromResultSetAsList(resultSet, columnIndex, resultSetProcessor);
+			}
+			// TODO handle all other list types properly by
+			throw new UnsupportedOperationException("Other result type lists not supported for now.");
 		}
 
 		@Override

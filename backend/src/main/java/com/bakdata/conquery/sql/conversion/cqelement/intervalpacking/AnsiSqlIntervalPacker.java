@@ -44,14 +44,14 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		ArrayList<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), sourceTableName));
 		qualifiedSelects.add(new FieldWrapper(previousEnd));
 
-		Selects previousEndSelects = new Selects(
-				primaryColumn,
-				Optional.of(validityDate),
-				qualifiedSelects
-		);
+		Selects previousEndSelects = Selects.builder()
+											.primaryColumn(primaryColumn)
+											.validityDate(Optional.of(validityDate))
+											.sqlSelects(qualifiedSelects)
+											.build();
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingStep.PREVIOUS_END))
+						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.PREVIOUS_END))
 						.selects(previousEndSelects)
 						.fromTable(QueryStep.toTableLike(sourceTableName))
 						.predecessors(context.getPredecessor() == null ? Collections.emptyList() : List.of(context.getPredecessor()))
@@ -78,14 +78,14 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		ArrayList<SqlSelect> qualifiedSelects = new ArrayList<>(QualifyingUtil.qualify(context.getCarryThroughSelects(), previousEndCteName));
 		qualifiedSelects.add(new FieldWrapper(rangeIndex));
 
-		Selects rangeIndexSelects = new Selects(
-				primaryColumn,
-				Optional.of(validityDate),
-				qualifiedSelects
-		);
+		Selects rangeIndexSelects = Selects.builder()
+										   .primaryColumn(primaryColumn)
+										   .validityDate(Optional.of(validityDate))
+										   .sqlSelects(qualifiedSelects)
+										   .build();
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingStep.RANGE_INDEX))
+						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.RANGE_INDEX))
 						.selects(rangeIndexSelects)
 						.fromTable(QueryStep.toTableLike(previousEndCteName))
 						.predecessors(List.of(previousEndStep))
@@ -104,11 +104,11 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		Field<BigDecimal> rangeIndex = DSL.field(DSL.name(rangeIndexCteName, IntervalPacker.RANGE_INDEX_FIELD_NAME), BigDecimal.class);
 
 		List<SqlSelect> qualifiedSelects = QualifyingUtil.qualify(context.getCarryThroughSelects(), rangeIndexCteName);
-		Selects intervalCompleteSelects = new Selects(
-				primaryColumn,
-				Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)),
-				qualifiedSelects
-		);
+		Selects intervalCompleteSelects = Selects.builder()
+												 .primaryColumn(primaryColumn)
+												 .validityDate(Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)))
+												 .sqlSelects(qualifiedSelects)
+												 .build();
 
 		// we group range start and end by range index
 		List<Field<?>> groupBySelects = new ArrayList<>();
@@ -117,7 +117,7 @@ public class AnsiSqlIntervalPacker implements IntervalPacker {
 		qualifiedSelects.stream().map(SqlSelect::select).forEach(groupBySelects::add);
 
 		return QueryStep.builder()
-						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingStep.INTERVAL_COMPLETE))
+						.cteName(context.getIntervalPackingTables().cteName(IntervalPackingCteStep.INTERVAL_COMPLETE))
 						.selects(intervalCompleteSelects)
 						.fromTable(QueryStep.toTableLike(rangeIndexCteName))
 						.predecessors(List.of(rangeIndexStep))

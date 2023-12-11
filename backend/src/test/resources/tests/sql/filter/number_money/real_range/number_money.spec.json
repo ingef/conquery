@@ -1,7 +1,7 @@
 {
-  "label": "FIRST select with validity date",
+  "label": "Single Number-Real-Range Filter Query with REAL RANGE on column with MONEY type",
   "type": "SQL_QUERY_TEST",
-  "expectedCsv": "tests/sql/selects/first/expected.csv",
+  "expectedCsv": "tests/sql/filter/number_money/real_range/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
     "root": {
@@ -16,7 +16,16 @@
           "tables": [
             {
               "id": "number.number_connector",
-              "selects": "number.number_connector.first_value"
+              "filters": [
+                {
+                  "filter": "number.number_connector.money_number_filter",
+                  "type": "REAL_RANGE",
+                  "value": {
+                    "min": 99.00,
+                    "max": 150.00
+                  }
+                }
+              ]
             }
           ]
         }
@@ -31,15 +40,10 @@
         {
           "label": "number_connector",
           "table": "table1",
-          "validityDates": {
-            "label": "datum",
-            "startColumn": "table1.datum_start",
-            "endColumn": "table1.datum_end"
-          },
-          "selects": {
-            "label": "first_value",
-            "column": "table1.value",
-            "type": "FIRST"
+          "filters": {
+            "name": "money_number_filter",
+            "column": "table1.money",
+            "type": "NUMBER"
           }
         }
       ]
@@ -48,7 +52,7 @@
   "content": {
     "tables": [
       {
-        "csv": "tests/sql/selects/first/content.csv",
+        "csv": "tests/sql/filter/number_money/real_range/content.csv",
         "name": "table1",
         "primaryColumn": {
           "name": "pid",
@@ -56,16 +60,8 @@
         },
         "columns": [
           {
-            "name": "value",
-            "type": "REAL"
-          },
-          {
-            "name": "datum_start",
-            "type": "DATE"
-          },
-          {
-            "name": "datum_end",
-            "type": "DATE"
+            "name": "money",
+            "type": "MONEY"
           }
         ]
       }

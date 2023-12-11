@@ -1,4 +1,4 @@
-pid,dates,date_distance_centuries
+result,dates,Geschlecht SELECT date_distance_centuries
 2,{},0
 4,{},0
 7,{},0

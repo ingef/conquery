@@ -30,9 +30,8 @@ public class FirstValueSelectConverter implements SelectConverter<FirstValueSele
 
 		FirstValueSqlSelect firstValueSqlSelect =
 				FirstValueSqlSelect.builder()
-								   .firstColumn(context.getConceptTables()
-													   .qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased()))
-								   .alias(firstSelect.getName())
+								   .firstColumn(context.getConceptTables().qualifyOnPredecessor(ConceptCteStep.AGGREGATION_SELECT, rootSelect.aliased()))
+								   .alias(context.getNameGenerator().selectName(firstSelect))
 								   .orderByColumns(validityDateFields)
 								   .functionProvider(context.getParentContext().getSqlDialect().getFunctionProvider())
 								   .build();

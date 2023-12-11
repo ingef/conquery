@@ -9,6 +9,8 @@ import com.bakdata.conquery.sql.conversion.cqelement.aggregation.AnsiSqlDateAggr
 import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.intervalpacking.AnsiSqlIntervalPacker;
+import com.bakdata.conquery.sql.execution.DefaultSqlCDateSetParser;
+import com.bakdata.conquery.sql.execution.SqlCDateSetParser;
 import org.jooq.DSLContext;
 
 public class HanaSqlDialect implements SqlDialect {
@@ -16,6 +18,7 @@ public class HanaSqlDialect implements SqlDialect {
 	private final SqlFunctionProvider hanaSqlFunctionProvider;
 	private final IntervalPacker hanaIntervalPacker;
 	private final SqlDateAggregator hanaSqlDateAggregator;
+	private final DefaultSqlCDateSetParser defaultNotationParser;
 	private final DSLContext dslContext;
 
 	public HanaSqlDialect(DSLContext dslContext) {
@@ -23,11 +26,17 @@ public class HanaSqlDialect implements SqlDialect {
 		this.hanaSqlFunctionProvider = new HanaSqlFunctionProvider();
 		this.hanaIntervalPacker = new AnsiSqlIntervalPacker();
 		this.hanaSqlDateAggregator = new AnsiSqlDateAggregator(this.hanaSqlFunctionProvider, this.hanaIntervalPacker);
+		this.defaultNotationParser = new DefaultSqlCDateSetParser();
 	}
 
 	@Override
 	public DSLContext getDSLContext() {
 		return this.dslContext;
+	}
+
+	@Override
+	public SqlCDateSetParser getCDateSetParser() {
+		return this.defaultNotationParser;
 	}
 
 	@Override

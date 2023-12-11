@@ -70,11 +70,11 @@ class InvertCte extends DateAggregationCte {
 				functionProvider.toDateField(functionProvider.getMaxDateExpression())
 		).as(DateAggregationCte.RANGE_END);
 
-		return new Selects(
-				coalescedPrimaryColumn,
-				Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)),
-				context.getCarryThroughSelects()
-		);
+		return Selects.builder()
+					  .primaryColumn(coalescedPrimaryColumn)
+					  .validityDate(Optional.of(ColumnDateRange.of(rangeStart, rangeEnd)))
+					  .sqlSelects(context.getCarryThroughSelects())
+					  .build();
 	}
 
 	private TableOnConditionStep<Record> selfJoinWithShiftedRows(Field<Object> leftPrimaryColumn, Field<Object> rightPrimaryColumn, QueryStep rowNumberStep) {

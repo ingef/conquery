@@ -1,73 +1,56 @@
 package com.bakdata.conquery.sql.conversion.model;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
+import lombok.Builder;
 import lombok.Value;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
 
 @Value
+@Builder(toBuilder = true)
 public class Selects {
 
 	Field<Object> primaryColumn;
-	Optional<ColumnDateRange> validityDate;
-	List<SqlSelect> sqlSelects;
-
-	public Selects(Field<Object> primaryColumn, Optional<ColumnDateRange> validityDate, List<SqlSelect> sqlSelects) {
-		this.primaryColumn = primaryColumn;
-		this.validityDate = validityDate;
-		this.sqlSelects = sqlSelects;
-	}
-
-	/**
-	 * {@link Selects} without a validity date.
-	 */
-	public Selects(Field<Object> primaryColumn, List<SqlSelect> sqlSelects) {
-		this.primaryColumn = primaryColumn;
-		this.validityDate = Optional.empty();
-		this.sqlSelects = sqlSelects;
-	}
-
-	/**
-	 * {@link Selects#Selects(Field, Optional, List)} qualified onto the given qualifier.
-	 */
-	public static Selects qualified(String qualifier, Field<Object> primaryColumn, Optional<ColumnDateRange> validityDate, List<SqlSelect> sqlSelects) {
-		return new Selects(primaryColumn, validityDate, sqlSelects).qualify(qualifier);
-	}
-
-	/**
-	 * {@link Selects#Selects(Field, List)} qualified onto the given qualifier.
-	 */
-	public static Selects qualified(String qualifier, Field<Object> primaryColumn, List<SqlSelect> sqlSelects) {
-		return new Selects(primaryColumn, sqlSelects).qualify(qualifier);
-	}
+	@Builder.Default
+	Optional<ColumnDateRange> validityDate = Optional.empty();
+	@Builder.Default
+	List<SqlSelect> sqlSelects = Collections.emptyList();
 
 	public Selects withValidityDate(ColumnDateRange validityDate) {
-		return new Selects(this.primaryColumn, Optional.of(validityDate), this.sqlSelects);
+		return this.toBuilder()
+				   .validityDate(Optional.of(validityDate))
+				   .build();
 	}
 
 	public Selects blockValidityDate() {
-		return new Selects(this.primaryColumn, this.sqlSelects);
+		return this.toBuilder()
+				   .validityDate(Optional.empty())
+				   .build();
 	}
 
 	public Selects qualify(String qualifier) {
 		Field<Object> qualifiedPrimaryColumn = DSL.field(DSL.name(qualifier, this.primaryColumn.getName()));
-		List<SqlSelect> qualifiedSelects = this.sqlSelects.stream()
-														  .map(select -> ExtractingSqlSelect.fromSqlSelect(select, qualifier))
-														  .distinct()
-														  .collect(Collectors.toList());
-		if (this.validityDate.isEmpty()) {
-			return new Selects(qualifiedPrimaryColumn, qualifiedSelects);
+		List<SqlSelect> sqlSelects = this.sqlSelects.stream()
+													.map(sqlSelect -> sqlSelect.createReference(qualifier))
+													.distinct()
+													.collect(Collectors.toList());
+
+		SelectsBuilder builder = this.toBuilder()
+									 .primaryColumn(qualifiedPrimaryColumn)
+									 .sqlSelects(sqlSelects);
+
+		if (this.validityDate.isPresent()) {
+			builder = builder.validityDate(this.validityDate.map(_validityDate -> _validityDate.qualify(qualifier)));
 		}
-		else {
-			return new Selects(qualifiedPrimaryColumn, this.validityDate.map(_validityDate -> _validityDate.qualify(qualifier)), qualifiedSelects);
-		}
+
+		return builder.build();
 	}
 
 	public List<Field<?>> all() {

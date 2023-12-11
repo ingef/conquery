@@ -48,7 +48,7 @@ import org.testcontainers.utility.DockerImageName;
 @Slf4j
 public class HanaSqlIntegrationTests extends IntegrationTests {
 
-	private final static DockerImageName HANA_IMAGE = DockerImageName.parse("saplabs/hanaexpress:2.00.061.00.20220519.1");
+	private final static DockerImageName HANA_IMAGE = DockerImageName.parse("saplabs/hanaexpress:2.00.072.00.20231123.1");
 	private static final Path TMP_HANA_MOUNT_DIR = Paths.get("/tmp/data/hana");
 	private static boolean useLocalHanaDb = true;
 
@@ -111,6 +111,7 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 	public static class TestHanaDialect extends HanaSqlDialect implements TestSqlDialect {
 
 		public static final MockDateNowSupplier DATE_NOW_SUPPLIER = new MockDateNowSupplier();
+
 
 		public TestHanaDialect(DSLContext dslContext) {
 			super(dslContext);
@@ -175,10 +176,10 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 			this.sqlConnectorConfig = SqlConnectorConfig.builder()
 														.enabled(true)
 														.dialect(Dialect.HANA)
+														.withPrettyPrinting(true)
 														.jdbcConnectionUrl(hanaContainer.getJdbcUrl())
 														.databaseUsername(hanaContainer.getUsername())
 														.databasePassword(hanaContainer.getPassword())
-														.withPrettyPrinting(true)
 														.primaryColumn("pid")
 														.build();
 			this.dslContext = DslContextFactory.create(sqlConnectorConfig);
