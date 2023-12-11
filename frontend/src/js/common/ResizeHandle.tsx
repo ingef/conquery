@@ -33,9 +33,9 @@ const Line = styled("div")`
   background-color: ${({ theme }) => theme.col.grayMediumLight};
 `;
 
-export const ResizeHandle = () => {
+export const ResizeHandle = ({ disabled }: { disabled?: boolean }) => {
   return (
-    <SxPanelResizeHandle>
+    <SxPanelResizeHandle disabled={disabled}>
       <Handle>
         <Line />
       </Handle>
