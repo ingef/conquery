@@ -270,6 +270,11 @@ export default function Diagram({
         scales: {
           y: {
             beginAtZero: true,
+            ticks: {
+              callback: (value: number) => {
+                return formatNumber(value);
+              },
+            }
           },
           x: {
             suggestedMin: stat.span.min,
