@@ -13,10 +13,6 @@ import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 
 const Root = styled("div")`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 12px 12px;
-  align-items: center;
 `;
 
 const Date = styled("p")`
@@ -79,6 +75,7 @@ interface Props {
   matchingEntries?: number | null;
   matchingEntities?: number | null;
   dateRange?: DateRangeT;
+  className?: string;
 }
 
 const TooltipEntries = (props: Props) => {
@@ -104,7 +101,7 @@ const TooltipEntries = (props: Props) => {
     : "- - - - - - -";
 
   return (
-    <Root>
+    <Root className={props.className}>
       <StyledFaIcon icon={faHashtag} />
       <Info>
         <Number zero={isZero}>
