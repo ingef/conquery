@@ -1,10 +1,7 @@
 import styled from "@emotion/styled";
-import { FC } from "react";
 import Highlighter from "react-highlight-words";
 import { useTranslation } from "react-i18next";
-import { useSelector } from "react-redux";
 
-import type { StateT } from "../../app/reducers";
 import EditableText from "../../ui-components/EditableText";
 
 const Text = styled("div")`
@@ -21,32 +18,25 @@ const SxEditableText = styled(EditableText)`
   text-overflow: ellipsis;
 `;
 
-const useHighlightedWords = () => {
-  return useSelector<StateT, string[]>(
-    (state) => state.projectItemsSearch.words,
-  );
-};
-
-interface PropsT {
+const ProjectItemLabel = ({
+  mayEdit,
+  loading,
+  selectTextOnMount,
+  label,
+  highlightedWords,
+  onSubmit,
+  isEditing,
+  setIsEditing,
+}: {
   mayEdit?: boolean;
   label: string;
+  highlightedWords: string[];
   selectTextOnMount: boolean;
   loading?: boolean;
   onSubmit: (text: string) => void;
   isEditing: boolean;
   setIsEditing: (value: boolean) => void;
-}
-
-const ProjectItemLabel: FC<PropsT> = ({
-  mayEdit,
-  loading,
-  selectTextOnMount,
-  label,
-  onSubmit,
-  isEditing,
-  setIsEditing,
 }) => {
-  const highlightedWords = useHighlightedWords();
   const { t } = useTranslation();
 
   return mayEdit ? (
