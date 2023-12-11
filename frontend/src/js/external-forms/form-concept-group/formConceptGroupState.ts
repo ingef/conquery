@@ -1,6 +1,7 @@
 import type {
   PostFilterSuggestionsResponseT,
   SelectOptionT,
+  SelectorResultType,
 } from "../../api/types";
 import { DNDType } from "../../common/constants/dndTypes";
 import { compose } from "../../common/helpers/commonHelper";
@@ -40,6 +41,11 @@ export interface FormConceptGroupT {
 export interface TableConfig {
   allowlistedTables?: string[];
   blocklistedTables?: string[];
+}
+
+export interface SelectConfig {
+  allowlistedSelects?: SelectorResultType[];
+  blocklistedSelects?: SelectorResultType[];
 }
 
 export const addValue = (
@@ -278,6 +284,7 @@ export const addConceptsFromFile = (
   resolvedConcepts: string[],
 
   tableConfig: TableConfig,
+  selectConfig: SelectConfig,
   defaults: ConceptListDefaultsType,
   isValidConcept: ((item: FormConceptNodeT) => boolean) | undefined,
 
@@ -301,7 +308,12 @@ export const addConceptsFromFile = (
 
   if (!queryElement) return value;
 
-  const concept = initializeConcept(queryElement, defaults, tableConfig);
+  const concept = initializeConcept(
+    queryElement,
+    defaults,
+    tableConfig,
+    selectConfig,
+  );
 
   if (!concept || (!!isValidConcept && !isValidConcept(concept))) return value;
 
@@ -325,6 +337,7 @@ export const initializeConcept = (
   item: FormConceptNodeT,
   defaults: ConceptListDefaultsType,
   tableConfig: TableConfig,
+  selectConfig: SelectConfig,
 ) => {
   if (!item) return item;
 
@@ -336,8 +349,8 @@ export const initializeConcept = (
     ...item,
     excludeFromSecondaryId: false,
     excludeTimestamps: false,
-    tables: resetTables(item.tables, { useDefaults: true }),
-    selects: resetSelects(item.selects, { useDefaults: true }),
+    tables: resetTables(item.tables, { useDefaults: true, selectConfig }),
+    selects: resetSelects(item.selects, { useDefaults: true, selectConfig }),
   });
 };
 
