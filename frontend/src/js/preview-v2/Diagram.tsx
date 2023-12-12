@@ -100,18 +100,19 @@ function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
   while (pointer <= end) {
     // check month exists
     const month = format(pointer, "yyyy-M");
+    const monthLabel = format(pointer, "MMM yyyy");
     if (month in monthCounts) {
-      labels.push(month);
+      labels.push(monthLabel);
       values.push(monthCounts[month]);
     } else {
       // add quater values
       const quater = format(pointer, "yyyy-Q");
       if (quater in quarterCounts) {
-        labels.push(quater);
+        labels.push(monthLabel);
         values.push(quarterCounts[quater]);
       } else {
         // add zero values
-        labels.push(month);
+        labels.push(monthLabel);
         values.push(0);
       }
     }
@@ -169,6 +170,7 @@ export default function Diagram({
             beginAtZero: true,
           },
           x: {
+            beginAtZero: true,
             suggestedMin: stat.min,
             suggestedMax: stat.max,
             ticks: {
