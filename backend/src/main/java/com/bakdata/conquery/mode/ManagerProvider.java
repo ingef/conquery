@@ -30,7 +30,7 @@ public interface ManagerProvider {
 	static <N extends Namespace> DatasetRegistry<N> createDatasetRegistry(NamespaceHandler<N> namespaceHandler, ConqueryConfig config,
 																		  InternalObjectMapperCreator creator) {
 
-		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings());
+		final IndexService indexService = new IndexService(config.getCsv().createCsvParserSettings(), config.getIndex().getEmptyLabel());
 		DatasetRegistry<N> datasetRegistry = new DatasetRegistry<>(
 				config.getCluster().getEntityBucketSize(),
 				config,

@@ -64,7 +64,7 @@ const Content = () => {
           >
             {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
           </Panel>
-          <ResizeHandle />
+          <ResizeHandle disabled={!displayTooltip} />
           <Panel minSize={350} defaultSize={600}>
             <LeftPane />
           </Panel>
