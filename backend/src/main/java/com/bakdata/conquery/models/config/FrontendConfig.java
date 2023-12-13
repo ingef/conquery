@@ -42,6 +42,13 @@ public class FrontendConfig {
 	private int visualisationSamples = 1000;
 
 	/**
+	 * Limit to number of histogram entries.
+	 */
+	@Min(0)
+	private int visualisationsHistogramLimit = 25;
+
+
+	/**
 	 * The url that points a manual. This is also used by the {@link FormScanner}
 	 * as the base url for forms that specify a relative url. Internally {@link URI#resolve(URI)}
 	 * is used to concatenate this base url and the manual url from the form.

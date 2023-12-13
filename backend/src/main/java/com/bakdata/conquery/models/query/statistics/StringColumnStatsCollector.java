@@ -17,9 +17,11 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 
 	private final Frequency frequencies = new Frequency();
 	private final AtomicLong nulls = new AtomicLong(0);
+	private final long limit;
 
-	public StringColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings) {
+	public StringColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings, long limit) {
 		super(name, label, description, type, printSettings);
+		this.limit = limit;
 	}
 
 	@Override
@@ -38,6 +40,8 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 	public ResultColumnStatistics describe() {
 		final Map<String, Long> repr =
 				StreamSupport.stream(((Iterable<Map.Entry<Comparable<?>, Long>>) frequencies::entrySetIterator).spliterator(), false)
+							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed())
+							 .limit(limit)
 							 .collect(Collectors.toMap(entry -> (String) entry.getKey(), Map.Entry::getValue));
 
 
