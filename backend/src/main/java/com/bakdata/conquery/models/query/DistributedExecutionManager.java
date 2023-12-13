@@ -65,7 +65,6 @@ public class DistributedExecutionManager implements ExecutionManager {
 		execute(namespace, execution, config);
 
 		return execution;
-
 	}
 
 	@Override
