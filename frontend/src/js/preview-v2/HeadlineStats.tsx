@@ -2,6 +2,7 @@ import styled from "@emotion/styled";
 import { t } from "i18next";
 import { PreviewStatisticsResponse } from "../api/types";
 import { getDiffInDays, parseDate } from "../common/helpers/dateHelper";
+import { formatDate } from "./util";
 
 const Root = styled("div")`
   display: flex;
@@ -31,17 +32,8 @@ export type HeadlineStatsProps = {
 };
 
 export default function HeadlineStats({ statistics }: HeadlineStatsProps) {
-  const parseDateToLocaleString = (date: string | undefined) => {
-    if (date) {
-      return (
-        parseDate(date, "yyyy-MM-dd")?.toLocaleDateString("de-de") ??
-        t("preview.dateError")
-      );
-    }
-    return t("preview.dateError");
-  };
   const dateRange = statistics?.dateRange;
-  
+
   return (
     <Root>
       <MetaValue>
@@ -50,11 +42,11 @@ export default function HeadlineStats({ statistics }: HeadlineStatsProps) {
       </MetaValue>
       <MetaValue>
         <Key>Min Datum:</Key>
-        {parseDateToLocaleString(statistics?.dateRange.min)}
+        {formatDate(statistics?.dateRange.min)}
       </MetaValue>
       <MetaValue>
         <Key>Max Datum:</Key>
-        {parseDateToLocaleString(dateRange?.max)}
+        {formatDate(dateRange?.max)}
       </MetaValue>
       <MetaValue>
         <Key>Datumsbereich:</Key>
