@@ -102,8 +102,7 @@
         "columns": [
           {
             "name": "icd_code",
-            "type": "STRING",
-            "sharedDictionary": "icd"
+            "type": "STRING"
           },
           {
             "name": "entlassungsdatum",
@@ -121,8 +120,7 @@
         "columns": [
           {
             "name": "icd_code",
-            "type": "STRING",
-            "sharedDictionary": "icd"
+            "type": "STRING"
           },
           {
             "name": "au_beginn",
