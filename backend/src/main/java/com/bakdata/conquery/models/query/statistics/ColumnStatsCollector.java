@@ -52,7 +52,7 @@ public abstract class ColumnStatsCollector<T> {
 		}
 
 		if (type instanceof ResultType.BooleanT) {
-			return new BooleanColumnStatsCollector(name, label, info.getDescription(), type, printSettings, displayLimit);
+			return new BooleanColumnStatsCollector(name, label, info.getDescription(), printSettings);
 		}
 
 		if (type instanceof ResultType.DateT) {

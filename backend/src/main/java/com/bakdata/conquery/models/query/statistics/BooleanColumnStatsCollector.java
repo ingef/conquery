@@ -9,9 +9,9 @@ public class BooleanColumnStatsCollector extends ColumnStatsCollector<Boolean> {
 
 	private final StringColumnStatsCollector delegate;
 
-	public BooleanColumnStatsCollector(String name, String label, String description, ResultType type, PrintSettings printSettings, long limit) {
-		super(name, label, description, type, printSettings);
-		delegate = new StringColumnStatsCollector(name, label, description, type, printSettings, Integer.MAX_VALUE);
+	public BooleanColumnStatsCollector(String name, String label, String description, PrintSettings printSettings) {
+		super(name, label, description, ResultType.BooleanT.INSTANCE, printSettings);
+		delegate = new StringColumnStatsCollector(name, label, description, ResultType.StringT.INSTANCE, printSettings, Integer.MAX_VALUE);
 	}
 
 	@Override
