@@ -155,6 +155,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								1.140175425099138,
 								1,
 								4,
+								new BigDecimal("13.0"),
 								List.of(
 										1,
 										2,
@@ -175,6 +176,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								1.140175425099138,
 								1,
 								4,
+								new BigDecimal("13.0"),
 								List.of(
 										new BigDecimal("1.0"),
 										new BigDecimal("2.0"),
@@ -195,6 +197,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								1.140175425099138,
 								1,
 								4,
+								new BigDecimal("13.0"),
 								List.of(
 										1,
 										2,
@@ -215,6 +218,7 @@ public class QueryStatisticsTest implements ProgrammaticIntegrationTest {
 								11.40175425099138,
 								10,
 								40,
+								new BigDecimal("130.0"),
 								List.of(
 										new BigDecimal("10.00"),
 										new BigDecimal("20.00"),

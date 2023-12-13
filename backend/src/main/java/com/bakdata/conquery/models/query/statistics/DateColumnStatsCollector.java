@@ -123,7 +123,7 @@ public class DateColumnStatsCollector extends ColumnStatsCollector<Object> {
 		private final Collection<LocalDate> samples;
 
 		public ColumnDescription(String name, String label, String description, int count, int nullValues, SortedMap<String, Integer> quarterCounts, SortedMap<String, Integer> monthCounts, Range<LocalDate> span, Collection<LocalDate> samples) {
-			super(name, label, description, "DATES");
+			super(name, label, description, ResultType.DateT.INSTANCE.typeInfo());
 			this.count = count;
 			this.nullValues = nullValues;
 			this.quarterCounts = quarterCounts;

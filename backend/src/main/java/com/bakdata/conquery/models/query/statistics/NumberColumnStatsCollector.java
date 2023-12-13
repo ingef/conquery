@@ -76,7 +76,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			return new ColumnDescription(
 					getName(), getLabel(), getDescription(), getType().toString(),
 					getNulls().intValue(), getNulls().intValue(),
-					Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Collections.emptyList()
+					Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, 0, Collections.emptyList()
 			);
 		}
 
@@ -88,7 +88,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		return new ColumnDescription(getName(), getLabel(), getDescription(), getType().toString(), (int) (getStatistics().getN() + getNulls().intValue()), getNulls().intValue(), getStatistics().getMean(), getStatistics().getPercentile(50d /*This is the median.*/), getStatistics().getStandardDeviation(), (int) getStatistics().getMin(), (int) getStatistics().getMax(),
 									 // We cull extremes, as that can cause distortions when displayed.
-									 samples.stream().filter(val -> val.doubleValue() >= p01 && val.doubleValue() <= p99).sorted(comparator).toList()
+									 getStatistics().getSum(), samples.stream().filter(val -> val.doubleValue() >= p01 && val.doubleValue() <= p99).sorted(comparator).toList()
 		);
 	}
 
@@ -105,9 +105,11 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		private final Number min;
 		private final Number max;
 
+		private final Number sum;
+
 		private final Collection<? extends Number> samples;
 
-		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, double mean, double median, double stdDev, Number min, Number max, Collection<? extends Number> samples) {
+		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, double mean, double median, double stdDev, Number min, Number max, Number sum, Collection<? extends Number> samples) {
 			super(name, label, description, type);
 			this.count = count;
 			this.nullValues = nullValues;
@@ -116,6 +118,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			this.stdDev = stdDev;
 			this.min = min;
 			this.max = max;
+			this.sum = sum;
 			this.samples = samples;
 		}
 	}

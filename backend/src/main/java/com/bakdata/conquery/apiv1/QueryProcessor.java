@@ -614,7 +614,7 @@ public class QueryProcessor {
 
 
 		final List<ColumnStatsCollector> statsCollectors = resultInfos.stream()
-																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, samplePicker, info.getType(), uniqueNamer))
+																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, samplePicker, info.getType(), uniqueNamer, config.getFrontend().getVisualisationsHistogramLimit()))
 																	  .collect(Collectors.toList());
 
 		final IntSet entities = new IntOpenHashSet();

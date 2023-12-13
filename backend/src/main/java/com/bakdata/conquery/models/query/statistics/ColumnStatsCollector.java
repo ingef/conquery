@@ -22,11 +22,11 @@ public abstract class ColumnStatsCollector<T> {
 	@JsonIgnore
 	private final PrintSettings printSettings;
 
-	public static ColumnStatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, BooleanSupplier samplePicker, ResultType type, UniqueNamer uniqueNamer) {
+	public static ColumnStatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, BooleanSupplier samplePicker, ResultType type, UniqueNamer uniqueNamer, long displayLimit) {
 
 		// List recursion must be done before assigning uniqueNames
 		if (type instanceof ResultType.ListT listT){
-			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, samplePicker, listT.getElementType(), uniqueNamer);
+			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, samplePicker, listT.getElementType(), uniqueNamer, displayLimit);
 			// name label type are discarded when using ListColumnStatsCollector
 			return new ListColumnStatsCollector<>(null, null, null, type, columnStatsCollector, printSettings);
 		}
@@ -48,11 +48,11 @@ public abstract class ColumnStatsCollector<T> {
 		}
 
 		if (type instanceof ResultType.StringT) {
-			return new StringColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
+			return new StringColumnStatsCollector(name, label, info.getDescription(), type, printSettings, displayLimit);
 		}
 
 		if (type instanceof ResultType.BooleanT) {
-			return new BooleanColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
+			return new StringColumnStatsCollector(name, label, info.getDescription(), type, printSettings, displayLimit);
 		}
 
 		if (type instanceof ResultType.DateT) {
