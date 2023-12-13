@@ -9,7 +9,7 @@ on:
       - release
   pull_request:
     paths:
-      - "backend/**"
+      - "**"
 
 jobs:
   test:
