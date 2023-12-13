@@ -609,7 +609,7 @@ public class QueryProcessor {
 		final boolean hasValidityDates = resultInfos.get(0).getSemantics().contains(new SemanticType.EventDateT());
 		final ResultType dateType = resultInfos.get(0).getType();
 
-		final PrintSettings printSettings = new PrintSettings(false, I18n.LOCALE.get(), managedQuery.getNamespace(), config, null);
+		final PrintSettings printSettings = new PrintSettings(true, I18n.LOCALE.get(), managedQuery.getNamespace(), config, null);
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
 
 
