@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.NumberFilter;
 import com.bakdata.conquery.models.events.MajorTypeId;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
 import com.bakdata.conquery.sql.conversion.model.filter.NumberCondition;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
@@ -21,7 +21,7 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 	private static final Class<? extends NumberFilter> CLASS = NumberFilter.class;
 
 	@Override
-	public ConceptFilter convert(NumberFilter<IRange<? extends Number, ?>> numberFilter, FilterContext<IRange<? extends Number, ?>> context) {
+	public SqlFilters convert(NumberFilter<IRange<? extends Number, ?>> numberFilter, FilterContext<IRange<? extends Number, ?>> context) {
 
 		Class<? extends Number> numberClass = NumberMapUtil.NUMBER_MAP.get(numberFilter.getColumn().getType());
 
@@ -36,9 +36,9 @@ public class NumberFilterConverter implements FilterConverter<IRange<? extends N
 		IRange<? extends Number, ?> filterValue = prepareFilterValue(numberFilter, context);
 		NumberCondition condition = new NumberCondition(eventFilterCtePredecessor, filterValue);
 
-		return new ConceptFilter(
+		return new SqlFilters(
 				SqlSelects.builder()
-						  .forPreprocessingStep(List.of(rootSelect))
+						  .preprocessingSelects(List.of(rootSelect))
 						  .build(),
 				Filters.builder()
 					   .event(List.of(condition))

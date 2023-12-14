@@ -19,7 +19,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConver
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterType;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
@@ -91,10 +91,10 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		ConceptTables conceptTables = new ConceptTables(conceptLabel, requiredSteps, tableName, context.getNameGenerator());
 
 		// convert filters
-		Stream<ConceptFilter> conceptFilters = table.getFilters().stream()
-													.map(filterValue -> this.filterValueConversions.convert(filterValue, context, conceptTables));
-		Stream<ConceptFilter> dateRestrictionFilter = getDateRestriction(context, validityDateSelect).stream();
-		List<ConceptFilter> allFilters = Stream.concat(conceptFilters, dateRestrictionFilter).toList();
+		Stream<SqlFilters> conceptFilters = table.getFilters().stream()
+												 .map(filterValue -> this.filterValueConversions.convert(filterValue, context, conceptTables));
+		Stream<SqlFilters> dateRestrictionFilter = getDateRestriction(context, validityDateSelect).stream();
+		List<SqlFilters> allFilters = Stream.concat(conceptFilters, dateRestrictionFilter).toList();
 
 		// convert selects
 		SelectContext selectContext = new SelectContext(context, node, conceptLabel, validityDateSelect, conceptTables);
@@ -146,7 +146,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return Optional.of(validityDate);
 	}
 
-	private Optional<ConceptFilter> getDateRestriction(ConversionContext context, Optional<ColumnDateRange> validityDate) {
+	private Optional<SqlFilters> getDateRestriction(ConversionContext context, Optional<ColumnDateRange> validityDate) {
 
 		if (!dateRestrictionApplicable(context.dateRestrictionActive(), validityDate)) {
 			return Optional.empty();
@@ -162,8 +162,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		Condition dateRestrictionCondition = this.functionProvider.dateRestriction(dateRestriction, validityDate.get());
 
-		return Optional.of(new ConceptFilter(
-				SqlSelects.builder().forPreprocessingStep(dateRestrictionSelects).build(),
+		return Optional.of(new SqlFilters(
+				SqlSelects.builder().preprocessingSelects(dateRestrictionSelects).build(),
 				Filters.builder().event(List.of(ConditionUtil.wrap(dateRestrictionCondition, FilterType.EVENT))).build()
 		));
 	}

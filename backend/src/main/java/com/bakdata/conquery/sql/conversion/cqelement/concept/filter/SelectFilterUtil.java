@@ -4,19 +4,18 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterCondition;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
 import com.bakdata.conquery.sql.conversion.model.filter.MultiSelectCondition;
 import com.bakdata.conquery.sql.conversion.model.select.ExtractingSqlSelect;
-import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 
 class SelectFilterUtil {
 
-	public static <T> ConceptFilter convert(SelectFilter<T> selectFilter, FilterContext<T> context, String[] values) {
+	public static <T> SqlFilters convert(SelectFilter<T> selectFilter, FilterContext<T> context, String[] values) {
 
-		SqlSelect rootSelect = new ExtractingSqlSelect<>(
+		ExtractingSqlSelect<String> rootSelect = new ExtractingSqlSelect<>(
 				context.getConceptTables().getPredecessor(ConceptCteStep.PREPROCESSING),
 				selectFilter.getColumn().getName(),
 				String.class
@@ -28,9 +27,9 @@ class SelectFilterUtil {
 				context.getParentContext().getSqlDialect().getFunctionProvider()
 		);
 
-		return new ConceptFilter(
+		return new SqlFilters(
 				SqlSelects.builder()
-						  .forPreprocessingStep(List.of(rootSelect))
+						  .preprocessingSelect(rootSelect)
 						  .build(),
 				Filters.builder()
 					   .event(List.of(condition))
