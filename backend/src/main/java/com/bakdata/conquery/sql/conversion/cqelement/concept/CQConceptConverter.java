@@ -66,9 +66,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		}
 
 		return context.toBuilder()
-					  .queryStep(lastQueryStep.orElseThrow(() -> new RuntimeException(
-							  "No conversion for concept possible. Required steps: %s".formatted(requiredSteps())))
-					  )
+					  .queryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible.")))
 					  .build();
 	}
 
