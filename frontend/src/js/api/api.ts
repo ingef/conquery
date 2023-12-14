@@ -1,4 +1,4 @@
-import { useCallback, useContext, useRef } from "react";
+import { useCallback, useContext, useEffect, useRef } from "react";
 
 import { EditorV2Query } from "../editor-v2/types";
 import { EntityId } from "../entity-history/reducer";
@@ -411,8 +411,14 @@ export const usePostResolveEntities = () => {
 
 export const useGetResult = () => {
   const { authToken } = useContext(AuthTokenContext);
+  const authTokenRef = useRef<string>(authToken);
+  useEffect(
+    function updateRef() {
+      authTokenRef.current = authToken;
+    },
+    [authToken],
+  );
   return useCallback((queryId: string) => {
-    const authTokenRef = useRef<string>(authToken);
     const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`), {
       headers: {
         Authorization: `Bearer ${authTokenRef.current}`,
