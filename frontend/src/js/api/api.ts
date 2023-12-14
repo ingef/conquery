@@ -411,8 +411,8 @@ export const usePostResolveEntities = () => {
 
 export const useGetResult = () => {
   const { authToken } = useContext(AuthTokenContext);
-  const authTokenRef = useRef<string>(authToken);
   return useCallback((queryId: string) => {
+    const authTokenRef = useRef<string>(authToken);
     const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`), {
       headers: {
         Authorization: `Bearer ${authTokenRef.current}`,
