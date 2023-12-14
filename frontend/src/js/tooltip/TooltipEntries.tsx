@@ -76,7 +76,6 @@ interface Props extends HTMLAttributes<HTMLDivElement> {
   matchingEntries?: number | null;
   matchingEntities?: number | null;
   dateRange?: DateRangeT;
-  className?: string;
 }
 
 const TooltipEntries = (props: Props) => {
