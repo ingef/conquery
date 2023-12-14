@@ -5,8 +5,13 @@ import {
   StringStatistics,
 } from "../api/types";
 
+
 const DIGITS_OF_PRECISION = 3;
 export function formatNumber(num: number): string {
+  if (num > 100) {
+    return num.toFixed(0).replace(".", ",");
+  }
+
   return num
     .toPrecision(DIGITS_OF_PRECISION)
     .toLocaleString()
