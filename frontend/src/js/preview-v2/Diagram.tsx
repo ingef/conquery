@@ -99,19 +99,20 @@ function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
   let pointer = start;
   while (pointer <= end) {
     // check month exists
-    const month = format(pointer, "yyyy-MM");
+    const month = format(pointer, "yyyy-M");
+    const monthLabel = format(pointer, "MMM yyyy");
     if (month in monthCounts) {
-      labels.push(month);
+      labels.push(monthLabel);
       values.push(monthCounts[month]);
     } else {
       // add quater values
       const quater = format(pointer, "yyyy-Q");
       if (quater in quarterCounts) {
-        labels.push(quater);
+        labels.push(monthLabel);
         values.push(quarterCounts[quater]);
       } else {
         // add zero values
-        labels.push(month);
+        labels.push(monthLabel);
         values.push(0);
       }
     }
@@ -138,6 +139,14 @@ export default function Diagram({
   height,
   width,
 }: DiagramProps) {
+  const getValueForIndex = (index: number) => {
+    const labels = data?.labels;
+    if(!labels) {
+      return undefined;
+    }
+    return labels[index];
+ }
+
   const options = useMemo(() => {
     if (previewStatsIsNumberStats(stat)) {
       return {
@@ -161,6 +170,7 @@ export default function Diagram({
             beginAtZero: true,
           },
           x: {
+            beginAtZero: true,
             suggestedMin: stat.min,
             suggestedMax: stat.max,
             ticks: {
@@ -262,11 +272,20 @@ export default function Diagram({
         scales: {
           y: {
             beginAtZero: true,
+            ticks: {
+              callback: (value: number) => {
+                return formatNumber(value);
+              },
+            }
           },
           x: {
             suggestedMin: stat.span.min,
             suggestedMax: stat.span.max,
-            //type: "time",
+            ticks: {
+              callback: (valueIndex: number, index: number) => {
+                return index % 2 === 0 ? getValueForIndex(valueIndex) : "";
+              },
+            }
           },
         },
         plugins: {

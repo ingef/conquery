@@ -22,6 +22,10 @@ const SxDiagram = styled(Diagram)`
   margin-right: 15px;
 `;
 
+const StyledRcTable = styled(RcTable)`
+  margin: auto
+`;
+
 export default function DiagramModal({
   statistic,
   onClose,
@@ -34,7 +38,7 @@ export default function DiagramModal({
       <Horizontal>
         <SxDiagram stat={statistic} />
         {previewStatsIsNumberStats(statistic) && (
-          <RcTable columns={
+          <StyledRcTable columns={
             [
               {
                 title: t("preview.name"),
