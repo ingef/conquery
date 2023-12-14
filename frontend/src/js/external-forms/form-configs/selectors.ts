@@ -2,6 +2,13 @@ import { exists } from "../../common/helpers/exists";
 import type { ProjectItemsFilterStateT } from "../../previous-queries/filter/reducer";
 import { FormConfigT } from "../../previous-queries/list/reducer";
 
+const configHasOwner = (config: FormConfigT, searchTerm: string) => {
+  return (
+    !!config.ownerName &&
+    config.ownerName.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+  );
+};
+
 const configHasTag = (config: FormConfigT, searchTerm: string) => {
   return (
     !!config.tags &&
@@ -58,7 +65,8 @@ export const configMatchesSearch = (
   !exists(searchTerm) ||
   configHasId(config, searchTerm) ||
   configHasLabel(config, searchTerm) ||
-  configHasTag(config, searchTerm);
+  configHasTag(config, searchTerm) ||
+  configHasOwner(config, searchTerm);
 
 export const selectFormConfigs = (
   formConfigs: FormConfigT[],
