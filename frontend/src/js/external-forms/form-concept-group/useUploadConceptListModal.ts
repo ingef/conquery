@@ -13,6 +13,7 @@ import {
 } from "../../upload-concept-list-modal/actions";
 import type { ConceptListDefaults as ConceptListDefaultsType } from "../config-types";
 
+import { SelectConfig } from "../../model/select";
 import {
   addConceptsFromFile,
   FormConceptGroupT,
@@ -30,6 +31,7 @@ export const useUploadConceptListModal = ({
   newValue,
   defaults,
   tableConfig,
+  selectConfig,
   isValidConcept,
 }: {
   value: FormConceptGroupT[];
@@ -37,6 +39,7 @@ export const useUploadConceptListModal = ({
   newValue: FormConceptGroupT;
   defaults: ConceptListDefaultsType;
   tableConfig: TableConfig;
+  selectConfig: SelectConfig;
   isValidConcept?: (concept: DragItemConceptTreeNode) => boolean;
 }) => {
   const { t } = useTranslation();
@@ -108,6 +111,7 @@ export const useUploadConceptListModal = ({
         resolvedConcepts,
 
         tableConfig,
+        selectConfig,
         defaults,
         isValidConcept,
 
