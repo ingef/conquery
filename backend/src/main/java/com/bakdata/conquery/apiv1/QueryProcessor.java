@@ -589,6 +589,7 @@ public class QueryProcessor {
 		final Query query = managedQuery.getQuery();
 		final List<ResultInfo> resultInfos = query.getResultInfos();
 
+
 		final RandomGenerator random = new Random();
 		final int requiredSamples = config.getFrontend().getVisualisationSamples();
 
@@ -606,8 +607,9 @@ public class QueryProcessor {
 			samplePicker = () -> random.nextInt(totalSamples) < requiredSamples;
 		}
 
-		final boolean hasValidityDates = resultInfos.get(0).getSemantics().contains(new SemanticType.EventDateT());
-		final ResultType dateType = resultInfos.get(0).getType();
+		final Optional<ResultInfo> dateInfo = query.getResultInfos().stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
+
+		final int dateIndex = dateInfo.map(resultInfos::indexOf).orElse(-1 /*Not used if dateInfo is not present*/);
 
 		final PrintSettings printSettings = new PrintSettings(false, I18n.LOCALE.get(), managedQuery.getNamespace(), config, null);
 		final UniqueNamer uniqueNamer = new UniqueNamer(printSettings);
@@ -629,10 +631,11 @@ public class QueryProcessor {
 					.flatMap(List::stream)
 					.forEach(line -> {
 
-						if (hasValidityDates) {
-							final CDateSet dateSet = extractValidityDate(dateType, line[0]);
+						dateInfo.ifPresent(info -> {
+							final CDateSet dateSet = extractValidityDate(info.getType(), line[dateIndex]);
 							span.getAndAccumulate(dateSet.span(), (old, incoming) -> incoming.spanClosed(old));
-						}
+						});
+
 
 						lines.incrementAndGet();
 
@@ -653,7 +656,7 @@ public class QueryProcessor {
 							   .filter(Objects::nonNull) // Not all columns produces stats
 							   .map(ColumnStatsCollector::describe)
 							   .toList(),
-				span.get().toSimpleRange()
+				dateInfo.map(ignored -> span.get().toSimpleRange()).orElse(CDateRange.all().toSimpleRange())
 		);
 	}
 
