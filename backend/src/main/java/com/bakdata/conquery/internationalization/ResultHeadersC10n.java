@@ -41,5 +41,9 @@ public interface ResultHeadersC10n {
 	@De("Nachbeobachtungszeitraum")
 	String outcomeDateRange();
 
+	@En("{0} others")
+	@De("{0} andere")
+	String others(long count);
+
 
 }

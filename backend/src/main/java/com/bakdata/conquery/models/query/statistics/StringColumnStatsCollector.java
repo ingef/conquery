@@ -1,18 +1,24 @@
 package com.bakdata.conquery.models.query.statistics;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import c10n.C10N;
+import com.bakdata.conquery.internationalization.ResultHeadersC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.math3.stat.Frequency;
 
 @Getter
+@Slf4j
 public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 
 	private final Frequency frequencies = new Frequency();
@@ -38,11 +44,23 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 
 	@Override
 	public ResultColumnStatistics describe() {
-		final Map<String, Long> repr =
+		final List<Map.Entry<Comparable<?>, Long>> entriesSorted =
 				StreamSupport.stream(((Iterable<Map.Entry<Comparable<?>, Long>>) frequencies::entrySetIterator).spliterator(), false)
-							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed())
+							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed()).toList();
+
+		Map<String, Long> repr =
+				entriesSorted.stream()
 							 .limit(limit)
 							 .collect(Collectors.toMap(entry -> (String) entry.getKey(), Map.Entry::getValue));
+
+
+		final long otherTotal = entriesSorted.stream().skip(limit).mapToLong(Map.Entry::getValue).sum();
+		final long othersCount = entriesSorted.size() - limit;
+
+		if (othersCount > 0){
+			repr = new HashMap<>(repr);
+			repr.put(C10N.get(ResultHeadersC10n.class).others(othersCount), otherTotal);
+		}
 
 
 		return new ColumnDescription(getName(), getLabel(), getDescription(), repr);
