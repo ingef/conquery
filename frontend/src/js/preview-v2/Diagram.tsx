@@ -96,26 +96,20 @@ function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
       ],
     };
   }
-  const { monthCounts, quarterCounts } = stats;
+  const { monthCounts } = stats;
   let pointer = start;
   while (pointer <= end) {
     // check month exists
-    const month = format(pointer, "yyyy-M");
+    const month = format(pointer, "yyyy-MM");
     const monthLabel = format(pointer, "MMM yyyy");
     if (month in monthCounts) {
       labels.push(monthLabel);
       values.push(monthCounts[month]);
     } else {
-      // add quater values
-      const quater = format(pointer, "yyyy-Q");
-      if (quater in quarterCounts) {
-        labels.push(monthLabel);
-        values.push(quarterCounts[quater]);
-      } else {
-        // add zero values
-        labels.push(monthLabel);
-        values.push(0);
-      }
+
+      // add zero values
+      labels.push(monthLabel);
+      values.push(0);
     }
 
     pointer = addMonths(pointer, 1);
