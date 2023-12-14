@@ -7,7 +7,7 @@ import java.util.Optional;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.select.connector.LastValueSelect;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectContext;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;

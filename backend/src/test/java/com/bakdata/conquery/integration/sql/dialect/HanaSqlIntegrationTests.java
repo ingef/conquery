@@ -20,13 +20,9 @@ import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.sql.testcontainer.hana.HanaContainer;
 import com.bakdata.conquery.models.config.Dialect;
 import com.bakdata.conquery.models.config.SqlConnectorConfig;
-import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.sql.DslContextFactory;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.DateDistanceFilterConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.select.DateDistanceSelectConverter;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConverter;
 import com.bakdata.conquery.sql.conversion.dialect.HanaSqlDialect;
+import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -118,17 +114,8 @@ public class HanaSqlIntegrationTests extends IntegrationTests {
 		}
 
 		@Override
-		public List<SelectConverter<? extends Select>> getSelectConverters() {
-			return this.customizeSelectConverters(List.of(
-					new DateDistanceSelectConverter(DATE_NOW_SUPPLIER)
-			));
-		}
-
-		@Override
-		public List<FilterConverter<?, ?>> getFilterConverters() {
-			return this.customizeFilterConverters(List.of(
-					new DateDistanceFilterConverter(DATE_NOW_SUPPLIER)
-			));
+		public DateNowSupplier getDateNowSupplier() {
+			return DATE_NOW_SUPPLIER;
 		}
 
 		public TestFunctionProvider getTestFunctionProvider() {

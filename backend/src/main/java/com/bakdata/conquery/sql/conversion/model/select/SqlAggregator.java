@@ -1,7 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 
 public interface SqlAggregator {
 

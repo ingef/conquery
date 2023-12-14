@@ -14,6 +14,9 @@ import com.bakdata.conquery.models.datasets.concepts.select.Select;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.CountSqlAggregator;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.jetbrains.annotations.Nullable;
@@ -58,4 +61,10 @@ public class CountSelect extends Select {
 
 		return out;
 	}
+
+	@Override
+	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
+		return CountSqlAggregator.create(this, selectContext).getSqlSelects();
+	}
+
 }
