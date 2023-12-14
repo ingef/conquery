@@ -8,7 +8,9 @@ import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 
 
 
+
 const DIGITS_OF_PRECISION = 3;
+
 
 export function formatNumber(num: number): string {
   return num.toLocaleString();
