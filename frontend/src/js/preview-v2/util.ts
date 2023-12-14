@@ -6,7 +6,10 @@ import {
 } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 
+
+
 const DIGITS_OF_PRECISION = 3;
+
 export function formatNumber(num: number): string {
   return num.toLocaleString();
   // TODO verify localeString implementation
@@ -23,17 +26,17 @@ export function formatNumber(num: number): string {
 export function previewStatsIsStringStats(
   stats: PreviewStatistics,
 ): stats is StringStatistics {
-  return stats.type === "STRING";
+  return stats.chart === "HISTO";
 }
 
 export function previewStatsIsNumberStats(
   stats: PreviewStatistics,
 ): stats is NumberStatistics {
-  return "mean" in stats;
+  return stats.chart === "DESCRIPTIVE";
 }
 
 export function previewStatsIsDateStats(
   stats: PreviewStatistics,
 ): stats is DateStatistics {
-  return stats.type === "DATE" || stats.type === "DATE_RANGE";
+  return stats.chart === "DATES";
 }

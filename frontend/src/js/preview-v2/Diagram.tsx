@@ -20,6 +20,7 @@ import {
   previewStatsIsNumberStats,
   previewStatsIsStringStats,
 } from "./util";
+import { t } from "i18next";
 
 type DiagramProps = {
   stat: PreviewStatistics;
@@ -29,7 +30,7 @@ type DiagramProps = {
   width?: string | number;
 };
 
-const PDF_POINTS = 40;
+const PDF_POINTS = 100;
 
 function transformStringStatsToData(stats: StringStatistics): ChartData<"bar"> {
   return {
@@ -51,14 +52,14 @@ function transformNumberStatsToData(
     min: stats.min,
     max: stats.max,
     size: PDF_POINTS,
-    width: 5, // TODO calculate this?!?!
+    width: 5, // TODO calculate this?
   };
   const pdf: { x: number; y: number }[] = pdfast.create(
     stats.samples.sort((a, b) => a - b),
     options,
   );
   const labels = pdf.map((p) => p.x);
-  const values = pdf.map((p) => p.y);
+  const values = pdf.map((p) => p.y*100); // Percentage
   return {
     labels,
     datasets: [
@@ -138,13 +139,25 @@ export default function Diagram({
   height,
   width,
 }: DiagramProps) {
-  const getValueForIndex = (index: number) => {
+  function getValueForIndex<T>(index: number):T|undefined {
     const labels = data?.labels;
     if(!labels) {
       return undefined;
     }
-    return labels[index];
- }
+    return labels[index] as T|undefined;
+  }
+
+  const data = useMemo(() => {
+    if (previewStatsIsStringStats(stat)) {
+      return transformStringStatsToData(stat);
+    }
+    if (previewStatsIsNumberStats(stat)) {
+      return transformNumberStatsToData(stat);
+    }
+    if (previewStatsIsDateStats(stat)) {
+      return transformDateStatsToData(stat);
+    }
+  }, [stat]);
 
   const options = useMemo(() => {
     if (previewStatsIsNumberStats(stat)) {
@@ -163,17 +176,22 @@ export default function Diagram({
           point: {
             radius: 0,
           },
+          line: {
+            cubicInterpolationMode: "default",
+          }
         },
         scales: {
           y: {
             beginAtZero: true,
+            //grace: "%"
           },
           x: {
-            suggestedMin: stat.min,
+            min: 0,
             suggestedMax: stat.max,
             ticks: {
-              callback: (value: number) => {
-                return formatNumber(value);
+              callback: (index: number) => {
+                // How can I return the scale here?!
+                return (getValueForIndex<number>(index)||0).toLocaleString();
               },
             }
           },
@@ -181,7 +199,7 @@ export default function Diagram({
         plugins: {
           title: {
             display: true,
-            text: stat.label,
+            text: `${t("preview.densityPlot")}: ${stat.label}`,
           },
           tooltip: {
             usePointStyle: true,
@@ -197,12 +215,7 @@ export default function Diagram({
               // -> cast to unknown and then to undefined
               title: () => null as unknown as undefined,
               label: (context) => {
-                const label =
-                  formatNumber(context.parsed.x) ||
-                  context.dataset.label ||
-                  context.label ||
-                  "";
-                return `${label}: ${formatNumber(context.raw as number)}`;
+                return `${formatNumber(getValueForIndex(context.parsed.x)||0)}: ${formatNumber(context.raw as number)}%`;
               },
             },
             caretSize: 0,
@@ -317,19 +330,9 @@ export default function Diagram({
     }
 
     throw new Error("Unknown stats type");
-  }, [stat]);
+  }, [stat, data]);
 
-  const data = useMemo(() => {
-    if (previewStatsIsStringStats(stat)) {
-      return transformStringStatsToData(stat);
-    }
-    if (previewStatsIsNumberStats(stat)) {
-      return transformNumberStatsToData(stat);
-    }
-    if (previewStatsIsDateStats(stat)) {
-      return transformDateStatsToData(stat);
-    }
-  }, [stat]);
+  
   // TODO fall back if no data is present
   return (
     <div className={className}>
