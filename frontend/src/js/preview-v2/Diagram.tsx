@@ -4,7 +4,6 @@ import pdfast, { createPdfastOptions } from "pdfast";
 import { useMemo } from "react";
 import { Bar, Line } from "react-chartjs-2";
 
-import { theme } from "../../app-theme";
 import {
   DateStatistics,
   NumberStatistics,
@@ -21,6 +20,7 @@ import {
   previewStatsIsStringStats,
 } from "./util";
 import { t } from "i18next";
+import { useTheme } from "@emotion/react";
 
 type DiagramProps = {
   stat: PreviewStatistics;
@@ -32,58 +32,44 @@ type DiagramProps = {
 
 const PDF_POINTS = 100;
 
-function transformStringStatsToData(stats: StringStatistics): ChartData<"bar"> {
-  return {
-    labels: Object.keys(stats.histogram),
-    datasets: [
-      {
-        data: Object.values(stats.histogram),
-        backgroundColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
-        borderWidth: 1,
-      },
-    ],
-  };
-}
 
-function transformNumberStatsToData(
-  stats: NumberStatistics,
-): ChartData<"line"> {
-  const options: createPdfastOptions = {
-    min: stats.min,
-    max: stats.max,
-    size: PDF_POINTS,
-    width: 5, // TODO calculate this?
-  };
-  const pdf: { x: number; y: number }[] = pdfast.create(
-    stats.samples.sort((a, b) => a - b),
-    options,
-  );
-  const labels = pdf.map((p) => p.x);
-  const values = pdf.map((p) => p.y*100); // Percentage
-  return {
-    labels,
-    datasets: [
-      {
-        data: values,
-        borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
-        borderWidth: 1,
-        fill: false,
-      },
-    ],
-  };
-}
+export default function Diagram({
+  stat,
+  className,
+  onClick,
+  height,
+  width,
+}: DiagramProps) {
+  const theme = useTheme();
 
-function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
-  // loop over all dates in date range
-  // check if month is present in stats
-  // if yes add months value to data
-  // if no add quater values to data for the whole quater (for each month)
-
-  const labels: string[] = [];
-  const values: number[] = [];
-  const start = parseStdDate(stats.span.min);
-  const end = parseStdDate(stats.span.max);
-  if (start === null || end === null) {
+  function transformStringStatsToData(stats: StringStatistics): ChartData<"bar"> {
+    return {
+      labels: Object.keys(stats.histogram),
+      datasets: [
+        {
+          data: Object.values(stats.histogram),
+          backgroundColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+          borderWidth: 1,
+        },
+      ],
+    };
+  }
+  
+  function transformNumberStatsToData(
+    stats: NumberStatistics,
+  ): ChartData<"line"> {
+    const options: createPdfastOptions = {
+      min: stats.min,
+      max: stats.max,
+      size: PDF_POINTS,
+      width: 5, // TODO calculate this?
+    };
+    const pdf: { x: number; y: number }[] = pdfast.create(
+      stats.samples.sort((a, b) => a - b),
+      options,
+    );
+    const labels = pdf.map((p) => p.x);
+    const values = pdf.map((p) => p.y*100); // Percentage
     return {
       labels,
       datasets: [
@@ -96,44 +82,61 @@ function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
       ],
     };
   }
-  const { monthCounts } = stats;
-  let pointer = start;
-  while (pointer <= end) {
-    // check month exists
-    const month = format(pointer, "yyyy-MM");
-    const monthLabel = format(pointer, "MMM yyyy");
-    if (month in monthCounts) {
-      labels.push(monthLabel);
-      values.push(monthCounts[month]);
-    } else {
-
-      // add zero values
-      labels.push(monthLabel);
-      values.push(0);
+  
+  function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
+    // loop over all dates in date range
+    // check if month is present in stats
+    // if yes add months value to data
+    // if no add quater values to data for the whole quater (for each month)
+  
+    const labels: string[] = [];
+    const values: number[] = [];
+    const start = parseStdDate(stats.span.min);
+    const end = parseStdDate(stats.span.max);
+    if (start === null || end === null) {
+      return {
+        labels,
+        datasets: [
+          {
+            data: values,
+            borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+            borderWidth: 1,
+            fill: false,
+          },
+        ],
+      };
     }
-
-    pointer = addMonths(pointer, 1);
+    const { monthCounts } = stats;
+    let pointer = start;
+    while (pointer <= end) {
+      // check month exists
+      const month = format(pointer, "yyyy-MM");
+      const monthLabel = format(pointer, "MMM yyyy");
+      if (month in monthCounts) {
+        labels.push(monthLabel);
+        values.push(monthCounts[month]);
+      } else {
+  
+        // add zero values
+        labels.push(monthLabel);
+        values.push(0);
+      }
+  
+      pointer = addMonths(pointer, 1);
+    }
+    return {
+      labels,
+      datasets: [
+        {
+          data: values,
+          borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+          borderWidth: 1,
+          fill: false,
+        },
+      ],
+    };
   }
-  return {
-    labels,
-    datasets: [
-      {
-        data: values,
-        borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
-        borderWidth: 1,
-        fill: false,
-      },
-    ],
-  };
-}
-
-export default function Diagram({
-  stat,
-  className,
-  onClick,
-  height,
-  width,
-}: DiagramProps) {
+  
   function getValueForIndex<T>(index: number):T|undefined {
     const labels = data?.labels;
     if(!labels) {
