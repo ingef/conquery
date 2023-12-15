@@ -2,8 +2,8 @@ import { Table, tableFromIPC } from "apache-arrow";
 import { t } from "i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { ActionType, createAction, createAsyncAction } from "typesafe-actions";
-import { useGetResult, usePreviewStatistics } from "../api/api";
-import { PreviewStatisticsResponse } from "../api/types";
+import { useGetQuery, useGetResult, usePreviewStatistics } from "../api/api";
+import { GetQueryResponseT, PreviewStatisticsResponse } from "../api/types";
 import { StateT } from "../app/reducers";
 import { ErrorObject } from "../common/actions/genericActions";
 import { setMessage } from "../snack-message/actions";
@@ -19,6 +19,7 @@ export type PreviewActions = ActionType<
 
 interface PreviewData {
   statisticsData: PreviewStatisticsResponse;
+  queryData: GetQueryResponseT;
   tableData: Table;
   queryId: string;
 }
@@ -39,18 +40,18 @@ export const updateQueryId = createAction("preview/UPDATE_LAST_QUERY_ID")<{
 
 export function useLoadPreviewData() {
   const dispatch = useDispatch();
+  const getQuery = useGetQuery();
   const getResult = useGetResult();
   const getStatistics = usePreviewStatistics();
 
-  const { dataLoadedForQueryId, tableData, statisticsData } = useSelector<
-    StateT,
-    PreviewStateT
-  >((state) => state.preview);
+  const { dataLoadedForQueryId, tableData, queryData, statisticsData } =
+    useSelector<StateT, PreviewStateT>((state) => state.preview);
   const currentPreviewData: PreviewData | null =
-    dataLoadedForQueryId && tableData && statisticsData
+    dataLoadedForQueryId && tableData && queryData && statisticsData
       ? {
           queryId: dataLoadedForQueryId,
           statisticsData,
+          queryData,
           tableData,
         }
       : null;
@@ -71,11 +72,13 @@ export function useLoadPreviewData() {
       // load data simultaneously
       const awaitedData = await Promise.all([
         getStatistics(queryId),
+        getQuery(queryId),
         tableFromIPC(getResult(queryId)),
       ]);
       const payload = {
         statisticsData: awaitedData[0],
-        tableData: awaitedData[1],
+        queryData: awaitedData[1],
+        tableData: awaitedData[2],
         queryId,
       };
       dispatch(loadPreview.success(payload));

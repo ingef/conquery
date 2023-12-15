@@ -144,7 +144,9 @@ export default function Preview() {
         {popOver && (
           <DiagramModal statistic={popOver} onClose={() => setPopOver(null)} />
         )}
-        {preview.tableData && <Table data={preview.tableData} />}
+        {preview.tableData && preview.queryData && (
+          <Table data={preview.tableData} queryData={preview.queryData} />
+        )}
       </SxScrollBox>
     </FullScreen>
   );
