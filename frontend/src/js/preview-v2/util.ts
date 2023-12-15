@@ -34,7 +34,6 @@ export function formatDate(date: string | undefined) {
     );
   }
   return t("preview.dateError");
-}
 
 export function previewStatsIsStringStats(
   stats: PreviewStatistics,
