@@ -1,6 +1,6 @@
 import { Table } from "apache-arrow";
 import { getType } from "typesafe-actions";
-import { PreviewStatisticsResponse } from "../api/types";
+import { GetQueryResponseT, PreviewStatisticsResponse } from "../api/types";
 
 import { Action } from "../app/actions";
 
@@ -16,6 +16,7 @@ export type PreviewStateT = {
   isLoading: boolean;
   dataLoadedForQueryId: string | null;
   statisticsData: PreviewStatisticsResponse | null;
+  queryData: GetQueryResponseT | null;
   tableData: Table | null;
   lastQuery: string | null;
 };
@@ -25,6 +26,7 @@ const initialState: PreviewStateT = {
   isLoading: false,
   dataLoadedForQueryId: null,
   statisticsData: null,
+  queryData: null,
   tableData: null,
   lastQuery: null,
 };
@@ -62,6 +64,7 @@ export default function reducer(
         ...state,
         isLoading: false,
         dataLoadedForQueryId: action.payload.queryId,
+        queryData: action.payload.queryData,
         tableData: action.payload.tableData,
         statisticsData: action.payload.statisticsData,
       };
