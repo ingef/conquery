@@ -87,7 +87,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			);
 		}
 
-		final Histogram histogram = Histogram.createDynamic(LogLinearLayout.create(Double.MAX_VALUE, Double.MAX_VALUE, getStatistics().getMin(), getStatistics().getMax()));
+		final Histogram histogram = Histogram.createDynamic(LogLinearLayout.create(getStatistics().getStandardDeviation() / 2, 0.05, getStatistics().getMin(), getStatistics().getMax()));
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::addValue);
 
