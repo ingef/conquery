@@ -5,7 +5,6 @@ import {
   PreviewStatistics,
   StringStatistics,
 } from "../api/types";
-import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { parseDate } from "../common/helpers/dateHelper";
 
 export const NUMBER_TYPES = [
@@ -35,6 +34,7 @@ export function formatDate(date: string | undefined) {
     );
   }
   return t("preview.dateError");
+}
 
 export function previewStatsIsStringStats(
   stats: PreviewStatistics,
