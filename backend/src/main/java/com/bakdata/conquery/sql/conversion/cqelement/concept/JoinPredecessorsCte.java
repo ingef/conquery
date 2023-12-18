@@ -30,7 +30,7 @@ class JoinPredecessorsCte extends ConceptCte {
 								 .sqlSelects(mergedSelects)
 								 .build();
 
-		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.OR, conceptCteContext.getConversionContext());
+		TableLike<Record> fromTable = QueryStepJoiner.constructJoinedTable(queriesToJoin, LogicalOperation.AND, conceptCteContext.getConversionContext());
 
 		return QueryStep.builder()
 						.selects(selects)
