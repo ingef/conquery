@@ -425,7 +425,7 @@ export const useGetResult = () => {
       }
     });
     return res as unknown as Promise<Table>;
-  }, []);
+  }, [authTokenRef]);
 };
 
 export const usePreviewStatistics = () => {
