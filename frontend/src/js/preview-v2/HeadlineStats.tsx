@@ -4,6 +4,8 @@ import TooltipEntries from "../tooltip/TooltipEntries";
 
 const Root = styled("div")`
   padding: 10px;
+  align-self: right;
+  margin-left: auto;
 `;
 
 const SxTooltipEntries = styled(TooltipEntries)`

@@ -406,7 +406,8 @@
     "loadingError": "Fehler beim laden der Vorschau",
     "dateError": "Datum unbekannt",
     "name": "Name",
-    "value": "Wert"
+    "value": "Wert",
+    "densityPlot": "Dichtediagramm"
   },
   "login": {
     "headline": "Anfragen und Analyse",

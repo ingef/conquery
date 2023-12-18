@@ -406,7 +406,8 @@
     "loadingError": "An error occurred while loading the preview.",
     "dateError": "Date unknown",
     "name": "Name",
-    "value": "Value"
+    "value": "Value",
+    "densityPlot": "Density Plot"
   },
   "login": {
     "headline": "Queries and Analyses",

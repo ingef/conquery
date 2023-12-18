@@ -4,7 +4,6 @@ import pdfast, { createPdfastOptions } from "pdfast";
 import { useMemo } from "react";
 import { Bar, Line } from "react-chartjs-2";
 
-import { theme } from "../../app-theme";
 import {
   DateStatistics,
   NumberStatistics,
@@ -20,6 +19,8 @@ import {
   previewStatsIsNumberStats,
   previewStatsIsStringStats,
 } from "./util";
+import { t } from "i18next";
+import { useTheme } from "@emotion/react";
 
 type DiagramProps = {
   stat: PreviewStatistics;
@@ -29,60 +30,46 @@ type DiagramProps = {
   width?: string | number;
 };
 
-const PDF_POINTS = 40;
+const PDF_POINTS = 100;
 
-function transformStringStatsToData(stats: StringStatistics): ChartData<"bar"> {
-  return {
-    labels: Object.keys(stats.histogram),
-    datasets: [
-      {
-        data: Object.values(stats.histogram),
-        backgroundColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
-        borderWidth: 1,
-      },
-    ],
-  };
-}
 
-function transformNumberStatsToData(
-  stats: NumberStatistics,
-): ChartData<"line"> {
-  const options: createPdfastOptions = {
-    min: stats.min,
-    max: stats.max,
-    size: PDF_POINTS,
-    width: 5, // TODO calculate this?!?!
-  };
-  const pdf: { x: number; y: number }[] = pdfast.create(
-    stats.samples.sort((a, b) => a - b),
-    options,
-  );
-  const labels = pdf.map((p) => p.x);
-  const values = pdf.map((p) => p.y);
-  return {
-    labels,
-    datasets: [
-      {
-        data: values,
-        borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
-        borderWidth: 1,
-        fill: false,
-      },
-    ],
-  };
-}
+export default function Diagram({
+  stat,
+  className,
+  onClick,
+  height,
+  width,
+}: DiagramProps) {
+  const theme = useTheme();
 
-function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
-  // loop over all dates in date range
-  // check if month is present in stats
-  // if yes add months value to data
-  // if no add quater values to data for the whole quater (for each month)
-
-  const labels: string[] = [];
-  const values: number[] = [];
-  const start = parseStdDate(stats.span.min);
-  const end = parseStdDate(stats.span.max);
-  if (start === null || end === null) {
+  function transformStringStatsToData(stats: StringStatistics): ChartData<"bar"> {
+    return {
+      labels: Object.keys(stats.histogram),
+      datasets: [
+        {
+          data: Object.values(stats.histogram),
+          backgroundColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+          borderWidth: 1,
+        },
+      ],
+    };
+  }
+  
+  function transformNumberStatsToData(
+    stats: NumberStatistics,
+  ): ChartData<"line"> {
+    const options: createPdfastOptions = {
+      min: stats.min,
+      max: stats.max,
+      size: PDF_POINTS,
+      width: 5, // TODO calculate this?
+    };
+    const pdf: { x: number; y: number }[] = pdfast.create(
+      stats.samples.sort((a, b) => a - b),
+      options,
+    );
+    const labels = pdf.map((p) => p.x);
+    const values = pdf.map((p) => p.y*100); // Percentage
     return {
       labels,
       datasets: [
@@ -95,57 +82,80 @@ function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
       ],
     };
   }
-  const { monthCounts, quarterCounts } = stats;
-  let pointer = start;
-  while (pointer <= end) {
-    // check month exists
-    const month = format(pointer, "yyyy-M");
-    const monthLabel = format(pointer, "MMM yyyy");
-    if (month in monthCounts) {
-      labels.push(monthLabel);
-      values.push(monthCounts[month]);
-    } else {
-      // add quater values
-      const quater = format(pointer, "yyyy-Q");
-      if (quater in quarterCounts) {
+  
+  function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
+    // loop over all dates in date range
+    // check if month is present in stats
+    // if yes add months value to data
+    // if no add quater values to data for the whole quater (for each month)
+  
+    const labels: string[] = [];
+    const values: number[] = [];
+    const start = parseStdDate(stats.span.min);
+    const end = parseStdDate(stats.span.max);
+    if (start === null || end === null) {
+      return {
+        labels,
+        datasets: [
+          {
+            data: values,
+            borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+            borderWidth: 1,
+            fill: false,
+          },
+        ],
+      };
+    }
+    const { monthCounts } = stats;
+    let pointer = start;
+    while (pointer <= end) {
+      // check month exists
+      const month = format(pointer, "yyyy-MM");
+      const monthLabel = format(pointer, "MMM yyyy");
+      if (month in monthCounts) {
         labels.push(monthLabel);
-        values.push(quarterCounts[quater]);
+        values.push(monthCounts[month]);
       } else {
+  
         // add zero values
         labels.push(monthLabel);
         values.push(0);
       }
+  
+      pointer = addMonths(pointer, 1);
     }
-
-    pointer = addMonths(pointer, 1);
+    return {
+      labels,
+      datasets: [
+        {
+          data: values,
+          borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+          borderWidth: 1,
+          fill: false,
+        },
+      ],
+    };
   }
-  return {
-    labels,
-    datasets: [
-      {
-        data: values,
-        borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
-        borderWidth: 1,
-        fill: false,
-      },
-    ],
-  };
-}
-
-export default function Diagram({
-  stat,
-  className,
-  onClick,
-  height,
-  width,
-}: DiagramProps) {
-  const getValueForIndex = (index: number) => {
+  
+  function getValueForIndex<T>(index: number):T|undefined {
     const labels = data?.labels;
     if(!labels) {
       return undefined;
     }
-    return labels[index];
- }
+    return labels[index] as T|undefined;
+  }
+
+  const data = useMemo(() => {
+    if (previewStatsIsStringStats(stat)) {
+      return transformStringStatsToData(stat);
+    }
+    if (previewStatsIsNumberStats(stat)) {
+      return transformNumberStatsToData(stat);
+    }
+    if (previewStatsIsDateStats(stat)) {
+      return transformDateStatsToData(stat);
+    }
+  }, [stat]);
 
   const options = useMemo(() => {
     if (previewStatsIsNumberStats(stat)) {
@@ -164,18 +174,22 @@ export default function Diagram({
           point: {
             radius: 0,
           },
+          line: {
+            cubicInterpolationMode: "default",
+          }
         },
         scales: {
           y: {
             beginAtZero: true,
+            //grace: "%"
           },
           x: {
-            beginAtZero: true,
-            suggestedMin: stat.min,
+            min: 0,
             suggestedMax: stat.max,
             ticks: {
-              callback: (value: number) => {
-                return formatNumber(value);
+              callback: (index: number) => {
+                // How can I return the scale here?!
+                return (getValueForIndex<number>(index)||0).toLocaleString();
               },
             }
           },
@@ -183,7 +197,7 @@ export default function Diagram({
         plugins: {
           title: {
             display: true,
-            text: stat.label,
+            text: `${t("preview.densityPlot")}: ${stat.label}`,
           },
           tooltip: {
             usePointStyle: true,
@@ -194,13 +208,12 @@ export default function Diagram({
             borderWidth: 0.5,
             padding: 10,
             callbacks: {
+              // To remove the title from the tooltip a null is needed. 
+              // This does not work with the typescript definition of chart.js
+              // -> cast to unknown and then to undefined
+              title: (title) => formatNumber(title[0].raw as number),
               label: (context) => {
-                const label =
-                  formatNumber(context.parsed.x) ||
-                  context.dataset.label ||
-                  context.label ||
-                  "";
-                return `${label}: ${formatNumber(context.raw as number)}`;
+                return `${formatNumber(context.raw as number)}%`;
               },
             },
             caretSize: 0,
@@ -240,6 +253,7 @@ export default function Diagram({
             borderWidth: 0.5,
             padding: 10,
             callbacks: {
+              title: () => null as unknown as undefined,
               label: (context) => {
                 const label = context.dataset.label || context.label || "";
                 return `${label}: ${formatNumber(context.raw as number)}`;
@@ -296,19 +310,14 @@ export default function Diagram({
           tooltip: {
             usePointStyle: true,
             backgroundColor: "rgba(255, 255, 255, 0.9)",
-            titleColor: "rgba(0, 0, 0, 1)",
             bodyColor: "rgba(0, 0, 0, 1)",
             borderColor: "rgba(0, 0, 0, 0.2)",
             borderWidth: 0.5,
             padding: 10,
             callbacks: {
+              title: () => null as unknown as undefined,
               label: (context) => {
-                const label =
-                  formatNumber(context.parsed.x) ||
-                  context.dataset.label ||
-                  context.label ||
-                  "";
-                return `${label}: ${formatNumber(context.raw as number)}`;
+                return `${context.label}: ${formatNumber(context.raw as number)}`;
               },
             },
             caretSize: 0,
@@ -319,19 +328,9 @@ export default function Diagram({
     }
 
     throw new Error("Unknown stats type");
-  }, [stat]);
+  }, [stat, data]);
 
-  const data = useMemo(() => {
-    if (previewStatsIsStringStats(stat)) {
-      return transformStringStatsToData(stat);
-    }
-    if (previewStatsIsNumberStats(stat)) {
-      return transformNumberStatsToData(stat);
-    }
-    if (previewStatsIsDateStats(stat)) {
-      return transformDateStatsToData(stat);
-    }
-  }, [stat]);
+  
   // TODO fall back if no data is present
   return (
     <div className={className}>

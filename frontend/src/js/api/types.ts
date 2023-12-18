@@ -593,6 +593,7 @@ export type BaseStatistics = {
 };
 
 export type NumberStatistics = BaseStatistics & {
+  chart: "DESCRIPTIVE"
   type: SelectorResultDataType;
   mean: number;
   stdDev: number;
@@ -602,6 +603,7 @@ export type NumberStatistics = BaseStatistics & {
 };
 
 export type StringStatistics = BaseStatistics & {
+  chart: "HISTO";
   type: "STRING";
   histogram: {
     [value: string]: number;
@@ -609,6 +611,7 @@ export type StringStatistics = BaseStatistics & {
 };
 
 export type DateStatistics = BaseStatistics & {
+  chart: "DATES";
   type: "DATE_RANGE" | "DATE";
   quarterCounts: Record<string, number>;
   monthCounts: Record<string, number>;
