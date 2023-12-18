@@ -409,12 +409,6 @@ export const usePostResolveEntities = () => {
 export const useGetResult = () => {
   const { authToken } = useContext(AuthTokenContext);
   const authTokenRef = useRef<string>(authToken);
-  useEffect(
-    function updateRef() {
-      authTokenRef.current = authToken;
-    },
-    [authToken],
-  );
   return useCallback((queryId: string) => {
     const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`), {
       headers: {
@@ -422,7 +416,7 @@ export const useGetResult = () => {
       }
     });
     return res as unknown as Promise<Table>;
-  }, []);
+  }, [authTokenRef]);
 };
 
 export const usePreviewStatistics = () => {

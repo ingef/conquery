@@ -1,12 +1,11 @@
+import { t } from "i18next";
 import {
   DateStatistics,
   NumberStatistics,
   PreviewStatistics,
   StringStatistics,
 } from "../api/types";
-import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
-
-
+import { parseDate } from "../common/helpers/dateHelper";
 
 const DIGITS_OF_PRECISION = 3;
 export function formatNumber(num: number): string {

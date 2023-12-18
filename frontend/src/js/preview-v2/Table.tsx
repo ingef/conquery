@@ -1,10 +1,13 @@
 import styled from "@emotion/styled";
 import { Table as ArrowTable } from "apache-arrow";
 import RcTable from "rc-table";
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
+import { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
+import { NUMBER_TYPES, formatDate, formatNumber } from "./util";
 
 interface Props {
   data: ArrowTable;
+  queryData: GetQueryResponseT;
 }
 
 const Root = styled("div")`
@@ -34,15 +37,39 @@ export const StyledTable = styled("table")`
   }
 `;
 
-export default function Table({ data }: Props) {
+export default function Table({ data, queryData }: Props) {
   const components = {
     table: StyledTable,
+  };
+
+  const getRenderFunction = (
+    fieldName: string,
+  ): ((value: string) => ReactNode) | undefined => {
+    const cellType = (
+      queryData as GetQueryResponseDoneT
+    ).columnDescriptions?.find((x) => x.label == fieldName)?.type;
+    if (cellType) {
+      if (NUMBER_TYPES.includes(cellType)) {
+        return (value) => {
+          const num = parseFloat(value);
+          return isNaN(num) ? value : formatNumber(num);
+        };
+      } else if (cellType == "DATE") {
+        return (value) => formatDate(value);
+      } else if (cellType == "MONEY") {
+        return (value) => {
+          const num = parseFloat(value);
+          return isNaN(num) ? value : formatNumber(num, 2) + " €";
+        };
+      }
+    }
   };
 
   const columns = data.schema.fields.map((field) => ({
     title: field.name.charAt(0).toUpperCase() + field.name.slice(1),
     dataIndex: field.name,
     key: field.name,
+    render: getRenderFunction(field.name),
   }));
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -56,8 +83,11 @@ export default function Table({ data }: Props) {
       if (!div) {
         return;
       }
-      const maxScroll = (div.parentElement?.scrollHeight || div.scrollHeight)-window.innerHeight;
-      const thresholdTriggered = (div.parentElement?.scrollTop || div.scrollTop) / maxScroll > 0.9;
+      const maxScroll =
+        (div.parentElement?.scrollHeight || div.scrollHeight) -
+        window.innerHeight;
+      const thresholdTriggered =
+        (div.parentElement?.scrollTop || div.scrollTop) / maxScroll > 0.9;
       if (thresholdTriggered) {
         setLoadingAmount((amount) =>
           Math.min(amount + stepCount, tableData.length),
