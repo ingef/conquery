@@ -14,6 +14,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.NumberMapUtil;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.CteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
+import com.bakdata.conquery.sql.conversion.model.QualifyingUtil;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
@@ -69,12 +70,19 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 		String rootTable = conceptTables.getRootTable();
 		Class<? extends Number> numberClass1 = NumberMapUtil.NUMBER_MAP.get(sumColumn.getType());
 		ExtractingSqlSelect<? extends Number> sumColumnRootSelect = new ExtractingSqlSelect<>(rootTable, sumColumn.getName(), numberClass1);
+		List<ExtractingSqlSelect<Object>> distinctByRootSelects = distinctByColumns.stream()
+																				   .map(column -> new ExtractingSqlSelect<>(
+																						   rootTable, column.getName(), Object.class)
+																				   )
+																				   .toList();
 
-		QueryStep rowNumberCte = createRowNumberCte(rootTable, primaryColumn, sumColumnRootSelect, distinctByColumns, alias, nameGenerator);
+		QueryStep rowNumberCte = createRowNumberCte(primaryColumn, sumColumnRootSelect, distinctByRootSelects, alias, conceptTables, nameGenerator);
 		FieldWrapper<BigDecimal> sumSelect = createSumDistinctSelect(sumColumnRootSelect, alias, rowNumberCte);
 		QueryStep rowNumberFilteredCte = createRowNumberFilteredCte(rowNumberCte, primaryColumn, sumSelect, alias, nameGenerator);
 
 		SqlSelects.SqlSelectsBuilder builder = SqlSelects.builder()
+														 .preprocessingSelect(sumColumnRootSelect)
+														 .preprocessingSelects(distinctByRootSelects)
 														 .additionalPredecessor(rowNumberFilteredCte);
 
 		if (filterValue != null) {
@@ -90,6 +98,45 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
 			this.filters = Filters.builder().build();
 		}
+	}
+
+	/**
+	 * Assigns row numbers for each partition over the pid and the distinct by columns. If the values per pid in the distinct by columns are duplicated,
+	 * the row number will be incremented for each duplicated entry.
+	 */
+	private static QueryStep createRowNumberCte(
+			Field<Object> primaryColumn,
+			ExtractingSqlSelect<? extends Number> sumColumnRootSelect,
+			List<ExtractingSqlSelect<Object>> distinctByRootSelects,
+			String alias,
+			SqlTables<ConceptCteStep> conceptTables,
+			NameGenerator nameGenerator
+	) {
+		String predecessor = conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT);
+
+		Field<Object> qualifiedPrimaryColumn = QualifyingUtil.qualify(primaryColumn, predecessor);
+		ExtractingSqlSelect<?> qualifiedSumRootSelect = sumColumnRootSelect.createColumnReference(predecessor);
+
+		List<Field<?>> partitioningFields = Stream.concat(
+				Stream.of(qualifiedPrimaryColumn),
+				distinctByRootSelects.stream().map(sqlSelect -> sqlSelect.createColumnReference(predecessor).select())
+		).toList();
+		FieldWrapper<Integer> rowNumber = new FieldWrapper<>(
+				DSL.rowNumber()
+				   .over(DSL.partitionBy(partitioningFields))
+				   .as(ROW_NUMBER_ALIAS)
+		);
+
+		Selects rowNumberAssignedSelects = Selects.builder()
+												  .primaryColumn(qualifiedPrimaryColumn)
+												  .sqlSelects(List.of(qualifiedSumRootSelect, rowNumber))
+												  .build();
+
+		return QueryStep.builder()
+						.cteName(nameGenerator.cteStepName(SumDistinctCteStep.ROW_NUMBER_ASSIGNED, alias))
+						.selects(rowNumberAssignedSelects)
+						.fromTable(QueryStep.toTableLike(predecessor))
+						.build();
 	}
 
 	public static SumDistinctSqlAggregator create(SumSelect sumSelect, SelectContext selectContext) {
@@ -114,38 +161,6 @@ public class SumDistinctSqlAggregator implements SqlAggregator {
 				filterContext.getConceptTables(),
 				filterContext.getNameGenerator()
 		);
-	}
-
-	/**
-	 * Assigns row numbers for each partition over the pid and the distinct by columns. If the values per pid in the distinct by columns are duplicated,
-	 * the row number will be incremented for each duplicated entry.
-	 */
-	private static QueryStep createRowNumberCte(
-			String rootTable,
-			Field<Object> primaryColumn,
-			ExtractingSqlSelect<? extends Number> sumColumnRootSelect,
-			List<Column> distinctByColumns,
-			String alias,
-			NameGenerator nameGenerator
-	) {
-		Stream<Field<?>> distinctByFields = distinctByColumns.stream().map(column -> DSL.field(DSL.name(rootTable, column.getName())));
-		List<Field<?>> partitioningFields = Stream.concat(Stream.of(primaryColumn), distinctByFields).toList();
-		FieldWrapper<Integer> rowNumber = new FieldWrapper<>(
-				DSL.rowNumber()
-				   .over(DSL.partitionBy(partitioningFields))
-				   .as(ROW_NUMBER_ALIAS)
-		);
-
-		Selects rowNumberAssignedSelects = Selects.builder()
-												  .primaryColumn(primaryColumn)
-												  .sqlSelects(List.of(sumColumnRootSelect, rowNumber))
-												  .build();
-
-		return QueryStep.builder()
-						.cteName(nameGenerator.cteStepName(SumDistinctCteStep.ROW_NUMBER_ASSIGNED, alias))
-						.selects(rowNumberAssignedSelects)
-						.fromTable(QueryStep.toTableLike(rootTable))
-						.build();
 	}
 
 	private static FieldWrapper<BigDecimal> createSumDistinctSelect(ExtractingSqlSelect<? extends Number> sumColumnRootSelect, String alias, QueryStep rowNumberCte) {
