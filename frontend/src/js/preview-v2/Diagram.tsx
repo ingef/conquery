@@ -212,9 +212,9 @@ export default function Diagram({
               // To remove the title from the tooltip a null is needed. 
               // This does not work with the typescript definition of chart.js
               // -> cast to unknown and then to undefined
-              title: () => null as unknown as undefined,
+              title: (title) => formatNumber(title[0].raw as number),
               label: (context) => {
-                return `${formatNumber(getValueForIndex(context.parsed.x)||0)}: ${formatNumber(context.raw as number)}%`;
+                return `${formatNumber(context.raw as number)}%`;
               },
             },
             caretSize: 0,
