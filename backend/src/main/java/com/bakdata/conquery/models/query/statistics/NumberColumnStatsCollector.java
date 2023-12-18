@@ -1,16 +1,17 @@
 package com.bakdata.conquery.models.query.statistics;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BooleanSupplier;
 
+import c10n.C10N;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -21,6 +22,7 @@ import com.dynatrace.dynahist.layout.LogLinearLayout;
 import lombok.Getter;
 import lombok.ToString;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.jetbrains.annotations.NotNull;
 
 @Getter
 public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> extends ColumnStatsCollector<Number> {
@@ -87,21 +89,8 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			);
 		}
 
-		final Histogram histogram = Histogram.createDynamic(LogLinearLayout.create(getStatistics().getStandardDeviation() / 2, 0.05, getStatistics().getMin(), getStatistics().getMax()));
+		final List<StringColumnStatsCollector.ColumnDescription.Entry> bins = createBins();
 
-		Arrays.stream(getStatistics().getValues()).forEach(histogram::addValue);
-
-		final Map<String, Long> bins = new HashMap<>();
-
-		for (Bin bin : histogram.nonEmptyBinsAscending()) {
-			//TODO handle under/overflow, although they should not happen, given we are providing min/max properly
-
-			final String binLabel = String.format(I18n.LOCALE.get(), "%.1f - %.1f", bin.getLowerBound(), bin.getUpperBound());
-
-			bins.put(binLabel, bin.getBinCount());
-
-
-		}
 
 		final double p99 = getStatistics().getPercentile(99d);
 		final double maybeP01 = getStatistics().getPercentile(1d);
@@ -116,8 +105,61 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		//		);
 
 		return new StringColumnStatsCollector.ColumnDescription(
-				getName(), getLabel(), getDescription(), bins
+				getName(), getLabel(), getDescription(), bins,
+				getExtras()
 		);
+	}
+
+	@NotNull
+	private Map<String, String> getExtras() {
+		final StatisticsLabels labels = C10N.get(StatisticsLabels.class);
+
+		return Map.of(
+				labels.min(), printValue(getStatistics().getMin()),
+				labels.max(), printValue(getStatistics().getMax()),
+				labels.mean(), printValue(getStatistics().getMean()),
+				labels.median(), printValue(getStatistics().getPercentile(50)),
+				labels.p25(), printValue(getStatistics().getPercentile(25)),
+				labels.p75(), printValue(getStatistics().getPercentile(75)),
+				labels.sum(), printValue(getStatistics().getSum()),
+				labels.std(), getPrintSettings().getDecimalFormat().format(getStatistics().getStandardDeviation()),
+				labels.count(), getPrintSettings().getIntegerFormat().format(getStatistics().getN()),
+				labels.missing(), getPrintSettings().getIntegerFormat().format(getStatistics().getN())
+		);
+	}
+
+	private String printValue(Number value){
+		if (getType() instanceof ResultType.MoneyT) {
+			return NumberFormat.getCurrencyInstance(I18n.LOCALE.get()).format(value);
+		}
+
+		return getPrintSettings().getDecimalFormat().format(value);
+	}
+
+	@NotNull
+	private List<StringColumnStatsCollector.ColumnDescription.Entry> createBins() {
+		final Histogram
+				histogram =
+				Histogram.createDynamic(LogLinearLayout.create(getStatistics().getStandardDeviation()
+															   / 2, 0.05, getStatistics().getMin(), getStatistics().getMax()));
+
+		Arrays.stream(getStatistics().getValues()).forEach(histogram::addValue);
+
+
+		final List<StringColumnStatsCollector.ColumnDescription.Entry> bins = new ArrayList<>();
+
+		for (Bin bin : histogram.nonEmptyBinsAscending()) {
+			//TODO Do we need to handle under/overflow?
+
+			final String lower = printValue(bin.getLowerBound());
+			final String upper = printValue(bin.getUpperBound());
+
+			final String binLabel = String.format("%s - %s", lower, upper);
+
+
+			bins.add(new StringColumnStatsCollector.ColumnDescription.Entry(binLabel, bin.getBinCount()));
+		}
+		return bins;
 	}
 
 	@Getter
@@ -132,7 +174,6 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		private final double stdDev;
 		private final Number min;
 		private final Number max;
-
 		private final Number sum;
 
 		private final Collection<? extends Number> samples;
