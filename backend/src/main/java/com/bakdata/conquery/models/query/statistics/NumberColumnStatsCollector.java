@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -88,23 +87,20 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			);
 		}
 
-		//TODO pull from config?
-		final Histogram histogram = Histogram.createDynamic(LogLinearLayout.create(5, 5, getStatistics().getMin(), getStatistics().getMax()));
+		final Histogram histogram = Histogram.createDynamic(LogLinearLayout.create(Double.MAX_VALUE, Double.MAX_VALUE, getStatistics().getMin(), getStatistics().getMax()));
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::addValue);
 
 		final Map<String, Long> bins = new HashMap<>();
-		final Formatter formatter = new Formatter(I18n.LOCALE.get());
-
 
 		for (Bin bin : histogram.nonEmptyBinsAscending()) {
 			//TODO handle under/overflow, although they should not happen, given we are providing min/max properly
 
-			final String binLabel = formatter.format("%f.1f - %f.1f", bin.getLowerBound(), bin.getUpperBound()).toString();
+			final String binLabel = String.format(I18n.LOCALE.get(), "%f.1 - %f.1", bin.getLowerBound(), bin.getUpperBound());
 
 			bins.put(binLabel, bin.getBinCount());
 
-			formatter.flush();
+
 		}
 
 		final double p99 = getStatistics().getPercentile(99d);
@@ -114,10 +110,10 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		final double p01 = (Math.abs(maybeP01) < 2 * Double.MIN_VALUE) ? Double.MIN_VALUE : maybeP01;
 
 		//TODO properly implement number value histogram.
-//		return new ColumnDescription(getName(), getLabel(), getDescription(), getType().toString(), (int) (getStatistics().getN() + getNulls().intValue()), getNulls().intValue(), getStatistics().getMean(), getStatistics().getPercentile(50d /*This is the median.*/), getStatistics().getStandardDeviation(), (int) getStatistics().getMin(), (int) getStatistics().getMax(),
-//									 // We cull extremes, as that can cause distortions when displayed.
-//									 getStatistics().getSum(), samples.stream().filter(val -> val.doubleValue() >= p01 && val.doubleValue() <= p99).sorted(comparator).toList()
-//		);
+		//		return new ColumnDescription(getName(), getLabel(), getDescription(), getType().toString(), (int) (getStatistics().getN() + getNulls().intValue()), getNulls().intValue(), getStatistics().getMean(), getStatistics().getPercentile(50d /*This is the median.*/), getStatistics().getStandardDeviation(), (int) getStatistics().getMin(), (int) getStatistics().getMax(),
+		//									 // We cull extremes, as that can cause distortions when displayed.
+		//									 getStatistics().getSum(), samples.stream().filter(val -> val.doubleValue() >= p01 && val.doubleValue() <= p99).sorted(comparator).toList()
+		//		);
 
 		return new StringColumnStatsCollector.ColumnDescription(
 				getName(), getLabel(), getDescription(), bins
