@@ -9,30 +9,28 @@ import { parseDate } from "../common/helpers/dateHelper";
 
 const DIGITS_OF_PRECISION = 3;
 export function formatNumber(num: number): string {
+  return num.toLocaleString();
+  // TODO verify localeString implementation
   if (num > 100) {
-    return num.toFixed(0).replace(".", ",");
+    return numberToThreeDigitArray(Math.floor(num)).join(".")
   }
-
-  return num
-    .toPrecision(DIGITS_OF_PRECISION)
-    .toLocaleString()
-    .replace(".", ",");
+  return t("preview.dateError");
 }
 
 export function previewStatsIsStringStats(
   stats: PreviewStatistics,
 ): stats is StringStatistics {
-  return stats.type === "STRING";
+  return stats.chart === "HISTO";
 }
 
 export function previewStatsIsNumberStats(
   stats: PreviewStatistics,
 ): stats is NumberStatistics {
-  return "mean" in stats;
+  return stats.chart === "DESCRIPTIVE";
 }
 
 export function previewStatsIsDateStats(
   stats: PreviewStatistics,
 ): stats is DateStatistics {
-  return stats.type === "DATE" || stats.type === "DATE_RANGE";
+  return stats.chart === "DATES";
 }
