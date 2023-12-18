@@ -96,7 +96,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		for (Bin bin : histogram.nonEmptyBinsAscending()) {
 			//TODO handle under/overflow, although they should not happen, given we are providing min/max properly
 
-			final String binLabel = String.format(I18n.LOCALE.get(), "%f.1 - %f.1", bin.getLowerBound(), bin.getUpperBound());
+			final String binLabel = String.format(I18n.LOCALE.get(), "%.1f - %.1f", bin.getLowerBound(), bin.getUpperBound());
 
 			bins.put(binLabel, bin.getBinCount());
 
