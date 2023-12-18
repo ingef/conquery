@@ -14,11 +14,7 @@ export function formatNumber(num: number): string {
   if (num > 100) {
     return numberToThreeDigitArray(Math.floor(num)).join(".")
   }
-
-  return num
-    .toPrecision(DIGITS_OF_PRECISION)
-    .toLocaleString()
-    .replace(".", ",");
+  return t("preview.dateError");
 }
 
 export function previewStatsIsStringStats(
