@@ -1,14 +1,12 @@
 import { ChartData, ChartOptions } from "chart.js";
 import { addMonths, format } from "date-fns";
-import pdfast, { createPdfastOptions } from "pdfast";
 import { useMemo } from "react";
 import { Bar, Line } from "react-chartjs-2";
 
 import {
   DateStatistics,
-  NumberStatistics,
   PreviewStatistics,
-  StringStatistics,
+  BarStatistics,
 } from "../api/types";
 import { parseStdDate } from "../common/helpers/dateHelper";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
@@ -16,10 +14,8 @@ import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
 import {
   formatNumber,
   previewStatsIsDateStats,
-  previewStatsIsNumberStats,
-  previewStatsIsStringStats,
+  previewStatsIsBarStats,
 } from "./util";
-import { t } from "i18next";
 import { useTheme } from "@emotion/react";
 
 type DiagramProps = {
@@ -30,7 +26,6 @@ type DiagramProps = {
   width?: string | number;
 };
 
-const PDF_POINTS = 100;
 
 
 export default function Diagram({
@@ -42,42 +37,14 @@ export default function Diagram({
 }: DiagramProps) {
   const theme = useTheme();
 
-  function transformStringStatsToData(stats: StringStatistics): ChartData<"bar"> {
+  function transformBarStatsToData(stats: BarStatistics): ChartData<"bar"> {
     return {
-      labels: Object.keys(stats.histogram),
+      labels: stats.entries.map((entry) => entry.label),
       datasets: [
         {
-          data: Object.values(stats.histogram),
+          data: stats.entries.map((entry) => entry.value),
           backgroundColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
           borderWidth: 1,
-        },
-      ],
-    };
-  }
-  
-  function transformNumberStatsToData(
-    stats: NumberStatistics,
-  ): ChartData<"line"> {
-    const options: createPdfastOptions = {
-      min: stats.min,
-      max: stats.max,
-      size: PDF_POINTS,
-      width: 5, // TODO calculate this?
-    };
-    const pdf: { x: number; y: number }[] = pdfast.create(
-      stats.samples.sort((a, b) => a - b),
-      options,
-    );
-    const labels = pdf.map((p) => p.x);
-    const values = pdf.map((p) => p.y*100); // Percentage
-    return {
-      labels,
-      datasets: [
-        {
-          data: values,
-          borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
-          borderWidth: 1,
-          fill: false,
         },
       ],
     };
@@ -146,11 +113,8 @@ export default function Diagram({
   }
 
   const data = useMemo(() => {
-    if (previewStatsIsStringStats(stat)) {
-      return transformStringStatsToData(stat);
-    }
-    if (previewStatsIsNumberStats(stat)) {
-      return transformNumberStatsToData(stat);
+    if (previewStatsIsBarStats(stat)) {
+      return transformBarStatsToData(stat);
     }
     if (previewStatsIsDateStats(stat)) {
       return transformDateStatsToData(stat);
@@ -158,71 +122,7 @@ export default function Diagram({
   }, [stat]);
 
   const options = useMemo(() => {
-    if (previewStatsIsNumberStats(stat)) {
-      return {
-        type: "line",
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-          mode: "index" as const,
-          intersect: false,
-        },
-        layout: {
-          padding: 0,
-        },
-        elements: {
-          point: {
-            radius: 0,
-          },
-          line: {
-            cubicInterpolationMode: "default",
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            //grace: "%"
-          },
-          x: {
-            min: 0,
-            suggestedMax: stat.max,
-            ticks: {
-              callback: (index: number) => {
-                // How can I return the scale here?!
-                return (getValueForIndex<number>(index)||0).toLocaleString();
-              },
-            }
-          },
-        },
-        plugins: {
-          title: {
-            display: true,
-            text: `${t("preview.densityPlot")}: ${stat.label}`,
-          },
-          tooltip: {
-            usePointStyle: true,
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
-            titleColor: "rgba(0, 0, 0, 1)",
-            bodyColor: "rgba(0, 0, 0, 1)",
-            borderColor: "rgba(0, 0, 0, 0.2)",
-            borderWidth: 0.5,
-            padding: 10,
-            callbacks: {
-              // To remove the title from the tooltip a null is needed. 
-              // This does not work with the typescript definition of chart.js
-              // -> cast to unknown and then to undefined
-              title: (title) => formatNumber(title[0].raw as number),
-              label: (context) => {
-                return `${formatNumber(context.raw as number)}%`;
-              },
-            },
-            caretSize: 0,
-            caretPadding: 0,
-          },
-        },
-      } as ChartOptions<"line">;
-    }
-    if (previewStatsIsStringStats(stat)) {
+    if (previewStatsIsBarStats(stat)) {
       return {
         type: "bar",
         responsive: true,
@@ -334,7 +234,7 @@ export default function Diagram({
   // TODO fall back if no data is present
   return (
     <div className={className}>
-      {previewStatsIsStringStats(stat) ? (
+      {previewStatsIsBarStats(stat) ? (
         <Bar
           options={options as ChartOptions<"bar">}
           data={data as ChartData<"bar">}

@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { PreviewStatistics } from "../api/types";
 import Modal from "../modal/Modal";
 import Diagram from "./Diagram";
-import { formatNumber, previewStatsIsNumberStats } from "./util";
+import { previewStatsIsBarStats } from "./util";
 import { StyledTable } from "./Table";
 import RcTable from "rc-table";
 import { t } from "i18next";
@@ -37,7 +37,7 @@ export default function DiagramModal({
     <Modal closeIcon onClose={() => onClose()}>
       <Horizontal>
         <SxDiagram stat={statistic} />
-        {previewStatsIsNumberStats(statistic) && (
+        {previewStatsIsBarStats(statistic) && Object.keys(statistic.extras).length > 0 && (
           <StyledRcTable columns={
             [
               {
@@ -52,26 +52,7 @@ export default function DiagramModal({
               },
             ]
           }
-            data={
-              [
-                {
-                  "name": t("common.min"),
-                  "value": formatNumber(statistic.min)
-                },
-                {
-                  "name": t("common.max"),
-                  "value": formatNumber(statistic.max)
-                },
-                {
-                  "name": t("common.average"),
-                  "value": formatNumber(statistic.mean)
-                },
-                {
-                  "name": t("common.std"),
-                  "value": formatNumber(statistic.stdDev)
-                },
-              ]
-            }
+            data={Object.entries(statistic.extras).map(([name, value]) => { return { name, value } })}
             rowKey={(_, index) => `row_${index}`}
             components={components}
           />

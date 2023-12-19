@@ -1,9 +1,8 @@
 import { t } from "i18next";
 import {
   DateStatistics,
-  NumberStatistics,
   PreviewStatistics,
-  StringStatistics,
+  BarStatistics,
 } from "../api/types";
 import { parseDate } from "../common/helpers/dateHelper";
 
@@ -36,16 +35,10 @@ export function formatDate(date: string | undefined) {
   return t("preview.dateError");
 }
 
-export function previewStatsIsStringStats(
+export function previewStatsIsBarStats(
   stats: PreviewStatistics,
-): stats is StringStatistics {
+): stats is BarStatistics {
   return stats.chart === "HISTO";
-}
-
-export function previewStatsIsNumberStats(
-  stats: PreviewStatistics,
-): stats is NumberStatistics {
-  return stats.chart === "DESCRIPTIVE";
 }
 
 export function previewStatsIsDateStats(
