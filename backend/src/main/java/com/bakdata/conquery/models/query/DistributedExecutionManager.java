@@ -126,7 +126,8 @@ public class DistributedExecutionManager implements ExecutionManager {
 	 */
 	public <R extends ShardResult, E extends ManagedExecution & InternalExecution<R>> void handleQueryResult(R result) {
 
-		final E query = (E) storage.getExecution(result.getQueryId());
+		final ManagedExecutionId executionId = result.getQueryId();
+		final E query = (E) storage.getExecution(executionId);
 
 		if (query.getState() != ExecutionState.RUNNING) {
 			return;
@@ -141,6 +142,10 @@ public class DistributedExecutionManager implements ExecutionManager {
 			ExecutionMetrics.getRunningQueriesCounter(primaryGroupName).dec();
 			ExecutionMetrics.getQueryStateCounter(query.getState(), primaryGroupName).inc();
 			ExecutionMetrics.getQueriesTimeHistogram(primaryGroupName).update(query.getExecutionTime().toMillis());
+
+			/* This log is here to prevent an NPE which could occur when no strong reference to result.getResults()
+			 existed anymore after the query finished and immediately was reset */
+			log.trace("Collected metrics for execution {}. Last result received: {}:", executionId, result.getResults());
 		}
 
 	}
