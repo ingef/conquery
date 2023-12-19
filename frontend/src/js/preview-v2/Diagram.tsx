@@ -21,7 +21,10 @@ type DiagramProps = {
   height?: string | number;
   width?: string | number;
 };
-function transformBarStatsToData(stats: BarStatistics, theme: Theme): ChartData<"bar"> {
+function transformBarStatsToData(
+  stats: BarStatistics,
+  theme: Theme,
+): ChartData<"bar"> {
   return {
     labels: stats.entries.map((entry) => entry.label),
     datasets: [
@@ -34,7 +37,10 @@ function transformBarStatsToData(stats: BarStatistics, theme: Theme): ChartData<
   };
 }
 
-function transformDateStatsToData(stats: DateStatistics, theme: Theme): ChartData<"line"> {
+function transformDateStatsToData(
+  stats: DateStatistics,
+  theme: Theme,
+): ChartData<"line"> {
   // loop over all dates in date range
   // check if month is present in stats
   // if yes add months value to data
@@ -87,8 +93,10 @@ function transformDateStatsToData(stats: DateStatistics, theme: Theme): ChartDat
   };
 }
 
-
-function getValueForIndex<T>(data: ChartData|undefined, index: number): T | undefined {
+function getValueForIndex<T>(
+  data: ChartData | undefined,
+  index: number,
+): T | undefined {
   const labels = data?.labels;
   if (!labels) {
     return undefined;
@@ -186,7 +194,9 @@ export default function Diagram({
             suggestedMax: stat.span.max,
             ticks: {
               callback: (valueIndex: number, index: number) => {
-                return index % 2 === 0 ? getValueForIndex(data, valueIndex) : "";
+                return index % 2 === 0
+                  ? getValueForIndex(data, valueIndex)
+                  : "";
               },
             },
           },
