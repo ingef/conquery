@@ -1,11 +1,11 @@
 import styled from "@emotion/styled";
+import { t } from "i18next";
+import RcTable from "rc-table";
 import { PreviewStatistics } from "../api/types";
 import Modal from "../modal/Modal";
 import Diagram from "./Diagram";
-import { previewStatsIsBarStats } from "./util";
 import { StyledTable } from "./Table";
-import RcTable from "rc-table";
-import { t } from "i18next";
+import { previewStatsIsBarStats } from "./util";
 
 interface DiagramModalProps {
   statistic: PreviewStatistics;
@@ -23,7 +23,7 @@ const SxDiagram = styled(Diagram)`
 `;
 
 const StyledRcTable = styled(RcTable)`
-  margin: auto
+  margin: auto;
 `;
 
 export default function DiagramModal({
@@ -37,26 +37,28 @@ export default function DiagramModal({
     <Modal closeIcon onClose={() => onClose()}>
       <Horizontal>
         <SxDiagram stat={statistic} />
-        {previewStatsIsBarStats(statistic) && Object.keys(statistic.extras).length > 0 && (
-          <StyledRcTable columns={
-            [
-              {
-                title: t("preview.name"),
-                dataIndex: "name",
-                key: "name",
-              },
-              {
-                title: t("preview.value"),
-                dataIndex: "value",
-                key: "value",
-              },
-            ]
-          }
-            data={Object.entries(statistic.extras).map(([name, value]) => { return { name, value } })}
-            rowKey={(_, index) => `row_${index}`}
-            components={components}
-          />
-        )}
+        {previewStatsIsBarStats(statistic) &&
+          Object.keys(statistic.extras).length > 0 && (
+            <StyledRcTable
+              columns={[
+                {
+                  title: t("preview.name"),
+                  dataIndex: "name",
+                  key: "name",
+                },
+                {
+                  title: t("preview.value"),
+                  dataIndex: "value",
+                  key: "value",
+                },
+              ]}
+              data={Object.entries(statistic.extras).map(([name, value]) => {
+                return { name, value };
+              })}
+              rowKey={(_, index) => `row_${index}`}
+              components={components}
+            />
+          )}
       </Horizontal>
     </Modal>
   );

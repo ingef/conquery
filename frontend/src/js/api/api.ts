@@ -9,6 +9,7 @@ import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
 import { Table } from "apache-arrow";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { transformQueryToApi } from "./apiHelper";
 import {
   type QueryIdT,
@@ -37,7 +38,6 @@ import {
   PreviewStatisticsResponse,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
-import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 
 const PROTECTED_PREFIX = "/api";
 
@@ -409,14 +409,23 @@ export const usePostResolveEntities = () => {
 export const useGetResult = () => {
   const { authToken } = useContext(AuthTokenContext);
   const authTokenRef = useRef<string>(authToken);
-  return useCallback((queryId: string) => {
-    const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`), {
-      headers: {
-        Authorization: `Bearer ${authTokenRef.current}`,
-      }
-    });
-    return res as unknown as Promise<Table>;
-  }, [authTokenRef]);
+  useEffect(
+    function updateRef() {
+      authTokenRef.current = authToken;
+    },
+    [authToken],
+  );
+  return useCallback(
+    (queryId: string) => {
+      const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`), {
+        headers: {
+          Authorization: `Bearer ${authTokenRef.current}`,
+        },
+      });
+      return res as unknown as Promise<Table>;
+    },
+    [authTokenRef],
+  );
 };
 
 export const usePreviewStatistics = () => {

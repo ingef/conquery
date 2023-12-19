@@ -7,9 +7,11 @@ import {
   BarElement,
   Tooltip,
   ChartOptions,
+  LineElement,
+  LinearScale,
   PointElement,
   Title,
-  LineElement,
+  Tooltip,
 } from "chart.js";
 import { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
