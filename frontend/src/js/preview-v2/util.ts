@@ -1,22 +1,10 @@
 import { t } from "i18next";
-import {
-  DateStatistics,
-  PreviewStatistics,
-  BarStatistics,
-} from "../api/types";
+import { BarStatistics, DateStatistics, PreviewStatistics } from "../api/types";
 import { parseDate } from "../common/helpers/dateHelper";
 
-export const NUMBER_TYPES = [
-  "NUMBER",
-  "INTEGER",
-  "REAL",
-  "DECIMAL",
-];
+export const NUMBER_TYPES = ["NUMBER", "INTEGER", "REAL", "DECIMAL"];
 
-export const NUMBER_STATISTICS_TYPES = [
-  ...NUMBER_TYPES,
-  "MONEY",
-];
+export const NUMBER_STATISTICS_TYPES = [...NUMBER_TYPES, "MONEY"];
 
 export function formatNumber(num: number, precision = 3): string {
   const precisionMultiplier = 10 * precision;

@@ -594,7 +594,7 @@ export type BaseStatistics = {
 export type BarStatistics = BaseStatistics & {
   chart: "HISTO";
   type: "INTEGER" | "DECIMAL" | "MONEY" | "STRING" | "REAL";
-  entries: { label: string, value: number }[];
+  entries: { label: string; value: number }[];
   extras: { [key: string]: string };
 };
 
@@ -609,9 +609,7 @@ export type DateStatistics = BaseStatistics & {
   };
 };
 
-export type PreviewStatistics =
-  | BarStatistics
-  | DateStatistics;
+export type PreviewStatistics = BarStatistics | DateStatistics;
 
 export type PreviewStatisticsResponse = {
   entities: number;

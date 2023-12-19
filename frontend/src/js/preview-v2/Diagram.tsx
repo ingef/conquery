@@ -3,20 +3,16 @@ import { addMonths, format } from "date-fns";
 import { useMemo } from "react";
 import { Bar, Line } from "react-chartjs-2";
 
-import {
-  DateStatistics,
-  PreviewStatistics,
-  BarStatistics,
-} from "../api/types";
+import { BarStatistics, DateStatistics, PreviewStatistics } from "../api/types";
 import { parseStdDate } from "../common/helpers/dateHelper";
 import { hexToRgbA } from "../entity-history/TimeStratifiedChart";
 
+import { useTheme } from "@emotion/react";
 import {
   formatNumber,
-  previewStatsIsDateStats,
   previewStatsIsBarStats,
+  previewStatsIsDateStats,
 } from "./util";
-import { useTheme } from "@emotion/react";
 
 type DiagramProps = {
   stat: PreviewStatistics;
@@ -25,8 +21,6 @@ type DiagramProps = {
   height?: string | number;
   width?: string | number;
 };
-
-
 
 export default function Diagram({
   stat,
@@ -49,13 +43,13 @@ export default function Diagram({
       ],
     };
   }
-  
+
   function transformDateStatsToData(stats: DateStatistics): ChartData<"line"> {
     // loop over all dates in date range
     // check if month is present in stats
     // if yes add months value to data
     // if no add quater values to data for the whole quater (for each month)
-  
+
     const labels: string[] = [];
     const values: number[] = [];
     const start = parseStdDate(stats.span.min);
@@ -83,12 +77,11 @@ export default function Diagram({
         labels.push(monthLabel);
         values.push(monthCounts[month]);
       } else {
-  
         // add zero values
         labels.push(monthLabel);
         values.push(0);
       }
-  
+
       pointer = addMonths(pointer, 1);
     }
     return {
@@ -103,13 +96,13 @@ export default function Diagram({
       ],
     };
   }
-  
-  function getValueForIndex<T>(index: number):T|undefined {
+
+  function getValueForIndex<T>(index: number): T | undefined {
     const labels = data?.labels;
-    if(!labels) {
+    if (!labels) {
       return undefined;
     }
-    return labels[index] as T|undefined;
+    return labels[index] as T | undefined;
   }
 
   const data = useMemo(() => {
@@ -190,7 +183,7 @@ export default function Diagram({
               callback: (value: number) => {
                 return formatNumber(value);
               },
-            }
+            },
           },
           x: {
             suggestedMin: stat.span.min,
@@ -199,7 +192,7 @@ export default function Diagram({
               callback: (valueIndex: number, index: number) => {
                 return index % 2 === 0 ? getValueForIndex(valueIndex) : "";
               },
-            }
+            },
           },
         },
         plugins: {
@@ -217,7 +210,9 @@ export default function Diagram({
             callbacks: {
               title: () => null as unknown as undefined,
               label: (context) => {
-                return `${context.label}: ${formatNumber(context.raw as number)}`;
+                return `${context.label}: ${formatNumber(
+                  context.raw as number,
+                )}`;
               },
             },
             caretSize: 0,
@@ -230,7 +225,6 @@ export default function Diagram({
     throw new Error("Unknown stats type");
   }, [stat, data]);
 
-  
   // TODO fall back if no data is present
   return (
     <div className={className}>

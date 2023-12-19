@@ -12,6 +12,7 @@ import { StandardQueryStateT } from "../standard-query-editor/queryReducer";
 import { ValidatedTimebasedQueryStateT } from "../timebased-query-editor/reducer";
 
 import { Table } from "apache-arrow";
+import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 import { transformQueryToApi } from "./apiHelper";
 import type {
   ConceptIdT,
@@ -40,7 +41,6 @@ import type {
   UploadQueryResponseT,
 } from "./types";
 import { useApi, useApiUnauthorized } from "./useApi";
-import { AuthTokenContext } from "../authorization/AuthTokenProvider";
 
 const PROTECTED_PREFIX = "/api";
 
@@ -418,14 +418,17 @@ export const useGetResult = () => {
     },
     [authToken],
   );
-  return useCallback((queryId: string) => {
-    const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`), {
-      headers: {
-        Authorization: `Bearer ${authTokenRef.current}`,
-      }
-    });
-    return res as unknown as Promise<Table>;
-  }, [authTokenRef]);
+  return useCallback(
+    (queryId: string) => {
+      const res = fetch(getProtectedUrl(`/result/arrow/${queryId}.arrs`), {
+        headers: {
+          Authorization: `Bearer ${authTokenRef.current}`,
+        },
+      });
+      return res as unknown as Promise<Table>;
+    },
+    [authTokenRef],
+  );
 };
 
 export const usePreviewStatistics = () => {
