@@ -115,7 +115,7 @@ export default function Preview() {
             items={statistics?.statistics ?? ([] as PreviewStatistics[])}
             onChange={(res) => {
               const index = statistics?.statistics.findIndex(
-                (stat) => stat.name === res.name,
+                (stat) => stat.label === res.label,
               );
               if (index !== undefined && index !== null) {
                 setPage(Math.floor(index / 4));

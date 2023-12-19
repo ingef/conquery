@@ -55,14 +55,17 @@ export default function Charts({
   page,
   setPage,
 }: ChartProps) {
-  const diagramsOnPage = statistics.slice(page * DIAGRAMS_PER_PAGE, (page + 1) * DIAGRAMS_PER_PAGE);
+  const diagramsOnPage = statistics.slice(
+    page * DIAGRAMS_PER_PAGE,
+    (page + 1) * DIAGRAMS_PER_PAGE,
+  );
   return (
     <>
       <Root className={className}>
         <DiagramContainer>
           {diagramsOnPage.map((statistic) => {
             return (
-              <div key={statistic.name}>
+              <div key={statistic.label}>
                 <SxDiagram
                   stat={statistic}
                   onClick={() => showPopup(statistic)}
@@ -78,7 +81,8 @@ export default function Charts({
             disabled={page === 0}
           />
           <span>
-            {t("preview.page")} {page + 1}/{Math.ceil(statistics.length / DIAGRAMS_PER_PAGE)}
+            {t("preview.page")} {page + 1}/
+            {Math.ceil(statistics.length / DIAGRAMS_PER_PAGE)}
           </span>
           <SxIconButton
             icon={faArrowRight}

@@ -1,32 +1,32 @@
 import { t } from "i18next";
-import {
-  DateStatistics,
-  NumberStatistics,
-  PreviewStatistics,
-  StringStatistics,
-} from "../api/types";
+import { BarStatistics, DateStatistics, PreviewStatistics } from "../api/types";
 import { parseDate } from "../common/helpers/dateHelper";
 
-const DIGITS_OF_PRECISION = 3;
-export function formatNumber(num: number): string {
-  return num.toLocaleString();
-  // TODO verify localeString implementation
-  if (num > 100) {
-    return numberToThreeDigitArray(Math.floor(num)).join(".")
+export const NUMBER_TYPES = ["NUMBER", "INTEGER", "REAL", "DECIMAL"];
+
+export const NUMBER_STATISTICS_TYPES = [...NUMBER_TYPES, "MONEY"];
+
+export function formatNumber(num: number, precision = 3): string {
+  const precisionMultiplier = 10 * precision;
+  return (
+    Math.round(num * precisionMultiplier) / precisionMultiplier
+  ).toLocaleString("de-de");
+}
+
+export function formatDate(date: string | undefined) {
+  if (date) {
+    return (
+      parseDate(date, "yyyy-MM-dd")?.toLocaleDateString("de-de") ??
+      t("preview.dateError")
+    );
   }
   return t("preview.dateError");
 }
 
-export function previewStatsIsStringStats(
+export function previewStatsIsBarStats(
   stats: PreviewStatistics,
-): stats is StringStatistics {
+): stats is BarStatistics {
   return stats.chart === "HISTO";
-}
-
-export function previewStatsIsNumberStats(
-  stats: PreviewStatistics,
-): stats is NumberStatistics {
-  return stats.chart === "DESCRIPTIVE";
 }
 
 export function previewStatsIsDateStats(
