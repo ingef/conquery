@@ -1,0 +1,52 @@
+package com.bakdata.conquery.sql.conversion.model.select;
+
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.concepts.select.connector.RandomValueSelect;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
+import com.bakdata.conquery.sql.conversion.model.SqlTables;
+import com.bakdata.conquery.sql.conversion.model.filter.Filters;
+import lombok.Value;
+import org.jooq.Field;
+
+@Value
+public class RandomValueSqlAggregator implements SqlAggregator {
+
+	SqlSelects sqlSelects;
+	Filters filters;
+
+	private RandomValueSqlAggregator(
+			Column column,
+			String alias,
+			SqlTables<ConceptCteStep> conceptTables,
+			SqlFunctionProvider functionProvider
+	) {
+		String rootTableName = conceptTables.getPredecessor(ConceptCteStep.PREPROCESSING);
+		String columnName = column.getName();
+		ExtractingSqlSelect<?> rootSelect = new ExtractingSqlSelect<>(rootTableName, columnName, Object.class);
+
+		Field<?> qualifiedRootSelect = rootSelect.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_SELECT)).select();
+		FieldWrapper<?> randomGroupBy = new FieldWrapper<>(functionProvider.random(qualifiedRootSelect).as(alias), columnName);
+
+		ExtractingSqlSelect<?> finalSelect = randomGroupBy.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.FINAL));
+
+		this.sqlSelects = SqlSelects.builder()
+									.preprocessingSelect(rootSelect)
+									.aggregationSelect(randomGroupBy)
+									.finalSelect(finalSelect)
+									.build();
+
+		this.filters = Filters.builder().build();
+	}
+
+	public static RandomValueSqlAggregator create(RandomValueSelect randomValueSelect, SelectContext selectContext) {
+		return new RandomValueSqlAggregator(
+				randomValueSelect.getColumn(),
+				selectContext.getNameGenerator().selectName(randomValueSelect),
+				selectContext.getConceptTables(),
+				selectContext.getParentContext().getSqlDialect().getFunctionProvider()
+		);
+	}
+
+}

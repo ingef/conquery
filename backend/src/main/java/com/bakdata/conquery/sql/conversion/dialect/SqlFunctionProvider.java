@@ -115,10 +115,10 @@ public interface SqlFunctionProvider {
 		return DSL.function("replace", String.class, target, DSL.val(old), DSL.val(_new));
 	}
 
-	default Field<Object> prefixStringAggregation(Field<Object> field, String prefix) {
+	default Field<String> prefixStringAggregation(Field<String> field, String prefix) {
 		Field<String> likePattern = DSL.inline(prefix + "%");
 		String sqlTemplate = "'[' || STRING_AGG(CASE WHEN {0} LIKE {1} THEN {0} ELSE NULL END, ', ') || ']'";
-		return DSL.field(DSL.sql(sqlTemplate, field, likePattern));
+		return DSL.field(DSL.sql(sqlTemplate, field, likePattern), String.class);
 	}
 
 }

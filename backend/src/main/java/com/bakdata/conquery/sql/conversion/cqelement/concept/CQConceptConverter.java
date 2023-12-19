@@ -12,17 +12,13 @@ import com.bakdata.conquery.apiv1.query.concept.filter.CQTable;
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.sql.conversion.NodeConverter;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterConversions;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.filter.FilterValueConversions;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.select.SelectConversions;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
-import com.bakdata.conquery.sql.conversion.model.filter.ConceptFilter;
 import com.bakdata.conquery.sql.conversion.model.filter.ConditionUtil;
 import com.bakdata.conquery.sql.conversion.model.filter.FilterType;
 import com.bakdata.conquery.sql.conversion.model.filter.Filters;
+import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
 import com.bakdata.conquery.sql.conversion.model.select.FieldWrapper;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
@@ -32,13 +28,9 @@ import org.jooq.impl.DSL;
 public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 	private final List<ConceptCte> conceptCTEs;
-	private final FilterValueConversions filterValueConversions;
-	private final SelectConversions selectConversions;
 	private final SqlFunctionProvider functionProvider;
 
-	public CQConceptConverter(FilterConversions filterConversions, SelectConversions selectConversions, SqlFunctionProvider functionProvider) {
-		this.filterValueConversions = new FilterValueConversions(filterConversions);
-		this.selectConversions = selectConversions;
+	public CQConceptConverter(SqlFunctionProvider functionProvider) {
 		this.functionProvider = functionProvider;
 		this.conceptCTEs = List.of(
 				new PreprocessingCte(),
@@ -74,9 +66,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		}
 
 		return context.toBuilder()
-					  .queryStep(lastQueryStep.orElseThrow(() -> new RuntimeException(
-							  "No conversion for concept possible. Required steps: %s".formatted(requiredSteps())))
-					  )
+					  .queryStep(lastQueryStep.orElseThrow(() -> new RuntimeException("No conversion for concept possible.")))
 					  .build();
 	}
 
@@ -91,15 +81,15 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		ConceptTables conceptTables = new ConceptTables(conceptLabel, requiredSteps, tableName, context.getNameGenerator());
 
 		// convert filters
-		Stream<ConceptFilter> conceptFilters = table.getFilters().stream()
-													.map(filterValue -> this.filterValueConversions.convert(filterValue, context, conceptTables));
-		Stream<ConceptFilter> dateRestrictionFilter = getDateRestriction(context, validityDateSelect).stream();
-		List<ConceptFilter> allFilters = Stream.concat(conceptFilters, dateRestrictionFilter).toList();
+		Stream<SqlFilters> conceptFilters = table.getFilters().stream()
+												 .map(filterValue -> filterValue.convertToSqlFilter(context, conceptTables));
+		Stream<SqlFilters> dateRestrictionFilter = getDateRestriction(context, validityDateSelect).stream();
+		List<SqlFilters> allFilters = Stream.concat(conceptFilters, dateRestrictionFilter).toList();
 
 		// convert selects
 		SelectContext selectContext = new SelectContext(context, node, conceptLabel, validityDateSelect, conceptTables);
 		List<SqlSelects> conceptSelects = Stream.concat(node.getSelects().stream(), table.getSelects().stream())
-												.map(select -> this.selectConversions.convert(select, selectContext))
+												.map(select -> select.convertToSqlSelects(selectContext))
 												.toList();
 
 		return ConceptCteContext.builder()
@@ -128,7 +118,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		}
 
 		table.getFilters().stream()
-			 .flatMap(filterValue -> this.filterValueConversions.requiredSteps(filterValue).stream())
+			 .flatMap(filterValue -> filterValue.getFilter().getRequiredSqlSteps().stream())
 			 .forEach(requiredSteps::add);
 
 		return requiredSteps;
@@ -146,7 +136,7 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 		return Optional.of(validityDate);
 	}
 
-	private Optional<ConceptFilter> getDateRestriction(ConversionContext context, Optional<ColumnDateRange> validityDate) {
+	private Optional<SqlFilters> getDateRestriction(ConversionContext context, Optional<ColumnDateRange> validityDate) {
 
 		if (!dateRestrictionApplicable(context.dateRestrictionActive(), validityDate)) {
 			return Optional.empty();
@@ -162,8 +152,8 @@ public class CQConceptConverter implements NodeConverter<CQConcept> {
 
 		Condition dateRestrictionCondition = this.functionProvider.dateRestriction(dateRestriction, validityDate.get());
 
-		return Optional.of(new ConceptFilter(
-				SqlSelects.builder().forPreprocessingStep(dateRestrictionSelects).build(),
+		return Optional.of(new SqlFilters(
+				SqlSelects.builder().preprocessingSelects(dateRestrictionSelects).build(),
 				Filters.builder().event(List.of(ConditionUtil.wrap(dateRestrictionCondition, FilterType.EVENT))).build()
 		));
 	}

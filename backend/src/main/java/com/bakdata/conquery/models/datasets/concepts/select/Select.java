@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.datasets.concepts.select;
 
 import java.util.List;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.query.concept.specific.CQConcept;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -17,6 +18,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.types.ResultType;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
+import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
+import com.bakdata.conquery.sql.conversion.model.select.SqlSelects;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -117,4 +121,15 @@ public abstract class Select extends Labeled<SelectId> implements NamespacedIden
 
 		return valid;
 	}
+
+	@JsonIgnore
+	public SqlSelects convertToSqlSelects(SelectContext selectContext) {
+		throw new UnsupportedOperationException("SQL conversion of select %s not implemented yet.".formatted(getClass()));
+	}
+
+	@JsonIgnore
+	public Set<ConceptCteStep> getRequiredSqlSteps() {
+		return ConceptCteStep.MANDATORY_STEPS;
+	}
+
 }

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
@@ -13,9 +12,9 @@ class AggregationSelectCte extends ConceptCte {
 	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
 
 		List<SqlSelect> requiredInAggregationFilterStep = conceptCteContext.allConceptSelects()
-																		   .flatMap(sqlSelects -> sqlSelects.getForAggregationSelectStep().stream())
+																		   .flatMap(sqlSelects -> sqlSelects.getAggregationSelects().stream())
 																		   .distinct()
-																		   .collect(Collectors.toList());
+																		   .toList();
 
 		Selects aggregationSelectSelects = Selects.builder()
 												  .primaryColumn(conceptCteContext.getPrimaryColumn())

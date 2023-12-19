@@ -11,7 +11,7 @@ class PreprocessingCte extends ConceptCte {
 	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
 
 		List<SqlSelect> forPreprocessing = conceptCteContext.allConceptSelects()
-															.flatMap(sqlSelects -> sqlSelects.getForPreprocessingStep().stream())
+															.flatMap(sqlSelects -> sqlSelects.getPreprocessingSelects().stream())
 															.distinct()
 															.toList();
 

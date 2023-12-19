@@ -1,9 +1,8 @@
-package com.bakdata.conquery.sql.conversion.cqelement.concept.filter;
+package com.bakdata.conquery.sql.conversion.cqelement.concept;
 
 import com.bakdata.conquery.apiv1.query.concept.filter.FilterValue;
 import com.bakdata.conquery.sql.conversion.Context;
 import com.bakdata.conquery.sql.conversion.cqelement.ConversionContext;
-import com.bakdata.conquery.sql.conversion.cqelement.concept.ConceptCteStep;
 import com.bakdata.conquery.sql.conversion.model.NameGenerator;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import lombok.Value;
