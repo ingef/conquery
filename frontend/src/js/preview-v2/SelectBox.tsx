@@ -8,7 +8,6 @@ import { Input } from "../ui-components/InputSelect/InputSelectComponents";
 
 export interface SelectItem {
   label: string;
-  name: string; // Used as key
 }
 
 interface SelectBoxProps<T extends SelectItem> {
@@ -109,7 +108,7 @@ export default function SelectBox<T extends SelectItem>({
         {isOpen &&
           displayedItems.map((item) => {
             return (
-              <ListItem key={item.name} onClick={() => onChange(item)}>
+              <ListItem key={item.label} onClick={() => onChange(item)}>
                 {item.label}
               </ListItem>
             );

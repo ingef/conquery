@@ -62,7 +62,7 @@ export default function Charts({
         <DiagramContainer>
           {diagramsOnPage.map((statistic) => {
             return (
-              <div key={statistic.name}>
+              <div key={statistic.label}>
                 <SxDiagram
                   stat={statistic}
                   onClick={() => showPopup(statistic)}
