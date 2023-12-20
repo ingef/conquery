@@ -60,7 +60,7 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 	public static class ColumnDescription extends ResultColumnStatistics {
 
 		public static record Entry(String label, long value) {};
-		private final List<Entry> entries;
+		private final List<Entry> histogram;
 		/*
 		{
 			histogram : [
@@ -83,7 +83,7 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 
 		public ColumnDescription(String name, String label, String description, List<Entry> histogram, Map<String, String> extras) {
 			super(name, label, description, "STRING");
-			this.entries = histogram;
+			this.histogram = histogram;
 			this.extras = extras;
 		}
 	}
