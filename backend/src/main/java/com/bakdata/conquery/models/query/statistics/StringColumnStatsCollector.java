@@ -60,30 +60,13 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 	public static class ColumnDescription extends ResultColumnStatistics {
 
 		public static record Entry(String label, long value) {};
-		private final List<Entry> histogram;
-		/*
-		{
-			histogram : [
-				{
-				  "label" : "E00-E99", "value": 10
-				},
-				{
-				  "label" : "E00-E99", "value": 10
-				},
-				{
-				  "label" : "E00-E99", "value": 10
-				}
-			],
-			"extras" : {
-				"Median" : 0.4,
-		}
-		 */
+		private final List<Entry> entries;
 
 		private final Map<String, String> extras;
 
 		public ColumnDescription(String name, String label, String description, List<Entry> histogram, Map<String, String> extras) {
 			super(name, label, description, "STRING");
-			this.histogram = histogram;
+			this.entries = histogram;
 			this.extras = extras;
 		}
 	}
