@@ -6,6 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useTranslation } from "react-i18next";
 
+import { HTMLAttributes } from "react";
 import type { DateRangeT } from "../api/types";
 import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
@@ -13,8 +14,7 @@ import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
 import { HTMLAttributes } from "react";
 
-const Root = styled("div")`
-`;
+const Root = styled("div")``;
 
 const Date = styled("p")`
   margin: 0;
