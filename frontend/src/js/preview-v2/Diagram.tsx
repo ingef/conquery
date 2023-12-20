@@ -13,8 +13,6 @@ import {
   previewStatsIsBarStats,
   previewStatsIsDateStats,
 } from "./util";
-import { t } from "i18next";
-import { useTheme } from "@emotion/react";
 
 type DiagramProps = {
   stat: PreviewStatistics;
@@ -79,26 +77,21 @@ function transformDateStatsToData(
       labels.push(monthLabel);
       values.push(0);
     }
-    return {
-      labels,
-      datasets: [
-        {
-          data: values,
-          borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
-          borderWidth: 1,
-          fill: false,
-        },
-      ],
-    };
+
+    pointer = addMonths(pointer, 1);
   }
-  
-  function getValueForIndex<T>(index: number):T|undefined {
-    const labels = data?.labels;
-    if(!labels) {
-      return undefined;
-    }
-    return labels[index] as T|undefined;
-  }
+  return {
+    labels,
+    datasets: [
+      {
+        data: values,
+        borderColor: `rgba(${hexToRgbA(theme.col.blueGrayDark)}, 1)`,
+        borderWidth: 1,
+        fill: false,
+      },
+    ],
+  };
+}
 
 function getValueForIndex<T>(
   data: ChartData | undefined,
