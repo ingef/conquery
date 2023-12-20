@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -128,18 +129,24 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	private Map<String, String> getExtras() {
 		final StatisticsLabels labels = C10N.get(StatisticsLabels.class);
 
-		return Map.of(
-				labels.min(), printValue(getStatistics().getMin()),
-				labels.max(), printValue(getStatistics().getMax()),
-				labels.mean(), printValue(getStatistics().getMean()),
-				labels.median(), printValue(getStatistics().getPercentile(50)),
-				labels.p25(), printValue(getStatistics().getPercentile(25)),
-				labels.p75(), printValue(getStatistics().getPercentile(75)),
-				labels.sum(), printValue(getStatistics().getSum()),
-				labels.std(), getPrintSettings().getDecimalFormat().format(getStatistics().getStandardDeviation()),
-				labels.count(), getPrintSettings().getIntegerFormat().format(getStatistics().getN()),
-				labels.missing(), getPrintSettings().getIntegerFormat().format(getNulls().get())
-		);
+		// LinkedHashMap remembers insertion order
+		final LinkedHashMap<String, String> out = new LinkedHashMap<>();
+
+		out.put(labels.min(), printValue(getStatistics().getMin()));
+		out.put(labels.max(), printValue(getStatistics().getMax()));
+		out.put(labels.mean(), printValue(getStatistics().getMean()));
+
+		out.put(labels.p25(), printValue(getStatistics().getPercentile(25)));
+		out.put(labels.median(), printValue(getStatistics().getPercentile(50)));
+		out.put(labels.p75(), printValue(getStatistics().getPercentile(75)));
+		out.put(labels.std(), getPrintSettings().getDecimalFormat().format(getStatistics().getStandardDeviation()));
+
+		out.put(labels.sum(), printValue(getStatistics().getSum()));
+
+		out.put(labels.count(), getPrintSettings().getIntegerFormat().format(getStatistics().getN()));
+		out.put(labels.missing(), getPrintSettings().getIntegerFormat().format(getNulls().get()));
+
+		return out;
 	}
 
 	private String printValue(Number value) {
