@@ -4,7 +4,6 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import c10n.C10N;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
@@ -21,7 +19,6 @@ import com.dynatrace.dynahist.bin.Bin;
 import com.dynatrace.dynahist.layout.Layout;
 import com.dynatrace.dynahist.layout.LogLinearLayout;
 import lombok.Getter;
-import lombok.ToString;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.jetbrains.annotations.NotNull;
 
@@ -89,19 +86,13 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 	public ResultColumnStatistics describe() {
 		// If no real samples were collected, we short-circuit, as Statistics will throw an exception when empty.
 		if (getStatistics().getN() == 0) {
-			return new ColumnDescription(
-					getName(), getLabel(), getDescription(), getType().toString(),
-					getNulls().intValue(), getNulls().intValue(),
-					Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, 0, Collections.emptyList()
-			);
+			return new StringColumnStatsCollector.ColumnDescription(getName(), getLabel(), getDescription(), Collections.emptyList(), Collections.emptyMap());
 		}
 
 		final List<StringColumnStatsCollector.ColumnDescription.Entry> bins = createBins();
+		final Map<String, String> extras = getExtras();
 
-		return new StringColumnStatsCollector.ColumnDescription(
-				getName(), getLabel(), getDescription(), bins,
-				getExtras()
-		);
+		return new StringColumnStatsCollector.ColumnDescription(getName(), getLabel(), getDescription(), bins, extras);
 	}
 
 	@NotNull
@@ -147,7 +138,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 				labels.sum(), printValue(getStatistics().getSum()),
 				labels.std(), getPrintSettings().getDecimalFormat().format(getStatistics().getStandardDeviation()),
 				labels.count(), getPrintSettings().getIntegerFormat().format(getStatistics().getN()),
-				labels.missing(), getPrintSettings().getIntegerFormat().format(getStatistics().getN())
+				labels.missing(), getPrintSettings().getIntegerFormat().format(getNulls().get())
 		);
 	}
 
@@ -155,33 +146,4 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		return formatter.format(value.doubleValue());
 	}
 
-	@Getter
-	@CPSType(id = "DESCRIPTIVE", base = ResultColumnStatistics.class)
-	@ToString(callSuper = true)
-	public static class ColumnDescription extends ColumnStatsCollector.ResultColumnStatistics {
-
-		private final int count;
-		private final int nullValues;
-		private final double mean;
-		private final double median;
-		private final double stdDev;
-		private final Number min;
-		private final Number max;
-		private final Number sum;
-
-		private final Collection<? extends Number> samples;
-
-		public ColumnDescription(String name, String label, String description, String type, int count, int nullValues, double mean, double median, double stdDev, Number min, Number max, Number sum, Collection<? extends Number> samples) {
-			super(name, label, description, type);
-			this.count = count;
-			this.nullValues = nullValues;
-			this.mean = mean;
-			this.median = median;
-			this.stdDev = stdDev;
-			this.min = min;
-			this.max = max;
-			this.sum = sum;
-			this.samples = samples;
-		}
-	}
 }
