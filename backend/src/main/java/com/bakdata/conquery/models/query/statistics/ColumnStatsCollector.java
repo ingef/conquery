@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.query.statistics;
 
-import java.util.function.BooleanSupplier;
-
 import javax.annotation.Nullable;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -22,11 +20,11 @@ public abstract class ColumnStatsCollector<T> {
 	@JsonIgnore
 	private final PrintSettings printSettings;
 
-	public static ColumnStatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, BooleanSupplier samplePicker, ResultType type, UniqueNamer uniqueNamer, long displayLimit) {
+	public static ColumnStatsCollector getStatsCollector(ResultInfo info, final PrintSettings printSettings, ResultType type, UniqueNamer uniqueNamer, long displayLimit) {
 
 		// List recursion must be done before assigning uniqueNames
 		if (type instanceof ResultType.ListT listT){
-			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, samplePicker, listT.getElementType(), uniqueNamer, displayLimit);
+			final ColumnStatsCollector<?> columnStatsCollector = getStatsCollector(info, printSettings, listT.getElementType(), uniqueNamer, displayLimit);
 			// name label type are discarded when using ListColumnStatsCollector
 			return new ListColumnStatsCollector<>(null, null, null, type, columnStatsCollector, printSettings);
 		}
@@ -36,15 +34,15 @@ public abstract class ColumnStatsCollector<T> {
 		final String label = info.defaultColumnName(printSettings);
 
 		if (type instanceof ResultType.IntegerT) {
-			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, samplePicker, printSettings);
+			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
 		}
 
 		if (type instanceof ResultType.NumericT) {
-			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, samplePicker, printSettings);
+			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
 		}
 
 		if (type instanceof ResultType.MoneyT) {
-			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, samplePicker, printSettings);
+			return new NumberColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
 		}
 
 		if (type instanceof ResultType.StringT) {
@@ -52,15 +50,15 @@ public abstract class ColumnStatsCollector<T> {
 		}
 
 		if (type instanceof ResultType.BooleanT) {
-			return new StringColumnStatsCollector(name, label, info.getDescription(), type, printSettings, displayLimit);
+			return new BooleanColumnStatsCollector(name, label, info.getDescription(), printSettings);
 		}
 
 		if (type instanceof ResultType.DateT) {
-			return new DateColumnStatsCollector(name, label, info.getDescription(), samplePicker, type, printSettings);
+			return new DateColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
 		}
 
 		if (type instanceof ResultType.DateRangeT) {
-			return new DateColumnStatsCollector(name, label, info.getDescription(), samplePicker, type, printSettings);
+			return new DateColumnStatsCollector(name, label, info.getDescription(), type, printSettings);
 		}
 
 

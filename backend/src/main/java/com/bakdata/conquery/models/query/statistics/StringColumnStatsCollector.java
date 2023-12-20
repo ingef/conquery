@@ -1,14 +1,11 @@
 package com.bakdata.conquery.models.query.statistics;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import c10n.C10N;
-import com.bakdata.conquery.internationalization.ResultHeadersC10n;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.types.ResultType;
@@ -48,33 +45,29 @@ public class StringColumnStatsCollector extends ColumnStatsCollector<String> {
 				StreamSupport.stream(((Iterable<Map.Entry<Comparable<?>, Long>>) frequencies::entrySetIterator).spliterator(), false)
 							 .sorted(Map.Entry.<Comparable<?>, Long>comparingByValue().reversed()).toList();
 
-		Map<String, Long> repr =
+		List<ColumnDescription.Entry> repr =
 				entriesSorted.stream()
 							 .limit(limit)
-							 .collect(Collectors.toMap(entry -> (String) entry.getKey(), Map.Entry::getValue));
+							 .map(entry -> new ColumnDescription.Entry(((String) entry.getKey()), entry.getValue()))
+							 .toList();
 
-
-		final long otherTotal = entriesSorted.stream().skip(limit).mapToLong(Map.Entry::getValue).sum();
-		final long othersCount = entriesSorted.size() - limit;
-
-		if (othersCount > 0){
-			repr = new HashMap<>(repr);
-			repr.put(C10N.get(ResultHeadersC10n.class).others(othersCount), otherTotal);
-		}
-
-
-		return new ColumnDescription(getName(), getLabel(), getDescription(), repr);
+		return new ColumnDescription(getName(), getLabel(), getDescription(), repr, Collections.emptyMap());
 	}
 
 	@Getter
 	@CPSType(id = "HISTO", base = ResultColumnStatistics.class)
 	@ToString(callSuper = true)
 	public static class ColumnDescription extends ResultColumnStatistics {
-		private final Map<String, Long> histogram;
 
-		public ColumnDescription(String name, String label, String description, Map<String, Long> histogram) {
+		public static record Entry(String label, long value) {};
+		private final List<Entry> entries;
+
+		private final Map<String, String> extras;
+
+		public ColumnDescription(String name, String label, String description, List<Entry> histogram, Map<String, String> extras) {
 			super(name, label, description, "STRING");
-			this.histogram = histogram;
+			this.entries = histogram;
+			this.extras = extras;
 		}
 	}
 }
