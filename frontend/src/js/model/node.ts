@@ -19,7 +19,7 @@ import type {
 } from "../standard-query-editor/types";
 import { PossibleDroppableObject } from "../ui-components/Dropzone";
 
-import { SelectConfig, objectHasNonDefaultSelects } from "./select";
+import { objectHasNonDefaultSelects } from "./select";
 import {
   tablesHaveEmptySettings,
   tablesHaveFilterValues,
@@ -28,7 +28,6 @@ import {
 
 export interface NodeResetConfig {
   useDefaults?: boolean;
-  selectConfig?: SelectConfig;
 }
 
 export const nodeIsConceptQueryNode = (

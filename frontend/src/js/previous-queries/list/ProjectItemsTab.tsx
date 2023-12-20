@@ -1,6 +1,6 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -107,11 +107,6 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
 
   const { items, loading } = useProjectItems({ datasetId });
 
-  const collapsedStyles = useMemo(
-    () => (areFoldersOpen ? {} : { display: "none" }),
-    [areFoldersOpen],
-  );
-
   return (
     <>
       <Row>
@@ -125,12 +120,21 @@ const ProjectItemsTab = ({ datasetId }: PropsT) => {
         )}
       </Row>
       <FoldersAndQueries>
-        <PanelGroup direction="horizontal">
-          <Panel key="left" defaultSize={25} style={collapsedStyles}>
+        <PanelGroup
+          direction="horizontal"
+          // size={leftPaneSize}
+          // onDragFinished={(newSize) => setLeftPaneSize(newSize)}
+          // resizerStyle={{
+          //   zIndex: 0, // To set below overlaying dropdowns
+          //   marginTop: "46px",
+          //   display: areFoldersOpen ? "inherit" : "none",
+          // }}
+        >
+          <Panel minSize={10} maxSize={75} defaultSize={25}>
             <SxFolders />
           </Panel>
-          <ResizeHandle style={collapsedStyles} />
-          <Panel key="right">
+          <ResizeHandle />
+          <Panel>
             <Expand areFoldersOpen={areFoldersOpen}>
               <Filters>
                 <SxProjectItemsTypeFilter />

@@ -27,6 +27,17 @@ export function sortSelects(selects: SelectorT[]) {
     .sort((a, b) => (a.label < b.label ? -1 : 1));
 }
 
+const resetSelected = (select: SelectorT, config: NodeResetConfig) => ({
+  ...select,
+  selected: config.useDefaults ? !!select.default : false,
+});
+
+export const resetSelects = (
+  selects: SelectorT[],
+  config: NodeResetConfig = {},
+): SelectedSelectorT[] =>
+  selects.map((select) => resetSelected(select, config));
+
 function selectTypesMatch(
   resultType1: SelectorResultType,
   resultType2: SelectorResultType,
@@ -52,37 +63,20 @@ export function selectIsWithinTypes(
   );
 }
 
-export interface SelectConfig {
+interface AllowBlocklistedSelects {
   blocklistedSelects?: SelectorResultType[];
   allowlistedSelects?: SelectorResultType[];
 }
 
 export const isSelectDisabled = (
   select: SelectorT,
-  { blocklistedSelects, allowlistedSelects }: SelectConfig,
+  { blocklistedSelects, allowlistedSelects }: AllowBlocklistedSelects,
 ) =>
   (!!allowlistedSelects && !selectIsWithinTypes(select, allowlistedSelects)) ||
   (!!blocklistedSelects && selectIsWithinTypes(select, blocklistedSelects));
 
 export const isValidSelect =
-  ({ blocklistedSelects, allowlistedSelects }: SelectConfig) =>
+  ({ blocklistedSelects, allowlistedSelects }: AllowBlocklistedSelects) =>
   (select: SelectedSelectorT) =>
     !!select.selected &&
     !isSelectDisabled(select, { blocklistedSelects, allowlistedSelects });
-
-const resetSelected = (select: SelectorT, config: NodeResetConfig) => {
-  if (config.selectConfig && !isValidSelect(config.selectConfig)(select)) {
-    return { ...select, selected: false };
-  }
-
-  return {
-    ...select,
-    selected: config.useDefaults ? !!select.default : false,
-  };
-};
-
-export const resetSelects = (
-  selects: SelectorT[],
-  config: NodeResetConfig = {},
-): SelectedSelectorT[] =>
-  selects.map((select) => resetSelected(select, config));

@@ -12,7 +12,6 @@ import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 import { formatDate, parseDate } from "../common/helpers/dateHelper";
 import { exists } from "../common/helpers/exists";
 import FaIcon from "../icon/FaIcon";
-import { HTMLAttributes } from "react";
 
 const Root = styled("div")``;
 

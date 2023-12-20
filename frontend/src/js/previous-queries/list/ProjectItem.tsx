@@ -26,7 +26,6 @@ import FormSymbol from "../../symbols/FormSymbol";
 import QuerySymbol from "../../symbols/QuerySymbol";
 import WithTooltip from "../../tooltip/WithTooltip";
 
-import Highlighter from "react-highlight-words";
 import { DeleteProjectItemButton } from "./DeleteProjectItemButton";
 import ProjectItemLabel from "./ProjectItemLabel";
 import { useUpdateFormConfig, useUpdateQuery } from "./actions";
@@ -160,9 +159,6 @@ const ProjectItem = forwardRef<
   ref,
 ) {
   const { t } = useTranslation();
-  const highlightedWords = useSelector<StateT, string[]>(
-    (state) => state.projectItemsSearch.words,
-  );
 
   const loadedSecondaryIds = useSelector<StateT, SecondaryId[]>(
     (state) => state.conceptTrees.secondaryIds,
@@ -295,21 +291,10 @@ const ProjectItem = forwardRef<
             label={label}
             selectTextOnMount={true}
             onSubmit={onRenameLabel}
-            highlightedWords={highlightedWords}
             isEditing={isEditingLabel}
             setIsEditing={setIsEditingLabel}
           />
-          <OwnerName>
-            {highlightedWords.length > 0 ? (
-              <Highlighter
-                searchWords={highlightedWords}
-                autoEscape
-                textToHighlight={item.ownerName}
-              />
-            ) : (
-              item.ownerName
-            )}
-          </OwnerName>
+          <OwnerName>{item.ownerName}</OwnerName>
         </LabelRow>
       </Content>
     </Root>

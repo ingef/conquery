@@ -12,7 +12,7 @@ import {
 import { TreesT } from "../../concept-trees/reducer";
 import { mergeFilterOptions } from "../../model/filter";
 import { NodeResetConfig } from "../../model/node";
-import { SelectConfig, resetSelects } from "../../model/select";
+import { resetSelects } from "../../model/select";
 import { resetTables, tableWithDefaults } from "../../model/table";
 import { filterSuggestionToSelectOption } from "../../query-node-editor/suggestionsHelper";
 import type {
@@ -278,7 +278,6 @@ export const addConceptsFromFile = (
   resolvedConcepts: string[],
 
   tableConfig: TableConfig,
-  selectConfig: SelectConfig,
   defaults: ConceptListDefaultsType,
   isValidConcept: ((item: FormConceptNodeT) => boolean) | undefined,
 
@@ -302,12 +301,7 @@ export const addConceptsFromFile = (
 
   if (!queryElement) return value;
 
-  const concept = initializeConcept(
-    queryElement,
-    defaults,
-    tableConfig,
-    selectConfig,
-  );
+  const concept = initializeConcept(queryElement, defaults, tableConfig);
 
   if (!concept || (!!isValidConcept && !isValidConcept(concept))) return value;
 
@@ -331,7 +325,6 @@ export const initializeConcept = (
   item: FormConceptNodeT,
   defaults: ConceptListDefaultsType,
   tableConfig: TableConfig,
-  selectConfig: SelectConfig,
 ) => {
   if (!item) return item;
 
@@ -343,8 +336,8 @@ export const initializeConcept = (
     ...item,
     excludeFromSecondaryId: false,
     excludeTimestamps: false,
-    tables: resetTables(item.tables, { useDefaults: true, selectConfig }),
-    selects: resetSelects(item.selects, { useDefaults: true, selectConfig }),
+    tables: resetTables(item.tables, { useDefaults: true }),
+    selects: resetSelects(item.selects, { useDefaults: true }),
   });
 };
 
