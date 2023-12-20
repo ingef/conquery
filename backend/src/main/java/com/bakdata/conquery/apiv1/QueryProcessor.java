@@ -13,15 +13,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -591,24 +588,6 @@ public class QueryProcessor {
 		final Query query = managedQuery.getQuery();
 		final List<ResultInfo> resultInfos = query.getResultInfos();
 
-
-		final RandomGenerator random = new Random();
-		final int requiredSamples = config.getFrontend().getVisualisationSamples();
-
-
-		final int totalSamples = managedQuery.getLastResultCount().intValue();
-
-		//We collect about $requiredSamples values as samples for visualisation, while streaming the values.
-		// Note that nextInt produces values > 0 and < totalSamples. This is equivalent to `P(k) = $requiredSamples/$totalSamples` but terser.
-		final BooleanSupplier samplePicker;
-
-		if (totalSamples <= requiredSamples) {
-			samplePicker = () -> true;
-		}
-		else {
-			samplePicker = () -> random.nextInt(totalSamples) < requiredSamples;
-		}
-
 		final Optional<ResultInfo>
 				dateInfo =
 				query.getResultInfos().stream().filter(info -> info.getSemantics().contains(new SemanticType.EventDateT())).findFirst();
@@ -628,8 +607,8 @@ public class QueryProcessor {
 
 
 		final List<ColumnStatsCollector> statsCollectors = resultInfos.stream()
-																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, samplePicker, info.getType(), uniqueNamer, config.getFrontend()
-																																																.getVisualisationsHistogramLimit()))
+																	  .map(info -> ColumnStatsCollector.getStatsCollector(info, printSettings, info.getType(), uniqueNamer, config.getFrontend()
+																																												  .getVisualisationsHistogramLimit()))
 																	  .collect(Collectors.toList());
 
 		final IntSet entities = new IntOpenHashSet();
