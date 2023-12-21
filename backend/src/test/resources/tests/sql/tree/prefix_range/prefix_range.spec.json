@@ -49,7 +49,6 @@
       "children": [
         {
           "label": "F00-F99",
-          "description": "Psychische und Verhaltensstörungen",
           "condition": {
             "type": "PREFIX_RANGE",
             "min": "F00",
@@ -58,7 +57,6 @@
           "children": [
             {
               "label": "F20-F29",
-              "description": "Schizophrenie, schizotype und wahnhafte Störungen",
               "condition": {
                 "type": "PREFIX_RANGE",
                 "min": "F20",
@@ -67,7 +65,6 @@
               "children": [
                 {
                   "label": "F20",
-                  "description": "Schizophrenie",
                   "condition": {
                     "type": "PREFIX_LIST",
                     "prefixes": [
@@ -77,13 +74,6 @@
                   "children": [
                     {
                       "label": "F20.0",
-                      "description": "Paranoide Schizophrenie",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Paranoide Schizophrenie -- Paranoid-halluzinatorische Schizophrenie -- Paranoide Schizophrenie mit Halluzination -- Paraphrenie -- Paranoid-schizophrene Psychose -- Akute Paraphrenie -- Paraphrene Schizophrenie -- Akute paranoide Schizophrenie"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -93,13 +83,6 @@
                     },
                     {
                       "label": "F20.1",
-                      "description": "Hebephrene Schizophrenie",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Hebephrenie -- Hebephrene Schizophrenie -- Akute Hebephrenie -- Hebephrene Demenz -- Hebephrene Dementia praecox -- Desintegrative Schizophrenie -- Desorganisierte Schizophrenie -- Jugendirresein"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -109,13 +92,6 @@
                     },
                     {
                       "label": "F20.2",
-                      "description": "Katatone Schizophrenie",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Katatone Schizophrenie -- Katatonie -- Katatone Demenz -- Katatone Erregung -- Akute Katatonie -- Katatoner Erregungszustand -- Katatoner Spannungszustand -- Katatone Agitation -- Schizophrene Flexibilitas cerea -- Schizophrene Katalepsie -- Akute katatone Katalepsie -- Kataleptische Schizophrenie -- Flexibilitas cerea bei Schizophrenie -- Katatoner Stupor -- Schizophrene Katatonie -- Katatonischer Stupor"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -125,13 +101,6 @@
                     },
                     {
                       "label": "F20.3",
-                      "description": "Undifferenzierte Schizophrenie",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Undifferenzierte Schizophrenie -- Atypische Schizophrenie"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -141,13 +110,6 @@
                     },
                     {
                       "label": "F20.4",
-                      "description": "Postschizophrene Depression",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Postschizophrene Depression"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -157,13 +119,6 @@
                     },
                     {
                       "label": "F20.5",
-                      "description": "Schizophrenes Residuum",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Schizophrenes Residuum -- Schizophrener Restzustand -- Chronischer Morbus Bleuler -- Schizophrener Defekt -- Chronische Schizophrenie a.n.k. -- Residuale Schizophrenie -- Schizophrener Residualzustand -- Chronische undifferenzierte Schizophrenie"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -173,13 +128,6 @@
                     },
                     {
                       "label": "F20.6",
-                      "description": "Schizophrenia simplex",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Schizophrenia simplex -- Akute primäre Schizophrenie -- Akute einfache Schizophrenie"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -189,13 +137,6 @@
                     },
                     {
                       "label": "F20.8",
-                      "description": "Sonstige Schizophrenie",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Akute schizophrene Attacke -- Zönästhetische Schizophrenie -- Schizophrene Attacke -- Schizophrenie und Verwirrtheit -- Schizophreniformer Anfall -- Schizophreniforme Psychose"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -205,13 +146,6 @@
                     },
                     {
                       "label": "F20.9",
-                      "description": "Schizophrenie, nicht näher bezeichnet",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Schizophrenie -- Schizophrene Reaktion -- Schizophrene Demenz -- Morbus Bleuler -- Schizophrene Psychose -- Schizophrenia -- Schizophrenie-Reaktion -- Dementia praecox -- Spaltungsirresein -- Paranoide Dementia praecox"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -223,7 +157,6 @@
                 },
                 {
                   "label": "F22",
-                  "description": "Anhaltende wahnhafte Störungen",
                   "condition": {
                     "type": "PREFIX_LIST",
                     "prefixes": [
@@ -233,13 +166,6 @@
                   "children": [
                     {
                       "label": "F22.0",
-                      "description": "Wahnhafte Störung",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Beziehungswahn -- Wahnidee -- Wahnvorstellung -- Größenwahn -- Wahnhafte Störung -- Wahn -- Capgras-Syndrom \\[Wahnsyndrom mit Personenverkennung im Sinne der Doppelgänger-Illusion\\] -- Wahnsyndrom mit Personenverkennung im Sinne einer Doppelgängerillusion \\[Capgras-Syndrom\\] -- Verfolgungswahn -- Spätparaphrenie -- Paranoia -- Eifersuchtswahn -- Sensitiver Beziehungswahn -- Paranoid-halluzinatorische Psychose -- Paranoide Psychose -- Paranoider Zustand -- Chronische paranoide Reaktion -- Paranoides Syndrom -- Einfache paranoide Psychose -- Paranoide Charakterneurose -- Paranoider Wahn -- Paranoische Psychose -- Systematisierter Wahn -- Paranoide Wahnvorstellung -- Paranoide Halluzination"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -249,13 +175,6 @@
                     },
                     {
                       "label": "F22.8",
-                      "description": "Sonstige anhaltende wahnhafte Störungen",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Involutionsparaphrenie -- Dysmorphophobie -- Querulantenwahn -- Paranoia querulans -- Wahnhafte Dysmorphophobie -- Paranoides Zustandsbild bei Klimakterium -- Paranoides Zustandsbild im Involutionsalter -- Paranoides organisch bedingtes Zustandsbild im Involutionsalter -- Paranoide Involutionspsychose -- Paranoide Involutionsreaktion -- Menopausale paranoide Psychose -- Klimakterische paranoide Psychose -- Klimakterische paranoide Reaktion -- Menopausale Paraphrenie -- Klimakterische Paraphrenie"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -265,13 +184,6 @@
                     },
                     {
                       "label": "F22.9",
-                      "description": "Anhaltende wahnhafte Störung, nicht näher bezeichnet",
-                      "additionalInfos": [
-                        {
-                          "key": "Stichworte",
-                          "value": "Anhaltende wahnhafte Störung -- Dementia phantastica -- Paranoides Irresein"
-                        }
-                      ],
                       "condition": {
                         "type": "PREFIX_LIST",
                         "prefixes": [
@@ -283,13 +195,6 @@
                 },
                 {
                   "label": "F24",
-                  "description": "Induzierte wahnhafte Störung",
-                  "additionalInfos": [
-                    {
-                      "key": "Stichworte",
-                      "value": "Induzierte wahnhafte Störung -- Induzierte Psychose -- Induzierte paranoide Psychose -- Folie à deux -- Symbiotische Psychose -- Induzierte psychotische Störung -- Induzierte paranoide Störung"
-                    }
-                  ],
                   "condition": {
                     "type": "PREFIX_LIST",
                     "prefixes": [
