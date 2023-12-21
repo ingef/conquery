@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.datasets.concepts.conditions;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotEmpty;
 
@@ -14,8 +15,8 @@ import com.bakdata.conquery.util.CalculatedValue;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.jooq.Condition;
 import org.jooq.Field;
-import org.jooq.LikeEscapeStep;
 import org.jooq.impl.DSL;
 
 /**
@@ -43,12 +44,8 @@ public class PrefixCondition implements CTCondition {
 	@Override
 	public WhereCondition convertToSqlCondition(CTConditionContext context) {
 		Field<String> field = DSL.field(DSL.name(context.getConnectorTable().getName(), context.getConnectorColumn().getName()), String.class);
-		LikeEscapeStep condition = Arrays.stream(prefixes)
-										 .map(prefix -> field.like(prefix + "%"))
-										 .reduce((like1, like2) -> (LikeEscapeStep) like1.or(like2))
-										 .orElseThrow(() -> new IllegalStateException(
-												 "At least 1 prefix is required for the conversion of %s to a SQL where clause.".formatted(getClass()))
-										 );
+		String pattern = Arrays.stream(prefixes).collect(Collectors.joining("|", "", "%"));
+		Condition condition = context.getFunctionProvider().likeRegex(field, pattern);
 		return new WhereConditionWrapper(condition, ConditionType.PREPROCESSING);
 	}
 }

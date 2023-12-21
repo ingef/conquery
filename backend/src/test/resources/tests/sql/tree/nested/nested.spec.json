@@ -46,7 +46,10 @@
             "conditions": [
               {
                 "type": "PREFIX_LIST",
-                "prefixes": "C1"
+                "prefixes": [
+                  "C",
+                  "C1"
+                ]
               },
               {
                 "type": "AND",
