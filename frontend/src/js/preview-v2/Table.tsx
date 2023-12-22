@@ -1,9 +1,11 @@
 import styled from "@emotion/styled";
-import { Table as ArrowTable } from "apache-arrow";
+import { Table as ArrowTable, Vector } from "apache-arrow";
 import RcTable from "rc-table";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
+import { CurrencyConfigT, GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
 import { NUMBER_TYPES, formatDate, formatNumber } from "./util";
+import { useSelector } from "react-redux";
+import { StateT } from "../app/reducers";
 
 interface Props {
   data: ArrowTable;
@@ -42,26 +44,53 @@ export default function Table({ data, queryData }: Props) {
     table: StyledTable,
   };
 
-  const getRenderFunction = (
+  const currencyConfig = useSelector<StateT, CurrencyConfigT>(
+    (state) => state.startup.config.currency,
+  );
+
+  function getRenderFunction(cellType: string): ((value: string | Vector) => ReactNode) | undefined {
+    if (cellType.indexOf("LIST") == 0) {
+      const listType = cellType.match(/LIST\[(?<listtype>.*)\]/)?.groups?.["listtype"]
+      if (listType) {
+        const listTypeRenderFunction = getRenderFunction(listType)
+        return (value) => (value as Vector).toArray()
+          .map((listItem: string) => listTypeRenderFunction ? listTypeRenderFunction(listItem) : listItem)
+          .join(", ")
+      }
+    } else if (NUMBER_TYPES.includes(cellType)) {
+      return (value) => {
+        const num = parseFloat(value as string);
+        return isNaN(num) ? value : formatNumber(num);
+      };
+    } else if (cellType == "DATE") {
+      return (value) => formatDate(value as string);
+    } else if (cellType == "DATE_RANGE") {
+      return (value) => {
+        const dateRange = (value as Vector).toJSON() as unknown as { min: Date, max: Date }
+        const min = dateRange.min.toLocaleDateString("de-de")
+        const max = dateRange.max.toLocaleDateString("de-de")
+        return min == max
+          ? min
+          : `${min} - ${max}`
+      }
+    } else if (cellType == "MONEY") {
+      return (value) => {
+        const num = parseFloat(value as string);
+        return isNaN(num) ? value : `${formatNumber(num)} ${currencyConfig.unit}`;
+      };
+    } else if (cellType == "BOOLEAN") {
+      return (value) => value ? "1" : "0"
+    }
+  }
+
+  const getRenderFunctionByFieldName = (
     fieldName: string,
-  ): ((value: string) => ReactNode) | undefined => {
+  ): ((value: string | Vector) => ReactNode) | undefined => {
     const cellType = (
       queryData as GetQueryResponseDoneT
     ).columnDescriptions?.find((x) => x.label == fieldName)?.type;
     if (cellType) {
-      if (NUMBER_TYPES.includes(cellType)) {
-        return (value) => {
-          const num = parseFloat(value);
-          return isNaN(num) ? value : formatNumber(num);
-        };
-      } else if (cellType == "DATE") {
-        return (value) => formatDate(value);
-      } else if (cellType == "MONEY") {
-        return (value) => {
-          const num = parseFloat(value);
-          return isNaN(num) ? value : formatNumber(num, 2) + " €";
-        };
-      }
+      return getRenderFunction(cellType)
     }
   };
 
@@ -69,7 +98,7 @@ export default function Table({ data, queryData }: Props) {
     title: field.name.charAt(0).toUpperCase() + field.name.slice(1),
     dataIndex: field.name,
     key: field.name,
-    render: getRenderFunction(field.name),
+    render: getRenderFunctionByFieldName(field.name),
   }));
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -106,6 +135,7 @@ export default function Table({ data, queryData }: Props) {
         data={tableData.slice(0, loadingAmount)}
         rowKey={(_, index) => `row_${index}`}
         components={components}
+        scroll={{ x: true }}
       />
     </Root>
   );
