@@ -1,14 +1,11 @@
 import styled from "@emotion/styled";
-import { faStar } from "@fortawesome/free-solid-svg-icons";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import type { StateT } from "../app/reducers";
 import { HistoryButton } from "../button/HistoryButton";
-import IconButton from "../button/IconButton";
 import DatasetSelector from "../dataset/DatasetSelector";
-import { openPreview, useLoadPreviewData } from "../preview-v2/actions";
 import { canViewEntityPreview, useHideLogoutButton } from "../user/selectors";
 
 import { HelpMenu } from "./HelpMenu";
@@ -80,12 +77,6 @@ const Header: FC = () => {
     StateT["startup"]["config"]
   >((state) => state.startup.config);
 
-  const dispatch = useDispatch();
-  const loadPreviewData = useLoadPreviewData();
-  const queryId = useSelector<StateT, string | null>(
-    (state) => state.preview.lastQuery,
-  );
-
   return (
     <Root>
       <OverflowHidden>
@@ -93,15 +84,6 @@ const Header: FC = () => {
         <Spacer />
         <Headline>{t("headline")}</Headline>
       </OverflowHidden>
-      {queryId && (
-        <IconButton
-          icon={faStar}
-          onClick={async () => {
-            await loadPreviewData(queryId);
-            dispatch(openPreview());
-          }}
-        />
-      )}
       <Right>
         <DatasetSelector />
         {canViewHistory && <HistoryButton />}
