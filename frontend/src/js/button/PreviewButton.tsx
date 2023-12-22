@@ -1,12 +1,12 @@
 import styled from "@emotion/styled";
 import { useTranslation } from "react-i18next";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import type { ColumnDescription } from "../api/types";
-import { useGetAuthorizedUrl } from "../authorization/useAuthorizedUrl";
-import { openPreview, useLoadPreviewData } from "../preview/actions";
 
 import { TransparentButton } from "./TransparentButton";
+import { StateT } from "../app/reducers";
+import { openPreview, useLoadPreviewData } from "../preview-v2/actions";
 
 const Button = styled(TransparentButton)`
   white-space: nowrap;
@@ -25,13 +25,17 @@ const PreviewButton = ({
   const dispatch = useDispatch();
 
   const loadPreviewData = useLoadPreviewData();
-  const getAuthorizedUrl = useGetAuthorizedUrl();
+  const queryId = useSelector<StateT, string | null>(
+    (state) => state.preview.lastQuery,
+  );
 
   return (
     <Button
       onClick={async () => {
-        await loadPreviewData(getAuthorizedUrl(url), columns);
-        dispatch(openPreview());
+        if (queryId) {
+          await loadPreviewData(queryId);
+          dispatch(openPreview());
+        }
       }}
       {...restProps}
     >
