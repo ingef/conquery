@@ -188,7 +188,10 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			prior = null;
 		}
 
-		bins.add(prior);
+		if(prior != null) {
+			bins.add(prior);
+		}
+
 		return bins;
 	}
 
