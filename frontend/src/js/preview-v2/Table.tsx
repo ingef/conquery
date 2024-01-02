@@ -59,9 +59,10 @@ export default function Table({ data, queryData }: Props) {
       const listType = cellType.match(/LIST\[(?<listtype>.*)\]/)?.groups?.[
         "listtype"
       ];
-      if (listType) {
-        const listTypeRenderFunction = getRenderFunction(listType);
+
+      const listTypeRenderFunction = getRenderFunction(listType);
         return (value) =>
+          value ?
           (value as Vector)
             .toArray()
             .map((listItem: string) =>
@@ -69,8 +70,9 @@ export default function Table({ data, queryData }: Props) {
                 ? listTypeRenderFunction(listItem)
                 : listItem,
             )
-            .join(", ");
-      }
+            .join(", ")
+            : null;
+
     } else if (NUMBER_TYPES.includes(cellType)) {
       return (value) => {
         const num = parseFloat(value as string);
