@@ -192,6 +192,8 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			bins.add(prior);
 		}
 
+		Collections.reverse(bins);
+
 		return bins;
 	}
 
