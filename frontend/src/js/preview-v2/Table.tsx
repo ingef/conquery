@@ -59,7 +59,7 @@ export default function Table({ data, queryData }: Props) {
       const listType = cellType.match(/LIST\[(?<listtype>.*)\]/)?.groups?.[
         "listtype"
       ];
-      if (!listType) {
+      if (listType) {
         const listTypeRenderFunction = getRenderFunction(listType);
         return (value) =>
         value ?
