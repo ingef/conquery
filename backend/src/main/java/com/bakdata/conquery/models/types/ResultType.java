@@ -244,6 +244,11 @@ public abstract class ResultType<T> {
 		public String getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
 			return resultSetProcessor.getString(resultSet, columnIndex);
 		}
+
+		@Override
+		protected List<String> getFromResultSetAsList(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
+			return resultSetProcessor.getStringList(resultSet, columnIndex);
+		}
 	}
 
 	@CPSType(id = "MONEY", base = ResultType.class)
@@ -277,6 +282,7 @@ public abstract class ResultType<T> {
 	@Getter
 	@EqualsAndHashCode(callSuper = false)
 	public static class ListT<T> extends ResultType<List<T>> {
+
 		@NonNull
 		private final ResultType<T> elementType;
 
@@ -307,10 +313,10 @@ public abstract class ResultType<T> {
 
 		@Override
 		public List<T> getFromResultSet(ResultSet resultSet, int columnIndex, ResultSetProcessor resultSetProcessor) throws SQLException {
-			if (elementType instanceof DateRangeT) {
+			if (elementType.getClass() == DateRangeT.class || elementType.getClass() == StringT.class) {
 				return elementType.getFromResultSetAsList(resultSet, columnIndex, resultSetProcessor);
 			}
-			// TODO handle all other list types properly by
+			// TODO handle all other list types properly
 			throw new UnsupportedOperationException("Other result type lists not supported for now.");
 		}
 

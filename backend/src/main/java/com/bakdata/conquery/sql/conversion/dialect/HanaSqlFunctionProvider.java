@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import org.jooq.Condition;
+import org.jooq.DataType;
 import org.jooq.Field;
 import org.jooq.Name;
 import org.jooq.Param;
@@ -28,6 +29,20 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public String getMaxDateExpression() {
 		return MAX_DATE_VALUE;
+	}
+
+	@Override
+	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
+		return DSL.function(
+				"CAST",
+				type.getType(),
+				DSL.field("%s AS %s".formatted(field, type.getName()))
+		);
+	}
+
+	@Override
+	public Field<String> toChar(int character) {
+		return DSL.function("char", String.class, DSL.val(character));
 	}
 
 	@Override

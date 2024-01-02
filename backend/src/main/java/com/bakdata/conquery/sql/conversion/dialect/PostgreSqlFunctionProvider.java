@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.concepts.ValidityDate;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import org.jooq.Condition;
+import org.jooq.DataType;
 import org.jooq.DatePart;
 import org.jooq.Field;
 import org.jooq.Name;
@@ -29,6 +30,16 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 	@Override
 	public String getMaxDateExpression() {
 		return INFINITY_DATE_VALUE;
+	}
+
+	@Override
+	public <T> Field<T> cast(Field<?> field, DataType<T> type) {
+		return DSL.cast(field, type);
+	}
+
+	@Override
+	public Field<String> toChar(int character) {
+		return DSL.chr(character);
 	}
 
 	@Override

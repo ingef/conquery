@@ -7,13 +7,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 class DefaultResultSetProcessor implements ResultSetProcessor {
 
 	private final SqlCDateSetParser sqlCDateSetParser;
-
-	public DefaultResultSetProcessor(SqlCDateSetParser sqlCDateSetParser) {
-		this.sqlCDateSetParser = sqlCDateSetParser;
-	}
 
 	@Override
 	public String getString(ResultSet resultSet, int columnIndex) throws SQLException {
@@ -61,6 +60,11 @@ class DefaultResultSetProcessor implements ResultSetProcessor {
 	@Override
 	public List<List<Integer>> getDateRangeList(ResultSet resultSet, int columnIndex) throws SQLException {
 		return this.sqlCDateSetParser.toEpochDayRangeList(resultSet.getString(columnIndex));
+	}
+
+	@Override
+	public List<String> getStringList(ResultSet resultSet, int columnIndex) throws SQLException {
+		return SqlStringListParser.parse(resultSet.getString(columnIndex));
 	}
 
 	@FunctionalInterface
