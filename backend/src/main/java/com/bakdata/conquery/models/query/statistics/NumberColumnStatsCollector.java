@@ -200,7 +200,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 		final int expectedBins = 15;
 
 		final int min = (int) Math.round(getStatistics().getMin());
-		final int max = (int) Math.round(getStatistics().getMin());
+		final int max = (int) Math.round(getStatistics().getMax());
 
 		final int nBins = Math.min(1 + min - max, expectedBins);
 
