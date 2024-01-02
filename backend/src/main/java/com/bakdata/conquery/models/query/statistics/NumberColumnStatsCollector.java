@@ -204,7 +204,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		final int nBins = Math.min(1 + min - max, expectedBins);
 
-		final int width = (min - max) / nBins;
+		final int width = Math.max(1, (min - max) / nBins);
 
 
 		return CustomLayout.create(DoubleStream.iterate(min, cur -> cur <= max, cur -> cur + width).toArray());
