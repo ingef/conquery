@@ -10,13 +10,13 @@ import it.unimi.dsi.fastutil.doubles.DoubleList;
 import lombok.Data;
 
 @Data
-public class DynamicHistogram {
+public class BalancingStaticHistogram {
 	private final Node[] nodes;
 	private final double min;
 	private final double width;
 
-	public static DynamicHistogram create(double min, double max, int expectedBins) {
-		return new DynamicHistogram(new Node[expectedBins], min, (max - min) / expectedBins);
+	public static BalancingStaticHistogram create(double min, double max, int expectedBins) {
+		return new BalancingStaticHistogram(new Node[expectedBins], min, (max - min) / (expectedBins - 1));
 	}
 
 	public void add(double value) {
