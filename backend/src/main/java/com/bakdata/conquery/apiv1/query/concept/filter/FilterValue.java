@@ -75,7 +75,7 @@ public abstract class FilterValue<VALUE> {
 		FilterContext<VALUE> filterContext = new FilterContext<>(value, context, conceptTables);
 		SqlFilters sqlFilters = filter.convertToSqlFilter(filterContext);
 		if (context.isNegation()) {
-			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getFilters().negated());
+			return new SqlFilters(sqlFilters.getSelects(), sqlFilters.getWhereClauses().negated());
 		}
 		return sqlFilters;
 	}

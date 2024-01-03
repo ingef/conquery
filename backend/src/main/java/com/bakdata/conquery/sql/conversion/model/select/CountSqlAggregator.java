@@ -1,7 +1,5 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
-import java.util.List;
-
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
@@ -12,8 +10,8 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.CountCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.Filters;
 import com.bakdata.conquery.sql.conversion.model.filter.SqlFilters;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import lombok.Value;
 import org.jooq.Field;
 import org.jooq.impl.DSL;
@@ -23,7 +21,7 @@ import org.jooq.impl.DSL;
 public class CountSqlAggregator implements SqlAggregator {
 
 	SqlSelects sqlSelects;
-	Filters filters;
+	WhereClauses whereClauses;
 
 	private CountSqlAggregator(
 			Column countColumn,
@@ -51,15 +49,15 @@ public class CountSqlAggregator implements SqlAggregator {
 		if (filterValue == null) {
 			ExtractingSqlSelect<Integer> finalSelect = countGroupBy.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
-			this.filters = null;
+			this.whereClauses = null;
 		}
 		else {
 			this.sqlSelects = builder.build();
 			Field<Integer> qualifiedCountSelect = countGroupBy.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
 			CountCondition countCondition = new CountCondition(qualifiedCountSelect, filterValue);
-			this.filters = Filters.builder()
-								  .group(List.of(countCondition))
-								  .build();
+			this.whereClauses = WhereClauses.builder()
+											.groupFilter(countCondition)
+											.build();
 		}
 	}
 
@@ -85,7 +83,7 @@ public class CountSqlAggregator implements SqlAggregator {
 
 	@Override
 	public SqlFilters getSqlFilters() {
-		return new SqlFilters(this.sqlSelects, this.filters);
+		return new SqlFilters(this.sqlSelects, this.whereClauses);
 	}
 
 	public enum CountType {

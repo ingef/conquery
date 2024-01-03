@@ -1,7 +1,6 @@
 package com.bakdata.conquery.sql.conversion.model.select;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -12,7 +11,7 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.FilterContext;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.NumberMapUtil;
 import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
-import com.bakdata.conquery.sql.conversion.model.filter.Filters;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.model.filter.SumCondition;
 import lombok.Value;
 import org.jooq.Field;
@@ -22,7 +21,7 @@ import org.jooq.impl.DSL;
 public class SumSqlAggregator implements SqlAggregator {
 
 	SqlSelects sqlSelects;
-	Filters filters;
+	WhereClauses whereClauses;
 
 	private SumSqlAggregator(
 			Column sumColumn,
@@ -49,15 +48,15 @@ public class SumSqlAggregator implements SqlAggregator {
 		if (filterValue == null) {
 			ExtractingSqlSelect<BigDecimal> finalSelect = sumGroupBy.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.FINAL));
 			this.sqlSelects = builder.finalSelect(finalSelect).build();
-			this.filters = null;
+			this.whereClauses = null;
 		}
 		else {
 			this.sqlSelects = builder.build();
 			Field<BigDecimal> qualifiedSumGroupBy = sumGroupBy.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.AGGREGATION_FILTER)).select();
 			SumCondition sumCondition = new SumCondition(qualifiedSumGroupBy, filterValue);
-			this.filters = Filters.builder()
-								  .group(List.of(sumCondition))
-								  .build();
+			this.whereClauses = WhereClauses.builder()
+											.groupFilter(sumCondition)
+											.build();
 		}
 	}
 

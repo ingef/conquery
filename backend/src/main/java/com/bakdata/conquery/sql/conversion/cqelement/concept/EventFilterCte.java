@@ -6,7 +6,7 @@ import java.util.Optional;
 import com.bakdata.conquery.sql.conversion.model.ColumnDateRange;
 import com.bakdata.conquery.sql.conversion.model.QueryStep;
 import com.bakdata.conquery.sql.conversion.model.Selects;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
 import com.bakdata.conquery.sql.conversion.model.select.SqlSelect;
 import org.jooq.Condition;
 
@@ -16,8 +16,8 @@ class EventFilterCte extends ConceptCte {
 	public QueryStep.QueryStepBuilder convertStep(ConceptCteContext conceptCteContext) {
 		Selects eventFilterSelects = getEventFilterSelects(conceptCteContext);
 		List<Condition> eventFilterConditions = conceptCteContext.getFilters().stream()
-																 .flatMap(conceptFilter -> conceptFilter.getFilters().getEvent().stream())
-																 .map(FilterCondition::filterCondition)
+																 .flatMap(conceptFilter -> conceptFilter.getWhereClauses().getEventFilters().stream())
+																 .map(WhereCondition::condition)
 																 .toList();
 		return QueryStep.builder()
 						.selects(eventFilterSelects)

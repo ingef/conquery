@@ -3,7 +3,6 @@ package com.bakdata.conquery.sql.conversion.model.select;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Objects;
 
 import com.bakdata.conquery.models.common.Range;
@@ -18,8 +17,8 @@ import com.bakdata.conquery.sql.conversion.cqelement.concept.SelectContext;
 import com.bakdata.conquery.sql.conversion.dialect.SqlFunctionProvider;
 import com.bakdata.conquery.sql.conversion.model.SqlTables;
 import com.bakdata.conquery.sql.conversion.model.filter.DateDistanceCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.FilterCondition;
-import com.bakdata.conquery.sql.conversion.model.filter.Filters;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereCondition;
+import com.bakdata.conquery.sql.conversion.model.filter.WhereClauses;
 import com.bakdata.conquery.sql.conversion.supplier.DateNowSupplier;
 import lombok.Value;
 import org.jooq.Field;
@@ -30,7 +29,7 @@ import org.jooq.impl.DSL;
 public class DateDistanceSqlAggregator implements SqlAggregator {
 
 	SqlSelects sqlSelects;
-	Filters filters;
+	WhereClauses whereClauses;
 
 	private DateDistanceSqlAggregator(
 			Column column,
@@ -62,17 +61,17 @@ public class DateDistanceSqlAggregator implements SqlAggregator {
 			this.sqlSelects = builder.aggregationSelect(minDateDistance)
 									 .finalSelect(finalSelect)
 									 .build();
-			this.filters = null;
+			this.whereClauses = null;
 		}
 		else {
 			this.sqlSelects = builder.build();
 			Field<Integer>
 					qualifiedDateDistanceSelect =
 					dateDistanceSelect.createAliasedReference(conceptTables.getPredecessor(ConceptCteStep.EVENT_FILTER)).select();
-			FilterCondition dateDistanceCondition = new DateDistanceCondition(qualifiedDateDistanceSelect, filterValue);
-			this.filters = Filters.builder()
-								  .event(List.of(dateDistanceCondition))
-								  .build();
+			WhereCondition dateDistanceCondition = new DateDistanceCondition(qualifiedDateDistanceSelect, filterValue);
+			this.whereClauses = WhereClauses.builder()
+											.eventFilter(dateDistanceCondition)
+											.build();
 		}
 	}
 

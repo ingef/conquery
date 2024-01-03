@@ -6,5 +6,5 @@ import lombok.Value;
 @Value
 public class SqlFilters {
 	SqlSelects selects;
-	Filters filters;
+	WhereClauses whereClauses;
 }

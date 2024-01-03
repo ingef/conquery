@@ -192,6 +192,11 @@ class HanaSqlFunctionProvider implements SqlFunctionProvider {
 	}
 
 	@Override
+	public Condition likeRegex(Field<String> field, String pattern) {
+		return DSL.condition("{0} LIKE_REGEXPR {1}", field, pattern);
+	}
+
+	@Override
 	public Field<Date> addDays(Field<Date> dateColumn, int amountOfDays) {
 		return DSL.function(
 				"ADD_DAYS",

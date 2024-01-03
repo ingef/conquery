@@ -176,6 +176,11 @@ class PostgreSqlFunctionProvider implements SqlFunctionProvider {
 		return DSL.field(DSL.sql("({0})[1]", DSL.arrayAgg(DSL.field("%s %s".formatted(column, orderByRandomClause)))));
 	}
 
+	@Override
+	public Condition likeRegex(Field<String> field, String pattern) {
+		return field.similarTo(pattern);
+	}
+
 	private Field<?> daterange(Field<?> startColumn, Field<?> endColumn, String bounds) {
 		return DSL.function(
 				"daterange",

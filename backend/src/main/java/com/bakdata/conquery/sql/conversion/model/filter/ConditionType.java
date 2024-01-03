@@ -1,6 +1,7 @@
 package com.bakdata.conquery.sql.conversion.model.filter;
 
-public enum FilterType {
+public enum ConditionType {
+	PREPROCESSING,
 	EVENT,
 	GROUP
 }
