@@ -35,4 +35,18 @@ public class ConversionContext implements Context {
 		return this.dateRestrictionRange != null;
 	}
 
+	/**
+	 * Adds a query step to the list of {@link QueryStep} of this context.
+	 */
+	public ConversionContext withQueryStep(QueryStep queryStep) {
+		return this.toBuilder().queryStep(queryStep).build();
+	}
+
+	/**
+	 * @return Creates a child context that keeps the meta information of this context, but empties the list of already converted querySteps.
+	 */
+	public ConversionContext createChildContext() {
+		return this.toBuilder().clearQuerySteps().build();
+	}
+
 }

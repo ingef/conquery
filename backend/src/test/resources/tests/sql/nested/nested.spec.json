@@ -1,0 +1,215 @@
+{
+  "label": "Complex query with neste AND, OR and extra lang qualifiers",
+  "expectedCsv": "tests/sql/nested/expected.csv",
+  "type": "SQL_QUERY_TEST",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "OR",
+      "children": [
+        {
+          "type": "CONCEPT",
+          "label": "vs",
+          "ids": [
+            "number_with_an_extra_long_name_wow_its_huge_this_is_hilarious"
+          ],
+          "tables": [
+            {
+              "id": "number_with_an_extra_long_name_wow_its_huge_this_is_hilarious.number_connector",
+              "filters": [
+                {
+                  "filter": "number_with_an_extra_long_name_wow_its_huge_this_is_hilarious.number_connector.value_filter",
+                  "type": "REAL_RANGE",
+                  "value": {
+                    "min": -1,
+                    "max": 0
+                  }
+                }
+              ],
+              "selects": "number_with_an_extra_long_name_wow_its_huge_this_is_hilarious.number_connector.value_select"
+            }
+          ]
+        },
+        {
+          "type": "AND",
+          "children": [
+            {
+              "ids": [
+                "geschlecht_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious"
+              ],
+              "type": "CONCEPT",
+              "label": "Geschlecht SELECT",
+              "tables": [
+                {
+                  "id": "geschlecht_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.geschlecht_connector",
+                  "filters": [
+                    {
+                      "filter": "geschlecht_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.geschlecht_connector.geschlecht",
+                      "type": "BIG_MULTI_SELECT",
+                      "value": [
+                        "f"
+                      ]
+                    }
+                  ],
+                  "selects": [
+                    "geschlecht_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.geschlecht_connector.geschlecht"
+                  ]
+                }
+              ]
+            },
+            {
+              "ids": [
+                "language_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious"
+              ],
+              "type": "CONCEPT",
+              "label": "Language SELECT",
+              "tables": [
+                {
+                  "id": "language_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.language_connector",
+                  "filters": [
+                    {
+                      "filter": "language_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.language_connector.language",
+                      "type": "BIG_MULTI_SELECT",
+                      "value": [
+                        "de"
+                      ]
+                    }
+                  ],
+                  "selects": [
+                    "language_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious.language_connector.language"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "number_with_an_extra_long_name_wow_its_huge_this_is_hilarious",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "number_connector",
+          "table": "table1",
+          "validityDates": {
+            "label": "datum",
+            "startColumn": "table1.datum_start",
+            "endColumn": "table1.datum_end"
+          },
+          "filters": {
+            "label": "value_filter",
+            "description": "xy",
+            "column": "table1.value",
+            "type": "NUMBER"
+          },
+          "selects": {
+            "name": "value_select",
+            "column": "table1.value",
+            "type": "FIRST"
+          }
+        }
+      ]
+    },
+    {
+      "label": "geschlecht_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "table2",
+          "validityDates": {
+            "label": "datum",
+            "column": "table2.datum"
+          },
+          "filters": {
+            "label": "geschlecht",
+            "description": "Geschlecht zur gegebenen Datumseinschränkung",
+            "column": "table2.geschlecht",
+            "type": "SELECT"
+          },
+          "selects": {
+            "name": "geschlecht",
+            "column": "table2.geschlecht",
+            "type": "FIRST"
+          }
+        }
+      ]
+    },
+    {
+      "label": "language_select_with_an_extra_long_name_wow_its_huge_this_is_hilarious",
+      "type": "TREE",
+      "connectors": [
+        {
+          "label": "language_connector",
+          "table": "table2",
+          "validityDates": {
+            "label": "datum",
+            "column": "table2.datum"
+          },
+          "filters": {
+            "label": "language",
+            "description": "Sprache",
+            "column": "table2.language",
+            "type": "SELECT"
+          },
+          "selects": {
+            "name": "language",
+            "column": "table2.language",
+            "type": "FIRST"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/sql/nested/content1.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum_start",
+            "type": "DATE"
+          },
+          {
+            "name": "datum_end",
+            "type": "DATE"
+          }
+        ]
+      },
+      {
+        "csv": "tests/sql/nested/content2.csv",
+        "name": "table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "geschlecht",
+            "type": "STRING"
+          },
+          {
+            "name": "language",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}
