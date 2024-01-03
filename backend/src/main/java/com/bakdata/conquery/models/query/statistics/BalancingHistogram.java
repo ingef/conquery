@@ -19,10 +19,12 @@ public class BalancingHistogram {
 
 	private final int expectedBins;
 
+	private final double stiffness;
+
 	private int total;
 
-	public static BalancingHistogram create(double min, double max, int expectedBins) {
-		return new BalancingHistogram(new Node[expectedBins], min, (max - min) / (expectedBins - 1), expectedBins);
+	public static BalancingHistogram create(double min, double max, int expectedBins, double stiffness) {
+		return new BalancingHistogram(new Node[expectedBins], min, (max - min) / (expectedBins - 1), expectedBins, stiffness);
 	}
 
 	public void add(double value) {
@@ -65,7 +67,7 @@ public class BalancingHistogram {
 			}
 
 			// If the bin is too small, we merge-left
-			if (prior.getCount() < (total / expectedBins) * 0.5d) {
+			if (prior.getCount() < (total / expectedBins) * stiffness) {
 				prior = prior.merge(bin);
 				continue;
 			}
@@ -94,7 +96,7 @@ public class BalancingHistogram {
 
 		while(!frontier.isEmpty()) {
 			final Node node = frontier.pop();
-			if (node.getCount() <= (expectedBinSize * 1.5d)) {
+			if (node.getCount() <= (expectedBinSize * (1 + stiffness))) {
 				bins.add(node);
 				continue;
 			}
@@ -105,7 +107,7 @@ public class BalancingHistogram {
 			final Node higher = split.get(1);
 
 			// node has a heavy bias
-			if(Math.min(higher.getCount(), lower.getCount()) <= expectedBinSize * 0.1d){
+			if(Math.min(higher.getCount(), lower.getCount()) <= expectedBinSize * 0.1d /* This is not the merge threshold, just a sufficiently small number */){
 				bins.add(node);
 				continue;
 			}
