@@ -86,6 +86,7 @@ public class BalancingHistogram {
 	}
 
 	private List<Node> splitRight(List<Node> nodes) {
+		final int expectedBinSize = total / expectedBins;
 
 		final List<Node> bins = new ArrayList<>();
 
@@ -93,13 +94,24 @@ public class BalancingHistogram {
 
 		while(!frontier.isEmpty()) {
 			final Node node = frontier.pop();
-			if (node.getCount() <= (total / expectedBins * 1.5d)) {
+			if (node.getCount() <= (expectedBinSize * 1.5d)) {
 				bins.add(node);
 				continue;
 			}
 
-			frontier.addFirst(node.split().get(1));
-			frontier.addFirst(node.split().get(0));
+			final List<Node> split = node.split();
+
+			final Node lower = split.get(0);
+			final Node higher = split.get(1);
+
+			// node has a heavy bias
+			if(Math.min(higher.getCount(), lower.getCount()) <= expectedBinSize * 0.1d){
+				bins.add(node);
+				continue;
+			}
+
+			frontier.addFirst(higher);
+			frontier.addFirst(lower);
 		}
 
 		return bins;
