@@ -20,7 +20,7 @@ public class DynamicHistogram {
 	}
 
 	public void add(double value) {
-		final int index = (int) Math.floor((min - value) / width);
+		final int index = (int) Math.floor((value - min) / width);
 
 		if (nodes[index] == null) {
 			nodes[index] = new Node(new DoubleArrayList());
