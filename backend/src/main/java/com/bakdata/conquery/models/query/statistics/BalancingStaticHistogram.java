@@ -45,6 +45,10 @@ public class BalancingStaticHistogram {
 		Node prior = null;
 
 		for (Node bin : nodes) {
+			// Not all bins are initialised.
+			if(bin == null){
+				continue;
+			}
 
 			if (prior == null) {
 				prior = bin;
