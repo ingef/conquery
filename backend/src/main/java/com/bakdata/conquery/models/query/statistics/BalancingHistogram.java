@@ -1,25 +1,33 @@
 package com.bakdata.conquery.models.query.statistics;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 
-import com.google.common.math.Stats;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
-public class BalancingStaticHistogram {
+public class BalancingHistogram {
 	private final Node[] nodes;
 	private final double min;
 	private final double width;
 
-	public static BalancingStaticHistogram create(double min, double max, int expectedBins) {
-		return new BalancingStaticHistogram(new Node[expectedBins], min, (max - min) / (expectedBins - 1));
+	private final int expectedBins;
+
+	private int total;
+
+	public static BalancingHistogram create(double min, double max, int expectedBins) {
+		return new BalancingHistogram(new Node[expectedBins], min, (max - min) / (expectedBins - 1), expectedBins);
 	}
 
 	public void add(double value) {
+		total++;
+
 		final int index = (int) Math.floor((value - min) / width);
 
 		if (nodes[index] == null) {
@@ -29,24 +37,25 @@ public class BalancingStaticHistogram {
 		nodes[index].add(value);
 	}
 
-	public List<Node> balanced(int expectedBins, int total) {
+	public List<Node> balanced() {
 
-		final List<Node> merged = mergeLeft(total, nodes);
+		final List<Node> merged = mergeLeft(nodes);
 
-		final List<Node> split = splitRight(expectedBins, merged);
+		final List<Node> split = splitRight(merged);
 
 		return split;
 
 	}
 
-	private static List<Node> mergeLeft(int total, Node[] nodes) {
+	private List<Node> mergeLeft(Node[] nodes) {
 		final List<Node> bins = new ArrayList<>();
 
 		Node prior = null;
 
-		for (Node bin : nodes) {
+		for (int i = nodes.length - 1; i >= 0; i--) {
+			final Node bin = nodes[i];
 			// Not all bins are initialised.
-			if(bin == null){
+			if (bin == null) {
 				continue;
 			}
 
@@ -56,14 +65,14 @@ public class BalancingStaticHistogram {
 			}
 
 			// If the bin is too small, we merge-left
-			if ((double) prior.getCount() / total <= (1d / total)) {
+			if (prior.getCount() < (total / expectedBins) * 0.5d) {
 				prior = prior.merge(bin);
 				continue;
 			}
 
-			// Only emit bin, if we cannot merge left.
+			// emit prior, if we cannot merge left.
 			bins.add(prior);
-			prior = null;
+			prior = bin;
 		}
 
 		if (prior != null) {
@@ -76,27 +85,21 @@ public class BalancingStaticHistogram {
 		return bins;
 	}
 
-	private static List<Node> splitRight(int expectedBins, List<Node> nodes) {
-
-		if ((double) nodes.size() / (double) expectedBins >= 0.7d) {
-			return nodes;
-		}
+	private List<Node> splitRight(List<Node> nodes) {
 
 		final List<Node> bins = new ArrayList<>();
 
-		final Stats stats = nodes.stream().mapToDouble(node -> (double) node.getCount()).boxed().collect(Stats.toStats());
+		final Deque<Node> frontier = new ArrayDeque<>(nodes);
 
-		final double stdDev = stats.sampleStandardDeviation();
-		final double mean = stats.mean();
-
-
-		for (Node node : nodes) {
-			if (node.getCount() < mean + stdDev) {
+		while(!frontier.isEmpty()) {
+			final Node node = frontier.pop();
+			if (node.getCount() <= (total / expectedBins * 1.5d)) {
 				bins.add(node);
 				continue;
 			}
 
-			bins.addAll(node.split());
+			frontier.addFirst(node.split().get(1));
+			frontier.addFirst(node.split().get(0));
 		}
 
 		return bins;
@@ -104,6 +107,7 @@ public class BalancingStaticHistogram {
 
 	@Data
 	public static final class Node {
+		@ToString.Exclude
 		private final DoubleList entries;
 		private double min = Double.MAX_VALUE;
 		private double max = Double.MIN_VALUE;
@@ -120,6 +124,7 @@ public class BalancingStaticHistogram {
 			return out;
 		}
 
+		@ToString.Include
 		public int getCount() {
 			return entries.size();
 		}
