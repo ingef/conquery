@@ -94,17 +94,17 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 	@NotNull
 	private List<StringColumnStatsCollector.ColumnDescription.Entry> createBins(int total, int expectedBins) {
-		final DynamicHistogram histogram = DynamicHistogram.create(getStatistics().getMin(), getStatistics().getMax(), expectedBins);
+		final BalancingStaticHistogram histogram = BalancingStaticHistogram.create(getStatistics().getMin(), getStatistics().getMax(), expectedBins);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
-		final List<DynamicHistogram.Node> balanced = histogram.balanced(expectedBins, total);
+		final List<BalancingStaticHistogram.Node> balanced = histogram.balanced(expectedBins, total);
 
 
 		final List<StringColumnStatsCollector.ColumnDescription.Entry> entries = new ArrayList<>();
 
 
-		for (DynamicHistogram.Node bin : balanced) {
+		for (BalancingStaticHistogram.Node bin : balanced) {
 			final String lower = printValue(bin.getMin());
 			final String upper = printValue(bin.getMax());
 
