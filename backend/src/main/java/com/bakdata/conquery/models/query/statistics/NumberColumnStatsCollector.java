@@ -86,29 +86,29 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 			return new StringColumnStatsCollector.ColumnDescription(getName(), getLabel(), getDescription(), Collections.emptyList(), Collections.emptyMap());
 		}
 
-		final List<StringColumnStatsCollector.ColumnDescription.Entry> bins = createBins(((int) getStatistics().getN()), 15);
+		final List<StringColumnStatsCollector.ColumnDescription.Entry> bins = createBins(15);
 		final Map<String, String> extras = getExtras();
 
 		return new StringColumnStatsCollector.ColumnDescription(getName(), getLabel(), getDescription(), bins, extras);
 	}
 
 	@NotNull
-	private List<StringColumnStatsCollector.ColumnDescription.Entry> createBins(int total, int expectedBins) {
-		final BalancingStaticHistogram histogram = BalancingStaticHistogram.create(getStatistics().getMin(), getStatistics().getMax(), expectedBins);
+	private List<StringColumnStatsCollector.ColumnDescription.Entry> createBins(int expectedBins) {
+		final BalancingHistogram histogram = BalancingHistogram.create(getStatistics().getMin(), getStatistics().getMax(), expectedBins);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
-		final List<BalancingStaticHistogram.Node> balanced = histogram.balanced(expectedBins, total);
+		final List<BalancingHistogram.Node> balanced = histogram.balanced();
 
 
 		final List<StringColumnStatsCollector.ColumnDescription.Entry> entries = new ArrayList<>();
 
 
-		for (BalancingStaticHistogram.Node bin : balanced) {
+		for (BalancingHistogram.Node bin : balanced) {
 			final String lower = printValue(bin.getMin());
 			final String upper = printValue(bin.getMax());
 
-			final String binLabel = String.format("%s - %s", lower, upper);
+			final String binLabel = lower.equals(upper) ? lower : String.format("%s - %s", lower, upper);
 
 
 			entries.add(new StringColumnStatsCollector.ColumnDescription.Entry(binLabel, bin.getCount()));
