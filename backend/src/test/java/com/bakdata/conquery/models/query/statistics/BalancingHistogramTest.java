@@ -9,25 +9,81 @@ import org.junit.jupiter.api.Test;
 @Slf4j
 class BalancingHistogramTest {
 
-	@Test
-	void add() {
-		BalancingHistogram histogram = BalancingHistogram.create(0, 10, 15, 0.8d);
+	public static final int SEED = 0xD00F;
+	private final int max = 250;
 
-		final Random random = new Random();
+	@Test
+	void balanced() {
+		BalancingHistogram histogram = BalancingHistogram.create(0, max, 15, 0.8d, false);
+
+		final Random random = new Random(SEED);
 
 		for (int val = 0; val < 1000; val++) {
-			histogram.add(random.nextDouble(0, 10));
+			histogram.add(random.nextDouble(0, max));
 		}
 
 		for (int val = 0; val < 100; val++) {
-			histogram.add(random.nextDouble(0, 2));
+			histogram.add(random.nextDouble(0, max / 5d));
 		}
 
-		histogram.add(0);
-		histogram.add(10);
+		for (int val = 0; val < 100; val++) {
+			histogram.add(random.nextDouble(max / 2d, max / 2d + max / 5d));
+		}
+
+		histogram.add(max);
 
 
 		List<BalancingHistogram.Node> balanced = histogram.balanced();
+		log.info("{}", balanced);
+	}
+
+	@Test
+	void snapped() {
+		BalancingHistogram histogram = BalancingHistogram.create(0, max, 15, 0.8d, false);
+
+		final Random random = new Random(SEED);
+
+		for (int val = 0; val < 1000; val++) {
+			histogram.add(random.nextDouble(0, max));
+		}
+
+		for (int val = 0; val < 100; val++) {
+			histogram.add(random.nextDouble(0, max / 5d));
+		}
+
+		for (int val = 0; val < 100; val++) {
+			histogram.add(random.nextDouble(max / 2d, max / 2d + max / 5d));
+		}
+
+		histogram.add(max);
+
+
+		List<BalancingHistogram.Node> balanced = histogram.snapped();
+		log.info("{}", balanced);
+	}
+
+	@Test
+	void plain() {
+		BalancingHistogram histogram = BalancingHistogram.create(0, max, 15, 0.8d, false);
+
+		final Random random = new Random(SEED);
+
+		for (int val = 0; val < 1000; val++) {
+			histogram.add(random.nextDouble(0, max));
+		}
+
+		for (int val = 0; val < 100; val++) {
+			histogram.add(random.nextDouble(0, max / 5d));
+		}
+
+		for (int val = 0; val < 100; val++) {
+			histogram.add(random.nextDouble(max / 2d, max / 2d + max / 5d));
+		}
+
+		histogram.add(max);
+
+
+		List<BalancingHistogram.Node> balanced = histogram.nodes();
 		log.info("{}", balanced);
 	}
 }

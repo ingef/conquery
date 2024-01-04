@@ -94,11 +94,11 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 	@NotNull
 	private List<StringColumnStatsCollector.ColumnDescription.Entry> createBins(int expectedBins) {
-		final BalancingHistogram histogram = BalancingHistogram.create(getStatistics().getMin(), getStatistics().getMax(), expectedBins, 0.8d);
+		final BalancingHistogram histogram = BalancingHistogram.create(getStatistics().getMin(), getStatistics().getMax(), expectedBins, 0.8d, false);
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
-		final List<BalancingHistogram.Node> balanced = histogram.balanced();
+		final List<BalancingHistogram.Node> balanced = histogram.snapped();
 
 
 		final List<StringColumnStatsCollector.ColumnDescription.Entry> entries = new ArrayList<>();

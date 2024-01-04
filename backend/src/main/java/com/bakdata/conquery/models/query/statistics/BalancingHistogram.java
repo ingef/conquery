@@ -2,11 +2,16 @@ package com.bakdata.conquery.models.query.statistics;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
 
+import groovy.lang.Tuple;
+import groovy.lang.Tuple2;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
+import it.unimi.dsi.fastutil.doubles.DoubleIterator;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import lombok.Data;
 import lombok.ToString;
@@ -23,8 +28,18 @@ public class BalancingHistogram {
 
 	private int total;
 
-	public static BalancingHistogram create(double min, double max, int expectedBins, double stiffness) {
-		return new BalancingHistogram(new Node[expectedBins], min, (max - min) / (expectedBins - 1), expectedBins, stiffness);
+	public static BalancingHistogram create(double min, double max, int expectedBins, double stiffness, boolean snap) {
+		double width = (max - min) / (expectedBins - 1);
+
+		if (snap) {
+			min = Math.floor(min);
+			max = Math.ceil(max);
+			width = Math.min(1, Math.round(width));
+
+			expectedBins = (int) Math.ceil((min - max) / width);
+		}
+
+		return new BalancingHistogram(new Node[expectedBins], min, width, expectedBins, stiffness);
 	}
 
 	public void add(double value) {
@@ -94,7 +109,7 @@ public class BalancingHistogram {
 
 		final Deque<Node> frontier = new ArrayDeque<>(nodes);
 
-		while(!frontier.isEmpty()) {
+		while (!frontier.isEmpty()) {
 			final Node node = frontier.pop();
 			if (node.getCount() <= (expectedBinSize * (1 + stiffness))) {
 				bins.add(node);
@@ -107,7 +122,8 @@ public class BalancingHistogram {
 			final Node higher = split.get(1);
 
 			// node has a heavy bias
-			if(Math.min(higher.getCount(), lower.getCount()) <= expectedBinSize * 0.1d /* This is not the merge threshold, just a sufficiently small number */){
+			if (Math.min(higher.getCount(), lower.getCount())
+				<= expectedBinSize * 0.1d /* This is not the merge threshold, just a sufficiently small number */) {
 				bins.add(node);
 				continue;
 			}
@@ -117,6 +133,57 @@ public class BalancingHistogram {
 		}
 
 		return bins;
+	}
+
+	public List<Node> snapped() {
+		final Node first = nodes[0];
+
+		double min;
+		double max = Math.floor(first.min);
+
+
+		for (int index = 0; index < nodes.length; index++) {
+			final Node current = nodes[index];
+
+			if (current == null) {
+				continue;
+			}
+
+			min = max;
+			max = Math.max(min, Math.round(current.max));
+
+			boolean isLast = index == nodes.length - 1;
+
+			if (isLast) {
+				max = Math.ceil(current.max);
+			}
+
+			final Tuple2<DoubleList, DoubleList> spill = current.adjust(min, max);
+
+			final DoubleList lower = spill.getV1();
+
+			if (!lower.isEmpty()) {
+				lower.forEach(nodes[index - 1]::add);
+			}
+
+			final DoubleList higher = spill.getV2();
+
+			if (!higher.isEmpty()) {
+				if (isLast) {
+					higher.forEach(current::add);
+				}
+				else {
+					higher.forEach(nodes[index + 1]::add);
+				}
+			}
+
+		}
+
+		return Arrays.stream(nodes).filter(Objects::nonNull).filter(node -> node.getCount() > 0).toList();
+	}
+
+	public List<Node> nodes() {
+		return Arrays.stream(nodes).filter(Objects::nonNull).toList();
 	}
 
 	@Data
@@ -165,6 +232,30 @@ public class BalancingHistogram {
 			max = Math.max(max, value);
 			min = Math.min(min, value);
 			entries.add(value);
+		}
+
+		public Tuple2<DoubleList, DoubleList> adjust(double min, double max) {
+			final DoubleList lower = new DoubleArrayList();
+			final DoubleList higher = new DoubleArrayList();
+			final DoubleIterator iterator = entries.doubleIterator();
+
+			this.min = min;
+			this.max = max;
+
+			while (iterator.hasNext()) {
+				final double value = iterator.nextDouble();
+
+				if (value < min) {
+					lower.add(value);
+					iterator.remove();
+				}
+				else if (value >= max) {
+					higher.add(value);
+					iterator.remove();
+				}
+			}
+
+			return Tuple.tuple(lower, higher);
 		}
 	}
 
