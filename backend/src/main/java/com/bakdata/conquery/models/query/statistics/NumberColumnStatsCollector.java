@@ -98,7 +98,7 @@ public class NumberColumnStatsCollector<TYPE extends Number & Comparable<TYPE>> 
 
 		Arrays.stream(getStatistics().getValues()).forEach(histogram::add);
 
-		final List<BalancingHistogram.Node> balanced = histogram.snapped();
+		final List<BalancingHistogram.Node> balanced = histogram.nodes();
 
 
 		final List<StringColumnStatsCollector.ColumnDescription.Entry> entries = new ArrayList<>();
