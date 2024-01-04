@@ -1,0 +1,115 @@
+{
+  "type": "QUERY_TEST",
+  "label": "Concept Date Aggregation",
+  "expectedCsv": "tests/query/CONCEPT_DATE_AGGREGATION/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "concept"
+      ],
+      "type": "CONCEPT",
+      "tables": [
+        {
+          "id": "concept.connector1",
+          "filters": [
+            {
+              "filter": "concept.connector1.filter",
+              "type": "INTEGER_RANGE",
+              "value": {
+                "min": 2,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "id": "concept.connector2",
+          "filters": [
+            {
+              "filter": "concept.connector2.filter",
+              "type": "INTEGER_RANGE",
+              "value": {
+                "min": 3
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "name": "concept",
+      "type": "TREE",
+      "connectors": [
+        {
+          "name": "connector1",
+          "table": "table1",
+          "validityDates": {
+            "name": "datum",
+            "column": "table1.datum"
+          },
+          "filters": {
+            "name": "filter",
+            "column": "table1.geschlecht",
+            "type": "COUNT"
+          }
+        },
+        {
+          "name": "connector2",
+          "table": "table2",
+          "validityDates": {
+            "name": "datum",
+            "column": "table2.datum"
+          },
+          "filters": {
+            "name": "filter",
+            "column": "table2.geschlecht",
+            "type": "COUNT"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/CONCEPT_DATE_AGGREGATION/content1.csv",
+        "name": "table1",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "geschlecht",
+            "type": "STRING"
+          }
+        ]
+      },
+      {
+        "csv": "tests/query/CONCEPT_DATE_AGGREGATION/content2.csv",
+        "name": "table2",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "geschlecht",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}
