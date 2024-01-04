@@ -48,7 +48,7 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 
 		if (!bucket.has(event, getAddendColumn()) && !bucket.has(event, getSubtrahendColumn())) {
 			return;

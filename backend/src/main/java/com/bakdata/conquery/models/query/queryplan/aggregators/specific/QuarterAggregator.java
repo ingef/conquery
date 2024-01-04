@@ -53,7 +53,7 @@ public class QuarterAggregator extends Aggregator<String> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		final CDateRange dateRange = validityDate.getValidityDate(event, bucket);
 
 		if (dateRange == null){

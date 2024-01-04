@@ -43,7 +43,7 @@ public class EventDurationSumAggregator extends Aggregator<Long> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public void consumeEvent(Bucket bucket, int event) {
 		if (validityDateColumn == null) {
 			return;
 		}

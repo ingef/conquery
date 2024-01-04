@@ -51,8 +51,9 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-		aggregator.acceptEvent(bucket, event);
+	public boolean acceptEvent(Bucket bucket, int event) {
+		aggregator.consumeEvent(bucket, event);
+		return true; // this is ignored for non-EventFilterNodes
 	}
 
 	@Override

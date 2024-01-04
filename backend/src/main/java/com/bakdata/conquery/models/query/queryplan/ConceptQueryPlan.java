@@ -63,8 +63,8 @@ public class ConceptQueryPlan implements QueryPlan<SinglelineEntityResult> {
 		child.init(entity, ctx);
 	}
 
-	public void nextEvent(Bucket bucket, int event) {
-		getChild().acceptEvent(bucket, event);
+	public boolean nextEvent(Bucket bucket, int event) {
+		return getChild().acceptEvent(bucket, event);
 	}
 
 	protected SinglelineEntityResult createResult() {

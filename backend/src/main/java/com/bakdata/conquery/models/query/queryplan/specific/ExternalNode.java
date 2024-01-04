@@ -77,8 +77,9 @@ public class ExternalNode<T> extends QPNode {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
+	public boolean acceptEvent(Bucket bucket, int event) {
 		// Nothing to do
+		return true;
 	}
 
 	@Override

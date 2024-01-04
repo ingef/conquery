@@ -108,7 +108,7 @@ public class ResultTestUtil {
 				}
 
 				@Override
-				public void acceptEvent(Bucket bucket, int event) {
+				public void consumeEvent(Bucket bucket, int event) {
 					throw new UnsupportedOperationException();
 				}
 

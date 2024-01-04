@@ -15,8 +15,9 @@ public abstract class EventFilterNode<FILTER_VALUE> extends FilterNode<FILTER_VA
 	public abstract boolean checkEvent(Bucket bucket, int event);
 
 	@Override
-	public final void acceptEvent(Bucket bucket, int event) {
+	public final boolean acceptEvent(Bucket bucket, int event) {
 		hit = true;
+		return true;
 	}
 
 	public final boolean isContained() {

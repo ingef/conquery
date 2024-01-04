@@ -26,8 +26,8 @@ public class Yes extends QPNode {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {
-
+	public boolean acceptEvent(Bucket bucket, int event) {
+		return true;
 	}
 
 	@Override

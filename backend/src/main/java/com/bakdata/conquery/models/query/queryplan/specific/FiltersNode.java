@@ -94,17 +94,19 @@ public class FiltersNode extends QPNode {
 	}
 
 	@Override
-	public final void acceptEvent(Bucket bucket, int event) {
+	public final boolean acceptEvent(Bucket bucket, int event) {
 		for (EventFilterNode<?> f : eventFilters) {
 			if (!f.checkEvent(bucket, event)) {
-				return;
+				return false;
 			}
 		}
 
 		filters.forEach(f -> f.acceptEvent(bucket, event));
-		aggregators.forEach(a -> a.acceptEvent(bucket, event));
+		aggregators.forEach(a -> a.consumeEvent(bucket, event));
 
 		hit = true;
+
+		return true;
 	}
 
 	@Override

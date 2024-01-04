@@ -42,7 +42,7 @@ public abstract class EventIterating {
 	public void nextBlock(Bucket bucket) {
 	}
 
-	public abstract void acceptEvent(Bucket bucket, int event);
+	public abstract boolean acceptEvent(Bucket bucket, int event);
 
 
 	public boolean isOfInterest(Bucket bucket) {

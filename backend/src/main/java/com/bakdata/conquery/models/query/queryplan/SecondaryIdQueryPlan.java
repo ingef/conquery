@@ -57,8 +57,11 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 
 
 	private final Map<String, ConceptQueryPlan> childPerKey = new HashMap<>();
-
-
+	/**
+	 * This helps us avoid allocations, instead allowing us to reuse the queries.
+	 */
+	@Getter(AccessLevel.NONE)
+	private final Queue<ConceptQueryPlan> childPlanReusePool = new LinkedList<>();
 
 	/**
 	 * This is the same execution as a typical ConceptQueryPlan. The difference
@@ -89,11 +92,88 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return createResult(entity);
 	}
 
+	private void executeQueriesWithSecondaryId(QueryExecutionContext ctx, Entity entity, Column secondaryIdColumnId) {
+
+		final QueryExecutionContext ctxWithPhase = ctx.withActiveSecondaryId(getSecondaryId());
+
+		final Table currentTable = secondaryIdColumnId.getTable();
+
+		nextTable(ctxWithPhase, currentTable);
+
+		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
+
+		for (Bucket bucket : tableBuckets) {
+			final int entityId = entity.getId();
+
+			nextBlock(bucket);
+
+			if (!bucket.containsEntity(entityId)) {
+				continue;
+			}
+
+			if (!isOfInterest(bucket)) {
+				continue;
+			}
+
+			final int start = bucket.getEntityStart(entityId);
+			final int end = bucket.getEntityEnd(entityId);
+
+			for (int event = start; event < end; event++) {
+				//we ignore events with no value in the secondaryIdColumn
+				if (!bucket.has(event, secondaryIdColumnId)) {
+					continue;
+				}
+
+				final String key = ((String) bucket.createScriptValue(event, secondaryIdColumnId));
+
+				if (childPerKey.containsKey(key)) {
+					final ConceptQueryPlan plan = childPerKey.get(key);
+					plan.nextEvent(bucket, event);
+				}
+				else {
+					final ConceptQueryPlan plan = createChild(ctxWithPhase, bucket);
+					final boolean consumed = plan.nextEvent(bucket, event);
+
+					if (consumed) {
+						childPerKey.put(key, plan);
+					}
+					else {
+						childPlanReusePool.add(plan);
+					}
+				}
+			}
+		}
+	}
+
+	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, Table currentTable) {
+
+		nextTable(ctx, currentTable);
+
+		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
+
+		for (Bucket bucket : tableBuckets) {
+			final int entityId = entity.getId();
+			nextBlock(bucket);
+			if (!bucket.containsEntity(entityId) || !isOfInterest(bucket)) {
+				continue;
+			}
+
+			final int start = bucket.getEntityStart(entityId);
+			final int end = bucket.getEntityEnd(entityId);
+
+			for (int event = start; event < end; event++) {
+				for (ConceptQueryPlan child : childPerKey.values()) {
+					child.nextEvent(bucket, event);
+				}
+			}
+		}
+	}
+
 	/**
 	 * For each secondaryId that is included, create a line, return {@link MultilineEntityResult} containing all results.
 	 */
 	private Optional<MultilineEntityResult> createResult(Entity entity) {
-		List<Object[]> result = new ArrayList<>(childPerKey.values().size());
+		final List<Object[]> result = new ArrayList<>(childPerKey.values().size());
 
 		// Prepend the key (ie the actual SecondaryId) to the result.
 		for (Map.Entry<String, ConceptQueryPlan> child : childPerKey.entrySet()) {
@@ -112,90 +192,10 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		return Optional.of(new MultilineEntityResult(entity.getId(), result));
 	}
 
-	/**
-	 * This helps us avoid allocations, instead allowing us to reuse the queries.
-	 */
-	@Getter(AccessLevel.NONE)
-	private final Queue<ConceptQueryPlan> childPlanReusePool = new LinkedList<>();
-
-	@Override
-	public void init(QueryExecutionContext ctx, Entity entity) {
-		queryPlan.init(ctx, entity);
-
-		// Dump the created children into reuse-pool
-		childPlanReusePool.addAll(childPerKey.values());
-
-		childPerKey.clear();
-	}
-
-
-	private void executeQueriesWithSecondaryId(QueryExecutionContext ctx, Entity entity, Column secondaryIdColumnId) {
-
-		QueryExecutionContext ctxWithPhase = ctx.withActiveSecondaryId(getSecondaryId());
-
-		Table currentTable = secondaryIdColumnId.getTable();
-
-		nextTable(ctxWithPhase, currentTable);
-
-		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
-
-		for (Bucket bucket : tableBuckets) {
-			int entityId = entity.getId();
-
-			nextBlock(bucket);
-
-			if (!bucket.containsEntity(entityId)) {
-				continue;
-			}
-
-			if (!isOfInterest(bucket)) {
-				continue;
-			}
-
-			int start = bucket.getEntityStart(entityId);
-			int end = bucket.getEntityEnd(entityId);
-
-			for (int event = start; event < end; event++) {
-				//we ignore events with no value in the secondaryIdColumn
-				if (!bucket.has(event, secondaryIdColumnId)) {
-					continue;
-				}
-
-				String key = ((String) bucket.createScriptValue(event, secondaryIdColumnId));
-				final ConceptQueryPlan plan = childPerKey.computeIfAbsent(key, k -> createChild(ctxWithPhase, bucket));
-				plan.nextEvent(bucket, event);
-			}
-		}
-	}
-
-	private void executeQueriesWithoutSecondaryId(QueryExecutionContext ctx, Entity entity, Table currentTable) {
-
-		nextTable(ctx, currentTable);
-
-		final List<Bucket> tableBuckets = ctx.getBucketManager().getEntityBucketsForTable(entity, currentTable);
-
-		for (Bucket bucket : tableBuckets) {
-			int entityId = entity.getId();
-			nextBlock(bucket);
-			if (!bucket.containsEntity(entityId) || !isOfInterest(bucket)) {
-				continue;
-			}
-
-			int start = bucket.getEntityStart(entityId);
-			int end = bucket.getEntityEnd(entityId);
-
-			for (int event = start; event < end; event++) {
-				for (ConceptQueryPlan child : childPerKey.values()) {
-					child.nextEvent(bucket, event);
-				}
-			}
-		}
-	}
-
 	private void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		queryPlan.nextTable(ctx, currentTable);
 		for (ConceptQueryPlan c : childPerKey.values()) {
-			QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(ctx, c::getValidityDateAggregator);
+			final QueryExecutionContext context = QueryUtils.determineDateAggregatorForContext(ctx, c::getValidityDateAggregator);
 			c.nextTable(context, currentTable);
 		}
 	}
@@ -220,7 +220,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 		ConceptQueryPlan plan;
 
 		// Try to reuse old child plan first before allocating new ones
-		if((plan = childPlanReusePool.poll()) == null) {
+		if ((plan = childPlanReusePool.poll()) == null) {
 			plan = query.createQueryPlan(queryPlanContext.withSelectedSecondaryId(secondaryId));
 		}
 
@@ -235,6 +235,16 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 	}
 
 	@Override
+	public void init(QueryExecutionContext ctx, Entity entity) {
+		queryPlan.init(ctx, entity);
+
+		// Dump the created children into reuse-pool
+		childPlanReusePool.addAll(childPerKey.values());
+
+		childPerKey.clear();
+	}
+
+	@Override
 	public boolean isOfInterest(Entity entity) {
 		return queryPlan.isOfInterest(entity);
 	}
@@ -245,7 +255,7 @@ public class SecondaryIdQueryPlan implements QueryPlan<MultilineEntityResult> {
 			return Optional.empty();
 		}
 
-		DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);
+		final DateAggregator agg = new DateAggregator(DateAggregationAction.MERGE);
 		childPerKey.values().forEach(c -> c.getValidityDateAggregator().ifPresent(agg::register));
 
 		return agg.hasChildren() ? Optional.of(agg) : Optional.empty();

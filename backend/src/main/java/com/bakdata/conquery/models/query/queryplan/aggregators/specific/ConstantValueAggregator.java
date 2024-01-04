@@ -33,7 +33,8 @@ public class ConstantValueAggregator<T> extends Aggregator<T> {
 	}
 
 	@Override
-	public void acceptEvent(Bucket bucket, int event) {}
+	public void consumeEvent(Bucket bucket, int event) {
+	}
 	
 	@Override
 	public ResultType getResultType() {
