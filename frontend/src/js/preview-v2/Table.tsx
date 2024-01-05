@@ -2,10 +2,14 @@ import styled from "@emotion/styled";
 import { Table as ArrowTable, Vector } from "apache-arrow";
 import RcTable from "rc-table";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { CurrencyConfigT, GetQueryResponseDoneT, GetQueryResponseT } from "../api/types";
-import { NUMBER_TYPES, formatDate, formatNumber } from "./util";
 import { useSelector } from "react-redux";
+import {
+  CurrencyConfigT,
+  GetQueryResponseDoneT,
+  GetQueryResponseT,
+} from "../api/types";
 import { StateT } from "../app/reducers";
+import { NUMBER_TYPES, formatDate, formatNumber } from "./util";
 
 interface Props {
   data: ArrowTable;
@@ -48,14 +52,24 @@ export default function Table({ data, queryData }: Props) {
     (state) => state.startup.config.currency,
   );
 
-  function getRenderFunction(cellType: string): ((value: string | Vector) => ReactNode) | undefined {
+  function getRenderFunction(
+    cellType: string,
+  ): ((value: string | Vector) => ReactNode) | undefined {
     if (cellType.indexOf("LIST") == 0) {
-      const listType = cellType.match(/LIST\[(?<listtype>.*)\]/)?.groups?.["listtype"]
+      const listType = cellType.match(/LIST\[(?<listtype>.*)\]/)?.groups?.[
+        "listtype"
+      ];
       if (listType) {
-        const listTypeRenderFunction = getRenderFunction(listType)
-        return (value) => (value as Vector).toArray()
-          .map((listItem: string) => listTypeRenderFunction ? listTypeRenderFunction(listItem) : listItem)
-          .join(", ")
+        const listTypeRenderFunction = getRenderFunction(listType);
+        return (value) =>
+          (value as Vector)
+            .toArray()
+            .map((listItem: string) =>
+              listTypeRenderFunction
+                ? listTypeRenderFunction(listItem)
+                : listItem,
+            )
+            .join(", ");
       }
     } else if (NUMBER_TYPES.includes(cellType)) {
       return (value) => {
@@ -66,20 +80,23 @@ export default function Table({ data, queryData }: Props) {
       return (value) => formatDate(value as string);
     } else if (cellType == "DATE_RANGE") {
       return (value) => {
-        const dateRange = (value as Vector).toJSON() as unknown as { min: Date, max: Date }
-        const min = dateRange.min.toLocaleDateString("de-de")
-        const max = dateRange.max.toLocaleDateString("de-de")
-        return min == max
-          ? min
-          : `${min} - ${max}`
-      }
+        const dateRange = (value as Vector).toJSON() as unknown as {
+          min: Date;
+          max: Date;
+        };
+        const min = dateRange.min.toLocaleDateString("de-de");
+        const max = dateRange.max.toLocaleDateString("de-de");
+        return min == max ? min : `${min} - ${max}`;
+      };
     } else if (cellType == "MONEY") {
       return (value) => {
         const num = parseFloat(value as string);
-        return isNaN(num) ? value : `${formatNumber(num)} ${currencyConfig.unit}`;
+        return isNaN(num)
+          ? value
+          : `${formatNumber(num)} ${currencyConfig.unit}`;
       };
     } else if (cellType == "BOOLEAN") {
-      return (value) => value ? "1" : "0"
+      return (value) => (value ? "1" : "0");
     }
   }
 
@@ -90,7 +107,7 @@ export default function Table({ data, queryData }: Props) {
       queryData as GetQueryResponseDoneT
     ).columnDescriptions?.find((x) => x.label == fieldName)?.type;
     if (cellType) {
-      return getRenderFunction(cellType)
+      return getRenderFunction(cellType);
     }
   };
 
