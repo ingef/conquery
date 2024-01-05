@@ -90,7 +90,7 @@ export default function Preview() {
   const statistics = preview.statisticsData;
 
   useHotkeys("esc", () => {
-    if(!selectBoxOpen && !popOver) onClose();
+    if (!selectBoxOpen && !popOver) onClose();
   });
 
   const store = useStore();
@@ -101,7 +101,7 @@ export default function Preview() {
         dispatch(toggleDragHandles());
       };
     }
-  }, [preview.statisticsData]);
+  }, [preview.statisticsData, dispatch, store]);
 
   return (
     <FullScreen>
