@@ -145,7 +145,8 @@ public class FlagSqlAggregator implements SqlAggregator {
 			Field<Boolean> boolColumn = entry.getValue();
 			Condition anyTrue = DSL.max(functionProvider.cast(boolColumn, SQLDataType.INTEGER))
 								   .eq(NUMERIC_TRUE_VAL);
-			// we have to prevent null values because then the whole String aggregation is null
+			// we have to prevent null values by adding an empty string in case no value is true
+			// because otherwise the whole String aggregation will become null
 			String flagName = entry.getKey();
 			Field<String> flag = DSL.when(anyTrue, DSL.val(flagName))
 									.otherwise(EMPTY_STRING);
