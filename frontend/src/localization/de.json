@@ -403,7 +403,7 @@
     "min": "Min Datum",
     "max": "Max Datum",
     "span": "Datumsbereich",
-    "loadingError": "Fehler beim laden der Vorschau",
+    "loadingError": "Da ist etwas schiefgelaufen, bitte versuche es nochmal.",
     "dateError": "Datum unbekannt",
     "name": "Name",
     "value": "Wert",

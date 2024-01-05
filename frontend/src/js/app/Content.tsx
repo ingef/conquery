@@ -38,6 +38,10 @@ const Content = () => {
     (state) => state.entityHistory.isOpen,
   );
 
+  const disableDragHandles = useSelector<StateT, boolean>(
+    (state) => state.panes.disableDragHandles,
+  );
+
   const collapsedStyles = useMemo(() => {
     if (displayTooltip) return {};
 
@@ -64,11 +68,11 @@ const Content = () => {
           >
             {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
           </Panel>
-          <ResizeHandle />
+          <ResizeHandle disabled={disableDragHandles} />
           <Panel minSize={350} defaultSize={600}>
             <LeftPane />
           </Panel>
-          <ResizeHandle />
+          <ResizeHandle disabled={disableDragHandles} />
           <Panel minSize={250}>
             <RightPane />
           </Panel>
