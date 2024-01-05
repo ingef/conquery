@@ -30,7 +30,6 @@ const InputContainer = styled("div")`
   flex-direction: row;
 `;
 
-// TODO combine Margin
 const List = styled("div")`
   position: absolute;
   z-index: 1;
@@ -48,7 +47,12 @@ const List = styled("div")`
 `;
 
 const ListItem = styled("div")`
-  margin-left: 5px;
+  padding: 0 5px;
+  cursor: pointer;
+  cursor: pointer;
+  &:hover {
+    background-color: ${({ theme }) => theme.col.grayVeryLight};
+  }
 `;
 
 const SxInput = styled(Input)`
@@ -98,6 +102,11 @@ export default function SelectBox<T extends SelectItem>({
           onChange={(e: { target: { value: SetStateAction<string> } }) =>
             setSearchTerm(e.target.value)
           }
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              onChange(displayedItems[0]);
+            }
+          }}
           spellCheck={false}
         />
         <ArrowContainer>

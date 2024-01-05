@@ -4,9 +4,9 @@ import { useDispatch, useSelector } from "react-redux";
 
 import type { ColumnDescription } from "../api/types";
 
-import { TransparentButton } from "./TransparentButton";
 import { StateT } from "../app/reducers";
 import { openPreview, useLoadPreviewData } from "../preview-v2/actions";
+import { TransparentButton } from "./TransparentButton";
 
 const Button = styled(TransparentButton)`
   white-space: nowrap;

@@ -6,6 +6,7 @@ import Modal from "../modal/Modal";
 import Diagram from "./Diagram";
 import { StyledTable } from "./Table";
 import { previewStatsIsBarStats } from "./util";
+import { useHotkeys } from "react-hotkeys-hook";
 
 interface DiagramModalProps {
   statistic: PreviewStatistics;
@@ -33,6 +34,9 @@ export default function DiagramModal({
   const components = {
     table: StyledTable,
   };
+
+  useHotkeys("esc", () => onClose());
+
   return (
     <Modal closeIcon onClose={() => onClose()}>
       <Horizontal>
