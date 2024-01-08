@@ -4,10 +4,13 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.apiv1.execution.ExecutionStatus;
+import com.bakdata.conquery.apiv1.query.EditorQuery;
 import com.bakdata.conquery.apiv1.query.Query;
 import com.bakdata.conquery.apiv1.query.QueryDescription;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.storage.MetaStorage;
+import com.bakdata.conquery.models.auth.entities.Subject;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -22,12 +25,13 @@ import com.bakdata.conquery.sql.conversion.model.SqlQuery;
 import com.bakdata.conquery.sql.execution.SqlExecutionResult;
 import com.bakdata.conquery.util.QueryUtils;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 @Setter
 @Getter
 @CPSType(base = ManagedExecution.class, id = "SQL_QUERY")
-public class SqlManagedQuery extends ManagedExecution implements SingleTableResult {
+public class SqlManagedQuery extends ManagedExecution implements EditorQuery, SingleTableResult {
 
 	private Query query;
 	private SqlQuery sqlQuery;
@@ -82,6 +86,12 @@ public class SqlManagedQuery extends ManagedExecution implements SingleTableResu
 	@Override
 	public long resultRowCount() {
 		return result.getRowCount();
+	}
+
+	@Override
+	public void setStatusBase(@NonNull Subject subject, @NonNull ExecutionStatus status) {
+		super.setStatusBase(subject, status);
+		enrichStatusBase(status);
 	}
 
 	public void finish(final SqlExecutionResult result) {

@@ -36,6 +36,7 @@ import com.bakdata.conquery.apiv1.execution.OverviewExecutionStatus;
 import com.bakdata.conquery.apiv1.execution.ResultAsset;
 import com.bakdata.conquery.apiv1.query.CQElement;
 import com.bakdata.conquery.apiv1.query.ConceptQuery;
+import com.bakdata.conquery.apiv1.query.EditorQuery;
 import com.bakdata.conquery.apiv1.query.ExternalUpload;
 import com.bakdata.conquery.apiv1.query.ExternalUploadResult;
 import com.bakdata.conquery.apiv1.query.Query;
@@ -168,11 +169,11 @@ public class QueryProcessor {
 	 */
 	private static boolean canFrontendRender(ManagedExecution q) {
 		//TODO FK: should this be used to fill into canExpand instead of hiding the Executions?
-		if (!(q instanceof ManagedQuery)) {
+		if (!(q instanceof EditorQuery)) {
 			return false;
 		}
 
-		final Query query = ((ManagedQuery) q).getQuery();
+		final Query query = ((EditorQuery) q).getQuery();
 
 		if (query instanceof ConceptQuery) {
 			return isFrontendStructure(((ConceptQuery) query).getRoot());
