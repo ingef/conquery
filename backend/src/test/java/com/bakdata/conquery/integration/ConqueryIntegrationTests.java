@@ -27,10 +27,9 @@ public class ConqueryIntegrationTests extends IntegrationTests {
 		return super.jsonTests();
 	}
 
-	@Override
 	@TestFactory
 	@Tag(TestTags.INTEGRATION_PROGRAMMATIC)
-	public Stream<DynamicNode> programmaticTests(TestDataImporter testImporter, StandaloneSupport.Mode mode) {
+	public Stream<DynamicNode> runProgrammaticTests() {
 		return super.programmaticTests(WORKER_TEST_DATA_IMPORTER, StandaloneSupport.Mode.WORKER);
 	}
 
