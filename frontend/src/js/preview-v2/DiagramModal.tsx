@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { t } from "i18next";
 import RcTable from "rc-table";
+import { useHotkeys } from "react-hotkeys-hook";
 import { PreviewStatistics } from "../api/types";
 import Modal from "../modal/Modal";
 import Diagram from "./Diagram";
@@ -33,6 +34,9 @@ export default function DiagramModal({
   const components = {
     table: StyledTable,
   };
+
+  useHotkeys("esc", () => onClose());
+
   return (
     <Modal closeIcon onClose={() => onClose()}>
       <Horizontal>

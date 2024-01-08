@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { useEffect, useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, useStore } from "react-redux";
 
 import { StateT } from "../app/reducers";
 
@@ -12,6 +12,7 @@ import FaIcon from "../icon/FaIcon";
 import PreviewInfo from "../preview/PreviewInfo";
 
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { toggleDragHandles } from "../pane/actions";
 import Charts from "./Charts";
 import DiagramModal from "./DiagramModal";
 import HeadlineStats from "./HeadlineStats";
@@ -89,12 +90,18 @@ export default function Preview() {
   const statistics = preview.statisticsData;
 
   useHotkeys("esc", () => {
-    onClose();
+    if (!selectBoxOpen && !popOver) onClose();
   });
 
+  const store = useStore();
   useEffect(() => {
-    setPage(0);
-  }, [preview.statisticsData]);
+    if (!(store.getState() as StateT).panes.disableDragHandles) {
+      dispatch(toggleDragHandles());
+      return () => {
+        dispatch(toggleDragHandles());
+      };
+    }
+  }, [preview.statisticsData, dispatch, store]);
 
   return (
     <FullScreen>
@@ -114,13 +121,10 @@ export default function Preview() {
           <SxSelectBox
             items={statistics?.statistics ?? ([] as PreviewStatistics[])}
             onChange={(res) => {
-              const index = statistics?.statistics.findIndex(
+              const stat = statistics?.statistics.find(
                 (stat) => stat.label === res.label,
               );
-              if (index !== undefined && index !== null) {
-                setPage(Math.floor(index / 4));
-                setSelectBoxOpen(false);
-              }
+              setPopOver(stat ?? null);
             }}
             isOpen={selectBoxOpen}
             setIsOpen={setSelectBoxOpen}
